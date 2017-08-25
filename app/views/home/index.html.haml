@@ -1,0 +1,28 @@
+%h2
+  Home
+%table
+  %thead
+    %tr
+      %th
+        Unit Id
+      %th
+        Name
+      %th
+        Number
+      %th
+        Floorplan Id
+      %th
+        Min Rent
+      %th
+        Available
+      %th
+        Available Date
+  %tbody
+    - @units.each do |u|
+      %tr
+        %td= u.provider_unit_id
+        %td= u.number
+        %td= u.floorplan_id
+        %td= u.min_rent
+        %td= u.availability
+        %td= u.available_date

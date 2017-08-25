@@ -1,0 +1,13 @@
+%h2
+  Floorplans
+%table
+  %thead
+    %tr
+      %th
+        Floorplan Id
+
+  %tbody
+    - @floorplans.each do |f|
+      %tr
+        %td
+          #{f.provider_floorplan_id}
