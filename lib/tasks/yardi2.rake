@@ -4,16 +4,28 @@ namespace :dataprovider do
 
   desc 'fetch floorplans data from realpage scv'
   task :yardi2 => :environment do
+    url = "https://www.yardiasp14.com/34255rdmerrill/webservices/itfilsguestcard20.asmx"
+    post = '34255rdmerrill/Webservices/itfilsguestcard20.asmx HTTP/1.1'
+    host = 'www.yardiasp14.com'
+    soap_action = 'http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20/UnitAvailability_Login'
+    user_name = "Pynwheel"
+    password = "Pynwheel"
+    server_name = "VNSQL41_2K12"
+    database = "bexedqvjz_live"
+    platform = 'SQL Server'
+    property_id = "000161"
+    interface_entity = "Pynwheel"
+    license_key = "MIIBEAYJKwYBBAGCN1gDoIIBATCB/gYKKwYBBAGCN1gDAaCB7zCB7AIDAgABAgJoAQICAIAEAAQQb2bdpX8B3jHdPljSivbiuASByOvAt9PkhRChGWsa5YG3AL9BJALXDVPHpDmcs0H+kJNxj3/BusZJQ5xAehvRVRxtU2fZvQ7KR2RMavloRYvMX4yDMDfCKGiiBUcHgwXMXArK1clII0o1gNYu+NcrCGxFC5EqDY6os308AssprSKJ6c4qbtw2lNE1SgYdHsEQFpetjRj8Ps8QIseOWA9M0s1FLABpdm3dGODEB9VXjswmM7qNzZyNTN5MSKBgIAjDQ3tmz2eEzgYxD9NxCZwB/eOvCJVq8ZZ+MoM4"
     response = HTTParty.post(
-        "https://www.yardiasp14.com/34255rdmerrill/webservices/itfilsguestcard20.asmx",
-        :headers => {'POST'=>'34255rdmerrill/Webservices/itfilsguestcard20.asmx HTTP/1.1','HOST'=>'www.yardiasp14.com','Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>'http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20/UnitAvailability_Login'},
-        :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>Pynwheel</UserName><Password>Pynwheel</Password><ServerName>VNSQL41_2K12</ServerName><Database>bexedqvjz_live</Database><Platform>SQL Server</Platform><YardiPropertyId>000161</YardiPropertyId><InterfaceEntity>Pynwheel</InterfaceEntity><InterfaceLicense>MIIBEAYJKwYBBAGCN1gDoIIBATCB/gYKKwYBBAGCN1gDAaCB7zCB7AIDAgABAgJoAQICAIAEAAQQb2bdpX8B3jHdPljSivbiuASByOvAt9PkhRChGWsa5YG3AL9BJALXDVPHpDmcs0H+kJNxj3/BusZJQ5xAehvRVRxtU2fZvQ7KR2RMavloRYvMX4yDMDfCKGiiBUcHgwXMXArK1clII0o1gNYu+NcrCGxFC5EqDY6os308AssprSKJ6c4qbtw2lNE1SgYdHsEQFpetjRj8Ps8QIseOWA9M0s1FLABpdm3dGODEB9VXjswmM7qNzZyNTN5MSKBgIAjDQ3tmz2eEzgYxD9NxCZwB/eOvCJVq8ZZ+MoM4</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>YdHsEQFpetjRj8Ps8QIseOWA9M0s1FLABpdm3dGODEB9VXjswmM7qNzZyNTN5MSKBgIAjDQ3tmz2eEzgYxD9NxCZwB/eOvCJVq8ZZ+MoM4')
+        url,
+        :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
+        :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
     result = Hash.from_xml(response.body)
     ils_units = result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["ILS_Unit"]
     floorplans = result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["Floorplan"]
     @prop_id =  result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["PropertyID"]["Identification"]["PrimaryID"]
-    save_yardi4_units(ils_units)
-    save_yardi4_floorplans(floorplans)
+    save_yardi2_units(ils_units)
+    save_yardi2_floorplans(floorplans)
   end
 
   def save_yardi2_units(ils_units)

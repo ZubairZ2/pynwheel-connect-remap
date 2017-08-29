@@ -8,8 +8,8 @@ class CreateFloorplans < ActiveRecord::Migration[5.0]
       t.string :name
       t.integer :unit_count
       t.integer :units_available
-      t.integer :bedrooms
-      t.integer :bathrooms
+      t.string :bedrooms
+      t.float :bathrooms
       t.float :market_rent
       t.float :square_feet
       t.float :deposit
