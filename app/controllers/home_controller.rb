@@ -1,9 +1,9 @@
 class HomeController < ApplicationController
   def index
-    @units = Unit.all
+    @floorplans = Floorplan.all.page(params[:page]).per(10)
   end
-  def floorplans
-    @floorplans = Floorplan.all
+  def units
+    @units = Unit.all.page(params[:page]).per(10)
   end
 
 end

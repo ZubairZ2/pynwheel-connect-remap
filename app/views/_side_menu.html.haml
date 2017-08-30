@@ -1,0 +1,86 @@
+/ Start menu nav left Section
+%aside.main-sidebar
+  / sidebar: style can be found in sidebar.less
+  %section.sidebar
+    / Sidebar user panel
+    %ul.sidebar-menu{"data-widget" => "tree"}
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-home
+          %span HomePage
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-tv
+          %span Design
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-building-o
+          %span Companies
+      %li.active.treeview
+        %a{:href => "#"}
+          %i.fa.fa-columns
+          %span Appartments
+          %span.pull-right-container
+            %i.fa.fa-angle-right.pull-right
+        %ul.treeview-menu
+          %li
+            %a{:href => "#"} Floor Plans
+          %li
+            %a{:href => "#"} Floor Plan Amenity Images
+      %li.treeview
+        %a{:href => "#{units_path}"}
+          %i.fa.fa-laptop
+          %span Units
+          %span.pull-right-container
+            %i.fa.fa-angle-right.pull-right
+        %ul.treeview-menu
+          %li
+            %a{:href => "#"} Name Here
+          %li
+            %a{:href => "#"} Name Here
+          %li
+            %a{:href => "#"} Name Here
+      %li.treeview
+        %a{:href => "#"}
+          %i.fa.fa-map-marker
+          %span Property Map
+          %span.pull-right-container
+            %i.fa.fa-angle-right.pull-right
+        %ul.treeview-menu
+          %li
+            %a{:href => "#"} Name Here
+          %li
+            %a{:href => "#"} Name Here
+          %li
+            %a{:href => "#"} Name Here
+      %li.treeview
+        %a{:href => "#"}
+          %i.fa.fa-database
+          %span Floor Plates
+          %span.pull-right-container
+            %i.fa.fa-angle-right.pull-right
+        %ul.treeview-menu
+          %li
+            %a{:href => "#"} Name Here
+          %li
+            %a{:href => "#"} Name Here
+          %li
+            %a{:href => "#"} Name Here
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-cubes
+          %span Galleries
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-bank
+          %span Neighborhood
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-star
+          %span Favorites
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-gears
+          %span Settings
+  / /.sidebar
+/ End menu nav left Section

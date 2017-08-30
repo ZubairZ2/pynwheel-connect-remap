@@ -33,8 +33,12 @@ gem 'haml'
 gem 'httparty'
 # SOAP calls
 gem 'savon', '~> 2.11.0'
-
+# For spreadsheet reading
 gem "roo", "~> 2.7.0"
+# To add font awesome
+gem "font-awesome-rails"
+# For Pagination
+gem 'kaminari'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

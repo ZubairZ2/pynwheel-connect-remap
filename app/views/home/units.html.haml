@@ -1,0 +1,66 @@
+.content-wrapper
+  / Content Header (Page header)
+  %section.content-header
+    %ol.breadcrumb
+      %li
+        %a{:href => "#"} Home
+      %li.active
+        %a{:href => "#"} Units
+    .clearfix
+  .clearfix
+  / Main content
+  %section
+    .content
+      .title-heading
+        %h4
+          %i.fa.fa-columns
+          Units
+      .row
+        / Start Panel left Side
+        .col-lg-12.col-md-12
+          .row
+            .col-md-12
+              %h4.title UNITS FOR 1225 OLD TOWN
+          .box.box-widget.panel-box
+            .box-headrer
+              %div
+                .col-sm-9
+                  %label
+                    %select.form-control
+                      %option{:value => "10"} 10
+                      %option{:value => "25"} 25
+                      %option{:value => "50"} 50
+                      %option{:value => "100"} 100
+                  records
+                .col-sm-3
+                  %input.form-control{"aria-controls" => "example1", :placeholder => "Search:", :type => "search"}
+              .row
+                .col-md-12
+                  %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+                    %thead
+                      %tr
+                        %th{:width => "79"} Sr #
+                        %th Number
+                        %th Rent
+                        %th Availability
+                        %th Actions
+                    %tbody
+                      - @units.each_with_index  do |u,index|
+                        %tr
+                          %td= index+1
+                          %td= u.number
+                          %td= u.min_rent
+                          %td= u.availability
+                          %td
+                            %a.text-success{:href => "#"}
+                              %i.fa.fa-edit
+                            %a.text-danger{:href => "#"}
+                              %i.fa.fa-trash
+
+              .row
+                .col-md-6
+                  .pl-20.pt-5 Showing 1 to 3 of 25 records
+                .col-md-6
+                  %ul.pagination.pull-right.pr-20.mt-0
+                    = paginate @units
+        / End Panel left Side

@@ -1,0 +1,22 @@
+%footer.main-footer
+  %strong
+    Copyright © 2017
+    = succeed "." do
+      %a{:href => "#"} Pynwheel.com
+  All rights reserved.
+/ End Footer Section
+/ Setting Section Slide panel
+%aside.control-sidebar.control-sidebar-dark
+  %ul.nav.nav-tabs.nav-justified.control-sidebar-tabs
+    %li
+      %a{"data-toggle" => "tab", :href => "#control-sidebar-home-tab"}
+        %i.fa.fa-home
+    %li
+      %a{"data-toggle" => "tab", :href => "#control-sidebar-settings-tab"}
+        %i.fa.fa-gears
+  .tab-content
+    #control-sidebar-home-tab.tab-pane
+    #control-sidebar-stats-tab.tab-pane Stats Tab Content
+    #control-sidebar-settings-tab.tab-pane
+/ End Setting Section Slide panel
+.control-sidebar-bg

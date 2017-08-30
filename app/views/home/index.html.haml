@@ -1,28 +1,119 @@
-%h2
-  Home
-%table
-  %thead
-    %tr
-      %th
-        Unit Id
-      %th
-        Name
-      %th
-        Number
-      %th
-        Floorplan Id
-      %th
-        Min Rent
-      %th
-        Available
-      %th
-        Available Date
-  %tbody
-    - @units.each do |u|
-      %tr
-        %td= u.provider_unit_id
-        %td= u.number
-        %td= u.floorplan_id
-        %td= u.min_rent
-        %td= u.availability
-        %td= u.available_date
+.content-wrapper
+  / Content Header (Page header)
+  %section.content-header
+    %ol.breadcrumb
+      %li
+        %a{:href => "#"} Home
+      %li
+        %a{:href => "#"} Appartments
+      %li.active Floor Plans
+    .clearfix
+  .clearfix
+  / Main content
+  %section
+    .content
+      .title-heading
+        %h4
+          %i.fa.fa-columns
+          Floor Plans
+      .row
+        / Start Panel left Side
+        .col-lg-8.col-md-12
+          .row
+            .col-md-12
+              %h4.title FLOORPLANS FOR 1225 OLD TOWN
+          .box.box-widget.panel-box
+            .box-headrer
+              %div
+                .col-sm-9
+                  %label
+                    %select.form-control
+                      %option{:value => "10"} 10
+                      %option{:value => "25"} 25
+                      %option{:value => "50"} 50
+                      %option{:value => "100"} 100
+                  records
+                .col-sm-3
+                  %input.form-control{"aria-controls" => "example1", :placeholder => "Search:", :type => "search"}
+              .row
+                .col-md-12
+                  %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+                    %thead
+                      %tr
+                        %th{:width => "79"} Sr #
+                        %th Plan Name
+                        %th Sq.Ft
+                        %th Bedrooms
+                        %th Bathrooms
+                        %th Plot Amenity
+                        %th Image
+                        %th Actions
+                    %tbody
+                      - @floorplans.each_with_index  do |f,index|
+                        %tr
+                          %td= index+1
+                          %td= f.name
+                          %td= f.square_feet
+                          %td= f.bedrooms
+                          %td= f.bathrooms
+                          %td
+                            %button.btn.btn-default.black-button Plot Now
+                          %td
+                            .drop-img.drop-img-left{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
+                          %td
+                            %a.text-success{:href => "#"}
+                              %i.fa.fa-edit
+                            %a.text-danger{:href => "#"}
+                              %i.fa.fa-trash
+
+              .row
+                .col-md-6
+                  .pl-20.pt-5 Showing 1 to 3 of 25 records
+                .col-md-6
+                  %ul.pagination.pull-right.pr-20.mt-0
+                    = paginate @floorplans
+        / End Panel left Side
+        / Start Panel Right Side
+        .col-lg-4.col-md-12
+          .row
+            .col-md-12
+              .mt-35
+                %a.btn.btn-success.pull-right.mb-20{:href => "#"}
+                  %i.fa.fa-plus-circle
+                  ADD FLOOR PLAN
+          .row
+            .col-md-12
+              .box.box-widget.panel-box.pl-20.pr-20.pb-10
+                .row
+                  .col-md-12.col-lg-9.col-xs-9
+                    %h4 Upload File
+                    %p.pt-10.mb-20 Upload the File here, then drag  drop it to the image column in the table.
+                  .col-md-12.col-lg-3.col-xs-3
+                    %img{:alt => "", :src => "/assets/upload-image.jpg", :style => "max-width:100%;", :title => ""}
+                %span.btn.btn-success.btn-file
+                  %i.fa.fa-plus
+                  All Files
+                  %input{:type => "file"}
+                %table.table.upload-image
+                  %tr{:valign => "middle"}
+                    %td{:align => "left"}
+                      .drop-img{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
+                        %img#drag1{:alt => "", :draggable => "true", :ondragstart => "drag(event)", :src => "/assets/drop-image.jpg", :title => ""}
+                      %td Picture Name
+                      %td
+                        %a.btn.btn-danger.btn-sm{:href => "#"} Cancel
+                    %tr{:valign => "middle"}
+                      %td{:align => "left"}
+                        .drop-img{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
+                          %img#drag2{:alt => "", :draggable => "true", :ondragstart => "drag(event)", :src => "/assets/drop-image.jpg"}
+                        %td Picture Name
+                        %td
+                          %a.btn.btn-danger.btn-sm{:href => "#"} Cancel
+                      %tr{:valign => "middle"}
+                        %td{:align => "left"}
+                          .drop-img{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
+                            %img#drag3{:alt => "", :draggable => "true", :ondragstart => "drag(event)", :src => "/assets/drop-image.jpg", :title => ""}
+                          %td Picture Name
+                          %td
+                            %a.btn.btn-danger.btn-sm{:href => "#"} Cancel
+              / End Panel Right Side

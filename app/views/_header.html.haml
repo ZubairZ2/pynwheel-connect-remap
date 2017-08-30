@@ -1,0 +1,57 @@
+
+%header.main-header
+  / Logo
+  %a.logo{:href => "/"}
+    / mini logo for sidebar mini 50x50 pixels
+    %span.logo-mini
+      %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
+    / logo for regular state and mobile devices
+    %span.logo-lg
+      %img{:alt => "", :src => "/assets/logo.png", :title => ""}/
+  %nav.navbar.navbar-static-top
+    / Sidebar toggle button
+    %a.sidebar-toggle{"data-toggle" => "push-menu", :href => "#", :role => "button"}
+      %span.sr-only Toggle navigation
+    .navbar-custom-menu
+      %ul.nav.navbar-nav
+        %li.search-box
+          / search form
+          %form#sidebar-form.sidebar-form{:action => "#", :method => "get"}
+            .input-group
+              %input.form-control{:name => "q", :placeholder => "Search...", :type => "text"}/
+              %span.input-group-btn
+                %button#search-btn.btn.btn-flat{:name => "search", :type => "submit"}
+                  %i.fa.fa-search
+          / /.search form
+        %li
+          %a{"data-toggle" => "control-sidebar", :href => "#"}
+            %i.fa.fa-gear
+        %li.dropdown.user.user-menu
+          %a.dropdown-toggle{"data-toggle" => "dropdown", :href => "#"}
+            %img.user-image{:alt => "User Image", :src => "/assets/user8-128x128.jpg"}/
+            %span.hidden-xs John Henderson
+            %i.fa.fa-angle-down
+          %ul.dropdown-menu
+            / User image
+            %li.user-header
+              %img.img-circle{:alt => "User Image", :src => "/assets/user8-128x128.jpg"}/
+              %p
+                Alexander Pierce - Web Developer
+                %small Member since Nov. 2012
+            / Menu Body
+            %li.user-body
+              .row
+                .col-xs-4.text-center
+                  %a{:href => "#"} Followers
+                .col-xs-4.text-center
+                  %a{:href => "#"} Sales
+                .col-xs-4.text-center
+                  %a{:href => "#"} Friends
+              / /.row
+            / Menu Footer
+            %li.user-footer
+              .pull-left
+                %a.btn.btn-default.btn-flat{:href => "#"} Profile
+              .pull-right
+                %a.btn.btn-default.btn-flat{:href => "#"} Sign out
+/ End Header Section
