@@ -63,7 +63,7 @@
                           %td
                             %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
                               %i.fa.fa-edit
-                            %a.text-danger{:href => "#"}
+                            %a.text-danger{:href => "/communities/#{@community.id}/floorplans/#{f.id}","data-method"=>:delete}
                               %i.fa.fa-trash
 
               .row

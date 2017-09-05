@@ -1,4 +1,4 @@
-(document).ready(function(e){
+$(document).ready(function(e){
 
 var headertext = [],
     headers = document.querySelectorAll("#miyazaki th"),

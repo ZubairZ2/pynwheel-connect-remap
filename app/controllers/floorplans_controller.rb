@@ -30,6 +30,11 @@ class FloorplansController < CommunitiesController
     @floorplans = @community.floorplans.page(params[:page]).per(10)
   end
 
+  def destroy
+    @floorplan.destroy
+    redirect_to community_floorplans_path(:community_id=>@community.id)
+  end
+
   private
 
   def set_floorplan
