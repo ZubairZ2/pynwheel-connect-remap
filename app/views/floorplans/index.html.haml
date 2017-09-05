@@ -61,7 +61,7 @@
                           %td
                             .drop-img.drop-img-left{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
                           %td
-                            %a.text-success{:href => "#"}
+                            %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
                               %i.fa.fa-edit
                             %a.text-danger{:href => "#"}
                               %i.fa.fa-trash
@@ -78,7 +78,7 @@
           .row
             .col-md-12
               .mt-35
-                %a.btn.btn-success.pull-right.mb-20{:href => "#"}
+                %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
                   %i.fa.fa-plus-circle
                   ADD FLOOR PLAN
           .row
