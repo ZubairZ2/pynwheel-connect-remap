@@ -19,7 +19,7 @@ namespace :dataprovider do
 
   def save_yardi4_units(ils_units)
     ils_units.each do |u|
-      unit = Unit.new(provider: "yardi4",community_id: 4)
+      unit = Unit.new(provider: "yardi4",community_id: 5)
       unit.property_id = @prop_id
       unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
       unit.name = u["Units"]["Unit"]["Identification"]["IDValue"]
@@ -64,7 +64,7 @@ namespace :dataprovider do
 
   def save_yardi4_floorplans(floorplans)
     floorplans.each do |f|
-      fp = Floorplan.new(provider: "yardi4",community_id: 4)
+      fp = Floorplan.new(provider: "yardi4",community_id: 5)
       fp.provider_floorplan_id = f["IDValue"]
       rooms = f["Room"]
       rooms.each do |room|

@@ -7,7 +7,7 @@ namespace :provider do
     request_type = "apartmentavailability"
     company_code = "C00000077105"
     property_code = "p0223331"
-    community_id = 1
+    community_id = 2
     response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
     response = JSON.parse(response.body)
     # if  Unit.where(provider: "yardirentcafe",community_id: 1).count > 0

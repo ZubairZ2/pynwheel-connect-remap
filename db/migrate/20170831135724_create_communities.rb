@@ -13,6 +13,7 @@ class CreateCommunities < ActiveRecord::Migration[5.0]
       t.decimal :latitude
       t.decimal :longitude
       t.boolean :locked
+      t.string :data_provider
       t.references :company, foreign_key: true
 
       t.timestamps

@@ -1,0 +1,3 @@
+class CommunitiesController < ApplicationController
+
+end

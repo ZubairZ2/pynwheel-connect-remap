@@ -6,7 +6,7 @@ namespace :provider do
     password = "Password2017"
     username = "pynwheel"
     @property_id = "491314"
-    @community_id = 2
+    @community_id = 1
     response = HTTParty.post("https://#{domain}.entrata.com/api/propertyunits",
                              :body => {
                                  "auth": {
@@ -89,7 +89,7 @@ namespace :provider do
   def save_floorplans(floorplans)
     floorplans.each do |f|
 
-      floorplan = Floorplan.new(provider: "psi",community_id: 2)
+      floorplan = Floorplan.new(provider: "psi",community_id: @community_id)
       floorplan.property_id = "168925"
       floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
       floorplan.name = f["Name"]
