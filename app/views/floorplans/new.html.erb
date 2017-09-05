@@ -80,7 +80,7 @@
 
                   <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
                     <div class="select-img mb-20">
-                      <div class="select-img-img"></div>
+                      <div class="select-img-img"><%= image_tag "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"%></div>
                     </div>
                     <span class="btn btn-default black-button btn-sm btn-file">
                                     Select Image
@@ -103,3 +103,21 @@
   </section>
   <!-- /.content -->
 </div>
+<script>
+    function readURL(input) {
+
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#preview-image').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    $("#floorplan_file_url").change(function(){
+        readURL(this);
+    });
+</script>
