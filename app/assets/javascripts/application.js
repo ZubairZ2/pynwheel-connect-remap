@@ -12,7 +12,7 @@
 //
 //= require jquery.min
 //= require jquery_ujs
-//= require turbolinks
+// require turbolinks
 //= require bootstrap.min
 //= require pyn.min
 //= require_tree .

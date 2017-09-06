@@ -48,3 +48,66 @@ function readURL(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+$(document).ready(function () {
+
+    var data_provider = $("#community_data_provider").val();
+    showPsiFields();
+    $("#community_data_provider").change(function(){
+        data_provider = $(this).val();
+        switch(data_provider) {
+            case "readpagesvc":
+                showRealPageSVCFields();
+                break;
+            case "yardirentcafe":
+                showYardiRentCafeFields();
+                break;
+            case "yardi2":
+                showYardiFields();
+                break;
+            case "yardi4":
+                showYardiFields();
+                break;
+            case "psi":
+                showPsiFields();
+                break;
+        }
+    });
+});
+
+function showPsiFields(){
+    $('.credential_fields').hide();
+    $('#domain').show();
+    $('#password').show();
+    $('#username').show();
+    $('#property_id').show();
+}
+
+function showYardiFields(){
+    $('.credential_fields').hide();
+    $('#domain').show();
+    $('#host').show();
+    $('#username').show();
+    $('#password').show();
+    $('#server_name').show();
+    $('#database').show();
+    $('#platform').show();
+    $('#property_id').show();
+    $('#license_key').show();
+    $('#interface_entity').show();
+}
+
+function showYardiRentCafeFields(){
+    $('.credential_fields').hide();
+    $('#domain').show();
+    $('#property_id').show();
+}
+
+function showRealPageSVCFields(){
+    $('.credential_fields').hide();
+    $('#property_id').show();
+    $('#pmc_id').show();
+    $('#username').show();
+    $('#password').show();
+    $('#license_key').show();
+}
