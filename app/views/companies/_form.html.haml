@@ -3,7 +3,7 @@
     Name
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :name, :class=>"form-control", :placeholder=>"Name",:required=>true
+    = f.text_field :name, :class=>"form-control", :placeholder=>"Company Name",:required=>true
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
@@ -12,8 +12,6 @@
     = f.text_area :address, :class=>"form-control", :placeholder=>"Address", rows: 4
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-
-
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
@@ -27,36 +25,22 @@
         %small Zip
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Email
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :email, :class=>"form-control", :placeholder=>"Email",:required=>true
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Description
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :description, :class=>"form-control", :placeholder=>"Description",:required=>true
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-
-
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
-      .col-sm-6.col-lg-3.col-md-3.col-xs-12
-        = f.text_field :latitude, :class=>"form-control", :placeholder=>"Latitude",:required=>true
-        %small Latitude
-      .col-sm-6.col-lg-3.col-md-3.col-xs-12
-        = f.text_field :longitude, :class=>"form-control", :placeholder=>"Longitude",:required=>true
-        %small Longitude
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :phone, :class=>"form-control", :placeholder=>"Phone",:required=>true
+        %small Phone
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :email, :class=>"form-control", :placeholder=>"Email",:required=>true
+        %small Email
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Upload Image
+    Upload Logo
     %span
-      Upload image of this
+      Upload logo of this
       %br/
-      floor plan.
+      company.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .select-img.mb-20
       .select-img-img= image_tag "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
