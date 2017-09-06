@@ -9,20 +9,20 @@
     Address
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :address, :class=>"form-control", :placeholder=>"Address"
+    = f.text_area :address, :class=>"form-control",rows:5, :placeholder=>"Address"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
-      .col-sm-6.col-lg-3.col-md-3.col-xs-12
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :city, :class=>"form-control", :placeholder=>"City",:required=>true
         %small City
-      .col-sm-6.col-lg-3.col-md-3.col-xs-12
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :state, :class=>"form-control", :placeholder=>"State",:required=>true
         %small State
-      .col-sm-6.col-lg-3.col-md-3.col-xs-12
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :zip, :class=>"form-control", :placeholder=>"Zip",:required=>true
         %small Zip
 .form-group
@@ -36,17 +36,17 @@
     Description
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :description, :class=>"form-control", :placeholder=>"Description",:required=>true
+    = f.text_area :description, :class=>"form-control", rows:5, :placeholder=>"Description",:required=>true
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
-      .col-sm-6.col-lg-3.col-md-3.col-xs-12
+      .col-sm-6.col-lg-6.col-md-6.col-xs-12
         = f.text_field :latitude, :class=>"form-control", :placeholder=>"Latitude",:required=>true
         %small Latitude
-      .col-sm-6.col-lg-3.col-md-3.col-xs-12
+      .col-sm-6.col-lg-6.col-md-6.col-xs-12
         = f.text_field :longitude, :class=>"form-control", :placeholder=>"Longitude",:required=>true
         %small Longitude
 
