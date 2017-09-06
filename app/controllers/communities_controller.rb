@@ -44,7 +44,7 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
-    @community = Community.find params[:edit]
+    @community = Community.find params[:id]
   end
 
   def community_params

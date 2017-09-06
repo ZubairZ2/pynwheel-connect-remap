@@ -52,28 +52,31 @@ function readURL(input) {
 $(document).ready(function () {
 
     var data_provider = $("#community_data_provider").val();
-    showPsiFields();
+    selectDataProvider(data_provider);
     $("#community_data_provider").change(function(){
-        data_provider = $(this).val();
-        switch(data_provider) {
-            case "readpagesvc":
-                showRealPageSVCFields();
-                break;
-            case "yardirentcafe":
-                showYardiRentCafeFields();
-                break;
-            case "yardi2":
-                showYardiFields();
-                break;
-            case "yardi4":
-                showYardiFields();
-                break;
-            case "psi":
-                showPsiFields();
-                break;
-        }
+        selectDataProvider($(this).val());
     });
 });
+
+function selectDataProvider(data_provider){
+    switch(data_provider) {
+        case "readpagesvc":
+            showRealPageSVCFields();
+            break;
+        case "yardirentcafe":
+            showYardiRentCafeFields();
+            break;
+        case "yardi2":
+            showYardiFields();
+            break;
+        case "yardi4":
+            showYardiFields();
+            break;
+        case "psi":
+            showPsiFields();
+            break;
+    }
+}
 
 function showPsiFields(){
     $('.credential_fields').hide();
