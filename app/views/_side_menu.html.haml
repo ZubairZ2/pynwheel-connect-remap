@@ -12,18 +12,23 @@
         %a{:href => "#"}
           %i.fa.fa-tv
           %span Design
-      %li
-        %a{:href => "#"}
+      %li.treeview{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
+        %a{:href => "/"}
           %i.fa.fa-building-o
           %span Companies
-      %li.active.treeview
+          %span.pull-right-container
+            %i.fa.fa-angle-right.pull-right
+        %ul.treeview-menu
+          %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
+            %a{:href => "/communities"} Communities
+      %li.treeview{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-columns
           %span Appartments
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
-          %li
+          %li{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
             %a{:href => "/"} Floor Plans
           %li
             %a{:href => "#"} Floor Plan Amenity Images
