@@ -228,8 +228,8 @@ class Community < ApplicationRecord
 
   def import_yardi4_data
     begin
-      url = "https://#{credential.host}/#{credential.domain}/webservices/itfilsguestcard.asmx?wsdl"
-      post = "#{credential.domain}/Webservices/itfilsguestcard.asmx HTTP/1.1"
+      url = "http://#{credential.host}/#{credential.domain}/webservices/itfilsguestcard.asmx?wsdl"
+      post = "/#{credential.domain}/Webservices/itfilsguestcard.asmx HTTP/1.1"
       host = credential.host
       soap_action = 'http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard/UnitAvailability_Login'
       user_name = credential.username
