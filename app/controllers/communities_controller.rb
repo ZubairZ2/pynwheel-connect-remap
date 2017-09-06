@@ -1,7 +1,13 @@
 class CommunitiesController < ApplicationController
+  before_action :set_community , only: [:edit,:update,:destroy]
+
+  def index
+    @communities = Community.page(params[:page]).per(10)
+  end
 
   def new
     @community = Community.new
+    @community.build_credential
   end
 
   def create
@@ -13,6 +19,36 @@ class CommunitiesController < ApplicationController
       flash[:notice] = @community.errors.full_messages.join(',')
       render :new
     end
+  end
+
+  def edit
+
+  end
+
+  def update
+    if @community.update(community_params)
+      flash[:notice] = "Community updated successfully."
+      redirect_to root_path
+    else
+      flash[:notice] = @community.errors.full_messages.join(',')
+      render :edit
+    end
+  end
+
+  def destroy
+    @community.destroy
+    flash[:notice] = "Community destroyed successfully."
+    redirect_to root_path
+  end
+
+  private
+
+  def set_community
+    @community = Community.find params[:id]
+  end
+
+  def community_params
+    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:credential_attributes=>[:domain,:username,:password,:property_id,:pmc_id,:licence_key,:host,:server_name,:database,:platform,:interface_entity])
   end
 
 end
