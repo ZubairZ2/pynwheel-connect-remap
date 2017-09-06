@@ -1,0 +1,49 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Name
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :name, :class=>"form-control", :placeholder=>"Company Name",:required=>true
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Address
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_area :address, :class=>"form-control", :placeholder=>"Address", rows: 4
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :city, :class=>"form-control", :placeholder=>"City",:required=>true
+        %small City
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :state, :class=>"form-control", :placeholder=>"State",:required=>true
+        %small State
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :zip, :class=>"form-control", :placeholder=>"Zip",:required=>true
+        %small Zip
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :phone, :class=>"form-control", :placeholder=>"Phone",:required=>true
+        %small Phone
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :email, :class=>"form-control", :placeholder=>"Email",:required=>true
+        %small Email
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Upload Logo
+    %span
+      Upload logo of this
+      %br/
+      company.
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .select-img.mb-20
+      .select-img-img= image_tag "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+    %span.btn.btn-default.black-button.btn-sm.btn-file
+      Select Image
+      = f.file_field :logo

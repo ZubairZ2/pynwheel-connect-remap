@@ -235,6 +235,9 @@ body{
 .panel-box .form-control{
 	border-radius:3px;
 }
+a:hover{
+	cursor: pointer;
+}
 /****Table Style***/
 table#miyazaki { margin-top:15px;}
 table#miyazaki caption {}
@@ -244,6 +247,31 @@ table#miyazaki thead th, table#miyazaki tbody td:last-child{ border-right:none;}
 /****Table Style***/
 .mt-0{
 	margin-top:0px;
+}
+
+.ml-5{
+	margin-left:5px;
+}
+.ml-10{
+	margin-left:10px;
+}
+.ml-15{
+	margin-left:15px;
+}
+.ml-20{
+	margin-left:20px;
+}
+.mr-5{
+	margin-right:5px;
+}
+.mr-10{
+	margin-right:10px;
+}
+.mr-15{
+	margin-right:15px;
+}
+.mr-20{
+	margin-right:20px;
 }
 
 .mt-5{
