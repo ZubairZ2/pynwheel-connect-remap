@@ -41,6 +41,19 @@ class CommunitiesController < ApplicationController
     redirect_to root_path
   end
 
+  def import
+    @community = Community.find params[:community_id]
+    @credential = @community.credential
+    @data_provider = @community.data_provider
+    if @community.data_is_imported
+      flash[:notice] = "Data is imported successfully."
+      redirect_to community_floorplans_path(:community_id=>@community.id)
+    else
+      flash[:notice] = "Something went wrong."
+      redirect_to root_path
+    end
+  end
+
   private
 
   def set_community

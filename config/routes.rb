@@ -4,5 +4,6 @@ Rails.application.routes.draw do
   resources :communities do
     resources :floorplans
     resources :units
+    get :import
   end
 end

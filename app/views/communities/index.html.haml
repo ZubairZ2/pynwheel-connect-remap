@@ -45,6 +45,7 @@
                       %th{:width => "79"} Sr #
                       %th Name
                       %th Data Provider
+                      %th Import
                       %th Actions
                   %tbody
                     - @communities.each_with_index  do |f,index|
@@ -52,6 +53,8 @@
                         %td= index+1
                         %td= f.name
                         %td= f.data_provider
+                        %td
+                          = link_to "Import",community_import_path(:community_id=>f.id), :class =>"button btn btn-default black-button"
                         %td
                           %a.text-success{:href => "/communities/#{f.id}/edit"}
                             %i.fa.fa-edit
