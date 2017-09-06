@@ -1,0 +1,39 @@
+/ Start Body right Section
+.content-wrapper
+  / Content Header (Page header)
+  %section.content-header
+    %ol.breadcrumb
+      %li
+        %a{:href => "#"} Home
+      %li
+        %a{:href => "#"} Appartments
+      %li
+        %a{:href => "#"} Floor Plans
+      %li.active Add Floor Plan
+    .clearfix
+  .clearfix
+  / Main content
+  %section
+    .content
+      .box.box-info.add-plan.mt-20
+        .box-header
+          %h3.box-title
+            Add Floor
+            %span Plan
+        / /.box-header
+        / form start
+        = form_for @floorplan,:url=>community_floorplan_path(:id=>@floorplan.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
+          .box-body
+            .row
+              .col-lg-9.col-lg-offset-1
+                = render :partial=>'form',:locals=>{:f=>f}
+          / /.box-body
+          .box-footer
+            = f.submit "EDIT FLOOR PLAN", :class=>"btn btn-success pull-right"
+          / /.box-footer
+  / /.content
+:javascript
+
+  $("#floorplan_file_url").change(function(){
+      readURL(this);
+  });
