@@ -8,8 +8,10 @@ class FloorplansController < CommunitiesController
   def create
     @floorplan = @community.floorplans.new(floorplan_params)
     if @floorplan.save
+      flash[:notice] = "Floorplan created successfully."
       redirect_to community_floorplans_path(:community_id=>@community.id)
     else
+      flash[:notice] = @floorplan.errors.full_messages.join(',')
       render :new
     end
   end
@@ -20,9 +22,11 @@ class FloorplansController < CommunitiesController
 
   def update
     if @floorplan.update(floorplan_params)
+      flash[:notice] = "Floorplan updated successfully."
       redirect_to community_floorplans_path(:community_id=>@community.id)
     else
-      render :new
+      flash[:notice] = @floorplan.errors.full_messages.join(',')
+      render :edit
     end
   end
 

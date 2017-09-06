@@ -13,6 +13,8 @@
     .wrapper
       = render partial: "/header"
       = render partial: "/side_menu"
-      = yield
+      .content-wrapper
+        = render partial: "/messages"
+        = yield
       = render partial: "/footer"
 
