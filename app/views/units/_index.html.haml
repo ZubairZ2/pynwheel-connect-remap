@@ -35,9 +35,9 @@
                     %td= u.min_rent
                     %td= u.availability
                     %td
-                      %a.text-success{:href => "#"}
+                      %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit
-                      %a.text-danger{:href => "#"}
+                      %a.text-danger{:href => "#{community_unit_path(@community,u)}","data-method"=>:delete}
                         %i.fa.fa-trash
 
         .row

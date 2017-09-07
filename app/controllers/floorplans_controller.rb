@@ -37,6 +37,7 @@ class FloorplansController < CommunitiesController
 
   def destroy
     @floorplan.destroy
+    flash[:notice] = "Floorplan deleted successfully."
     redirect_to community_floorplans_path(:community_id=>@community.id)
   end
 
