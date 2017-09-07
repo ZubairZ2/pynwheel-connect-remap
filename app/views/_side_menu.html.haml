@@ -29,17 +29,17 @@
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
-            %a{:href => "/"} Floor Plans
+            = link_to "Floor Plans", community_floorplans_path(Community.first)
           %li
             %a{:href => "#"} Floor Plan Amenity Images
-      %li.treeview
+      %li.treeview{:class=>"#{controller_name =='units' ? 'active' : ''}"}
         %a{:href => "#"}
           %i.fa.fa-laptop
           %span Units
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
-          %li
+          %li{:class=>"#{controller_name =='units' ? 'active' : ''}"}
             = link_to "Units", community_units_path(Community.first)
           %li
             %a{:href => "#"} Unit Amenity Images

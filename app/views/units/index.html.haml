@@ -9,57 +9,26 @@
 .clearfix
 / Main content
 %section
+  .row.mt-25.mb-20
+    .form-group
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+        Select Community
+      .col-sm-12.col-lg-12.col-md-12.col-xs-12    
+        = select_tag :communities_at_units, options_for_select(@communities.collect{|c| [c.name,c.id]},params[:community_id]), :class=>"form-control"
   .content
     .title-heading
       %h4
         %i.fa.fa-columns
         Units
-    .row
-      / Start Panel left Side
-      .col-lg-12.col-md-12
-        .row
-          .col-md-12
-            %h4.title UNITS FOR #{@community.name}
-        .box.box-widget.panel-box
-          .box-headrer
-            %div
-              .col-sm-9
-                %label
-                  %select.form-control
-                    %option{:value => "10"} 10
-                    %option{:value => "25"} 25
-                    %option{:value => "50"} 50
-                    %option{:value => "100"} 100
-                records
-              .col-sm-3
-                %input.form-control{"aria-controls" => "example1", :placeholder => "Search:", :type => "search"}
-            .row
-              .col-md-12
-                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
-                  %thead
-                    %tr
-                      %th{:width => "79"} Sr #
-                      %th Number
-                      %th Rent
-                      %th Availability
-                      %th Actions
-                  %tbody
-                    - @units.each_with_index  do |u,index|
-                      %tr
-                        %td= index+1
-                        %td= u.number
-                        %td= u.min_rent
-                        %td= u.availability
-                        %td
-                          %a.text-success{:href => "#"}
-                            %i.fa.fa-edit
-                          %a.text-danger{:href => "#"}
-                            %i.fa.fa-trash
+    #units-index
+      = render 'index'
+:javascript
+  $("#communities_at_units").change(function(){
+    var community_id = $('#communities_at_units').val();
 
-            .row
-              .col-md-6
-                .pl-20.pt-5 #{page_entries_info @units}
-              .col-md-6
-                %ul.pagination.pull-right.pr-20.mt-0
-                  = paginate @units
-      / End Panel left Side
+    $.ajax({
+      url: "/communities/"+community_id+"/units",
+      type: "GET",
+      dataType: "script"
+    });
+  });      

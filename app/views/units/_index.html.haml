@@ -1,0 +1,49 @@
+.row
+  / Start Panel left Side
+  .col-lg-12.col-md-12
+    .row
+      .col-md-12
+        %h4.title UNITS FOR #{@community.name}
+    .box.box-widget.panel-box
+      .box-headrer
+        %div
+          .col-sm-9
+            %label
+              %select.form-control
+                %option{:value => "10"} 10
+                %option{:value => "25"} 25
+                %option{:value => "50"} 50
+                %option{:value => "100"} 100
+            records
+          .col-sm-3
+            %input.form-control{"aria-controls" => "example1", :placeholder => "Search:", :type => "search"}
+        .row
+          .col-md-12
+            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+              %thead
+                %tr
+                  %th{:width => "79"} Sr #
+                  %th Number
+                  %th Rent
+                  %th Availability
+                  %th Actions
+              %tbody
+                - @units.each_with_index  do |u,index|
+                  %tr
+                    %td= index+1
+                    %td= u.number
+                    %td= u.min_rent
+                    %td= u.availability
+                    %td
+                      %a.text-success{:href => "#"}
+                        %i.fa.fa-edit
+                      %a.text-danger{:href => "#"}
+                        %i.fa.fa-trash
+
+        .row
+          .col-md-6
+            .pl-20.pt-5 #{page_entries_info @units}
+          .col-md-6
+            %ul.pagination.pull-right.pr-20.mt-0
+              = paginate @units
+  / End Panel left Side

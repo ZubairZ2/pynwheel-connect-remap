@@ -32,6 +32,7 @@ class FloorplansController < CommunitiesController
 
   def index
     @floorplans = @community.floorplans.page(params[:page]).per(10)
+    @communities = Community.select(:id,:name)
   end
 
   def destroy
