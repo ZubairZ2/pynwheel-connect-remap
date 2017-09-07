@@ -10,7 +10,6 @@ class CommunitiesController < ApplicationController
   end
 
   def create
-    fff
     @community = Community.new(community_params)
     if @community.save
       flash[:notice] = "Community created successfully."
