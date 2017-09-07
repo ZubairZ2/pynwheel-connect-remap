@@ -1,36 +1,32 @@
-
 %section.content-header
   %ol.breadcrumb
     %li
-      %a{:href => "#"} Home
-    %li.active
-      %a{:href => "#"} Units
+      %a{:href => "#"} Companies
   .clearfix
 .clearfix
-/ Main content
+
 %section
   .content
     .title-heading
       %h4
         %i.fa.fa-columns
-        Units
+        Companies
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
         .row
-          .col-md-12
-            %h4.title UNITS FOR #{@community.name}
+          .col-md-6
+            %h4.title Pynwheel
+          .col-md-6
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "#"}
+                %i.fa.fa-plus-circle
+                ADD COMPANY
         .box.box-widget.panel-box
           .box-headrer
             %div
               .col-sm-9
-                %label
-                  %select.form-control
-                    %option{:value => "10"} 10
-                    %option{:value => "25"} 25
-                    %option{:value => "50"} 50
-                    %option{:value => "100"} 100
-                records
+                
               .col-sm-3
                 %input.form-control{"aria-controls" => "example1", :placeholder => "Search:", :type => "search"}
             .row
@@ -39,27 +35,35 @@
                   %thead
                     %tr
                       %th{:width => "79"} Sr #
-                      %th Number
-                      %th Rent
-                      %th Availability
-                      %th Actions
+                      %th Company Name
+                      %th{:width => "250"} Actions
                   %tbody
-                    - @units.each_with_index  do |u,index|
+                    - @companies.each_with_index do |company,index|
                       %tr
-                        %td= index+1
-                        %td= u.number
-                        %td= u.min_rent
-                        %td= u.availability
+                        %td
+                          =index+1
+                        %td
+                          =company.name
                         %td
                           %a.text-success{:href => "#"}
                             %i.fa.fa-edit
                           %a.text-danger{:href => "#"}
                             %i.fa.fa-trash
+                          %a.btn-info.btn-xs.mr-5
+                            Update now
+                          %a.btn-success.btn-xs
+                            Live
 
             .row
               .col-md-6
-                .pl-20.pt-5 #{page_entries_info @units}
+                .pl-20.pt-5 
               .col-md-6
                 %ul.pagination.pull-right.pr-20.mt-0
-                  = paginate @units
+                  
       / End Panel left Side
+      / Start Panel Right Side
+      .col-lg-4.col-md-12
+        .row
+          .col-md-12
+
+        

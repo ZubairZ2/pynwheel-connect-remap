@@ -1,5 +1,9 @@
 class CompaniesController < ApplicationController
 
+  def index
+    @companies = Company.all
+  end
+
   def new
     @company = Company.new
   end
@@ -13,6 +17,11 @@ class CompaniesController < ApplicationController
       flash[:notice] = @company.errors.full_messages.join(',')
       render :new
     end
+  end
+
+  private
+  def company_params
+    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo)
   end
 
 end
