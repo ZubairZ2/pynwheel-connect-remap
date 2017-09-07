@@ -22,7 +22,7 @@
           %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
             %a{:href => "/communities"} Communities
       %li.treeview{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
-        %a{:href => "/"}
+        %a{:href => "#{community_floorplans_path(Community.first)}"}
           %i.fa.fa-columns
           %span Appartments
           %span.pull-right-container
@@ -40,7 +40,7 @@
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
           %li
-            %a{:href => "/units"} Units
+            = link_to "Units", community_units_path(Community.first)
           %li
             %a{:href => "#"} Unit Amenity Images
       %li.treeview

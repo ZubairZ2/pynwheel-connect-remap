@@ -19,7 +19,7 @@
             %h4.title Pynwheel
           .col-md-6
             .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "#"}
+              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/new"}
                 %i.fa.fa-plus-circle
                 ADD COMPANY
         .box.box-widget.panel-box
@@ -45,14 +45,10 @@
                         %td
                           =company.name
                         %td
-                          %a.text-success{:href => "#"}
+                          %a.text-success{:href => "/companies/#{company.id}/edit"}
                             %i.fa.fa-edit
-                          %a.text-danger{:href => "#"}
+                          %a.text-danger{:href => "/companies/#{company.id}","data-method"=>:delete}
                             %i.fa.fa-trash
-                          %a.btn-info.btn-xs.mr-5
-                            Update now
-                          %a.btn-success.btn-xs
-                            Live
 
             .row
               .col-md-6

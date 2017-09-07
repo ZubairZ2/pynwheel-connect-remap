@@ -1,10 +1,10 @@
 %section.content-header
   %ol.breadcrumb
     %li
-      %a{:href => "#"} Home
+      %a{:href => "/"} Home
     %li
-      %a{:href => "#"} Companies
-    %li.active Add Company
+      %a{:href => "/companies"} Companies
+    %li.active Edit Company
   .clearfix
 .clearfix
 / Main content
@@ -13,7 +13,7 @@
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
-          Add
+          Edit
           %span Company
 
       = form_for @company,:html=>{:class=>"form-horizontal"} do |f|
@@ -23,7 +23,7 @@
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
         .box-footer
-          = f.submit "ADD COMPANY", :class=>"btn btn-success pull-right"
+          = f.submit "EDIT COMPANY", :class=>"btn btn-success pull-right"
 
 :javascript
 

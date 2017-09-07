@@ -60,7 +60,7 @@ $(document).ready(function () {
 
 function selectDataProvider(data_provider){
     switch(data_provider) {
-        case "readpagesvc":
+        case "realpagesvc":
             showRealPageSVCFields();
             break;
         case "yardirentcafe":
