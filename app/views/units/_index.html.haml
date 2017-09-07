@@ -1,5 +1,12 @@
 .row
   / Start Panel left Side
+  .col-lg-4.col-md-12.hidden
+    .row
+      .col-md-12
+        .mt-35
+          %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/units/new"}
+            %i.fa.fa-plus-circle
+            ADD UNIT
   .col-lg-12.col-md-12
     .row
       .col-md-12
@@ -37,7 +44,7 @@
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit
-                      %a.text-danger{:href => "#{community_unit_path(@community,u)}","data-method"=>:delete}
+                      %a.text-danger{:href => "#{community_unit_path(@community,u)}","data-method"=>:delete,"data-confirm"=>"Are you sure?"}
                         %i.fa.fa-trash
 
         .row

@@ -45,7 +45,7 @@
                     %td
                       %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
                         %i.fa.fa-edit
-                      %a.text-danger{:href => "/communities/#{@community.id}/floorplans/#{f.id}","data-method"=>:delete}
+                      %a.text-danger{:href => "/communities/#{@community.id}/floorplans/#{f.id}","data-method"=>:delete,"data-confirm"=>"Are you sure?"}
                         %i.fa.fa-trash
 
         .row
