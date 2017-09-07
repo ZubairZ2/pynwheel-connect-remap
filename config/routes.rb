@@ -6,5 +6,7 @@ Rails.application.routes.draw do
     resources :floorplans
     resources :units
     get :import
+    get :credentials
   end
+  resources :settings , only: :index
 end

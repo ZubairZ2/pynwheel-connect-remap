@@ -7,10 +7,10 @@ class CommunitiesController < ApplicationController
 
   def new
     @community = Community.new
-    @community.build_credential
   end
 
   def create
+    fff
     @community = Community.new(community_params)
     if @community.save
       flash[:notice] = "Community created successfully."
@@ -26,12 +26,16 @@ class CommunitiesController < ApplicationController
   end
 
   def update
-    if @community.update(community_params)
-      flash[:notice] = "Community updated successfully."
-      redirect_to root_path
-    else
-      flash[:notice] = @community.errors.full_messages.join(',')
-      render :edit
+    respond_to do |format|
+      if @community.update(community_params)
+        format.html { redirect_to root_path, notice: 'Community updated successfully.' }
+        message = '<div class="alert alert-info">'+@community.name+' updated successfully.</div>'
+        format.js {render js: "$('#flash-message').html('#{message}')"}
+      else
+        format.html { render :new }
+        message = '<div class="alert alert-info">'+@community.errors.full_messages.join(',')+'</div>'
+        format.js {render js: "$('#flash-message').html('#{message}')"}
+      end
     end
   end
 
@@ -52,6 +56,13 @@ class CommunitiesController < ApplicationController
     end
   end
 
+  def credentials
+    @community = Community.find params[:community_id]
+    unless @community.credential.present?
+      @community.build_credential
+    end
+  end
+
   private
 
   def set_community
@@ -59,7 +70,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:credential_attributes=>[:domain,:username,:password,:property_id,:pmc_id,:licence_key,:host,:server_name,:database,:platform,:interface_entity])
+    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:credential_attributes=>[:id,:domain,:username,:password,:property_id,:pmc_id,:licence_key,:host,:server_name,:database,:platform,:interface_entity])
   end
 
 end
