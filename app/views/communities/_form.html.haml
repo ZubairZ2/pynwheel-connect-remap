@@ -63,12 +63,4 @@
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :logo
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Data Provider
 
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.select :data_provider , options_for_select([["Entrata","psi"],["RealPageSVC","realpagesvc"],["YardiRentCafe","yardirentcafe"],["Yard2","yardi2"],["Yard4","yardi4"]],f.object.data_provider),{},{:class=>"form-control"}
-
-= f.fields_for :credential do |c|
-  = render :partial=>"credential_form",:locals=>{:f=>c}

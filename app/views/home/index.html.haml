@@ -67,10 +67,10 @@
 
             .row
               .col-md-6
-                .pl-20.pt-5 #{page_entries_info @floorplans}
+                .pl-20.pt-5 #{page_entries_info @floorplans rescue 0}
               .col-md-6
                 %ul.pagination.pull-right.pr-20.mt-0
-                  = paginate @floorplans
+                  = paginate @floorplans rescue []
       / End Panel left Side
       / Start Panel Right Side
       .col-lg-4.col-md-12

@@ -114,3 +114,11 @@ function showRealPageSVCFields(){
     $('#password').show();
     $('#license_key').show();
 }
+
+function showCredentialsForm(){
+    var community_id = $('#communities').val();
+    $.ajax({
+        url: "/communities/"+community_id+"/credentials",
+        type: "GET"
+    });
+}
