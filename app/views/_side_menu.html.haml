@@ -12,13 +12,15 @@
         %a{:href => "#"}
           %i.fa.fa-tv
           %span Design
-      %li.treeview{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
+      %li.treeview{:class=>"#{controller_name =='communities' || controller_name =='companies' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-building-o
           %span Companies
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
+          %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
+            %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
             %a{:href => "/communities"} Communities
       %li.treeview{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}

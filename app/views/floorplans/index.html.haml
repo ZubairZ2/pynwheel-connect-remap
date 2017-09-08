@@ -1,7 +1,7 @@
 %section.content-header
   %ol.breadcrumb
     %li
-      %a{:href => "#"} Home
+      %a{:href => "/"} Home
     %li
       %a{:href => "#"} Appartments
     %li.active Floor Plans
@@ -9,13 +9,13 @@
 .clearfix
 
 %section
-  .row.mt-25.mb-20
-    .form-group
-      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-        Select Community
-      .col-sm-12.col-lg-12.col-md-12.col-xs-12    
-        = select_tag :communities_at_floorplans, options_for_select(@communities.collect{|c| [c.name,c.id]},params[:community_id]), :class=>"form-control"
   .content
+    .row.mt-25.mb-20
+      .form-group
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+          Select Community
+        .col-sm-12.col-lg-12.col-md-12.col-xs-12
+          = select_tag :communities_at_floorplans, options_for_select(@communities.collect{|c| [c.name,c.id]},params[:community_id]), :class=>"form-control"
     .title-heading
       %h4
         %i.fa.fa-columns

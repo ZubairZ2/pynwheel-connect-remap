@@ -13,7 +13,7 @@ class CommunitiesController < ApplicationController
     @community = Community.new(community_params)
     if @community.save
       flash[:notice] = "Community created successfully."
-      redirect_to root_path
+      redirect_to communities_path
     else
       flash[:notice] = @community.errors.full_messages.join(',')
       render :new
@@ -27,12 +27,12 @@ class CommunitiesController < ApplicationController
   def update
     respond_to do |format|
       if @community.update(community_params)
-        format.html { redirect_to root_path, notice: 'Community updated successfully.' }
-        message = '<div class="alert alert-info">'+@community.name+' updated successfully.</div>'
+        format.html { redirect_to communities_path, notice: 'Community updated successfully.' }
+        message = '<div class="alert alert-success">'+@community.name+' updated successfully.</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       else
         format.html { render :new }
-        message = '<div class="alert alert-info">'+@community.errors.full_messages.join(',')+'</div>'
+        message = '<div class="alert alert-danger">'+@community.errors.full_messages.join(',')+'</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       end
     end
