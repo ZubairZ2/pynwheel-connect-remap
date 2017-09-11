@@ -26,7 +26,9 @@
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/communities/new"}
                 %i.fa.fa-plus-circle
-                ADD COMMUNITY  
+                ADD COMMUNITY
+            #page-loader.hidden
+              %i.fa.fa-refresh.fa-spin.fa-4x
         .box.box-widget.panel-box
           .box-headrer
             
@@ -51,7 +53,7 @@
                             %i.fa.fa-edit
                           %a.text-danger{:href => "/communities/#{f.id}","data-method"=>:delete}
                             %i.fa.fa-trash
-                          %a.btn-info.btn-xs.mr-5{:href=>"/communities/#{f.id}/import"}
+                          %a.btn-info.btn-xs.mr-5#import_data{:href=>"/communities/#{f.id}/import"}
                             Update now
                           %a.btn-success.btn-xs
                             Live
