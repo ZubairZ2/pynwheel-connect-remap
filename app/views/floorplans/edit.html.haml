@@ -15,8 +15,8 @@
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
-          Add Floor
-          %span Plan
+          Edit 
+          %span Floor Plan
       / /.box-header
       / form start
       = form_for @floorplan,:url=>community_floorplan_path(:id=>@floorplan.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
