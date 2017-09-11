@@ -56,9 +56,7 @@ function readURL(input) {
 }
 
 $(document).ready(function () {
-    $('.table').DataTable({
-        "ordering": false
-    });
+    showDataTables();
     var data_provider = $("#community_data_provider").val();
     selectDataProvider(data_provider);
     $("#community_data_provider").change(function(){
@@ -128,5 +126,15 @@ function showCredentialsForm(){
     $.ajax({
         url: "/communities/"+community_id+"/credentials",
         type: "GET"
+    });
+}
+
+function readyJsOnAjaxCall(){
+    showDataTables();
+}
+
+function showDataTables(){
+    $('#miyazaki.table').DataTable({
+        "ordering": false
     });
 }
