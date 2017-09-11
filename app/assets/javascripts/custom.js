@@ -56,7 +56,9 @@ function readURL(input) {
 }
 
 $(document).ready(function () {
-
+    $('.table').DataTable({
+        "ordering": false
+    });
     var data_provider = $("#community_data_provider").val();
     selectDataProvider(data_provider);
     $("#community_data_provider").change(function(){

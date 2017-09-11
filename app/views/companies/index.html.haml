@@ -24,11 +24,7 @@
                 ADD COMPANY
         .box.box-widget.panel-box
           .box-headrer
-            %div
-              .col-sm-9
-                
-              .col-sm-3
-                %input.form-control{"aria-controls" => "example1", :placeholder => "Search:", :type => "search"}
+            
             .row
               .col-md-12
                 %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
@@ -50,11 +46,7 @@
                           %a.text-danger{:href => "/companies/#{company.id}","data-method"=>:delete}
                             %i.fa.fa-trash
 
-            .row
-              .col-md-6
-                .pl-20.pt-5 
-              .col-md-6
-                %ul.pagination.pull-right.pr-20.mt-0
+            
                   
       / End Panel left Side
       / Start Panel Right Side

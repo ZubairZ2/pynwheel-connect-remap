@@ -2,7 +2,8 @@ class UnitsController < CommunitiesController
   before_action :set_community
   before_action :set_unit, only: [:edit,:update,:destroy]
   def index
-    @units = @community.units.page(params[:page]).per(10)
+    #@units = @community.units.page(params[:page]).per(10)
+    @units = @community.units
     @communities = Community.select(:id,:name)
   end
 

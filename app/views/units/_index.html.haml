@@ -11,17 +11,7 @@
             ADD UNIT
     .box.box-widget.panel-box
       .box-headrer
-        %div
-          .col-sm-9
-            %label
-              %select.form-control
-                %option{:value => "10"} 10
-                %option{:value => "25"} 25
-                %option{:value => "50"} 50
-                %option{:value => "100"} 100
-            records
-          .col-sm-3
-            %input.form-control{"aria-controls" => "example1", :placeholder => "Search:", :type => "search"}
+        
         .row
           .col-md-12
             %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
@@ -45,10 +35,5 @@
                       %a.text-danger{:href => "#{community_unit_path(@community,u)}","data-method"=>:delete,"data-confirm"=>"Are you sure?"}
                         %i.fa.fa-trash
 
-        .row
-          .col-md-6
-            .pl-20.pt-5 #{page_entries_info @units}
-          .col-md-6
-            %ul.pagination.pull-right.pr-20.mt-0
-              = paginate @units
+        
   / End Panel left Side

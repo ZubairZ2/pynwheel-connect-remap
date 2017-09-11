@@ -1,6 +1,13 @@
 class FloorplansController < CommunitiesController
   before_action :set_community
   before_action :set_floorplan, only: [:edit,:update,:destroy]
+
+  def index
+    #@floorplans = @community.floorplans.page(params[:page]).per(10)
+    @floorplans = @community.floorplans
+    @communities = Community.select(:id,:name)
+  end
+
   def new
     @floorplan = @community.floorplans.new
   end
@@ -30,10 +37,6 @@ class FloorplansController < CommunitiesController
     end
   end
 
-  def index
-    @floorplans = @community.floorplans.page(params[:page]).per(10)
-    @communities = Community.select(:id,:name)
-  end
 
   def destroy
     @floorplan.destroy
