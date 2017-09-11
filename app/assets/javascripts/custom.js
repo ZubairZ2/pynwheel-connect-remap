@@ -26,9 +26,9 @@ $("#company_logo,#community_logo").change(function(){
     readURL(this);
 });
 
-$("#import_data").on("click",function(e){
+$("#import_data").click(function(){
     $("#page-loader").removeClass("hidden")
-})
+});
 
 })
 
