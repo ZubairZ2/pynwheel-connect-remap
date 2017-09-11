@@ -15,23 +15,23 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :city, :class=>"form-control validate[required]", :placeholder=>"City"
+        = f.text_field :city, :class=>"form-control validate[required,custom[onlyLetterSp]]", :placeholder=>"City"
         %small City
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :state, :class=>"form-control validate[required]", :placeholder=>"State"
+        = f.text_field :state, :class=>"form-control validate[required,custom[onlyLetterSp]]", :placeholder=>"State"
         %small State
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :zip, :class=>"form-control validate[required]", :placeholder=>"Zip"
+        = f.text_field :zip, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Zip"
         %small Zip
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :phone, :class=>"form-control validate[required]", :placeholder=>"Phone"
+        = f.text_field :phone, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Phone"
         %small Phone
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :email, :class=>"form-control validate[required]", :placeholder=>"Email"
+        = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email"
         %small Email
 
 .form-group

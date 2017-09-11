@@ -15,7 +15,8 @@
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
-          Edit Unit
+          Edit
+          %span Unit
       / /.box-header
       / form start
       = form_for @unit,:url=>community_unit_path(:id=>@unit.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
