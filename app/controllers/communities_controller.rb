@@ -41,7 +41,7 @@ class CommunitiesController < ApplicationController
   def destroy
     @community.destroy
     flash[:notice] = "Community destroyed successfully."
-    redirect_to root_path
+    redirect_to communities_path
   end
 
   def import
