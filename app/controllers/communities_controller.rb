@@ -46,12 +46,17 @@ class CommunitiesController < ApplicationController
 
   def import
     @community = Community.find params[:community_id]
-    if @community.data_is_imported
-      flash[:notice] = "Data is imported successfully."
-      redirect_to community_floorplans_path(:community_id=>@community.id)
+    if @community.credentials_are_present?
+      if @community.data_is_imported
+        flash[:notice] = "Data is imported successfully."
+        redirect_to community_floorplans_path(:community_id=>@community.id)
+      else
+        flash[:notice] = "Something went wrong."
+        redirect_to communities_path
+      end
     else
-      flash[:notice] = "Something went wrong."
-      redirect_to root_path
+      flash[:notice] = "Please enter credentials in settings before importing data."
+      redirect_to communities_path
     end
   end
 

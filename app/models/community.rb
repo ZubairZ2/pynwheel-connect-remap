@@ -72,4 +72,8 @@ class Community < ApplicationRecord
     end
   end
 
+  def credentials_are_present?
+    credential.present?
+  end
+
 end
