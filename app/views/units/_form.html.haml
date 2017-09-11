@@ -3,7 +3,7 @@
     Unit Number
     %span Specify number here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :number, :class=>"form-control", :placeholder=>"Unit Number",:required=>true
+    = f.text_field :number, :class=>"form-control validate[required]", :placeholder=>"Unit Number"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floorplan
@@ -21,10 +21,12 @@
     Building
     %span 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:required=>true 
+    = f.text_field :building, :class=>"form-control", :placeholder=>"Building"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Rent
     %span 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :min_rent, :class=>"form-control", :placeholder=>"Rent",:required=>true        
+    = f.text_field :min_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"Rent" 
+:javascript
+  $("form").validationEngine();          

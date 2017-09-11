@@ -86,39 +86,62 @@ function selectDataProvider(data_provider){
 
 function showPsiFields(){
     $('.credential_fields').hide();
+    removeValidationsClass();
     $('#domain').show();
+    $('#community_credential_attributes_domain').addClass("validate[required]");
     $('#password').show();
+    $('#community_credential_attributes_password').addClass("validate[required]");
     $('#username').show();
+    $('#community_credential_attributes_username').addClass("validate[required]");
     $('#property_id').show();
+    $('#community_credential_attributes_property_id').addClass("validate[required]");
 }
 
 function showYardiFields(){
     $('.credential_fields').hide();
+    removeValidationsClass();
     $('#domain').show();
+    $('#community_credential_attributes_domain').addClass("validate[required]");
     $('#host').show();
+    $('#community_credential_attributes_host').addClass("validate[required]");
     $('#username').show();
+    $('#community_credential_attributes_username').addClass("validate[required]");
     $('#password').show();
+    $('#community_credential_attributes_password').addClass("validate[required]");
     $('#server_name').show();
+    $('#community_credential_attributes_server_name').addClass("validate[required]");
     $('#database').show();
+    $('#community_credential_attributes_database').addClass("validate[required]");
     $('#platform').show();
     $('#property_id').show();
+    $('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#license_key').show();
+    $('#community_credential_attributes_licence_key').addClass("validate[required]");
     $('#interface_entity').show();
 }
 
 function showYardiRentCafeFields(){
     $('.credential_fields').hide();
+    removeValidationsClass();
     $('#domain').show();
+    $('#community_credential_attributes_domain').addClass("validate[required]");
     $('#property_id').show();
+    $('#community_credential_attributes_property_id').addClass("validate[required]");
 }
 
 function showRealPageSVCFields(){
     $('.credential_fields').hide();
+    removeValidationsClass();
     $('#property_id').show();
+    $('#community_credential_attributes_domain').addClass("validate[required]");
     $('#pmc_id').show();
+    $('#community_credential_attributes_pmc_id').addClass("validate[required]");
     $('#username').show();
+    $('#community_credential_attributes_username').addClass("validate[required]");
     $('#password').show();
+    $('#community_credential_attributes_password').addClass("validate[required]");
     $('#license_key').show();
+    $('#community_credential_attributes_licence_key').addClass("validate[required]");
 }
 
 function showCredentialsForm(){
@@ -137,4 +160,15 @@ function showDataTables(){
     $('#miyazaki.table').DataTable({
         "ordering": false
     });
+}
+
+function removeValidationsClass(){
+    $('#community_credential_attributes_domain').removeClass("validate[required]");
+    $('#community_credential_attributes_host').removeClass("validate[required]");
+    $('#community_credential_attributes_username').removeClass("validate[required]");
+    $('#community_credential_attributes_password').removeClass("validate[required]");
+    $('#community_credential_attributes_server_name').removeClass("validate[required]");
+    $('#community_credential_attributes_property_id').removeClass("validate[required]");
+    $('#community_credential_attributes_licence_key').removeClass("validate[required]");
+    $('#community_credential_attributes_pmc_id').removeClass("validate[required]");
 }

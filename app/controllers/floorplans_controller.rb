@@ -15,7 +15,7 @@ class FloorplansController < CommunitiesController
   def create
     @floorplan = @community.floorplans.new(floorplan_params)
     if @floorplan.save
-      flash[:notice] = "Floorplan created successfully."
+      flash[:notice] = "Floor plan created successfully."
       redirect_to community_floorplans_path(:community_id=>@community.id)
     else
       flash[:notice] = @floorplan.errors.full_messages.join(',')
@@ -29,7 +29,7 @@ class FloorplansController < CommunitiesController
 
   def update
     if @floorplan.update(floorplan_params)
-      flash[:notice] = "Floorplan updated successfully."
+      flash[:notice] = "Floor plan updated successfully."
       redirect_to community_floorplans_path(:community_id=>@community.id)
     else
       flash[:notice] = @floorplan.errors.full_messages.join(',')
@@ -40,7 +40,7 @@ class FloorplansController < CommunitiesController
 
   def destroy
     @floorplan.destroy
-    flash[:notice] = "Floorplan deleted successfully."
+    flash[:notice] = "Floor plan deleted successfully."
     redirect_to community_floorplans_path(:community_id=>@community.id)
   end
 

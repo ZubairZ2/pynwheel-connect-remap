@@ -17,4 +17,6 @@
 // require turbolinks
 //= require bootstrap.min
 //= require pyn.min
+//= require jquery.validationEngine-en
+//= require jquery.validationEngine
 //= require_tree .

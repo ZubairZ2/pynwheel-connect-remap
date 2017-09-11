@@ -12,7 +12,7 @@ class CompaniesController < ApplicationController
   def create
     @company = Company.new(company_params)
     if @company.save
-      flash[:notice] = "@company created successfully."
+      flash[:notice] = "Company created successfully."
       redirect_to root_path
     else
       flash[:notice] = @company.errors.full_messages.join(',')

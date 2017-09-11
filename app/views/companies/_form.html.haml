@@ -3,35 +3,35 @@
     Name
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :name, :class=>"form-control", :placeholder=>"Company Name",:required=>true
+    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Company Name"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :address, :class=>"form-control", :placeholder=>"Address", rows: 4
+    = f.text_area :address, :class=>"form-control validate[required]", :placeholder=>"Address", rows: 4
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :city, :class=>"form-control", :placeholder=>"City",:required=>true
+        = f.text_field :city, :class=>"form-control validate[required]", :placeholder=>"City"
         %small City
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :state, :class=>"form-control", :placeholder=>"State",:required=>true
+        = f.text_field :state, :class=>"form-control validate[required]", :placeholder=>"State"
         %small State
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :zip, :class=>"form-control", :placeholder=>"Zip",:required=>true
+        = f.text_field :zip, :class=>"form-control validate[required]", :placeholder=>"Zip"
         %small Zip
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :phone, :class=>"form-control", :placeholder=>"Phone",:required=>true
+        = f.text_field :phone, :class=>"form-control validate[required]", :placeholder=>"Phone"
         %small Phone
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :email, :class=>"form-control", :placeholder=>"Email",:required=>true
+        = f.text_field :email, :class=>"form-control validate[required]", :placeholder=>"Email"
         %small Email
 
 .form-group
@@ -47,3 +47,5 @@
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :logo
+:javascript
+  $("form").validationEngine();      

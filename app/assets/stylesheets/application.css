@@ -17,5 +17,6 @@
  *= require pyn-custom
  *= require_tree .
  *= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
+ *= require validationEngine.jquery
  *= require_self
  */
