@@ -1,4 +1,7 @@
 class CommunitiesController < ApplicationController
+  add_breadcrumb "Home", :root_path
+  add_breadcrumb "Companies", :companies_path
+  add_breadcrumb "Communities", :communities_path
   before_action :set_community , only: [:edit,:update,:destroy]
 
   def index
@@ -6,6 +9,7 @@ class CommunitiesController < ApplicationController
   end
 
   def new
+    add_breadcrumb "Add Community", new_community_path
     @community = Community.new
   end
 
@@ -21,7 +25,7 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
-
+    add_breadcrumb "Edit Community", edit_community_path(@community)  
   end
 
   def update

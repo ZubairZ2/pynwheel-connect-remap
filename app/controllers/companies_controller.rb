@@ -1,4 +1,6 @@
 class CompaniesController < ApplicationController
+  add_breadcrumb "Home", :root_path
+  add_breadcrumb "Companies", :root_path
   before_action :set_company , only: [:edit,:update,:destroy]
 
   def index
@@ -6,6 +8,7 @@ class CompaniesController < ApplicationController
   end
 
   def new
+    add_breadcrumb "Add Company", new_company_path
     @company = Company.new
   end
 
@@ -21,6 +24,7 @@ class CompaniesController < ApplicationController
   end
 
   def edit
+    add_breadcrumb "Edit Company", edit_company_path(@company)
   end
 
   def update

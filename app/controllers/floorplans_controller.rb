@@ -1,4 +1,6 @@
-class FloorplansController < CommunitiesController
+class FloorplansController < ApplicationController
+  add_breadcrumb "Home", :root_path
+  add_breadcrumb "Appartments", "##"
   before_action :set_community
   before_action :set_floorplan, only: [:edit,:update,:destroy]
 
@@ -6,10 +8,13 @@ class FloorplansController < CommunitiesController
     #@floorplans = @community.floorplans.page(params[:page]).per(10)
     @floorplans = @community.floorplans
     @communities = Community.select(:id,:name)
+    add_breadcrumb "Floor plans", community_floorplans_path(@community)
   end
 
   def new
     @floorplan = @community.floorplans.new
+    add_breadcrumb "Floor plans", community_floorplans_path(@community)
+    add_breadcrumb "Add Floor plan", new_community_floorplan_path(@community)
   end
 
   def create
@@ -24,7 +29,8 @@ class FloorplansController < CommunitiesController
   end
 
   def edit
-
+    add_breadcrumb "Floor plans", community_floorplans_path(@community)
+    add_breadcrumb "Edit Floor plan", "##"
   end
 
   def update

@@ -43,6 +43,7 @@ GEM
       nokogiri
     arel (7.1.4)
     bindex (0.5.0)
+    breadcrumbs_on_rails (3.0.1)
     builder (3.2.3)
     byebug (9.0.6)
     carrierwave (1.1.0)
@@ -218,6 +219,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  breadcrumbs_on_rails
   byebug
   carrierwave (~> 1.0)
   coffee-rails (~> 4.2)

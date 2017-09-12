@@ -43,6 +43,7 @@ gem 'execjs'
 gem 'therubyracer'
 gem 'carrierwave', '~> 1.0'
 gem 'jquery-datatables-rails', '~> 3.4.0'
+gem "breadcrumbs_on_rails"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
