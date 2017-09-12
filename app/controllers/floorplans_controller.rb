@@ -30,7 +30,7 @@ class FloorplansController < ApplicationController
 
   def edit
     add_breadcrumb "Floor plans", community_floorplans_path(@community)
-    add_breadcrumb "Edit Floor plan", "##"
+    add_breadcrumb "Edit Floor plan", edit_community_floorplan_path(@community,@floorplan)
   end
 
   def update
