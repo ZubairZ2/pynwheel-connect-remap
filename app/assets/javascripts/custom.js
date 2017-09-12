@@ -191,9 +191,12 @@ function readImageSrc(file){
       reader.onload = function (e) {
         index++
         var s = "'#row"+index+"'";
-        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img" ondrop="drop(event)" ondragover="allowDrop(event)"><img src="'+e.target.result+'" alt="" title=""  draggable="true" ondragstart="drag(event)" id="drag'+index+'"> </div></td><td> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="$('+s+').remove();">Cancel</a></td></tr>';
+        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img" ondrop="drop(event)" ondragover="allowDrop(event)"><img src="'+e.target.result+'" alt="" title=""  ondragend="myFunction(event,this)" draggable="true" ondragstart="drag(event)" id="drag'+index+'"> </div></td><td> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="$('+s+').remove();">Cancel</a></td></tr>';
         $('#pre-save-floorplan-images-table').append(tr_tag);
       }
       reader.readAsDataURL(file);
   }
-  
+   function myFunction(e,element){
+        console.log(e);
+        console.log($(e.target).parent().attr('class'));
+   }
