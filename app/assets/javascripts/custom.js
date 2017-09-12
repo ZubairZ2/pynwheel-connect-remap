@@ -26,9 +26,10 @@ $("#company_logo,#community_logo").change(function(){
     readURL(this);
 });
 
+
 $(".import_data").on("click",function(e){
     $(".divLoading").removeClass("hidden")
-})
+});
 
 })
 
