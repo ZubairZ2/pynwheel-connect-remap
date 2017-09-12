@@ -60,27 +60,14 @@
           %span.btn.btn-success.btn-file
             %i.fa.fa-plus
             All Files
-            %input{:type => "file"}
-          %table.table.upload-image
+            %input#mutiple-files{:type => "file",:multiple=>true}
+          %table.table.upload-image#pre-save-floorplan-images-table
             %tr{:valign => "middle"}
-              %td{:align => "left"}
-                .drop-img{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
-                  %img#drag1{:alt => "", :draggable => "true", :ondragstart => "drag(event)", :src => "/assets/drop-image.jpg", :title => ""}
-                %td Picture Name
-                %td
-                  %a.btn.btn-danger.btn-sm{:href => "#"} Cancel
-              %tr{:valign => "middle"}
-                %td{:align => "left"}
-                  .drop-img{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
-                    %img#drag2{:alt => "", :draggable => "true", :ondragstart => "drag(event)", :src => "/assets/drop-image.jpg"}
-                  %td Picture Name
-                  %td
-                    %a.btn.btn-danger.btn-sm{:href => "#"} Cancel
-                %tr{:valign => "middle"}
-                  %td{:align => "left"}
-                    .drop-img{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
-                      %img#drag3{:alt => "", :draggable => "true", :ondragstart => "drag(event)", :src => "/assets/drop-image.jpg", :title => ""}
-                    %td Picture Name
-                    %td
-                      %a.btn.btn-danger.btn-sm{:href => "#"} Cancel
+
         / End Panel Right Side
+:javascript
+  var index = 0;
+  
+
+  
+

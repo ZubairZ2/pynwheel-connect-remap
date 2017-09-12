@@ -67,6 +67,14 @@ $(document).ready(function () {
     $("#community_data_provider").change(function(){
         selectDataProvider($(this).val());
     });
+
+    //below code is populating images on floorplans right panel
+    $("#mutiple-files").change(function(){
+        var files = $(this).prop("files")
+        for (var i = 0; i < files.length; i++) {
+            readImageSrc(files[i]);
+        } 
+    });
 });
 
 function selectDataProvider(data_provider){
@@ -177,3 +185,15 @@ function removeValidationsClass(){
     $('#community_credential_attributes_licence_key').removeClass("validate[required]");
     $('#community_credential_attributes_pmc_id').removeClass("validate[required]");
 }
+
+function readImageSrc(file){
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        index++
+        var s = "'#row"+index+"'";
+        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img" ondrop="drop(event)" ondragover="allowDrop(event)"><img src="'+e.target.result+'" alt="" title=""  draggable="true" ondragstart="drag(event)" id="drag'+index+'"> </div></td><td> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="$('+s+').remove();">Cancel</a></td></tr>';
+        $('#pre-save-floorplan-images-table').append(tr_tag);
+      }
+      reader.readAsDataURL(file);
+  }
+  
