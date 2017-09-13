@@ -16,6 +16,7 @@ class CreateFloorplans < ActiveRecord::Migration[5.0]
       t.text :comment
       t.text :description
       t.string :image
+      t.string :file_url
 
       t.timestamps
     end
