@@ -1,70 +1,49 @@
-.row
-  / Start Panel left Side
-  .col-lg-8.col-md-12
-    .row
-      .col-md-12
-        %h4.title FLOOR PLANS FOR #{@community.name}
-    .box.box-widget.panel-box
-      .box-header
-        
-        .row
-          .col-md-12
-            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
-              %thead
+/ Start Panel left Side
+.col-lg-8.col-md-12
+  .row
+    .col-md-12
+      %h4.title FLOOR PLANS FOR #{@community.name}
+  .box.box-widget.panel-box
+    .box-header
+      
+      .row
+        .col-md-12
+          %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+            %thead
+              %tr
+                %th{:width => "79"} Sr #
+                %th Plan Name
+                %th Sq.Ft
+                %th Bedrooms
+                %th Bathrooms
+                %th Plot Amenity
+                %th Image
+                %th Actions
+            %tbody
+              - @floorplans.each_with_index  do |f,index|
                 %tr
-                  %th{:width => "79"} Sr #
-                  %th Plan Name
-                  %th Sq.Ft
-                  %th Bedrooms
-                  %th Bathrooms
-                  %th Plot Amenity
-                  %th Image
-                  %th Actions
-              %tbody
-                - @floorplans.each_with_index  do |f,index|
-                  %tr
-                    %td= index+1
-                    %td= f.name
-                    %td= f.square_feet
-                    %td= f.bedrooms
-                    %td= f.bathrooms
-                    %td
-                      %button.btn.btn-default.black-button Plot Now
-                    %td
-                      .drop-img.drop-img-left{:ondragover => "allowDrop(event)", :ondrop => "drop(event)"}
-                    %td
-                      %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
-                        %i.fa.fa-edit
-                      %a.text-danger{:href => "/communities/#{@community.id}/floorplans/#{f.id}","data-method"=>:delete,"data-confirm"=>"Are you sure?"}
-                        %i.fa.fa-trash
+                  %td= index+1
+                  %td= f.name
+                  %td= f.square_feet
+                  %td= f.bedrooms
+                  %td= f.bathrooms
+                  %td
+                    %button.btn.btn-default.black-button Plot Now
+                  %td
+                    - if f.image.present?
+                      .drop-img.drop-img-left{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id}
+                        = image_tag f.image.url
+                    - else  
+                      .drop-img.drop-img-left{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id}
+                  %td
+                    %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
+                      %i.fa.fa-edit
+                    %a.text-danger{:href => "/communities/#{@community.id}/floorplans/#{f.id}","data-method"=>:delete,"data-confirm"=>"Are you sure?"}
+                      %i.fa.fa-trash
 
-        
-  / End Panel left Side
-  / Start Panel Right Side
-  .col-lg-4.col-md-12
-    .row
-      .col-md-12
-        .mt-35
-          %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
-            %i.fa.fa-plus-circle
-            ADD FLOOR PLAN
-    .row
-      .col-md-12
-        .box.box-widget.panel-box.pl-20.pr-20.pb-10
-          .row
-            .col-md-12.col-lg-9.col-xs-9
-              %h4 Upload File
-              %p.pt-10.mb-20 Upload the File here, then drag  drop it to the image column in the table.
-            .col-md-12.col-lg-3.col-xs-3
-              %img{:alt => "", :src => "/assets/upload-image.jpg", :style => "max-width:100%;", :title => ""}
-          %span.btn.btn-success.btn-file
-            %i.fa.fa-plus
-            All Files
-            %input#mutiple-files{:type => "file",:multiple=>true}
-          %table.table.upload-image#pre-save-floorplan-images-table
-            %tr{:valign => "middle"}
-
-        / End Panel Right Side
+      
+/ End Panel left Side
+/ Start Panel Right Side
 :javascript
   // below variable is important it is using in pre save images on right panel.
   var index = 0;

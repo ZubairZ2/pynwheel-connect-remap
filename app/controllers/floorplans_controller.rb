@@ -34,12 +34,16 @@ class FloorplansController < ApplicationController
   end
 
   def update
-    if @floorplan.update(floorplan_params)
-      flash[:notice] = "Floor plan updated successfully."
-      redirect_to community_floorplans_path(:community_id=>@community.id)
-    else
-      flash[:notice] = @floorplan.errors.full_messages.join(',')
-      render :edit
+    respond_to do |format|
+      if @floorplan.update(floorplan_params)
+        format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
+        message = '<div class="alert alert-success">'+@floorplan.name+' image uploaded successfully.</div>'
+        format.js {render js: "$('#flash-message').html('#{message}')"}
+      else
+        format.html { render :edit }
+        message = '<div class="alert alert-danger">'+@floorplan.errors.full_messages.join(',')+'</div>'
+        format.js {render js: "$('#flash-message').html('#{message}')"}
+      end
     end
   end
 

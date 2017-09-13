@@ -11,8 +11,33 @@
       %h4
         %i.fa.fa-columns
         Floor Plans
-    #floorplans-index
-      = render 'index'
+    .row
+      #floorplans-index
+        = render 'index'
+      .col-lg-4.col-md-12
+        .row
+          .col-md-12
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
+                %i.fa.fa-plus-circle
+                ADD FLOOR PLAN
+        .row
+          .col-md-12
+            .box.box-widget.panel-box.pl-20.pr-20.pb-10
+              .row
+                .col-md-12.col-lg-9.col-xs-9
+                  %h4 Upload File
+                  %p.pt-10.mb-20 Upload the File here, then drag  drop it to the image column in the table.
+                .col-md-12.col-lg-3.col-xs-3
+                  %img{:alt => "", :src => "/assets/upload-image.jpg", :style => "max-width:100%;", :title => ""}
+              %span.btn.btn-success.btn-file
+                %i.fa.fa-plus
+                All Files
+                %input#mutiple-files{:type => "file",:multiple=>true}
+              %table.table.upload-image#pre-save-floorplan-images-table
+                %tr{:valign => "middle"}
+
+              / End Panel Right Side
 :javascript
   $("#communities_at_floorplans").change(function(){
     var community_id = $('#communities_at_floorplans').val();

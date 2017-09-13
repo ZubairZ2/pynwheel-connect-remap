@@ -17,7 +17,7 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
-        = f.text_field :square_feet, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"No of square feet"
+        = f.text_field :square_feet, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of square feet"
         %small Square Feet
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
         = f.text_field :bedrooms, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of bedrooms"
@@ -37,9 +37,9 @@
       floor plan.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .select-img.mb-20
-      .select-img-img= image_tag "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+      .select-img-img= image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
-      = f.file_field :file_url
+      = f.file_field :image
 :javascript
   $("form").validationEngine();       

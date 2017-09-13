@@ -191,12 +191,32 @@ function readImageSrc(file){
       reader.onload = function (e) {
         index++
         var s = "'#row"+index+"'";
-        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img" ondrop="drop(event)" ondragover="allowDrop(event)"><img src="'+e.target.result+'" alt="" title=""  ondragend="myFunction(event,this)" draggable="true" ondragstart="drag(event)" id="drag'+index+'"> </div></td><td> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="$('+s+').remove();">Cancel</a></td></tr>';
+        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img" ondrop="drop(event)" ondragover="allowDrop(event)"><img src="'+e.target.result+'" alt="" title=""  ondragend="dropCompleted(event)" draggable="true" ondragstart="drag(event)" id="drag-'+index+'"> </div></td><td> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="$('+s+').remove();">Cancel</a></td></tr>';
         $('#pre-save-floorplan-images-table').append(tr_tag);
       }
       reader.readAsDataURL(file);
   }
-   function myFunction(e,element){
-        console.log(e);
-        console.log($(e.target).parent().attr('class'));
+   function dropCompleted(e){
+        var id = e.target.id;
+        id = id.split('-');
+        id = id[1];
+        $('#row'+id).remove();
+        console.log();
+        saveFloorPlanImage($(e.target).parent().attr('id'),e.target.src);
+   }
+
+   function saveFloorPlanImage(floorplan_id,src){
+    var community_id = $('#communities_at_floorplans').val();
+    $.ajax({
+        url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            floorplan: {
+                image: src
+            }
+        }
+    }).done(function(){
+        console.log("success");
+    });
    }
