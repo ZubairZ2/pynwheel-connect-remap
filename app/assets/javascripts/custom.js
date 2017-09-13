@@ -31,6 +31,10 @@ $(".import_data").on("click",function(e){
     $(".divLoading").removeClass("hidden")
 });
 
+setTimeout(function() {
+    $('.alert').fadeOut('slow');
+}, 1000); // <-- time in milliseconds
+
 //below code have drag n drop functionality.
 var holder = document.getElementById('holder');
 holder.ondragover = function () { this.className = 'hover'; return false; };
