@@ -58,9 +58,9 @@ function drop(ev) {
     var data = ev.dataTransfer.getData("text");
     ev.target.appendChild(document.getElementById(data));
     var img_object = $(ev.target).find('img');
-    //id = id.split('-');
-    //id = id[1];
-    //$('#row'+id).remove();
+    var id = $(img_object).attr("id");
+    id = id.split('-');
+    $('#row'+id[1]).remove();
     saveFloorPlanImage($(img_object).attr("src"),ev.target.id);
 }
 // preview image function
