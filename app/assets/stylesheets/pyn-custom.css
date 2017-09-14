@@ -552,6 +552,21 @@ table.upload-image tr td{
 color: #a7a7a7;
 font-size: 12px;
 }
+
+.communities-list{
+
+}
+
+.communities-list li{
+	float: left;
+	width: 100%;
+	border-bottom: 1px solid #F5F5F5;
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+.communities-list li:last-child{
+	border-bottom: none;
+}
 @media only screen and (min-width: 991px) and (max-width: 1280px)  {
 	.drop-img{
 		width:75px;
