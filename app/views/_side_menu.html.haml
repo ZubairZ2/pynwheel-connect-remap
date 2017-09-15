@@ -4,14 +4,6 @@
   %section.sidebar
     / Sidebar user panel
     %ul.sidebar-menu{"data-widget" => "tree"}
-      %li
-        %a{:href => "#"}
-          %i.fa.fa-home
-          %span HomePage
-      %li
-        %a{:href => "#"}
-          %i.fa.fa-tv
-          %span Design
       %li.treeview{:class=>"#{controller_name =='communities' || controller_name =='companies' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-building-o
@@ -23,6 +15,14 @@
             %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
             %a{:href => "/communities"} Communities
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-home
+          %span HomePage
+      %li
+        %a{:href => "#"}
+          %i.fa.fa-tv
+          %span Design
       %li.treeview{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
         %a{:href => "#{community_floorplans_path(Community.first)}"}
           %i.fa.fa-columns
