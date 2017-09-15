@@ -34,8 +34,12 @@
                 %i.fa.fa-plus
                 All Files
                 %input#mutiple-files{:type => "file",:multiple=>true}
-              %table.table.upload-image#pre-save-floorplan-images-table
+              %table.table-striped.table.upload-image#pre-save-floorplan-images-table
                 %tr{:valign => "middle"}
+              .text-center.mt-10.drag-drop-section
+                %img{:alt => "", :src => "/assets/upload-image.png", :style => "max-width:100%;", :title => ""}
+                %p.mt-10
+                  Drag & Drop file to Upload  
 
               / End Panel Right Side
 :javascript

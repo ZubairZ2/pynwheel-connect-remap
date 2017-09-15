@@ -203,6 +203,7 @@ body{
 	box-shadow: 0 0px 9px rgba(0, 0, 0, 0.08);
 	border:1px solid #e5e5e5;
 }
+
 .panel-box table{
 	margin-top:15px;
 }
@@ -241,9 +242,13 @@ a:hover{
 /****Table Style***/
 table#miyazaki { margin-top:15px;}
 table#miyazaki caption {}
-table#miyazaki thead th { }
-table#miyazaki thead th, table#miyazaki tbody td { border-color:#e3e3e3;}
+table#miyazaki thead th tr th{}
+table.dataTable thead > tr > th{ padding-right: 0 !important; }
+table#miyazaki thead th, table#miyazaki tbody td { border-color:#e3e3e3; }
 table#miyazaki thead th, table#miyazaki tbody td:last-child{ border-right:none;}
+table#miyazaki tbody tr td{
+	color: #696969;
+}
 /****Table Style***/
 .mt-0{
 	margin-top:0px;
@@ -521,7 +526,48 @@ table.upload-image tr td{
 	height:100%;
 	background:#f6f6f6;
 }
-@media only screen and (min-width: 1034px) and (max-width: 1280px)  {
+
+.panel-box .dataTables_filter{
+	margin-bottom: 10px;
+	margin-right: 10px;
+
+}
+.panel-box .dataTables_length, .dataTables_info{
+	margin-left: 10px;
+}
+.panel-box .dataTables_info{
+	margin-left: 10px;
+	padding-top: 15px;
+}
+.panel-box .dataTables_paginate{
+	margin: 10px 10px 10px 0;
+}
+.panel-box .box-header{
+	padding: 0;
+}
+.table-striped>tbody>tr:nth-of-type(odd){
+	background-color: #fafafa;
+}
+.drag-drop-section{
+color: #a7a7a7;
+font-size: 12px;
+}
+
+.communities-list{
+
+}
+
+.communities-list li{
+	float: left;
+	width: 100%;
+	border-bottom: 1px solid #F5F5F5;
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+.communities-list li:last-child{
+	border-bottom: none;
+}
+@media only screen and (min-width: 991px) and (max-width: 1280px)  {
 	.drop-img{
 		width:75px;
 		height:75px;
@@ -530,6 +576,7 @@ table.upload-image tr td{
 		padding-left:10px;
 		padding-right:10px;
 	}
+
 }
 @media (max-width:991px){
 	.skin-blue .main-header .logo{
@@ -541,6 +588,14 @@ table.upload-image tr td{
 	.content-header>.breadcrumb{
 		margin-top:0;
 		background: none;
+	}
+	.drop-img{
+		width:75px;
+		height:75px;
+	}
+	.black-button{
+		padding-left:10px;
+		padding-right:10px;
 	}
 
 	
@@ -561,6 +616,7 @@ table.upload-image tr td{
 	}
 	table#miyazaki tbody td { 
 		display: block; 
+		text-align: left;
 	}
 	table#miyazaki tbody tr td:first-child { 
 		background: #008fd4; 
@@ -600,3 +656,14 @@ table.upload-image tr td{
     right: 0; 
     top: 0; 
  }
+#new-search-area {
+    width: 100%;
+    clear: both;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+#new-search-area input {
+    width: 600px;
+    font-size: 20px;
+    padding: 5px;
+}
