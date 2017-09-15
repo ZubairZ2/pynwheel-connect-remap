@@ -43,8 +43,22 @@ holder.ondrop = function (e) {
     this.className = '';
     e.preventDefault();
     files = e.dataTransfer.files;
-        for (var i = 0; i < files.length; i++) {
-          readImageSrc(files[i]);  
+        if (files.length > 0){
+            for (var i = 0; i < files.length; i++) {
+              readImageSrc(files[i]);  
+            }
+        }
+        else{
+            var img = e.dataTransfer.mozSourceNode;
+            console.log($(img).attr("id"));
+            console.log($(img).parent().attr("id"));
+            var floorplan_id = $(img).parent().attr("id");
+            var id = $(img).attr("id");
+            id = id.split('-');
+            $('#row'+id[1]).show();
+            console.log("ok");
+            $('#parent-'+id[1]).append($(img));
+            deleteFloorPlanImage(floorplan_id);
         }
     }
 });
@@ -64,9 +78,10 @@ function drop(ev) {
     var img_object = $(ev.target).find('img');
     var id = $(img_object).attr("id");
     id = id.split('-');
-    $('#row'+id[1]).remove();
+    $('#row'+id[1]).hide();
     saveFloorPlanImage($(img_object).attr("src"),ev.target.id);
 }
+
 // preview image function
 function readURL(input) {
 
@@ -212,7 +227,7 @@ function readImageSrc(file){
       reader.onload = function (e) {
         index++
         var s = "'#row"+index+"'";
-        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img" ondrop="drop(event)" ondragover="allowDrop(event)"><img src="'+e.target.result+'" alt="" title=""  draggable="true" ondragstart="drag(event)" id="drag-'+index+'"> </div></td><td> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="$('+s+').remove();">Remove</a></td></tr>';
+        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img generated-class" ondrop="dropBack(event)" ondragover="allowDrop(event)" id="parent-'+index+'"><img src="'+e.target.result+'" alt="" title=""  draggable="true" ondragstart="drag(event)" id="drag-'+index+'"> </div></td><td> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="$('+s+').remove();">Remove</a></td></tr>';
         $('#pre-save-floorplan-images-table').append(tr_tag);
       }
       reader.readAsDataURL(file);
@@ -227,6 +242,22 @@ function readImageSrc(file){
         data: {
             floorplan: {
                 image: src
+            }
+        }
+    }).done(function(){
+        console.log("success");
+    });
+   }
+
+   function deleteFloorPlanImage(floorplan_id){
+    var community_id = $('#communities_at_floorplans').val();
+    $.ajax({
+        url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            floorplan: {
+                remove_image: true
             }
         }
     }).done(function(){

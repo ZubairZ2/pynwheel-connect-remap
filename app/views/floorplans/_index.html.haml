@@ -31,10 +31,10 @@
                     %button.btn.btn-default.black-button Plot Now
                   %td
                     - if f.image.present?
-                      .drop-img.drop-img-left{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id}
+                      .drop-img.drop-img-left
                         = image_tag f.image.url
                     - else  
-                      .drop-img.drop-img-left{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id}
+                      .drop-img.drop-img-left.image-holder{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id}
                   %td
                     %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
                       %i.fa.fa-edit
