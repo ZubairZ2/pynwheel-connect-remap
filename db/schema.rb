@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170913132028) do
+ActiveRecord::Schema.define(version: 20170915104141) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -60,19 +60,21 @@ ActiveRecord::Schema.define(version: 20170913132028) do
 
   create_table "credentials", force: :cascade do |t|
     t.integer  "community_id"
-    t.string   "domain"
     t.string   "password"
     t.string   "username"
     t.string   "property_id"
     t.string   "pmc_id"
     t.string   "licence_key"
-    t.string   "host"
     t.string   "server_name"
     t.string   "database"
     t.string   "platform"
     t.string   "interface_entity"
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
+    t.string   "url"
+    t.string   "site_id"
+    t.string   "c_code"
+    t.string   "p_code"
     t.index ["community_id"], name: "index_credentials_on_community_id", using: :btree
   end
 
