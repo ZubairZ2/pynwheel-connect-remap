@@ -216,7 +216,7 @@ function showDataTables(){
     $('#miyazaki.table').DataTable({
         "ordering": false
     });
-    $('#communities').DataTable({
+    $('#communities.table').DataTable({
         initComplete : function() {
             $("#communities_filter").detach().appendTo('#new-search-area');
         },
@@ -226,6 +226,18 @@ function showDataTables(){
         language: {
             search: "",
             searchPlaceholder: "Search by community or company name"
+        }
+    });
+    $('#companies.table').DataTable({
+        initComplete : function() {
+            $("#companies_filter").detach().appendTo('#new-search-area');
+        },
+        "ordering": false,
+        "info": false, //Dont display info e.g. "Showing 1 to 4 of 4 entries"
+        "paging": false, //Dont want paging
+        language: {
+            search: "",
+            searchPlaceholder: "Search by company name"
         }
     });
 }

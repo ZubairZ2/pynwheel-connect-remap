@@ -9,10 +9,14 @@
     = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
     %link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
-  %body.hold-transition.skin-blue.sidebar-mini
+  %body.hold-transition.skin-blue.sidebar-mini{:id => "#{controller_name == "home" || controller_name == "companies" ? "no-sidemenu" : ""}"}
     .wrapper
       = render partial: "/header"
-      = render partial: "/side_menu"
+      - unless controller_name == "home" || controller_name == "companies"
+        - if controller_name == "communities"
+          = render partial: "/sidemenu_communities"
+        - else
+          = render partial: "/side_menu"
       .content-wrapper
         = render partial: "/messages"
         = render partial: "/breadcrumbs"

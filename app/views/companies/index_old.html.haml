@@ -1,22 +1,24 @@
-- content_for :title, "Communities - Pynwheel"
+- content_for :title, "Companies - Pynwheel"
+
 %section
   .content
     .title-heading
       %h4
         %i.fa.fa-columns
-        Communities
+        Companies
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
         .row
           .col-md-6
-            %h4.title Gables
+            .mt-35
+              %a.btn.btn-success.mb-20{:href => "/"}
+                List all communities
           .col-md-6
             .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/communities/new"}
+              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/new"}
                 %i.fa.fa-plus-circle
-                ADD COMMUNITY
-            .divLoading.hidden
+                ADD COMPANY
         .box.box-widget.panel-box
           .box-header
             
@@ -26,25 +28,20 @@
                   %thead
                     %tr
                       %th{:width => "79"} Sr #
-
-                      %th Community Name
+                      %th Company Name
                       %th{:width => "250"} Actions
                   %tbody
-                    - @communities.each_with_index  do |f,index|
+                    - @companies.each_with_index do |company,index|
                       %tr
                         %td
-                          = index+1
+                          =index+1
                         %td
-                          = link_to f.name, community_floorplans_path(f)
+                          =company.name
                         %td
-                          %a.text-success{:href => "/communities/#{f.id}/edit"}
+                          %a.text-success{:href => "/companies/#{company.id}/edit"}
                             %i.fa.fa-edit
-                          %a.text-danger{:href => "/communities/#{f.id}","data-method"=>:delete}
+                          %a.text-danger{:href => "/companies/#{company.id}","data-method"=>:delete}
                             %i.fa.fa-trash
-                          %a.btn-info.btn-xs.mr-5.import_data{:href=>"/communities/#{f.id}/import"}
-                            Update now
-                          %a.btn-success.btn-xs
-                            Live
 
             
                   
