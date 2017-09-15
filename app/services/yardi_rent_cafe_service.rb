@@ -7,8 +7,8 @@ class YardiRentCafeService < BaseService
 
 	def import_yardirentcafe_floorplans
 	    request_type = "apartmentavailability"
-	    company_code = credentials.domain
-	    property_code = credentials.property_id
+	    company_code = credentials.c_code
+	    property_code = credentials.p_code
 	    
 	    response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
 	    response = JSON.parse(response.body)
@@ -60,8 +60,8 @@ class YardiRentCafeService < BaseService
 
   	def import_yardirentcafe_units
 	    request_type = "floorplan"
-	    company_code = credentials.domain
-	    property_code = credentials.property_id
+	    company_code = credentials.c_code
+	    property_code = credentials.p_code
 
 	    response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
 	    response = JSON.parse(response.body)

@@ -1,0 +1,9 @@
+REALPAGESVC_USERNAME="pynwheel_service"
+REALPAGESVC_PASSWORD="FaFGpnB4YNWrHQqi7CBPmH4fITg1Sm"
+REALPAGESVC_LICENSE_KEY="a915d9fa-fcb7-4300-97bb-cf3170c946af"
+REALPAGE_URL="https://gateway.rpx.realpage.com/RPXGateway/partner/Pynwheel/Pynwheel.svc"
+REALPAGE_FLOORPLAN_ACTION ='http://tempuri.org/IRPXService/getfloorplanlist'
+REALPAGE_UNIT_ACTION = 'http://tempuri.org/IRPXService/getunitsbyproperty'
+REALPAGE_PRICE_ACTION = 'http://tempuri.org/IRPXService/getunitlist'
+REALPAGE_BUILDING_ACTION = 'http://tempuri.org/IRPXService/getpicklist'
+YARDI_LICENSE_KEY="MIIBEAYJKwYBBAGCN1gDoIIBATCB/gYKKwYBBAGCN1gDAaCB7zCB7AIDAgABAgJoAQICAIAEAAQQb2bdpX8B3jHdPljSivbiuASByOvAt9PkhRChGWsa5YG3AL9BJALXDVPHpDmcs0H+kJNxj3/BusZJQ5xAehvRVRxtU2fZvQ7KR2RMavloRYvMX4yDMDfCKGiiBUcHgwXMXArK1clII0o1gNYu+NcrCGxFC5EqDY6os308AssprSKJ6c4qbtw2lNE1SgYdHsEQFpetjRj8Ps8QIseOWA9M0s1FLABpdm3dGODEB9VXjswmM7qNzZyNTN5MSKBgIAjDQ3tmz2eEzgYxD9NxCZwB/eOvCJVq8ZZ+MoM4"

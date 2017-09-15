@@ -6,13 +6,13 @@ class RealPageSvcService < BaseService
 	end
 
 	def import_realpage_svc_floorplans
-    url = "https://gateway.rpx.realpage.com/RPXGateway/partner/Pynwheel/Pynwheel.svc"
-    soap_action = 'http://tempuri.org/IRPXService/getfloorplanlist'
+    url = REALPAGE_URL
+    soap_action = REALPAGE_FLOORPLAN_ACTION
     pmc_id = credentials.pmc_id
-    site_id = credentials.property_id
-    username = credentials.username
-    password = credentials.password
-    license_key = credentials.licence_key
+    site_id = credentials.site_id
+    username = REALPAGESVC_USERNAME
+    password = REALPAGESVC_PASSWORD
+    license_key = REALPAGESVC_LICENSE_KEY
     community_id = credentials.community_id
     response = HTTParty.post(
         url,
@@ -74,13 +74,13 @@ class RealPageSvcService < BaseService
 
   def import_realpage_svc_units
     building_result = realpage_building
-    url = "https://gateway.rpx.realpage.com/RPXGateway/partner/Pynwheel/Pynwheel.svc"
-    soap_action = 'http://tempuri.org/IRPXService/getunitsbyproperty'
+    url = REALPAGE_URL
+    soap_action = REALPAGE_UNIT_ACTION
     pmc_id = credentials.pmc_id
     site_id = credentials.property_id
-    username = credentials.username
-    password = credentials.password
-    license_key = credentials.licence_key
+    username = REALPAGESVC_USERNAME
+    password = REALPAGESVC_PASSWORD
+    license_key = REALPAGESVC_LICENSE_KEY
     community_id = credentials.community_id
     response = HTTParty.post(
         url,
@@ -148,13 +148,13 @@ class RealPageSvcService < BaseService
   end
 
   def import_realpage_svc_price
-    url = "https://gateway.rpx.realpage.com/RPXGateway/partner/Pynwheel/Pynwheel.svc"
-    soap_action = 'http://tempuri.org/IRPXService/getunitlist'
+    url = REALPAGE_URL
+    soap_action = REALPAGE_PRICE_ACTION 
     pmc_id = credentials.pmc_id
     site_id = credentials.property_id
-    username = credentials.username
-    password = credentials.password
-    license_key = credentials.licence_key
+    username = REALPAGESVC_USERNAME
+    password = REALPAGESVC_PASSWORD
+    license_key = REALPAGESVC_LICENSE_KEY
     community_id = credentials.community_id
     response = HTTParty.post(
         url,
@@ -219,13 +219,13 @@ class RealPageSvcService < BaseService
   end
 
   def realpage_building
-    url = "https://gateway.rpx.realpage.com/RPXGateway/partner/Pynwheel/Pynwheel.svc"
-    soap_action = 'http://tempuri.org/IRPXService/getpicklist'
+    url = REALPAGE_URL
+    soap_action = REALPAGE_BUILDING_ACTION
     pmc_id = credentials.pmc_id
     site_id = credentials.property_id
-    username = credentials.username
-    password = credentials.password
-    license_key = credentials.licence_key
+    username = REALPAGESVC_USERNAME
+    password = REALPAGESVC_PASSWORD
+    license_key = REALPAGESVC_LICENSE_KEY
     response = HTTParty.post(
         url,
         :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},

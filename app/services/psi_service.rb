@@ -1,10 +1,10 @@
 class PsiService < BaseService
 	def perform
-		domain = credentials.domain
+		    url = credentials.url
       	password = credentials.password
       	username = credentials.username
       	property_id = credentials.property_id
-      	response = HTTParty.post("https://#{domain}.entrata.com/api/propertyunits",
+      	response = HTTParty.post(url,
                                :body => {
                                    "auth": {
                                    "type": "basic",
@@ -122,11 +122,11 @@ class PsiService < BaseService
   end
 
   def fill_psi_pricing_details
-    domain = credentials.domain
+    url = credentials.url
     password = credentials.password
     username = credentials.username
     property_id = credentials.property_id
-    response = HTTParty.post("https://#{domain}.entrata.com/api/propertyunits",
+    response = HTTParty.post(url,
                              :body => {
                                  "auth": {
                                  "type": "basic",

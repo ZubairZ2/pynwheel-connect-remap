@@ -1,8 +1,9 @@
 class Yardi2Service < BaseService
 	def perform
-		url = "https://#{credentials.host}/#{credentials.domain}/webservices/itfilsguestcard20.asmx"
-	    post = "#{credentials.domain}/Webservices/itfilsguestcard20.asmx HTTP/1.1"
-	    host = credentials.host
+		  url = credentials.url
+      arr = url.split('/')
+	    post = "#{arr[3]}/Webservices/itfilsguestcard20.asmx HTTP/1.1"
+	    host = arr[2]
 	    soap_action = 'http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20/UnitAvailability_Login'
 	    user_name = credentials.username
 	    password = credentials.password
@@ -11,7 +12,7 @@ class Yardi2Service < BaseService
 	    platform = credentials.platform
 	    property_id = credentials.property_id
 	    interface_entity = credentials.interface_entity
-	    license_key = credentials.licence_key
+	    license_key = YARDI_LICENSE_KEY
 	    response = HTTParty.post(
 	          url,
 	          :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
@@ -26,7 +27,7 @@ class Yardi2Service < BaseService
 
 	def save_yardi2_units(ils_units,property_id)
       ils_units.each do |u|
-      unit = Unit.where(provider: "yardi2",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize  
+      unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize  
       #unit = Unit.new(provider: "yardi2",community_id: credentials.communty_id)
       unit.property_id = property_id
       #unit.provider_unit_id = u["Id"]
@@ -63,7 +64,7 @@ class Yardi2Service < BaseService
 
   def save_yardi2_floorplans(floorplans)
     floorplans.each do |f|
-      fp = Floorplan.where(provider: "yardi2",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize  
+      fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize  
       #fp = Floorplan.new(provider: "yardi2",community_id: credentials.communty_id)
       #fp.provider_floorplan_id = f["Id"]
       rooms = f["Room"]
