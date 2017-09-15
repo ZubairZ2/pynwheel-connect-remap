@@ -656,3 +656,14 @@ font-size: 12px;
     right: 0; 
     top: 0; 
  }
+#new-search-area {
+    width: 100%;
+    clear: both;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+#new-search-area input {
+    width: 600px;
+    font-size: 20px;
+    padding: 5px;
+}

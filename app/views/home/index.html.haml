@@ -10,56 +10,58 @@
             All communities are listed here.
           %p
             This Admin feature allows you to directly access any community in the system
-      .row
-        .col-md-12       
-          %form.mt-30.mb-30{:action => "#", :method => "post"}
-            .input-group
-              %input.form-control{:name => "message", :placeholder => "Search by community or company name", :type => "text"}
-              %span.input-group-btn
-                %button.btn.btn-success.btn-flat{:type => "submit"} Search
+
       .row
         .col-md-12
-          .box.box-solid
-            .box-header.with-border
-              .row
-                .col-md-8
-                  %h3.box-title.pt-15.pb-15 
-                    %b
-                      Communities                
-                .col-md-4
-                  %h3.box-title.pt-15.pb-15 
-                    %b
-                      Company
-            / /.box-header
-            .box-body
-              .row
-                .col-md-8
-                  %h4.h4 
-                    %a Latitude at Presidio
-                    %h5.h5 Updated: 11-11-2016
-                .col-md-4
-                  %h5.h5
-                    NRP 
-              .row
-                .col-md-12      
-                  %hr               
-              .row
-                .col-md-8
-                  %h4.h4 
-                    %a Latitude at Presidio
-                    %h5.h5 Updated: 11-11-2016
-                .col-md-4
-                  %h5.h5
-                    NRP 
-              .row
-                .col-md-12      
-                  %hr                 
-              .row
-                .col-md-8
-                  %h4.h4 
-                    %a Latitude at Presidio
-                    %h5.h5 Updated: 11-11-2016
-                .col-md-4
-                  %h5.h5
-                    NRP      
-                    
+          #new-search-area
+      .row
+        .col-md-12
+          %table#communities.table.table-hover.table-responsive
+            %thead
+              %tr
+                %th Community
+                %th{:width => "250"} Company
+            %tbody
+              - @communities.each do |community|
+                %tr
+                  %td
+                    =community.name
+                  %td
+                    =community.company.name
+
+
+      -#.row
+      -#  .col-md-12
+      -#    %form.mt-30.mb-30{:action => "#", :method => "post"}
+      -#      .input-group
+      -#        %input.form-control{:name => "message", :placeholder => "Search by community or company name", :type => "text"}
+      -#        %span.input-group-btn
+      -#          %button.btn.btn-success.btn-flat{:type => "submit"} Search
+      -#.row
+      -#  .col-md-12
+      -#    .box.box-solid
+      -#      .box-header.with-border
+      -#        .row
+      -#          .col-md-8
+      -#            %h3.box-title.pt-15.pb-15
+      -#              %b
+      -#                Communities
+      -#          .col-md-4
+      -#            %h3.box-title.pt-15.pb-15
+      -#              %b
+      -#                Company
+      -#      / /.box-header
+      -#      .box-body
+      -#        - @communities.each do |community|
+      -#          .row
+      -#            .col-md-8
+      -#              %h4.h4
+      -#                %a= community.name
+      -#                %h5.h5 Updated: #{community.updated_at.to_date}
+      -#            .col-md-4
+      -#              %h5.h5
+      -#                = community.company.name
+      -#          .row
+      -#            .col-md-12
+      -#              %hr
+
