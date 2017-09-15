@@ -6,7 +6,7 @@
         %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
           Select Community
         .col-sm-12.col-lg-12.col-md-12.col-xs-12    
-          = select_tag :communities, options_for_select(@communities.collect{|c| [c.name,c.id]}), :class=>"form-control"
+          = select_tag :communities_on_settings, options_for_select(@communities.collect{|c| [c.name,c.id]}), :class=>"form-control"
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
@@ -16,7 +16,7 @@
 
 :javascript
   showCredentialsForm(); 
-  $('#communities').on('change', function() {
+  $('#communities_on_settings').on('change', function() {
     showCredentialsForm(); 
   });        
 

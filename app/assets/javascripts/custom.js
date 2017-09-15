@@ -128,10 +128,7 @@ function selectDataProvider(data_provider){
         case "yardirentcafe":
             showYardiRentCafeFields();
             break;
-        case "yardi2":
-            showYardiFields();
-            break;
-        case "yardi4":
+        case "yardi":
             showYardiFields();
             break;
         case "psi":
@@ -143,8 +140,8 @@ function selectDataProvider(data_provider){
 function showPsiFields(){
     $('.credential_fields').hide();
     removeValidationsClass();
-    $('#domain').show();
-    $('#community_credential_attributes_domain').addClass("validate[required]");
+    $('#url').show();
+    $('#community_credential_attributes_url').addClass("validate[required]");
     $('#password').show();
     $('#community_credential_attributes_password').addClass("validate[required]");
     $('#username').show();
@@ -156,10 +153,8 @@ function showPsiFields(){
 function showYardiFields(){
     $('.credential_fields').hide();
     removeValidationsClass();
-    $('#domain').show();
-    $('#community_credential_attributes_domain').addClass("validate[required]");
-    $('#host').show();
-    $('#community_credential_attributes_host').addClass("validate[required]");
+    $('#url').show();
+    $('#community_credential_attributes_url').addClass("validate[required]");
     $('#username').show();
     $('#community_credential_attributes_username').addClass("validate[required]");
     $('#password').show();
@@ -171,37 +166,29 @@ function showYardiFields(){
     $('#platform').show();
     $('#property_id').show();
     $('#community_credential_attributes_property_id').addClass("validate[required]");
-    $('#license_key').show();
-    $('#community_credential_attributes_licence_key').addClass("validate[required]");
     $('#interface_entity').show();
 }
 
 function showYardiRentCafeFields(){
     $('.credential_fields').hide();
     removeValidationsClass();
-    $('#domain').show();
-    $('#community_credential_attributes_domain').addClass("validate[required]");
-    $('#property_id').show();
-    $('#community_credential_attributes_property_id').addClass("validate[required]");
+    $('#c_code').show();
+    $('#community_credential_attributes_c_code').addClass("validate[required]");
+    $('#p_code').show();
+    $('#community_credential_attributes_p_code').addClass("validate[required]");
 }
 
 function showRealPageSVCFields(){
     $('.credential_fields').hide();
     removeValidationsClass();
-    $('#property_id').show();
-    $('#community_credential_attributes_domain').addClass("validate[required]");
     $('#pmc_id').show();
     $('#community_credential_attributes_pmc_id').addClass("validate[required]");
-    $('#username').show();
-    $('#community_credential_attributes_username').addClass("validate[required]");
-    $('#password').show();
-    $('#community_credential_attributes_password').addClass("validate[required]");
-    $('#license_key').show();
-    $('#community_credential_attributes_licence_key').addClass("validate[required]");
+    $('#site_id').show();
+    $('#community_credential_attributes_site_id').addClass("validate[required]");    
 }
 
 function showCredentialsForm(){
-    var community_id = $('#communities').val();
+    var community_id = $('#communities_on_settings').val();
     $.ajax({
         url: "/communities/"+community_id+"/credentials",
         type: "GET"
@@ -243,14 +230,15 @@ function showDataTables(){
 }
 
 function removeValidationsClass(){
-    $('#community_credential_attributes_domain').removeClass("validate[required]");
-    $('#community_credential_attributes_host').removeClass("validate[required]");
+    $('#community_credential_attributes_url').removeClass("validate[required]");
     $('#community_credential_attributes_username').removeClass("validate[required]");
     $('#community_credential_attributes_password').removeClass("validate[required]");
     $('#community_credential_attributes_server_name').removeClass("validate[required]");
     $('#community_credential_attributes_property_id').removeClass("validate[required]");
-    $('#community_credential_attributes_licence_key').removeClass("validate[required]");
+    $('#community_credential_attributes_site_id').removeClass("validate[required]");
     $('#community_credential_attributes_pmc_id').removeClass("validate[required]");
+    $('#community_credential_attributes_c_code').removeClass("validate[required]");
+    $('#community_credential_attributes_p_code').removeClass("validate[required]");
 }
 
 function readImageSrc(file){

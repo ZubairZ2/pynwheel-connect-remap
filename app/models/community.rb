@@ -15,11 +15,13 @@ class Community < ApplicationRecord
         import_yardirentcafe_data
       when "realpagesvc"
         import_realpage_svc_data
-      when "yardi2"
-        import_yardi2_data
-      when "yardi4"
-        import_yardi4_data
+      when "yardi"
+        select_yardi_provider
     end
+  end
+
+  def select_yardi_provider
+    credential.url.include?("20") ? import_yardi2_data : import_yardi4_data
   end
 
   def import_psi_data
