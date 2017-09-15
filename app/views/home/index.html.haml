@@ -2,32 +2,31 @@
 / Main content
 .container
   %section
-    .content
-      .row
-        .col-md-12
-          %h2 Communities
-          %h5
-            All communities are listed here.
-          %p
-            This Admin feature allows you to directly access any community in the system
+    .row
+      .col-md-12
+        %h2 Communities
+        %h5
+          All communities are listed here.
+        %p.mb-30
+          This Admin feature allows you to directly access any community in the system
 
-      .row
-        .col-md-12
-          #new-search-area
-      .row
-        .col-md-12
-          %table#communities.table.table-hover.table-responsive
-            %thead
-              %tr
-                %th Community
-                %th{:width => "250"} Company
-            %tbody
-              - @communities.each do |community|
-                %tr
-                  %td
-                    =community.name
-                  %td
-                    =community.company.name
+    .box.box-widget.panel-box
+      #new-search-area
+      %table#communities.table.table-hover.table-responsive
+        %thead
+          %tr
+            %th Community
+            %th{:width => "250"} Company
+        %tbody
+          - @communities.each do |community|
+            %tr
+              %td
+                %h4.h4
+                  = link_to community.name, "#"
+                %h6.h6 Updated: #{community.updated_at.to_date}  
+              %td
+                %h5.h5
+                  =community.company.name
 
 
       -#.row
