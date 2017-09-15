@@ -37,29 +37,29 @@ setTimeout(function() {
 
 //below code have drag n drop functionality.
 var holder = document.getElementById('holder');
-holder.ondragover = function () { this.className = 'hover'; return false; };
-holder.ondragend = function () { this.className = ''; return false; };
-holder.ondrop = function (e) {
-    this.className = '';
-    e.preventDefault();
-    files = e.dataTransfer.files;
-        if (files.length > 0){
-            for (var i = 0; i < files.length; i++) {
-              readImageSrc(files[i]);  
+    if (holder){
+        holder.ondragover = function () { this.className = 'hover'; return false; };
+        holder.ondragend = function () { this.className = ''; return false; };
+        holder.ondrop = function (e) {
+            this.className = '';
+            e.preventDefault();
+            files = e.dataTransfer.files;
+                if (files.length > 0){
+                    for (var i = 0; i < files.length; i++) {
+                      readImageSrc(files[i]);  
+                    }
+                }
+                else{
+                    //var img = e.dataTransfer.mozSourceNode;
+                    var floorplan_id = $(draging_image).parent().attr("id");
+                    var id = $(draging_image).attr("id");
+                    id = id.split('-');
+                    $('#row'+id[1]).show();
+                    console.log("ok");
+                    $('#parent-'+id[1]).append($(draging_image));
+                    deleteFloorPlanImage(floorplan_id);
+                }
             }
-        }
-        else{
-            var img = e.dataTransfer.mozSourceNode;
-            console.log($(img).attr("id"));
-            console.log($(img).parent().attr("id"));
-            var floorplan_id = $(img).parent().attr("id");
-            var id = $(img).attr("id");
-            id = id.split('-');
-            $('#row'+id[1]).show();
-            console.log("ok");
-            $('#parent-'+id[1]).append($(img));
-            deleteFloorPlanImage(floorplan_id);
-        }
     }
 });
 
@@ -68,18 +68,25 @@ function allowDrop(ev) {
 }
 
 function drag(ev) {
+    //below assinging of draging_image is very important. Don't remove it
+    draging_image = ev.target;
     ev.dataTransfer.setData("text", ev.target.id);
 }
 
 function drop(ev) {
     ev.preventDefault();
-    var data = ev.dataTransfer.getData("text");
-    ev.target.appendChild(document.getElementById(data));
-    var img_object = $(ev.target).find('img');
-    var id = $(img_object).attr("id");
-    id = id.split('-');
-    $('#row'+id[1]).hide();
-    saveFloorPlanImage($(img_object).attr("src"),ev.target.id);
+    if ($(ev.target).hasClass('drop-img')) { 
+        var data = ev.dataTransfer.getData("text");
+        ev.target.appendChild(document.getElementById(data));
+        var img_object = $(ev.target).find('img');
+        var id = $(img_object).attr("id");
+        id = id.split('-');
+        $('#row'+id[1]).hide();
+        saveFloorPlanImage($(img_object).attr("src"),ev.target.id);
+   }
+   else{
+     return;
+   }
 }
 
 // preview image function
