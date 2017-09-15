@@ -11,5 +11,4 @@ Rails.application.routes.draw do
     get :credentials
     resources :settings , only: :index
   end
-  resources :settings , only: :index
 end
