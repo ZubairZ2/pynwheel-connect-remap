@@ -192,6 +192,8 @@ function showCredentialsForm(){
     $.ajax({
         url: "/communities/"+community_id+"/credentials",
         type: "GET"
+    }).done(function(){
+        $('.import_data').attr("href","/communities/"+community_id+"/import"); 
     });
 }
 
