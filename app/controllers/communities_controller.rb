@@ -49,13 +49,14 @@ class CommunitiesController < ApplicationController
   end
 
   def import
+    Thread.current[:errors] = []
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
-      if @community.data_is_imported
+      if @community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Data is imported successfully."
         redirect_to community_floorplans_path(:community_id=>@community.id)
       else
-        flash[:notice] = "Something went wrong."
+        flash[:notice] = Thread.current[:errors].join(',') 
         redirect_to communities_path
       end
     else
