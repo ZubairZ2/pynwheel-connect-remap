@@ -17,7 +17,7 @@ function find_geocodes(address) {
             var latitude = results[0].geometry.location.lat();
             var longitude = results[0].geometry.location.lng();
             if (latitude != null){
-                console.log(longitude)
+                // console.log(longitude)
                 showResult(latitude,longitude)
             }
         }
