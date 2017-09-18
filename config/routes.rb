@@ -9,6 +9,7 @@ Rails.application.routes.draw do
     resources :units
     get :import
     get :credentials
+    get :test_connection
     resources :settings , only: :index
   end
 end

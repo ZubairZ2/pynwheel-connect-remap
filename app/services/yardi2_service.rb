@@ -1,28 +1,36 @@
 class Yardi2Service < BaseService
 	def perform
-		  url = credentials.url
-      arr = url.split('/')
-	    post = "#{arr[3]}/Webservices/itfilsguestcard20.asmx HTTP/1.1"
-	    host = arr[2]
-	    soap_action = 'http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20/UnitAvailability_Login'
-	    user_name = credentials.username
-	    password = credentials.password
-	    server_name = credentials.server_name
-	    database = credentials.database
-	    platform = credentials.platform
-	    property_id = credentials.property_id
-	    interface_entity = credentials.interface_entity
-	    license_key = YARDI_LICENSE_KEY
-	    response = HTTParty.post(
-	          url,
-	          :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
-	          :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
-	    result = Hash.from_xml(response.body)
-	    ils_units = result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["ILS_Unit"]
-	    floorplans = result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["Floorplan"]
-	    property_id =  result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["PropertyID"]["Identification"]["PrimaryID"]
-	    save_yardi2_units(ils_units,property_id)
-	    save_yardi2_floorplans(floorplans)
+      begin
+  		  url = credentials.url
+        arr = url.split('/')
+  	    post = "#{arr[3]}/Webservices/itfilsguestcard20.asmx HTTP/1.1"
+  	    host = arr[2]
+  	    soap_action = 'http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20/UnitAvailability_Login'
+  	    user_name = credentials.username
+  	    password = credentials.password
+  	    server_name = credentials.server_name
+  	    database = credentials.database
+  	    platform = credentials.platform
+  	    property_id = credentials.property_id
+  	    interface_entity = credentials.interface_entity
+  	    license_key = YARDI_LICENSE_KEY
+  	    response = HTTParty.post(
+  	          url,
+  	          :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
+  	          :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
+  	    result = Hash.from_xml(response.body)
+        unless result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"].present?
+    	    ils_units = result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["ILS_Unit"]
+    	    floorplans = result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["Floorplan"]
+    	    property_id =  result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["PropertyID"]["Identification"]["PrimaryID"]
+    	    save_yardi2_units(ils_units,property_id)
+    	    save_yardi2_floorplans(floorplans)
+        else
+          Thread.current[:errors] << result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"]  
+        end
+      rescue => e
+        Thread.current[:errors] << e.message
+      end
 	end
 
 	def save_yardi2_units(ils_units,property_id)

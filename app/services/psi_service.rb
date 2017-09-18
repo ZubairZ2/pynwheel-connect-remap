@@ -1,10 +1,11 @@
 class PsiService < BaseService
 	def perform
-		    url = credentials.url
-      	password = credentials.password
-      	username = credentials.username
-      	property_id = credentials.property_id
-      	response = HTTParty.post(url,
+    begin
+      url = credentials.url
+        password = credentials.password
+        username = credentials.username
+        property_id = credentials.property_id
+        response = HTTParty.post(url,
                                :body => {
                                    "auth": {
                                    "type": "basic",
@@ -16,25 +17,32 @@ class PsiService < BaseService
           "params": {
               "propertyIds": property_id,
           "availableUnitsOnly": "0"
-      	}
-      	}
-      	}.to_json,
-      	:headers => { 'Content-Type' => 'application/json' } )
-      	response =  JSON.parse(response.body)
-      	units = []
-      	floorplans = []
-      	response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
-        	pro["ILS_Unit"].each do |ils|
-          	units << ils
-          	# puts '***********', ils
-        	end
-        	pro["Floorplan"].each do |f|
-          	floorplans << f
-        	end
-      	end
-      	save_psi_units(units,property_id)
-      	save_psi_floorplans(floorplans,property_id)
-      	fill_psi_pricing_details
+        }
+        }
+        }.to_json,
+        :headers => { 'Content-Type' => 'application/json' } )
+        response =  JSON.parse(response.body)
+        if response["response"]["code"] == 200
+          units = []
+          floorplans = []
+          response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
+            pro["ILS_Unit"].each do |ils|
+              units << ils
+              # puts '***********', ils
+            end
+            pro["Floorplan"].each do |f|
+              floorplans << f
+            end
+          end
+          save_psi_units(units,property_id)
+          save_psi_floorplans(floorplans,property_id)
+        else
+          Thread.current[:errors] <<  response["response"]["error"]["message"]  
+        end
+    rescue => e
+      Thread.current[:errors] << e.message
+    end
+    fill_psi_pricing_details if Thread.current[:errors].empty?
 	end
 
 	def save_psi_units(units,property_id)
@@ -122,39 +130,47 @@ class PsiService < BaseService
   end
 
   def fill_psi_pricing_details
-    url = credentials.url
-    password = credentials.password
-    username = credentials.username
-    property_id = credentials.property_id
-    response = HTTParty.post(url,
-                             :body => {
-                                 "auth": {
-                                 "type": "basic",
-                                 "password": password,
-                                 "username": username
-                             },
-                             "method": {
-        "name": "getUnitsAvailabilityAndPricing",
-        "params": {
-            "propertyId": property_id,
-        "availableUnitsOnly": "0"
-    }
-    }
-    }.to_json,
-    :headers => { 'Content-Type' => 'application/json' } )
-    response =  JSON.parse(response.body)
-
-    psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
-    psi_units.each do |u|
-      unit_no = u[1]["@attributes"]["UnitNumber"].to_i
-      unit = Unit.where(number: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
-      if unit.present?
-        unit = unit.first
-        if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
-          puts '*****************************', u[1]["Rent"]["@attributes"]["MinRent"]
-          unit.update_attribute(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
+    begin
+      url = credentials.url
+      password = credentials.password
+      username = credentials.username
+      property_id = credentials.property_id
+      response = HTTParty.post(url,
+                               :body => {
+                                   "auth": {
+                                   "type": "basic",
+                                   "password": password,
+                                   "username": username
+                               },
+                               "method": {
+          "name": "getUnitsAvailabilityAndPricing",
+          "params": {
+              "propertyId": property_id,
+          "availableUnitsOnly": "0"
+      }
+      }
+      }.to_json,
+      :headers => { 'Content-Type' => 'application/json' } )
+      response =  JSON.parse(response.body)
+     
+      if response["response"]["code"] == 200
+        psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
+        psi_units.each do |u|
+          unit_no = u[1]["@attributes"]["UnitNumber"].to_i
+          unit = Unit.where(number: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
+          if unit.present?
+            unit = unit.first
+            if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
+              puts '*****************************', u[1]["Rent"]["@attributes"]["MinRent"]
+              unit.update_attribute(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
+            end
+          end
         end
+      else
+        Thread.current[:errors] << response["response"]["error"]["message"]  
       end
+    rescue => e
+      Thread.current[:errors] << e.message
     end
   end
 end

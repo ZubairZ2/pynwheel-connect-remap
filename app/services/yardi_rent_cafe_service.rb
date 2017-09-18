@@ -2,90 +2,105 @@ class YardiRentCafeService < BaseService
 
 	def perform
 		import_yardirentcafe_floorplans
-		import_yardirentcafe_units
+		import_yardirentcafe_units if Thread.current[:errors].empty?
 	end
 
 	def import_yardirentcafe_floorplans
-	    request_type = "apartmentavailability"
-	    company_code = credentials.c_code
-	    property_code = credentials.p_code
-	    
-	    response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
-	    response = JSON.parse(response.body)
+		begin
+		    request_type = "apartmentavailability"
+		    company_code = credentials.c_code
+		    property_code = credentials.p_code
+		    
+		    response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
+		    response = JSON.parse(response.body)
+		    
+			if response[0]["Error"].nil?
+			    response.each do |r|
+			      puts '-----------------' , r
 
-	    response.each do |r|
-	      puts '-----------------' , r
 
+			      unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
 
-	      unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
+			      unit.property_id = r["PropertyId"]
+			      unit.name = r["ApartmentName"]
+			      unit.number = r["ApartmentName"]
+			      unit.floorplan_id = r["FloorplanId"]
+			      unit.avg_rent = r["MinimumRent"]
+			      unit.min_rent = r["MinimumRent"]
+			      unit.max_rent = r["MaximumRent"]
+			      unit.availability = "Unoccupied"
+			      if r["AvailableDate"] != ""
+			        unit.availability = "Unoccupied"
+			        unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
+			      else
+			        unit.availability = "Occupied"
+			        unit.available_date = Date.parse(set_availabilty_date("1/1/1999"))
+			      end
+			      unit.save!
+			      if r["Amenities"] != ""
 
-	      unit.property_id = r["PropertyId"]
-	      unit.name = r["ApartmentName"]
-	      unit.number = r["ApartmentName"]
-	      unit.floorplan_id = r["FloorplanId"]
-	      unit.avg_rent = r["MinimumRent"]
-	      unit.min_rent = r["MinimumRent"]
-	      unit.max_rent = r["MaximumRent"]
-	      unit.availability = "Unoccupied"
-	      if r["AvailableDate"] != ""
-	        unit.availability = "Unoccupied"
-	        unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
-	      else
-	        unit.availability = "Occupied"
-	        unit.available_date = Date.parse(set_availabilty_date("1/1/1999"))
-	      end
-	      unit.save!
-	      if r["Amenities"] != ""
+			        amenities = r["Amenities"]
+			        puts '*********************** a' , amenities.inspect
+			        if amenities.index("^") == nil
+			          amenity = Amenity.where(unit_id: unit.id).first_or_initialize
+			          amenity.provider_amenity_id = amenities
+			          amenity.save
+			          puts '*********************** u' , amenity
+			        else
+			          amenities = amenities.split("^")
+			          amenities.each do |a|
+			            amenity = Amenity.where(unit_id: unit.id).first_or_initialize
+			            amenity.provider_amenity_id = a
+			            amenity.save
+			            puts '*********************** l' , amenity
+			          end
+			        end
+			      end
 
-	        amenities = r["Amenities"]
-	        puts '*********************** a' , amenities.inspect
-	        if amenities.index("^") == nil
-	          amenity = Amenity.where(unit_id: unit.id).first_or_initialize
-	          amenity.provider_amenity_id = amenities
-	          amenity.save
-	          puts '*********************** u' , amenity
-	        else
-	          amenities = amenities.split("^")
-	          amenities.each do |a|
-	            amenity = Amenity.where(unit_id: unit.id).first_or_initialize
-	            amenity.provider_amenity_id = a
-	            amenity.save
-	            puts '*********************** l' , amenity
-	          end
-	        end
-	      end
-
-	    end
+			    end
+			else
+				Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."  
+			end
+		rescue => e 
+			Thread.current[:errors] = e.message
+		end
   	end
 
   	def import_yardirentcafe_units
-	    request_type = "floorplan"
-	    company_code = credentials.c_code
-	    property_code = credentials.p_code
+  		begin
+		    request_type = "floorplan"
+		    company_code = credentials.c_code
+		    property_code = credentials.p_code
 
-	    response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
-	    response = JSON.parse(response.body)
-
-	    response.each do |r|
-	      puts '-----------------' , r
-	      #fp = Floorplan.new(provider: "yardirentcafe",community_id: 1)
-	      fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
-	      fp.property_id = r["PropertyId"]
-	      fp.provider_floorplan_id = r["FloorplanId"]
-	      fp.name = r["FloorplanName"]
-	      fp.unit_count = r[""]
-	      fp.units_available = r[""]
-	      fp.bedrooms = r["Beds"]
-	      fp.bathrooms = r["Baths"]
-	      if r["MinimumSQFT"].present?
-	        fp.square_feet = r["MinimumSQFT"]
-	      elsif r["SQFT"].present?
-	        fp.square_feet = r["SQFT"]
-	      end
-	      fp.market_rent = r["MinimumRent"]
-	      fp.deposit = r["MinimumDeposit"]
-	      fp.save
-	    end
+		    response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
+		    response = JSON.parse(response.body)
+		    if response[0]["Error"].nil?
+			    response.each do |r|
+			      puts '-----------------' , r
+			      #fp = Floorplan.new(provider: "yardirentcafe",community_id: 1)
+			      fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
+			      fp.property_id = r["PropertyId"]
+			      fp.provider_floorplan_id = r["FloorplanId"]
+			      fp.name = r["FloorplanName"]
+			      fp.unit_count = r[""]
+			      fp.units_available = r[""]
+			      fp.bedrooms = r["Beds"]
+			      fp.bathrooms = r["Baths"]
+			      if r["MinimumSQFT"].present?
+			        fp.square_feet = r["MinimumSQFT"]
+			      elsif r["SQFT"].present?
+			        fp.square_feet = r["SQFT"]
+			      end
+			      fp.market_rent = r["MinimumRent"]
+			      fp.deposit = r["MinimumDeposit"]
+			      fp.save
+			    end
+			else
+				Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."    
+			end
+	    rescue => e 
+			Thread.current[:errors] = e.message
+		end
   	end
 
   	def set_availabilty_date(available_date)

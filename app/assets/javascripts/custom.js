@@ -36,7 +36,7 @@ $(".import_data").on("click",function(e){
 
 setTimeout(function() {
     $('.alert').fadeOut('slow');
-}, 1000); // <-- time in milliseconds
+}, 10000); // <-- time in milliseconds
 
 //below code have drag n drop functionality.
 var holder = document.getElementById('holder');
