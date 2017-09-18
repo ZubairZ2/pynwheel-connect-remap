@@ -59,7 +59,7 @@ class YardiRentCafeService < BaseService
 
 			    end
 			else
-				Thread.current[:errors] = "Invalid credentials.Please enter correct one and try again."  
+				Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."  
 			end
 		rescue => e 
 			Thread.current[:errors] = e.message
@@ -96,7 +96,7 @@ class YardiRentCafeService < BaseService
 			      fp.save
 			    end
 			else
-				Thread.current[:errors] = "Invalid credentials.Please enter correct one and try again."    
+				Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."    
 			end
 	    rescue => e 
 			Thread.current[:errors] = e.message
