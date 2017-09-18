@@ -18,6 +18,7 @@
                 %tr
                   %th{:width => "79"} Sr #
                   %th Number
+                  -#%th Floor Plan
                   %th Rent
                   %th Availability
                   %th Actions
@@ -26,6 +27,7 @@
                   %tr
                     %td= index+1
                     %td= u.number
+                    -#%td= u.floorplan.name
                     %td= u.min_rent
                     %td= u.availability
                     %td

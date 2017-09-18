@@ -39,6 +39,8 @@ gem "roo", "~> 2.7.0"
 gem "font-awesome-rails"
 # Environment variables
 gem 'figaro'
+# Table editing in-place
+gem 'best_in_place', '~> 3.0.1'
 # For Pagination
 gem 'kaminari'
 gem 'execjs'

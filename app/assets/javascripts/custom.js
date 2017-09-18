@@ -1,5 +1,8 @@
 $(document).ready(function(e){
 
+    /* Activating Best In Place */
+    jQuery(".best_in_place").best_in_place();
+
 var headertext = [],
     headers = document.querySelectorAll("#miyazaki th"),
     tablerows = document.querySelectorAll("#miyazaki th"),

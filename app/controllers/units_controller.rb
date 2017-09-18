@@ -32,14 +32,17 @@ class UnitsController < ApplicationController
   end
 
   def update
-    if @unit.update(unit_params)
-      flash[:notice] = "Unit updated successfully."
-      redirect_to community_units_path(:community_id=>@community.id)
-    else
-      flash[:notice] = @unit.errors.full_messages.join(',')
-      render :edit
+    respond_to do |format|
+      if @unit.update(unit_params)
+        format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+        format.json { respond_with_bip(@unit) }
+      else
+        format.html { render :action => "edit", :notice => @unit.errors.full_messages.join(',') }
+        format.json { respond_with_bip(@unit) }
+      end
     end
   end
+
   def destroy
     @unit.destroy
     flash[:notice] = "Unit deleted successfully."
