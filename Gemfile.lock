@@ -496,6 +496,8 @@ GEM
     excon (0.59.0)
     execjs (2.7.0)
     ffi (1.9.18)
+    figaro (1.1.1)
+      thor (~> 0.14)
     fog-aws (1.4.1)
       fog-core (~> 1.38)
       fog-json (~> 1.0)
@@ -679,6 +681,7 @@ DEPENDENCIES
   carrierwave-base64
   coffee-rails (~> 4.2)
   execjs
+  figaro
   fog-aws
   font-awesome-rails
   haml

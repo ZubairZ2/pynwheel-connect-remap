@@ -37,6 +37,8 @@ gem 'savon', '~> 2.11.0'
 gem "roo", "~> 2.7.0"
 # To add font awesome
 gem "font-awesome-rails"
+# Environment variables
+gem 'figaro'
 # For Pagination
 gem 'kaminari'
 gem 'execjs'
@@ -47,6 +49,7 @@ gem "breadcrumbs_on_rails"
 gem 'carrierwave-base64'
 gem 'aws-sdk', '~> 3'
 gem "fog-aws", group: :production
+
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
