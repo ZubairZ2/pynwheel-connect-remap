@@ -53,4 +53,46 @@ class Community < ApplicationRecord
     credential.present?
   end
 
+  def connect_to_provider
+    case data_provider
+      when "psi"
+        connect_to_psi
+      when "yardirentcafe"
+        connect_to_yardirentcafe
+      when "realpagesvc"
+        connect_to_realpagesvc
+      when "yardi"
+        connect_to_yardi
+    end
+  end
+
+  def connect_to_psi
+    psi_connection_service = PsiConnectionService.new(credential.attributes)
+    psi_connection_service.perform
+  end
+
+  def connect_to_yardirentcafe
+    yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
+    yardi_rent_cafe_connection_service.perform
+  end
+
+  def connect_to_realpagesvc
+    real_page_svc_connection_service = RealPageSvcConnectionService.new(credential.attributes)
+    real_page_svc_connection_service.perform
+  end
+
+  def connect_to_yardi
+    credential.url.include?("20") ? yardi2_service : yardi4_service
+  end
+
+  def yardi2_service
+    yardi2_connection_service = Yardi2ConnectionService.new(credential.attributes)
+    yardi2_connection_service.perform
+  end
+
+  def yardi4_service
+    yardi4_connection_service = Yardi4ConnectionService.new(credential.attributes)
+    yardi4_connection_service.perform
+  end
+
 end
