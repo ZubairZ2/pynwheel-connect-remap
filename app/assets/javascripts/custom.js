@@ -25,7 +25,7 @@ $("li").on("click", function (e) {
     $(this).addClass("active")
 })
 
-$("#company_logo,#community_logo").change(function(){
+$("#company_logo,#community_logo,#user_avatar").change(function(){
     readURL(this);
 });
 

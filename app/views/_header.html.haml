@@ -13,45 +13,34 @@
     %a.sidebar-toggle{"data-toggle" => "push-menu", :href => "#", :role => "button"}
       %span.sr-only Toggle navigation
     .navbar-custom-menu
-      %ul.nav.navbar-nav
-        %li.search-box
-          / search form
-          %form#sidebar-form.sidebar-form{:action => "#", :method => "get"}
-            .input-group
-              %input.form-control{:name => "q", :placeholder => "Search...", :type => "text"}/
-              %span.input-group-btn
-                %button#search-btn.btn.btn-flat{:name => "search", :type => "submit"}
-                  %i.fa.fa-search
-          / /.search form
-        %li
-          %a{"data-toggle" => "control-sidebar", :href => "#"}
-            %i.fa.fa-gear
-        %li.dropdown.user.user-menu
-          %a.dropdown-toggle{"data-toggle" => "dropdown", :href => "#"}
-            %img.user-image{:alt => "User Image", :src => "/assets/user8-128x128.jpg"}/
-            %span.hidden-xs John Henderson
-            %i.fa.fa-angle-down
-          %ul.dropdown-menu
-            / User image
-            %li.user-header
-              %img.img-circle{:alt => "User Image", :src => "/assets/user8-128x128.jpg"}/
-              %p
-                Alexander Pierce - Web Developer
-                %small Member since Nov. 2012
-            / Menu Body
-            %li.user-body
-              .row
-                .col-xs-4.text-center
-                  %a{:href => "#"} Followers
-                .col-xs-4.text-center
-                  %a{:href => "#"} Sales
-                .col-xs-4.text-center
-                  %a{:href => "#"} Friends
-              / /.row
-            / Menu Footer
-            %li.user-footer
-              .pull-left
-                %a.btn.btn-default.btn-flat{:href => "#"} Profile
-              .pull-right
-                %a.btn.btn-default.btn-flat{:href => "#"} Sign out
-/ End Header Section
+      - if user_signed_in?  
+        %ul.nav.navbar-nav
+          %li.search-box
+            / search form
+            %form#sidebar-form.sidebar-form{:action => "#", :method => "get"}
+              .input-group
+                %input.form-control{:name => "q", :placeholder => "Search...", :type => "text"}/
+                %span.input-group-btn
+                  %button#search-btn.btn.btn-flat{:name => "search", :type => "submit"}
+                    %i.fa.fa-search
+            / /.search form
+          %li
+            %a{"data-toggle" => "control-sidebar", :href => "#"}
+              %i.fa.fa-gear
+          %li.dropdown.user.user-menu
+            %a.dropdown-toggle{"data-toggle" => "dropdown", :href => "#"}
+              %img.user-image{:alt => "User Image", :src => current_user.avatar.present? ? current_user.avatar.url : "/assets/user8-128x128.jpg"}/
+              %span.hidden-xs= current_user.name 
+              %i.fa.fa-angle-down
+            %ul.dropdown-menu
+              / User image
+              %li.user-header
+                %img.img-circle{:alt => "User Image", :src => current_user.avatar.present? ? current_user.avatar.url : "/assets/user8-128x128.jpg"}/
+                %p
+                  = current_user.name 
+                  %small Member since #{current_user.created_at.strftime("%b")}. #{current_user.created_at.strftime("%Y")}
+              %li.user-footer
+                .pull-left
+                  = link_to "Profile", edit_user_path(current_user), :class=>"btn btn-default btn-flat"
+                .pull-right
+                  = link_to "Sign Out", destroy_user_session_path,:class=>"btn btn-default btn-flat",method: :delete

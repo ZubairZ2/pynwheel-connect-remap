@@ -51,6 +51,8 @@ gem "breadcrumbs_on_rails"
 gem 'carrierwave-base64'
 gem 'aws-sdk', '~> 3'
 gem "fog-aws", group: :production
+gem 'devise'
+gem 'cancancan', '~> 2.0'
 
 
 group :development, :test do

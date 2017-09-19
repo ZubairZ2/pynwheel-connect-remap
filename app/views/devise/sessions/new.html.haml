@@ -1,0 +1,32 @@
+- content_for :title, "Login - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Log 
+          %span In
+      = form_for(resource, as: resource_name, url: session_path(resource_name),:html=>{:class=>"form-horizontal"}) do |f|    
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Email
+                  %span Specify email here	
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Password
+                  %span Specify password here	
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autocomplete: "off"      	      
+              - if devise_mapping.rememberable?		
+                .form-group
+                  = f.check_box :remember_me 
+                  = f.label :remember_me 
+        .box-footer
+          = f.submit "LOG IN", :class=>"btn btn-success pull-right" 
+:javascript
+  $("form").validationEngine();                   
