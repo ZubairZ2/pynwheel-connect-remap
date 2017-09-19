@@ -14,9 +14,9 @@
     .wrapper
       = render partial: "/header"
       - unless controller_name == "home" || controller_name == "companies"
-        - if controller_name == "communities" &&  user_signed_in? && controller_name != "users"
+        - if controller_name == "communities" &&  user_signed_in?
           = render partial: "/sidemenu_communities"
-        - elsif user_signed_in? && controller_name != "users"
+        - elsif user_signed_in? 
           = render partial: "/side_menu"
       .content-wrapper
         = render partial: "/messages"

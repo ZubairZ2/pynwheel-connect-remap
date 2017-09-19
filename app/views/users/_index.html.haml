@@ -1,0 +1,28 @@
+/ Start Panel left Side
+.col-lg-8.col-md-12
+  .row
+    .col-md-12
+      %h4.title Users
+  .box.box-widget.panel-box
+    .box-header
+      
+      .row
+        .col-md-12
+          %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+            %thead
+              %tr
+                %th{:width => "79"} Sr #
+                %th First Name
+                %th Last Name
+                %th Role
+                %th Actions
+            %tbody
+              - @users.each_with_index  do |u,index|
+                %tr
+                  %td= index+1
+                  %td= u.first_name
+                  %td= u.last_name
+                  %td= u.role
+                  %td
+                    %a.text-success{:href => "/employees/#{u.id}/edit"}
+                      %i.fa.fa-edit

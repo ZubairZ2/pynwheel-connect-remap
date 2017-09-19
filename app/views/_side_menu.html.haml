@@ -24,14 +24,14 @@
           %i.fa.fa-tv
           %span Design
       %li.treeview{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
-        %a{:href => "#{community_floorplans_path(Community.first)}"}
+        %a{:href => "#{community_floorplans_path(current_community)}"}
           %i.fa.fa-columns
           %span Appartments
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
-            = link_to "Floor Plans", community_floorplans_path(params[:community_id])
+            = link_to "Floor Plans", community_floorplans_path(current_community)
           %li
             %a{:href => "#"} Floor Plan Amenity Images
       %li.treeview{:class=>"#{controller_name =='units' ? 'active' : ''}"}
@@ -42,7 +42,7 @@
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='units' ? 'active' : ''}"}
-            = link_to "Units", community_units_path(params[:community_id])
+            = link_to "Units", community_units_path(current_community)
           %li
             %a{:href => "#"} Unit Amenity Images
       %li.treeview
@@ -84,7 +84,11 @@
           %i.fa.fa-star
           %span Favorites
       %li
-        =  link_to community_settings_path(params[:community_id]) do     
+        = link_to employees_path do 
+          %i.fa.fa-user
+          %span Users    
+      %li
+        =  link_to community_settings_path(current_community) do     
           %i.fa.fa-gears
           %span Settings
   / /.sidebar

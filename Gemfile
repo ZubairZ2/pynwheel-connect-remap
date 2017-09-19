@@ -52,6 +52,7 @@ gem 'carrierwave-base64'
 gem 'aws-sdk', '~> 3'
 gem "fog-aws", group: :production
 gem 'devise'
+gem 'devise_invitable'
 gem 'cancancan', '~> 2.0'
 
 

@@ -1,0 +1,37 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Role
+    %span Select role here	
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control"} 
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Email
+    %span Specify email here	
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    First Name
+    %span Specify first_name here	
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :first_name, :class=>"form-control validate[required]", :placeholder=>"First Name" 
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Last Name
+    %span Specify last_name here	
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name"  
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Upload Image
+    %span
+      Upload image of this
+      %br/
+      floor plan.
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .select-img.mb-20
+      .select-img-img= image_tag f.object.avatar.present? ? f.object.avatar.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+    %span.btn.btn-default.black-button.btn-sm.btn-file
+      Select Image
+      = f.file_field :avatar 

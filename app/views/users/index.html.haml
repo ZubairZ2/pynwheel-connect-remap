@@ -1,0 +1,20 @@
+- content_for :title, "Users - Pynwheel"
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-columns
+        Users
+    .row
+      #users-index
+        = render 'index'
+      .col-lg-4.col-md-12
+        .row
+          .col-md-12
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "/employees/new"}
+                %i.fa.fa-plus-circle
+                ADD USER
+         
+
+  
