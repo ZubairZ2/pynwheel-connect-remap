@@ -25,7 +25,7 @@ $("li").on("click", function (e) {
     $(this).addClass("active")
 })
 
-$("#company_logo,#community_logo").change(function(){
+$("#company_logo,#community_logo,#user_avatar").change(function(){
     readURL(this);
 });
 
@@ -49,7 +49,9 @@ var holder = document.getElementById('holder');
             files = e.dataTransfer.files;
                 if (files.length > 0){
                     for (var i = 0; i < files.length; i++) {
-                      readImageSrc(files[i]);  
+                      if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){   
+                        readImageSrc(files[i]);  
+                      }
                     }
                 }
                 else{
@@ -118,7 +120,9 @@ $(document).ready(function () {
     $("#mutiple-files").change(function(){
         var files = $(this).prop("files")
         for (var i = 0; i < files.length; i++) {
-            readImageSrc(files[i]);
+            if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+                readImageSrc(files[i]);
+            }
         } 
     });
 });

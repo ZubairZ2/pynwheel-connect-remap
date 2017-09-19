@@ -1,5 +1,5 @@
 
-/ Main content
+- content_for :title, "Home - Pynwheel"
 .container
   %section
     .row
@@ -9,10 +9,11 @@
           All communities are listed here.
         %p.mb-30
           This Admin feature allows you to directly access any community in the system
-      .col-md-6
-        .mt-35
-          %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
-            List all companies
+      - if can? :read, Company     
+        .col-md-6
+          .mt-35
+            %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
+              List all companies
 
     .box.box-widget.panel-box
       #new-search-area

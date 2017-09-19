@@ -1,4 +1,5 @@
 class CompaniesController < ApplicationController
+  load_and_authorize_resource
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :root_path
   before_action :set_company , only: [:edit,:update,:destroy]
