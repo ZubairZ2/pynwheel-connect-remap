@@ -210,13 +210,15 @@ function readyJsOnAjaxCall(){
 
 function showDataTables(){
     $('#miyazaki.table').DataTable({
-        "ordering": false
+        "ordering": false,
+        "stateSave": true
     });
     $('#communities.table').DataTable({
         initComplete : function() {
             $("#communities_filter").detach().appendTo('#new-search-area');
         },
         "ordering": false,
+        "stateSave": true,
         "info": false, //Dont display info e.g. "Showing 1 to 4 of 4 entries"
         "paging": false, //Dont want paging
         language: {
@@ -229,6 +231,7 @@ function showDataTables(){
             $("#companies_filter").detach().appendTo('#new-search-area');
         },
         "ordering": false,
+        "stateSave": true,
         "info": false, //Dont display info e.g. "Showing 1 to 4 of 4 entries"
         "paging": false, //Dont want paging
         language: {
