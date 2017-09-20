@@ -16,6 +16,16 @@ body{
 	text-align:left;
 	margin-left:10px;
 }
+.logo-lg{
+	color: #fff;
+	font-size: 20px;
+	text-transform: uppercase;
+	font-weight: 600;
+}
+.logo-lg span{
+  position: relative;
+  top: 3px;
+}
 .skin-blue .main-header .logo:hover{
 	background-color:transparent;
 }
@@ -610,6 +620,89 @@ table#communities tbody tr td{
 }
 #no-sidemenu .breadcrumb{
     display: none;
+}
+
+/*Login page css*/
+.login-bg{
+	background:#33434b;
+	padding:7% 0;
+	position:relative;
+}
+.fa-caret-down{
+	position:absolute;
+	top:-13px;
+	left:49%;
+	color:#33434b;
+	font-size:36px;
+	font-family: 'FontAwesome';
+    content: "\f0d7";
+}
+.login-top{}
+.login-top p{
+	font-size:13px;
+	color:#cccccc;
+	margin-bottom:0;
+	margin-top:15px;
+}
+.login-from{
+	background:#2c3b42;
+	position:relative;
+	padding:90px 0 7% 0;
+	font-family: 'Open Sans', sans-serif;
+	color:#b7b7b7;
+
+}
+.login-from a{
+	color:#b7b7b7;
+}
+.login-from a:hover{
+	color:#FFF;
+}
+.login-from .checkbox{
+	padding-top:10px;
+	padding-bottom:10px;
+}
+.login-from h3{
+	font-size:20px;
+	font-weight:300;
+	color:#FFF;
+	font-family: 'Open Sans', sans-serif;
+}
+.login-from form{
+	margin-top:30px;
+}
+.login-from .copy-right{
+	color:#FFF;
+	margin-top:35px;
+}
+.login-from .btn{
+	background:#008bd2;
+	text-transform:uppercase;
+	padding-top:8px;
+	padding-bottom:8px;
+	box-shadow: 1px 1px 8px -1px rgba(0, 0, 0, 0.35);
+}
+.login-from .form-group{
+	position:relative;
+}
+.login-from .form-group input{
+	padding-left:50px;
+	padding-top:12px;
+	padding-bottom:12px;
+	height:40px;
+	font-size:13px;
+	color:#949494;
+	font-weight:300;
+}
+.login-from .form-group .fa{
+	position:absolute;
+	left:0px;
+	top:10px;
+	height:20px;
+	width:40px;
+	border-right:1px solid #949494;
+	line-height:20px;
+	text-align:center;
 }
 
 @media only screen and (min-width: 991px) and (max-width: 1280px)  {
