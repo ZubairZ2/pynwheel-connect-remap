@@ -1,0 +1,24 @@
+- content_for :title, "Invite User - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Invite  
+          %span User
+      = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1   
+              - resource.class.invite_key_fields.each do |field|
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Email
+                    %span Specify email here
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.text_field field, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true   
+        .box-footer
+          = link_to "CANCEL", employees_path, :class=>"btn btn-default pull-right"
+          = f.submit "SEND INVITATION", :class=>"btn btn-success pull-right" 
+:javascript
+  $("form").validationEngine();                      
