@@ -9,14 +9,24 @@
       = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
         .box-body
           .row
-            .col-lg-9.col-lg-offset-1   
-              - resource.class.invite_key_fields.each do |field|
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Email
-                    %span Specify email here
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.text_field field, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true   
+            .col-lg-9.col-lg-offset-1 
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Company
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select :role, options_for_select(@companies.collect{|c| [c.name,c.id]},f.object.company_id),{},{class: "form-control"}   
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Role
+                   
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control"}   
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Email
+                  
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true   
         .box-footer
           = link_to "CANCEL", employees_path, :class=>"btn btn-default pull-right"
           = f.submit "SEND INVITATION", :class=>"btn btn-success pull-right" 

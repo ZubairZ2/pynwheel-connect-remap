@@ -35,6 +35,10 @@ class UsersController < ApplicationController
 		end 
 	end
 
+	def profile
+		@user = User.find params[:employee_id]
+	end
+
 	private
 
 	def set_user
