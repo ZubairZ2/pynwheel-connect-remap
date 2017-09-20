@@ -8,7 +8,7 @@
     / logo for regular state and mobile devices
     %span.logo-lg
       %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}
-      %span Riverstone
+      %span= @community.present? ? @community.company.name : (@company.present? ? @company.name : "pynwheel")
   %nav.navbar.navbar-static-top
     / Sidebar toggle button
     %a.sidebar-toggle{"data-toggle" => "push-menu", :href => "#", :role => "button"}
