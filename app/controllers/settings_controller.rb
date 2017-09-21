@@ -2,6 +2,7 @@
 	add_breadcrumb "Home", :root_path
     before_action :set_community
 	def index
+		authorize! :add_settings,current_user
 		add_breadcrumb "Settings", community_settings_path(@community)
 		@communities = Community.select(:id,:name)
 	end

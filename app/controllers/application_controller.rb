@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
-  helper_method :current_community
   before_action :configure_permitted_parameters, if: :devise_controller?
+  helper_method :current_community
+  helper_method :current_company
   def current_community
   	if params[:community_id].present?
 	  	@community ||= Community.find params[:community_id]
@@ -8,6 +9,10 @@ class ApplicationController < ActionController::Base
 		  @community = Community.first
 	  end  	
   end	
+
+  def current_company
+    @company ||= current_user.company
+  end
   protect_from_forgery with: :exception
   rescue_from CanCan::AccessDenied do |exception|
     respond_to do |format|

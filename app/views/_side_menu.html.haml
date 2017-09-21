@@ -83,13 +83,15 @@
         %a{:href => "#"}
           %i.fa.fa-star
           %span Favorites
-      %li
-        = link_to employees_path do 
-          %i.fa.fa-user
-          %span Users    
-      %li
-        =  link_to community_settings_path(current_community) do     
-          %i.fa.fa-gears
-          %span Settings
+      - if can? :manage, current_user    
+        %li
+          = link_to employees_path do 
+            %i.fa.fa-user
+            %span Users  
+      - if can? :add_settings, current_user      
+        %li
+          =  link_to community_settings_path(current_community) do     
+            %i.fa.fa-gears
+            %span Settings
   / /.sidebar
 / End menu nav left Section

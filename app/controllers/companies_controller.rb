@@ -5,7 +5,11 @@ class CompaniesController < ApplicationController
   before_action :set_company , only: [:edit,:update,:destroy]
 
   def index
-    @companies = Company.all
+    if current_user.is_super_admin?
+      @companies = Company.all
+    else
+      @companies = Company.where(id: current_user.company_id)
+    end
   end
 
   def new

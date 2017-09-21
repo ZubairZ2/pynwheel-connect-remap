@@ -1,6 +1,7 @@
 class InvitationsController < Devise::InvitationsController
 
    def new
+     authorize! :invite,current_user		
    	 @companies = Company.all
      super
    end

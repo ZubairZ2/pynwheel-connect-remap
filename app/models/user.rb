@@ -4,7 +4,8 @@ class User < ApplicationRecord
   mount_uploader :avatar, AvatarUploader
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
-  ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]       
+  ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
+  belongs_to :company     
 
   def name
   	if first_name.nil? and last_name.nil?
@@ -14,12 +15,12 @@ class User < ApplicationRecord
   	end
   end  
 
-  def is_admin?
-    role == "admin"
+  def is_super_admin?
+    role == "super admin"
   end
 
-  def is_normal_user?
-    role == "user"
+  def is_company_admin?
+    role == "company admin"
   end
 
 end
