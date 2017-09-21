@@ -1,66 +1,32 @@
 - content_for :title, "Login - Pynwheel"
 .login-bg
   .container.text-center.login-top
-    %a{:href => ""}
-      %img{:alt => "", :src => "images/pynwheel-logo.png", :title => ""}/
+    %a{:href => "/"}
+      = image_tag "pynwheel-logo.png"
     %p Dear user, log in to access the admin area!
 .login-from
   .container
     %i.fa.fa-caret-down
     .row
       .col-md-3.col-lg-4
-        .col-md-6.col-lg-4
-          .text-center
-            %h3 Login to your account
-          = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
-            .form-group
-              = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
-              %i.fa.fa-user
-            .form-group
-              = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autocomplete: "off"
-              %i.fa.fa-key
-            .checkbox
-              - if devise_mapping.rememberable?   
-                %label
-                  = f.check_box :remember_me 
-                  Remember
-              %a.pull-right{:href => "#"} Forgot Password ?
-            = f.submit "Login", :class => "btn btn-primary btn-block" 
+      .col-md-6.col-lg-4
+        .text-center
+          %h3 Login to your account
+        = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
+          .form-group
+            = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
+            %i.fa.fa-user
+          .form-group
+            = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autocomplete: "off"
+            %i.fa.fa-key
+          .checkbox
+            - if devise_mapping.rememberable?   
+              %label
+                = f.check_box :remember_me 
+                Remember
+            = link_to "Forgot Password ?", new_user_password_path,class: "pull-right"
+          = f.submit "Login", :class => "btn btn-primary btn-block" 
         .text-center
           %p.copy-right © 2017 Pynwheel
-
-
-
-
-
-/ %section
-/   .content
-/     .box.box-info.add-plan.mt-20
-/       .box-header
-/         %h3.box-title
-/           Log 
-/           %span In
-/       = form_for(resource, as: resource_name, url: session_path(resource_name),:html=>{:class=>"form-horizontal"}) do |f|    
-/         .box-body
-/           .row
-/             .col-lg-9.col-lg-offset-1
-/               .form-group
-/                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-/                   Email
-/                   %span Specify email here	
-/                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-/                   = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
-/               .form-group
-/                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-/                   Password
-/                   %span Specify password here	
-/                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-/                   = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autocomplete: "off"      	      
-/               - if devise_mapping.rememberable?		
-/                 .form-group
-/                   = f.check_box :remember_me 
-/                   = f.label :remember_me 
-/         .box-footer
-/           = f.submit "LOG IN", :class=>"btn btn-success pull-right" 
 :javascript
-  $("form").validationEngine();                   
+  $("form").validationEngine();                     

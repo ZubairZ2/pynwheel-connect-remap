@@ -4,7 +4,7 @@
 	def index
 		authorize! :add_settings,current_user
 		add_breadcrumb "Settings", community_settings_path(@community)
-		@communities = Community.select(:id,:name)
+		@communities = current_company.communities
 	end
 	private
 	def set_community

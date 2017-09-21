@@ -1,54 +1,36 @@
 - content_for :title, "Set Password - Pynwheel"
-%section
-  .content
-    .box.box-info.add-plan.mt-20
-      .box-header
-        %h3.box-title
-          Set Password  
-          %span User
-      = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => { :method => :put } do |f|
-        = f.hidden_field :invitation_token   
-        .box-body
-          .row
-            .col-lg-9.col-lg-offset-1   
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  First Name
-                  
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :first_name, :class=>"form-control validate[required]", :placeholder=>"First Name"
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Last Name
-                   
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name" 
-              %br/     
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Upload Image
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .select-img.mb-20
-                    .select-img-img= image_tag "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image" 
-                  %span.btn.btn-default.black-button.btn-sm.btn-file
-                    Select Image
-                    = f.file_field :avatar   
-              - if f.object.class.require_password_on_accepting  
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Password
-                    
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autocomplete: "off"    
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Password Confirmation
-                    
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.password_field :password_confirmation, :class=>"form-control validate[required]", :placeholder=>"Password Confirmation", autocomplete: "off"    
-                                
-        .box-footer
-          = link_to "CANCEL", employees_path, :class=>"btn btn-default pull-right"
-          = f.submit "SET MY PASSWORD", :class=>"btn btn-success pull-right" 
+.login-bg
+  .container.text-center.login-top
+    %a{:href => "/"}
+      = image_tag "pynwheel-logo.png"
+    %p Set your profile!
+.login-from
+  .container
+    %i.fa.fa-caret-down
+    .row
+      .col-md-3.col-lg-4
+      .col-md-6.col-lg-4
+        .text-center
+          %h3 Set your profile
+        = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => { :method => :put } do |f|
+          = f.hidden_field :invitation_token 
+          .form-group
+            = f.text_field :first_name, :class=>"form-control validate[required]", :placeholder=>"First Name"
+            %i.fa.fa-user  
+          .form-group
+            = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name"  
+            %i.fa.fa-user 
+          .form-group
+            = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true
+            %i.fa.fa-envelope   
+          .form-group
+            = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autocomplete: "off" 
+            %i.fa.fa-envelope 
+          .form-group
+            = f.password_field :password_confirmation, :class=>"form-control validate[required]", :placeholder=>"Password Confirmation", autocomplete: "off"
+            %i.fa.fa-envelope       
+          = f.submit "Save Changes", :class=>"btn btn-primary btn-block"
+        .text-center
+          %p.copy-right © 2017 Pynwheel    
 :javascript
-  $("form").validationEngine();                      
+  $("form").validationEngine();                                         
