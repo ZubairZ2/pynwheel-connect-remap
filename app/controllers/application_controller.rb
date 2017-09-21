@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::Base
+  layout :layout_by_resource
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
   helper_method :current_company
@@ -23,6 +24,14 @@ class ApplicationController < ActionController::Base
   end
   protected
 
+  def layout_by_resource
+    if devise_controller?
+      "users"
+    else
+      "application"
+    end
+  end
+    
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:invite, keys: [:role,:company_id])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
