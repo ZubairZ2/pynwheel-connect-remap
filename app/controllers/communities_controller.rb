@@ -1,9 +1,9 @@
 class CommunitiesController < ApplicationController
   load_and_authorize_resource
-  add_breadcrumb "Home", :root_path
-  add_breadcrumb "Companies", :companies_path
-  add_breadcrumb "Communities", :communities_path
   before_action :set_community , only: [:edit,:update,:destroy]
+  add_breadcrumb "Home", :root_path
+  add_breadcrumb "Companies", :companies_path, except: [:import_page]
+  add_breadcrumb "Communities", :communities_path, except: [:import_page]
 
   def index
     #@communities = Community.page(params[:page]).per(10)
