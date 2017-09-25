@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   resources :communities do
     resources :floorplans
     resources :units
+    get :import_page
     get :import
     get :credentials
     get :test_connection

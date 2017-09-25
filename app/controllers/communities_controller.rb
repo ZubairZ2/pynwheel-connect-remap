@@ -59,11 +59,11 @@ class CommunitiesController < ApplicationController
         redirect_to community_floorplans_path(:community_id=>@community.id)
       else
         flash[:notice] = Thread.current[:errors].join(',') 
-        redirect_to communities_path
+        redirect_to community_import_page_path(current_community)
       end
     else
       flash[:notice] = "Please enter credentials in settings before importing data."
-      redirect_to communities_path
+      redirect_to community_import_page_path(current_community)
     end
   end
 
@@ -73,7 +73,7 @@ class CommunitiesController < ApplicationController
       render :json => @community.connect_to_provider
     else
       flash[:notice] = "Please enter credentials in settings before importing data."
-      redirect_to communities_path  
+      redirect_to community_import_page_path(current_community) 
     end
   end
 
@@ -82,6 +82,10 @@ class CommunitiesController < ApplicationController
     unless @community.credential.present?
       @community.build_credential
     end
+  end
+
+  def import_page
+    add_breadcrumb "Import Unit Data", community_import_page_path(current_community)
   end
 
   private

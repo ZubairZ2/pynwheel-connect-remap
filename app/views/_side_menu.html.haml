@@ -42,7 +42,7 @@
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='units' ? 'active' : ''}"}
-            = link_to "Units", community_units_path(current_community)
+            = link_to "Units", community_units_path(current_community)  
           %li
             %a{:href => "#"} Unit Amenity Images
       %li.treeview
@@ -88,10 +88,17 @@
           = link_to employees_path do 
             %i.fa.fa-user
             %span Users  
-      - if can? :add_settings, current_user      
-        %li
-          =  link_to community_settings_path(current_community) do     
-            %i.fa.fa-gears
-            %span Settings
+      %li.treeview{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
+        %a{:href => "javascript::;"}
+          %i.fa.fa-gears
+          %span Settings
+          %span.pull-right-container
+            %i.fa.fa-angle-right.pull-right
+        %ul.treeview-menu 
+          - if can? :add_settings, current_user   
+            %li{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
+              = link_to "Add Credentials",community_settings_path(current_community)
+          %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
+            = link_to "Import Unit Data" , community_import_page_path(current_community)      
   / /.sidebar
 / End menu nav left Section
