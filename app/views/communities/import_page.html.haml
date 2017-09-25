@@ -1,4 +1,30 @@
 - content_for :title, "Import Unit Data - Pynwheel"
-.divLoading.hidden
-= link_to "Import Unit Data" , community_import_path(current_community) , :class=>"btn btn-primary import_data"
-= link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-default"
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-columns
+        = @community.name.capitalize
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-6
+            %h4.title Test Data Connection 
+        .box.box-widget.panel-box.pl-20.pr-20.pb-20
+          .box-header
+            %p
+              This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
+            = link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-primary"
+        .row
+          .col-md-6
+            %h4.title Import Vendor Data
+        .box.box-widget.panel-box.pl-20.pr-20.pb-20
+          .box-header
+            %p
+              This option allows you to import vendor data based on the settings in the data section.
+            .callout.callout-danger
+              %p
+                %i.fa.fa-warning
+                This action will either create new, or update existing, Unit and Floor plan records, based on the vendor's record IDs.
+            = link_to "Import Unit Data" , community_import_path(current_community) , :class=>"btn btn-primary import_data"
