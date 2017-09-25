@@ -22,12 +22,11 @@ class YardiRentCafeService < BaseService
 			      unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
 
 			      unit.property_id = r["PropertyId"]
-			      unit.name = r["ApartmentName"]
-			      unit.number = r["ApartmentName"]
+			      unit.unit_type = r["ApartmentName"]
+			      unit.marketing_name = r["ApartmentName"]
 			      unit.floorplan_id = r["FloorplanId"]
-			      unit.avg_rent = r["MinimumRent"]
-			      unit.min_rent = r["MinimumRent"]
-			      unit.max_rent = r["MaximumRent"]
+			      unit.market_rent = r["MinimumRent"]
+			      unit.effective_rent = r["MinimumRent"]
 			      unit.availability = "Unoccupied"
 			      if r["AvailableDate"] != ""
 			        unit.availability = "Unoccupied"

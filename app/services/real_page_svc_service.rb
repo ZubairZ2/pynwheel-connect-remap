@@ -125,12 +125,11 @@ class RealPageSvcService < BaseService
           #unit = Unit.new(provider: "realpagesvc",community_id: community_id)
           unit.property_id = u["SiteID"]
           #unit.provider_unit_id = u["UnitID"]
-          unit.name = u["UnitNumber"]
-          unit.number = u["UnitNumber"]
+          unit.unit_type = u["UnitNumber"]
+          unit.marketing_name = u["UnitNumber"]
           unit.floorplan_id = u["FloorplanID"]
-          unit.avg_rent = u["BaseRentAmount"]
-          unit.min_rent = u["BaseRentAmount"]
-          unit.max_rent = u["BaseRentAmount"]
+          unit.market_rent = u["BaseRentAmount"]
+          unit.effective_rent = u["BaseRentAmount"]
           unit.availability = u["AvailableBit"] == "true" ? "Unoccupied" : "Occupied"
           if u["AvailableDate"].present?
             unit.available_date = u["AvailableDate"]

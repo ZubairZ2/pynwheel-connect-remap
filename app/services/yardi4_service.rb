@@ -40,12 +40,11 @@ class Yardi4Service < BaseService
       #unit = Unit.new(provider: "yardi4",community_id: credentials.community_id)
       unit.property_id = property_id
       #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
-      unit.name = u["Units"]["Unit"]["Identification"]["IDValue"]
-      unit.number = u["Units"]["Unit"]["Identification"]["IDValue"]
+      unit.unit_type = u["Units"]["Unit"]["Identification"]["IDValue"]
+      unit.marketing_name = u["Units"]["Unit"]["Identification"]["IDValue"]
       unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
-      unit.avg_rent = 0 #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
-      unit.min_rent = u["Units"]["Unit"]["MarketRent"]
-      unit.max_rent = u["Units"]["Unit"]["MarketRent"]
+      unit.market_rent = 0 #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
+      unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
 
       is_available = false
       vacate_date = Date.today

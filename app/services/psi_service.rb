@@ -51,13 +51,12 @@ class PsiService < BaseService
 	    #unit = Unit.new(provider: "psi",community_id: credentials.community_id)
 	    #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
 	    unit.property_id = property_id
-	    unit.name = u["Units"]["Unit"]["UnitType"]
-	    unit.number = u["Units"]["Unit"]["MarketingName"].to_i
+	    unit.unit_type = u["Units"]["Unit"]["UnitType"]
+	    unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
 
 	    unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-	    unit.avg_rent = u["Units"]["Unit"]["MarketRent"]
-	    unit.min_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
-	    unit.max_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
+	    unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+	    unit.effective_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
 	    unit.availability = u["Availability"]["VacancyClass"]
 	    if u["Availability"]["VacateDate"].present?
 	      if  u["Availability"]["VacateDate"]["@year"].present?
