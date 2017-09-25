@@ -7,7 +7,7 @@ class FloorplansController < ApplicationController
   def index
     #@floorplans = @community.floorplans.page(params[:page]).per(10)
     @floorplans = @community.floorplans
-    @communities = Community.select(:id,:name)
+    @communities = current_company.communities
     add_breadcrumb "Floor plans", community_floorplans_path(@community)
   end
 

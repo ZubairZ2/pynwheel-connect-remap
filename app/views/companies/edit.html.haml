@@ -14,6 +14,7 @@
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
         .box-footer
-          = f.submit "Save Changes", :class=>"btn btn-success pull-right"
+          = link_to "CANCEL" , companies_path, :class=>"btn btn-default pull-right"
+          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"
 
 

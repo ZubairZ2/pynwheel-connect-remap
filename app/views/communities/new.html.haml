@@ -14,5 +14,6 @@
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
         .box-footer
-          = f.submit "ADD COMMUNITY", :class=>"btn btn-success pull-right"
+          = link_to "CANCEL" , communities_path, :class=>"btn btn-default pull-right"
+          = f.submit "ADD COMMUNITY", :class=>"btn btn-success pull-right mr-10"
 

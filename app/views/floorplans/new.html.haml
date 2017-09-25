@@ -16,7 +16,8 @@
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
         .box-footer
-          = f.submit "ADD FLOOR PLAN", :class=>"btn btn-success pull-right"
+          = link_to "CANCEL" , community_floorplans_path(:community_id=>current_community.id), :class=>"btn btn-default pull-right"
+          = f.submit "ADD FLOOR PLAN", :class=>"btn btn-success pull-right mr-10"
 
 
 :javascript

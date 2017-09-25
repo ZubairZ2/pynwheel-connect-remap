@@ -5,7 +5,7 @@ class UnitsController < ApplicationController
   def index
     #@units = @community.units.page(params[:page]).per(10)
     @units = @community.units
-    @communities = Community.select(:id,:name)
+    @communities = current_company.communities
     add_breadcrumb "Units", community_units_path(@community)
   end
 

@@ -3,19 +3,14 @@ class Ability
 
   def initialize(user)
     if user.is_super_admin?
-        can :manage, Company
-        can :manage, Community
-        can :manage, Floorplan
-        can :manage, Unit
-        can :manage, User
-        can :add_settings,User  
-        can :invite, User
+        can :manage, :all
     elsif user.is_company_admin?
         can :manage, Community, company_id: user.company_id	
         can :manage, Floorplan
         can :manage, Unit
         can :read, Company, id: user.company_id	
-        can :update, Company, id: user.company_id	   
+        can :update, Company, id: user.company_id	 
+        can :profile ,User, id: user.id  
     end
   end
 end
