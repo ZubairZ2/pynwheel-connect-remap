@@ -28,7 +28,7 @@ class UsersController < ApplicationController
 
 	def update
 		if @user.update(user_params)
-			flash[:notice] = "User Updated Successfully."
+			flash[:notice] = "Updated Successfully."
 			redirect_to company_employees_path(current_company)
 		else
 			flash[:error] = @user.errors.full_messages.join(',')
