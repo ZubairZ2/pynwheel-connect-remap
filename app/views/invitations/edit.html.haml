@@ -15,10 +15,10 @@
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => { :method => :put } do |f|
           = f.hidden_field :invitation_token 
           .form-group
-            = f.text_field :first_name, :class=>"form-control validate[required]", :placeholder=>"First Name"
+            = f.text_field :first_name, :class=>"form-control validate[required,custom[onlyLetterSp]", :placeholder=>"First Name"
             %i.fa.fa-user  
           .form-group
-            = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name"  
+            = f.text_field :last_name, :class=>"form-control validate[required,custom[onlyLetterSp]", :placeholder=>"Last Name"  
             %i.fa.fa-user 
           .form-group
             = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true
