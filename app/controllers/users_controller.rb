@@ -3,7 +3,7 @@ class UsersController < ApplicationController
 	before_action :authenticate_user!
 	before_action :set_user, only: [:edit,:update]
 	def index
-		@users = User.all
+		@users = current_company.users
 	end
 
 	def new
@@ -15,7 +15,7 @@ class UsersController < ApplicationController
 		@user.password = Devise.friendly_token.first(8)
 		if @user.save
 			flash[:notice] = "User Created Successfully."
-			redirect_to employees_path
+			redirect_to company_employees_path(current_company)
 		else
 			flash[:error] = @user.errors.full_messages.join(',')
 			render :new
@@ -29,7 +29,7 @@ class UsersController < ApplicationController
 	def update
 		if @user.update(user_params)
 			flash[:notice] = "User Updated Successfully."
-			redirect_to employees_path
+			redirect_to company_employees_path(current_company)
 		else
 			flash[:error] = @user.errors.full_messages.join(',')
 			render :edit

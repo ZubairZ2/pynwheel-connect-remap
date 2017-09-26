@@ -229,7 +229,7 @@ class RealPageSvcService < BaseService
             end
           end
           if best_price.present? && unit.present?
-            unit.first.update_attributes(min_rent: best_price)
+            unit.first.update_attributes(effective_rent: best_price)
             puts " **** price updated *** "
           end
         end

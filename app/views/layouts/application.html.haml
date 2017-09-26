@@ -16,6 +16,8 @@
       - unless controller_name == "home" || controller_name == "companies"
         - if (controller_name == "communities" && sidemenu_communities_actions.include?(params[:action])) &&  user_signed_in?
           = render partial: "/sidemenu_communities"
+        - elsif controller_name == "users"  &&  user_signed_in?
+          = render partial: "/sidemenu_communities"  
         - elsif user_signed_in? 
           = render partial: "/side_menu"
       .content-wrapper
