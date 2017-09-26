@@ -27,12 +27,12 @@
               .row
                 .col-md-12.col-lg-9.col-xs-9
                   %h4 Upload File
-                  %p.pt-10.mb-20 Upload the File here, then drag  drop it to the image column in the table.
+                  %p.pt-10.mb-20 Upload the File here, then drag  drop it to the image column in the table.Only jpeg,jpg and png files are allowed.
                 .col-md-12.col-lg-3.col-xs-3
                   %img{:alt => "", :src => "/assets/upload-image.jpg", :style => "max-width:100%;", :title => ""}
               %span.btn.btn-success.btn-file
                 %i.fa.fa-plus
-                All Files
+                Add Files
                 %input#mutiple-files{:type => "file",:multiple=>true}
               %table.table-striped.table.upload-image#pre-save-floorplan-images-table
                 %tr{:valign => "middle"}
