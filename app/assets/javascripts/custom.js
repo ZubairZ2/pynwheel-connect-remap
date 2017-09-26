@@ -66,6 +66,20 @@ var holder = document.getElementById('holder');
                 }
             }
     }
+
+// below lines prevent image on broswer other than selected area
+window.addEventListener("dragover",function(e){
+  e = e || event;
+  e.preventDefault();
+},false);
+
+window.addEventListener("drop",function(e){
+  e = e || event;
+  e.preventDefault();
+},false);
+
+//
+
 });
 
 function allowDrop(ev) {

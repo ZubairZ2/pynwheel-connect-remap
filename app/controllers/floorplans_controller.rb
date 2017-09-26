@@ -37,7 +37,7 @@ class FloorplansController < ApplicationController
     respond_to do |format|
       if @floorplan.update(floorplan_params)
         format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
-        message = '<div class="alert alert-success">'+@floorplan.name+' image uploaded successfully.</div>'
+        message = '<div class="alert alert-info">'+@floorplan.name+' image uploaded successfully.</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       else
         format.html { render :edit }
