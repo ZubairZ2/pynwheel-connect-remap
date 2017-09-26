@@ -6,14 +6,14 @@
         %h3.box-title
           Update 
           %span Profile
-      = form_for @user,url: employee_path(@user),:html=>{:class=>"form-horizontal"} do |f|   
+      = form_for @user,url: company_employee_path(current_company,@user),:html=>{:class=>"form-horizontal"} do |f|   
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
               = render 'form' , :f=>f            	      
               
         .box-footer
-          = link_to "CANCEL", employees_path, :class=>"btn btn-default pull-right"
+          = link_to "CANCEL", company_employees_path(current_company), :class=>"btn btn-default pull-right"
           = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right" 
 
 :javascript
