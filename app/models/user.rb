@@ -23,4 +23,16 @@ class User < ApplicationRecord
     role == "company admin"
   end
 
+  def is_community_manager?
+    role == "community manager"
+  end
+
+  def is_region_admin?
+    role == "region admin"
+  end
+
+  def is_member?
+    role == "member"
+  end
+
 end
