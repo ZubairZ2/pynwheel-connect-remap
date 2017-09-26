@@ -16,7 +16,7 @@ class CommunitiesController < ApplicationController
   end
 
   def create
-    @community = Community.new(community_params)
+    @community = current_company.communities.new(community_params)
     if @community.save
       flash[:notice] = "Community created successfully."
       redirect_to communities_path
