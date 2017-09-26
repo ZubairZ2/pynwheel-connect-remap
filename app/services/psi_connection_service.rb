@@ -1,6 +1,6 @@
 class PsiConnectionService < BaseService
  def perform
-    
+    begin
         url = credentials.url
         password = credentials.password
         username = credentials.username
@@ -22,5 +22,8 @@ class PsiConnectionService < BaseService
         }.to_json,
         :headers => { 'Content-Type' => 'application/json' } )
         JSON.parse(response.body)
+    rescue=>e
+      false
+    end    
  end	
 end

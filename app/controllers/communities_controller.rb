@@ -70,9 +70,14 @@ class CommunitiesController < ApplicationController
   def test_connection
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
-      render :json => @community.connect_to_provider
+      if json = @community.connect_to_provider
+        render :json => json
+      else
+        flash[:error] = "Please enter correct credentials in settings before importing data."
+        redirect_to community_import_page_path(current_community) 
+      end
     else
-      flash[:notice] = "Please enter credentials in settings before importing data."
+      flash[:error] = "Please enter credentials in settings before importing data."
       redirect_to community_import_page_path(current_community) 
     end
   end

@@ -1,6 +1,7 @@
 class RealPageSvcConnectionService < BaseService
 	def perform
-	  url = REALPAGE_URL
+    begin
+	    url = REALPAGE_URL
       soap_action = REALPAGE_UNIT_ACTION
       pmc_id = credentials.pmc_id
       site_id = credentials.site_id
@@ -34,5 +35,8 @@ class RealPageSvcConnectionService < BaseService
                       </soapenv:Envelope>
                       ')
       Hash.from_xml(response.body) 
+     rescue
+      false
+     end 
 	end
 end
