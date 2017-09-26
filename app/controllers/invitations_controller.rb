@@ -6,7 +6,7 @@ class InvitationsController < Devise::InvitationsController
    end
 
    def after_invite_path_for(resource)
-    employees_path
+     company_employees_path(current_company)
    end
 
 end
