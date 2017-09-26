@@ -34,7 +34,7 @@ class CommunitiesController < ApplicationController
     respond_to do |format|
       if @community.update(community_params)
         format.html { redirect_to communities_path, notice: 'Community updated successfully.' }
-        message = '<div class="alert alert-success">'+@community.name+' updated successfully.</div>'
+        message = '<div class="alert alert-info">'+@community.name+' updated successfully.</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       else
         format.html { render :new }
