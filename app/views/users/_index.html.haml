@@ -16,5 +16,5 @@
             %td= u.last_name
             %td= u.role
             %td
-              %a.text-success{:href => "/employees/#{u.id}/edit"}
+              %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
                 %i.fa.fa-edit

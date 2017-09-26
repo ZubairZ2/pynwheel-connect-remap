@@ -156,12 +156,12 @@ class PsiService < BaseService
         psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
         psi_units.each do |u|
           unit_no = u[1]["@attributes"]["UnitNumber"].to_i
-          unit = Unit.where(number: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
+          unit = Unit.where(marketing_name: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
           if unit.present?
             unit = unit.first
             if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
               puts '*****************************', u[1]["Rent"]["@attributes"]["MinRent"]
-              unit.update_attribute(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
+              unit.update_attribute(:effective_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
             end
           end
         end

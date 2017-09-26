@@ -82,12 +82,7 @@
       %li
         %a{:href => "#"}
           %i.fa.fa-star
-          %span Favorites
-      - if can? :manage, current_user    
-        %li{:class=>"#{controller_name =='users' ? 'active' : ''}"}
-          = link_to employees_path do 
-            %i.fa.fa-user
-            %span Users  
+          %span Favorites 
       %li.treeview{:class=>"#{controller_name =='settings' || (controller_name =='communities' && params[:action] =='import_page') ? 'active' : ''}"}
         %a{:href => "javascript::;"}
           %i.fa.fa-gears

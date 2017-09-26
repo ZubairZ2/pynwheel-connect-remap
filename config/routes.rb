@@ -2,11 +2,12 @@ Rails.application.routes.draw do
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
-  resources :employees, :controller => 'users' do
-    get :profile
-  end
+  
   resources :companies do
     resources :communities
+    resources :employees, :controller => 'users' do
+      get :profile
+    end
   end
   resources :communities do
     resources :floorplans

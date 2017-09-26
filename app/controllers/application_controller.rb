@@ -12,8 +12,16 @@ class ApplicationController < ActionController::Base
   end	
 
   def current_company
-    @company ||= current_user.company
+    if params[:company_id].present?
+      session[:company_id] = params[:company_id]
+      @company = Company.find params[:company_id]
+    elsif session[:company_id].present?  
+      @company = Company.find session[:company_id]
+    else
+      @company = current_community.company 
+    end
   end
+
   protect_from_forgery with: :exception
   rescue_from CanCan::AccessDenied do |exception|
     respond_to do |format|

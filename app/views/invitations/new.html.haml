@@ -13,15 +13,14 @@
         .text-center
           %h3 Send Invitation
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
-          .form-group
-            = f.select :role, options_for_select(@companies.collect{|c| [c.name,c.id]},f.object.company_id),{},{class: "form-control"}
+          = f.hidden_field :company_id, :value=>current_company.id
           .form-group
             = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control"} 
           .form-group
             = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true
             %i.fa.fa-envelope    
           = f.submit "Send Ivitation", :class=>"btn btn-primary btn-block" 
-          = link_to "Cancel", employees_path, :class=>"btn btn-default btn-block"
+          = link_to "Cancel", company_employees_path(current_company), :class=>"btn btn-default btn-block"
         .text-center
           %p.copy-right © 2017 Pynwheel    
 :javascript
