@@ -4,7 +4,8 @@ class User < ApplicationRecord
   mount_uploader :avatar, AvatarUploader
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
-  ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
+  #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
+  ROLES = ["super admin" , "company admin"]  
   belongs_to :company     
 
   def name
