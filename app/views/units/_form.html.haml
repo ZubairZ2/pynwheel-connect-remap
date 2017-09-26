@@ -5,7 +5,7 @@
     .row
       .col-sm-6.col-lg-6.col-md-3.col-xs-12
         = f.select :floorplan_id, options_for_select(@community.floorplans.collect{|f| [f.name,f.id]}),{},{ :class=>"form-control"}
-        %small Floorplan 
+        %small Floor plan 
       .col-sm-6.col-lg-6.col-md-3.col-xs-12
         = f.select :availability, options_for_select(["Occupied","Unoccupied"]),{},{ :class=>"form-control"} 
         %small Availability 
