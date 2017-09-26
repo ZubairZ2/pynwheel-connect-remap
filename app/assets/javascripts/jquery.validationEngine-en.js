@@ -198,11 +198,11 @@
 	            },
 	            "onlyLatitude": {
       				"regex": /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/,
-      				"alertText": "* Latitude only"
+      				"alertText": "* Latitude only upto 6 decimal places"
     			},
     			"onlyLongitude": {
       				"regex": /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/,
-      				"alertText": "* Longitude only"
+      				"alertText": "* Longitude only upto 6 decimal places"
     			},
     			"onlyNumber": {
     				"regex":  /^[0-9\ ]+$/,
