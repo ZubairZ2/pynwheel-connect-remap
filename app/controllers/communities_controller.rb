@@ -90,6 +90,7 @@ class CommunitiesController < ApplicationController
   end
 
   def import_page
+    add_breadcrumb "Settings", "##"
     add_breadcrumb "Import Unit Data", community_import_page_path(current_community)
   end
 
