@@ -50,7 +50,7 @@ gem 'jquery-datatables-rails', '~> 3.4.0'
 gem "breadcrumbs_on_rails"
 gem 'carrierwave-base64'
 gem 'aws-sdk', '~> 3'
-gem "fog-aws", group: :production
+gem "fog"
 gem 'devise'
 gem 'devise_invitable'
 gem 'cancancan', '~> 2.0'

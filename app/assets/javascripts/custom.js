@@ -265,7 +265,7 @@ function readImageSrc(file){
   }
 
    function saveFloorPlanImage(src,floorplan_id){
-    var community_id = $('#communities_at_floorplans').val();
+    //var community_id = $('#communities_at_floorplans').val();
     $.ajax({
         url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
         type: "PUT",
@@ -281,7 +281,7 @@ function readImageSrc(file){
    }
 
    function deleteFloorPlanImage(floorplan_id){
-    var community_id = $('#communities_at_floorplans').val();
+    //var community_id = $('#communities_at_floorplans').val();
     $.ajax({
         url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
         type: "PUT",
