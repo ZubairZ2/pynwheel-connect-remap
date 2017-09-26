@@ -15,13 +15,13 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.text_field :min_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"Rent"
+        = f.text_field :effective_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"Rent"
         %small Base Rent
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
         = f.text_field :building, :class=>"form-control", :placeholder=>"Building"
         %small Building
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.text_field :number, :class=>"form-control validate[required]", :placeholder=>"Unit Number"
+        = f.text_field :marketing_name, :class=>"form-control validate[required]", :placeholder=>"Marketing Name"
         %small Unit Number  
 
 :javascript
