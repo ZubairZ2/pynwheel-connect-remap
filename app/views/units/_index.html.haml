@@ -33,7 +33,7 @@
                     %td
                       -#%a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                       -#  %i.fa.fa-edit
-                      %a.text-danger{:href => "#{community_unit_path(@community,u)}","data-method"=>:delete,"data-confirm"=>"Are you sure?"}
+                      %a.text-danger{"data-href" => "#{community_unit_path(@community,u)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                         %i.fa.fa-trash
 
         

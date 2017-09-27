@@ -38,7 +38,7 @@
                   %td
                     %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
                       %i.fa.fa-edit
-                    %a.text-danger{:href => "/communities/#{@community.id}/floorplans/#{f.id}","data-method"=>:delete,"data-confirm"=>"Are you sure?"}
+                    %a.text-danger{"data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                       %i.fa.fa-trash
 
       

@@ -78,7 +78,11 @@ window.addEventListener("drop",function(e){
   e.preventDefault();
 },false);
 
-//
+//below lines change href on delete anchor tag in delete bootstrap modal
+
+$('#confirm-delete').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+});
 
 });
 

@@ -38,5 +38,5 @@
               %td
                 %a.text-success{:href => "/companies/#{company.id}/edit"}
                   %i.fa.fa-edit
-                %a.text-danger{:href => "/companies/#{company.id}","data-method"=>:delete}
+                %a.text-danger{"data-href" => "/companies/#{company.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                   %i.fa.fa-trash

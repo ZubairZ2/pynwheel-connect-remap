@@ -39,7 +39,7 @@
                         %td
                           %a.text-success{:href => "/communities/#{f.id}/edit"}
                             %i.fa.fa-edit
-                          %a.text-danger{:href => "/communities/#{f.id}","data-method"=>:delete}
+                          %a.text-danger{"data-href" => "/communities/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                             %i.fa.fa-trash
                           %a.btn-info.btn-xs.mr-5
                             Update now

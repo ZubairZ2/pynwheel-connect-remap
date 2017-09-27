@@ -1,0 +1,10 @@
+#confirm-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Delete Record
+      .modal-body
+        Are you sure?
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        %a.btn.btn-danger.btn-ok{"data-method"=>"delete"} Delete
