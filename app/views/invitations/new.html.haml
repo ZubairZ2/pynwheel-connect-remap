@@ -15,7 +15,7 @@
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
           = f.hidden_field :company_id, :value=>current_company.id
           .form-group
-            = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control"} 
+            = f.select :role, options_for_select(User::ROLES,f.object.role),{:include_blank => 'Select Admin'},{class: "form-control validate[required]"} 
           .form-group
             = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true
             %i.fa.fa-envelope    

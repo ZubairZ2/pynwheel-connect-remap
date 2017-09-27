@@ -1,7 +1,7 @@
 #flash-message
   - flash.each do |name, msg|
-    = content_tag :div, msg, class: "alert alert-info"
+    = content_tag :div, msg, class: "#{flash_class(name).to_s}"
 - if defined? model   
   - if model.errors.any?
     - model.errors.full_messages.each do |msg|
-      = content_tag :div, msg, class: "alert alert-info"  
+      = content_tag :div, msg, class: "alert alert-warning"  

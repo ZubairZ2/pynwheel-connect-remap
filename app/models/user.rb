@@ -5,7 +5,7 @@ class User < ApplicationRecord
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
   #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
-  ROLES = ["super admin" , "company admin"]  
+  ROLES = ["Super admin" , "Company admin"]  
   belongs_to :company     
 
   def name
@@ -17,11 +17,11 @@ class User < ApplicationRecord
   end  
 
   def is_super_admin?
-    role == "super admin"
+    role == "Super admin"
   end
 
   def is_company_admin?
-    role == "company admin"
+    role == "Company admin"
   end
 
   def is_community_manager?

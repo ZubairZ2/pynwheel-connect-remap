@@ -116,13 +116,18 @@ function drop(ev) {
 function readURL(input) {
 
     if (input.files && input.files[0]) {
-        var reader = new FileReader();
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
+          var reader = new FileReader();
 
-        reader.onload = function (e) {
-            $('#preview-image').attr('src', e.target.result);
-        }
+          reader.onload = function (e) {
+              $('#preview-image').attr('src', e.target.result);
+          }
 
-        reader.readAsDataURL(input.files[0]);
+          reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $('#image-upload-warning').modal('show');
+      }
     }
 }
 

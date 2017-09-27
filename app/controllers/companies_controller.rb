@@ -23,7 +23,7 @@ class CompaniesController < ApplicationController
       flash[:notice] = "Company created successfully."
       redirect_to companies_path
     else
-      flash[:notice] = @company.errors.full_messages.join(',')
+      flash[:error] = @company.errors.full_messages.join(',')
       render :new
     end
   end
@@ -37,7 +37,7 @@ class CompaniesController < ApplicationController
       flash[:notice] = "Company updated successfully."
       redirect_to companies_path
     else
-      flash[:notice] = @company.errors.full_messages.join(',')
+      flash[:error] = @company.errors.full_messages.join(',')
       render :edit
     end
   end

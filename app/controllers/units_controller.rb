@@ -4,7 +4,7 @@ class UnitsController < ApplicationController
   before_action :set_unit, only: [:edit,:update,:destroy]
   def index
     #@units = @community.units.page(params[:page]).per(10)
-    @units = @community.units
+    @units = @community.units.order(unit_type: :desc)
     @communities = current_company.communities
     add_breadcrumb "Units", community_units_path(@community)
   end
@@ -21,7 +21,7 @@ class UnitsController < ApplicationController
       flash[:notice] = "Unit created successfully."
       redirect_to community_units_path(:community_id=>@community.id)
     else
-      flash[:notice] = @unit.errors.full_messages.join(',')
+      flash[:error] = @unit.errors.full_messages.join(',')
       render :new
     end
   end
@@ -37,7 +37,7 @@ class UnitsController < ApplicationController
         format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
         format.json { respond_with_bip(@unit) }
       else
-        format.html { render :action => "edit", :notice => @unit.errors.full_messages.join(',') }
+        format.html { render :action => "edit", :error => @unit.errors.full_messages.join(',') }
         format.json { respond_with_bip(@unit) }
       end
     end

@@ -21,7 +21,7 @@ class CommunitiesController < ApplicationController
       flash[:notice] = "Community created successfully."
       redirect_to communities_path
     else
-      flash[:notice] = @community.errors.full_messages.join(',')
+      flash[:error] = @community.errors.full_messages.join(',')
       render :new
     end
   end
@@ -34,11 +34,11 @@ class CommunitiesController < ApplicationController
     respond_to do |format|
       if @community.update(community_params)
         format.html { redirect_to communities_path, notice: 'Community updated successfully.' }
-        message = '<div class="alert alert-info">'+@community.name+' updated successfully.</div>'
+        message = '<div class="alert alert-success">'+@community.name+' updated successfully.</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       else
         format.html { render :new }
-        message = '<div class="alert alert-danger">'+@community.errors.full_messages.join(',')+'</div>'
+        message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       end
     end
@@ -58,11 +58,11 @@ class CommunitiesController < ApplicationController
         flash[:notice] = "Data is imported successfully."
         redirect_to community_floorplans_path(:community_id=>@community.id)
       else
-        flash[:notice] = Thread.current[:errors].join(',') 
+        flash[:error] = Thread.current[:errors].join(',') 
         redirect_to community_import_page_path(current_community)
       end
     else
-      flash[:notice] = "Please enter credentials in settings before importing data."
+      flash[:error] = "Please enter credentials in settings before importing data."
       redirect_to community_import_page_path(current_community)
     end
   end
