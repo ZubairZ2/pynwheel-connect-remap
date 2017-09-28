@@ -132,7 +132,9 @@ function readURL(input) {
           reader.readAsDataURL(input.files[0]);
       }
       else{
+        $(input).val('');
         $('#image-upload-warning').modal('show');
+        //console.log($(input).val());
       }
     }
 }

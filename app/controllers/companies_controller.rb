@@ -3,7 +3,7 @@ class CompaniesController < ApplicationController
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :root_path
   before_action :set_company , only: [:edit,:update,:destroy]
-
+  before_action :check_current_company , except: [:new,:create]
   def index
     if current_user.is_super_admin?
       @companies = Company.all
@@ -46,6 +46,10 @@ class CompaniesController < ApplicationController
     @company.destroy
     flash[:notice] = "Company deleted successfully."
     redirect_to companies_path
+  end
+
+  def check_current_company
+    redirect_to new_company_path if current_company.nil?
   end
 
   private

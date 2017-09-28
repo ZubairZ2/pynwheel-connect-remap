@@ -41,7 +41,7 @@ class UsersController < ApplicationController
 	end
 
 	def redirect_path
-	  params[:action_name].present? && params[:action_name] == "profile" ? company_employee_profile_path(current_company,current_user) : company_employees_path(current_company)
+	  params[:action_name].present? && params[:action_name] == "profile" ? root_path : company_employees_path(current_company)
 	end
 
 	def render_action

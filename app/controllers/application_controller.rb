@@ -12,13 +12,17 @@ class ApplicationController < ActionController::Base
   end	
 
   def current_company
-    if params[:company_id].present?
-      session[:company_id] = params[:company_id]
-      @company = Company.find params[:company_id]
-    elsif session[:company_id].present?  
-      @company = Company.find session[:company_id]
-    else
-      @company = current_community.company 
+    begin
+      if params[:company_id].present?
+        session[:company_id] = params[:company_id]
+        @company = Company.find params[:company_id]
+      elsif session[:company_id].present?  
+        @company = Company.find session[:company_id]
+      elsif !current_community.nil?
+        @company = current_community.company   
+      end
+    rescue
+      @company = Company.first
     end
   end
 

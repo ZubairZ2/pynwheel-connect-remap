@@ -8,7 +8,7 @@
     / logo for regular state and mobile devices
     %span.logo-lg
       %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}
-      %span= current_company.name
+      %span= current_company.name rescue ''
   %nav.navbar.navbar-static-top
     / Sidebar toggle button
     %a.sidebar-toggle{"data-toggle" => "push-menu", :href => "#", :role => "button"}
@@ -42,6 +42,7 @@
                   %small Member since #{current_user.created_at.strftime("%b")}. #{current_user.created_at.strftime("%Y")}
               %li.user-footer
                 .pull-left
-                  = link_to "Profile", company_employee_profile_path(current_company,current_user), :class=>"btn btn-default btn-flat"
+                  - unless current_company.nil?
+                    = link_to "Profile", company_employee_profile_path(current_company,current_user), :class=>"btn btn-default btn-flat"
                 .pull-right
                   = link_to "Sign Out", destroy_user_session_path,:class=>"btn btn-default btn-flat",method: :delete
