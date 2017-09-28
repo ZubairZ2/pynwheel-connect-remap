@@ -28,13 +28,25 @@ class UsersController < ApplicationController
 
 	def update
 		if @user.update(user_params)
-			flash[:notice] = "Updated Successfully."
-			redirect_to company_employees_path(current_company)
+			flash[:notice] = alert_message
+			redirect_to redirect_path
 		else
 			flash[:error] = @user.errors.full_messages.join(',')
-			render :edit
+			render render_action
 		end 
 	end
+
+	def alert_message
+	  params[:action_name].present? && params[:action_name] == "profile" ? "Profile is updated successfully" : "User is updated successfully"
+	end
+
+	def redirect_path
+	  params[:action_name].present? && params[:action_name] == "profile" ? company_employee_profile_path(current_company,current_user) : company_employees_path(current_company)
+	end
+
+	def render_action
+		params[:action_name].present? && params[:action_name] == "profile" ? :profile : :edit
+    end
 
 	def profile
 		@user = User.find params[:employee_id]
