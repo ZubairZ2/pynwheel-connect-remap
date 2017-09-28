@@ -41,8 +41,8 @@ setTimeout(function() {
 //below code have drag n drop functionality.
 var holder = document.getElementById('holder');
     if (holder){
-        holder.ondragover = function () { this.className = 'hover'; return false; };
-        holder.ondragend = function () { this.className = ''; return false; };
+        //holder.ondragover = function () { this.className = 'hover'; return false; };
+        //holder.ondragend = function () { this.className = ''; return false; };
         holder.ondrop = function (e) {
             this.className = '';
             e.preventDefault();
@@ -51,6 +51,9 @@ var holder = document.getElementById('holder');
                     for (var i = 0; i < files.length; i++) {
                       if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){   
                         readImageSrc(files[i]);  
+                      }
+                      else{
+                        $('#image-upload-warning').modal('show');
                       }
                     }
                 }
@@ -149,6 +152,11 @@ $(document).ready(function () {
                 readImageSrc(files[i]);
             }
         } 
+        if(files.length == 1){
+           if(files[0].type != "image/png" || files[0].type != "image/jpeg" || files[0].type != "image/jpg"){ 
+            $('#image-upload-warning').modal('show');
+           } 
+        }
     });
 });
 
