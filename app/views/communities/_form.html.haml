@@ -49,9 +49,3 @@
       .col-sm-6.col-lg-6.col-md-6.col-xs-12
         = f.text_field :longitude, :class=>"form-control validate[required,custom[onlyLongitude]]", :placeholder=>"Longitude"
         %small Longitude
-
-:javascript
-  $("form").validationEngine();
-
-
-

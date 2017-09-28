@@ -40,6 +40,4 @@
       .select-img-img= image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
-      = f.file_field :image
-:javascript
-  $("form").validationEngine();       
+      = f.file_field :image     
