@@ -154,7 +154,7 @@ $(document).ready(function () {
             }
         } 
         if(files.length == 1){
-           if(files[0].type != "image/png" || files[0].type != "image/jpeg" || files[0].type != "image/jpg"){ 
+           if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
             $('#image-upload-warning').modal('show');
            } 
         }
