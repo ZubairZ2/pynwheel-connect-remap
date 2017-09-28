@@ -209,8 +209,8 @@
     				"alertText": "* Numbers only"
                },
                "onlyDecimal": {
-    				"regex":  /^[+-]?\d+(\.\d+)?$/,
-    				"alertText": "* Decimals only"
+    				"regex":  /^[+]?([0-9]+(?:[\.][0-9]*)?|\.[0-9]+)$/,
+    				"alertText": "* Poitive Decimals only"
                }
             };
             

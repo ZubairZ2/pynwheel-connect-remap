@@ -82,6 +82,8 @@ window.addEventListener("drop",function(e){
 
 $('#confirm-delete').on('show.bs.modal', function(e) {
     $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find('#record-name').html('Delete '+$(e.relatedTarget).data('name'));
+    $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
 });
 
 });

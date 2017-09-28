@@ -14,7 +14,7 @@
           %h3 Login to your account
         = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
           .form-group
-            = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
+            = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
             %i.fa.fa-user
           .form-group
             = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autocomplete: "off"
