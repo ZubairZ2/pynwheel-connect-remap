@@ -15,11 +15,11 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.text_field :effective_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"Rent"
+        = f.text_field :effective_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"Rent",:maxlength=>"15"
         %small Base Rent
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.text_field :building, :class=>"form-control", :placeholder=>"Building"
+        = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"20"
         %small Building
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.text_field :marketing_name, :class=>"form-control validate[required]", :placeholder=>"Marketing Name"
+        = f.text_field :marketing_name, :class=>"form-control validate[required]", :placeholder=>"Marketing Name",:maxlength=>"20"
         %small Unit Number           

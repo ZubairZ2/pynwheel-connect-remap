@@ -14,10 +14,10 @@
           %h3 Login to your account
         = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
           .form-group
-            = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
+            = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true 
             %i.fa.fa-user
           .form-group
-            = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autocomplete: "off"
+            = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password",:maxlength=>"50", autocomplete: "off"
             %i.fa.fa-key
           .checkbox
             - if devise_mapping.rememberable?   

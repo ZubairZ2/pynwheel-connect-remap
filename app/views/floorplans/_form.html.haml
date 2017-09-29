@@ -3,13 +3,13 @@
     Floor Plan Name
     %span Specify name here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Floor Plan Name"
+    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Floor Plan Name",:maxlength=>"20"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     External Floor Plan ID
     %span Specify ID here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :provider_floorplan_id, :class=>"form-control validate[required]", :placeholder=>"From 3rd Party Vendor"
+    = f.text_field :provider_floorplan_id, :class=>"form-control validate[required]", :placeholder=>"From 3rd Party Vendor",:maxlength=>"30"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floor Plan Info
@@ -17,16 +17,16 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
-        = f.text_field :square_feet, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of square feet"
+        = f.text_field :square_feet, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of square feet",:maxlength=>"15"
         %small Square Feet
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
-        = f.text_field :bedrooms, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of bedrooms"
+        = f.text_field :bedrooms, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of bedrooms",:maxlength=>"15"
         %small Bedrooms
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
         = f.text_field :bathrooms, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of bathrooms"
-        %small Bathrooms
+        %small Bathrooms,:maxlength=>"15"
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
-        = f.text_field :market_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"0.00"
+        = f.text_field :market_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"0.00",:maxlength=>"15"
         %small Base Rent
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

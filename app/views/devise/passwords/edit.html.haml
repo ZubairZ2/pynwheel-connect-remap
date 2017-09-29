@@ -15,10 +15,10 @@
         = form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| 
           = f.hidden_field :reset_password_token 
           .form-group
-            = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password", autofocus: true ,autocomplete: "off"
+            = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password",:maxlength=>"50", autofocus: true ,autocomplete: "off"
             %i.fa.fa-key
           .form-group
-            = f.password_field :password_confirmation, :class=>"form-control validate[required]", :placeholder=>"Password Confirmation",autocomplete: "off" 
+            = f.password_field :password_confirmation, :class=>"form-control validate[required]", :placeholder=>"Password Confirmation",:maxlength=>"50",autocomplete: "off" 
             %i.fa.fa-key  
           = f.submit "Change my password", :class => "btn btn-primary btn-block" 
         .text-center

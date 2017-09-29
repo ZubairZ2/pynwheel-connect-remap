@@ -3,13 +3,13 @@
     Name
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Company Name"
+    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Company Name",:maxlength=>"30"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email"    
+    = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email" ,:maxlength=>"50"   
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
@@ -21,18 +21,18 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        = f.text_field :city, :class=>"form-control validate[required,custom[onlyLetterSp]]", :placeholder=>"City"
+        = f.text_field :city, :class=>"form-control validate[required,custom[onlyLetterSp]]", :placeholder=>"City",:maxlength=>"20"
         %small City
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        = f.text_field :state, :class=>"form-control validate[required,custom[onlyLetterSp]]", :placeholder=>"State"
+        = f.text_field :state, :class=>"form-control validate[required,custom[onlyLetterSp]]", :placeholder=>"State",:maxlength=>"20"
         %small State
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        = f.text_field :zip, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Zip"
+        = f.text_field :zip, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Zip",:maxlength=>"20"
         %small Zip
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        = f.text_field :phone, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Phone"
+        = f.text_field :phone, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Phone",:maxlength=>"20"
         %small Phone     

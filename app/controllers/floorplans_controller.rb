@@ -1,4 +1,5 @@
 class FloorplansController < ApplicationController
+  before_action :authenticate_user!
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Appartments", "##"
   before_action :set_community

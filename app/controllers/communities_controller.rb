@@ -1,4 +1,5 @@
 class CommunitiesController < ApplicationController
+  before_action :authenticate_user!
   load_and_authorize_resource
   before_action :set_community , only: [:edit,:update,:destroy]
   add_breadcrumb "Home", :root_path

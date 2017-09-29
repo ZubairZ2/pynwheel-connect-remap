@@ -1,4 +1,5 @@
 class UnitsController < ApplicationController
+  before_action :authenticate_user!
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :set_unit, only: [:edit,:update,:destroy]

@@ -12,19 +12,19 @@
     Email
     %span Specify email here	
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email", autofocus: true 
+    = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     First Name
     %span Specify first_name here	
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :first_name, :class=>"form-control validate[required]", :placeholder=>"First Name" 
+    = f.text_field :first_name, :class=>"form-control validate[required]", :placeholder=>"First Name",:maxlength=>"20" 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Last Name
     %span Specify last_name here	
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name"  
+    = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name" ,:maxlength=>"50" 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Image
