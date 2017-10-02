@@ -39,4 +39,12 @@
         
   / End Panel left Side
   :javascript 
-    $('.best_in_place').bind("ajax:success", function () {$('#flash-message').html('<div class="alert alert-success">Unit uploaded successfully.</div>') });
+    $('.best_in_place').bind("ajax:success", function (e) {
+      $('#flash-message').html('<div class="alert alert-success">Unit uploaded successfully.</div>'); 
+    });
+
+    $('.best_in_place').bind("ajax:error", function () {
+      $('#flash-message').html('<div class="alert alert-success">Something went wrong.</div>'); 
+    });
+
+
