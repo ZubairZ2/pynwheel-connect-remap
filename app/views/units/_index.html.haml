@@ -39,12 +39,27 @@
         
   / End Panel left Side
   :javascript 
-    $('.best_in_place').bind("ajax:success", function (e) {
-      $('#flash-message').html('<div class="alert alert-success">Unit uploaded successfully.</div>'); 
+    $('.best_in_place').bind("ajax:success", function () {
+      var field = ""
+      switch($(this).data('bipAttribute')) {
+        case 'effective_rent':
+            field = "Rent"
+            break;
+        case 'floorplan_id':
+            field = "Floor Plan"
+            break;
+        case 'marketing_name':
+            field = 'Marketing Name'
+            break;
+        case 'availability':
+            field = "Availability"
+            break    
+      } 
+      $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>'); 
     });
 
     $('.best_in_place').bind("ajax:error", function () {
-      $('#flash-message').html('<div class="alert alert-success">Something went wrong.</div>'); 
+      $('#flash-message').html('<div class="alert alert-danger">Rent must be greater than 0</div>'); 
     });
 
 
