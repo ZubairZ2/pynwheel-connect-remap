@@ -20,7 +20,7 @@
           %i.fa.fa-home
           %span HomePage
       %li
-        %a{:href => "#"}
+        = link_to community_design_index_path(current_community) do
           %i.fa.fa-tv
           %span Design
       %li.treeview{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
