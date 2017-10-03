@@ -17,5 +17,6 @@ Rails.application.routes.draw do
     get :credentials
     get :test_connection
     resources :settings , only: :index
+    resources :design, only: :index
   end
 end

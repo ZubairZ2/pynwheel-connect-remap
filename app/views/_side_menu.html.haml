@@ -19,7 +19,7 @@
         %a{:href => "#"}
           %i.fa.fa-home
           %span HomePage
-      %li
+      %li{:class=>"#{controller_name =='design' ? 'active' : ''}"}
         = link_to community_design_index_path(current_community) do
           %i.fa.fa-tv
           %span Design
