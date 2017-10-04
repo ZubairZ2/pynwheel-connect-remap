@@ -17,7 +17,7 @@
             %li{:role => "presentation"}
               %a#color-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-color", :role => "tab"} Select Color
             %li{:role => "presentation"}
-              %a{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
+              %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
             %li.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Menu
@@ -170,43 +170,115 @@
                           %i.fa.fa-save>
                             SAVE CHANGES
                 / End Color section
-                #s-font.tab-pane.fade{:role => "tabpanel"}
+            #s-font.tab-pane.fade{:role => "tabpanel"}
+              = form_for @community,:method=>"PUT" do |f|
+                = f.fields_for :design do |d|
                   .row
                     .col-md-12
                       %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
                   .row
-                    .col-lg-12
-                      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-                        Primary Font
-                        %span Select font family .size .weight, alignment, color etc
-                  .row
-                    .col-lg-10
-                      .form-group.mt-30
-                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                          Select Primary Color
-                          %span Select a color
-                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                          .input-group.colorpicker-style.colorpicker-style
-                            .input-group-addon
-                              %i
-                              %input.form-control{:type => "text"}/
-                  .row
-                    .col-lg-10
-                      .form-group.mt-30
-                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                          Select Secondary Color
-                          %span Select a color
-                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                          .input-group.colorpicker-style.colorpicker-style
-                            .input-group-addon
-                              %i
-                              %input.form-control{:type => "text"}/
+                    .col-lg-6
+                      .row
+                        .col-lg-12
+                          %label.control-label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+                            Primary Font
+                            %span Select font family .size .weight, alignment, color etc
+                      .row
+                        .col-lg-8.p-right0
+                          .row
+                            .col-lg-12
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Font Family
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                                  = d.select :primary_font_family , options_for_select(font_families,d.object.primary_font_family),{},{class: "form-control primary-inputs primary_font_family"}
+                          .row
+                            .col-lg-6.p-right0
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Font Size
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
+                                  = d.select :primary_font_size , options_for_select(font_sizes,d.object.primary_font_size),{},{class: "form-control primary-inputs primary_font_size"}
+                            .col-lg-6.p-left0
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Font Weight
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                                  = d.select :primary_font_weight , options_for_select(font_weight,d.object.primary_font_weight),{},{class: "form-control primary-inputs primary_font_weight"}
+                          .row
+                            .col-lg-6.p-right0
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Text align
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
+                                  = d.select :primary_text_align , options_for_select(text_align,d.object.primary_text_align),{},{class: "form-control primary-inputs primary_text_align"}
+                            .col-lg-6.p-left0
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Color
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                                  .input-group.colorpicker-style.colorpicker-style
+                                    .input-group-addon
+                                      %i
+                                      = d.text_field :primary_font_color , class: "form-control primary-inputs primary_font_color"
+                        .col-lg-4
+                          .block-text.margin-bottom-30#primary-font-text
+                            A man bribes a rabbit with wicked dentures to run away with him in a sailboat via an ambulance. Bribing Koalas to remain illegally in one place. Trees anchor me in place. / Your mom drives the ambulance, but the city is farther than it appears.
+                    .col-lg-6.p-left0
+                      .row
+                        .col-lg-12
+                          %label.control-label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+                            Secondary Font
+                            %span Select font family .size .weight, alignment, color etc
+                      .row
+                        .col-lg-8.p-right0
+                          .row
+                            .col-lg-12
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Font Family
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                                  = d.select :secondary_font_family , options_for_select(font_families,d.object.primary_font_family),{},{class: "form-control secondary-inputs secondary_font_family"}
+                          .row
+                            .col-lg-6.p-right0
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Font Size
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
+                                  = d.select :secondary_font_size , options_for_select(font_sizes,d.object.primary_font_size),{},{class: "form-control secondary-inputs secondary_font_size"}
+                            .col-lg-6.p-left0
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Font Weight
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                                  = d.select :secondary_font_weight , options_for_select(font_weight,d.object.primary_font_weight),{},{class: "form-control secondary-inputs secondary_font_weight"}
+                          .row
+                            .col-lg-6.p-right0
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Text align
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
+                                  = d.select :secondary_text_align , options_for_select(text_align,d.object.primary_text_align),{},{class: "form-control secondary-inputs secondary_text_align"}
+                            .col-lg-6.p-left0
+                              .form-group.mt-30
+                                %label.col-sm-12.control-label
+                                  %span Color
+                                .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                                  .input-group.colorpicker-style.colorpicker-style
+                                    .input-group-addon
+                                      %i
+                                      = d.text_field :secondary_font_color , class: "form-control secondary-inputs secondary_font_color"
+                        .col-lg-4
+                          .block-text#secondary-font-text
+                            A man bribes a rabbit with wicked dentures to run away with him in a sailboat via an ambulance. Bribing Koalas to remain illegally in one place. Trees anchor me in place. / Your mom drives the ambulance, but the city is farther than it appears.
                   .row
                     .col-md-12
                       .box-footer.mt-30.pt-15
                         %button.btn.btn-success.pull-right{:type => "submit"}
                           %i.fa.fa-save>
                             SAVE CHANGES
+                / End Font Family section
+
             #profile.tab-pane.fade{:role => "tabpanel"}
               .row
                 .col-md-12
@@ -223,11 +295,17 @@
 :javascript 
   var theme_tab = #{params[:tab].present? && params[:tab] == "theme"}
   var color_tab = #{params[:tab].present? && params[:tab] == "color"}
+  var font_tab = #{params[:tab].present? && params[:tab] == "font"}
   if (theme_tab){
     $('#theme-tab').click();
   }
   if (color_tab){
     $('#color-tab').click();
+  }
+  if (font_tab){
+    $('#font-tab').click();
+    set_primary_font_changes();
+    set_secondary_font_changes();
   }
   
   $('.theme-selection').click(function(){
@@ -236,3 +314,19 @@
     $('.select-theme').removeClass('active-theme');
     $('#'+theme_name+'-theme').addClass('active-theme');
   });
+
+  $('.primary-inputs').change(function(){
+    set_primary_font_changes();
+  });
+
+  $('.secondary-inputs').change(function(){
+    set_secondary_font_changes();
+  });
+
+  function set_primary_font_changes(){
+    $("#primary-font-text").css({"font-family":$('.primary_font_family').val(),"color": $('.primary_font_color').val(),"font-size": $('.primary_font_size').val(),"font-weight": $('.primary_font_weight').val(),"text-align": $('.primary_text_align').val()});
+  }
+
+  function set_secondary_font_changes(){
+    $("#secondary-font-text").css({"font-family":$('.secondary_font_family').val(),"color": $('.secondary_font_color').val(),"font-size": $('.secondary_font_size').val(),"font-weight": $('.secondary_font_weight').val(),"text-align": $('.secondary_text_align').val()});
+  }

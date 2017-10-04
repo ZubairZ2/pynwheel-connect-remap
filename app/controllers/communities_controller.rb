@@ -54,7 +54,10 @@ class CommunitiesController < ApplicationController
       community_design_index_path(@community,tab: 'theme')
     elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_color].present?
       flash[:notice] = 'Colors added successfully.'
-      community_design_index_path(@community,tab: 'color')   
+      community_design_index_path(@community,tab: 'color')
+    elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_font_family].present?
+      flash[:notice] = 'Font changes added successfully.'
+      community_design_index_path(@community,tab: 'font')     
     else
       flash[:notice] = 'Community updated successfully.'
       communities_path
@@ -118,7 +121,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:theme_name,:credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:p_code],:design_attributes=>[:id,:primary_color,:secondary_color])
+    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:theme_name,:credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:p_code],:design_attributes=>[:id,:primary_color,:secondary_color,:primary_font_family,:primary_font_size,:primary_font_weight,:primary_text_align,:primary_font_color,:secondary_font_family,:secondary_font_size,:secondary_font_weight,:secondary_text_align,:secondary_font_color])
   end
 
 end
