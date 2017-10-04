@@ -54,6 +54,7 @@ gem "fog"
 gem 'devise'
 gem 'devise_invitable'
 gem 'cancancan', '~> 2.0'
+gem 'themes_on_rails'
 
 
 group :development, :test do

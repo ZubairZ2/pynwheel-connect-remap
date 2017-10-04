@@ -13,9 +13,9 @@
             %li.active{:role => "presentation"}
               %a#home-tab{"aria-expanded" => "true", "data-toggle" => "tab", :href => "#home", :role => "tab"} Logo Options
             %li{:role => "presentation"}
-              %a{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-theme", :role => "tab"} Select Theme
+              %a#theme-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-theme", :role => "tab"} Select Theme
             %li{:role => "presentation"}
-              %a{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-color", :role => "tab"} Select Color
+              %a#color-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-color", :role => "tab"} Select Color
             %li{:role => "presentation"}
               %a{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
             %li.dropdown{:role => "presentation"}
@@ -30,213 +30,183 @@
           #myTabContent.tab-content.add-plan
             / Start L>ogo Upload section
             #home.tab-pane.fade.active.in{:role => "tabpanel"}
-              .row
-                .col-md-12
-                  %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-              .row
-                .col-lg-10
+              = form_for @community,:method=>"PUT" do |f|
+                .row
+                  .col-md-12
+                    %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                .row
+                  .col-lg-10
+                    .form-group
+                      %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                        Upload Logo
+                        %span Upload site logo to display in page
+                      
+                      
+                .row
+                  .col-lg-10
+                    .form-group
+                      %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                        
+                      
+                      .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                        .select-img.mb-20.mt-30
+                          .select-img-img= image_tag f.object.logo.present? ? f.object.logo.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"      
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = f.file_field :logo          
+                .row
                   .form-group
-                    %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                      Upload Logo
-                      %span Upload site logo to display in page
-                    .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                      .drag-box.mt-15
-                        %span.icon-upload
-                          = image_tag "upload-image.png"
-                      %span.btn.btn-primary.btn-file.mt-30
-                        %i.fa.fa-upload
-                        Upload File
-                        %input#mutiple-files{:multiple => "multiple", :type => "file"}/
-              .row
-                .col-lg-12
-                  .box-footer.mt-30.pt-15
-                    %button.btn.btn-success.pull-right{:type => "submit"}
-                      %i.fa.fa-save>
-                        SAVE CHANGES
+                    
+                .row
+                  .col-lg-12
+                    .box-footer.mt-30.pt-15
+                      %button.btn.btn-success.pull-right{:type => "submit"}
+                        %i.fa.fa-save>
+                          SAVE CHANGES
             / End L>ogo Upload section
             / Start Select theme section
             #s-theme.tab-pane.fade{:role => "tabpanel"}
-              .row
-                .col-md-12
-                  %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-              .row
-                .col-lg-12
-                  %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-                    Select Theme
-                    %span Select a theme from below.
-              .row
-                .col-lg-12
-                  .col-lg-3.col-md-6.col-sm-12
-                    .select-theme.active-theme
-                      .theme-img{:style => "background:url(#{asset_path('theme-image-1.jpg')});"}
-                      .themes-detail
-                        .pull-left
-                          %h4 Futurist
-                        .pull-right
-                          %a{:href => "#"}> View Theme
-                           
-                          %a.btn.btn-success{:href => "#"} Select
-                      %i.fa.fa-check
-                  .col-lg-3.col-md-6.col-sm-12
-                    .select-theme
-                      .theme-img{:style => "background:url(#{asset_path('theme-image-2.jpg')});"}
-                      .themes-detail
-                        .pull-left
-                          %h4 Cubist
-                        .pull-right
-                          %a{:href => "#"}> View Theme
-                           
-                          %a.btn.btn-success{:href => "#"} Select
-                  .col-lg-3.col-md-6.col-sm-12
-                    .select-theme
-                      .theme-img{:style => "background:url(#{asset_path('theme-image-3.jpg')});"}
-                      .themes-detail
-                        .pull-left
-                          %h4 Modernist
-                        .pull-right
-                          %a{:href => "#"}> View Theme
-                           
-                          %a.btn.btn-success{:href => "#"} Select
-                  .col-lg-3.col-md-6.col-sm-12
-                    .select-theme
-                      .theme-img{:style => "background:url(#{asset_path('theme-image-4.jpg')});"}
-                      .themes-detail
-                        .pull-left
-                          %h4 Expressionist
-                        .pull-right
-                          %a{:href => "#"}> View Theme
-                           
-                          %a.btn.btn-success{:href => "#"} Select
-              .row
-                .col-lg-12
-                  %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-                    Company Designs
-                    %span Select a theme from below.
-              .row
-                .col-lg-12
-                  .col-lg-3.col-md-6.col-sm-12
-                    .select-theme
-                      .theme-img{:style => "background:url(#{asset_path('theme-image-1.jpg')});"}
-                      .themes-detail
-                        .pull-left
-                          %h4 Futurist
-                        .pull-right
-                          %a{:href => "#"}> View Theme
-                           
-                          %a.btn.btn-success{:href => "#"} Select
-                  .col-lg-3.col-md-6.col-sm-12
-                    .select-theme
-                      .theme-img{:style => "background:url(#{asset_path('theme-image-1.jpg')});"}
-                      .themes-detail
-                        .pull-left
-                          %h4 Futurist
-                        .pull-right
-                          %a{:href => "#"}> View Theme
-                           
-                          %a.btn.btn-success{:href => "#"} Select
-                  .col-lg-3.col-md-6.col-sm-12
-                    .select-theme
-                      .theme-img{:style => "background:url(#{asset_path('theme-image-1.jpg')});"}
-                      .themes-detail
-                        .pull-left
-                          %h4 Futurist
-                        .pull-right
-                          %a{:href => "#"}> View Theme
-                           
-                          %a.btn.btn-success{:href => "#"} Select
-                  .col-lg-3.col-md-6.col-sm-12
-                    .select-theme
-                      .theme-img{:style => "background:url(#{asset_path('theme-image-1.jpg')});"}
-                      .themes-detail
-                        .pull-left
-                          %h4 Futurist
-                        .pull-right
-                          %a{:href => "#"}> View Theme
-                           
-                          %a.btn.btn-success{:href => "#"} Select
-              .row
-                .col-lg-12
-                  .box-footer.mt-30.pt-15
-                    %button.btn.btn-success.pull-right{:type => "submit"}
-                      %i.fa.fa-save>
-                        SAVE CHANGES
-            / End Select theme section
-            / Start Color section
+              = form_for @community,:method=>"PUT" do |f|
+                .row
+                  .col-md-12
+                    %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                .row
+                  .col-lg-12
+                    %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+                      Select Theme
+                      %span Select a theme from below.
+                .row
+                  .col-lg-12
+                    .col-lg-3.col-md-6.col-sm-12
+                      .select-theme#futurist-theme{:class=>"#{@community.is_futurist? ? 'active-theme' : 'active'}"}
+                        .theme-img{:style => "background:url(#{asset_path('theme-image-1.jpg')});"}
+                        .themes-detail
+                          .pull-left
+                            %h4 Futurist
+                          .pull-right
+                            %a{:href => "##"} View Theme
+                            = f.radio_button :theme_name,"futurist",style: "display: none;" 
+                            %a.btn.btn-success.theme-selection{:href => "javascript::;","data-theme-name"=>"futurist"} Select
+                        %i.fa.fa-check
+                    .col-lg-3.col-md-6.col-sm-12
+                      .select-theme#cubist-theme{:class=>"#{@community.is_cubist? ? 'active-theme' : 'active'}"}
+                        .theme-img{:style => "background:url(#{asset_path('theme-image-2.jpg')});"}
+                        .themes-detail
+                          .pull-left
+                            %h4 Cubist
+                          .pull-right
+                            %a{:href => "#"} View Theme
+                            = f.radio_button :theme_name,"cubist",style: "display: none;"  
+                            %a.btn.btn-success.theme-selection{:href => "javascript::;","data-theme-name"=>"cubist"} Select
+                        %i.fa.fa-check   
+                    .col-lg-3.col-md-6.col-sm-12
+                      .select-theme#modernist-theme{:class=>"#{@community.is_modernist? ? 'active-theme' : 'active'}"}
+                        .theme-img{:style => "background:url(#{asset_path('theme-image-3.jpg')});"}
+                        .themes-detail
+                          .pull-left
+                            %h4 Modernist
+                          .pull-right
+                            %a{:href => "#"} View Theme
+                            = f.radio_button :theme_name,"modernist",style: "display: none;" 
+                            %a.btn.btn-success.theme-selection{:href => "javascript::;","data-theme-name"=>"modernist"} Select
+                        %i.fa.fa-check  
+                    .col-lg-3.col-md-6.col-sm-12
+                      .select-theme#expressionist-theme{:class=>"#{@community.is_expressionist? ? 'active-theme' : 'active'}"}
+                        .theme-img{:style => "background:url(#{asset_path('theme-image-4.jpg')});"}
+                        .themes-detail
+                          .pull-left
+                            %h4 Expressionist
+                          .pull-right
+                            %a{:href => "#"} View Theme
+                            = f.radio_button :theme_name,"expressionist",style: "display: none;" 
+                            %a.btn.btn-success.theme-selection{:href => "javascript::;","data-theme-name"=>"expressionist"} Select
+                        %i.fa.fa-check
+                .row
+                  .col-lg-12
+                    .box-footer.mt-30.pt-15
+                      %button.btn.btn-success.pull-right{:type => "submit"}
+                        %i.fa.fa-save>
+                          SAVE CHANGES
+              / End Select theme section
+              / Start Color section
             #s-color.tab-pane.fade{:role => "tabpanel"}
-              .row
-                .col-md-12
-                  %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-              .row
-                .col-lg-12
-                  %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-                    Color Options
-              .row
-                .col-lg-10
-                  .form-group.mt-30
-                    %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                      Select Primary Color
-                      %span Select a color
-                    .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                      .input-group.colorpicker-style.colorpicker-style
-                        .input-group-addon
-                          %i
-                          %input.form-control{:type => "text"}/
-              .row
-                .col-lg-10
-                  .form-group.mt-30
-                    %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                      Select Secondary Color
-                      %span Select a color
-                    .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                      .input-group.colorpicker-style.colorpicker-style
-                        .input-group-addon
-                          %i
-                          %input.form-control{:type => "text"}/
-              .mt-40
-              .row
-                .col-md-12
-                  .box-footer.mt-30.pt-15
-                    %button.btn.btn-success.pull-right{:type => "submit"}
-                      %i.fa.fa-save>
-                        SAVE CHANGES
-            / End Color section
-            #s-font.tab-pane.fade{:role => "tabpanel"}
-              .row
-                .col-md-12
-                  %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-              .row
-                .col-lg-12
-                  %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-                    Primary Font
-                    %span Select font family .size .weight, alignment, color etc
-              .row
-                .col-lg-10
-                  .form-group.mt-30
-                    %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                      Select Primary Color
-                      %span Select a color
-                    .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                      .input-group.colorpicker-style.colorpicker-style
-                        .input-group-addon
-                          %i
-                          %input.form-control{:type => "text"}/
-              .row
-                .col-lg-10
-                  .form-group.mt-30
-                    %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                      Select Secondary Color
-                      %span Select a color
-                    .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                      .input-group.colorpicker-style.colorpicker-style
-                        .input-group-addon
-                          %i
-                          %input.form-control{:type => "text"}/
-              .row
-                .col-md-12
-                  .box-footer.mt-30.pt-15
-                    %button.btn.btn-success.pull-right{:type => "submit"}
-                      %i.fa.fa-save>
-                        SAVE CHANGES
+              = form_for @community,:method=>"PUT" do |f|
+                = f.fields_for :design do |d|
+                  .row
+                    .col-md-12
+                      %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                  .row
+                    .col-lg-12
+                      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+                        Color Options
+                  .row
+                    .col-lg-10
+                      .form-group.mt-30
+                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                          Select Primary Color
+                          %span Select a color
+                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                          .input-group.colorpicker-style.colorpicker-style
+                            .input-group-addon
+                              %i
+                              = d.text_field :primary_color, class: "form-control"
+                  .row
+                    .col-lg-10
+                      .form-group.mt-30
+                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                          Select Secondary Color
+                          %span Select a color
+                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                          .input-group.colorpicker-style.colorpicker-style
+                            .input-group-addon
+                              %i
+                              = d.text_field :secondary_color, class: "form-control"
+                  .mt-40
+                  .row
+                    .col-md-12
+                      .box-footer.mt-30.pt-15
+                        %button.btn.btn-success.pull-right{:type => "submit"}
+                          %i.fa.fa-save>
+                            SAVE CHANGES
+                / End Color section
+                #s-font.tab-pane.fade{:role => "tabpanel"}
+                  .row
+                    .col-md-12
+                      %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                  .row
+                    .col-lg-12
+                      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+                        Primary Font
+                        %span Select font family .size .weight, alignment, color etc
+                  .row
+                    .col-lg-10
+                      .form-group.mt-30
+                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                          Select Primary Color
+                          %span Select a color
+                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                          .input-group.colorpicker-style.colorpicker-style
+                            .input-group-addon
+                              %i
+                              %input.form-control{:type => "text"}/
+                  .row
+                    .col-lg-10
+                      .form-group.mt-30
+                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                          Select Secondary Color
+                          %span Select a color
+                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                          .input-group.colorpicker-style.colorpicker-style
+                            .input-group-addon
+                              %i
+                              %input.form-control{:type => "text"}/
+                  .row
+                    .col-md-12
+                      .box-footer.mt-30.pt-15
+                        %button.btn.btn-success.pull-right{:type => "submit"}
+                          %i.fa.fa-save>
+                            SAVE CHANGES
             #profile.tab-pane.fade{:role => "tabpanel"}
               .row
                 .col-md-12
@@ -250,3 +220,19 @@
                 .col-md-12
                   %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
       / End Panel left Side
+:javascript 
+  var theme_tab = #{params[:tab].present? && params[:tab] == "theme"}
+  var color_tab = #{params[:tab].present? && params[:tab] == "color"}
+  if (theme_tab){
+    $('#theme-tab').click();
+  }
+  if (color_tab){
+    $('#color-tab').click();
+  }
+  
+  $('.theme-selection').click(function(){
+    var theme_name = $(this).data("theme-name");
+    $('#community_theme_name_'+theme_name).attr('checked',true);
+    $('.select-theme').removeClass('active-theme');
+    $('#'+theme_name+'-theme').addClass('active-theme');
+  });

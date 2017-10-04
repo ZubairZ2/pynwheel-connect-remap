@@ -3,6 +3,8 @@ $(document).ready(function(e){
     $("form").validationEngine({binded: false});
     /* Activating Best In Place */
     jQuery(".best_in_place").best_in_place();
+    /*color picker*/
+    $('.colorpicker-style').colorpicker();
 
 var headertext = [],
     headers = document.querySelectorAll("#miyazaki th"),
@@ -20,11 +22,11 @@ if (tablebody != null) {
         }
     }
 }
-
-$("li").on("click", function (e) {
+// TO DO I am commenting this code because tabs are not working ion design page
+/*$("li").on("click", function (e) {
     $(this).siblings(".active" ).removeClass("active")
     $(this).addClass("active")
-})
+})*/
 
 $("#company_logo,#community_logo,#user_avatar").change(function(){
     readURL(this);
@@ -69,7 +71,9 @@ var holder = document.getElementById('holder');
                     deleteFloorPlanImage(floorplan_id);
                 }
             }
-    }
+    }  
+
+
 
 // below lines prevent image on broswer other than selected area
 window.addEventListener("dragover",function(e){
@@ -299,6 +303,7 @@ function readImageSrc(file){
       }
       reader.readAsDataURL(file);
   }
+
 
    function saveFloorPlanImage(src,floorplan_id){
     //var community_id = $('#communities_at_floorplans').val();

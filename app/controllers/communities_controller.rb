@@ -34,7 +34,7 @@ class CommunitiesController < ApplicationController
   def update
     respond_to do |format|
       if @community.update(community_params)
-        format.html { redirect_to communities_path, notice: 'Community updated successfully.' }
+        format.html { redirect_to set_community_path }
         message = '<div class="alert alert-success">'+@community.name+' updated successfully.</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       else
@@ -42,6 +42,22 @@ class CommunitiesController < ApplicationController
         message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       end
+    end
+  end
+
+  def set_community_path
+    if params[:community][:logo].present?
+      flash[:notice] = 'Logo added successfully.'
+      community_design_index_path(@community)
+    elsif params[:community][:theme_name].present?
+      flash[:notice] = 'Theme selected successfully.'
+      community_design_index_path(@community,tab: 'theme')
+    elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_color].present?
+      flash[:notice] = 'Colors added successfully.'
+      community_design_index_path(@community,tab: 'color')   
+    else
+      flash[:notice] = 'Community updated successfully.'
+      communities_path
     end
   end
 
@@ -102,7 +118,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:p_code])
+    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:theme_name,:credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:p_code],:design_attributes=>[:id,:primary_color,:secondary_color])
   end
 
 end

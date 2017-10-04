@@ -12,12 +12,17 @@
 //
 //= require jquery.min
 //= require jquery_ujs
+//= require bootstrap.min
 //= require best_in_place
 //= require dataTables/jquery.dataTables
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 // require turbolinks
-//= require bootstrap.min
 //= require pyn.min
 //= require jquery.validationEngine-en
 //= require jquery.validationEngine
+//= require populate_geocode
+//= require custom
+//= require cable
+//= require design
+//= require bootstrap-colorpicker.min
 // require_tree .

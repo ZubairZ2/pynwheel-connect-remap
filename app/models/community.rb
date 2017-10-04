@@ -4,8 +4,25 @@ class Community < ApplicationRecord
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
   has_one :credential , dependent: :destroy
+  has_one :design, dependent: :destroy
   accepts_nested_attributes_for :credential
+  accepts_nested_attributes_for :design
 
+  def is_futurist?
+    theme_name == "futurist"
+  end
+
+  def is_cubist?
+    theme_name == "cubist"
+  end
+
+  def is_modernist?
+    theme_name == "modernist"
+  end
+
+  def is_expressionist?
+    theme_name == "expressionist"
+  end
 
   def data_is_imported
     case data_provider

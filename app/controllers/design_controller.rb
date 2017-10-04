@@ -5,6 +5,9 @@ class DesignController < ApplicationController
 
 	def index
 		add_breadcrumb "Design", community_design_index_path(@community)
+		unless @community.design.present?
+			@community.build_design
+		end
 	end
 
 	private 
