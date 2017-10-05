@@ -25,4 +25,19 @@ module ApplicationHelper
     def text_align
     	["left","right","center","justify","justify-all","inherit","initial","unset","start","end","match-parent"]
     end
+
+    def menu_position
+        ["Left","Right","Top","Bottom"]
+    end
+
+    def button_style
+        ["Solid","Bordered","Top","Bottom"]
+    end
+
+    def border_radius
+        ["1px","2px","3px","4px","5px","6px","7px","8px","9px","10px"]
+    end
+    def border_width
+        ["1px","2px","3px","4px","5px","6px","7px","8px","9px","10px"]
+    end
 end

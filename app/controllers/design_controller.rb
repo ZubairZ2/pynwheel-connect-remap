@@ -7,6 +7,16 @@ class DesignController < ApplicationController
 		add_breadcrumb "Design", community_design_index_path(@community)
 		unless @community.design.present?
 			@community.build_design
+		else
+			unless @community.design.menu.present?
+				@community.design.build_menu
+			end
+			unless @community.design.main_screen.present?
+				@community.design.build_main_screen
+			end
+			unless @community.design.home_screen.present?
+				@community.design.build_home_screen
+			end
 		end
 	end
 
