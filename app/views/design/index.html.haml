@@ -19,15 +19,16 @@
               %a#color-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-color", :role => "tab"} Select Color
             %li{:role => "presentation"}
               %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
-            %li.dropdown{:role => "presentation"}
-              %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
-                Menu
-                %span.caret
-              %ul.dropdown-menu{"aria-labelledby" => "myTabDrop1"}
-                %li
-                  %a#custom-style-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#c-style", :role => "tab"} Custom Style
-                %li
-                  %a#button-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#u-button", :role => "tab"} Upload Buttons
+            - if @community.design.menu.present?  
+              %li.dropdown{:role => "presentation"}
+                %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
+                  Menu
+                  %span.caret
+                %ul.dropdown-menu{"aria-labelledby" => "myTabDrop1"}
+                  %li
+                    %a#custom-style-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#c-style", :role => "tab"} Custom Style
+                  %li
+                    %a#button-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#u-button", :role => "tab"} Upload Buttons
           #myTabContent.tab-content.add-plan
             / Start L>ogo Upload section
             #home.tab-pane.fade.active.in{:role => "tabpanel"}
