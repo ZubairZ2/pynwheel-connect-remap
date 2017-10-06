@@ -640,6 +640,24 @@ table.upload-image tr td{
 	text-align:center;
 }
 
+#no-sidemenu .logo{    
+	background-color: #fff;
+	margin-left: 0;
+
+}
+#no-sidemenu .content-wrapper{ 
+   margin-left: 0;
+}
+#no-sidemenu .main-footer{ 
+    margin-left: 0; 
+ }
+ #no-sidemenu .sidebar-toggle{
+     display: none;
+ }
+ #no-sidemenu .breadcrumb{
+   display: none;
+}
+
 .checkbox {
   padding-left: 20px; }
   .checkbox label {
