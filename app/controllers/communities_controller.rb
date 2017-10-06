@@ -52,25 +52,25 @@ class CommunitiesController < ApplicationController
 
   def set_community_path
     if params[:community][:logo].present?
-      flash[:notice] = 'Logo added successfully.'
+      flash[:notice] = 'Logo uploaded successfully.'
       community_design_index_path(@community)
     elsif params[:community][:theme_name].present?
       flash[:notice] = 'Theme selected successfully.'
       community_design_index_path(@community,tab: 'theme')
     elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_color].present?
-      flash[:notice] = 'Colors added successfully.'
+      flash[:notice] = 'Colors selected successfully.'
       community_design_index_path(@community,tab: 'color')
     elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_font_family].present?
-      flash[:notice] = 'Font changes added successfully.'
+      flash[:notice] = 'Font style selected successfully.'
       community_design_index_path(@community,tab: 'font') 
     elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:menu_attributes].present?
-      flash[:notice] = 'Menu changes added successfully.'
+      flash[:notice] = 'Menu options selected successfully.'
       community_design_index_path(@community,tab: 'custom_style')
     elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:main_screen_attributes].present?
-      flash[:notice] = 'Menu changes added successfully.'
+      flash[:notice] = 'Menu options selected successfully.'
       community_design_index_path(@community,tab: 'button') 
     elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:home_screen_attributes].present?
-      flash[:notice] = 'Menu changes added successfully.'
+      flash[:notice] = 'Menu options selected successfully.'
       community_design_index_path(@community,tab: 'button')         
     else
       flash[:notice] = 'Community updated successfully.'

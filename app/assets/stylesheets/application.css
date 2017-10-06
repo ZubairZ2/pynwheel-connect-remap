@@ -14,10 +14,8 @@
  *= require font-awesome
  *= require pyn.min
  *= require skins/_all-pyn.min
- 
  *= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
  *= require validationEngine.jquery
  *= require bootstrap-colorpicker.min
- 
  *= require pyn-custom
  */

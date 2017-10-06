@@ -14,6 +14,7 @@
               %a#home-tab{"aria-expanded" => "true", "data-toggle" => "tab", :href => "#home", :role => "tab"} Logo Options
             %li{:role => "presentation"}
               %a#theme-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-theme", :role => "tab"} Select Theme
+             
             %li{:role => "presentation"}
               %a#color-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-color", :role => "tab"} Select Color
             %li{:role => "presentation"}
@@ -150,6 +151,46 @@
                           .input-group.colorpicker-style.colorpicker-style
                             .input-group-addon
                               %i
+                              = d.text_field :primary_color, class: "form-control validate[required]",readonly: true,autocomplete: true
+                  .row
+                    .col-lg-10
+                      .form-group.mt-30
+                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                          Select Secondary Color
+                          %span Select a color
+                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                          .input-group.colorpicker-style.colorpicker-style
+                            .input-group-addon
+                              %i
+                              = d.text_field :secondary_color, class: "form-control validate[required]",readonly: true,autocomplete: true
+                  .mt-40
+                  .row
+                    .col-md-12
+                      .box-footer.mt-30.pt-15
+                        %button.btn.btn-success.pull-right{:type => "submit"}
+                          %i.fa.fa-save>
+                            SAVE CHANGES
+                / End Color section
+            #s-overlay.tab-pane.fade{:role => "tabpanel"}
+              = form_for @community,:method=>"PUT" do |f|
+                = f.fields_for :design do |d|
+                  .row
+                    .col-md-12
+                      %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                  .row
+                    .col-lg-12
+                      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+                        Color Options
+                  .row
+                    .col-lg-10
+                      .form-group.mt-30
+                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                          Select Primary Color
+                          %span Select a color
+                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                          .input-group.colorpicker-style.colorpicker-style
+                            .input-group-addon
+                              %i
                               = d.text_field :primary_color, class: "form-control validate[required]"
                   .row
                     .col-lg-10
@@ -169,7 +210,7 @@
                         %button.btn.btn-success.pull-right{:type => "submit"}
                           %i.fa.fa-save>
                             SAVE CHANGES
-                / End Color section
+                / End Overlay section    
             #s-font.tab-pane.fade{:role => "tabpanel"}
               = form_for @community,:method=>"PUT" do |f|
                 = f.fields_for :design do |d|
@@ -182,7 +223,7 @@
                         .col-lg-12
                           %label.control-label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
                             Primary Font
-                            %span Select font family .size .weight, alignment, color etc
+                            %span Select font family, size, weight, alignment and color 
                       .row
                         .col-lg-8.p-right0
                           .row
@@ -220,7 +261,7 @@
                                   .input-group.colorpicker-style.colorpicker-style
                                     .input-group-addon
                                       %i
-                                      = d.text_field :primary_font_color , class: "form-control primary-inputs primary_font_color validate[required]"
+                                      = d.text_field :primary_font_color , class: "form-control primary-inputs primary_font_color validate[required]",readonly: true,autocomplete: true
                         .col-lg-4
                           .block-text.margin-bottom-30#primary-font-text
                             A man bribes a rabbit with wicked dentures to run away with him in a sailboat via an ambulance. Bribing Koalas to remain illegally in one place. Trees anchor me in place. / Your mom drives the ambulance, but the city is farther than it appears.
@@ -229,7 +270,7 @@
                         .col-lg-12
                           %label.control-label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
                             Secondary Font
-                            %span Select font family .size .weight, alignment, color etc
+                            %span Select font family, size, weight, alignment and color
                       .row
                         .col-lg-8.p-right0
                           .row
@@ -238,27 +279,27 @@
                                 %label.col-sm-12.control-label
                                   %span Font Family
                                 .col-sm-12.col-lg-12.col-md-12.col-xs-12
-                                  = d.select :secondary_font_family , options_for_select(font_families,d.object.primary_font_family),{},{class: "form-control secondary-inputs secondary_font_family"}
+                                  = d.select :secondary_font_family , options_for_select(font_families,d.object.secondary_font_family),{},{class: "form-control secondary-inputs secondary_font_family"}
                           .row
                             .col-lg-6.p-right0
                               .form-group.mt-30
                                 %label.col-sm-12.control-label
                                   %span Font Size
                                 .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
-                                  = d.select :secondary_font_size , options_for_select(font_sizes,d.object.primary_font_size),{},{class: "form-control secondary-inputs secondary_font_size"}
+                                  = d.select :secondary_font_size , options_for_select(font_sizes,d.object.secondary_font_size),{},{class: "form-control secondary-inputs secondary_font_size"}
                             .col-lg-6.p-left0
                               .form-group.mt-30
                                 %label.col-sm-12.control-label
                                   %span Font Weight
                                 .col-sm-12.col-lg-12.col-md-12.col-xs-12
-                                  = d.select :secondary_font_weight , options_for_select(font_weight,d.object.primary_font_weight),{},{class: "form-control secondary-inputs secondary_font_weight"}
+                                  = d.select :secondary_font_weight , options_for_select(font_weight,d.object.secondary_font_weight),{},{class: "form-control secondary-inputs secondary_font_weight"}
                           .row
                             .col-lg-6.p-right0
                               .form-group.mt-30
                                 %label.col-sm-12.control-label
                                   %span Text align
                                 .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
-                                  = d.select :secondary_text_align , options_for_select(text_align,d.object.primary_text_align),{},{class: "form-control secondary-inputs secondary_text_align"}
+                                  = d.select :secondary_text_align , options_for_select(text_align,d.object.secondary_text_align),{},{class: "form-control secondary-inputs secondary_text_align"}
                             .col-lg-6.p-left0
                               .form-group.mt-30
                                 %label.col-sm-12.control-label
@@ -267,7 +308,7 @@
                                   .input-group.colorpicker-style.colorpicker-style
                                     .input-group-addon
                                       %i
-                                      = d.text_field :secondary_font_color , class: "form-control secondary-inputs secondary_font_color validate[required]"
+                                      = d.text_field :secondary_font_color , class: "form-control secondary-inputs secondary_font_color validate[required]",readonly: true,autocomplete: true
                         .col-lg-4
                           .block-text#secondary-font-text
                             A man bribes a rabbit with wicked dentures to run away with him in a sailboat via an ambulance. Bribing Koalas to remain illegally in one place. Trees anchor me in place. / Your mom drives the ambulance, but the city is farther than it appears.
@@ -314,15 +355,15 @@
                             %span Select border width, radius , color
                           .col-sm-12.col-lg-3.col-md-3.col-xs-12.margin-bottom-30
                             = m.select :border_radius , options_for_select(border_radius,m.object.border_radius),{},{class: "form-control"}
-                            %small Radius: 0 to 10px
+                            %small Radius: 1px to 10px
                           .col-sm-12.col-lg-3.col-md-3.col-xs-12.margin-bottom-30
                             = m.select :border_width , options_for_select(border_width,m.object.border_width),{},{class: "form-control"}
-                            %small Width: 0 to 10px
+                            %small Width: 1px to 10px
                           .col-sm-12.col-lg-3.col-md-3.col-xs-12
                             .input-group.colorpicker-style.colorpicker-style
                               .input-group-addon
                                 %i
-                                = m.text_field :border_color,class: "form-control validate[required]"
+                                = m.text_field :border_color,class: "form-control validate[required]",readonly: true,autocomplete: true
                               %small Border Color
                     .row
                       .col-lg-10
@@ -336,13 +377,13 @@
                                 .input-group.colorpicker-style.colorpicker-style
                                   .input-group-addon
                                     %i
-                                    = m.text_field :button_background_color,class: "form-control validate[required]"
+                                    = m.text_field :button_background_color,class: "form-control validate[required]",readonly: true,autocomplete: true
                                   %small Select Background Button Color
                               .col-lg-6.col-md-6.col-xs-12
                                 .input-group.colorpicker-style.colorpicker-style
                                   .input-group-addon
                                     %i
-                                    = m.text_field :button_hover_color,class: "form-control validate[required]"
+                                    = m.text_field :button_hover_color,class: "form-control validate[required]",readonly: true,autocomplete: true
                                   %small Select hover backgound
                     .row
                       .col-lg-10
@@ -354,20 +395,21 @@
                             .TriSea-technologies-Switch
                               %span.pr-15 No
                               /%input#TriSeaPrimary{:name => "TriSea1", :type => "checkbox"}/
-                              = m.check_box :manage_background,id: "TriSeaPrimary"
-                              %label.label-primary{:for => "TriSeaPrimary"}
+                              = m.check_box :manage_background
+                              %label.label-primary{:for => "community_design_attributes_menu_attributes_manage_background"}
                               %span.pl-15 Yes
-                    .row
-                      .col-lg-10
-                        .form-group.mt-30
-                          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                            Background color
-                            %span Select menu background color & change the opacity
-                          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                            .input-group.colorpicker-style.colorpicker-style
-                              .input-group-addon
-                                %i
-                                = m.text_field :background_color,class: "form-control validate[required]"
+                    #c-style-background-color          
+                      .row
+                        .col-lg-10
+                          .form-group.mt-30
+                            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                              Background color
+                              %span Select menu background color & change the opacity
+                            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                              .input-group.colorpicker-style.colorpicker-style
+                                .input-group-addon
+                                  %i
+                                  = m.text_field :background_color,class: "form-control",readonly: true,autocomplete: true
                     .row
                       .col-md-12
                         .box-footer.mt-30.pt-15
@@ -474,6 +516,7 @@
                                           Upload File
                                           = m.file_field :favorities_button  
                                   .clearfix
+                    = d.fields_for :menu do |m|                
                       .row
                         .col-lg-10
                           .form-group.mt-30
@@ -481,7 +524,7 @@
                               Menu Position
                               %span Select position of menu
                             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                              = m.select :menu_position , options_for_select(menu_position,m.object.menu_position),{},{class: "form-control"}
+                              = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control"}
                               .input-group.colorpicker-style.colorpicker-style.hidden
                                 .input-group-addon
                                   %i
@@ -498,17 +541,18 @@
                                 = m.check_box :manage_background,id: "TriSeaPrimary2"
                                 %label.label-primary{:for => "TriSeaPrimary2"}
                                 %span.pl-15 Yes
-                      .row
-                        .col-lg-10
-                          .form-group.mt-30
-                            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                              Background color
-                              %span Select menu background color  change the opacity
-                            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                              .input-group.colorpicker-style.colorpicker-style
-                                .input-group-addon
-                                  %i
-                                  = m.text_field :background_color , class: "form-control validate[required]"
+                      #m-style-background-color           
+                        .row
+                          .col-lg-10
+                            .form-group.mt-30
+                              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                                Background color
+                                %span Select menu background color  change the opacity
+                              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                                .input-group.colorpicker-style.colorpicker-style
+                                  .input-group-addon
+                                    %i
+                                    = m.text_field :background_color , class: "form-control",readonly: true,autocomplete: true
                       .row
                         .col-md-12
                           .box-footer.mt-30.pt-15
@@ -591,6 +635,7 @@
                                           Upload File
                                           = m.file_field :favorities_button  
                                   .clearfix
+                    = d.fields_for :menu do |m|               
                       .row
                         .col-lg-10
                           .form-group.mt-30
@@ -598,7 +643,7 @@
                               Menu Position
                               %span Select position of menu
                             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                              = m.select :menu_position , options_for_select(menu_position,m.object.menu_position),{},{class: "form-control"}
+                              = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control"}
                               
                       .row
                         .col-lg-10
@@ -612,17 +657,18 @@
                                 = m.check_box :manage_background,id: "TriSeaPrimary3"
                                 %label.label-primary{:for => "TriSeaPrimary3"}
                                 %span.pl-15 Yes
-                      .row
-                        .col-lg-10
-                          .form-group.mt-30
-                            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                              Background color
-                              %span Select menu background color  change the opacity
-                            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                              .input-group.colorpicker-style.colorpicker-style
-                                .input-group-addon
-                                  %i
-                                  = m.text_field :background_color , class: "form-control validate[required]"
+                      #h-style-background-color           
+                        .row
+                          .col-lg-10
+                            .form-group.mt-30
+                              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                                Background color
+                                %span Select menu background color  change the opacity
+                              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                                .input-group.colorpicker-style.colorpicker-style
+                                  .input-group-addon
+                                    %i
+                                    = m.text_field :background_color , class: "form-control",readonly: true,autocomplete: true
                       .row
                         .col-md-12
                           .box-footer.mt-30.pt-15
@@ -637,4 +683,28 @@
   var font_tab = #{params[:tab].present? && params[:tab] == "font"}
   var custom_style_tab = #{params[:tab].present? && params[:tab] == "custom_style"}
   var button_tab = #{params[:tab].present? && params[:tab] == "button"}
+  var overlay_tab = #{params[:tab].present? && params[:tab] == "overlay"}
+  hideShowBackgroundColorDiv($('#community_design_attributes_menu_attributes_manage_background'),$('#c-style-background-color '));
+  hideShowBackgroundColorDiv($('#TriSeaPrimary2'),$('#m-style-background-color '));
+  hideShowBackgroundColorDiv($('#TriSeaPrimary3'),$('#h-style-background-color '));
+  $('#community_design_attributes_menu_attributes_manage_background').change(function(){
+    hideShowBackgroundColorDiv($(this),$('#c-style-background-color '));
+  });
+
+  $('#TriSeaPrimary2').change(function(){
+    hideShowBackgroundColorDiv($(this),$('#m-style-background-color '));
+  });
+
+  $('#TriSeaPrimary3').change(function(){
+    hideShowBackgroundColorDiv($(this),$('#h-style-background-color '));
+  });
+
+  function hideShowBackgroundColorDiv(radio_button,element){
+    if ($(radio_button).is(":checked")){
+      $(element).show();
+    }
+    else{
+      $(element).hide();
+    }
+  }
   
