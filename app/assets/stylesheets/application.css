@@ -14,10 +14,10 @@
  *= require font-awesome
  *= require pyn.min
  *= require skins/_all-pyn.min
- *= require pyn-custom
- *= require_tree .
+ 
  *= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
  *= require validationEngine.jquery
  *= require bootstrap-colorpicker.min
- *= require_self
+ 
+ *= require pyn-custom
  */

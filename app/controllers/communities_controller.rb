@@ -32,16 +32,21 @@ class CommunitiesController < ApplicationController
   end
 
   def update
-    respond_to do |format|
-      if @community.update(community_params)
-        format.html { redirect_to set_community_path }
-        message = '<div class="alert alert-success">'+@community.name+' updated successfully.</div>'
-        format.js {render js: "$('#flash-message').html('#{message}')"}
-      else
-        format.html { render :new }
-        message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
-        format.js {render js: "$('#flash-message').html('#{message}')"}
+    begin
+      respond_to do |format|
+        if @community.update(community_params)
+          format.html { redirect_to set_community_path }
+          message = '<div class="alert alert-success">'+@community.name+' updated successfully.</div>'
+          format.js {render js: "$('#flash-message').html('#{message}')"}
+        else
+          format.html { render :new }
+          message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
+          format.js {render js: "$('#flash-message').html('#{message}')"}
+        end
       end
+    rescue 
+      flash[:error] = 'Please upload logo first.'
+      redirect_to community_design_index_path(@community)
     end
   end
 

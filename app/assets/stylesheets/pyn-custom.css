@@ -1017,7 +1017,9 @@ input[type="radio"] .styled:checked + label::after {
 	background-repeat:no-repeat !important;
 	margin-bottom:10px;
 }
-.colorpicker-style{}
+.colorpicker-style{
+	display: inline-block;
+}
 .colorpicker-style .input-group-addon{
 	padding:0; 
 	border:none;
