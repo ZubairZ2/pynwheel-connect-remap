@@ -164,6 +164,7 @@ $(document).ready(function () {
             $('#image-upload-warning').modal('show');
            } 
         }
+        $("#mutiple-files").val('');
     });
 });
 
