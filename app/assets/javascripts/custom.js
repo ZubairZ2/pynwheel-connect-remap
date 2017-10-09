@@ -4,7 +4,8 @@ $(document).ready(function(e){
     /* Activating Best In Place */
     jQuery(".best_in_place").best_in_place();
     /*color picker*/
-    $('.colorpicker-style').colorpicker();
+    $('.rgba-format-colorpicker').colorpicker({format: 'rgba'});
+    $('.hex-format-colorpicker').colorpicker({format: 'hex'});
 
 var headertext = [],
     headers = document.querySelectorAll("#miyazaki th"),

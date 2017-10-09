@@ -32,6 +32,7 @@ class CommunitiesController < ApplicationController
   end
 
   def update
+     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
     begin
       respond_to do |format|
         if @community.update(community_params)
