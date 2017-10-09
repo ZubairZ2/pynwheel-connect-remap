@@ -14,6 +14,9 @@ $(document).ready(function(){
   if (overlay_tab){
     $('#overlay-tab').click();
   }
+  if (home_tab){
+    $('#home-tab').click();
+  }
   if (font_tab){
     $('#font-tab').click();
     set_primary_font_changes();

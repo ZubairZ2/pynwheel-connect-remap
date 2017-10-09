@@ -46,15 +46,20 @@ class CommunitiesController < ApplicationController
         end
       end
     rescue 
-      flash[:error] = 'Please upload logo first.'
-      redirect_to community_design_index_path(@community)
+      if params[:theme_tab].present? and params[:theme_tab]
+        flash[:error] = 'Please select theme first.'
+        redirect_to community_design_index_path(@community,tab: 'theme')
+      else 
+        flash[:error] = 'Please upload logo first.'
+        redirect_to community_design_index_path(@community,tab: 'home')
+      end
     end
   end
 
   def set_community_path
     if params[:community][:logo].present?
       flash[:notice] = 'Logo uploaded successfully.'
-      community_design_index_path(@community)
+      community_design_index_path(@community,tab: 'home')
     elsif params[:community][:theme_name].present?
       flash[:notice] = 'Theme selected successfully.'
       community_design_index_path(@community,tab: 'theme')
@@ -64,15 +69,15 @@ class CommunitiesController < ApplicationController
     elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_font_family].present?
       flash[:notice] = 'Font style selected successfully.'
       community_design_index_path(@community,tab: 'font') 
-    elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:menu_attributes].present?
+    elsif params[:custom_style_tab].present? and params[:custom_style_tab]
       flash[:notice] = 'Menu options selected successfully.'
       community_design_index_path(@community,tab: 'custom_style')
-    elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:main_screen_attributes].present?
+    elsif params[:button_main_screen_tab].present? 
       flash[:notice] = 'Menu options selected successfully.'
       community_design_index_path(@community,tab: 'button') 
-    elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:home_screen_attributes].present?
+    elsif params[:button_home_screen_tab].present?
       flash[:notice] = 'Menu options selected successfully.'
-      community_design_index_path(@community,tab: 'button')         
+      community_design_index_path(@community,tab: 'button',radio_button: 'radio_button_screen_tab')         
     else
       flash[:notice] = 'Community updated successfully.'
       communities_path
