@@ -1,27 +1,29 @@
 $(document).ready(function(){
-  if (theme_tab){
-    $('#theme-tab').click();
-  }
-  if (color_tab){
-    $('#color-tab').click();
-  }
-  if (custom_style_tab){
-    $('#custom-style-tab').click();
-  }
-  if (button_tab){
-    $('#button-tab').click();
-  }
-  if (overlay_tab){
-    $('#overlay-tab').click();
-  }
-  if (home_tab){
-    $('#home-tab').click();
-  }
-  if (font_tab){
-    $('#font-tab').click();
-    set_primary_font_changes();
-    set_secondary_font_changes();
-  }
+  if ($('.is-home-page')[0]){
+    if (theme_tab){
+      $('#theme-tab').click();
+    }
+    if (color_tab){
+      $('#color-tab').click();
+    }
+    if (custom_style_tab){
+      $('#custom-style-tab').click();
+    }
+    if (button_tab){
+      $('#button-tab').click();
+    }
+    if (overlay_tab){
+      $('#overlay-tab').click();
+    }
+    if (home_tab){
+      $('#home-tab').click();
+    }
+    if (font_tab){
+      $('#font-tab').click();
+      set_primary_font_changes();
+      set_secondary_font_changes();
+    }
+ }
   
   $('.theme-selection').click(function(){
     var theme_name = $(this).data("theme-name");

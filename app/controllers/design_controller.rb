@@ -20,6 +20,20 @@ class DesignController < ApplicationController
 		end
 	end
 
+	# def rgb2hex(blue)
+	#   @blue_as_hex = ""
+
+ #       blue.each do |component|
+ #         hex = component.to_s(16)
+ #         if component < 10
+ #           @blue_as_hex << "0#{hex}"
+ #          else
+ #           @blue_as_hex << hex
+ #         end
+ #        end
+ #        return @blue_as_hex
+ #    end
+
 	private 
 
 	def set_community

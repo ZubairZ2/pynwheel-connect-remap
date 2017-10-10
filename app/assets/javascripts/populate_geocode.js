@@ -1,5 +1,7 @@
 $(document).ready(function () {
-    find_geocodes();
+    if ($('.is-community-page')[0]){
+      find_geocodes();
+    }
     $(document).on('change', '.address_fields', function() {
         console.log(" * address changed *")
         var address = buildAddress()

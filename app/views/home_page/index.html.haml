@@ -1,0 +1,68 @@
+- content_for :title, "Home Page - Pynwheel"
+%section.is-home_page
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-home>
+        Main Screen
+    .row
+      .col-lg-7
+        %ul#myTabs.nav.nav-tabs.home-tabs{:role => "tablist"}
+          %li.active{:role => "presentation"}
+            %a{"aria-expanded" => "true", "data-toggle" => "tab", :href => "#image-slide", :role => "tab"} Slide Show Images
+          %li{:role => "presentation"}
+            %a{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#video-slide", :role => "tab"} Videos
+    / Start Tabs Secttions
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+      #myTabContent.tab-content
+        / Start image-slide section
+        #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+          .row
+            .col-lg-12
+              .mt-30
+                .title-home
+                  %h4 Slide Show Images
+                  %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                  %span.btn.btn-success.btn-file.pull-right.text-UP
+                    %i.fa.fa-plus-circle
+                    Add Files
+                    %input#home-page-image{:type => "file"}
+          .row
+            .col-lg-12
+              .pull-right
+                %a.view-slide{"data-target" => ".bs-example-modal-lg", "data-toggle" => "modal", :href => "#"} View SlideShow
+          #images-index
+            = render 'index'
+        #video-slide.tab-pane.fade{:role => "tabpanel"}
+          .row
+            .col-lg-12
+              .mt-30
+                .title-home
+                  %h4 Video Show
+                  %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                  %span.btn.btn-success.btn-file.pull-right.text-UP
+                    %i.fa.fa-plus-circle
+                    Add Video's
+                    
+          .row.slide-imgage-boxs
+            .col-lg-3
+              .slide-image
+                .image-box
+                  .images
+                    = image_tag "homepage-slide-1.jpg"
+                  %h4 Video 1
+                  .icons
+                    %i.fa.fa-pencil
+                    %i.fa.fa-close
+            .col-lg-3
+              .slide-image
+                .image-box
+                  .images
+                    = image_tag "homepage-slide-2.jpg"
+                  %h4 Video 2
+                  .icons
+                    %i.fa.fa-pencil{"data-target" => "#edit-image", "data-toggle" => "modal"}
+                    %i.fa.fa-close
+#edit-image.modal.fade.edit-image   
+:javascript
+  var community_id = #{params[:community_id]}

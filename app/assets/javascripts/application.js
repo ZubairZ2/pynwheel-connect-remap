@@ -24,5 +24,9 @@
 //= require custom
 //= require cable
 //= require design
+//= require home_page
 //= require bootstrap-colorpicker.min
+//= require jcrop
+//= require jquery-ui/widgets/sortable
+//= require rails_sortable
 // require_tree .

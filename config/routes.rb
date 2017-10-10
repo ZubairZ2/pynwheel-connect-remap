@@ -18,5 +18,13 @@ Rails.application.routes.draw do
     get :test_connection
     resources :settings , only: :index
     resources :design, only: :index
+    resources :home_page, only: :index do
+      collection do
+        get :show_image_in_modal
+        post :save_home_page_image
+        put :update_home_page_image
+        delete :delete_home_page_image
+      end
+    end
   end
 end

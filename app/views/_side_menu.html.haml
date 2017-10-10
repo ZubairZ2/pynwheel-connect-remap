@@ -16,7 +16,7 @@
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             %a{:href => "/communities"} Communities
       %li
-        %a{:href => "#"}
+        = link_to community_home_page_index_path(current_community) do
           %i.fa.fa-home
           %span HomePage
       %li{:class=>"#{controller_name =='design' ? 'active' : ''}"}

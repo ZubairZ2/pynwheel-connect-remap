@@ -1,0 +1,33 @@
+.row.slide-imgage-boxs
+  - current_community.design.home_page_images.each do |home_page_image|
+    .col-lg-3
+      .slide-image
+        .image-box
+          .images
+            = image_tag home_page_image.image.url(:thumb)
+          %h4 Nature Image 3
+          .icons
+            = link_to show_image_in_modal_community_home_page_index_path(current_community,home_page_image_id: home_page_image.id), remote: true do 
+              %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+            
+            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_image?home_page_image_id=#{home_page_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+              %i.fa.fa-close
+
+.modal.fade.bs-example-modal-lg{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-body
+        #carousel-example-generic.carousel.slide{"data-ride" => "carousel"}
+          / Wrapper for slides
+          .carousel-inner
+            - current_community.design.home_page_images.each_with_index do |home_page_image,index|
+              .item.text-center{:class=>"#{index == 1 ? 'active' : ''}"}
+                = image_tag home_page_image.image.url(:thumb),width: "400px", height: "400px"
+                .carousel-caption
+                  One Image
+            
+          / Controls
+          %a.left.carousel-control{"data-slide" => "prev", :href => "#carousel-example-generic", :role => "button"}
+            %span.glyphicon.glyphicon-chevron-left
+          %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
+            %span.glyphicon.glyphicon-chevron-right              

@@ -55,7 +55,9 @@ gem 'devise'
 gem 'devise_invitable'
 gem 'cancancan', '~> 2.0'
 gem 'themes_on_rails'
-
+gem 'rmagick', :require => 'RMagick'
+gem 'jquery-ui-rails'
+gem 'rails_sortable'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
