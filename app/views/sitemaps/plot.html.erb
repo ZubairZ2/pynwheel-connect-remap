@@ -1,0 +1,78 @@
+<div class="row-fluid">
+  <%= render_partial 'sitemap/topnav', :locals => {:sitemap => @sitemap} %>
+</div>
+<section class="row-fluid">
+    <div class="row-fluid">
+        <div class="span12">
+            <div class="alert">
+                <!-- add -->
+                <% link_to '#', :class => "badge badge-info", :title => "plot new unit marker on map", :id => "new" do  %>
+                    <i class="icon-white icon-plus-sign"></i> Add Marker
+                <% end %>&nbsp;
+                <label id="newmsg">Place new Unit marker on Map</label>
+                
+		<a class="btn btn-small btn-warning pull-right" href="/sitemaps/<%= @sitemap.id %>/reset" title="reset plotting"><i class="icon-exclamation-sign"></i> Reset All Plots</a>
+                
+                <!-- show/hide map thumb -->
+                <span class="pull-right toggle-map-thumb">
+                    <!-- mouse x/y -->
+                    <span id="active_x_plot">0</span> / <span id="active_y_plot">0</span>
+                    <a id="showhide" class="btn btn-small" title="show/hide map navigator"><i class="icon-eye-close"></i></a>
+                        <span class="btn-group">
+                          <a id="gridview" class="btn btn-small" href="/sitemaps/<%= @sitemap.id %>/grid" title="grid view"><i class="icon-th-list"></i></a>
+                          <a id="mapview" class="btn btn-small" href="#" title="map view"><i class="icon-picture"></i></a>&nbsp;
+                        </span>
+                    </span>
+                </div>
+
+                <!-- thumbnail -->
+                <div class="map-thumb-wrap">
+                    <div id="map-thumb">
+                        <% if swf_file? @map.filename %>
+                            <script type="text/javascript">
+                                swfobject.embedSWF("<%= map_file_path(@map) %>", "plate-thumb", "200", "<%= @map.height/(@map.width/200) %>", "10.0.0", false, false, {wmode:"transparent"});
+                            </script>
+                            <div style="position:absolute; width:200px; height:100%;"></div>
+                            <div id="plate-thumb"><p>Flash image not found</p></div>
+                        <% else %>
+                            <img id="plate-thumb" src="<%= map_file_path(@map) %>" />
+                        <% end %>
+                        <div id="map-nav"></div>
+                    </div>
+                </div>
+
+                <div style="width:none; max-width:none;">
+                    <div id="map-container">
+                      <% p map_file_path(@map) %>
+                        <% if swf_file? @map.filename %>
+                            <script type="text/javascript">
+                                swfobject.embedSWF("<%= map_file_path(@map) %>", "map-fla", "<%=h @map.width %>", "<%=h @map.height %>", "10.0.0", false, false, {wmode:"transparent"});
+                            </script>
+                            <div id="map" style="width:<%= h @map.width %>px; height:<%= h @map.height %>px;"></div>
+                            <div id="map-fla" style="width:<%= h @map.width %>px; height:<%= h @map.height %>px;">
+                                <p>Flash image not found</p>
+                            </div>
+                        <% else %>
+                            <img id="map" src="<%= map_file_path(@map) %>" name="map" style="width:<%=h @map.width %>px; height:<%=h @map.height %>px"/>
+                        <% end %>
+
+                        <!-- draw all plotted markers -->
+                        <% @units.sort! { |x, y| [x["building"].to_s, x["number"].to_s] <=> [y["building"].to_s, y["number"].to_s] }
+			   @units.each do |u|  %>
+                            <% link_to path_for(:plot_sitemap, @sitemap.id, :unit_id => u.id.to_s), :class => "marker", :'data-toggle' => "tooltip", :title => u.number, :style => "left:#{u.x_plot}px; top:#{u.y_plot}px;" do %>
+                                <%= @marker_tag %>
+                            <% end %>
+                        <% end %>
+
+                        <!-- 'new' marker -->
+                        <div id="map-marker" data-toggle="tooltip" title="new marker" onclick="selMarker()"><i class="icon-map-marker"></i></div>
+                    </div>
+                </div>
+            </div>
+            <% if @unit %>
+                <%= render_partial 'sitemap/plot_form', :locals => {:unit => @unit} %>
+            <% end %>
+            <%= render_partial 'sitemap/plot_form', :locals => {:unit => nil} %>
+		</div>
+	</div>
+</section>

@@ -1,0 +1,19 @@
+<div class="span3"> <!--</div> data-spy="affix" data-offset-top="0">-->
+	<ul class="nav nav-list well well-small">
+		<li class="<%= active_page(params, 'sitemap','edit') %>">
+          <% link_to path_for(:edit_sitemap, sitemap.id) do %>
+              Edit Sitemap<i class="icon-chevron-right icon-white pull-right"></i>
+          <% end %>
+		</li>
+        <li class="<%= active_page(params, 'sitemap','plot') %>">
+          <% link_to path_for(:plot_sitemap, sitemap.id) do %>
+              Plot Units<i class="icon-chevron-right icon-white pull-right"></i>
+          <% end %>
+        </li>
+		<li class="<%= active_page(params, 'amenityjoin','new') %>">
+          <% link_to path_for(:new_amenityjoin, :id => sitemap.id.to_s, :model => 'Sitemap') do %>
+              Plot Amenities<i class="icon-chevron-right icon-white pull-right"></i>
+          <% end %>
+        </li>
+	</ul>
+</div>

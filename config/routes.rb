@@ -16,6 +16,12 @@ Rails.application.routes.draw do
     get :import
     get :credentials
     get :test_connection
+    resources :sitemaps do
+      collection do
+        get :plotexp
+        get :map
+      end
+    end
     resources :settings , only: :index
     resources :design, only: :index
     resources :home_page, only: :index do

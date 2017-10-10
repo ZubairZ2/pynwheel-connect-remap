@@ -5,6 +5,7 @@ class Community < ApplicationRecord
   has_many :floorplans, dependent: :destroy
   has_one :credential , dependent: :destroy
   has_one :design, dependent: :destroy
+  has_one :sitemap , dependent: :destroy
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170919142339) do
+ActiveRecord::Schema.define(version: 20171009144412) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -99,22 +99,31 @@ ActiveRecord::Schema.define(version: 20170919142339) do
     t.string   "image"
   end
 
+  create_table "sitemaps", force: :cascade do |t|
+    t.string   "image"
+    t.integer  "community_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["community_id"], name: "index_sitemaps_on_community_id", using: :btree
+  end
+
   create_table "units", force: :cascade do |t|
     t.integer  "community_id"
     t.string   "provider"
     t.string   "property_id"
     t.string   "provider_unit_id"
-    t.string   "name"
-    t.integer  "number"
+    t.string   "unit_type"
+    t.integer  "marketing_name"
     t.integer  "floorplan_id"
-    t.float    "avg_rent"
-    t.float    "min_rent"
-    t.integer  "max_rent"
+    t.float    "market_rent"
+    t.float    "effective_rent"
     t.string   "availability"
     t.date     "available_date"
     t.string   "building"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
+    t.integer  "x_plot",           default: 0
+    t.integer  "y_plot",           default: 0
   end
 
   create_table "users", force: :cascade do |t|
@@ -142,6 +151,7 @@ ActiveRecord::Schema.define(version: 20170919142339) do
     t.string   "invited_by_type"
     t.integer  "invited_by_id"
     t.integer  "invitations_count",      default: 0
+    t.integer  "company_id"
     t.index ["email"], name: "index_users_on_email", unique: true, using: :btree
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, using: :btree
     t.index ["invitations_count"], name: "index_users_on_invitations_count", using: :btree
@@ -151,4 +161,5 @@ ActiveRecord::Schema.define(version: 20170919142339) do
 
   add_foreign_key "communities", "companies"
   add_foreign_key "credentials", "communities"
+  add_foreign_key "sitemaps", "communities"
 end

@@ -1,0 +1,21 @@
+<div class="row-fluid">
+    <%= render_partial 'sitemap/topnav', :locals => {:sitemap => @sitemap} %>
+</div>
+
+<section class="row-fluid">
+  <div class="pull-left">
+    <h1><%= page_title %></h1>
+  </div>
+</section>
+
+<section class="row-fluid">
+  <div class="container-fluid tab-content-wrapper">
+    <div class="tab-content span12">
+        <p>Are you sure you want to delete the sitemap for the following community: <em>'<%=h @sitemap.community.name %>'</em>?</p>
+      <% form_for @sitemap, path_for(:sitemap, @sitemap.id), :method => 'delete' do |f| %>
+        <%= f.submit "Yes, Delete It!", :class => "btn btn-warning" %>
+        <%= link_to 'Cancel', path_for(:edit_sitemap, @sitemap.id), :class => "btn btn-small"  %>
+      <% end %>
+    </div>
+  </div>
+</section>
