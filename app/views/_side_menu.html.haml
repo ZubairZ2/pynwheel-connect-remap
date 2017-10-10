@@ -45,19 +45,17 @@
             = link_to "Units", community_units_path(current_community)  
           %li
             %a{:href => "#"} Unit Amenity Images
-      %li.treeview
+      %li.treeview{:class=>"#{controller_name =='sitemaps' ? 'active' : ''}"}
         %a{:href => "#"}
           %i.fa.fa-map-marker
           %span Property Map
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
-          %li
-            %a{:href => "#"} Name Here
-          %li
-            %a{:href => "#"} Name Here
-          %li
-            %a{:href => "#"} Name Here
+          %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'map' ? 'active' : ''}"}
+            = link_to "Sitemap", map_community_sitemaps_path(current_community)
+          %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'plotexp' ? 'active' : ''}"}
+            = link_to "Plot Units", plotexp_community_sitemaps_path(current_community)
       %li.treeview
         %a{:href => "#"}
           %i.fa.fa-database

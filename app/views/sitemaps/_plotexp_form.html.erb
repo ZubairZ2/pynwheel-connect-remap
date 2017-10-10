@@ -1,0 +1,65 @@
+<div id="<%= unit.nil? ? 'new' : 'edit' %>-aj-popup" class="modal <%= unit.nil? ? 'hide' : 'show' %> aj-popup" style="height:550px">
+  <div class="modal-header"><h5>Edit Unit Marker</h5></div>
+  <div class="~modal-body">
+
+    <% form_for :unit, path_for(:plotexp_sitemap, @sitemap.id, :unit_id => unit.nil? ? unit : unit.id.to_s), {:method => 'post' } do |f| %>
+
+
+      <div class="controls span12">
+        <span class="span5">
+          <%= f.label :x_plot, :caption => 'X' %>
+          <div class="controls">
+            <%= f.text_field :x_plot, :value => (unit.x_plot if unit), :class => "span10 numeric", :id => 'x_plot' %>
+          </div>
+        </span>
+        <span class="span5">
+          <%= f.label :y_plot, :caption => 'Y' %>
+          <div class="controls">
+              <%= f.text_field :y_plot, :value => (unit.y_plot if unit), :class => "span10 numeric", :id => 'y_plot' %>
+          </div>
+        </span>
+      </div>
+
+      <div class="control-group">
+        <%= f.label :unit_id, :caption => 'Select Unit(s) for this location' %>
+        <div class="controls">
+          <span class="helper"><small><em>(Use Ctrl/Cmd or Shift-click to select multiple)</em></small></span>
+
+          <select class="span12" name="unit_list[]" style="height:232px" multiple isrequired>
+            <% @sitemap.community.units.sort! { |a,b| [a['building'].to_s,a['number'].to_s] <=> [b['building'].to_s,b['number'].to_s] }
+               @sitemap.community.units.each do |u|
+                hit=false
+                if unit                
+                  session[:before].each do |sid| 
+                    if u.id == sid && u.x_plot == unit.x_plot && u.y_plot == unit.y_plot
+                      hit = true
+                    end
+                    break if hit
+                  end
+                end
+            %>
+              <option value="<%= u.id %>" <%= (hit ? "selected" : "")%>>
+                <%= h (u.building != "" ? "#{u.building}-" : '') + u.number %>
+              </option>
+            <% end %> 
+          </select>
+          
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <div class="form-actions span12">
+          <%= f.submit "#{ unit.nil? ? "Create" : "Update"}", :class => "btn btn-primary" %>&nbsp;
+          <%= link_to 'Cancel', '#', :class => 'btn btn-small close-aj-popup' %>
+          <% if unit %>
+              <%= link_to 'Delete Marker', path_for(:plotexp_sitemap, @sitemap.id, :unit_id => unit.id.to_s), 'data-method' => 'delete', :class => 'btn btn-small' %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    
+  </div>
+
+</div>
+
+

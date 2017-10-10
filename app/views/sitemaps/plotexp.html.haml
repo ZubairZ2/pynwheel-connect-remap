@@ -1,0 +1,91 @@
+/ Main content
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Plot Property
+          %span Map Units
+      / /.box-header
+      / form start
+      %form.form-horizontal
+        .box-body.map-body-top
+          .row
+            .col-lg-9
+              .map-block#map
+                = image_tag @sitemap.present? ? @sitemap.image.url : "default.jpeg"
+            .col-lg-3
+              %h5.mt-40.mb-20 SELECT UNITS TO PLOT
+              %select.amenities-list.form-control
+                - @units.each do |unit|
+                  %option
+                    = link_to "#{unit.unit_type}", "#"
+              %h5.mt-40 SELECTED UNIT
+              .add-plan.mt-10.mb-20
+                %ul#selected-units
+              %button.btn.btn-success#new{:type => "button"} PLOT NOW
+              %label#newmsg Place marker for selected units on Map
+:javascript
+  var addmode = false;
+  selected=[];
+  $('.amenities-list').mouseup( function(e) {
+    e.preventDefault();
+    $('.amenities-list :selected').each(function(){
+      selected.push([ $(this).val(), $.trim($(this).text()) ]);
+      // add to selected list
+      $("#selected-units").empty();
+      for (i=0; i<selected.length; i++) {
+        $("#selected-units").append('<li>' + selected[i][1] + '</li>');
+      }
+      // hide from unused list
+      $(this).css({"display": "none"});
+    }); 
+  });
+
+  $("#new").click(function(e) {
+    e.preventDefault();
+    if (selected.length > 0) {
+      addmode = true;
+      $("#newmsg").css({display: 'inline-block'});
+      $("#map").css('cursor','crosshair');
+    } else {
+      addmode = false;
+      $("#newmsg").css({display: 'none'});
+      $("#map").css('cursor','default');
+      alert('Select units from list first...')
+    }
+  });
+
+  $("#map").mouseup(function(e) {
+    e.preventDefault();
+    dx = parseInt($('#active_x_plot').html())-8;
+    dy = parseInt($('#active_y_plot').html()-10);
+    if (addmode) {
+      // save plotting for each selected unit
+      for (i=0; i<selected.length; i++) {
+        //savePlot(selected[i][0], dx, dy);
+      }
+      // add new marker to display
+      tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px;' href='/sitemaps/<%= @sitemap.id %>/plotexp?unit_id=" + selected[0][0] + "'>";
+      
+      tag += "<i class='icon-screenshot'></i>";
+      tag += "</a>"
+      $('#map-container').append(tag);
+      reset();
+      //doDraggable();
+    }
+  });
+
+  function reset() {
+    addmode = false;
+    selected=[];
+    dx = 0;
+    dy = 0;
+    $("#map").css('cursor','default');
+    $("#selected-units").empty();
+    $("#newmsg").css({display: 'none'});
+    // reset any hidden unused ones that didn't get plotted
+    $('.amenities-list option').each(function(){
+      $(this).css({"display": "block"});
+    }); 
+  }

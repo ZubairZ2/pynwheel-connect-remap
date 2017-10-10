@@ -1,0 +1,25 @@
+<% community = sitemap.new? ? @community : sitemap.community %>
+<div class="topnav span12"> <!-- data-spy="affix" data-offset-top="0"> -->
+	<ul class="breadcrumb">
+		<!--<li>
+			<%= link_to "Company", path_for(:edit_company, community.company_id) %>
+			<span class="divider"> > </span>
+		</li>-->
+			<li>
+				<%= link_to "Communities", path_for(:communities, :company_id => community.company_id.to_s) %>
+				<span class="divider"> > </span>
+			</li>
+		<li>
+			<%= link_to community.name, path_for(:community, community.id) %>
+			<span class="divider"> > </span>
+		</li>
+		<li>
+			<% if sitemap.new? %>
+				Sitemap
+			<% else %>
+				<%= link_to "Sitemap", path_for(:edit_sitemap, sitemap.id) %>
+				<span class="divider"> > </span>Plot
+			<% end %>
+		</li>
+	</ul>
+</div>

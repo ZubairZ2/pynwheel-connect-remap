@@ -1,0 +1,247 @@
+<section class="row-fluid">
+    <div>
+
+	<!-- sidebar controls -->
+	<div class="span2">
+	  <p>Select Units to plot <a href="#" title="help" onclick="javascript:help()"><i class="icon-question-sign"></i></a></p>
+	  <select id="unitlist" name="unit_list[]" style="height:350px" multiple>
+	    <% @community.units.sort { |a,b| [a['building'].to_s,a['number'].to_s] <=> [b['building'].to_s,b['number'].to_s] }
+	       @community.units.each do |u|
+		hit = false
+		if @unit != nil              
+		  session[:before].each do |sid| 
+		    if u.id == sid && u.x_plot == @unit.x_plot && u.y_plot == @unit.y_plot
+		      hit = true
+		    end
+		    break if hit
+		  end
+		end
+		if u.x_plot.to_i + u.y_plot.to_i == 0 %>
+		<option value="<%= u.id %>" <%= (hit ? "selected" : "")%>>
+		  <%= h (u.building.to_s != "" ? "#{u.building}-#{u.unit_type}" : "#{u.unit_type}") %>
+		</option>
+	      <% end %>
+	    <% end %>
+	  </select>
+	  
+	  <br/>
+	  <p>Selected Units</p>
+	    <a id="reset" class="btn btn-small" style="margin-right:10px">Reset</a>
+	    <!-- add mode -->
+	    <% link_to '#', :class => "btn btn-small btn-info", :title => "plot new unit marker on map", :id => "new" do  %>
+		<i class="icon-white icon-screenshot"></i> Plot Units
+	    <% end %>&nbsp;
+	  <br/>
+	    <label id="newmsg">Place marker for selected units on Map</label>
+	  <br/>
+	  
+	  <ul id="selunitlist" class="unstyled"></ul>
+	</div>
+
+	<!-- thumbnail -->
+	<div class="map-thumb-wrap">
+	    <div id="map-thumb">
+		<div id="map-nav"></div>
+	    </div>
+	</div>
+
+	<!-- full map -->
+	<div class="span9 pull-right">
+	    <div id="map-container">
+	     
+	      
+		  <img id="map" class="map2" src="/assets/image.jpeg" name="map" style="width: 3030px; height: 1868px"/>
+	      <!-- draw all plotted markers -->
+	      <% @community.units.sort { |x, y| [x["building"].to_s, x["unit_type"].to_s] <=> [y["building"].to_s, y["unit_type"].to_s] }
+		arr = []
+		@community.units.each do |u|
+		  #if u.x_plot.to_i + u.y_plot.to_i > 0
+		    arr.push([u.id.to_s, u.x_plot.to_i, u.y_plot.to_i, true, u.unit_type]);
+		  #end
+		end
+	      %>
+	      
+	      <script>
+		// copy working array to client
+		var arr = <%= arr %>;
+	      </script>
+	      
+	      <%
+		@community.units.each do |u|
+		  skip = false
+		  #arr.each {|au|
+		  #  #if au[3] != false && au[0] != u.id && (au[1] == u.x_plot && au[2] == u.y_plot)
+		  #  if au[0] != u.id && (au[1] == u.x_plot && au[2] == u.y_plot)
+		      #  p "#{au[4]} : #{au[0]} != #{u.id} && #{au[1]} == #{u.x_plot} && #{au[2]} == #{u.y_plot}"
+		      #  au[3] = false
+		      #  skip = true
+		      #  break
+		  #  end
+		  #}
+		  if skip == false
+		    if u.x_plot.to_i + u.y_plot.to_i > 0
+			link_to path_for(:plotexp_sitemap, @sitemap.id, :unit_id => u.id), :class => "marker", :'data-toggle' => "tooltip", :title => u.unit_type, :id => "m_#{u.id}", :style => "left:#{u.x_plot}px; top:#{u.y_plot}px;" do
+			  @marker_tag
+			end
+		    end
+		  end
+		end
+	      %>
+	      <!-- 'new' marker -->
+	      <div id="map-marker" data-toggle="tooltip" title="new marker" onclick="selMarker()"><i class="icon-screenshot"></i></div>
+	    </div>
+	</div>
+    </div>
+
+    
+</section>
+
+<!--<script type="text/javascript" src="/js/mapexp.js"></script>-->
+<script>
+var addmode = false;
+var selected=[];
+var temp=[];
+$("#map").css('cursor','default');
+
+$(window).load(function (){
+  doDraggable();
+});
+
+function doDraggable() {
+  // marker move
+  $('.marker').draggable({
+    containment: 'parent',
+    stack: ".marker",
+    // get the initial X and Y position when dragging starts
+    start: function(event, ui) {
+      console.debug("start drag")
+      xpos = Math.round(ui.position.left);
+      ypos = Math.round(ui.position.top);
+      // temp array of just markers at same x/y
+      temp=[];
+      if (arr != null) {
+	for (i=0; i<arr.length; i++) {
+	  if (arr[i][1] == xpos && arr[i][2] == ypos) {
+	    temp.push(arr[i][0])
+	  }
+	}
+      }
+    },
+    // when dragging stops
+    drag: function(event, ui) {
+      // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
+      xmove = ui.position.left - xpos;
+      ymove = ui.position.top - ypos;
+      if (temp != null) {
+	for (i=0; i<temp.length; i++) {
+	  $('#m_' + temp[i]).css({"left": ui.position.left, "top": ui.position.top});
+	}
+      }
+    },
+    stop: function(event, ui) {
+      if (temp != null) {
+	for (i=0; i<temp.length; i++) {
+	  console.debug("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+	  for (j=0; j<arr.length; j++) {
+	    if (arr[j][0] == temp[i]) {
+	      arr[j][1] = Math.round(ui.position.left);
+	      arr[j][2] = Math.round(ui.position.top);
+	    }
+	  }
+	  savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+	}
+      }
+    }
+  });
+}
+
+$('#reset').click( function() {
+  reset();
+});
+
+function reset() {
+  addmode = false;
+  selected=[];
+  dx = 0;
+  dy = 0;
+  $("#map").css('cursor','default');
+  $("#selunitlist").empty();
+  $("#newmsg").css({display: 'none'});
+  // reset any hidden unused ones that didn't get plotted
+  $('#unitlist option').each(function(){
+    $(this).css({"display": "block"});
+  }); 
+}
+
+// place maker on click
+$("#map").mouseup(function(e) {
+  e.preventDefault();
+  dx = parseInt($('#active_x_plot').html())-8;
+  dy = parseInt($('#active_y_plot').html()-10);
+  if (addmode) {
+    // save plotting for each selected unit
+    for (i=0; i<selected.length; i++) {
+      savePlot(selected[i][0], dx, dy);
+    }
+    // add new marker to display
+      tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px;' href='/communities/9/sitemaps/plotexp?unit_id=" + selected[0][0] + "'>";
+    tag += "<i class='icon-screenshot'></i>";
+    tag += "</a>"
+    $('#map-container').append(tag);
+    reset();
+    doDraggable();
+  }
+});
+
+// save an individual unit (even if same x/y)
+function savePlot(id, dx, dy) {
+  console.debug("ready to ajaxsave ajaxplotunit", id, dx, dy);
+  $.post( "/units/" + id + "/ajaxplotunit",
+      { "x_plot": dx,
+	"y_plot": dy
+      },
+      function(data,status,xhr) {
+	console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+	// delete from unused list
+	$('#unitlist option').each(function(){
+	  if ($(this).val() == id) {
+	    $(this).remove();
+	  }
+	});
+      });
+}
+
+$("#new").click(function(e) {
+  e.preventDefault();
+  if (selected.length > 0) {
+    addmode = true;
+    $("#newmsg").css({display: 'inline-block'});
+    $("#map").css('cursor','crosshair');
+  } else {
+    addmode = false;
+    $("#newmsg").css({display: 'none'});
+    $("#map").css('cursor','default');
+    alert('Select units from list first...')
+  }
+});
+
+
+$('#unitlist').mouseup( function(e) {
+  e.preventDefault();
+  $('#unitlist :selected').each(function(){
+    selected.push([ $(this).val(), $.trim($(this).text()) ]);
+    // add to selected list
+    $("#selunitlist").empty();
+    for (i=0; i<selected.length; i++) {
+      $("#selunitlist").append('<li>' + selected[i][1] + '</li>');
+    }
+    // hide from unused list
+    $(this).css({"display": "none"});
+  }); 
+});
+
+function help() {
+  alert("Select units from list (choose all that will be combined in one location)\n- They are moved to the 'Selected' list\n- Press 'Plot Units' button\n- Click on map to set x/y\n- Once plotted you can drag markers around on map to re-position them.\n- Rinse, repeat...");
+}
+
+</script>
