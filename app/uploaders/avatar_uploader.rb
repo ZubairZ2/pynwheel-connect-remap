@@ -17,12 +17,13 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
   version :thumb do
     process :crop
+    resize_to_fill(600, 600)
   end
 
 
   def crop
     if model.crop_x.present?
-      #resize_to_limit(600, 600)
+      resize_to_limit(600, 600)
       manipulate! do |img|
         x = model.crop_x
         y = model.crop_y

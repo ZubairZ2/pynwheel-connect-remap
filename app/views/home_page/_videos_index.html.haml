@@ -1,10 +1,10 @@
 - current_community.design.home_page_videos.each do |home_page_video|
   .col-lg-3
     .slide-image
-      .image-box
+      .image-box.video-box
         .images
           = video_tag home_page_video.video.url, :controls => true, :autobuffer => true
-        %h4= home_page_video.name 
         .icons
           %i.fa.fa-close
+      %h4= home_page_video.name     
             
