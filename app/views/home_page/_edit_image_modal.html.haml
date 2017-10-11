@@ -3,7 +3,7 @@
     = form_for @home_page_image,url: update_home_page_image_community_home_page_index_path(current_community,home_page_image_id: @home_page_image.id),method: :put do |f|
       .modal-body
         .image-crop
-          = image_tag @home_page_image.image.url(:thumb), id: "cropbox",width: "600", height: "600"
+          = image_tag @home_page_image.image.url(:thumb), id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"  
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
@@ -18,14 +18,11 @@
             %i.fa.fa-check
         .clearfix
 :javascript 
-  var width = $("#cropbox").width();
-  var height = $("#cropbox").height();
   $("#crop_image").on("click",function(e){
     $(".divLoading").removeClass("hidden")
   });
   
   $('#cropbox').Jcrop({
-    trueSize: [width, height],
     onSelect: update_crop,
     onChange: update_crop,
     aspectRatio: 1
