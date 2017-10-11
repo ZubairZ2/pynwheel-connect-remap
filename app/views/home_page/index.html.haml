@@ -43,26 +43,11 @@
                   %span.btn.btn-success.btn-file.pull-right.text-UP
                     %i.fa.fa-plus-circle
                     Add Video's
+                    %input#home-page-video{:type => "file"}
                     
           .row.slide-imgage-boxs
-            .col-lg-3
-              .slide-image
-                .image-box
-                  .images
-                    = image_tag "homepage-slide-1.jpg"
-                  %h4 Video 1
-                  .icons
-                    %i.fa.fa-pencil
-                    %i.fa.fa-close
-            .col-lg-3
-              .slide-image
-                .image-box
-                  .images
-                    = image_tag "homepage-slide-2.jpg"
-                  %h4 Video 2
-                  .icons
-                    %i.fa.fa-pencil{"data-target" => "#edit-image", "data-toggle" => "modal"}
-                    %i.fa.fa-close
+            #videos-index
+              = render 'videos_index'
 #edit-image.modal.fade.edit-image   
 :javascript
   var community_id = #{params[:community_id]}

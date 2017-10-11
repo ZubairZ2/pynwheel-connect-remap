@@ -26,6 +26,11 @@ class HomePageController < ApplicationController
 		flash[:notice] = "Image delete successfully."
 		redirect_to :back
 	end
+
+    def save_home_page_video
+		current_community.design.home_page_videos.create(video: params[:src],name: params[:name])
+	end
+
 	private
 
 	def home_page_image_params

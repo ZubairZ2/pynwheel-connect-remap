@@ -58,6 +58,7 @@ gem 'themes_on_rails'
 gem 'rmagick', :require => 'RMagick'
 gem 'jquery-ui-rails'
 gem 'rails_sortable'
+gem 'carrierwave-video-thumbnailer'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

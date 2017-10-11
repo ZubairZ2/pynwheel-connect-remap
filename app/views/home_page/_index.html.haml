@@ -5,7 +5,7 @@
         .image-box
           .images
             = image_tag home_page_image.image.url(:thumb)
-          %h4 Nature Image 3
+          %h4= home_page_image.name 
           .icons
             = link_to show_image_in_modal_community_home_page_index_path(current_community,home_page_image_id: home_page_image.id), remote: true do 
               %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
@@ -24,7 +24,7 @@
               .item.text-center{:class=>"#{index == 1 ? 'active' : ''}"}
                 = image_tag home_page_image.image.url(:thumb)
                 .carousel-caption
-                  One Image
+                  = home_page_image.name
             
           / Controls
           %a.left.carousel-control{"data-slide" => "prev", :href => "#carousel-example-generic", :role => "button"}
