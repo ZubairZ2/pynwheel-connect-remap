@@ -31,6 +31,13 @@ class HomePageController < ApplicationController
 		current_community.design.home_page_videos.create(video: params[:src],name: params[:name])
 	end
 
+	def delete_home_page_video
+		@home_page_video = HomePageVideo.find(params[:home_page_video_id])
+		@home_page_video.destroy
+		flash[:notice] = "Video deleted successfully."
+		redirect_to :back
+	end
+
 	private
 
 	def home_page_image_params

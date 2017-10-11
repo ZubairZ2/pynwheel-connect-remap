@@ -49,6 +49,7 @@ function homePageImage(src,name){
  }
 
  function readHomePageVideo(input){
+  $(".divLoading").removeClass("hidden");
   if (input.files && input.files[0]) {
         //if(input.files[0].type == "mp4"){ 
           var reader = new FileReader();
@@ -78,6 +79,7 @@ function homePageVideo(src,name){
             src: src
         }
     }).done(function(){
+        $(".divLoading").addClass("hidden");
         console.log("success");
     });
  }

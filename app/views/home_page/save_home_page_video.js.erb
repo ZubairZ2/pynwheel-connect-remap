@@ -1,0 +1,6 @@
+$('#videos-index').html("<%= escape_javascript render 'videos_index' %>");
+var message = '<div class="alert alert-success">Video uploaded successfully.</div>'
+$('#flash-message').html(message);
+setTimeout(function() {
+    $('.alert').fadeOut('slow');
+}, 10000);

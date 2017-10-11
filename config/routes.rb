@@ -31,6 +31,7 @@ Rails.application.routes.draw do
         put :update_home_page_image
         delete :delete_home_page_image
         post :save_home_page_video
+        delete :delete_home_page_video
       end
     end
   end
