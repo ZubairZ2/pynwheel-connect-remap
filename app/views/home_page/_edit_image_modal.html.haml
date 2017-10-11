@@ -34,10 +34,14 @@
     var ratioW = $('#cropbox')[0].naturalWidth / $('#cropbox').width();
     var ratioH = $('#cropbox')[0].naturalHeight / $('#cropbox').height();
     var currentRatio = Math.min(ratioW, ratioH);
-    $('#home_page_image_crop_x').val(Math.round(coords.x * currentRatio));
-    $('#home_page_image_crop_y').val(Math.round(coords.y * currentRatio));
-    $('#home_page_image_crop_w').val(Math.round(coords.w * currentRatio));
-    $('#home_page_image_crop_h').val(Math.round(coords.h * currentRatio));
+    //$('#home_page_image_crop_x').val(Math.round(coords.x * currentRatio));
+    $('#home_page_image_crop_x').val(coords.x);
+    //$('#home_page_image_crop_y').val(Math.round(coords.y * currentRatio));
+    $('#home_page_image_crop_y').val(coords.y);
+    //$('#home_page_image_crop_w').val(Math.round(coords.w * currentRatio));
+    $('#home_page_image_crop_w').val(coords.w);
+    //$('#home_page_image_crop_h').val(Math.round(coords.h * currentRatio));
+    $('#home_page_image_crop_h').val(coords.h);
     //update_preview(coords);
   } 
 
