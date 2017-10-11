@@ -16,7 +16,7 @@ class HomePageController < ApplicationController
 	def update_home_page_image
 		@home_page_image = HomePageImage.find(params[:home_page_image_id])
 		@home_page_image.update(home_page_image_params)
-		flash[:notice] = "Image is cropped successfully."
+		flash[:notice] = "Image is edited successfully."
 		redirect_to :back
 	end
 

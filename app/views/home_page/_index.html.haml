@@ -21,7 +21,7 @@
           / Wrapper for slides
           .carousel-inner
             - @home_page_images.each_with_index do |home_page_image,index|
-              .item.text-center{:class=>"#{index == 1 ? 'active' : ''}"}
+              .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
                 = image_tag home_page_image.image.url(:thumb)
                 .carousel-caption
                   = home_page_image.name
@@ -32,4 +32,4 @@
           %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
             %span.glyphicon.glyphicon-chevron-right 
 :javascript
-  $('.sortable').railsSortable({axis: "x"});                         
+  $('.sortable').railsSortable({axis: "x",axis: "y"});                         
