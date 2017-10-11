@@ -15,20 +15,23 @@
             - if can? :select_theme, current_user  
               %li{:role => "presentation"}
                 %a#theme-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-theme", :role => "tab"} Select Theme 
-            %li{:role => "presentation"}
-              %a#color-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-color", :role => "tab"} Select Color
-            %li{:role => "presentation"}
-              %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
-            - if @community.design.menu.present?  
-              %li.dropdown{:role => "presentation"}
-                %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
-                  Menu
-                  %span.caret
-                %ul.dropdown-menu{"aria-labelledby" => "myTabDrop1"}
-                  %li
-                    %a#custom-style-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#c-style", :role => "tab"} Custom Style
-                  %li
-                    %a#button-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#u-button", :role => "tab"} Upload Buttons
+            - if current_community.present? and (current_community.is_cubist? || current_community.is_modernist? || current_community.is_expressionist?)    
+              %li{:role => "presentation"}
+                %a#color-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-color", :role => "tab"} Select Color
+            - if current_community.present? and (current_community.is_cubist? || current_community.is_modernist? || current_community.is_expressionist?)     
+              %li{:role => "presentation"}
+                %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
+            - if current_community.present? and current_community.is_expressionist?     
+              - if @community.design.menu.present?  
+                %li.dropdown{:role => "presentation"}
+                  %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
+                    Menu
+                    %span.caret
+                  %ul.dropdown-menu{"aria-labelledby" => "myTabDrop1"}
+                    %li
+                      %a#custom-style-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#c-style", :role => "tab"} Custom Style
+                    %li
+                      %a#button-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#u-button", :role => "tab"} Upload Buttons
           #myTabContent.tab-content.add-plan
             / Start L>ogo Upload section
             #home.tab-pane.fade{:role => "tabpanel"}
@@ -714,5 +717,15 @@
       $(element).hide();
       $(text_field).removeClass('validate[required]');
     }
+  }
+
+  if ($('#main-screen-radio').is(':checked')){
+    $('#main-screen').show();
+    $('#home-screen').hide();
+  }
+
+  if ($('#home-screen-radio').is(':checked')){
+    $('#main-screen').hide();
+    $('#home-screen').show();
   }
   
