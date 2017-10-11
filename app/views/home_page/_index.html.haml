@@ -25,7 +25,7 @@
           .carousel-inner{:style=>"height: 500px;"}
             - @home_page_images.each_with_index do |home_page_image,index|
               .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
-                = image_tag home_page_image.image.url(:thumb)
+                = image_tag home_page_image.image.url(:thumb),width: "600", height: "600"
                 .carousel-caption
                   = home_page_image.name
             
