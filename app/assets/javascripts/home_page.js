@@ -49,9 +49,10 @@ function homePageImage(src,name){
  }
 
  function readHomePageVideo(input){
-  $(".divLoading").removeClass("hidden");
   if (input.files && input.files[0]) {
-        //if(input.files[0].type == "mp4"){ 
+        console.log(input.files[0].type);
+        if(input.files[0].type == "video/mp4" || input.files[0].type == "video/webm"){
+          $(".divLoading").removeClass("hidden"); 
           var reader = new FileReader();
 
           reader.onload = function (e) {
@@ -59,11 +60,11 @@ function homePageImage(src,name){
           }
 
           reader.readAsDataURL(input.files[0]);
-      /*}
+      }
       else{
         $(input).val('');
-        $('#image-upload-warning').modal('show');
-      }*/
+        $('#video-upload-warning').modal('show');
+      }
     }
 }
 
