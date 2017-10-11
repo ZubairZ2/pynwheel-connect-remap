@@ -1,11 +1,12 @@
 class HomePageController < ApplicationController
 	before_action :authenticate_user!
 	def index
-      
+      @home_page_images = current_community.design.home_page_images.order(:sort).all
 	end
 
 	def save_home_page_image
 		current_community.design.home_page_images.create(image: params[:src],name: params[:name])
+		@home_page_images = current_community.design.home_page_images.order(:sort).all
 	end
 
 	def show_image_in_modal

@@ -1,6 +1,6 @@
-.row.slide-imgage-boxs
-  - current_community.design.home_page_images.each do |home_page_image|
-    .col-lg-3
+.row.slide-imgage-boxs.sortable
+  - sortable_fetch(@home_page_images) do |home_page_image, id_tag|
+    .col-lg-3{:id=> id_tag}
       .slide-image
         .image-box
           .images
@@ -20,9 +20,9 @@
         #carousel-example-generic.carousel.slide{"data-ride" => "carousel"}
           / Wrapper for slides
           .carousel-inner
-            - current_community.design.home_page_images.each_with_index do |home_page_image,index|
+            - @home_page_images.each_with_index do |home_page_image,index|
               .item.text-center{:class=>"#{index == 1 ? 'active' : ''}"}
-                = image_tag home_page_image.image.url(:thumb),width: "400px", height: "400px"
+                = image_tag home_page_image.image.url(:thumb)
                 .carousel-caption
                   One Image
             
@@ -30,4 +30,6 @@
           %a.left.carousel-control{"data-slide" => "prev", :href => "#carousel-example-generic", :role => "button"}
             %span.glyphicon.glyphicon-chevron-left
           %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
-            %span.glyphicon.glyphicon-chevron-right              
+            %span.glyphicon.glyphicon-chevron-right 
+:javascript
+  $('.sortable').railsSortable({axis: "x"});                         
