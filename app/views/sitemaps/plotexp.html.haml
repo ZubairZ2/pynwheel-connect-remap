@@ -88,7 +88,7 @@
       tag += "</a>"
       $('#container').append(tag);
       reset();
-      //doDraggable();
+      doDraggable();
     }
   });
 
@@ -147,7 +147,7 @@
           arr[j][2] = Math.round(ui.position.top);
         }
       }
-      //savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+      savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
     }
         }
       }
