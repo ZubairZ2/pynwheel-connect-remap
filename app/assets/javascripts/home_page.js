@@ -13,6 +13,7 @@ $(document).ready(function(){
 
 
 function readHomePageImage(input){
+  $(".divLoading").removeClass("hidden")
 	if (input.files && input.files[0]) {
         if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
           var reader = new FileReader();
@@ -42,6 +43,7 @@ function homePageImage(src,name){
             src: src
         }
     }).done(function(){
+        $(".divLoading").addClass("hidden")
         console.log("success");
     });
  }

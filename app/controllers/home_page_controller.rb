@@ -23,7 +23,7 @@ class HomePageController < ApplicationController
 	def delete_home_page_image
 		@home_page_image = HomePageImage.find(params[:home_page_image_id])
 		@home_page_image.destroy
-		flash[:notice] = "Image delete successfully."
+		flash[:notice] = "Image deleted successfully."
 		redirect_to :back
 	end
 
