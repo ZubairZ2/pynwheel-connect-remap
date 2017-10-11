@@ -11,7 +11,11 @@ Rails.application.routes.draw do
   end
   resources :communities do
     resources :floorplans
-    resources :units
+    resources :units do
+      member do
+        post :ajaxplotunit
+      end
+    end
     get :import_page
     get :import
     get :credentials

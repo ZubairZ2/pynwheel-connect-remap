@@ -2,7 +2,7 @@
    Editor: Alexey Klimuk, Softensity, Inc.
  * sitemap, floorplate, amenity map plotting
 */
-  $(window).load(function (){
+  $(window).on('load',function (){
     /**
     * map controls
     */
@@ -22,8 +22,8 @@
 
     // show mousemove x/y
     $('#map').mousemove(function(event) {
-      var dx = parseInt(event.pageX) - parseInt($('#map-container').offset().left) + parseInt($('#map-container').scrollLeft());
-      var dy = parseInt(event.pageY) - parseInt($('#map-container').offset().top) + parseInt($('#map-container').scrollTop());
+      var dx = parseInt(event.pageX) - parseInt($('#container').offset().left) + parseInt($('#container').scrollLeft());
+      var dy = parseInt(event.pageY) - parseInt($('#container').offset().top) + parseInt($('#container').scrollTop());
       $('#active_x_plot').html(dx);
       $('#active_y_plot').html(dy);
     });
@@ -96,8 +96,8 @@
 
     // set @currunit x/y on load
     if ($('#x_plot').val() != "") {
-      $('#map-container').scrollLeft($('#x_plot').val() - ($('#map-container').width()/2));
-      $('#map-container').scrollTop($('#y_plot').val() - ($('#map-container').height()/2));
+      $('#container').scrollLeft($('#x_plot').val() - ($('#container').width()/2));
+      $('#container').scrollTop($('#y_plot').val() - ($('#container').height()/2));
       var dx = parseInt($('#x_plot').val());
       var dy = parseInt($('#y_plot').val());
       // place marker

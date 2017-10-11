@@ -11,6 +11,7 @@
 // about supported directives.
 //
 //= require jquery.min
+//= require jquery-ui.min
 //= require jquery_ujs
 //= require best_in_place
 //= require dataTables/jquery.dataTables
