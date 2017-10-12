@@ -15,8 +15,8 @@
         .box-body.map-body-top
           .row
             .col-lg-9#container
-              .map-block#map
-                = image_tag @sitemap.present? ? @sitemap.image.url : "default.jpeg",width: "100%", height: "100%"
+              .map-block#map{:style=>"position: relative;"}
+                = image_tag @sitemap.present? ? @sitemap.image.url : "default.jpeg"
                 - @units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                     = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.unit_type, :id => "m_#{unit.id}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;"
@@ -90,7 +90,7 @@
       
       tag += "<i class='fa fa-asterisk'></i>";
       tag += "</a>"
-      $('#container').append(tag);
+      $('#map').append(tag);
       reset();
       doDraggable();
     }

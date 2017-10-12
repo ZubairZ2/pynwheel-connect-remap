@@ -22,8 +22,8 @@
 
     // show mousemove x/y
     $('#map').mousemove(function(event) {
-      var dx = parseInt(event.pageX) - parseInt($('#container').offset().left) + parseInt($('#container').scrollLeft());
-      var dy = parseInt(event.pageY) - parseInt($('#container').offset().top) + parseInt($('#container').scrollTop());
+      var dx = parseInt(event.pageX) - parseInt($('#map').offset().left) + parseInt($('#map').scrollLeft());
+      var dy = parseInt(event.pageY) - parseInt($('#map').offset().top) + parseInt($('#map').scrollTop());
       $('#active_x_plot').html(dx);
       $('#active_y_plot').html(dy);
     });
