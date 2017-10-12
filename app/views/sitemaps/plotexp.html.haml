@@ -1,4 +1,4 @@
-/ Main content
+- content_for :title, "Plot Unit - Pynwheel"
 %section
   .content
     .box.box-info.add-plan.mt-20
@@ -6,9 +6,9 @@
         %h3.box-title
           Plot Property
           %span Map Units
-          %span#active_x_plot 0
-          \/
-          %span#active_y_plot 0
+          %span.hidden#active_x_plot 0
+          
+          %span.hidden#active_y_plot 0
       / /.box-header
       / form start
       %form.form-horizontal
@@ -16,10 +16,10 @@
           .row
             .col-lg-9#container
               .map-block#map
-                = image_tag @sitemap.present? ? @sitemap.image.url : "default.jpeg"
+                = image_tag @sitemap.present? ? @sitemap.image.url : "default.jpeg",width: "100%", height: "100%"
                 - @units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i > 0
-                    = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.unit_type, :id => "m_#{unit.id}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px;"
+                    = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.unit_type, :id => "m_#{unit.id}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;"
             .col-lg-3
               %h5.mt-40.mb-20 SELECT UNITS TO PLOT
               %select.amenities-list.form-control
@@ -27,7 +27,7 @@
                 - @units.each do |unit|
                   %option
                     = link_to "#{unit.unit_type}", "#"
-                  - arr.push([unit.id.to_s, unit.x_plot.to_i, unit.y_plot.to_i, true, unit.unit_type]);
+                  - arr.push([unit.unit_type, unit.x_plot.to_i, unit.y_plot.to_i, true, unit.id.to_s])
               %h5.mt-40 SELECTED UNIT
               .add-plan.mt-10.mb-20
                 %ul#selected-units
@@ -36,6 +36,8 @@
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 :javascript
+  var arr = #{raw arr}
+  var community_id = #{params[:community_id]}
   var addmode = false;
   selected=[];
   var temp=[];
@@ -82,7 +84,7 @@
         savePlot(selected[i][0], dx, dy);
       }
       // add new marker to display
-      tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px;'>";
+      tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
       
       tag += "<i class='fa fa-asterisk'></i>";
       tag += "</a>"
@@ -157,7 +159,7 @@
   // save an individual unit (even if same x/y)
   function savePlot(id, dx, dy) {
     console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
-    $.post( "/communities/9/units/" + id + "/ajaxplotunit",
+    $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunit",
         { "x_plot": dx,
     "y_plot": dy
         },

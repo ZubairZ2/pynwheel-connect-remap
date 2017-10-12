@@ -30,4 +30,5 @@
 //= require jcrop
 //= require jquery-ui/widgets/sortable
 //= require rails_sortable
+//= require maps
 // require_tree .
