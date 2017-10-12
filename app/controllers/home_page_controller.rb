@@ -1,7 +1,8 @@
 class HomePageController < ApplicationController
 	before_action :authenticate_user!
 	def index
-      @home_page_images = current_community.design.home_page_images.order(:sort).all
+	  @design = current_community.design || current_community.create_design
+      @home_page_images = @design.home_page_images.order(:sort).all
 	end
 
 	def save_home_page_image
