@@ -50,6 +50,16 @@ class UnitsController < ApplicationController
     redirect_to community_units_path(:community_id=>@community.id)
   end
 
+  def ajaxplotunit
+    unit = @community.units.where(unit_type: params[:id])
+    if unit.present?
+      unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot])
+      render json: {}, status: 200
+    else
+      render json: {}, status: 404
+    end
+  end
+
   private
   def set_community
     @community = Community.find(params[:community_id])
