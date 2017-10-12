@@ -51,7 +51,7 @@ class UnitsController < ApplicationController
   end
 
   def ajaxplotunit
-    unit = @community.units.where(unit_type: params[:id])
+    unit = @community.units.where(marketing_name: params[:id])
     if unit.present?
       unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot])
       render json: {}, status: 200
