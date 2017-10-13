@@ -1580,5 +1580,5 @@ ul.home-tabs li:hover a{
 	}
 }
 .jcrop-keymgr{
-	display: none;
+	opacity: 0;
 }
