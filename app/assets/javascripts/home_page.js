@@ -20,6 +20,7 @@ function readHomePageImage(input){
 
           reader.onload = function (e) {
               homePageImage(e.target.result,input.files[0].name);
+              $(input).val('');
           }
 
           reader.readAsDataURL(input.files[0]);
