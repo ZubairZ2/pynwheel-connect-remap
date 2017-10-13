@@ -1,5 +1,4 @@
 class DesignController < ApplicationController
-	before_action :authenticate_user!
 	before_action :set_community
 	add_breadcrumb "Home", :root_path
 
