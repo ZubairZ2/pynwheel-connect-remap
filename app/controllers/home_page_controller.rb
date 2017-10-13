@@ -1,5 +1,4 @@
 class HomePageController < ApplicationController
-	before_action :authenticate_user!
 	def index
 	  @design = current_community.design || current_community.create_design
       @home_page_images = @design.home_page_images.order(:sort).all

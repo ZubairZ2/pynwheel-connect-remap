@@ -1,7 +1,6 @@
 class CommunitiesController < ApplicationController
-  before_action :authenticate_user!
   load_and_authorize_resource
-  before_action :set_community , only: [:edit,:update,:destroy]
+  before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page]
   add_breadcrumb "Communities", :communities_path, except: [:import_page]
@@ -132,6 +131,11 @@ class CommunitiesController < ApplicationController
   def import_page
     add_breadcrumb "Settings", "##"
     add_breadcrumb "Import Unit Data", community_import_page_path(current_community)
+  end
+
+  def remove_plots
+    @community.delete_plots
+    redirect_to plotexp_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
   end
 
   private

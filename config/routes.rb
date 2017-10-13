@@ -10,16 +10,19 @@ Rails.application.routes.draw do
     end
   end
   resources :communities do
+    member do
+      delete :remove_plots
+    end
+    get :import_page
+    get :import
+    get :credentials
+    get :test_connection
     resources :floorplans
     resources :units do
       member do
         post :ajaxplotunit
       end
     end
-    get :import_page
-    get :import
-    get :credentials
-    get :test_connection
     resources :sitemaps do
       collection do
         get :plotexp

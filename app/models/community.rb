@@ -113,4 +113,11 @@ class Community < ApplicationRecord
     yardi4_connection_service.perform
   end
 
+  def delete_plots
+    self.units.each do |unit|
+      unit.update_attributes(x_plot: 0, y_plot: 0)
+    end
+    true
+  end
+
 end

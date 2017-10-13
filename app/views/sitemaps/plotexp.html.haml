@@ -9,6 +9,8 @@
           %span.hidden#active_x_plot 0
           
           %span.hidden#active_y_plot 0
+        .pull-right.btn-btn-danger
+          %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} Reset all plots
       / /.box-header
       / form start
       %form.form-horizontal
