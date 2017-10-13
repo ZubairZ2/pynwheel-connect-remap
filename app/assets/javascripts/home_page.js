@@ -57,6 +57,7 @@ function homePageImage(src,name){
 
           reader.onload = function (e) {
               homePageVideo(e.target.result,input.files[0].name);
+              $(input).val('');
           }
 
           reader.readAsDataURL(input.files[0]);

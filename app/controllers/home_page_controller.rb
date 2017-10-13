@@ -35,7 +35,7 @@ class HomePageController < ApplicationController
 		@home_page_video = HomePageVideo.find(params[:home_page_video_id])
 		@home_page_video.destroy
 		flash[:notice] = "Video deleted successfully."
-		redirect_to :back
+		redirect_to community_home_page_index_path(current_community,tab: "videos")
 	end
 
 	private

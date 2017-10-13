@@ -4,7 +4,7 @@ class SitemapsController < ApplicationController
   add_breadcrumb "Property Map", "##"
 
   def map
-    add_breadcrumb "Add Sitemap", map_community_sitemaps_path
+    add_breadcrumb "Add Site Map", map_community_sitemaps_path
     @sitemap = @community.sitemap || @community.build_sitemap
   end
 
@@ -15,7 +15,7 @@ class SitemapsController < ApplicationController
       redirect_to map_community_sitemaps_path
     else
       flash[:error] = @sitemap.errors.full_messages.join(',')
-      render :new
+      render :map
     end
   end
 
@@ -32,6 +32,9 @@ class SitemapsController < ApplicationController
   def plotexp
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
     @sitemap = @community.sitemap
+    unless @community.units.size > 0
+      flash[:error] = "Please import unit data first"
+    end
     @units = @community.units.order(:building, :unit_type)
     # get member(:plotexp) do
     #   authorize! :plot, Sitemap

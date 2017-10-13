@@ -53,7 +53,7 @@ class UnitsController < ApplicationController
     unit = @community.units.where(marketing_name: params[:id])
     if unit.present?
       unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot])
-      render json: {}, status: 200
+      render json: {unit: unit.first}, status: 200
     else
       render json: {}, status: 404
     end
