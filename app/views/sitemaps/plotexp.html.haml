@@ -16,7 +16,7 @@
           .row
             .col-lg-9#container
               .map-block#map{:style=>"position: relative;"}
-                = image_tag @sitemap.present? ? @sitemap.image.url : "default.jpeg"
+                = image_tag @sitemap.present? ? @sitemap.image.url : ""
                 - @units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                     = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.id}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;"
@@ -40,7 +40,6 @@
           %i.icon-screenshot
 :javascript
   var arr = #{raw arr}
-  console.log(arr);
   var community_id = #{params[:community_id]}
   var addmode = false;
   selected=[];
@@ -177,8 +176,12 @@
         },
         function(data,status,xhr) {
           console.log(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+          console.log(data.unit);
           console.log(data.unit.id);
-          arr.push([data.unit.marketing_name, data.unit.x_plot.to_i, data.unit.y_plot.to_i, true, data.unit.id.to_s]);
+          console.log(data.unit.x_plot);
+          console.log(data.unit.y_plot);
+          console.log(data.unit.marketing_name);
+          arr.push([data.unit.marketing_name, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
           doDraggable();
           // delete from unused list
           $('.amenities-list option').each(function(){
