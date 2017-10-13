@@ -23,6 +23,7 @@
             .col-lg-3
               %h5.mt-40.mb-20 SELECT UNITS TO PLOT
               %select.amenities-list.form-control
+                %option{:value => ""} -- select unit --
                 - arr = []
                 - @units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0
@@ -39,6 +40,7 @@
           %i.icon-screenshot
 :javascript
   var arr = #{raw arr}
+  console.log(arr);
   var community_id = #{params[:community_id]}
   var addmode = false;
   selected=[];
@@ -51,14 +53,22 @@
   $('.amenities-list').mouseup( function(e) {
     e.preventDefault();
     $('.amenities-list :selected').each(function(){
-      selected.push([ $(this).val(), $.trim($(this).text()) ]);
-      // add to selected list
-      $("#selected-units").empty();
-      for (i=0; i<selected.length; i++) {
-        $("#selected-units").append('<li>' + selected[i][1] + '</li>');
+      if ($(this).val()!=""){
+        // TODO below line selected=[] is temperory , we need to fix it later
+        selected=[];  
+        selected.push([ $(this).val(), $.trim($(this).text()) ]);
+        $(this).prop('selected',false);
+        $("#selected-units").empty();
+        $("#selected-units").append('<li>' + $(this).val() + '</li>');
       }
+      $('#newmsg').hide();
+      // add to selected list
+      
+      //for (var i=0; i<selected.length; i++) {
+        //$("#selected-units").append('<li>' + selected[i][1] + '</li>');
+      //}
       // hide from unused list
-      $(this).css({"display": "none"});
+      //$(this).css({"display": "none"});
     }); 
   });
 
@@ -72,7 +82,7 @@
       addmode = false;
       $("#newmsg").css({display: 'none'});
       $("#map").css('cursor','default');
-      alert('Select units from list first...')
+      $('#marker-plotting-error').modal('show');
     }
   });
 
@@ -92,7 +102,7 @@
       tag += "</a>"
       $('#map').append(tag);
       reset();
-      doDraggable();
+      //doDraggable();
     }
   });
 
@@ -163,15 +173,18 @@
     console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
     $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunit",
         { "x_plot": dx,
-    "y_plot": dy
+           "y_plot": dy
         },
         function(data,status,xhr) {
-    console.log(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-    // delete from unused list
-    $('.amenities-list option').each(function(){
-      if ($(this).val() == id) {
-        $(this).remove();
-      }
-    });
+          console.log(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+          console.log(data.unit.id);
+          arr.push([data.unit.marketing_name, data.unit.x_plot.to_i, data.unit.y_plot.to_i, true, data.unit.id.to_s]);
+          doDraggable();
+          // delete from unused list
+          $('.amenities-list option').each(function(){
+            if ($(this).val() == id) {
+              $(this).remove();
+            }
+          });
         });
   }
