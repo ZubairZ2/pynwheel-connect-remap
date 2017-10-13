@@ -12,7 +12,7 @@
           %li.active{:role => "presentation"}
             %a{"aria-expanded" => "true", "data-toggle" => "tab", :href => "#image-slide", :role => "tab"} Slide Show Images
           %li{:role => "presentation"}
-            %a{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#video-slide", :role => "tab"} Videos
+            %a#videos-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#video-slide", :role => "tab"} Videos
     / Start Tabs Secttions
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
@@ -43,7 +43,7 @@
                   %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
                   %span.btn.btn-success.btn-file.pull-right.text-UP
                     %i.fa.fa-plus-circle
-                    Add Video's
+                    Add Videos
                     %input#home-page-video{:type => "file"}
                     
           .row.slide-imgage-boxs
@@ -52,3 +52,7 @@
 #edit-image.modal.fade.edit-image   
 :javascript
   var community_id = #{params[:community_id]}
+  var videos_tab = #{params[:tab].present? && params[:tab] == "videos"}
+  if (videos_tab){
+      $('#videos-tab').click();
+  }
