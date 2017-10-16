@@ -24,6 +24,22 @@ $(document).ready(function(){
       set_secondary_font_changes();
     }
  }
+
+
+  var design_page_logo_upload_holder = document.getElementById('design-page-logo-upload-holder');
+  if (design_page_logo_upload_holder){
+      design_page_logo_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;    
+        if(files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg"){ 
+          readDesignPageLogoSrc(files[0]);
+        }
+        else{
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }          
+    }
+  }
   
   $('.theme-selection').click(function(){
     var theme_name = $(this).data("theme-name");
@@ -40,13 +56,11 @@ $(document).ready(function(){
     set_secondary_font_changes();
   });
 
-  function set_primary_font_changes(){
-    $("#primary-font-text").css({"font-family":$('.primary_font_family').val(),"color": $('.primary_font_color').val(),"font-size": $('.primary_font_size').val(),"font-weight": $('.primary_font_weight').val(),"text-align": $('.primary_text_align').val()});
-  }
+  $("#community_logo").change(function(){
+    readDesignPageLogoSrcFromInput(this);
+  });
 
-  function set_secondary_font_changes(){
-    $("#secondary-font-text").css({"font-family":$('.secondary_font_family').val(),"color": $('.secondary_font_color').val(),"font-size": $('.secondary_font_size').val(),"font-weight": $('.secondary_font_weight').val(),"text-align": $('.secondary_text_align').val()});
-  }	
+  
 
   //image preview code
 
@@ -83,7 +97,25 @@ $(document).ready(function(){
   });
 
 
-  function readURLOnDesignPage(input,preview_element) {
+ //hide show main screen home screen on the basis of radio button
+
+ $('#main-screen-radio').click(function(){
+ 	if ($(this).is(':checked')){
+ 		$('#main-screen').show();
+ 		$('#home-screen').hide();
+ 	}
+ });
+
+ $('#home-screen-radio').click(function(){
+ 	if ($(this).is(':checked')){
+ 		$('#main-screen').hide();
+ 		$('#home-screen').show();
+ 	}
+ });
+});
+
+
+function readURLOnDesignPage(input,preview_element) {
 
     if (input.files && input.files[0]) {
         if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
@@ -103,19 +135,60 @@ $(document).ready(function(){
     }
  }
 
- //hide show main screen home screen on the basis of radio button
 
- $('#main-screen-radio').click(function(){
- 	if ($(this).is(':checked')){
- 		$('#main-screen').show();
- 		$('#home-screen').hide();
- 	}
- });
 
- $('#home-screen-radio').click(function(){
- 	if ($(this).is(':checked')){
- 		$('#main-screen').hide();
- 		$('#home-screen').show();
- 	}
- });
-});
+
+function set_primary_font_changes(){
+  $("#primary-font-text").css({"font-family":$('.primary_font_family').val(),"color": $('.primary_font_color').val(),"font-size": $('.primary_font_size').val(),"font-weight": $('.primary_font_weight').val(),"text-align": $('.primary_text_align').val()});
+}
+
+function set_secondary_font_changes(){
+  $("#secondary-font-text").css({"font-family":$('.secondary_font_family').val(),"color": $('.secondary_font_color').val(),"font-size": $('.secondary_font_size').val(),"font-weight": $('.secondary_font_weight').val(),"text-align": $('.secondary_text_align').val()});
+} 
+
+function readDesignPageLogoSrc(file){
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#preview-image').attr('src', e.target.result);
+    designPageLogo(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+
+
+function designPageLogo(src){
+    var url = "/communities/"+community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {logo: src}
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+ }
+
+ function readDesignPageLogoSrcFromInput(input) {
+    $(".divLoading").removeClass("hidden");
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#preview-image').attr('src', e.target.result);
+              designPageLogo(e.target.result);
+          }
+
+          reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $(input).val('');
+        $('#image-upload-warning').modal('show');
+        //console.log($(input).val());
+      }
+    }
+}
