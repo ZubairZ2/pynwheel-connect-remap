@@ -11,7 +11,11 @@
             
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_image?home_page_image_id=#{home_page_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
               %i.fa.fa-close
-        %h4= home_page_image.name       
+        %h4= home_page_image.name    
+.text-center.image-upload#home-page-image--upload-holder
+  = image_tag "upload-image.png"
+  %p Drag &amp; Drop fie to Upload
+
 
 .modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
