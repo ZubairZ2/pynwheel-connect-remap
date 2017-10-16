@@ -56,7 +56,7 @@ $(document).ready(function(){
     set_secondary_font_changes();
   });
 
-  $("#community_logo").change(function(){
+  $("#logo").change(function(){
     readDesignPageLogoSrcFromInput(this);
   });
 
