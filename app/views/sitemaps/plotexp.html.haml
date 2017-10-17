@@ -19,7 +19,8 @@
             .col-lg-9#container
               .map-block#map{:style=>"position: relative;"}
                 = image_tag @sitemap.present? ? @sitemap.image.url : ""
-                - @units.each do |unit|
+                - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
+                - units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                     = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.id}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;"
             .col-lg-3
@@ -27,16 +28,16 @@
               %select.amenities-list.form-control
                 %option{:value => ""} -- select unit --
                 - arr = []
-                - @units.each do |unit|
+                - units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0
                     %option 
                       = link_to "#{unit.marketing_name}", "#"
                     
                   - arr.push([unit.marketing_name, unit.x_plot.to_i, unit.y_plot.to_i, true, unit.id.to_s])
-              %h5.mt-40 SELECTED UNIT
+              %h5.mt-40 SELECTED UNITS
               .add-plan.mt-10.mb-20
                 %ul#selected-units
-              %button.btn.btn-success#new{:type => "button"} PLOT NOW
+              / %button.btn.btn-success#new{:type => "button"} PLOT NOW
               %label#newmsg Place marker for selected units on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
@@ -46,6 +47,7 @@
   var addmode = false;
   selected=[];
   var temp=[];
+  $('#newmsg').hide();
   $("#map").css('cursor','default');
   $(window).on('load', function (){
     doDraggable();
@@ -55,24 +57,22 @@
     e.preventDefault();
     $('.amenities-list :selected').each(function(){
       if ($(this).val()!=""){
-        // TODO below line selected=[] is temperory , we need to fix it later
-        selected=[];  
         selected.push([ $(this).val(), $.trim($(this).text()) ]);
-        $(this).prop('selected',false);
-        $("#selected-units").empty();
-        $("#selected-units").append('<li>' + $(this).val() + '</li>');
+      }
+      // add to selected list
+      $("#selected-units").empty();
+      for (i=0; i<selected.length; i++) {
+        $("#selected-units").append('<li class="s-unit" "data-id"='+i+'>' + selected[i][1] + '</li>');
       }
       $('#newmsg').hide();
-      // add to selected list
-      
-      //for (var i=0; i<selected.length; i++) {
-        //$("#selected-units").append('<li>' + selected[i][1] + '</li>');
-      //}
+
       // hide from unused list
-      //$(this).css({"display": "none"});
+      $(this).css({"display": "none"});
+      plotMode();
     }); 
   });
 
+  ///////// Plot button code  ///////////////
   $("#new").click(function(e) {
     e.preventDefault();
     if (selected.length > 0) {
@@ -193,3 +193,13 @@
           });
         });
   }
+
+  function plotMode(selected){
+    addmode = true;
+    $("#newmsg").css({display: 'inline-block'});
+    $("#map").css('cursor','crosshair');
+  }
+
+  $(document).on("click", ".s-unit" , function() {
+   console.log(this.getAttribute('data-id'));
+  });
