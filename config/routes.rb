@@ -42,4 +42,13 @@ Rails.application.routes.draw do
       end
     end
   end
+  namespace :api, constraints: { format: 'json' } do
+    namespace :v1 do
+      resources :communities, only: :index do
+        member do
+          get :data
+        end
+      end
+    end
+  end
 end
