@@ -1,4 +1,5 @@
 $(document).ready(function(){
+  $('.sortable').railsSortable(); 
 	$("#home-page-images").change(function(){
       var files = $(this).prop("files")
       for (var i = 0; i < files.length; i++) {

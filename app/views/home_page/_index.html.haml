@@ -39,7 +39,6 @@
           %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
             %span.glyphicon.glyphicon-chevron-right 
 :javascript
-  //$('.sortable').railsSortable({axis: "x"}); 
   var images_size = #{@home_page_images.size}
   images_size = parseInt(images_size);
   if(images_size == 0){
