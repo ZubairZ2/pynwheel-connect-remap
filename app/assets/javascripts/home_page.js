@@ -15,26 +15,7 @@ $(document).ready(function(){
       $("#home-page-image").val(''); 
     });
   // below lines are doing drag and drop on home page
-  var home_page_image_upload_holder = document.getElementById('home-page-image--upload-holder');
-  if (home_page_image_upload_holder){
-        home_page_image_upload_holder.ondrop = function (e) {
-          e.preventDefault();
-          files = e.dataTransfer.files;
-          if (files.length > 0){
-              for (var i = 0; i < files.length; i++) {
-                if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-                  readHomePageImageSrc(files[i]);
-                }
-              }
-          }
-          if(files.length == 1){
-            console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
-            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
-              $('#image-upload-warning').modal('show');
-            } 
-          }          
-      }
-    }
+  imageDragNdrop();
 
   $('#images-loop-type-radio').click(function(){
     if ($(this).is(':checked')){
@@ -79,6 +60,29 @@ $(document).ready(function(){
       readHomePageVideo(this);
     });
 });
+
+function imageDragNdrop(){
+  var home_page_image_upload_holder = document.getElementById('home-page-image--upload-holder');
+  if (home_page_image_upload_holder){
+      home_page_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files.length > 0){
+            for (var i = 0; i < files.length; i++) {
+              if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+                readHomePageImageSrc(files[i]);
+              }
+            }
+        }
+        if(files.length == 1){
+          console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+          if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+            $('#image-upload-warning').modal('show');
+          } 
+        }          
+    }
+  }
+}
 
 function saveLoopType(loop_type){
     console.log(loop_type);
