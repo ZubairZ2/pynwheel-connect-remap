@@ -1,5 +1,6 @@
 class Community < ApplicationRecord
-  mount_uploader :logo, AvatarUploader
+  #mount_uploader :logo, AvatarUploader
+  mount_base64_uploader :logo, AvatarUploader
   belongs_to :company
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy

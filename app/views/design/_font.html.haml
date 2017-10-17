@@ -1,0 +1,104 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"font-form"},:remote=>true do |f|
+  = f.fields_for :design do |d|
+    .row
+      .col-md-12
+        %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+    .row
+      .col-lg-6
+        .row
+          .col-lg-12
+            %label.control-label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+              Primary Font
+              %span Select font family, size, weight, alignment and color 
+        .row
+          .col-lg-8.p-right0
+            .row
+              .col-lg-12
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Font Family
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    = d.select :primary_font_family , options_for_select(font_families,d.object.primary_font_family),{},{class: "form-control primary-inputs primary_font_family font-field"}
+            .row
+              .col-lg-6.p-right0
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Font Size
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
+                    = d.select :primary_font_size , options_for_select(font_sizes,d.object.primary_font_size),{},{class: "form-control primary-inputs primary_font_size font-field"}
+              .col-lg-6.p-left0
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Font Weight
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    = d.select :primary_font_weight , options_for_select(font_weight,d.object.primary_font_weight),{},{class: "form-control primary-inputs primary_font_weight font-field"}
+            .row
+              .col-lg-6.p-right0
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Text align
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
+                    = d.select :primary_text_align , options_for_select(text_align,d.object.primary_text_align),{},{class: "form-control primary-inputs primary_text_align font-field"}
+              .col-lg-6.p-left0
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Color
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    .input-group.colorpicker-style.hex-format-colorpicker
+                      .input-group-addon
+                        %i
+                        = d.text_field :primary_font_color , class: "form-control primary-inputs primary_font_color validate[required] font-field",autocomplete: true
+          .col-lg-4
+            .block-text.margin-bottom-30#primary-font-text
+              A man bribes a rabbit with wicked dentures to run away with him in a sailboat via an ambulance. Bribing Koalas to remain illegally in one place. Trees anchor me in place. / Your mom drives the ambulance, but the city is farther than it appears.
+      .col-lg-6.p-left0
+        .row
+          .col-lg-12
+            %label.control-label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+              Secondary Font
+              %span Select font family, size, weight, alignment and color
+        .row
+          .col-lg-8.p-right0
+            .row
+              .col-lg-12
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Font Family
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    = d.select :secondary_font_family , options_for_select(font_families,d.object.secondary_font_family),{},{class: "form-control secondary-inputs secondary_font_family font-field"}
+            .row
+              .col-lg-6.p-right0
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Font Size
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
+                    = d.select :secondary_font_size , options_for_select(font_sizes,d.object.secondary_font_size),{},{class: "form-control secondary-inputs secondary_font_size font-field"}
+              .col-lg-6.p-left0
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Font Weight
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    = d.select :secondary_font_weight , options_for_select(font_weight,d.object.secondary_font_weight),{},{class: "form-control secondary-inputs secondary_font_weight font-field"}
+            .row
+              .col-lg-6.p-right0
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Text align
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12.margin-bottom-30
+                    = d.select :secondary_text_align , options_for_select(text_align,d.object.secondary_text_align),{},{class: "form-control secondary-inputs secondary_text_align font-field"}
+              .col-lg-6.p-left0
+                .form-group.mt-30
+                  %label.col-sm-12.control-label
+                    %span Color
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    .input-group.colorpicker-style.hex-format-colorpicker
+                      .input-group-addon
+                        %i
+                        = d.text_field :secondary_font_color , class: "form-control secondary-inputs secondary_font_color validate[required] font-field",autocomplete: true
+          .col-lg-4
+            .block-text#secondary-font-text
+              A man bribes a rabbit with wicked dentures to run away with him in a sailboat via an ambulance. Bribing Koalas to remain illegally in one place. Trees anchor me in place. / Your mom drives the ambulance, but the city is farther than it appears.
+    .row
+      .col-md-12
+        .box-footer.mt-30.pt-15
+          
