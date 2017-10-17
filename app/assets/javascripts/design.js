@@ -203,6 +203,7 @@ function designPageLogo(src){
  }
 
  function designPageMainScreenbutton(src,button,screen_id){
+    $(".divLoading").removeClass("hidden");
     var url = "/communities/"+community_id;
     var data_hash = {}
     switch (button) { 
@@ -233,6 +234,7 @@ function designPageLogo(src){
  }
 
  function designPageHomeScreenbutton(src,button,screen_id){
+    $(".divLoading").removeClass("hidden");
     var url = "/communities/"+community_id;
     var data_hash = {}
     switch (button) { 
