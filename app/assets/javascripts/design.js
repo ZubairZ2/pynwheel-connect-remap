@@ -68,6 +68,10 @@ $(document).ready(function(){
     $('#main-screen-button-style-form').submit();
   });
 
+  $('.home-screen-field').change(function(){
+    $('#home-screen-button-style-form').submit();
+  });
+
   $('.primary-inputs').change(function(){
     set_primary_font_changes();
   });
