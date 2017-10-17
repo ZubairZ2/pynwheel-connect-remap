@@ -1,0 +1,59 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"theme-form"},:remote=>true do |f|
+  = hidden_field_tag "theme_tab", true
+  .row
+    .col-md-12
+      %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+  .row
+    .col-lg-12
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+        Select Theme
+        %span Select a theme from below.
+  .row
+    .col-lg-12
+      .col-lg-3.col-md-6.col-sm-12
+        .select-theme#futurist-theme{:class=>"#{@community.is_futurist? ? 'active-theme' : 'active'}"}
+          .theme-img{:style => "background:url(#{asset_path('theme-image-1.jpg')});"}
+          .themes-detail
+            .pull-left
+              %h4 Futurist
+            .pull-right
+              /%a{:href => "##"} View Theme
+              = f.radio_button :theme_name,"futurist",style: "display: none;" 
+              %a.btn.btn-success.theme-selection{:href => "javascript::;","data-theme-name"=>"futurist"} Select
+          %i.fa.fa-check
+      .col-lg-3.col-md-6.col-sm-12
+        .select-theme#cubist-theme{:class=>"#{@community.is_cubist? ? 'active-theme' : 'active'}"}
+          .theme-img{:style => "background:url(#{asset_path('theme-image-2.jpg')});"}
+          .themes-detail
+            .pull-left
+              %h4 Cubist
+            .pull-right
+              /%a{:href => "#"} View Theme
+              = f.radio_button :theme_name,"cubist",style: "display: none;"  
+              %a.btn.btn-success.theme-selection{:href => "javascript::;","data-theme-name"=>"cubist"} Select
+          %i.fa.fa-check   
+      .col-lg-3.col-md-6.col-sm-12
+        .select-theme#modernist-theme{:class=>"#{@community.is_modernist? ? 'active-theme' : 'active'}"}
+          .theme-img{:style => "background:url(#{asset_path('theme-image-3.jpg')});"}
+          .themes-detail
+            .pull-left
+              %h4 Modernist
+            .pull-right
+              /%a{:href => "#"} View Theme
+              = f.radio_button :theme_name,"modernist",style: "display: none;" 
+              %a.btn.btn-success.theme-selection{:href => "javascript::;","data-theme-name"=>"modernist"} Select
+          %i.fa.fa-check  
+      .col-lg-3.col-md-6.col-sm-12
+        .select-theme#expressionist-theme{:class=>"#{@community.is_expressionist? ? 'active-theme' : 'active'}"}
+          .theme-img{:style => "background:url(#{asset_path('theme-image-4.jpg')});"}
+          .themes-detail
+            .pull-left
+              %h4 Expressionist
+            .pull-right
+              /%a{:href => "#"} View Theme
+              = f.radio_button :theme_name,"expressionist",style: "display: none;" 
+              %a.btn.btn-success.theme-selection{:href => "javascript::;","data-theme-name"=>"expressionist"} Select
+          %i.fa.fa-check
+  .row
+    .col-lg-12
+      .box-footer.mt-30.pt-15

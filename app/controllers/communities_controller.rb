@@ -31,55 +31,32 @@ class CommunitiesController < ApplicationController
   end
 
   def update
-     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
-    begin
-      respond_to do |format|
-        if @community.update(community_params)
-          format.html { redirect_to set_community_path }
-          message = '<div class="alert alert-success">'+@community.name+' updated successfully.</div>'
-          format.js {render js: "$('#flash-message').html('#{message}')"}
-        else
-          format.html { render :new }
-          message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
-          format.js {render js: "$('#flash-message').html('#{message}')"}
-        end
-      end
-    rescue 
-      if params[:theme_tab].present? and params[:theme_tab]
-        flash[:error] = 'Please select theme first.'
-        redirect_to community_design_index_path(@community,tab: 'theme')
-      else 
-        flash[:error] = 'Please upload logo first.'
-        redirect_to community_design_index_path(@community,tab: 'home')
+    authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
+    respond_to do |format|
+      if @community.update(community_params)
+        format.html { redirect_to communities_path,notice: 'Community updated successfully.' }
+        format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}');"}
+      else
+        format.html { render :new }
+        message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
+        format.js {render js: "$('#flash-message').html('#{message}')"}
       end
     end
   end
 
-  def set_community_path
+  def alert_message
     if params[:community][:logo].present?
-      flash[:notice] = 'Logo uploaded successfully.'
-      community_design_index_path(@community,tab: 'home')
+      '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
-      flash[:notice] = 'Theme selected successfully.'
-      community_design_index_path(@community,tab: 'theme')
-    elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_color].present?
-      flash[:notice] = 'Colors selected successfully.'
-      community_design_index_path(@community,tab: 'color')
+      '<div class="alert alert-success">Theme selected successfully.</div>'
     elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_font_family].present?
-      flash[:notice] = 'Font style selected successfully.'
-      community_design_index_path(@community,tab: 'font') 
+      '<div class="alert alert-success">Font style selected successfully.</div>'
     elsif params[:custom_style_tab].present? and params[:custom_style_tab]
-      flash[:notice] = 'Menu options selected successfully.'
-      community_design_index_path(@community,tab: 'custom_style')
+      '<div class="alert alert-success">Menu options selected successfully.</div>'
     elsif params[:button_main_screen_tab].present? 
-      flash[:notice] = 'Menu options selected successfully.'
-      community_design_index_path(@community,tab: 'button') 
+      '<div class="alert alert-success">Menu options selected successfully.</div>'
     elsif params[:button_home_screen_tab].present?
-      flash[:notice] = 'Menu options selected successfully.'
-      community_design_index_path(@community,tab: 'button',radio_button: 'radio_button_screen_tab')         
-    else
-      flash[:notice] = 'Community updated successfully.'
-      communities_path
+      '<div class="alert alert-success">Menu options selected successfully.</div>'       
     end
   end
 
