@@ -293,11 +293,9 @@ function designPageLogo(src){
 function hideShowBackgroundColorDiv(radio_button,element,text_field){
   if ($(radio_button).is(":checked")){
     $(element).show();
-    $(text_field).addClass('validate[required]');
   }
   else{
     $(element).hide();
-    $(text_field).removeClass('validate[required]');
   }
 }
 
