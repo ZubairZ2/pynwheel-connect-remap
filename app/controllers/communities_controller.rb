@@ -35,7 +35,7 @@ class CommunitiesController < ApplicationController
     respond_to do |format|
       if @community.update(community_params)
         format.html { redirect_to communities_path,notice: 'Community updated successfully.' }
-        format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}');"}
+        format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
       else
         format.html { render :new }
         message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'

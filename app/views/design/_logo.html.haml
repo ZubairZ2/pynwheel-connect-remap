@@ -13,18 +13,15 @@
   .col-lg-10
     .form-group
       %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-		     
+      .col-sm-12.col-lg-8.col-md-8.col-xs-12
+        .select-logo.mb-20.mt-30
+          .select-logo-logo= image_tag current_community.logo.present? ? current_community.logo.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"preview-image"
+      %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label   
       .col-sm-12.col-lg-8.col-md-8.col-xs-12
         .drag-box.mt-15#design-page-logo-upload-holder
           %span.icon-upload
             = image_tag "upload-image.png"
 
-      %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-        
-      
-      .col-sm-12.col-lg-8.col-md-8.col-xs-12
-        .select-img.mb-20.mt-30
-          .select-img-img= image_tag current_community.logo.present? ? current_community.logo.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"      
         %span.btn.btn-primary.btn-file.mt-30
           %i.fa.fa-upload
           Upload File

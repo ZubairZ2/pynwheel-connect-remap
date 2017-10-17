@@ -192,6 +192,7 @@ function readDesignPageLogoSrc(file){
 
 
 function designPageLogo(src){
+    $(".divLoading").removeClass("hidden");
     var url = "/communities/"+community_id;
     $.ajax({
         url: url,
@@ -269,7 +270,6 @@ function designPageLogo(src){
  }
 
  function readDesignPageLogoSrcFromInput(input) {
-    $(".divLoading").removeClass("hidden");
     if (input.files && input.files[0]) {
         if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
           var reader = new FileReader();

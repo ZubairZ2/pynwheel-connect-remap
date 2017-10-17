@@ -552,10 +552,20 @@ table.upload-image tr td{
 	padding:8px;
 	background-color:#fff;
 }
+.select-logo{ 
+	width:315px; 
+	height:190px; 
+	padding:8px;
+	background-color:#fff;
+}
 .select-img-img{
 	width:100%;
 	height:100%;
 	background:#f6f6f6;
+}
+.select-logo-logo{
+	width:100%;
+	height:100%;
 }
 .panel-box .dataTables_filter{		
 	margin-bottom: 10px;		
