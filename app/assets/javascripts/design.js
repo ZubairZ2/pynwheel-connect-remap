@@ -148,6 +148,7 @@ function readURLOnDesignPage(input,preview_element,button_name,screen_id,main_sc
           var reader = new FileReader();
 
           reader.onload = function (e) {
+              $(input).val('');
               $(preview_element).attr('src', e.target.result);
               if (main_screen){
                 designPageMainScreenbutton(e.target.result,button_name,screen_id);
