@@ -5,17 +5,10 @@ class DesignController < ApplicationController
 	def index
 		add_breadcrumb "Design", community_design_index_path(@community)
 		unless @community.design.present?
-			@community.build_design
-		else
-			unless @community.design.menu.present?
-				@community.design.build_menu
-			end
-			unless @community.design.main_screen.present?
-				@community.design.build_main_screen
-			end
-			unless @community.design.home_screen.present?
-				@community.design.build_home_screen
-			end
+			@community.create_design
+			@community.design.create_menu
+			@community.design.create_main_screen
+			@community.design.create_home_screen	
 		end
 	end
 
