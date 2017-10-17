@@ -6,14 +6,19 @@
       %h4
         %i.fa.fa-home>
         Home Page
+    
     .row
-      .col-lg-7
-        %ul#myTabs.nav.nav-tabs.home-tabs{:role => "tablist"}
-          %li.active{:role => "presentation"}
-            %a{"aria-expanded" => "true", "data-toggle" => "tab", :href => "#image-slide", :role => "tab"} Slide Show Images
-          %li{:role => "presentation"}
-            %a#videos-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#video-slide", :role => "tab"} Videos
-    / Start Tabs Secttions
+      .col-lg-10
+        .form-group.mt-30 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .radio.radio-primary.pull-left
+              %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>current_community.design.has_images_loop_type? ? true : false}
+                %label{:for => "main_screen_radio"}
+                  Images
+            .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
+              %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
+                %label{:for => "home_screen_radio"}
+                  Video
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
         / Start image-slide section
@@ -43,7 +48,7 @@
                   %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
                   %span.btn.btn-success.btn-file.pull-right.text-UP
                     %i.fa.fa-plus-circle
-                    Add Videos
+                    Add Video
                     %input#home-page-video{:type => "file"}
                     
           .row.slide-imgage-boxs
@@ -52,7 +57,5 @@
 #edit-image.modal.fade.edit-image   
 :javascript
   var community_id = #{params[:community_id]}
-  var videos_tab = #{params[:tab].present? && params[:tab] == "videos"}
-  if (videos_tab){
-      $('#videos-tab').click();
-  }
+  var design_id = #{current_community.design.id}
+  
