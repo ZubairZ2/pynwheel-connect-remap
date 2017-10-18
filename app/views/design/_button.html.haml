@@ -19,7 +19,7 @@
         .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
           %input#home-screen-radio{:name => "screen_radio", :type => "radio", :value => "home_screen_radio",:checked=>params[:radio_button].present? ? true : false}
             %label{:for => "home_screen_radio"}
-              Home Screen
+              Landing Page
 #main-screen              
   = form_for @community,:method=>"PUT",:html=>{:id=>"main-screen-button-style-form"},:remote=>true do |f|
     = hidden_field_tag "button_main_screen_tab", true
@@ -106,11 +106,23 @@
                 Menu Position
                 %span Select position of menu
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control main-screen-field"}
-                .input-group.colorpicker-style.colorpicker-style.hidden
-                  .input-group-addon
-                    %i
-                    %input.form-control{:type => "text"}
+                = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control main-screen-field",id: "main_screen_menu_position"}
+        .row#main-screen-vertical-menu-position
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Vertical Menu Position
+                %span Select vertical position of menu
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = m.select :vertical_menu_position , options_for_select(vertical_menu_position,m.object.vertical_menu_position),{},{class: "form-control main-screen-field"}
+        .row#main-screen-horizontal-menu-position
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Horizontal Menu Position
+                %span Select horizontal position of menu
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = m.select :horizontal_menu_position , options_for_select(horizontal_menu_position,m.object.horizontal_menu_position),{},{class: "form-control main-screen-field"}             
         .row
           .col-lg-10
             .form-group.mt-30
@@ -225,7 +237,23 @@
                 Menu Position
                 %span Select position of menu
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control home-screen-field"}
+                = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control home-screen-field",id: "home_screen_menu_position"}
+        .row#home-screen-vertical-menu-position
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Vertical Menu Position
+                %span Select vertical position of menu
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = m.select :vertical_menu_position , options_for_select(vertical_menu_position,m.object.vertical_menu_position),{},{class: "form-control home-screen-field"}
+        .row#home-screen-horizontal-menu-position
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Horizontal Menu Position
+                %span Select horizontal position of menu
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = m.select :horizontal_menu_position , options_for_select(horizontal_menu_position,m.object.horizontal_menu_position),{},{class: "form-control home-screen-field"}
                 
         .row
           .col-lg-10

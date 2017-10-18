@@ -160,9 +160,17 @@ $(document).ready(function(){
   });
 
  showSelectedMenuPosition();
+ showSelectedMenuOnMainScreenPosition(); 
+ showSelectedMenuOnHomeScreenPosition();
  $('#community_design_attributes_menu_attributes_position').change(function(){
    showSelectedMenuPosition(); 
+ });
+ $('#main_screen_menu_position').change(function(){
+   showSelectedMenuOnMainScreenPosition(); 
  }); 
+ $('#home_screen_menu_position').change(function(){
+   showSelectedMenuOnHomeScreenPosition(); 
+ });
 
 
 });
@@ -176,6 +184,28 @@ function showSelectedMenuPosition(){
   else{
     $('#horizontal-menu-position').hide();
     $('#vertical-menu-position').show(); 
+  }
+}
+
+function showSelectedMenuOnMainScreenPosition(){
+  if ($('#main_screen_menu_position').val() == "Horizontal"){
+    $('#main-screen-horizontal-menu-position').show();
+    $('#main-screen-vertical-menu-position').hide(); 
+  }
+  else{
+    $('#main-screen-horizontal-menu-position').hide();
+    $('#main-screen-vertical-menu-position').show(); 
+  }
+}
+
+function showSelectedMenuOnHomeScreenPosition(){
+  if ($('#home_screen_menu_position').val() == "Horizontal"){
+    $('#home-screen-horizontal-menu-position').show();
+    $('#home-screen-vertical-menu-position').hide(); 
+  }
+  else{
+    $('#home-screen-horizontal-menu-position').hide();
+    $('#home-screen-vertical-menu-position').show(); 
   }
 }
 
