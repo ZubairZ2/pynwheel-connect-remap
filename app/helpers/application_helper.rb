@@ -27,7 +27,15 @@ module ApplicationHelper
     end
 
     def menu_position
-        ["Left","Right","Top","Bottom"]
+        ["Vertical","Horizontal"]
+    end
+
+    def vertical_menu_position
+        ["Left","Right"]
+    end
+
+    def horizontal_menu_position
+        ["Top","Middle","Bottom"]
     end
 
     def button_style
@@ -40,4 +48,17 @@ module ApplicationHelper
     def border_width
         ["1px","2px","3px","4px","5px","6px","7px","8px","9px","10px"]
     end
+
+    def logo_position
+        ["Top","Center","Bottom"]
+    end
+
+    def secondary_logo_position
+        ["Right","Center","Left"]
+    end
+
+    def global_navigation_position
+        ["Top","Bottom"]
+    end
+    
 end

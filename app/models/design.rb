@@ -1,4 +1,5 @@
 class Design < ApplicationRecord
+	mount_base64_uploader :secondary_page_background_image, AvatarUploader
 	has_one :menu , dependent: :destroy
 	has_one :home_screen,dependent: :destroy
 	has_one :main_screen,dependent: :destroy

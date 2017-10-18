@@ -17,6 +17,22 @@
               %span Select position of menu
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control custom-style-field"}
+      .row#vertical-menu-position
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Vertical Menu Position
+              %span Select vertical position of menu
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = m.select :vertical_menu_position , options_for_select(vertical_menu_position,m.object.vertical_menu_position),{},{class: "form-control custom-style-field"}
+      .row#horizontal-menu-position
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Horizontal Menu Position
+              %span Select horizontal position of menu
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = m.select :horizontal_menu_position , options_for_select(horizontal_menu_position,m.object.horizontal_menu_position),{},{class: "form-control custom-style-field"}                
       .row
         .col-lg-10
           .form-group.mt-30

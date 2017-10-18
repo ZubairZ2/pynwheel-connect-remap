@@ -17,7 +17,9 @@
               %li{:role => "presentation"}
                 %a#theme-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-theme", :role => "tab"} Select Theme     
             %li.hidden{:role => "presentation"}
-              %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font 
+              %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
+            %li.hidden{:role => "presentation"}
+              %a#overlay-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-overlay", :role => "tab"} Overlay   
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Menu
@@ -33,86 +35,8 @@
               = render 'logo'
             #s-theme.tab-pane.fade{:role => "tabpanel"}
               = render 'theme'
-            #s-color.tab-pane.fade{:role => "tabpanel"}
-              = form_for @community,:method=>"PUT" do |f|
-                = f.fields_for :design do |d|
-                  .row
-                    .col-md-12
-                      %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-                  .row
-                    .col-lg-12
-                      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-                        Color Options
-                  .row
-                    .col-lg-10
-                      .form-group.mt-30
-                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label.font-size-15
-                          Select Primary Color
-                          %span Select a color
-                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                          .input-group.colorpicker-style.hex-format-colorpicker
-                            .input-group-addon
-                              %i
-                              = d.text_field :primary_color, class: "form-control validate[required]",readonly: true,autocomplete: true
-                  .row
-                    .col-lg-10
-                      .form-group.mt-30
-                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label.font-size-15
-                          Select Secondary Color
-                          %span Select a color
-                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                          .input-group.colorpicker-style.hex-format-colorpicker
-                            .input-group-addon
-                              %i
-                              = d.text_field :secondary_color, class: "form-control validate[required]",readonly: true,autocomplete: true
-                  .mt-40
-                  .row
-                    .col-md-12
-                      .box-footer.mt-30.pt-15
-                        %button.btn.btn-success.pull-right{:type => "submit"}
-                          %i.fa.fa-save
-                          SAVE CHANGES
-                / End Color section
             #s-overlay.tab-pane.fade{:role => "tabpanel"}
-              = form_for @community,:method=>"PUT" do |f|
-                = f.fields_for :design do |d|
-                  .row
-                    .col-md-12
-                      %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-                  .row
-                    .col-lg-12
-                      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-                        Color Options
-                  .row
-                    .col-lg-10
-                      .form-group.mt-30
-                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                          Select Primary Color
-                          %span Select a color
-                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                          .input-group.colorpicker-style.hex-format-colorpicker
-                            .input-group-addon
-                              %i
-                              = d.text_field :primary_color, class: "form-control validate[required]"
-                  .row
-                    .col-lg-10
-                      .form-group.mt-30
-                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
-                          Select Secondary Color
-                          %span Select a color
-                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
-                          .input-group.colorpicker-style.hex-format-colorpicker
-                            .input-group-addon
-                              %i
-                              = d.text_field :secondary_color, class: "form-control validate[required]"
-                  .mt-40
-                  .row
-                    .col-md-12
-                      .box-footer.mt-30.pt-15
-                        %button.btn.btn-success.pull-right{:type => "submit"}
-                          %i.fa.fa-save
-                          SAVE CHANGES
-                / End Overlay section    
+              = render 'overlay'    
             #s-font.tab-pane.fade{:role => "tabpanel"}
               = render 'font'
             #c-style.tab-pane.fade{:role => "tabpanel"}
