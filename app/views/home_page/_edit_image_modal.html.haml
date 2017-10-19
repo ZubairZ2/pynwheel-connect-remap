@@ -1,9 +1,9 @@
-.modal-dialog
+.modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
   .modal-content
     = form_for @home_page_image,url: update_home_page_image_community_home_page_index_path(current_community,home_page_image_id: @home_page_image.id),method: :put do |f|
       .modal-body
-        .image-crop
-          = image_tag @home_page_image.image.url(:thumb), id: "cropbox"
+        .image-crop{:style=>"overflow-y: auto;"}
+          = image_tag @home_page_image.image.url(:large), id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"  
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
@@ -17,6 +17,7 @@
             Apply Changes
             %i.fa.fa-check
         .clearfix
+}
 :javascript 
   $("#crop_image").on("click",function(e){
     $(".divLoading").removeClass("hidden")
@@ -25,7 +26,6 @@
   $('#cropbox').Jcrop({
     onSelect: update_crop,
     onChange: update_crop,
-    aspectRatio: 1
   });
   
 

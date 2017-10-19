@@ -28,7 +28,11 @@ class HomePageController < ApplicationController
 	end
 
     def save_home_page_video
-		current_community.design.home_page_videos.create(video: params[:src],name: params[:name])
+    	if current_community.design.home_page_video.present?
+    		current_community.design.home_page_video.update_attributes(video: params[:src],name: params[:name])
+    	else
+    		current_community.design.create_home_page_video(video: params[:src],name: params[:name])
+    	end 
 	end
 
 	def delete_home_page_video

@@ -1,11 +1,11 @@
-- current_community.design.home_page_videos.each do |home_page_video|
+- if current_community.design.home_page_video.present?
   .col-lg-3
     .slide-image
       .image-box.video-box
         .images
-          = video_tag home_page_video.video.url, :controls => true, :autobuffer => true
+          = video_tag current_community.design.home_page_video.video.url, :controls => true, :autobuffer => true
         .icons
-          %a.text-danger{"data-name"=>"Video","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_video?home_page_video_id=#{home_page_video.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+          %a.text-danger{"data-name"=>"Video","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_video?home_page_video_id=#{current_community.design.home_page_video.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
             %i.fa.fa-close
-      %h4= home_page_video.name     
+      %h4= current_community.design.home_page_video.name     
             

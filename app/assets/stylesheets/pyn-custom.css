@@ -552,10 +552,20 @@ table.upload-image tr td{
 	padding:8px;
 	background-color:#fff;
 }
+.select-logo{ 
+	width:315px; 
+	height:190px; 
+	padding:8px;
+	background-color:#fff;
+}
 .select-img-img{
 	width:100%;
 	height:100%;
 	background:#f6f6f6;
+}
+.select-logo-logo{
+	width:100%;
+	height:100%;
 }
 .panel-box .dataTables_filter{		
 	margin-bottom: 10px;		
@@ -1581,4 +1591,12 @@ ul.home-tabs li:hover a{
 }
 .jcrop-keymgr{
 	opacity: 0;
+}
+.home-page-drag-box{
+	border: 2px dashed #e8e8e8;
+	background-color: azure;
+    height: 175px;
+}
+.drag-image-padding-top{
+	padding-top: 62px;
 }

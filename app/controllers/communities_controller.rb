@@ -35,7 +35,7 @@ class CommunitiesController < ApplicationController
     respond_to do |format|
       if @community.update(community_params)
         format.html { redirect_to communities_path,notice: 'Community updated successfully.' }
-        format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}');"}
+        format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
       else
         format.html { render :new }
         message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
@@ -49,14 +49,16 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
-    elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_font_family].present?
-      '<div class="alert alert-success">Font style selected successfully.</div>'
-    elsif params[:custom_style_tab].present? and params[:custom_style_tab]
-      '<div class="alert alert-success">Menu options selected successfully.</div>'
-    elsif params[:button_main_screen_tab].present? 
-      '<div class="alert alert-success">Menu options selected successfully.</div>'
-    elsif params[:button_home_screen_tab].present?
-      '<div class="alert alert-success">Menu options selected successfully.</div>'       
+    elsif params[:overlay_tab].present? 
+      '<div class="alert alert-success">Expressionist options selected successfully.</div>'
+    elsif params[:menu_tab].present? 
+      '<div class="alert alert-success">Menu options selected successfully.</div>'  
+    elsif params[:custom_style_tab].present? 
+      '<div class="alert alert-success">Button custom style options selected successfully.</div>'
+    elsif params[:community][:design_attributes][:main_screen_attributes].present? 
+      '<div class="alert alert-success">Main screen button uploaded successfully.</div>'
+    elsif params[:community][:design_attributes][:home_screen_attributes].present? 
+      '<div class="alert alert-success">Landing page button uploaded successfully.</div>'       
     end
   end
 
@@ -122,7 +124,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:theme_name,:credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:p_code],:design_attributes=>[:id,:primary_color,:secondary_color,:primary_font_family,:primary_font_size,:primary_font_weight,:primary_text_align,:primary_font_color,:secondary_font_family,:secondary_font_size,:secondary_font_weight,:secondary_text_align,:secondary_font_color,:menu_attributes=>[:id,:position,:button_style,:border_radius,:border_width,:border_color,:button_background_color,:button_hover_color,:manage_background,:background_color],:main_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:menu_position,:manage_background,:background_color],:home_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:menu_position,:manage_background,:background_color]])
+    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:logo,:data_provider,:theme_name,:credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:p_code],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,:secondary_page_background_image,:loop_type,:primary_color,:secondary_color,:primary_font_family,:primary_font_size,:primary_font_weight,:primary_text_align,:primary_font_color,:secondary_font_family,:secondary_font_size,:secondary_font_weight,:secondary_text_align,:secondary_font_color,:menu_attributes=>[:id,:position,:button_style,:border_radius,:border_width,:border_color,:button_background_color,:button_hover_color,:manage_background,:background_color,:vertical_menu_position,:horizontal_menu_position],:main_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:menu_position,:manage_background,:background_color],:home_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:menu_position,:manage_background,:background_color]])
   end
 
 end

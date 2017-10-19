@@ -12,8 +12,8 @@
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_image?home_page_image_id=#{home_page_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
               %i.fa.fa-close
         %h4= home_page_image.name    
-.text-center.image-upload#home-page-image--upload-holder
-  = image_tag "upload-image.png"
+.text-center.image-upload.home-page-drag-box#home-page-image--upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
   %p Drag &amp; Drop fie to Upload
 
 
@@ -29,7 +29,7 @@
           .carousel-inner{:style=>"height: 500px;"}
             - @home_page_images.each_with_index do |home_page_image,index|
               .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
-                = image_tag home_page_image.image.url(:thumb),width: "600", height: "600"
+                = image_tag home_page_image.image.url(:thumb)
                 .carousel-caption
                   = home_page_image.name
             
@@ -39,7 +39,6 @@
           %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
             %span.glyphicon.glyphicon-chevron-right 
 :javascript
-  //$('.sortable').railsSortable({axis: "x"}); 
   var images_size = #{@home_page_images.size}
   images_size = parseInt(images_size);
   if(images_size == 0){

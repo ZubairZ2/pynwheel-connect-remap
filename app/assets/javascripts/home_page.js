@@ -1,4 +1,5 @@
 $(document).ready(function(){
+  $('.sortable').railsSortable(); 
 	$("#home-page-images").change(function(){
       var files = $(this).prop("files")
       for (var i = 0; i < files.length; i++) {
@@ -14,26 +15,44 @@ $(document).ready(function(){
       $("#home-page-image").val(''); 
     });
   // below lines are doing drag and drop on home page
-  var home_page_image_upload_holder = document.getElementById('home-page-image--upload-holder');
-  if (home_page_image_upload_holder){
-        home_page_image_upload_holder.ondrop = function (e) {
-          e.preventDefault();
-          files = e.dataTransfer.files;
-          if (files.length > 0){
-              for (var i = 0; i < files.length; i++) {
-                if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-                  readHomePageImageSrc(files[i]);
-                }
-              }
-          }
-          if(files.length == 1){
-            console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
-            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
-              $('#image-upload-warning').modal('show');
-            } 
-          }          
-      }
+  imageDragNdrop();
+
+  $('#images-loop-type-radio').click(function(){
+    if ($(this).is(':checked')){
+      $('#image-slide').addClass('active');
+      $('#image-slide').addClass('in');
+      $('#video-slide').removeClass('active');
+      $('#video-slide').removeClass('in');
+      saveLoopType("images");
     }
+  });
+
+  $('#video-loop-type-radio').click(function(){
+    if ($(this).is(':checked')){
+     $('#image-slide').removeClass('active');
+     $('#image-slide').removeClass('in');
+     $('#video-slide').addClass('active');
+     $('#video-slide').addClass('in');
+     saveLoopType("video");
+    }
+  });
+
+
+  if ($('#images-loop-type-radio').is(':checked')){
+      $('#image-slide').addClass('active');
+      $('#image-slide').addClass('in');
+      $('#video-slide').removeClass('active');
+      $('#video-slide').removeClass('in');
+  }
+
+  if ($('#video-loop-type-radio').is(':checked')){
+    $('#image-slide').removeClass('active');
+    $('#image-slide').removeClass('in');
+    $('#video-slide').addClass('active');
+    $('#video-slide').addClass('in');
+  }
+
+
 });
 
 $(document).ready(function(){
@@ -42,6 +61,44 @@ $(document).ready(function(){
     });
 });
 
+function imageDragNdrop(){
+  var home_page_image_upload_holder = document.getElementById('home-page-image--upload-holder');
+  if (home_page_image_upload_holder){
+      home_page_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files.length > 0){
+            for (var i = 0; i < files.length; i++) {
+              if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+                readHomePageImageSrc(files[i]);
+              }
+            }
+        }
+        if(files.length == 1){
+          console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+          if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+            $('#image-upload-warning').modal('show');
+          } 
+        }          
+    }
+  }
+}
+
+function saveLoopType(loop_type){
+    console.log(loop_type);
+    var url = "/communities/"+community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id,loop_type: loop_type}}
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+}
 
 function readHomePageImageSrc(file){
   $(".divLoading").removeClass("hidden");
