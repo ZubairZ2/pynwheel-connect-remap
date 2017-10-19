@@ -1592,3 +1592,11 @@ ul.home-tabs li:hover a{
 .jcrop-keymgr{
 	opacity: 0;
 }
+.home-page-drag-box{
+	border: 2px dashed #e8e8e8;
+	background-color: azure;
+    height: 175px;
+}
+.drag-image-padding-top{
+	padding-top: 62px;
+}

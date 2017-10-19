@@ -13,11 +13,11 @@
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .radio.radio-primary.pull-left
               %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>current_community.design.has_images_loop_type? ? true : false}
-                %label{:for => "main_screen_radio"}
+                %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
                   Images
             .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
               %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
-                %label{:for => "home_screen_radio"}
+                %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
                   Video
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content

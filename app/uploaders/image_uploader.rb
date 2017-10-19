@@ -16,14 +16,18 @@ class ImageUploader < CarrierWave::Uploader::Base
   end
 
   version :thumb do
+    resize_to_fit(640, 360)
+  end
+
+  version :large do
     process :crop
-    resize_to_fit(600, 600)
+    resize_to_fit(1920, 1080)
   end
 
 
   def crop
     if model.crop_x.present?
-      resize_to_fit(600, 600)
+      resize_to_fit(1920, 1080)
       manipulate! do |img|
         x = model.crop_x
         y = model.crop_y
