@@ -8,14 +8,14 @@ class ImageUploader < CarrierWave::Uploader::Base
   #storage :file
 
   storage Rails.env.development? ? :file : :fog 
-
+  resize_to_fit(1920, 1080)
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
   def store_dir
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
   end
 
-  version :thumb do
+  version :thumb , from_version: :large do
     resize_to_fit(640, 360)
   end
 

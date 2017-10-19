@@ -1,8 +1,8 @@
-.modal-dialog.modal-lg{:style=>"overflow-y: initial !important"}
+.modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
   .modal-content
     = form_for @home_page_image,url: update_home_page_image_community_home_page_index_path(current_community,home_page_image_id: @home_page_image.id),method: :put do |f|
-      .modal-body{:style=>"overflow-y: auto;"}
-        .image-crop
+      .modal-body
+        .image-crop{:style=>"overflow-y: auto;"}
           = image_tag @home_page_image.image.url(:large), id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"  
