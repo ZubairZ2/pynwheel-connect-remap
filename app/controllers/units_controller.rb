@@ -59,6 +59,19 @@ class UnitsController < ApplicationController
     end
   end
 
+  def remove_plot
+    @unit = @community.units.where(marketing_name: params[:id])
+    if @unit.present?
+      x_plot = @unit.first.x_plot
+      y_plot = @unit.first.y_plot
+      units = @community.units.where(x_plot: x_plot,y_plot: y_plot)
+      units.each do |unit|
+        unit.update_attributes(x_plot: 0,y_plot:0)
+      end
+      redirect_to plotexp_community_sitemaps_path(@community), notice: "The plot has been deleted successfully."
+    end
+  end
+
   private
   def set_community
     @community = Community.find(params[:community_id])
