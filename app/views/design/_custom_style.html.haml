@@ -22,12 +22,12 @@
             .col-sm-12.col-lg-3.col-md-3.col-xs-12.margin-bottom-30
               = m.select :border_width , options_for_select(border_width,m.object.border_width),{},{class: "form-control custom-style-field"}
               %small Width: 1px to 10px
-            .col-sm-12.col-lg-3.col-md-3.col-xs-12
+            .col-sm-12.col-lg-3.col-md-3.col-xs-12.margin-bottom-30
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
                   = m.text_field :border_color,class: "form-control custom-style-field",readonly: true,autocomplete: true
-                %small Border Color
+              %small Border Color
       .row
         .col-lg-10
           .form-group.mt-30
@@ -41,13 +41,13 @@
                     .input-group-addon
                       %i
                       = m.text_field :button_background_color,class: "form-control custom-style-field",readonly: true,autocomplete: true
-                    %small Select Background Button Color
+                  %small Select Background Button Color
                 .col-lg-6.col-md-6.col-xs-12
                   .input-group.colorpicker-style.hex-format-colorpicker
                     .input-group-addon
                       %i
                       = m.text_field :button_hover_color,class: "form-control custom-style-field",readonly: true,autocomplete: true
-                    %small Select hover backgound     
+                  %small Select hover backgound     
       .row
         .col-md-12
           .box-footer.mt-30.pt-15
