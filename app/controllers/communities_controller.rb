@@ -54,7 +54,7 @@ class CommunitiesController < ApplicationController
     elsif params[:menu_tab].present? 
       '<div class="alert alert-success">Menu options selected successfully.</div>'  
     elsif params[:custom_style_tab].present? 
-      '<div class="alert alert-success">Button custom style options selected successfully.</div>'
+      '<div class="alert alert-success">Custom style options selected successfully.</div>'
     elsif params[:community][:design_attributes][:main_screen_attributes].present? 
       '<div class="alert alert-success">Main screen button uploaded successfully.</div>'
     elsif params[:community][:design_attributes][:home_screen_attributes].present? 
