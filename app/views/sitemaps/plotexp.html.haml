@@ -47,6 +47,8 @@
   var addmode = false;
   selected=[];
   var temp=[];
+  dx = 0;
+  dy = 0;
   $('#newmsg').hide();
   $("#map").css('cursor','default');
   $(window).on('load', function (){
@@ -62,7 +64,7 @@
       // add to selected list
       $("#selected-units").empty();
       for (i=0; i<selected.length; i++) {
-        $("#selected-units").append('<li class="s-unit" "data-id"='+i+'>' + selected[i][1] + '</li>');
+        $("#selected-units").append('<li class="s-unit" data-id='+i+'>' + selected[i][1] + '</li>');
       }
       $('#newmsg').hide();
 
@@ -103,7 +105,7 @@
       tag += "</a>"
       $('#map').append(tag);
       reset();
-      //doDraggable();
+      doDraggable();
     }
   });
 
@@ -155,7 +157,7 @@
       stop: function(event, ui) {
         if (temp != null) {
     for (i=0; i<temp.length; i++) {
-      console.debug("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+      console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
       for (j=0; j<arr.length; j++) {
         if (arr[j][0] == temp[i]) {
           arr[j][1] = Math.round(ui.position.left);
@@ -177,12 +179,12 @@
            "y_plot": dy
         },
         function(data,status,xhr) {
-          console.log(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-          console.log(data.unit);
-          console.log(data.unit.id);
-          console.log(data.unit.x_plot);
-          console.log(data.unit.y_plot);
-          console.log(data.unit.marketing_name);
+          console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+          console.debug(data.unit);
+          console.debug(data.unit.id);
+          console.debug(data.unit.x_plot);
+          console.debug(data.unit.y_plot);
+          console.debug(data.unit.marketing_name);
           arr.push([data.unit.marketing_name, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
           doDraggable();
           // delete from unused list
@@ -201,5 +203,23 @@
   }
 
   $(document).on("click", ".s-unit" , function() {
-   console.log(this.getAttribute('data-id'));
+    //selected.splice( $.inArray("1001", selected), 1 )
+    var remove_index = parseInt($(this).attr("data-id"))
+    selected.splice(remove_index,remove_index+1)
+    $('.amenities-list option').val($(this).html()).css({"display": "block"})
+    $(this).remove()
+    if (selected.length > 0)
+      resetDataIds()
   });
+
+  function resetDataIds() {
+    var i=0
+    $("#selected-units li").each(function(){ 
+      $(this).attr("data-id",i);
+      i++;
+    })
+  }
+
+  $(document).on("click", ".marker" , function() {
+    //$(this).css({"display": "none"})
+  })
