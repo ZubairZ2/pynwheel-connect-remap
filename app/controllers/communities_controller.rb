@@ -49,14 +49,16 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
-    elsif params[:community][:design_attributes].present? and params[:community][:design_attributes][:primary_font_family].present?
-      '<div class="alert alert-success">Font style selected successfully.</div>'
-    elsif params[:custom_style_tab].present? and params[:custom_style_tab]
-      '<div class="alert alert-success">Menu options selected successfully.</div>'
-    elsif params[:button_main_screen_tab].present? 
-      '<div class="alert alert-success">Menu options selected successfully.</div>'
-    elsif params[:button_home_screen_tab].present?
-      '<div class="alert alert-success">Menu options selected successfully.</div>'       
+    elsif params[:overlay_tab].present? 
+      '<div class="alert alert-success">Expressionist options selected successfully.</div>'
+    elsif params[:menu_tab].present? 
+      '<div class="alert alert-success">Menu options selected successfully.</div>'  
+    elsif params[:custom_style_tab].present? 
+      '<div class="alert alert-success">Button custom style options selected successfully.</div>'
+    elsif params[:community][:design_attributes][:main_screen_attributes].present? 
+      '<div class="alert alert-success">Main screen button uploaded successfully.</div>'
+    elsif params[:community][:design_attributes][:home_screen_attributes].present? 
+      '<div class="alert alert-success">Landing page button uploaded successfully.</div>'       
     end
   end
 

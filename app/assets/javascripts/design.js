@@ -44,18 +44,8 @@ $(document).ready(function(){
       $('#home-screen').show();
     }
 
-    $('#TriSeaPrimary2').change(function(){
-      hideShowBackgroundColorDiv($(this),$('#m-style-background-color '),$('#m-style-background-color-text-field'));
-    });
-
-    $('#TriSeaPrimary3').change(function(){
-      hideShowBackgroundColorDiv($(this),$('#h-style-background-color '),$('#h-style-background-color-text-field'));
-    });
 
     hideShowBackgroundColorDiv($('#community_design_attributes_menu_attributes_manage_background'),$('#c-style-background-color '),$('#c-style-background-color-text-field'));
-    hideShowBackgroundColorDiv($('#TriSeaPrimary2'),$('#m-style-background-color '),$('#m-style-background-color-text-field'));
-    hideShowBackgroundColorDiv($('#TriSeaPrimary3'),$('#h-style-background-color '),$('#h-style-background-color-text-field'));
-
     $('#community_design_attributes_menu_attributes_manage_background').change(function(){
       hideShowBackgroundColorDiv($(this),$('#c-style-background-color '),$('#c-style-background-color-text-field'));
     });
@@ -73,6 +63,10 @@ $(document).ready(function(){
 
   $('.font-field').change(function(){
     $('#font-form').submit();
+  });
+
+  $('.menu-field').change(function(){
+    $('#menu-form').submit();
   });
 
   $('.overlay-field').change(function(){
@@ -160,16 +154,8 @@ $(document).ready(function(){
   });
 
  showSelectedMenuPosition();
- showSelectedMenuOnMainScreenPosition(); 
- showSelectedMenuOnHomeScreenPosition();
  $('#community_design_attributes_menu_attributes_position').change(function(){
    showSelectedMenuPosition(); 
- });
- $('#main_screen_menu_position').change(function(){
-   showSelectedMenuOnMainScreenPosition(); 
- }); 
- $('#home_screen_menu_position').change(function(){
-   showSelectedMenuOnHomeScreenPosition(); 
  });
 
 
@@ -187,27 +173,6 @@ function showSelectedMenuPosition(){
   }
 }
 
-function showSelectedMenuOnMainScreenPosition(){
-  if ($('#main_screen_menu_position').val() == "Horizontal"){
-    $('#main-screen-horizontal-menu-position').show();
-    $('#main-screen-vertical-menu-position').hide(); 
-  }
-  else{
-    $('#main-screen-horizontal-menu-position').hide();
-    $('#main-screen-vertical-menu-position').show(); 
-  }
-}
-
-function showSelectedMenuOnHomeScreenPosition(){
-  if ($('#home_screen_menu_position').val() == "Horizontal"){
-    $('#home-screen-horizontal-menu-position').show();
-    $('#home-screen-vertical-menu-position').hide(); 
-  }
-  else{
-    $('#home-screen-horizontal-menu-position').hide();
-    $('#home-screen-vertical-menu-position').show(); 
-  }
-}
 
 
 function readURLOnDesignPage(input,preview_element,button_name,screen_id,main_screen) {
@@ -418,16 +383,19 @@ function hideShowBackgroundColorDiv(radio_button,element,text_field){
 function showTabsAccordingToTheme(theme){
   if (theme == 'cubist' || theme == 'modernist'){
     $('#font-tab').parent().removeClass('hidden'); 
+    $('#menu-tab').parent().removeClass('hidden');
     $('#custom-style-tab').parent().parent().parent().addClass('hidden'); 
     $('#overlay-tab').parent().addClass('hidden');  
   }
   if (theme == 'expressionist'){
     $('#font-tab').parent().removeClass('hidden');
+    $('#menu-tab').parent().removeClass('hidden');
     $('#custom-style-tab').parent().parent().parent().removeClass('hidden'); 
     $('#overlay-tab').parent().removeClass('hidden');  
   }
   if (theme == 'futurist'){
     $('#font-tab').parent().addClass('hidden');
+    $('#menu-tab').parent().addClass('hidden');
     $('#custom-style-tab').parent().parent().parent().addClass('hidden');
     $('#overlay-tab').parent().addClass('hidden');   
   }

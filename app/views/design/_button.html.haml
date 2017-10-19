@@ -97,56 +97,7 @@
                             %i.fa.fa-upload
                             Upload File
                             = m.file_field :favorities_button
-                    .clearfix
-      = d.fields_for :menu do |m|                
-        .row
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Menu Position
-                %span Select position of menu
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control main-screen-field",id: "main_screen_menu_position"}
-        .row#main-screen-vertical-menu-position
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Vertical Menu Position
-                %span Select vertical position of menu
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = m.select :vertical_menu_position , options_for_select(vertical_menu_position,m.object.vertical_menu_position),{},{class: "form-control main-screen-field"}
-        .row#main-screen-horizontal-menu-position
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Horizontal Menu Position
-                %span Select horizontal position of menu
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = m.select :horizontal_menu_position , options_for_select(horizontal_menu_position,m.object.horizontal_menu_position),{},{class: "form-control main-screen-field"}             
-        .row
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                Manage Background
-                %span Manage navigation background
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = m.check_box :manage_background,id: "TriSeaPrimary2",:class=>"main-screen-field"
-                  %label.label-primary{:for => "TriSeaPrimary2"}
-                  %span.pl-15 Yes
-        #m-style-background-color           
-          .row
-            .col-lg-10
-              .form-group.mt-30
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Background color
-                  %span Select menu background color & opacity
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .input-group.colorpicker-style.rgba-format-colorpicker
-                    .input-group-addon
-                      %i
-                      = m.text_field :background_color ,id: "m-style-background-color-text-field", class: "form-control main-screen-field",readonly: true,autocomplete: true      
+                    .clearfix     
         .row
           .col-md-12
             .box-footer.mt-30.pt-15
@@ -228,57 +179,7 @@
                             %i.fa.fa-upload
                             Upload File
                             = m.file_field :favorities_button  
-                    .clearfix
-      = d.fields_for :menu do |m|               
-        .row
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Menu Position
-                %span Select position of menu
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control home-screen-field",id: "home_screen_menu_position"}
-        .row#home-screen-vertical-menu-position
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Vertical Menu Position
-                %span Select vertical position of menu
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = m.select :vertical_menu_position , options_for_select(vertical_menu_position,m.object.vertical_menu_position),{},{class: "form-control home-screen-field"}
-        .row#home-screen-horizontal-menu-position
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Horizontal Menu Position
-                %span Select horizontal position of menu
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = m.select :horizontal_menu_position , options_for_select(horizontal_menu_position,m.object.horizontal_menu_position),{},{class: "form-control home-screen-field"}
-                
-        .row
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                Manage Background
-                %span Manage navigation background
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = m.check_box :manage_background,id: "TriSeaPrimary3",:class=>"home-screen-field"
-                  %label.label-primary{:for => "TriSeaPrimary3"}
-                  %span.pl-15 Yes
-        #h-style-background-color           
-          .row
-            .col-lg-10
-              .form-group.mt-30
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Background color
-                  %span Select menu background color & opacity
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .input-group.colorpicker-style.rgba-format-colorpicker
-                    .input-group-addon
-                      %i
-                      = m.text_field :background_color,id: "h-style-background-color-text-field" , class: "form-control home-screen-field",readonly: true,autocomplete: true      
+                    .clearfix      
         .row
           .col-md-12
             .box-footer.mt-30.pt-15

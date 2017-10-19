@@ -19,16 +19,18 @@
             %li.hidden{:role => "presentation"}
               %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
             %li.hidden{:role => "presentation"}
-              %a#overlay-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-overlay", :role => "tab"} Overlay   
+              %a#menu-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-menu", :role => "tab"} Menu  
+            %li.hidden{:role => "presentation"}
+              %a#overlay-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-overlay", :role => "tab"} Expressionist Options   
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
-                Menu
+                Style
                 %span.caret
               %ul.dropdown-menu{"aria-labelledby" => "myTabDrop1"}
                 %li
-                  %a#custom-style-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#c-style", :role => "tab"} Custom Style
+                  %a#custom-style-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#c-style", :role => "tab"} Custom Menu Buttons 
                 %li
-                  %a#button-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#u-button", :role => "tab"} Upload Buttons
+                  %a#button-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#u-button", :role => "tab"} Upload Menu Buttons
           #myTabContent.tab-content.add-plan
             / Start L>ogo Upload section
             #home.tab-pane.fade.active.in{:role => "tabpanel"}
@@ -39,6 +41,8 @@
               = render 'overlay'    
             #s-font.tab-pane.fade{:role => "tabpanel"}
               = render 'font'
+            #s-menu.tab-pane.fade{:role => "tabpanel"}
+              = render 'menu'  
             #c-style.tab-pane.fade{:role => "tabpanel"}
               = render 'custom_style'
             #u-button.tab-pane.fade{:role => "tabpanel"}
