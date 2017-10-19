@@ -59,7 +59,13 @@
     e.preventDefault();
     $('.amenities-list :selected').each(function(){
       if ($(this).val()!=""){
-        selected.push([ $(this).val(), $.trim($(this).text()) ]);
+        console.log($.inArray($(this).val(), $.map(selected, function(v) { return v[0]; })) == -1); 
+        if (selected.length == 0){
+          selected.push([ $(this).val(), $.trim($(this).text()) ]);
+        }
+        else if ($.inArray($(this).val(), $.map(selected, function(v) { return v[0]; })) == -1){
+          selected.push([ $(this).val(), $.trim($(this).text()) ]);
+        }
       }
       // add to selected list
       $("#selected-units").empty();
