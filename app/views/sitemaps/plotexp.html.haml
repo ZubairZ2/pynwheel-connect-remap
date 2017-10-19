@@ -22,7 +22,7 @@
                 - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
                 - units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i > 0
-                    = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;"
+                    = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.marketing_name}/remove_plot"
             .col-lg-3
               %h5.mt-40.mb-20 SELECT UNITS TO PLOT
               %select.amenities-list.form-control
@@ -110,6 +110,8 @@
       tag += "<i class='fa fa-asterisk'></i>";
       tag += "</a>"
       $('#map').append(tag);
+      // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
+      $(".marker:last").trigger("click") 
       reset();
       doDraggable();
     }
@@ -227,5 +229,9 @@
   }
 
   $(document).on("click", ".marker" , function() {
-    //$(this).css({"display": "none"})
+    console.log($(this).attr("title"))
+    $(this).attr('data-name' , 'plot')
+    $(this).attr('data-target' , '#confirm-delete')
+    $(this).attr('data-toggle' , 'modal')
+    $(this).attr('data-href' , '/communities/#{@community.id}/units/'+$(this).attr("title")+'/remove_plot')
   })

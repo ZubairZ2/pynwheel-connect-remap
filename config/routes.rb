@@ -21,6 +21,7 @@ Rails.application.routes.draw do
     resources :units do
       member do
         post :ajaxplotunit
+        delete :remove_plot
       end
     end
     resources :sitemaps do
