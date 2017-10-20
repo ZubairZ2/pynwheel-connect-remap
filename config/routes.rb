@@ -49,6 +49,9 @@ Rails.application.routes.draw do
         member do
           get :data
         end
+        collection do
+          post :login
+        end
       end
     end
   end
