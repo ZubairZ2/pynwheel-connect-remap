@@ -36,6 +36,8 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Secondary Page Background Image
+            %span Set secondary page background image
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .select-logo.mb-20.mt-30
               .select-logo-logo= image_tag current_community.design.secondary_page_background_image.present? ? current_community.design.secondary_page_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"secondary-image-preview-image"
