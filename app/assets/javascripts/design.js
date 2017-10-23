@@ -144,6 +144,10 @@ $(document).ready(function(){
     readURLOnDesignPage(this,$('#preview-home-screen-floorplan-button-image'),'floorplan_button',$('#home_screen_id').val(),false);
   });
 
+  $("#community_design_attributes_home_screen_attributes_building_button").change(function(){
+    readURLOnDesignPage(this,$('#preview-home-screen-building-button-image'),'building_button',$('#home_screen_id').val(),false);
+  });
+
 
  //hide show main screen home screen on the basis of radio button
 
@@ -329,7 +333,10 @@ function designPageLogo(src){
         break;
       case 'floorplan_button': 
         data_hash = {id: screen_id,floorplan_button: src}
-        break;    
+        break;
+      case 'building_button': 
+        data_hash = {id: screen_id,floorplan_button: src}
+        break;      
     }
     $.ajax({
         url: url,
