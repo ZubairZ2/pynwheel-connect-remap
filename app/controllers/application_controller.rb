@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
         @company = Company.find params[:company_id]
       elsif session[:company_id].present?  
         @company = Company.find session[:company_id]
-      else 
+      elsif current_community.present? 
         @company = current_community.company   
       end
     rescue
