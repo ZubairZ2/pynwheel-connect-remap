@@ -8,7 +8,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 			if company.present?
 				community = company.communities.where(name: str[1])
 				if community.present?
-					render :json=> {:success=>true, :community => community.first.id}, :status => 200
+					render :json=> {:success=>true, :community => community.first.id, :message => "success", :operation => "login"}, :status => 200
 				else
 					render :json=> {:success=>false, :message => "Community not found"}, :status=>404
 				end
