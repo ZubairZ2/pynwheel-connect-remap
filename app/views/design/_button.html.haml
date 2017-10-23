@@ -15,11 +15,11 @@
         .radio.radio-primary.pull-left
           %input#main-screen-radio{:name => "screen_radio", :type => "radio", :value => "main_screen_radio",:checked=>params[:radio_button].present? ? false : true}
             %label{:for => "main_screen_radio"}
-              Main Screen
+              Home Screen
         .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
           %input#home-screen-radio{:name => "screen_radio", :type => "radio", :value => "home_screen_radio",:checked=>params[:radio_button].present? ? true : false}
             %label{:for => "home_screen_radio"}
-              Landing Page
+              Inner Screen
 #main-screen              
   = form_for @community,:method=>"PUT",:html=>{:id=>"main-screen-button-style-form"},:remote=>true do |f|
     = hidden_field_tag "button_main_screen_tab", true
@@ -131,7 +131,15 @@
                   %li
                     %a{"data-toggle" => "tab", :href => "#home-favorites"}
                       Favorites
-                      %span Upload Favorites Button    
+                      %span Upload Favorites Button
+                  %li
+                    %a{"data-toggle" => "tab", :href => "#home-about"}
+                      About
+                      %span Upload About Button 
+                  %li
+                    %a{"data-toggle" => "tab", :href => "#home-floorplan"}
+                      Floor Plan
+                      %span Upload Floor Plan Button            
               .col-lg-9.col-xs-12.col-md-8
                 / Tab panes
                 .tab-content.tab-content-new
@@ -178,7 +186,29 @@
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
-                            = m.file_field :favorities_button  
+                            = m.file_field :favorities_button
+                  #home-about.tab-pane
+                    .col-lg-10
+                      .form-group
+                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                          .select-img.mb-20.mt-30
+                            .select-img-img= image_tag m.object.about_button.present? ? m.object.about_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-about-button-image"      
+                          %span.btn.btn-primary.btn-file.mt-30
+                            %i.fa.fa-upload
+                            Upload File
+                            = m.file_field :about_button
+                  #home-floorplan.tab-pane
+                    .col-lg-10
+                      .form-group
+                        %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+                        .col-sm-12.col-lg-8.col-md-8.col-xs-12
+                          .select-img.mb-20.mt-30
+                            .select-img-img= image_tag m.object.floorplan_button.present? ? m.object.floorplan_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-floorplan-button-image"      
+                          %span.btn.btn-primary.btn-file.mt-30
+                            %i.fa.fa-upload
+                            Upload File
+                            = m.file_field :floorplan_button                      
                     .clearfix      
         .row
           .col-md-12
