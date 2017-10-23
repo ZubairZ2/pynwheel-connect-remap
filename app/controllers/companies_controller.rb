@@ -3,7 +3,7 @@ class CompaniesController < ApplicationController
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :root_path
   before_action :set_company , only: [:edit,:update,:destroy]
-  before_action :check_current_company , except: [:new,:create]
+  #before_action :check_current_company , except: [:new,:create]
   def index
     if current_user.is_super_admin?
       @companies = Company.all
