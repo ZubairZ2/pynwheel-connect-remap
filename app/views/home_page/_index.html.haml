@@ -24,7 +24,7 @@
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
-        #carousel-example-generic.carousel.slide{"data-ride" => "carousel"}
+        #carousel-example-generic.carousel.slide
           / Wrapper for slides
           .carousel-inner{:style=>"height: 500px;"}
             - @home_page_images.each_with_index do |home_page_image,index|
