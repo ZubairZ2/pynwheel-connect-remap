@@ -335,7 +335,7 @@ function designPageLogo(src){
         data_hash = {id: screen_id,floorplan_button: src}
         break;
       case 'building_button': 
-        data_hash = {id: screen_id,floorplan_button: src}
+        data_hash = {id: screen_id,building_button: src}
         break;      
     }
     $.ajax({
