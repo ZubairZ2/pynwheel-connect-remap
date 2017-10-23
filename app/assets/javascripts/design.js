@@ -136,6 +136,14 @@ $(document).ready(function(){
     readURLOnDesignPage(this,$('#preview-home-screen-favorities-button-image'),'favorities_button',$('#home_screen_id').val(),false);
   });
 
+  $("#community_design_attributes_home_screen_attributes_about_button").change(function(){
+    readURLOnDesignPage(this,$('#preview-home-screen-about-button-image'),'about_button',$('#home_screen_id').val(),false);
+  });
+
+  $("#community_design_attributes_home_screen_attributes_floorplan_button").change(function(){
+    readURLOnDesignPage(this,$('#preview-home-screen-floorplan-button-image'),'floorplan_button',$('#home_screen_id').val(),false);
+  });
+
 
  //hide show main screen home screen on the basis of radio button
 
@@ -316,6 +324,12 @@ function designPageLogo(src){
       case 'favorities_button': 
         data_hash = {id: screen_id,favorities_button: src}
         break;
+      case 'about_button': 
+        data_hash = {id: screen_id,about_button: src}
+        break;
+      case 'floorplan_button': 
+        data_hash = {id: screen_id,floorplan_button: src}
+        break;    
     }
     $.ajax({
         url: url,

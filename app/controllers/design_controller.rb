@@ -4,12 +4,10 @@ class DesignController < ApplicationController
 
 	def index
 		add_breadcrumb "Design", community_design_index_path(@community)
-		unless @community.design.present?
-			@community.create_design
-			@community.design.create_menu
-			@community.design.create_main_screen
-			@community.design.create_home_screen	
-		end
+		@design = current_community.design || current_community.create_design
+		@menu = @design.menu ||  @design.create_menu
+		@main_screen = @design.main_screen ||  @design.create_main_screen
+		@home_screen = @design.home_screen ||  @design.create_home_screen	
 	end
 
 	# def rgb2hex(blue)
