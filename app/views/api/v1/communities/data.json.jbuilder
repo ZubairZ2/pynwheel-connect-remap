@@ -15,3 +15,6 @@ json.homescreen do
 	json.video	nil
 	json.loop_type "images"
 end
+
+json.message "success"
+json.operation "data"
