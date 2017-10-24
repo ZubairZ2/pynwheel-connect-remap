@@ -3,7 +3,7 @@ class Menu < ApplicationRecord
 	after_save :convert_rgba_to_hex
 
 	def convert_rgba_to_hex
-	  unless attributes["background_color"].nil?
+	  if attributes["background_color"].present?
         update_column(:background_color,rgbatohex(attributes["background_color"]))
 	  end
 	end
