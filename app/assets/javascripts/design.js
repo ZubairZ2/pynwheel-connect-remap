@@ -421,3 +421,13 @@ function showTabsAccordingToTheme(theme){
     $('#overlay-tab').parent().addClass('hidden');   
   }
 }
+
+function hexToRgbA(hex){
+    hex = hex.replace('#','');
+    r = parseInt(hex.substring(0,2), 16);
+    g = parseInt(hex.substring(2,4), 16);
+    b = parseInt(hex.substring(4,6), 16);
+    o = parseInt(hex.substring(6,8), 16);
+    result = 'rgba('+r+','+g+','+b+','+o/255+')';
+    return result;   
+}
