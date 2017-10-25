@@ -1,0 +1,24 @@
+- content_for :title, "Edit Floor plate - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Edit 
+          %span Floor Plate
+      / /.box-header
+      / form start
+      = form_for @floorplate,:url=>community_floorplate_path(:id=>@floorplate.id,:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render :partial=>'form',:locals=>{:f=>f}
+        / /.box-body
+        .box-footer
+          = f.submit "Save Changes", :class=>"btn btn-success pull-right"
+
+:javascript
+
+  $("#floorplate_image").change(function(){
+      readURL(this);
+  });

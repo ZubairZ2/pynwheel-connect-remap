@@ -1,0 +1,69 @@
+- content_for :title, "Floor Plates - Pynwheel"
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-columns
+        Floor Plates
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-6
+            %h4.title #{current_company.name.capitalize}
+          .col-md-6
+            .mt-35
+              = link_to new_community_floorplate_path(current_community), :class=>"btn btn-success pull-right mb-20" do 
+                %i.fa.fa-plus-circle
+                ADD FLOOR PLATE
+            .divLoading.hidden
+        .box.box-widget.panel-box
+          .box-header  
+            .row
+              .col-md-12
+                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+                  %thead
+                    %tr
+                      %th{:width => "79"} Sr #
+
+                      %th Name
+                      %th Number
+                      %th Building
+                      %th Range
+                      %th Image
+                      %th{:width => "250"} Actions
+                  %tbody
+                    - @floorplates.each_with_index  do |f,index|
+                      %tr
+                        %td
+                          = index+1
+                        %td
+                          = f.name
+                        %td
+                          = f.number 
+                        %td
+                          = f.building
+                        %td
+                          = f.range 
+                        %td
+                          - if f.image.present?
+                            .drop-img.drop-img-left
+                              = image_tag f.image.url
+                          - else  
+                            .drop-img.drop-img-left
+                        %td
+                          = link_to edit_community_floorplate_path(current_community,f), :class=>"text-success" do
+                            %i.fa.fa-edit
+                          %a.text-danger{"data-name"=>"Floor Plate","data-href" => "/communities/#{current_community.id}/floorplates/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                            %i.fa.fa-trash
+                          
+
+            
+                  
+      / End Panel left Side
+      / Start Panel Right Side
+      .col-lg-4.col-md-12
+        .row
+          .col-md-12
+
+        

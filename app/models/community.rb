@@ -4,6 +4,7 @@ class Community < ApplicationRecord
   belongs_to :company
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
+  has_many :floorplates, dependent: :destroy
   has_one :credential , dependent: :destroy
   has_one :design, dependent: :destroy
   has_one :sitemap , dependent: :destroy

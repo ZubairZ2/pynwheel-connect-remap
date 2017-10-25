@@ -1,0 +1,27 @@
+- content_for :title, "Add Floor plate - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Add 
+          %span Floor Plate
+      / /.box-header
+      / form start
+      / <form class="form-horizontal">
+      = form_for @floorplate,:url=>community_floorplates_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render :partial=>'form',:locals=>{:f=>f}
+        / /.box-body
+        .box-footer
+          = link_to "CANCEL" , community_floorplates_path(:community_id=>current_community.id), :class=>"btn btn-default pull-right"
+          = f.submit "ADD FLOOR PLATE", :class=>"btn btn-success pull-right mr-10"
+
+
+:javascript
+
+  $("#floorplate_image").change(function(){
+      readURL(this);
+  });

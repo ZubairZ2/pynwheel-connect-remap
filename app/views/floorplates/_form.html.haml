@@ -1,0 +1,38 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Floor Plate Name
+    %span Specify name here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Floor Plate Name",:maxlength=>"30"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Number
+    %span Specify number here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :number, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"Number",:maxlength=>"30"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Floor Plate Info
+    %span Specify info here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-3.col-xs-12
+        = f.text_field :building, :class=>"form-control validate[required]", :placeholder=>"Building",:maxlength=>"20"
+        %small Building
+      .col-sm-6.col-lg-6.col-md-3.col-xs-12
+        = f.text_field :range, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"Range",:maxlength=>"20"
+        %small Range
+      
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Upload Image
+    %span
+      Upload image of this
+      %br/
+      floor plate.
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .select-img.mb-20
+      .select-img-img= image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+    %span.btn.btn-default.black-button.btn-sm.btn-file
+      Select Image
+      = f.file_field :image     

@@ -56,19 +56,17 @@
             = link_to "Sitemap", map_community_sitemaps_path(current_community)
           %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'plotexp' ? 'active' : ''}"}
             = link_to "Plot Units", plotexp_community_sitemaps_path(current_community)
-      %li.treeview
+      %li.treeview{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
         %a{:href => "#"}
           %i.fa.fa-database
           %span Floor Plates
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
+          %li{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
+            = link_to "Floor Plates", community_floorplates_path(current_community)
           %li
-            %a{:href => "#"} Name Here
-          %li
-            %a{:href => "#"} Name Here
-          %li
-            %a{:href => "#"} Name Here
+            %a{:href => "#"} Plot Amenties
       %li
         %a{:href => "#"}
           %i.fa.fa-cubes
