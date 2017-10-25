@@ -18,7 +18,9 @@ Rails.application.routes.draw do
     get :credentials
     get :test_connection
     resources :floorplans
-    resources :floorplates
+    resources :floorplates do
+      get :plotexp
+    end
     resources :units do
       member do
         post :ajaxplotunit
