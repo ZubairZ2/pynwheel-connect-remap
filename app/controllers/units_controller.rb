@@ -90,7 +90,7 @@ class UnitsController < ApplicationController
       y_plot = @unit.first.y_plot
       units = @community.units.where(x_plot: x_plot,y_plot: y_plot)
       units.each do |unit|
-        unit.update_attributes(x_plot: 0,y_plot:0)
+        unit.update_attributes(x_plot: 0,y_plot:0,floorplate_id: nil)
       end
       redirect_to community_floorplate_plotexp_path(current_community,@floorplate), notice: "The plot has been deleted successfully."
     end

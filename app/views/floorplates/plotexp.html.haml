@@ -10,7 +10,7 @@
           
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
-          %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
+          %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
       / /.box-header
       / form start
       %form.form-horizontal
@@ -236,5 +236,5 @@
     $(this).attr('data-name' , 'plot')
     $(this).attr('data-target' , '#confirm-delete')
     $(this).attr('data-toggle' , 'modal')
-    $(this).attr('data-href' , '/communities/#{@community.id}/units/'+$(this).attr("title")+'/remove_plot')
+    $(this).attr('data-href' , '/communities/#{@community.id}/units/'+$(this).attr("title")+'/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}')
   })
