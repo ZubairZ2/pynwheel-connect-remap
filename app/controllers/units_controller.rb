@@ -83,9 +83,7 @@ class UnitsController < ApplicationController
   end
 
   def remove_plot_from_floorplate
-    puts '----------------' , params.inspect
     @floorplate = Floorplate.find params[:floorplate_id]
-    puts '-----------------' , @floorplate.inspect
     @unit = @community.units.where(marketing_name: params[:id])
     if @unit.present?
       x_plot = @unit.first.x_plot
