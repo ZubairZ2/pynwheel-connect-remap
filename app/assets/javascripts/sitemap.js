@@ -1,5 +1,5 @@
 $(document).ready(function(){
-  if ($('.is-floorplate')[0]){
+  if ($('.is-sitemap')[0]){
       selected=[];
       var temp=[];
       dx = 0;
@@ -33,12 +33,13 @@ $(document).ready(function(){
         }); 
       });
 
+     
       $(document).on("click", ".marker" , function() {
         console.log($(this).attr("title"));
         $(this).attr('data-name' , 'plot');
         $(this).attr('data-target' , '#confirm-delete');
         $(this).attr('data-toggle' , 'modal');
-        $(this).attr('data-href' , '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot_from_floorplate?floorplate_id='+floorplate_id);
+        $(this).attr('data-href' , '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot');
       });
 
       $("#map").mouseup(function(e) {

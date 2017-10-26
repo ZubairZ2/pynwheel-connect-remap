@@ -31,5 +31,7 @@
 //= require jquery-ui/widgets/sortable
 //= require rails_sortable
 //= require maps
+//= require unit-plotting
+//= require sitemap
 //= require floorplate
 // require_tree .
