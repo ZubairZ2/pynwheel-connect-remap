@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   resources :communities do
     member do
       delete :remove_plots
+      delete :remove_plots_from_floorplate
     end
     get :import_page
     get :import
@@ -24,7 +25,9 @@ Rails.application.routes.draw do
     resources :units do
       member do
         post :ajaxplotunit
+        post :ajaxplotunitforfloorplate
         delete :remove_plot
+        delete :remove_plot_from_floorplate
       end
     end
     resources :sitemaps do

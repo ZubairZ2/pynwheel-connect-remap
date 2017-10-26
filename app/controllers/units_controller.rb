@@ -59,6 +59,16 @@ class UnitsController < ApplicationController
     end
   end
 
+  def ajaxplotunitforfloorplate
+    unit = @community.units.where(marketing_name: params[:id])
+    if unit.present?
+      unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      render json: {unit: unit.first}, status: 200
+    else
+      render json: {}, status: 404
+    end
+  end
+
   def remove_plot
     @unit = @community.units.where(marketing_name: params[:id])
     if @unit.present?
@@ -69,6 +79,20 @@ class UnitsController < ApplicationController
         unit.update_attributes(x_plot: 0,y_plot:0)
       end
       redirect_to plotexp_community_sitemaps_path(@community), notice: "The plot has been deleted successfully."
+    end
+  end
+
+  def remove_plot_from_floorplate
+    @floorplate = Floorplate.find params[:floorplate_id]
+    @unit = @community.units.where(marketing_name: params[:id])
+    if @unit.present?
+      x_plot = @unit.first.x_plot
+      y_plot = @unit.first.y_plot
+      units = @community.units.where(x_plot: x_plot,y_plot: y_plot)
+      units.each do |unit|
+        unit.update_attributes(x_plot: 0,y_plot:0,floorplate_id: nil)
+      end
+      redirect_to community_floorplate_plotexp_path(current_community,@floorplate), notice: "The plot has been deleted successfully."
     end
   end
 

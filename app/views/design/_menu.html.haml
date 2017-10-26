@@ -52,12 +52,34 @@
             .form-group.mt-30
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Background color
-                %span Select menu background color & opacity
+                %span Select menu background color
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .input-group.colorpicker-style.rgba-format-colorpicker
                   .input-group-addon
                     %i
-                    = m.text_field :background_color,id: "c-style-background-color-text-field",class: "form-control menu-field",readonly: true,autocomplete: true       
+                    = m.text_field :background_color,id: "c-style-background-color-text-field",class: "form-control menu-field",readonly: true,autocomplete: false
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Primary color
+            %span Select primary color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.rgba-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :primary_color,class: "form-control menu-field",readonly: true,autocomplete: false
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Secondary color
+            %span Select secondary color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.rgba-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :secondary_color,class: "form-control menu-field",readonly: true,autocomplete: false                                   
       .row
         .col-md-12
           .box-footer.mt-30.pt-15        

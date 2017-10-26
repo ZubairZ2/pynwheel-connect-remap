@@ -117,6 +117,11 @@ class CommunitiesController < ApplicationController
     redirect_to plotexp_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
   end
 
+  def remove_plots_from_floorplate
+    @community.delete_plots_from_floorplate(params[:floorplate_id])
+    redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "All plots have been deleted successfully."
+  end
+
   private
 
   def set_community

@@ -45,7 +45,8 @@ class FloorplatesController < ApplicationController
 	    unless current_community.units.size > 0
 	      flash[:error] = "Please import unit data first"
 	    end
-	    @units = current_community.units.order(:building, :unit_type)
+	    @community_units = current_community.units.order(:building, :unit_type)
+	    @floorplate_units = @floorplate.units.order(:building, :unit_type)
 	end
 
 	private

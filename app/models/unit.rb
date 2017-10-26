@@ -1,6 +1,7 @@
 class Unit < ApplicationRecord
   belongs_to :community
   belongs_to :floorplan
+  belongs_to :floorplate
   validates :effective_rent, :numericality => { :greater_than => 0 }
 
   def floorplan
