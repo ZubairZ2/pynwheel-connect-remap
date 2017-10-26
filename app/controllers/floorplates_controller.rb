@@ -15,6 +15,7 @@ class FloorplatesController < ApplicationController
 			flash[:notice] = "Floor Plate is created successfully."
 			redirect_to community_floorplates_path(current_community)
 		else
+			flash[:error] = @floorplate.errors.full_messages.join(',')
 			render :new
 		end
 	end
@@ -27,6 +28,7 @@ class FloorplatesController < ApplicationController
 			flash[:notice] = "Floor Plate is updated successfully."
 			redirect_to community_floorplates_path(current_community)
 		else
+			flash[:error] = @floorplate.errors.full_messages.join(',')
 			render :edit
 		end
 	end
