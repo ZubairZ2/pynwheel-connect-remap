@@ -10,7 +10,7 @@
           
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
-          /%a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} Reset all plots
+          %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
       / /.box-header
       / form start
       %form.form-horizontal
@@ -19,16 +19,17 @@
             .col-lg-9#container
               .map-block#map{:style=>"position: relative;"}
                 = image_tag @floorplate.image? ? @floorplate.image.url : ""
-                - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
-                - units.each do |unit|
+                - community_units = @community_units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
+                - floorplate_units = @floorplate_units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
+                - floorplate_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i > 0
-                    = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.marketing_name}/remove_plot"
+                    = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.marketing_name}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}"
             .col-lg-3
               %h5.mt-40.mb-20 SELECT UNITS TO PLOT
               %select.amenities-list.form-control
                 %option{:value => ""} -- select unit --
                 - arr = []
-                - units.each do |unit|
+                - community_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0
                     %option 
                       = link_to "#{unit.marketing_name}", "#"
@@ -44,6 +45,7 @@
 :javascript
   var arr = #{raw arr}
   var community_id = #{params[:community_id]}
+  var floorplate_id = #{params[:floorplate_id]}
   var addmode = false;
   selected=[];
   var temp=[];
@@ -182,9 +184,10 @@
   // save an individual unit (even if same x/y)
   function savePlot(id, dx, dy) {
     console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
-    $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunit",
+    $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitforfloorplate",
         { "x_plot": dx,
-           "y_plot": dy
+           "y_plot": dy,
+           "floorplate_id": floorplate_id
         },
         function(data,status,xhr) {
           console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);

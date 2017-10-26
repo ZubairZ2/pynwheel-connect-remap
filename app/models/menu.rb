@@ -1,6 +1,6 @@
 class Menu < ApplicationRecord
 	belongs_to :design
-	after_save :convert_rgba_to_hex
+	#after_save :convert_rgba_to_hex
 
 	def convert_rgba_to_hex
 	  if attributes["background_color"].present?

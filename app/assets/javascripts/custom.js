@@ -4,7 +4,7 @@ $(document).ready(function(e){
     /* Activating Best In Place */
     jQuery(".best_in_place").best_in_place();
     /*color picker*/
-    $('.rgba-format-colorpicker').colorpicker({format: 'rgba'});
+    $('.rgba-format-colorpicker').colorpicker({format: 'hex'});
     $('.hex-format-colorpicker').colorpicker({format: 'hex'});
 
 var headertext = [],

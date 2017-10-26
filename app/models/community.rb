@@ -122,4 +122,13 @@ class Community < ApplicationRecord
     true
   end
 
+  def delete_plots_from_floorplate(floorplate_id)
+    self.units.where(floorplate_id: floorplate_id).each do |unit|
+      unit.update_attributes(x_plot: 0, y_plot: 0,floorplate_id: nil)
+    end
+    true
+  end
+
+
+
 end
