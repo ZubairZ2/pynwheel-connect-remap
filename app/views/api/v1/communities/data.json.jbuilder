@@ -1,6 +1,6 @@
 json.ui_settigs do
   json.theme @community.theme_name
-  json.logo @community.logo.present? ? @community.logo.url : nil
+  json.logo @community.logo.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+@community.logo.url : @community.logo.url) : nil
 end
 
 json.homescreen do
@@ -8,12 +8,12 @@ json.homescreen do
 		if @community.design.home_page_images.present?
 			json.images @community.design.home_page_images.order(:sort) do |img|
 			  json.filename img.name
-			  json.url img.image.url
+			  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image.url : img.image.url
 			end
 		else
 			json.images []
 		end
-		json.video	@community.design.home_page_video.present? ? ( Rails.env.development? ? "192.168.101.77:3000"+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil 
+		json.video	@community.design.home_page_video.present? ? ( Rails.env.development? ? "http://192.168.101.77:3000"+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil 
 		json.loop_type @community.design.loop_type
 	else
 		json.images []
