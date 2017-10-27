@@ -3,8 +3,20 @@ $(document).ready(function(e){
     $("form").validationEngine({binded: false});
     /* Activating Best In Place */
     jQuery(".best_in_place").best_in_place();
+
     /*color picker*/
-    $('.rgba-format-colorpicker').colorpicker({format: 'hex'});
+    $('#rgba-format-colorpicker').colorpicker({format: 'rgba'}).on('create',function(event){
+          $('#c-style-background-color-text-field').val(background_color);
+    })
+    .on('changeColor', function(event){
+        
+        if ( typeof event.value !== 'undefined'){ 
+          var rgba_color = rgbaToHex(event.value); 
+          console.log(rgba_color); 
+          $('#c-style-background-color-text-field').val(rgba_color);
+        }
+        
+    });
     $('.hex-format-colorpicker').colorpicker({format: 'hex'});
 
 var headertext = [],
@@ -338,3 +350,25 @@ function readImageSrc(file){
         console.log("success");
     });
    }
+
+
+function trim (str) {
+  if ( typeof str !== 'undefined'){  
+    return str.replace(/^\s+|\s+$/gm,'');
+  }
+}
+
+function rgbaToHex (rgba) {
+    if ( typeof rgba !== 'undefined'){  
+    var parts = rgba.substring(rgba.indexOf("(")).split(",");
+        r = parseInt(trim(parts[0].substring(1)), 10);
+        g = parseInt(trim(parts[1]), 10);
+        b = parseInt(trim(parts[2]), 10);
+        if ( typeof parts[3] !== 'undefined'){ 
+          a = parseFloat(trim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
+        }
+    if ( typeof a !== 'undefined'){    
+      return ('#' + r.toString(16) + g.toString(16) + b.toString(16) + (a * 255).toString(16).substring(0,2));
+    }
+   }   
+}
