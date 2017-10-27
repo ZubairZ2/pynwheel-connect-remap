@@ -610,7 +610,7 @@ font-size: 12px;
 .divLoading { 		
     display: none;  		
 }		
-.divLoading, .show {		
+.divLoading {		
     display: block;		
     position: fixed;		
     z-index: 100000;		

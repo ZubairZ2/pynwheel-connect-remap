@@ -1,4 +1,10 @@
 $(document).ready(function(e){
+   
+
+    $('.preview-image').click(function(event){
+      event.preventDefault();
+      $(this).ekkoLightbox();  
+    }); 
     //validates form
     $("form").validationEngine({binded: false});
     /* Activating Best In Place */
@@ -144,6 +150,7 @@ function readURL(input) {
 
           reader.onload = function (e) {
               $('#preview-image').attr('src', e.target.result);
+              $('#preview-image').parent().attr('href', e.target.result);
           }
 
           reader.readAsDataURL(input.files[0]);

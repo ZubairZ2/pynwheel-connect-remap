@@ -358,6 +358,7 @@ function designPageLogo(src){
 
           reader.onload = function (e) {
               $('#preview-image').attr('src', e.target.result);
+              $('#preview-image').parent().attr('href', e.target.result);
               designPageLogo(e.target.result);
           }
 
