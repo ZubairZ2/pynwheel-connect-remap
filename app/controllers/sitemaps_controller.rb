@@ -58,6 +58,11 @@ class SitemapsController < ApplicationController
     #   erb :'sitemap/plotexp'
     # end
   end
+
+  def list_amenities
+    @sitemap = @community.sitemap
+    @amenities = @sitemap.amenities
+  end
     
   private
 

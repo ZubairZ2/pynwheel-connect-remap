@@ -3,4 +3,5 @@ class Floorplate < ApplicationRecord
 	belongs_to :community
 	has_many :units
 	validates_uniqueness_of :name
+	has_many :amenities, as: :amenityable
 end

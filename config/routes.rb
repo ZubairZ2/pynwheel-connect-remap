@@ -31,9 +31,11 @@ Rails.application.routes.draw do
       end
     end
     resources :sitemaps do
+      resources :amenities
       collection do
         get :plotexp
         get :map
+        get :list_amenities
       end
     end
     resources :settings , only: :index
