@@ -18,8 +18,11 @@ Rails.application.routes.draw do
     get :import
     get :credentials
     get :test_connection
-    resources :floorplans
+    resources :floorplans do
+      resources :amenities,controller: "floorplan_amenities"
+    end
     resources :floorplates do
+      resources :amenities,controller: "floorplate_amenities"
       get :plotexp
     end
     resources :units do
@@ -31,11 +34,10 @@ Rails.application.routes.draw do
       end
     end
     resources :sitemaps do
-      resources :amenities
+      resources :amenities,controller: "sitemap_amenities"
       collection do
         get :plotexp
         get :map
-        get :list_amenities
       end
     end
     resources :settings , only: :index
