@@ -1,10 +1,13 @@
 $(document).ready(function(e){
    
 
-    $('.preview-image').click(function(event){
+    $('.preview-image').click(function(event){  
       event.preventDefault();
-      $(this).ekkoLightbox();  
+      $(this).ekkoLightbox({
+        alwaysShowClose: true
+      });  
     }); 
+
     //validates form
     $("form").validationEngine({binded: false});
     /* Activating Best In Place */

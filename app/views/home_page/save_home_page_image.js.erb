@@ -6,3 +6,10 @@ setTimeout(function() {
 }, 10000);
 imageDragNdrop();
 $('.sortable').railsSortable(); 
+
+$('.preview-image').click(function(event){  
+  event.preventDefault();
+  $(this).ekkoLightbox({
+    alwaysShowClose: true
+  });  
+}); 

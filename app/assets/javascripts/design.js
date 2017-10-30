@@ -196,6 +196,7 @@ function readURLOnDesignPage(input,preview_element,button_name,screen_id,main_sc
           reader.onload = function (e) {
               $(input).val('');
               $(preview_element).attr('src', e.target.result);
+              $(preview_element).parent().attr('href', e.target.result);
               if (main_screen){
                 designPageMainScreenbutton(e.target.result,button_name,screen_id);
               }
@@ -232,6 +233,7 @@ function readDesignPageLogoSrc(file){
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#preview-image').attr('src', e.target.result);
+    $('#preview-image').parent().attr('href', e.target.result);
     designPageLogo(e.target.result);
   }
   reader.readAsDataURL(file);
@@ -242,6 +244,7 @@ function readSecondaryPageBackgroundImageSrc(file){
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#secondary-image-preview-image').attr('src', e.target.result);
+    $('#secondary-image-preview-image').parent().attr('href', e.target.result);
     secondaryPageBackgroundImage(e.target.result);
   }
   reader.readAsDataURL(file);
@@ -379,6 +382,7 @@ function readSecondaryBackgroundImageFromInput(input) {
 
           reader.onload = function (e) {
               $('#secondary-image-preview-image').attr('src', e.target.result);
+              $('#secondary-image-preview-image').parent().attr('href',e.target.result);
               secondaryPageBackgroundImage(e.target.result);
           }
 

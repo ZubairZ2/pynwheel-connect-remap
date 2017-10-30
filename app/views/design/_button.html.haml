@@ -59,7 +59,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.appartments_button.present? ? m.object.appartments_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-main-screen-appartments-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.appartments_button? ? m.object.appartments_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Appartments Button"}
+                                = image_tag m.object.appartments_button.present? ? m.object.appartments_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-main-screen-appartments-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -70,7 +72,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.galleries_button.present? ? m.object.galleries_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-main-screen-galleries-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.galleries_button? ? m.object.galleries_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Galleries Button"}
+                                = image_tag m.object.galleries_button.present? ? m.object.galleries_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-main-screen-galleries-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -81,7 +85,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.neighborhood_button.present? ? m.object.neighborhood_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-main-screen-neighborhood-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.neighborhood_button? ? m.object.neighborhood_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Neighborhood Button"}
+                                = image_tag m.object.neighborhood_button.present? ? m.object.neighborhood_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-main-screen-neighborhood-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -92,7 +98,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.favorities_button.present? ? m.object.favorities_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-main-screen-favorities-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.favorities_button? ? m.object.favorities_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Favorities Button"}
+                                = image_tag m.object.favorities_button.present? ? m.object.favorities_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-main-screen-favorities-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -153,7 +161,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.appartments_button.present? ? m.object.appartments_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-appartments-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.appartments_button? ? m.object.appartments_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Appartments Button"}
+                                = image_tag m.object.appartments_button.present? ? m.object.appartments_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-appartments-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -164,7 +174,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.galleries_button.present? ? m.object.galleries_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-galleries-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.galleries_button? ? m.object.galleries_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Galleries Button"}
+                                = image_tag m.object.galleries_button.present? ? m.object.galleries_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-galleries-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -175,7 +187,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.neighborhood_button.present? ? m.object.neighborhood_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-neighborhood-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.neighborhood_button? ? m.object.neighborhood_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Neighborhood Button"}
+                                = image_tag m.object.neighborhood_button.present? ? m.object.neighborhood_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-neighborhood-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -186,7 +200,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.favorities_button.present? ? m.object.favorities_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-favorities-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.favorities_button? ? m.object.favorities_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Favorities Button"}   
+                                = image_tag m.object.favorities_button.present? ? m.object.favorities_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-favorities-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -197,7 +213,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.about_button.present? ? m.object.about_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-about-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.about_button? ? m.object.about_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"About Button"}
+                                = image_tag m.object.about_button.present? ? m.object.about_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-about-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -208,7 +226,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.floorplan_button.present? ? m.object.floorplan_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-floorplan-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.floorplan_button? ? m.object.floorplan_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floor Plan Button"}
+                                = image_tag m.object.floorplan_button.present? ? m.object.floorplan_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-floorplan-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
@@ -219,7 +239,9 @@
                         %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
                         .col-sm-12.col-lg-8.col-md-8.col-xs-12
                           .select-img.mb-20.mt-30
-                            .select-img-img= image_tag m.object.building_button.present? ? m.object.building_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-building-button-image"      
+                            .select-img-img
+                              %a.preview-image{:href=>m.object.building_button? ? m.object.building_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Building Button"}
+                                = image_tag m.object.building_button.present? ? m.object.building_button.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-home-screen-building-button-image"      
                           %span.btn.btn-primary.btn-file.mt-30
                             %i.fa.fa-upload
                             Upload File
