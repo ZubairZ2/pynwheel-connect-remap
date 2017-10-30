@@ -37,7 +37,9 @@
       floor plan.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .select-img.mb-20
-      .select-img-img= image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+      .select-img-img
+        %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floor Plan Image"}
+          = image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :image     

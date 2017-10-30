@@ -54,10 +54,10 @@
                 Background color
                 %span Select menu background color
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .input-group.colorpicker-style.rgba-format-colorpicker
+                .input-group.colorpicker-style#rgba-format-colorpicker
                   .input-group-addon
                     %i
-                    = m.text_field :background_color,id: "c-style-background-color-text-field",class: "form-control menu-field",readonly: true,autocomplete: false
+                    = m.text_field :background_color,id: "c-style-background-color-text-field",class: "form-control menu-field",autocomplete: false
     .row
       .col-lg-10
         .form-group.mt-30
@@ -65,7 +65,7 @@
             Primary color
             %span Select primary color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            .input-group.colorpicker-style.rgba-format-colorpicker
+            .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
                 = d.text_field :primary_color,class: "form-control menu-field",readonly: true,autocomplete: false
@@ -76,10 +76,13 @@
             Secondary color
             %span Select secondary color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            .input-group.colorpicker-style.rgba-format-colorpicker
+            .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
                 = d.text_field :secondary_color,class: "form-control menu-field",readonly: true,autocomplete: false                                   
       .row
         .col-md-12
-          .box-footer.mt-30.pt-15        
+          .box-footer.mt-30.pt-15 
+:javascript
+  var background_color = "#{@community.design.menu.background_color}" 
+  console.log(background_color);                

@@ -34,4 +34,5 @@
 //= require unit-plotting
 //= require sitemap
 //= require floorplate
+//= require ekko-lightbox
 // require_tree .

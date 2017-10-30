@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171018103243) do
+ActiveRecord::Schema.define(version: 20171026150459) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,6 +22,13 @@ ActiveRecord::Schema.define(version: 20171018103243) do
     t.integer  "unit_id"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+    t.string   "name"
+    t.string   "image"
+    t.integer  "x_plot"
+    t.integer  "y_plot"
+    t.string   "amenityable_type"
+    t.integer  "amenityable_id"
+    t.index ["amenityable_type", "amenityable_id"], name: "index_amenities_on_amenityable_type_and_amenityable_id", using: :btree
   end
 
   create_table "communities", force: :cascade do |t|
@@ -125,6 +132,17 @@ ActiveRecord::Schema.define(version: 20171018103243) do
     t.string   "image"
   end
 
+  create_table "floorplates", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "number"
+    t.string   "building"
+    t.integer  "range"
+    t.string   "image"
+    t.integer  "community_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+  end
+
   create_table "home_page_images", force: :cascade do |t|
     t.string   "image"
     t.string   "name"
@@ -157,6 +175,9 @@ ActiveRecord::Schema.define(version: 20171018103243) do
     t.integer  "design_id"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+    t.string   "about_button"
+    t.string   "floorplan_button"
+    t.string   "building_button"
   end
 
   create_table "main_screens", force: :cascade do |t|
@@ -215,6 +236,7 @@ ActiveRecord::Schema.define(version: 20171018103243) do
     t.datetime "updated_at",                   null: false
     t.integer  "x_plot",           default: 0
     t.integer  "y_plot",           default: 0
+    t.integer  "floorplate_id"
   end
 
   create_table "users", force: :cascade do |t|
