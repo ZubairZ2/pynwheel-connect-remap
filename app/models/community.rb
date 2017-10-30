@@ -10,6 +10,7 @@ class Community < ApplicationRecord
   has_one :sitemap , dependent: :destroy
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
+  validates_uniqueness_of :name, scope: :company_id
 
   def is_futurist?
     theme_name == "futurist"
