@@ -2,7 +2,7 @@ class FloorplatesController < ApplicationController
 	before_action :authenticate_user!
 	before_action :set_floorplate, only: [:edit,:update,:destroy]
 	def index
-		@floorplates = current_community.floorplates
+		@floorplates = current_community.floorplates.order(name: :desc)
 	end
 
 	def new
