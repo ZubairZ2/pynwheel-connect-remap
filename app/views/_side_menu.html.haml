@@ -32,8 +32,6 @@
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
             = link_to "Floor Plans", community_floorplans_path(current_community)
-          %li
-            %a{:href => "#"} Floor Plan Amenity Images
       %li.treeview{:class=>"#{controller_name =='units' ? 'active' : ''}"}
         %a{:href => "#"}
           %i.fa.fa-laptop

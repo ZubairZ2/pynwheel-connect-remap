@@ -1,12 +1,15 @@
 // save an individual unit (even if same x/y)
   function savePlot(id, dx, dy) {
-    console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
-    if ( typeof floorplate_id !== 'undefined'){
+    console.log(amenity_type);
+    if (typeof floorplan_id !== 'undefined'){
+      saveFloorplanPlot(id,dx,dy);
+    }
+    else if ( typeof floorplate_id !== 'undefined'){
       saveFloorplateUnit(id, dx, dy);
     }
     else if ( typeof sitemap_id !== 'undefined'){
       saveAmenityPlot(id, dx, dy);
-    }
+    } 
     else{
     	saveSiteMapUnit(id, dx, dy);
     }
@@ -26,6 +29,24 @@
        console.debug(data.unit.y_plot);
        console.debug(data.unit.marketing_name);
        arr.push([data.unit.marketing_name, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+       doDraggable();
+       // delete from unused list
+       $('.amenities-list option').each(function(){
+         if ($(this).val() == id) {
+           $(this).remove();
+         }
+       });
+     });
+  }
+
+  function saveFloorplanPlot(id,dx,dy){
+    $.post( "/communities/"+community_id+"/floorplans/"+floorplan_id+"/amenities/" + id + "/plot_amenity",
+     { "x_plot": dx,
+        "y_plot": dy,
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+       arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
        doDraggable();
        // delete from unused list
        $('.amenities-list option').each(function(){
