@@ -42,6 +42,9 @@ $(document).ready(function(){
         if (typeof floorplan_id !== 'undefined'){
           $(this).attr('data-href' , '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+$(this).attr("title")+'/remove_amenity');
         }
+        else if (typeof sitemap_id !== 'undefined'){
+          $(this).attr('data-href' , '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+$(this).attr("title")+'/remove_amenity');
+        }
         else if (typeof floorplate_id_for_amenity !== 'undefined'){
           $(this).attr('data-href' , '/communities/'+community_id+'/floorplates/'+floorplate_id_for_amenity+'/amenities/'+$(this).attr("title")+'/remove_amenity');
         }

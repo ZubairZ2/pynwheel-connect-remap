@@ -57,6 +57,9 @@ Rails.application.routes.draw do
         collection do
           delete :remove_amenities_plot
         end
+        member do
+          delete :remove_amenity
+        end
       end
       collection do
         get :plotexp

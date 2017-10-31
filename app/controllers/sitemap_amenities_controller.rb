@@ -75,6 +75,14 @@ class SitemapAmenitiesController < ApplicationController
 		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap), notice: "All plots have been deleted successfully."
 	end
 
+	def remove_amenity
+		amenity = Amenity.find params[:id]
+		amenity.x_plot = 0
+		amenity.y_plot = 0
+		amenity.save(validate: false)
+		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap),notice: "Amenity plot have been deleted successfully."
+	end
+
 	private
 
 	def set_community_and_sitemap

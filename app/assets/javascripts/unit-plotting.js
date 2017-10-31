@@ -1,6 +1,5 @@
 // save an individual unit (even if same x/y)
   function savePlot(id, dx, dy) {
-    console.log(amenity_type);
     if (typeof floorplan_id !== 'undefined'){
       saveFloorplanPlot(id,dx,dy);
     }
