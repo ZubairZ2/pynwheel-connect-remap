@@ -1,10 +1,13 @@
 class SitemapAmenitiesController < ApplicationController
+	add_breadcrumb "Home", :root_path
+    add_breadcrumb "Property Map", "##"
 	before_action :authenticate_user!
 	before_action :set_community_and_sitemap
 
 	def index
 		@sitemap = @community.sitemap
-    @amenities = @sitemap.amenities
+        @amenities = @sitemap.amenities
+        add_breadcrumb "Property Map Amenities", community_sitemap_amenities_path(@community,@sitemap) 
 	end
 
 	def new
@@ -50,9 +53,9 @@ class SitemapAmenitiesController < ApplicationController
 		@amenity.y_plot = params[:y_plot]
 		if @amenity.save(validate: false)
 			render json: {amenity: @amenity}, status: 200
-    else
-      render json: {}, status: 404
-    end
+	    else
+	      render json: {}, status: 404
+	    end
 	end
 
 	def remove_amenities_plot

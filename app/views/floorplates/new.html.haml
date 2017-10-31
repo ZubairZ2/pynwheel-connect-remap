@@ -16,7 +16,7 @@
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
         .box-footer
-          = link_to "CANCEL" , community_floorplates_path(:community_id=>current_community.id), :class=>"btn btn-default pull-right"
+          = link_to "CANCEL" , community_floorplates_path(current_community), :class=>"btn btn-default pull-right"
           = f.submit "ADD FLOOR PLATE", :class=>"btn btn-success pull-right mr-10"
 
 

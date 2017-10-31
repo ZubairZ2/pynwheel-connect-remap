@@ -65,6 +65,7 @@ class SitemapsController < ApplicationController
   end
 
   def plot_amenities
+    add_breadcrumb "Plot Property Map Amenities", plot_amenities_community_sitemaps_path(current_community) 
     @sitemap = @community.sitemap
     @amenities = @sitemap.amenities
   end
