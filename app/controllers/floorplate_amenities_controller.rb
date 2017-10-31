@@ -1,17 +1,26 @@
 class FloorplateAmenitiesController < ApplicationController
+	add_breadcrumb "Home", :root_path
 	before_action :authenticate_user!
 	before_action :set_community_and_floorplate
 
 	def index
-        @amenities = @floorplate.amenities
+        @amenities = @floorplate.amenities.order(id: :desc)
+        add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+	    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
 	end
 
 	def new
 		@amenity = @floorplate.amenities.build
+		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+	    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+	    add_breadcrumb "Add Amenity",new_community_floorplate_amenity_path
 	end
 
 	def edit
 		@amenity = @floorplate.amenities.find(params[:id])
+		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+	    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+	    add_breadcrumb "Edit Amenity",edit_community_floorplate_amenity_path(current_community,@floorplate,@amenity)
 	end
 
 	def create
@@ -19,6 +28,9 @@ class FloorplateAmenitiesController < ApplicationController
 		if @amenity.save
 			redirect_to community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity created successfully"
 		else
+			add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+	        add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+	        add_breadcrumb "Add Amenity",new_community_floorplate_amenity_path
 			flash[:error] = @amenity.errors.full_messages.join(',')
             render :new
 		end
@@ -29,6 +41,9 @@ class FloorplateAmenitiesController < ApplicationController
 		if @amenity.update_attributes(amenity_params)
 			redirect_to community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity updated successfully"
 		else
+			add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+	        add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+	        add_breadcrumb "Edit Amenity",edit_community_floorplate_amenity_path(current_community,@floorplate,@amenity)
 			flash[:error] = @amenity.errors.full_messages.join(',')
             render :edit
 		end
