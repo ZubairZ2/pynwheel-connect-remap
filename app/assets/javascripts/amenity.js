@@ -6,7 +6,7 @@ $(document).ready(function(){
       dy = 0;
       $("#map").css('cursor','default');
 
-      //doDraggable();
+      doDraggable();
 
       $('.amenities-list').mouseup( function(e) {
         e.preventDefault();
@@ -49,10 +49,7 @@ $(document).ready(function(){
         if (addmode) {
           // save plotting for each selected unit
           for (i=0; i<selected.length; i++) {
-            console.log(selected[i]);
-            console.log(selected[i][0]);
-            console.log(selected[i][1]);
-            saveAmenityPlot(selected[i][0], dx, dy);
+            savePlot(selected[i][0], dx, dy);
           }
           // add new marker to display
           tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";

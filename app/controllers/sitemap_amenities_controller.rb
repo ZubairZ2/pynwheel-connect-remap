@@ -4,7 +4,7 @@ class SitemapAmenitiesController < ApplicationController
 
 	def index
 		@sitemap = @community.sitemap
-        @amenities = @sitemap.amenities
+    @amenities = @sitemap.amenities
 	end
 
 	def new
@@ -53,6 +53,15 @@ class SitemapAmenitiesController < ApplicationController
     else
       render json: {}, status: 404
     end
+	end
+
+	def remove_amenities_plot
+		@community.sitemap.amenities.each do |amenity|
+			amenity.x_plot = 0
+			amenity.y_plot = 0
+			amenity.save(validate: false)
+		end
+		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap), notice: "All plots have been deleted successfully."
 	end
 
 	private

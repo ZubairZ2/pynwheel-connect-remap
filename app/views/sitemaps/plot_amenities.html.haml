@@ -10,7 +10,7 @@
           
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
-          %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_amenities"} Reset all plots
+          %a.btn.btn-danger{"data-name" => "sitemap's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/remove_amenities_plot"} Reset all plots
       / /.box-header
       / form start
       %form.form-horizontal
@@ -29,8 +29,8 @@
                 - amenity_arr = []
                 - @amenities.each do |amenity|
                   - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
-                    %option 
-                      = link_to "#{amenity.id}", "#"
+                    %option{:value => "#{amenity.id}"}= amenity.name 
+
                     
                   - amenity_arr.push([amenity.name, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.id.to_s])
               %h5.mt-40 SELECTED AMENITIES

@@ -4,6 +4,9 @@
     if ( typeof floorplate_id !== 'undefined'){
       saveFloorplateUnit(id, dx, dy);
     }
+    else if ( typeof sitemap_id !== 'undefined'){
+      saveAmenityPlot(id, dx, dy);
+    }
     else{
     	saveSiteMapUnit(id, dx, dy);
     }
