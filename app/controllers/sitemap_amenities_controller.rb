@@ -44,6 +44,17 @@ class SitemapAmenitiesController < ApplicationController
 		end
 	end
 
+	def plot_amenity
+		@amenity = @community.sitemap.amenities.find (params[:amenity_id])
+		@amenity.x_plot = params[:x_plot]
+		@amenity.y_plot = params[:y_plot]
+		if @amenity.save(validate: false)
+			render json: {amenity: @amenity}, status: 200
+    else
+      render json: {}, status: 404
+    end
+	end
+
 	private
 
 	def set_community_and_sitemap

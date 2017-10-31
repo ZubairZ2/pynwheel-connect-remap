@@ -34,7 +34,9 @@ Rails.application.routes.draw do
       end
     end
     resources :sitemaps do
-      resources :amenities,controller: "sitemap_amenities"
+      resources :amenities,controller: "sitemap_amenities" do
+        post :plot_amenity
+      end
       collection do
         get :plotexp
         get :map
