@@ -31,7 +31,16 @@ Rails.application.routes.draw do
       end
     end
     resources :floorplates do
-      resources :amenities,controller: "floorplate_amenities"
+      resources :amenities,controller: "floorplate_amenities" do
+        post :plot_amenity
+        collection do
+          get :plot_amenities
+          delete :remove_amenities_plot
+        end
+        member do
+          delete :remove_amenity
+        end
+      end
       get :plotexp
     end
     resources :units do

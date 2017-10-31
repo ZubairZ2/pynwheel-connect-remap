@@ -57,7 +57,8 @@
                           %a.text-danger{"data-name"=>"Floor Plate","data-href" => "/communities/#{current_community.id}/floorplates/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                             %i.fa.fa-trash
                           = link_to "Plot Now",community_floorplate_plotexp_path(current_community,f), :class=>"btn-info btn-xs mr-5" 
-                          = link_to "Amenties",community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"  
+                          = link_to "Amenties",community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"
+                          = link_to "Plot Amenties",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"   
                           
 
             
