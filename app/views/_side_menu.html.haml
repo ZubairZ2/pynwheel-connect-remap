@@ -57,7 +57,7 @@
           %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'plotexp' ? 'active' : ''}"}
             = link_to "Plot Units", plotexp_community_sitemaps_path(current_community)
           %li
-            = link_to "Sitemap Amenity Images",  list_amenities_community_sitemaps_path(current_community)
+            = link_to "Sitemap Amenity Images",  community_sitemap_amenities_path(current_community,current_community.sitemap)
           %li
             = link_to "Plot Sitemap Amenities",  plot_amenities_community_sitemaps_path(current_community)
       %li.treeview{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
@@ -69,8 +69,6 @@
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
             = link_to "Floor Plates", community_floorplates_path(current_community)
-          %li
-            %a{:href => "#"} Plot Units
       %li
         %a{:href => "#"}
           %i.fa.fa-cubes

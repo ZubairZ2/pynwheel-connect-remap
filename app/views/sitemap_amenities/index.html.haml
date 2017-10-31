@@ -1,0 +1,57 @@
+- content_for :title, "Amenities - Pynwheel"
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-columns
+        Amenities
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-6
+            %h4.title #{@community.name.capitalize}
+          .col-md-6
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"}
+                %i.fa.fa-plus-circle
+                ADD AMENITY
+            .divLoading.hidden
+        .box.box-widget.panel-box
+          .box-header
+            
+            .row
+              .col-md-12
+                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+                  %thead
+                    %tr
+                      %th{:width => "79"} Sr #
+
+                      %th Amenity Name
+                      %th Image
+                      %th{:width => "250"} Actions
+                  %tbody
+                    - @amenities.each_with_index  do |f,index|
+                      %tr
+                        %td
+                          = index+1
+                        %td
+                          = f.name
+                        %td
+                          .drop-img.drop-img-left
+                            = image_tag f.image.url if f.image.present?
+                        %td
+                          %a.text-success{:href => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{f.id}/edit"}
+                            %i.fa.fa-edit
+                          %a.text-danger{"data-name"=>"Amenity","data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                            %i.fa.fa-trash
+
+            
+                  
+      / End Panel left Side
+      / Start Panel Right Side
+      .col-lg-4.col-md-12
+        .row
+          .col-md-12
+
+        

@@ -50,7 +50,7 @@ if (tablebody != null) {
     $(this).addClass("active")
 })*/
 
-$("#company_logo,#community_logo,#user_avatar,#sitemap_image").change(function(){
+$("#company_logo,#community_logo,#user_avatar,#sitemap_image,#amenity_image").change(function(){
     readURL(this);
 });
 

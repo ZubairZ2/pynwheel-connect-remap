@@ -40,6 +40,7 @@
                       %i.fa.fa-edit
                     %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                       %i.fa.fa-trash
+                    = link_to "Amenties",community_floorplan_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"   
 
       
 / End Panel left Side

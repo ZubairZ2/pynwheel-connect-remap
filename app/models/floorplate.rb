@@ -1,5 +1,5 @@
 class Floorplate < ApplicationRecord
-	mount_uploader :image, AvatarUploader
+	mount_uploader :image, SiteMapUploader
 	belongs_to :community
 	has_many :units
 	has_many :amenities, as: :amenityable
