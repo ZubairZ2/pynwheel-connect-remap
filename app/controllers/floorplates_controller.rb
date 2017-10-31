@@ -1,18 +1,22 @@
 class FloorplatesController < ApplicationController
+	add_breadcrumb "Home", :root_path
 	before_action :authenticate_user!
 	before_action :set_floorplate, only: [:edit,:update,:destroy]
 	def index
 		@floorplates = current_community.floorplates.order(name: :desc)
+		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
 	end
 
 	def new
 		@floorplate = Floorplate.new
+		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+		add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
 	end
 
 	def create
 		@floorplate = current_community.floorplates.new(floorplate_params)
 		if @floorplate.save
-			flash[:notice] = "Floor Plate is created successfully."
+			flash[:notice] = "Floor Plate created successfully."
 			redirect_to community_floorplates_path(current_community)
 		else
 			flash[:error] = @floorplate.errors.full_messages.join(',')
@@ -21,11 +25,13 @@ class FloorplatesController < ApplicationController
 	end
 
 	def edit
+		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+		add_breadcrumb "Edit Floor plate", edit_community_floorplate_path(current_community,@floorplate)
 	end
 
 	def update
 		if @floorplate.update(floorplate_params)
-			flash[:notice] = "Floor Plate is updated successfully."
+			flash[:notice] = "Floor Plate updated successfully."
 			redirect_to community_floorplates_path(current_community)
 		else
 			flash[:error] = @floorplate.errors.full_messages.join(',')
@@ -35,7 +41,7 @@ class FloorplatesController < ApplicationController
 
 	def destroy
 		@floorplate.destroy
-		flash[:notice] = "Floorplate is deleted successfully."
+		flash[:notice] = "Floorplate deleted successfully."
 		redirect_to community_floorplates_path(current_community)
 	end
 

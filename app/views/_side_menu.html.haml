@@ -56,8 +56,9 @@
             = link_to "Sitemap", map_community_sitemaps_path(current_community)
           %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'plotexp' ? 'active' : ''}"}
             = link_to "Plot Units", plotexp_community_sitemaps_path(current_community)
-          %li
-            = link_to "Sitemap Amenity Images",  community_sitemap_amenities_path(current_community,current_community.sitemap)
+          - if Sitemap.exists? community_id: current_community.id  
+            %li
+              = link_to "Sitemap Amenity Images",  community_sitemap_amenities_path(current_community,current_community.sitemap)
       %li.treeview{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
         %a{:href => "#"}
           %i.fa.fa-database
