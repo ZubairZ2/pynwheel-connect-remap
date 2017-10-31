@@ -4,6 +4,9 @@
     if ( typeof floorplate_id !== 'undefined'){
       saveFloorplateUnit(id, dx, dy);
     }
+    else if ( typeof sitemap_id !== 'undefined'){
+      saveAmenityPlot(id, dx, dy);
+    }
     else{
     	saveSiteMapUnit(id, dx, dy);
     }
@@ -142,4 +145,23 @@
     $('.amenities-list option').each(function(){
       $(this).css({"display": "block"});
     }); 
+  }
+
+  function saveAmenityPlot(id, dx, dy) {
+    console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
+    $.post( "/communities/"+community_id+"/sitemaps/" + sitemap_id + "/amenities/" + id + "/plot_amenity",
+     { "x_plot": dx,
+        "y_plot": dy
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+       arr.push([data.amenity.name, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.id]);
+       doDraggable();
+       // delete from unused list
+       $('.amenities-list option').each(function(){
+         if ($(this).val() == id) {
+           $(this).remove();
+         }
+       });
+     });
   }
