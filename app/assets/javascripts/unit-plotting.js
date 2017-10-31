@@ -155,7 +155,7 @@
      },
      function(data,status,xhr) {
        console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-       arr.push([data.amenity.name, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.id]);
+       arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
        doDraggable();
        // delete from unused list
        $('.amenities-list option').each(function(){
