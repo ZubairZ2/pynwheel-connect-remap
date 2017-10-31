@@ -19,7 +19,16 @@ Rails.application.routes.draw do
     get :credentials
     get :test_connection
     resources :floorplans do
-      resources :amenities,controller: "floorplan_amenities"
+      resources :amenities,controller: "floorplan_amenities" do
+        post :plot_amenity
+        collection do
+          get :plot_amenities
+          delete :remove_amenities_plot
+        end
+        member do
+          delete :remove_amenity
+        end
+      end
     end
     resources :floorplates do
       resources :amenities,controller: "floorplate_amenities"

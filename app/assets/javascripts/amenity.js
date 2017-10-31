@@ -39,7 +39,13 @@ $(document).ready(function(){
         $(this).attr('data-name' , 'plot');
         $(this).attr('data-target' , '#confirm-delete');
         $(this).attr('data-toggle' , 'modal');
-        $(this).attr('data-href' , '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot');
+        if (typeof floorplan_id !== 'undefined'){
+          $(this).attr('data-href' , '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+$(this).attr("title")+'/remove_amenity');
+        }
+        else{
+          $(this).attr('data-href' , '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot');  
+        }
+        
       });
 
       $("#map").mouseup(function(e) {
@@ -51,8 +57,10 @@ $(document).ready(function(){
           for (i=0; i<selected.length; i++) {
             savePlot(selected[i][0], dx, dy);
           }
+          
+          console.log(selected[0][0]);
           // add new marker to display
-          tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
+          tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][0] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
           
           tag += "<i class='fa fa-asterisk'></i>";
           tag += "</a>"

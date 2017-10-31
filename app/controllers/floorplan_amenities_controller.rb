@@ -33,7 +33,7 @@ class FloorplanAmenitiesController < ApplicationController
 	        add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
 	        add_breadcrumb "Add Amenity",new_community_floorplan_amenity_path
 			flash[:error] = @amenity.errors.full_messages.join(',')
-            render :new
+      render :new
 		end
 	end
 
@@ -46,7 +46,7 @@ class FloorplanAmenitiesController < ApplicationController
 	        add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
 	        add_breadcrumb "Edit Amenity",edit_community_floorplan_amenity_path(current_community,@floorplan,@amenity)
 			flash[:error] = @amenity.errors.full_messages.join(',')
-            render :edit
+      render :edit
 		end
 	end
 
@@ -57,6 +57,43 @@ class FloorplanAmenitiesController < ApplicationController
 		else
 			redirect_to community_floorplan_amenities_path(@community,@floorplan), error: @amenity.errors.full_messages.join(',')
 		end
+	end
+
+	def plot_amenity
+		@amenity = Amenity.find (params[:amenity_id])
+		@amenity.x_plot = params[:x_plot]
+		@amenity.y_plot = params[:y_plot]
+		if @amenity.save(validate: false)
+			render json: {amenity: @amenity}, status: 200
+    else
+      render json: {}, status: 404
+    end
+	end
+
+	def plot_amenities
+		@sitemap = @floorplan
+    @amenities = @floorplan.amenities
+    if @floorplan.image.blank? 
+    	flash[:error] = "Kindly add floor plan image first"
+    	redirect_to community_floorplans_path(@community)
+    end
+	end
+
+	def remove_amenities_plot
+		@floorplan.amenities.each do |amenity|
+			amenity.x_plot = 0
+			amenity.y_plot = 0
+			amenity.save(validate: false)
+		end
+		redirect_to plot_amenities_community_floorplan_amenities_path(@community,@floorplan), notice: "All plots have been deleted successfully."
+	end
+
+	def remove_amenity
+		amenity = Amenity.find params[:id]
+		amenity.x_plot = 0
+		amenity.y_plot = 0
+		amenity.save(validate: false)
+		redirect_to plot_amenities_community_floorplan_amenities_path(@community,@floorplan), notice: "Amenity plot have been deleted successfully."
 	end
 
 	private

@@ -11,7 +11,7 @@
           %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
             %thead
               %tr
-                %th{:width => "79"} Sr #
+                %th Sr #
                 %th Plan Name
                 %th Sq.Ft
                 %th Bedrooms
@@ -28,7 +28,7 @@
                   %td= f.bedrooms
                   %td= f.bathrooms
                   %td
-                    %button.btn.btn-default.black-button Plot Now
+                    = link_to "Plot Now", plot_amenities_community_floorplan_amenities_path(@community,f.id), class: "btn btn-default black-button"
                   %td
                     - if f.image.present?
                       .drop-img.drop-img-left
