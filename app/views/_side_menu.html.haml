@@ -58,6 +58,8 @@
             = link_to "Plot Units", plotexp_community_sitemaps_path(current_community)
           %li
             = link_to "Sitemap Amenity Images",  list_amenities_community_sitemaps_path(current_community)
+          %li
+            = link_to "Plot Sitemap Amenities",  plot_amenities_community_sitemaps_path(current_community)
       %li.treeview{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
         %a{:href => "#"}
           %i.fa.fa-database

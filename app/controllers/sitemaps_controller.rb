@@ -63,6 +63,11 @@ class SitemapsController < ApplicationController
     @sitemap = @community.sitemap
     @amenities = @sitemap.amenities
   end
+
+  def plot_amenities
+    @sitemap = @community.sitemap
+    @amenities = @sitemap.amenities
+  end
     
   private
 

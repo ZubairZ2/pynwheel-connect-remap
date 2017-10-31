@@ -36,6 +36,7 @@ Rails.application.routes.draw do
         get :plotexp
         get :map
         get :list_amenities
+        get :plot_amenities
       end
     end
     resources :settings , only: :index
