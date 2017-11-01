@@ -1,27 +1,27 @@
 class FloorplanAmenitiesController < ApplicationController
 	add_breadcrumb "Home", :root_path
-	add_breadcrumb "Appartments", "##"
+	add_breadcrumb "Apartments", "##"
 	before_action :authenticate_user!
 	before_action :set_community_and_floorplan
 
 	def index
-        @amenities = @floorplan.amenities.order(id: :desc)
-        add_breadcrumb "Floor plans", community_floorplans_path(current_community)
-	    add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
+    @amenities = @floorplan.amenities.order(id: :desc)
+    add_breadcrumb "Floor plans", community_floorplans_path(current_community)
+    add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
 	end
 
 	def new
 		@amenity = @floorplan.amenities.build
 		add_breadcrumb "Floor plans", community_floorplans_path(current_community)
-	    add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
-	    add_breadcrumb "Add Amenity",new_community_floorplan_amenity_path
+    add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
+    add_breadcrumb "Add Amenity",new_community_floorplan_amenity_path
 	end
 
 	def edit
 		@amenity = @floorplan.amenities.find(params[:id])
 		add_breadcrumb "Floor plans", community_floorplans_path(current_community)
-	    add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
-	    add_breadcrumb "Edit Amenity",edit_community_floorplan_amenity_path(current_community,@floorplan,@amenity)
+    add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
+    add_breadcrumb "Edit Amenity",edit_community_floorplan_amenity_path(current_community,@floorplan,@amenity)
 	end
 
 	def create
@@ -30,8 +30,8 @@ class FloorplanAmenitiesController < ApplicationController
 			redirect_to community_floorplan_amenities_path(@community,@floorplan), notice: "Amenity created successfully"
 		else
 			add_breadcrumb "Floor plans", community_floorplans_path(current_community)
-	        add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
-	        add_breadcrumb "Add Amenity",new_community_floorplan_amenity_path
+      add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
+      add_breadcrumb "Add Amenity",new_community_floorplan_amenity_path
 			flash[:error] = @amenity.errors.full_messages.join(',')
       render :new
 		end
@@ -43,8 +43,8 @@ class FloorplanAmenitiesController < ApplicationController
 			redirect_to community_floorplan_amenities_path(@community,@floorplan), notice: "Amenity updated successfully"
 		else
 			add_breadcrumb "Floor plans", community_floorplans_path(current_community)
-	        add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
-	        add_breadcrumb "Edit Amenity",edit_community_floorplan_amenity_path(current_community,@floorplan,@amenity)
+      add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
+      add_breadcrumb "Edit Amenity",edit_community_floorplan_amenity_path(current_community,@floorplan,@amenity)
 			flash[:error] = @amenity.errors.full_messages.join(',')
       render :edit
 		end
@@ -71,6 +71,8 @@ class FloorplanAmenitiesController < ApplicationController
 	end
 
 	def plot_amenities
+		add_breadcrumb "Floor plans", community_floorplans_path(current_community)
+		add_breadcrumb "Plot Amenities", plot_amenities_community_floorplan_amenities_path(@community,@floorplan)
 		@sitemap = @floorplan
     @amenities = @floorplan.amenities
     if @floorplan.image.blank? 
