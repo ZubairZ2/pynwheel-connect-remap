@@ -76,10 +76,13 @@ class SitemapAmenitiesController < ApplicationController
 	end
 
 	def remove_amenity
-		amenity = Amenity.find params[:id]
-		amenity.x_plot = 0
-		amenity.y_plot = 0
-		amenity.save(validate: false)
+		@amenity = Amenity.find params[:id]
+		amenities = @sitemap.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)
+		amenities.each do |amenity|
+			amenity.x_plot = 0
+			amenity.y_plot = 0
+			amenity.save(validate: false)
+		end
 		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap),notice: "Amenity plot have been deleted successfully."
 	end
 
