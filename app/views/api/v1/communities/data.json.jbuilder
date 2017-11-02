@@ -11,14 +11,21 @@ json.homescreen do
 			  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image.url : img.image.url
 			end
 		else
-			json.images []
+			json.images DefaultImage.all.each do |img|
+				json.filename img.name
+			  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image : img.image
+			end
 		end
-		json.video	@community.design.home_page_video.present? ? ( Rails.env.development? ? "http://192.168.101.77:3000"+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil 
-		json.loop_type @community.design.loop_type
+		vid = @community.design.home_page_video.present? ? ( Rails.env.development? ? "http://192.168.101.77:3000"+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil
+		json.video vid
+		json.loop_type vid.present? ? @community.design.loop_type : "images"
 	else
-		json.images []
+		json.images DefaultImage.all.each do |img|
+			json.filename img.name
+		  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image : img.image
+		end
 		json.video nil
-		json.loop_type ""
+		json.loop_type "images"
 	end
 end
 
