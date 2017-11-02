@@ -1,0 +1,2 @@
+class DefaultImage < ApplicationRecord
+end

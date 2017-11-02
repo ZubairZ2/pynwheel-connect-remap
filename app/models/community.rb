@@ -11,6 +11,7 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
+  after_create :set_default_theme
 
   def is_futurist?
     theme_name == "futurist"
@@ -128,6 +129,11 @@ class Community < ApplicationRecord
       unit.update_attributes(x_plot: 0, y_plot: 0,floorplate_id: nil)
     end
     true
+  end
+
+  def set_default_theme
+    self.theme_name = "futurist"
+    self.save
   end
 
 

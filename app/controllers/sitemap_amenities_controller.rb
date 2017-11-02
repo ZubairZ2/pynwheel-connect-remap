@@ -1,25 +1,25 @@
 class SitemapAmenitiesController < ApplicationController
 	add_breadcrumb "Home", :root_path
-    add_breadcrumb "Property Map", "##"
+  add_breadcrumb "Property Map", "##"
 	before_action :authenticate_user!
 	before_action :set_community_and_sitemap
 
 	def index
 		@sitemap = @community.sitemap
-        @amenities = @sitemap.amenities.order(id: :desc)
-        add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
+    @amenities = @sitemap.amenities.order(id: :desc)
+    add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
 	end
 
 	def new
 		@amenity = @community.sitemap.amenities.build
 		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-	    add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
+    add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
 	end
 
 	def edit
 		@amenity = @community.sitemap.amenities.find(params[:id])
 		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-	    add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
+    add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
 	end
 
 	def create
@@ -28,9 +28,9 @@ class SitemapAmenitiesController < ApplicationController
 			redirect_to community_sitemap_amenities_path(@community,@sitemap), notice: "Amenity created successfully"
 		else
 			add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-	        add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
+      add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
 			flash[:error] = @amenity.errors.full_messages.join(',')
-            render :new
+      render :new
 		end
 	end
 
@@ -40,9 +40,9 @@ class SitemapAmenitiesController < ApplicationController
 			redirect_to community_sitemap_amenities_path(@community,@sitemap), notice: "Amenity updated successfully"
 		else
 			add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-	        add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
+      add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
 			flash[:error] = @amenity.errors.full_messages.join(',')
-            render :edit
+      render :edit
 		end
 	end
 
@@ -76,10 +76,13 @@ class SitemapAmenitiesController < ApplicationController
 	end
 
 	def remove_amenity
-		amenity = Amenity.find params[:id]
-		amenity.x_plot = 0
-		amenity.y_plot = 0
-		amenity.save(validate: false)
+		@amenity = Amenity.find params[:id]
+		amenities = @sitemap.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)
+		amenities.each do |amenity|
+			amenity.x_plot = 0
+			amenity.y_plot = 0
+			amenity.save(validate: false)
+		end
 		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap),notice: "Amenity plot have been deleted successfully."
 	end
 

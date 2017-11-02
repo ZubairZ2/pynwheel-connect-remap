@@ -4,23 +4,23 @@ class FloorplateAmenitiesController < ApplicationController
 	before_action :set_community_and_floorplate
 
 	def index
-        @amenities = @floorplate.amenities.order(id: :desc)
-        add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-	    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+    @amenities = @floorplate.amenities.order(id: :desc)
+    add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
 	end
 
 	def new
 		@amenity = @floorplate.amenities.build
 		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-	    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
-	    add_breadcrumb "Add Amenity",new_community_floorplate_amenity_path
+    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+    add_breadcrumb "Add Amenity",new_community_floorplate_amenity_path
 	end
 
 	def edit
 		@amenity = @floorplate.amenities.find(params[:id])
 		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-	    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
-	    add_breadcrumb "Edit Amenity",edit_community_floorplate_amenity_path(current_community,@floorplate,@amenity)
+    add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+    add_breadcrumb "Edit Amenity",edit_community_floorplate_amenity_path(current_community,@floorplate,@amenity)
 	end
 
 	def create
@@ -29,10 +29,10 @@ class FloorplateAmenitiesController < ApplicationController
 			redirect_to community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity created successfully"
 		else
 			add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-	        add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
-	        add_breadcrumb "Add Amenity",new_community_floorplate_amenity_path
+      add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+      add_breadcrumb "Add Amenity",new_community_floorplate_amenity_path
 			flash[:error] = @amenity.errors.full_messages.join(',')
-            render :new
+      render :new
 		end
 	end
 
@@ -42,10 +42,10 @@ class FloorplateAmenitiesController < ApplicationController
 			redirect_to community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity updated successfully"
 		else
 			add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-	        add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
-	        add_breadcrumb "Edit Amenity",edit_community_floorplate_amenity_path(current_community,@floorplate,@amenity)
+      add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
+      add_breadcrumb "Edit Amenity",edit_community_floorplate_amenity_path(current_community,@floorplate,@amenity)
 			flash[:error] = @amenity.errors.full_messages.join(',')
-            render :edit
+      render :edit
 		end
 	end
 
@@ -70,6 +70,8 @@ class FloorplateAmenitiesController < ApplicationController
 	end
 
 	def plot_amenities
+		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+    add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community,@floorplate)
 		@sitemap = @floorplate
     @amenities = @floorplate.amenities
     if @floorplate.image.blank? 
@@ -88,10 +90,13 @@ class FloorplateAmenitiesController < ApplicationController
 	end
 
 	def remove_amenity
-		amenity = Amenity.find params[:id]
-		amenity.x_plot = 0
-		amenity.y_plot = 0
-		amenity.save(validate: false)
+		@amenity = Amenity.find params[:id]
+		amenities = @floorplate.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)
+		amenities.each do |amenity|
+			amenity.x_plot = 0
+			amenity.y_plot = 0
+			amenity.save(validate: false)
+		end
 		redirect_to plot_amenities_community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity plot have been deleted successfully."
 	end
 
