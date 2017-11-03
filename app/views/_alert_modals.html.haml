@@ -24,4 +24,13 @@
       .modal-body
         Place marker for selected unit on Map
       .modal-footer
-        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok                
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok 
+#large-size-file-error.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Error
+      .modal-body
+        Video must be smaller than 100MB.
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok                        

@@ -12,6 +12,7 @@ $(document).ready(function(){
         e.preventDefault();
         $('.amenities-list :selected').each(function(){
           if ($(this).val()!=""){
+            console.log('selecting dropdown values from sitemap');
             console.log($.inArray($(this).val(), $.map(selected, function(v) { return v[0]; })) == -1); 
             if (selected.length == 0){
               selected.push([ $(this).val(), $.trim($(this).text()) ]);

@@ -32,8 +32,8 @@
                 - arr = []
                 - community_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0
-                    %option 
-                      = link_to "#{unit.marketing_name}", "#"
+                    %option{:value => "#{unit.marketing_name}"}= unit.marketing_name 
+                      
                     
                   - arr.push([unit.marketing_name, unit.x_plot.to_i, unit.y_plot.to_i, true, unit.id.to_s])
               %h5.mt-40 SELECTED UNITS

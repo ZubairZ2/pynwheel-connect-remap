@@ -129,16 +129,25 @@ function homePageImage(src,name){
  function readHomePageVideo(input){
   if (input.files && input.files[0]) {
         console.log(input.files[0].type);
+        console.log(input.files[0].size);
+        var file_size = input.files[0].size;
+        var file_size_in_mb = parseFloat(file_size)/1000000;
+        console.log(file_size_in_mb);
         if(input.files[0].type == "video/mp4" || input.files[0].type == "video/webm"){
-          $(".divLoading").removeClass("hidden"); 
-          var reader = new FileReader();
+          if (file_size_in_mb < 100){
+            $(".divLoading").removeClass("hidden"); 
+            var reader = new FileReader();
 
-          reader.onload = function (e) {
-              homePageVideo(e.target.result,input.files[0].name);
-              $(input).val('');
+            reader.onload = function (e) {
+                homePageVideo(e.target.result,input.files[0].name);
+                $(input).val('');
+            }
+
+            reader.readAsDataURL(input.files[0]);
           }
-
-          reader.readAsDataURL(input.files[0]);
+          else{
+            $('#large-size-file-error').modal('show');
+          }
       }
       else{
         $(input).val('');
