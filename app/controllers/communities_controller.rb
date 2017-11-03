@@ -45,7 +45,9 @@ class CommunitiesController < ApplicationController
   end
 
   def alert_message
-    if params[:community][:logo].present?
+    if params[:community][:data_provider].present? 
+      '<div class="alert alert-success">Credentials added successfully.</div>'
+    elsif params[:community][:logo].present?
       '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
@@ -58,7 +60,7 @@ class CommunitiesController < ApplicationController
     elsif params[:community][:design_attributes][:main_screen_attributes].present? 
       '<div class="alert alert-success">Main screen button uploaded successfully.</div>'
     elsif params[:community][:design_attributes][:home_screen_attributes].present? 
-      '<div class="alert alert-success">Landing page button uploaded successfully.</div>'       
+      '<div class="alert alert-success">Landing page button uploaded successfully.</div>'         
     end
   end
 
