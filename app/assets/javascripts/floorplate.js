@@ -13,7 +13,7 @@ $(document).ready(function(){
         $('.amenities-list :selected').each(function(){
           console.log('selecting dropdown values from floorplate');
           if ($(this).val() !== ""){
-            console.log($.inArray($(this).val(), $.map(selected, function(v) { return v[0]; })) == -1); 
+            //console.log($.inArray($(this).val(), $.map(selected, function(v) { return v[0]; })) == -1); 
             if (selected.length == 0){
               selected.push([ $(this).val(), $.trim($(this).text()) ]);
             }
