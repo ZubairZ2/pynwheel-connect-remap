@@ -10,6 +10,7 @@
           
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
+          = link_to "Back", community_sitemap_amenities_path(@community,@sitemap), class: "btn btn-primary"
           %a.btn.btn-danger{"data-name" => "sitemap's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/remove_amenities_plot"} Reset all plots
       / /.box-header
       / form start
