@@ -36,4 +36,5 @@
 //= require floorplate
 //= require amenity
 //= require ekko-lightbox
+//= require jquery.remotipart
 // require_tree .

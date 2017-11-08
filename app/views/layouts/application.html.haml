@@ -6,10 +6,11 @@
     %title= yield(:title)
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
     = csrf_meta_tags
-    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
+    = stylesheet_link_tag    'application', media: 'all'
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
     %script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
     %link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
+    = favicon_link_tag 'logo-small.png'
   %body.hold-transition.skin-blue.sidebar-mini{:id => "#{controller_name == "home" || controller_name == "companies" ? "no-sidemenu" : ""}"}
     .wrapper
       = render partial: "/header"
