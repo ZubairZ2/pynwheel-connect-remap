@@ -31,7 +31,9 @@
                       %th Building
                       %th Range
                       %th Image
-                      %th{:width => "250"} Actions
+                      %th Units
+                      %th Amenities
+                      %th Actions
                   %tbody
                     - @floorplates.each_with_index  do |f,index|
                       %tr
@@ -52,13 +54,17 @@
                           - else  
                             .drop-img.drop-img-left
                         %td
+                          = link_to "Plot Now",community_floorplate_plotexp_path(current_community,f), :class=>"btn btn-default black-button" 
+                        %td
+                          = link_to "Amenties",community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"
+                          = link_to "Plot Amenties",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5" 
+
+                        %td
                           = link_to edit_community_floorplate_path(current_community,f), :class=>"text-success" do
                             %i.fa.fa-edit
                           %a.text-danger{"data-name"=>"Floor Plate","data-href" => "/communities/#{current_community.id}/floorplates/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                             %i.fa.fa-trash
-                          = link_to "Plot Now",community_floorplate_plotexp_path(current_community,f), :class=>"btn-info btn-xs mr-5" 
-                          = link_to "Amenties",community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"
-                          = link_to "Plot Amenties",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"   
+                            
                           
 
             

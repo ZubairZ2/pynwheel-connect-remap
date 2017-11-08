@@ -16,6 +16,9 @@
               %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"}
                 %i.fa.fa-plus-circle
                 ADD AMENITY
+            .mt-35
+              %a.btn.btn-primary.pull-right.mb-20.mr-10{:href => "#{plot_amenities_community_sitemaps_path(@community)}"}
+                PLOT AMENITIES
             .divLoading.hidden
         .box.box-widget.panel-box
           .box-header
