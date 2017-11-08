@@ -29,9 +29,9 @@ class HomePageController < ApplicationController
 
     def save_home_page_video
     	if current_community.design.home_page_video.present?
-    		current_community.design.home_page_video.update_attributes(video: params[:src],name: params[:name])
+    		current_community.design.home_page_video.update(home_page_video_params)
     	else
-    		current_community.design.create_home_page_video(video: params[:src],name: params[:name])
+    		current_community.design.create_home_page_video(home_page_video_params)
     	end 
 	end
 
@@ -46,5 +46,9 @@ class HomePageController < ApplicationController
 
 	def home_page_image_params
 		params.require(:home_page_image).permit!
+	end
+
+	def home_page_video_params
+		params.require(:home_page_video).permit!
 	end
 end

@@ -52,13 +52,17 @@ $(document).ready(function(){
     $('#video-slide').addClass('in');
   }
 
+  $("#home_page_video_video").change(function(){
+      if(this.files[0].type == "video/mp4" || this.files[0].type == "video/webm"){
+        $(".divLoading").removeClass("hidden"); 
+        $('#home-page-video-form').submit();
+      }
+      else{
+        $(this).val('');
+        $('#video-upload-warning').modal('show');
+      }
+  });
 
-});
-
-$(document).ready(function(){
-  $("#home-page-video").change(function(){
-      readHomePageVideo(this);
-    });
 });
 
 function imageDragNdrop(){
@@ -112,53 +116,6 @@ function readHomePageImageSrc(file){
 
 function homePageImage(src,name){
 	var url = "/communities/"+community_id+"/home_page/save_home_page_image"
-    $.ajax({
-        url: url,
-        type: "POST",
-        dataType: "script",
-        data: {
-            name: name,
-            src: src
-        }
-    }).done(function(){
-        $(".divLoading").addClass("hidden");
-        console.log("success");
-    });
- }
-
- function readHomePageVideo(input){
-  if (input.files && input.files[0]) {
-        console.log(input.files[0].type);
-        console.log(input.files[0].size);
-        var file_size = input.files[0].size;
-        var file_size_in_mb = parseFloat(file_size)/1000000;
-        console.log(file_size_in_mb);
-        if(input.files[0].type == "video/mp4" || input.files[0].type == "video/webm"){
-          if (file_size_in_mb < 100){
-            $(".divLoading").removeClass("hidden"); 
-            var reader = new FileReader();
-
-            reader.onload = function (e) {
-                homePageVideo(e.target.result,input.files[0].name);
-                $(input).val('');
-            }
-
-            reader.readAsDataURL(input.files[0]);
-          }
-          else{
-            $('#large-size-file-error').modal('show');
-          }
-      }
-      else{
-        $(input).val('');
-        $('#video-upload-warning').modal('show');
-      }
-    }
-}
-
-
-function homePageVideo(src,name){
-  var url = "/communities/"+community_id+"/home_page/save_home_page_video"
     $.ajax({
         url: url,
         type: "POST",
