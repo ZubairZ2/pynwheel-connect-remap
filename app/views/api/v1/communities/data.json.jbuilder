@@ -30,8 +30,8 @@ json.homescreen do
 end
 
 json.apartments do
-	json.sitemap @community.sitemap.present? ? @community.sitemap.image.url : nil
-	json.units @community.units do |unit|
+	json.sitemap @community.sitemap.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+@community.sitemap.image.url : @community.sitemap.image.url) : nil
+	json.units @community.units.available_units do |unit|
 		json.marketing_name unit.marketing_name
 		json.rent unit.effective_rent
 		json.availability unit.availability
@@ -43,6 +43,9 @@ json.apartments do
 		json.unit_type unit.unit_type
 		json.provider_unit_id unit.provider_unit_id
 		json.id unit.id
+		json.bedrooms unit.floorplan.present? ? unit.floorplan.bedrooms : nil
+	  json.bathrooms unit.floorplan.present? ? unit.floorplan.bathrooms : nil
+	  json.square_feet unit.floorplan.present? ? unit.floorplan.square_feet : nil
 	end
 	json.floorplans @community.floorplans do |floorplan|
 	  json.id floorplan.id

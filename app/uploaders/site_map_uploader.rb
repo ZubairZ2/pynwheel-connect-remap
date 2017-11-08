@@ -6,7 +6,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
 
   # Choose what kind of storage to use for this uploader:
   #storage :file
-  resize_to_fill(1820, 880)
+  resize_to_fill(1412, 932)
   storage Rails.env.development? ? :file : :fog 
 
   # Override the directory where uploaded files will be stored.

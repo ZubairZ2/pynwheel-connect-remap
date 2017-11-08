@@ -5,6 +5,8 @@ class Unit < ApplicationRecord
   validates :effective_rent, :numericality => { :greater_than => 0 }
   has_many :amenities, as: :amenityable
 
+  scope :available_units, -> { where(availability: "Unoccupied") }
+
   def floorplan
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id)
   end
