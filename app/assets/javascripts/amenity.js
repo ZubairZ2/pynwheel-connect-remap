@@ -8,7 +8,7 @@ $(document).ready(function(){
 
       doDraggable();
 
-      $('.amenities-list').mouseup( function(e) {
+      $('.amenities-list').on('change', function(e) {
         e.preventDefault();
         $('.amenities-list :selected').each(function(){
           if ($(this).val()!=""){
