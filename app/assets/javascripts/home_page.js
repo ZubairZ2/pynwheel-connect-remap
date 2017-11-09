@@ -12,7 +12,7 @@ $(document).ready(function(){
           $('#image-upload-warning').modal('show');
         } 
       }
-      $("#home-page-image").val(''); 
+      $(this).val(''); 
     });
   // below lines are doing drag and drop on home page
   imageDragNdrop();
