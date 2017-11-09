@@ -12,8 +12,12 @@ class ImageUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
 
-   def filename
-    @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+  def filename
+    if model.crop_x.present?
+      @name = original_filename
+    else
+      @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+    end
   end
 
   def timestamp
