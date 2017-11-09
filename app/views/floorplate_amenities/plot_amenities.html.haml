@@ -1,7 +1,13 @@
 - content_for :title, "Plot Amenities - Pynwheel"
 %section.is-amenity
   .content
-    .box.box-info.add-plan.mt-20
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-6
+            %h4.title #{current_community.name.capitalize}
+    .box.box-info.add-plan
       .box-header
         %h3.box-title
           Plot Floor
