@@ -16,7 +16,7 @@ class ImageUploader < CarrierWave::Uploader::Base
     if model.crop_x.present?
       @name = original_filename
     else
-      @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+      @name ||= "#{secure_token}.#{file.extension}" if original_filename.present?
     end
   end
 
@@ -51,6 +51,12 @@ class ImageUploader < CarrierWave::Uploader::Base
         img
       end
     end
+  end
+
+  protected
+  def secure_token
+    var = :"@#{mounted_as}_secure_token"
+    model.instance_variable_get(var) or model.instance_variable_set(var, SecureRandom.uuid)
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
