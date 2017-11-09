@@ -37,7 +37,8 @@ class CommunitiesController < ApplicationController
         format.html { redirect_to communities_path,notice: 'Community updated successfully.' }
         format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
       else
-        format.html { render :new }
+        flash[:error] = @community.errors.full_messages.join(',')
+        format.html { render :edit }
         message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       end
