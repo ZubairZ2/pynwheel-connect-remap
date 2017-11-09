@@ -9,7 +9,6 @@
           %span.hidden#active_x_plot 0
           
           %span.hidden#active_y_plot 0
-        = link_to "Back", community_sitemap_amenities_path(@community,@community.sitemap), class: "btn btn-primary"
         .pull-right.btn-btn-danger
           %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
       / /.box-header

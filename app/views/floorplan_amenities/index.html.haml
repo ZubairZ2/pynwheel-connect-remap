@@ -16,6 +16,7 @@
               %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/#{@floorplan.id}/amenities/new"}
                 %i.fa.fa-plus-circle
                 ADD AMENITY
+              = link_to "Plot Now", plot_amenities_community_floorplan_amenities_path(@community,@floorplan), class: "btn btn-primary mr-5 pull-right"
             .divLoading.hidden
         .box.box-widget.panel-box
           .box-header

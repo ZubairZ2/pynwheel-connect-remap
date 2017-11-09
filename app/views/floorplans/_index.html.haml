@@ -16,7 +16,7 @@
                 %th Sq.Ft
                 %th Bedrooms
                 %th Bathrooms
-                %th Plot Amenity
+                %th Amenities
                 %th Image
                 %th Actions
             %tbody
@@ -28,7 +28,7 @@
                   %td= f.bedrooms
                   %td= f.bathrooms
                   %td
-                    = link_to "Plot Now", plot_amenities_community_floorplan_amenities_path(@community,f.id), class: "btn btn-default black-button"
+                    = link_to "Amenties",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
                   %td
                     - if f.image.present?
                       .drop-img.drop-img-left
@@ -40,7 +40,6 @@
                       %i.fa.fa-edit
                     %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                       %i.fa.fa-trash
-                    = link_to "Amenties",community_floorplan_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"   
 
       
 / End Panel left Side
