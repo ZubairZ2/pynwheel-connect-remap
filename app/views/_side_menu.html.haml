@@ -32,17 +32,10 @@
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
             = link_to "Floor Plans", community_floorplans_path(current_community)
-      %li.treeview{:class=>"#{controller_name =='units' ? 'active' : ''}"}
-        %a{:href => "#"}
+      %li{:class=>"#{controller_name =='units' ? 'active' : ''}"}
+        = link_to community_units_path(current_community)  do 
           %i.fa.fa-laptop
           %span Units
-          %span.pull-right-container
-            %i.fa.fa-angle-right.pull-right
-        %ul.treeview-menu
-          %li{:class=>"#{controller_name =='units' ? 'active' : ''}"}
-            = link_to "Units", community_units_path(current_community)  
-          %li
-            %a{:href => "#"} Unit Amenity Images
       %li.treeview{:class=>"#{controller_name =='sitemaps' || controller_name == 'sitemap_amenities' ? 'active' : ''}"}
         %a{:href => "#"}
           %i.fa.fa-map-marker

@@ -12,8 +12,12 @@ class ImageUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
 
-   def filename
-    @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+  def filename
+    if model.crop_x.present?
+      @name = original_filename
+    else
+      @name ||= "#{secure_token}.#{file.extension}" if original_filename.present?
+    end
   end
 
   def timestamp
@@ -47,6 +51,12 @@ class ImageUploader < CarrierWave::Uploader::Base
         img
       end
     end
+  end
+
+  protected
+  def secure_token
+    var = :"@#{mounted_as}_secure_token"
+    model.instance_variable_get(var) or model.instance_variable_set(var, SecureRandom.uuid)
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
