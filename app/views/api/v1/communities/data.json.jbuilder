@@ -35,7 +35,7 @@ json.apartments do
 		json.marketing_name unit.marketing_name
 		json.rent unit.effective_rent
 		json.availability unit.availability
-		json.available_date unit.available_date
+		json.available_date unit.available_date.strftime('%m/%d/%Y') if unit.available_date.present?
 		json.x_plot unit.x_plot
 		json.y_plot unit.y_plot
 		json.building unit.building
@@ -43,9 +43,11 @@ json.apartments do
 		json.unit_type unit.unit_type
 		json.provider_unit_id unit.provider_unit_id
 		json.id unit.id
+		json.floorplan_name unit.floorplan.present? ? unit.floorplan.name : nil
 		json.bedrooms unit.floorplan.present? ? unit.floorplan.bedrooms : nil
-	  json.bathrooms unit.floorplan.present? ? unit.floorplan.bathrooms : nil
+	  json.bathrooms unit.floorplan.present? ? convert_float_to_integer(unit.floorplan.bathrooms) : nil
 	  json.square_feet unit.floorplan.present? ? unit.floorplan.square_feet : nil
+	  json.image unit.floorplan.present? ? (unit.floorplan.image.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+unit.floorplan.image.url : unit.floorplan.image.url) : nil) : nil
 	end
 	json.floorplans @community.floorplans do |floorplan|
 	  json.id floorplan.id
