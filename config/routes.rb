@@ -80,6 +80,7 @@ Rails.application.routes.draw do
         delete :delete_home_page_video
       end
     end
+    resources :webpages, only: :index
   end
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
