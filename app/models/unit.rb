@@ -3,6 +3,7 @@ class Unit < ApplicationRecord
   belongs_to :floorplan
   belongs_to :floorplate
   validates :effective_rent, :numericality => { :greater_than => 0 }
+  validates_uniqueness_of :marketing_name
   has_many :amenities, as: :amenityable
 
   scope :available_units, -> { where(availability: "Unoccupied") }

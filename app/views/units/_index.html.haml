@@ -21,15 +21,17 @@
                   %th Floor Plan
                   %th Rent
                   %th Availability
+                  %th Available Date
                   %th Actions
               %tbody
                 - @units.each_with_index  do |u,index|
                   %tr
                     %td= index+1
                     %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name }
-                    %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => u.floorplan ? u.floorplan.name : nil }
+                    %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => u.floorplan_id }
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
                     %td= best_in_place u, :availability, :type => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
+                    %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
                     %td
                       -#%a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                       -#  %i.fa.fa-edit
@@ -38,7 +40,8 @@
 
         
   / End Panel left Side
-  :javascript 
+  :javascript
+    $.datepicker.setDefaults({dateFormat: 'yy-mm-dd' }); 
     $('.best_in_place').bind("ajax:success", function () {
       var field = ""
       switch($(this).data('bipAttribute')) {
@@ -53,13 +56,23 @@
             break;
         case 'availability':
             field = "Availability"
-            break    
+            break
+        case 'available_date':
+            field = "Available Date"
+            break        
       } 
       $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>'); 
     });
 
-    $('.best_in_place').bind("ajax:error", function () {
-      $('#flash-message').html('<div class="alert alert-danger">Rent must be greater than 0</div>'); 
+    
+    $('.best_in_place').on('best_in_place:error', function (event, request, error) {
+      $.each($.parseJSON(request.responseText), function (index, value) {
+            if (typeof value === "object") 
+            {
+              value = index + " " + value.toString(); 
+            }
+            $('#flash-message').html('<div class="alert alert-danger">'+value+'</div>');
+       });            
     });
-
+    
 
