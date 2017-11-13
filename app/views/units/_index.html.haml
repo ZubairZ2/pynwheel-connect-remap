@@ -21,6 +21,7 @@
                   %th Floor Plan
                   %th Rent
                   %th Availability
+                  %th Available Date
                   %th Actions
               %tbody
                 - @units.each_with_index  do |u,index|
@@ -30,6 +31,7 @@
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => u.floorplan_id }
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
                     %td= best_in_place u, :availability, :type => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
+                    %td= best_in_place u, :available_date, :as => :input, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
                     %td
                       -#%a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                       -#  %i.fa.fa-edit
@@ -58,8 +60,8 @@
       $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>'); 
     });
 
-    $('.best_in_place').bind("ajax:error", function () {
-      $('#flash-message').html('<div class="alert alert-danger">Rent must be greater than 0</div>'); 
-    });
+    / $('.best_in_place').bind("ajax:error", function () {
+    /   $('#flash-message').html('<div class="alert alert-danger">Rent must be greater than 0</div>'); 
+    / });
 
 
