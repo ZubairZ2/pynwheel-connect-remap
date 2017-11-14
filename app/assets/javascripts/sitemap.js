@@ -45,24 +45,27 @@ $(document).ready(function(){
       });
 
       $("#map").mouseup(function(e) {
-        e.preventDefault();
-        dx = parseInt($('#active_x_plot').html())-8;
-        dy = parseInt($('#active_y_plot').html()-10);
-        if (addmode) {
-          // save plotting for each selected unit
-          for (i=0; i<selected.length; i++) {
-            savePlot(selected[i][0], dx, dy);
+        // first check if user is clicking on scrollbar
+        if (e.target != $('#map').get(0)){
+          e.preventDefault();
+          dx = parseInt($('#active_x_plot').html())-8;
+          dy = parseInt($('#active_y_plot').html()-10);
+          if (addmode) {
+            // save plotting for each selected unit
+            for (i=0; i<selected.length; i++) {
+              savePlot(selected[i][0], dx, dy);
+            }
+            // add new marker to display
+            tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
+            
+            tag += "<i class='fa fa-asterisk'></i>";
+            tag += "</a>"
+            $('#map').append(tag);
+            // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
+            $(".marker:last").trigger("click") 
+            reset();
+            doDraggable();
           }
-          // add new marker to display
-          tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
-          
-          tag += "<i class='fa fa-asterisk'></i>";
-          tag += "</a>"
-          $('#map').append(tag);
-          // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
-          $(".marker:last").trigger("click") 
-          reset();
-          doDraggable();
         }
       });
   }  	
