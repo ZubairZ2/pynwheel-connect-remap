@@ -1,11 +1,9 @@
 %h2 WebPage
 :javascript
-  var units = "#{@units}";
+  var units = "#{@units_with_floorplan_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
-  for(var i=0;i < units.length;i++){
-    console.log(units[i]);
-  }
+
   
 
   
