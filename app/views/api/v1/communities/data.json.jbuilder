@@ -8,7 +8,7 @@ json.homescreen do
 		if @community.design.home_page_images.present?
 			json.images @community.design.home_page_images.order(:sort) do |img|
 			  json.filename img.name
-			  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image.url : img.image.url
+			  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image.url(:large) : img.image.url(:large)
 			end
 		else
 			json.images DefaultImage.all.each do |img|
