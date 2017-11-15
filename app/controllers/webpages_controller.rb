@@ -1,5 +1,8 @@
 class WebpagesController < ApplicationController
+	layout false
+
 	def index
-		@units = current_community.units.to_json
+		@community = Community.find params[:community_id]
+		@units = current_community.units
 	end
 end

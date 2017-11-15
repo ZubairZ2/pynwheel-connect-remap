@@ -1,11 +1,265 @@
-%h2 WebPage
-:javascript
-  var units = "#{@units}";
-  units = units.replace(/&quot;/g,'"');
-  units = JSON.parse(units);
-  for(var i=0;i < units.length;i++){
-    console.log(units[i]);
-  }
-  
-
-  
+!!!
+%html
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %meta{:charset => "utf-8"}/
+    %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
+    %title Pynwheel | Dashboard
+    %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
+    = csrf_meta_tags
+    = stylesheet_link_tag    'application', media: 'all'
+    = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+    %script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
+    %link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
+    = favicon_link_tag 'logo-small.png'
+    / %link{:href => "css/bootstrap.min.css", :rel => "stylesheet"}/
+    / %link{:href => "css/font-awesome.min.css", :rel => "stylesheet"}/
+    / %link{:href => "css/slider.css", :rel => "stylesheet"}/
+    / %link{:href => "css/pyn.min.css", :rel => "stylesheet"}/
+    / %link{:href => "css/skins/_all-pyn.min.css", :rel => "stylesheet"}/
+    / %link{:href => "css/jquery.mCustomScrollbar.css", :rel => "stylesheet"}/
+    / %link{:href => "css/pyn-custom.css", :rel => "stylesheet"}/
+    / HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries
+    / WARNING: Respond.js doesn't work if you view the page via file://
+    /[if lt IE 9]
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    / Google Font
+    %link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
+  %body.floor-plan{:style => "background-color:#303a3c;"}
+    / Main content
+    %section
+      %a#clickme{:href => "#"} Select Filter
+      .left-side.mydiv
+        .select-list
+          .select-title
+            %h3.pull-left
+              Filter
+              %span Map
+            .pull-right
+              .checkbox.checkbox-primary.pb-10
+                %input{:type => "checkbox"}/
+                %label
+                  Select All
+          .list-select
+            %h4 Bedrooms
+            .checkbox.checkbox-primary.pb-15
+              %input{:type => "checkbox"}/
+              %label
+                All
+            / .checkbox.checkbox-primary.pb-15
+            /   %input{:type => "checkbox"}/
+            /   %label
+            /     Studio
+            .checkbox.checkbox-primary.pb-15
+              %input{:type => "checkbox"}/
+              %label
+                1 Bedroom
+            .checkbox.checkbox-primary.pb-15
+              %input{:type => "checkbox"}/
+              %label
+                2 Bedroom
+            .checkbox.checkbox-primary.pb-15
+              %input{:type => "checkbox"}/
+              %label
+                3 Bedroom
+            .checkbox.checkbox-primary.pb-15
+              %input{:type => "checkbox"}/
+              %label
+                4 Bedroom
+          .bg-bottom
+            .list-select
+              %h4 Available
+              .checkbox.checkbox-primary.pb-15
+                %input{:type => "checkbox"}/
+                %label
+                  Now
+              .checkbox.checkbox-primary.pb-15
+                %input{:type => "checkbox"}/
+                %label
+                  In the next 30 days
+              .checkbox.checkbox-primary.pb-15
+                %input{:type => "checkbox"}/
+                %label
+                  In 31-60 days
+              .checkbox.checkbox-primary.pb-15
+                %input{:type => "checkbox"}/
+                %label
+                  In 61-90 days
+              .checkbox.checkbox-primary.pb-15
+                %input{:type => "checkbox"}/
+                %label
+                  In 91-120 days
+              .checkbox.checkbox-primary.pb-15
+                %input{:type => "checkbox"}/
+                %label
+                  In 121+ days
+            .select-price
+              %h3 Maximum Price Range
+              .form-group
+                %select.form-control
+                  %option $ 2000
+                  %option $ 1500
+                  %option $ 1000
+                  %option $ 500
+            .select-price
+              %h3 Maximum Square Footage
+              .form-group
+                %select.form-control
+                  %option 200
+                  %option 150
+                  %option 100
+                  %option 50
+        .select-floorP
+          %h4 Select Floor
+          .select-floor-bg
+            .showcase
+              #content-3.content
+                .select-floor
+                  %ul
+                    %li
+                      %a{:href => "#"} 1
+                    %li
+                      %a{:href => "#"} 2
+                    %li
+                      %a{:href => "#"} 3
+                    %li
+                      %a{:href => "#"} 4
+                    %li
+                      %a{:href => "#"} 5
+                    %li
+                      %a{:href => "#"} 6
+                    %li
+                      %a{:href => "#"} 7
+                    %li
+                      %a{:href => "#"} 8
+                    %li
+                      %a{:href => "#"} 9
+                    %li
+                      %a{:href => "#"} 10
+                    %li
+                      %a{:href => "#"} 11
+                    %li
+                      %a.selected{:href => "#"} 12
+                    %li
+                      %a{:href => "#"} 13
+                    %li
+                      %a{:href => "#"} 14
+                    %li
+                      %a{:href => "#"} 15
+                    %li
+                      %a{:href => "#"} 16
+                    %li
+                      %a{:href => "#"} 17
+                    %li
+                      %a{:href => "#"} 18
+                    %li
+                      %a{:href => "#"} 19
+                    %li
+                      %a{:href => "#"} 20
+                    %li
+                      %a{:href => "#"} 21
+                    %li
+                      %a{:href => "#"} 22
+                    %li
+                      %a{:href => "#"} 23
+                    %li
+                      %a{:href => "#"} 24
+                    %li
+                      %a{:href => "#"} 25
+                    %li
+                      %a{:href => "#"} 26
+                    %li
+                      %a{:href => "#"} 27
+                    %li
+                      %a{:href => "#"} 28
+                    %li
+                      %a{:href => "#"} 29
+      .right-side
+        / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
+        .image-map#map{:style => "position: relative;"}
+          %img{:alt => "", :src => "#{@community.sitemap.image.url}", :title => ""}/
+          - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
+          - units.each do |unit|
+            - if unit.x_plot.to_i + unit.y_plot.to_i > 0
+              = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#myModal", "data-toggle" => "modal"
+    / /.content
+    / Trigger the modal with a button
+    / Modal
+    #myModal.modal.fade{:role => "dialog"}
+      .modal-dialog.modal-lg{:style => "width: 100%;max-width: 1330px;"}
+        / Modal content
+        .modal-content.plan-modal
+          .modal-header
+            %button.close{"data-dismiss" => "modal", :type => "button"} ×
+            %h4.modal-title Plan Name
+          .modal-body
+            .row
+              .col-md-5
+                .plane-details
+                  .name
+                    Name here
+                  %ul
+                    %li
+                      %b> 975
+                      Sq Feet
+                    %li
+                      %b> 1
+                      Bedrooms
+                    %li
+                      %b> 2
+                      Bedrooms
+                    %li
+                      %b> 3
+                      Bedrooms
+                    %li
+                      %b> 4
+                      Bedrooms
+                    %li
+                      %b> $2000
+                      Price Range
+                    %li
+                      %b> 3
+                      Bedrooms
+                    %li
+                      %b> 2
+                      Bathrooms
+                  .price-details
+                    .price-count.pull-left
+                      250 $ / month
+                    .available-now
+                      %p Available Now
+                  .btn-apply
+                    %a{:href => "#"} Apply Now
+              .col-md-7
+                .plan-image
+                  %img{:alt => "", :src => "/assets/plan-image.jpg", :title => ""}/
+    / jQuery 3
+    / %script{:src => "js/jquery.min.js"}
+    / %script{:src => "js/bootstrap.min.js"}
+    / / Morris.js charts
+    / %script{:src => "js/pyn.min.js"}
+    / %script{:src => "js/bootstrap-slider.js"}
+    / %script{:src => "js/jquery.mCustomScrollbar.concat.min.js"}
+    :javascript
+      (function($){
+        $(window).on("load",function(){
+            
+            $("#content-3").mCustomScrollbar({
+                scrollButtons:{enable:true},
+                theme:"light-thick",
+                scrollbarPosition:"outside"
+            });
+          
+            
+        });
+      })(jQuery);
+    :javascript
+      $('#clickme').click(function() {
+          var $slider = $('.mydiv');
+        //$('.right-side').css('margin-left', '0');
+          $slider.animate({
+            left: parseInt($slider.css('left'),10) == -331 ?
+             0 : -331
+          });
+        });

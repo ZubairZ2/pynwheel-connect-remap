@@ -18,7 +18,8 @@
  *= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
  *= require validationEngine.jquery
  *= require bootstrap-colorpicker.min
- *= require pyn-custom
  *= require jcrop
  *= require ekko-lightbox
+ *= require jquery.mCustomScrollbar
+ *= require pyn-custom
  */

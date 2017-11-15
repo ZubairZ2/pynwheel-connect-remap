@@ -38,4 +38,5 @@
 //= require amenity
 //= require ekko-lightbox
 //= require jquery.remotipart
+//= require jquery.mCustomScrollbar.concat.min
 // require_tree .
