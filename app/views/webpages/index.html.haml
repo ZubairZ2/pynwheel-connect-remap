@@ -1,5 +1,3 @@
-//<<<<<<< HEAD
-!!!
 %html
   %head
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
@@ -45,54 +43,50 @@
           .list-select
             %h4 Bedrooms
             .checkbox.checkbox-primary.pb-15
-              %input{:type => "checkbox"}/
+              %input#all-bedrooms-checkbox{:type => "checkbox",:name=>"bedrooms"}/
               %label
                 All
-            / .checkbox.checkbox-primary.pb-15
-            /   %input{:type => "checkbox"}/
-            /   %label
-            /     Studio
-            .checkbox.checkbox-primary.pb-15
-              %input{:type => "checkbox"}/
+            .checkbox.checkbox-primary.pb-15.hidden
+              %input#one-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
               %label
                 1 Bedroom
-            .checkbox.checkbox-primary.pb-15
-              %input{:type => "checkbox"}/
+            .checkbox.checkbox-primary.pb-15.hidden
+              %input#two-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
               %label
-                2 Bedroom
-            .checkbox.checkbox-primary.pb-15
-              %input{:type => "checkbox"}/
+                2 Bedrooms
+            .checkbox.checkbox-primary.pb-15.hidden
+              %input#three-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
               %label
-                3 Bedroom
-            .checkbox.checkbox-primary.pb-15
-              %input{:type => "checkbox"}/
+                3 Bedrooms
+            .checkbox.checkbox-primary.pb-15.hidden
+              %input#four-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
               %label
-                4 Bedroom
+                4 Bedrooms
           .bg-bottom
             .list-select
               %h4 Available
               .checkbox.checkbox-primary.pb-15
-                %input{:type => "checkbox"}/
+                %input{:type => "checkbox",:name=>"available"}/
                 %label
                   Now
-              .checkbox.checkbox-primary.pb-15
-                %input{:type => "checkbox"}/
+              .checkbox.checkbox-primary.pb-15.hidden
+                %input#thirty-days-checkbox{:type => "checkbox",:name=>"available"}/
                 %label
                   In the next 30 days
-              .checkbox.checkbox-primary.pb-15
-                %input{:type => "checkbox"}/
+              .checkbox.checkbox-primary.pb-15.hidden
+                %input#thirty-to-sixty-days-checkbox{:type => "checkbox",:name=>"available"}/
                 %label
                   In 31-60 days
-              .checkbox.checkbox-primary.pb-15
-                %input{:type => "checkbox"}/
+              .checkbox.checkbox-primary.pb-15.hidden
+                %input#sixty-to-ninty-days-checkbox{:type => "checkbox",:name=>"available"}/
                 %label
                   In 61-90 days
-              .checkbox.checkbox-primary.pb-15
-                %input{:type => "checkbox"}/
+              .checkbox.checkbox-primary.pb-15.hidden
+                %input#ninty-to-one-twenty-days-checkbox{:type => "checkbox",:name=>"available"}/
                 %label
                   In 91-120 days
-              .checkbox.checkbox-primary.pb-15
-                %input{:type => "checkbox"}/
+              .checkbox.checkbox-primary.pb-15.hidden
+                %input#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available"}/
                 %label
                   In 121+ days
             .select-price
@@ -234,7 +228,7 @@
                     %a{:href => "#"} Apply Now
               .col-md-7
                 .plan-image
-                  %img{:alt => "", :src => "/assets/plan-image.jpg", :title => ""}/
+                  //%img{:alt => "", :src => "/assets/plan-image.jpg", :title => ""}/
     / jQuery 3
     / %script{:src => "js/jquery.min.js"}
     / %script{:src => "js/bootstrap.min.js"}
@@ -242,36 +236,30 @@
     / %script{:src => "js/pyn.min.js"}
     / %script{:src => "js/bootstrap-slider.js"}
     / %script{:src => "js/jquery.mCustomScrollbar.concat.min.js"}
-    :javascript
-      (function($){
-        $(window).on("load",function(){
-            
-            $("#content-3").mCustomScrollbar({
-                scrollButtons:{enable:true},
-                theme:"light-thick",
-                scrollbarPosition:"outside"
-            });
-          
-            
-        });
-      })(jQuery);
-    :javascript
-      $('#clickme').click(function() {
-          var $slider = $('.mydiv');
-        //$('.right-side').css('margin-left', '0');
-          $slider.animate({
-            left: parseInt($slider.css('left'),10) == -331 ?
-             0 : -331
-          });
-        });
-//=======
-%h2 WebPage
 :javascript
+  (function($){
+    $(window).on("load",function(){
+        
+        $("#content-3").mCustomScrollbar({
+            scrollButtons:{enable:true},
+            theme:"light-thick",
+            scrollbarPosition:"outside"
+        });
+      
+        
+    });
+  })(jQuery);
+
+  $('#clickme').click(function() {
+      var $slider = $('.mydiv');
+    //$('.right-side').css('margin-left', '0');
+      $slider.animate({
+        left: parseInt($slider.css('left'),10) == -331 ?
+         0 : -331
+      });
+    });
+
+
   var units = "#{@units_with_floorplan_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
-
-  
-
-  
-//>>>>>>> 6008262a8347b8fe0c60a5162748dbbff343f6f1

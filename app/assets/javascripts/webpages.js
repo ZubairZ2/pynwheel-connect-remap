@@ -9,11 +9,13 @@ function setFilters(){
  var three_bedroom = false;
  var four_bedroom = false;
  var units_available_in_thirty_days = false;
- var units_available_in_thirty_to_ninty_days = false;
+ var units_available_in_thirty_to_sixty_days = false;
+ var units_available_in_sixty_to_ninty_days = false;
  var units_available_in_ninty_to_one_twenty_days = false;
  var units_available_in_one_twenty_plus_days = false;
  var today = new Date();
  var thirty_days = new Date(today).setDate(today.getDate()+30);
+ var sixty_days = new Date(today).setDate(today.getDate()+60);
  var ninty_days = new Date(today).setDate(today.getDate()+90);
  var one_twenty_days = new Date(today).setDate(today.getDate()+120);
  //In below for loop hide and show filters on the basis of units data available
@@ -36,26 +38,48 @@ function setFilters(){
      if (available_date < thirty_days){
        units_available_in_thirty_days = true;
      }
-     if (available_date >= thirty_days && available_date <= ninty_days){
-       units_available_in_thirty_to_ninty_days = true;
+     if (available_date >= thirty_days && available_date <= sixty_days){
+       units_available_in_thirty_to_sixty_days = true;
+     }
+     if (available_date >= sixty_days && available_date <= ninty_days){
+       units_available_in_sixty_to_ninty_days = true;
      }
      if (available_date >= ninty_days && available_date <= one_twenty_days){
        units_available_in_ninty_to_one_twenty_days = true;
      }
      if (available_date > one_twenty_days){
-     	 console.log(available_date);
        units_available_in_one_twenty_plus_days = true;
      }
    }
  }
- console.log(units_available_in_thirty_days);
- console.log(units_available_in_thirty_to_ninty_days);
- console.log(units_available_in_ninty_to_one_twenty_days);
- console.log(units_available_in_one_twenty_plus_days);
- //console.log(one_bedroom);
- //console.log(two_bedroom);
- //console.log(three_bedroom);
- //console.log(four_bedroom);
+ if(units_available_in_thirty_days){
+  $('#thirty-days-checkbox').parent().removeClass('hidden');
+ }
+ if(units_available_in_thirty_to_sixty_days){
+  $('#thirty-to-sixty-days-checkbox').parent().removeClass('hidden');
+ }
+ if(units_available_in_sixty_to_ninty_days){
+  $('#sixty-to-ninty-days-checkbox').parent().removeClass('hidden');
+ }
+ if(units_available_in_ninty_to_one_twenty_days){
+  $('#ninty-to-one-twenty-days-checkbox').parent().removeClass('hidden');
+ }
+ if(units_available_in_one_twenty_plus_days){
+  $('#one-twenty-plus-days-checkbox').parent().removeClass('hidden');
+ }
+
+ if(one_bedroom){
+  $('#one-bedroom-checkbox').parent().removeClass('hidden');
+ }
+ if(two_bedroom){
+  $('#two-bedroom-checkbox').parent().removeClass('hidden');
+ }
+ if(three_bedroom){
+  $('#three-bedroom-checkbox').parent().removeClass('hidden');
+ }
+ if(four_bedroom){
+  $('#four-bedroom-checkbox').parent().removeClass('hidden');
+ }
 
  //var today = new Date();
  //console.log(today);

@@ -2,10 +2,6 @@ class WebpagesController < ApplicationController
 	layout false
 
 	def index
-#<<<<<<< HEAD
-		@community = Community.find params[:community_id]
-		@units = current_community.units
-#=======
 		@units_with_floorplan_info = []
 		@units = Unit.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").where(community_id: current_community.id)
 		@units.each do |unit|
@@ -36,6 +32,5 @@ class WebpagesController < ApplicationController
 			puts '----------------------' , v[1].to_s.gsub("..","-")
 		end
         @units_with_floorplan_info = @units_with_floorplan_info.to_json 
-#>>>>>>> 6008262a8347b8fe0c60a5162748dbbff343f6f1
 	end
 end
