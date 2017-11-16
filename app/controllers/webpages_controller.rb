@@ -3,10 +3,16 @@ class WebpagesController < ApplicationController
 
 	def index
 		@units_with_floorplan_info = []
-		@units = Unit.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").where(community_id: current_community.id)
+		if current_community.has_floorplates?
+		  @floorplate = params[:floorplate_number].present? ? current_community.floorplates.find_by_number(params[:floorplate_number]) : current_community.floorplates.first
+		  @units =  @floorplate.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id")
+		else
+          @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id")
+		end
 		@units.each do |unit|
 			if unit.floorplan.market_rent > 1
 				struct = {
+					marketing_name: unit.marketing_name,
 					market_rent: unit.floorplan.market_rent,
 					bedrooms: unit.floorplan.bedrooms,
 					bathrooms: unit.floorplan.bathrooms,

@@ -29,6 +29,10 @@ class Community < ApplicationRecord
     theme_name == "expressionist"
   end
 
+  def has_floorplates?
+    floorplates.size > 0
+  end
+
   def data_is_imported
     case data_provider
       when "psi"
