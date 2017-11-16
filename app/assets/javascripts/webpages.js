@@ -9,10 +9,22 @@ $(document).ready(function(){
       $(this).find('#availability').html($(e.relatedTarget).data('availability') == "Unoccupied" ? "Available Now" : "Occupied");
       $(this).find('#available-date').html($(e.relatedTarget).data('available-date'));
       $(this).find('#market-rent').html('$'+$(e.relatedTarget).data('market-rent'));
+      if ($(e.relatedTarget).data('floorplan-image') != ''){
+        $(this).find('#floorplan-image').attr('src',$(e.relatedTarget).data('floorplan-image'));
+      }
+      else{
+       $(this).find('#floorplan-image').attr('src','/assets/default.jpeg'); 
+      }
     });
 
     setFilters();
     $('.filters').click(function(){
+      if ($(this).is(':checked')){
+        $(this).parent().addClass('active');  
+      }
+      else{
+       $(this).parent().removeClass('active');   
+      }
       showMarkers();
     });
  }

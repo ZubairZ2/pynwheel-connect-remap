@@ -1602,6 +1602,12 @@ ul.home-tabs li:hover a{
 	max-width:100%;
 	height:100%;
 }
+.plan-image-pop{
+
+}
+.plan-image-pop img{
+	width: 100%;
+}
 .slider-box{}
 .slider-box .slider-handle{
 	border:5px solid #008fd4 !important;
@@ -1671,6 +1677,9 @@ ul.home-tabs li:hover a{
 	float:left;
 	width:100%;
 }
+.list-select .active label{
+	color: #fff;
+} 
 .list-select h4{
 	font-size:14px;
 	font-weight:bold;
@@ -1794,6 +1803,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 }
 .btn-apply{
 	margin-top:30px;
+	margin-bottom: 20px;
 }
 .btn-apply a{
 	padding:20px 30px;
@@ -1801,12 +1811,17 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	color:#7b7b7b;
 	border:1px solid #7b7b7b;
 	border-radius:50px;
+
 }
 .btn-apply a:hover{
 	color:#fff;
 	background:#2693ff;
 	border:1px solid #2693ff;
 
+}
+.custom-icon{
+	font-size: 20px;
+	color: #d40e0e;
 }
 .plan-modal{}
 .plan-modal .modal-header{}

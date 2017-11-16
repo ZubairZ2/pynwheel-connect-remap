@@ -6,6 +6,7 @@
     %title Pynwheel | Dashboard
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
     = csrf_meta_tags
+    = stylesheet_link_tag 'jquery.mCustomScrollbar.css'
     = stylesheet_link_tag    'application', media: 'all'
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
     /%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
@@ -92,19 +93,11 @@
             .select-price
               %h3 Maximum Price Range
               .form-group
-                %select.form-control
-                  %option $ 2000
-                  %option $ 1500
-                  %option $ 1000
-                  %option $ 500
+                = select_tag :market_rent, options_for_select(@market_rent),{:class=>"form-control"} 
             .select-price
               %h3 Maximum Square Footage
               .form-group
-                %select.form-control
-                  %option 200
-                  %option 150
-                  %option 100
-                  %option 50
+                = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control"}
         - if current_community.has_floorplates?          
           .select-floorP
             %h4 Select Floor
@@ -128,7 +121,7 @@
           - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
           - units.each do |unit|
             - if unit.x_plot.to_i + unit.y_plot.to_i > 0
-              = link_to "<i class='fa fa-asterisk'></i>".html_safe, "javascript::;", :class => "marker hidden", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-floorplan-name"=>unit.floorplan.name,"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.floorplan.market_rent,"data-square-feet"=>unit.floorplan.square_feet,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.bedrooms,"data-bathrooms"=>unit.floorplan.bathrooms
+              = link_to "<i class='fa fa-circle custom-icon'></i>".html_safe, "javascript::;", :class => "marker hidden", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-floorplan-name"=>unit.floorplan.name,"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.floorplan.market_rent,"data-square-feet"=>unit.floorplan.square_feet,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.bedrooms,"data-bathrooms"=>unit.floorplan.bathrooms,"data-floorplan-image"=>unit.floorplan.image
     / /.content
     / Trigger the modal with a button
     / Modal
@@ -170,8 +163,8 @@
                   .btn-apply
                     %a{:href => "#"} Apply Now
               .col-md-7
-                .plan-image
-                  //%img{:alt => "", :src => "/assets/plan-image.jpg", :title => ""}/
+                .plan-image-pop
+                  %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
     / jQuery 3
     / %script{:src => "js/jquery.min.js"}
     / %script{:src => "js/bootstrap.min.js"}
