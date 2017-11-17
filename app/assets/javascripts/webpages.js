@@ -121,6 +121,14 @@ function setFilters(){
 }
 
 function showMarkers(){
+  var market_rent = $('#market_rent').val();
+  var square_feet = $('#square_feet').val();
+  market_rent = market_rent.split('-');
+  square_feet = square_feet.split('-');
+  var minimum_market_rent = parseFloat(market_rent[0]);
+  var maximum_market_rent = parseFloat(market_rent[1]);
+  var minimum_square_feet = parseFloat(square_feet[0]);
+  var maximum_square_feet = parseFloat(square_feet[1]);
   var today = new Date();
   var thirty_days = new Date(today).setDate(today.getDate()+30);
   var sixty_days = new Date(today).setDate(today.getDate()+60);
@@ -186,5 +194,16 @@ function showMarkers(){
        $('#m_'+units[i]['marketing_name']).removeClass('hidden');
      }
    }
- }
+   //show units on the basis of minimum and maximum rent value
+   var unit_market_rent = parseFloat(units[i]['market_rent']);
+   if (unit_market_rent >= minimum_market_rent && unit_market_rent <= maximum_market_rent && units[i]['available_date'] != '2099-01-01'){
+    $('#m_'+units[i]['marketing_name']).removeClass('hidden');
+   }
+   //show units on the basis of minimum and maximum rent value
+   var unit_square_feet = parseFloat(units[i]['square_feet']);
+   if (unit_square_feet >= minimum_square_feet && unit_square_feet <= maximum_square_feet && units[i]['available_date'] != '2099-01-01'){
+    console.log('feet');
+    $('#m_'+units[i]['marketing_name']).removeClass('hidden');
+   }  
+ } 
 }
