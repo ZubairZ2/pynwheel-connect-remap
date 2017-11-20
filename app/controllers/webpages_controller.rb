@@ -7,22 +7,22 @@ class WebpagesController < ApplicationController
 		  @floorplate = params[:floorplate_number].present? ? current_community.floorplates.find_by_number(params[:floorplate_number]) : current_community.floorplates.first
 		  @units =  @floorplate.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id")
 		else
-          @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id")
+      @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id")
 		end
 		if @units.size > 0
 			normalize_units
 			build_square_feet_range
 			build_market_rent_range
-        	@units_with_floorplan_info = @units_with_floorplan_info.to_json
-        else
-          flash[:error] = "Plot units first."
-          redirect_to root_path	
-        end 
+    	@units_with_floorplan_info = @units_with_floorplan_info.to_json
+    else
+      flash[:error] = "Plot units first."
+      redirect_to root_path	
+    end 
 	end
 
 	def normalize_units
 		@units.each do |unit|
-			if unit.floorplan.market_rent > 1
+			if unit.floorplan.present? && unit.floorplan.market_rent > 1
 				struct = {
 					marketing_name: unit.marketing_name,
 					market_rent: unit.floorplan.market_rent,
@@ -33,9 +33,8 @@ class WebpagesController < ApplicationController
 					available_date: unit.available_date
 				}
 				@units_with_floorplan_info << struct
-		    end
+	    end
 		end
-
 	end
 
 	def build_square_feet_range

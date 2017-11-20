@@ -1852,7 +1852,18 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	padding-bottom:50px;
 }
 .bg-bottom:before{
-    content: "";
+	 content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    right: 0px;
+    top: -27px;
+    width: 100%;
+    transform: skewY(-8deg);
+    background-color: #2c3436;
+    height: 49px;
+    z-index: -1;
+    /*content: "";
     width: 0;
     height: 0;
     position: absolute;
@@ -1860,18 +1871,20 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     top: -42px;
     border-bottom: 42px solid #2b3436;
     border-left: 247px solid rgba(0, 0, 0, 0);
-    width: 100%;
+    width: 100%;*/
 }
 .bg-bottom:after{
-    content: "";
+     content: "";
     width: 0;
     height: 0;
     position: absolute;
     right: 0px;
-    bottom: 0px;
-    border-bottom: 42px solid #2d393b;
-    border-left: 247px solid rgba(0, 0, 0, 0);
+    bottom: -27px;
     width: 100%;
+    transform: skewY(-8deg);
+    background-color: #2c3436;
+    height: 49px;
+    z-index: -1;
 }
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
@@ -2073,5 +2086,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 }
 .drag-image-padding-top{
 	padding-top: 62px;
+}
+.adjust-width{
+	width: 92%;
 }
 

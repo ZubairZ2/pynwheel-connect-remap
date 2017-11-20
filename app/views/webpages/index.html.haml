@@ -32,7 +32,7 @@
     %section.is-webpage
       %a#clickme{:href => "#"} Select Filter
       .left-side.mydiv
-        .select-list
+        .select-list{:class => current_community.has_floorplates? ? "" : "adjust-width"}
           .select-title
             %h3.pull-left
               Filter
@@ -91,14 +91,16 @@
                 %input.filters#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available"}/
                 %label
                   In 121+ days
-            .select-price
-              %h3 Maximum Price Range
-              .form-group
-                = select_tag :market_rent, options_for_select(@market_rent),{:class=>"form-control"} 
-            .select-price
-              %h3 Maximum Square Footage
-              .form-group
-                = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control"}
+            - if @market_rent.present?
+              .select-price
+                %h3 Maximum Price Range
+                .form-group
+                  = select_tag :market_rent, options_for_select(@market_rent),{:class=>"form-control", :include_blank => "select price range"}
+            - if @square_feet.present?
+              .select-price
+                %h3 Maximum Square Footage
+                .form-group
+                  = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control", :include_blank => "select area range"}
         - if current_community.has_floorplates?          
           .select-floorP
             %h4 Select Floor
@@ -122,7 +124,7 @@
           - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
           - units.each do |unit|
             - if unit.x_plot.to_i + unit.y_plot.to_i > 0
-              = link_to "<i class='fa fa-circle custom-icon'></i>".html_safe, "javascript::;", :class => "marker hidden", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-floorplan-name"=>unit.floorplan.name,"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.floorplan.market_rent,"data-square-feet"=>unit.floorplan.square_feet,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.bedrooms,"data-bathrooms"=>unit.floorplan.bathrooms,"data-floorplan-image"=>unit.floorplan.image
+              = link_to "<i class='fa fa-circle custom-icon'></i>".html_safe, "javascript::;", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.floorplan.present? ? unit.floorplan.market_rent : nil,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil
     / /.content
     / Trigger the modal with a button
     / Modal
