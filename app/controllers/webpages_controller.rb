@@ -13,11 +13,11 @@ class WebpagesController < ApplicationController
 			normalize_units
 			build_square_feet_range
 			build_market_rent_range
-        	@units_with_floorplan_info = @units_with_floorplan_info.to_json
-        else
-          flash[:error] = "Plot units first."
-          redirect_to root_path	
-        end 
+    	@units_with_floorplan_info = @units_with_floorplan_info.to_json
+    else
+      flash[:error] = "Plot units first."
+      redirect_to root_path	
+    end 
 	end
 
 	def normalize_units
@@ -33,9 +33,8 @@ class WebpagesController < ApplicationController
 					available_date: unit.available_date
 				}
 				@units_with_floorplan_info << struct
-		    end
+	    end
 		end
-
 	end
 
 	def build_square_feet_range
