@@ -5,9 +5,9 @@ class WebpagesController < ApplicationController
 		@units_with_floorplan_info = []
 		if current_community.has_floorplates?
 		  @floorplate = params[:floorplate_number].present? ? current_community.floorplates.find_by_number(params[:floorplate_number]) : current_community.floorplates.first
-		  @units =  @floorplate.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id")
+		  @units =  @floorplate.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 		else
-      @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id")
+      @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 		end
 		if @units.size > 0
 			normalize_units

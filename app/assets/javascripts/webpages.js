@@ -181,26 +181,26 @@ function showMarkers(){
     all_units.push(units[i]['marketing_name']);
    //show one bedroom markers  
    if($('#one-bedroom-checkbox').is(':checked')){
-     if (units[i]['bedrooms'] == '1' && units[i]['availability'] == "Unoccupied"){
+     if (units[i]['bedrooms'] == '1'){
        //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
        bedroom_base_units.push(units[i]['marketing_name']);
      }
    }
    //show two bedroom markers
    if($('#two-bedroom-checkbox').is(':checked')){
-     if (units[i]['bedrooms'] == '2' && units[i]['availability'] == "Unoccupied"){
+     if (units[i]['bedrooms'] == '2'){
        bedroom_base_units.push(units[i]['marketing_name']);
      }
    }
    //show three bedroom markers
    if($('#three-bedroom-checkbox').is(':checked')){
-     if (units[i]['bedrooms'] == '3' && units[i]['availability'] == "Unoccupied"){
+     if (units[i]['bedrooms'] == '3'){
        bedroom_base_units.push(units[i]['marketing_name']);
      }
    }
    //show four bedroom markers
    if($('#four-bedroom-checkbox').is(':checked')){
-     if (units[i]['bedrooms'] == '4' && units[i]['availability'] == "Unoccupied"){
+     if (units[i]['bedrooms'] == '4'){
        bedroom_base_units.push(units[i]['marketing_name']);
      }
    }
