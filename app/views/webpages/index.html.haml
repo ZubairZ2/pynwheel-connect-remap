@@ -120,14 +120,15 @@
           - if current_community.has_floorplates?
             %img{:alt => "", :src => "#{@floorplate.image.url}", :title => ""}/
           - else
-            %img{:alt => "", :src => "#{@community.sitemap.image.url}", :title => ""}/
+            %img{:alt => "", :src => "#{@community.sitemap.present? ? @community.sitemap.image.url : "/assets/default.jpeg"}", :title => ""}/
           - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
           - units.each do |unit|
             - if unit.x_plot.to_i + unit.y_plot.to_i > 0
               = link_to "<i class='fa fa-circle custom-icon'></i>".html_safe, "javascript::;", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.effective_rent,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil
-          - @amenities.each do |amenity|
-            - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-              = link_to "<i class='fa fa-star custom-icon-black'></i>".html_safe, "javascript::;", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;"
+          - if @amenities.present?
+            - @amenities.each do |amenity|
+              - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
+                = link_to "<i class='fa fa-star custom-icon-black'></i>".html_safe, "javascript::;", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;"
     / /.content
     / Trigger the modal with a button
     / Modal
