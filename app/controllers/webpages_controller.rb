@@ -1,15 +1,16 @@
-class WebpagesController < ApplicationController
-	layout false
+class WebpagesController < ActionController::Base
+	before_action :set_community
+	# layout false
 
 	def index
 		@units_with_floorplan_info = []
-		if current_community.has_floorplates?
-		  @floorplate = params[:floorplate_number].present? ? current_community.floorplates.find_by_number(params[:floorplate_number]) : current_community.floorplates.first
+		if @community.has_floorplates?
+		  @floorplate = params[:floorplate_number].present? ? @community.floorplates.find_by_number(params[:floorplate_number]) : @community.floorplates.first
 		  @units =  @floorplate.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 		  @amenities = @floorplate.amenities
 		else
-      @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-		  @amenities = current_community.sitemap.amenities if current_community.sitemap.present?
+      @units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
+		  @amenities = @community.sitemap.amenities if @community.sitemap.present?
 		end
 		if @units.size > 0
 			normalize_units
@@ -63,5 +64,11 @@ class WebpagesController < ApplicationController
 		market_rent_range_hash.each do |v|
 			@market_rent << v[1].to_s.gsub("..","-")
 		end
+	end
+
+	private
+
+	def set_community
+		@community = Community.find(params[:community_id])
 	end
 end

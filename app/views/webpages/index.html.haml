@@ -32,7 +32,7 @@
     %section.is-webpage
       %a#clickme{:href => "#"} Select Filter
       .left-side.mydiv
-        .select-list{:class => current_community.has_floorplates? ? "" : "adjust-width"}
+        .select-list{:class => @community.has_floorplates? ? "" : "adjust-width"}
           .select-title
             %h3.pull-left
               Filter
@@ -101,7 +101,7 @@
                 %h3 Maximum Square Footage
                 .form-group
                   = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control", :include_blank => "select area range"}
-        - if current_community.has_floorplates?          
+        - if @community.has_floorplates?          
           .select-floorP
             %h4 Select Floor
             .select-floor-bg
@@ -110,14 +110,14 @@
                   .select-floor
                     %ul
                       %li
-                        - current_community.floorplates.each do |floorplate|
+                        - @community.floorplates.each do |floorplate|
                           = link_to floorplate.number,community_webpages_path(:floorplate_number=>floorplate.number), :class=>"#{floorplate.id == @floorplate.id ? 'selected' : ''}"
                           
                     
       .right-side
         / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
         .image-map#map{:style => "position: relative;"}
-          - if current_community.has_floorplates?
+          - if @community.has_floorplates?
             %img{:alt => "", :src => "#{@floorplate.image.url}", :title => ""}/
           - else
             %img{:alt => "", :src => "#{@community.sitemap.present? ? @community.sitemap.image.url : "/assets/default.jpeg"}", :title => ""}/
