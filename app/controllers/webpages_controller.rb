@@ -4,11 +4,12 @@ class WebpagesController < ApplicationController
 	def index
 		@units_with_floorplan_info = []
 		if current_community.has_floorplates?
-		  @floorplate = params[:floorplate_number].present? ? current_community.floorplates.find_by_number(params[:floorplate_number]) : current_community.floorplates.first
-		  @units =  @floorplate.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
+		  @floorplate = current_community.floorplates.first
+		  @units =  current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 		  @amenities = @floorplate.amenities
+		  @floorplate_numbers = current_community.floorplates.map(&:number) 
 		else
-      @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
+    @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 		  @amenities = current_community.sitemap.amenities
 		end
 		if @units.size > 0
@@ -26,15 +27,16 @@ class WebpagesController < ApplicationController
 		@units.each do |unit|
 			if unit.floorplan.present? && unit.floorplan.market_rent > 1
 				struct = {
-					marketing_name: unit.marketing_name,
-					market_rent: unit.effective_rent,
-					bedrooms: unit.floorplan.bedrooms,
-					bathrooms: unit.floorplan.bathrooms,
-					square_feet: unit.floorplan.square_feet,
-					availability: unit.availability,
-					available_date: unit.available_date
-				}
-				@units_with_floorplan_info << struct
+					 marketing_name: unit.marketing_name,
+					 market_rent: unit.effective_rent,
+					 bedrooms: unit.floorplan.bedrooms,
+					 bathrooms: unit.floorplan.bathrooms,
+					 square_feet: unit.floorplan.square_feet,
+					 availability: unit.availability,
+					 available_date: unit.available_date,
+					 floorplate_number: (unit.floorplate.present? ? unit.floorplate.number : 0) 
+			 	}
+				 @units_with_floorplan_info << struct
 	    end
 		end
 	end

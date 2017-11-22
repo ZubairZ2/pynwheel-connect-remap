@@ -109,16 +109,17 @@
                 #content-3.content
                   .select-floor
                     %ul
-                      %li
-                        - current_community.floorplates.each do |floorplate|
-                          = link_to floorplate.number,community_webpages_path(:floorplate_number=>floorplate.number), :class=>"#{floorplate.id == @floorplate.id ? 'selected' : ''}"
+                      - current_community.floorplates.each do |floorplate|
+                        %li
+                          = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number
                           
                     
       .right-side
         / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
         .image-map#map{:style => "position: relative;"}
           - if current_community.has_floorplates?
-            %img{:alt => "", :src => "#{@floorplate.image.url}", :title => ""}/
+            - current_community.floorplates.each do |floorplate|
+              = image_tag floorplate.image.url,:class=>"floorplate-image #{floorplate.id == @floorplate.id ? '' : 'hidden'}",:id=>"f_#{floorplate.number}"
           - else
             %img{:alt => "", :src => "#{@community.sitemap.image.url}", :title => ""}/
           - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
@@ -201,7 +202,14 @@
       });
     });
 
-
+  var has_floorplate = "#{current_community.has_floorplates?}";
+  var current_floorplate_number = "#{@floorplate.present? ? @floorplate.number : 0}";
+  var floorplate_numbers = "#{@floorplate_numbers.present? ? @floorplate_numbers : []}";
+  floorplate_numbers = JSON.parse(floorplate_numbers);
+  /////////////////////////////////////////
+  var current_units = [];
+  /////////////////////////////////////////
   var units = "#{@units_with_floorplan_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
+  populate_current_units();
