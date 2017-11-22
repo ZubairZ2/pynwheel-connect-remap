@@ -5,12 +5,14 @@ class WebpagesController < ActionController::Base
 	def index
 		@units_with_floorplan_info = []
 		if @community.has_floorplates?
-		  @floorplate = params[:floorplate_number].present? ? @community.floorplates.find_by_number(params[:floorplate_number]) : @community.floorplates.first
-		  @units =  @floorplate.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-		  @amenities = @floorplate.amenities
+		  @floorplate = @community.floorplates.first
+		  @units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
+		  @amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
+		  @amenities = @amenities.flatten
+		  @floorplate_numbers = @community.floorplates.map(&:number) 
 		else
-      @units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-		  @amenities = @community.sitemap.amenities if @community.sitemap.present?
+	    @units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
+	    @amenities = @community.sitemap.amenities if @community.sitemap.present?
 		end
 		if @units.size > 0
 			normalize_units
@@ -28,15 +30,16 @@ class WebpagesController < ActionController::Base
 		@units.each do |unit|
 			if unit.floorplan.present? && unit.floorplan.market_rent > 1
 				struct = {
-					marketing_name: unit.marketing_name,
-					market_rent: unit.effective_rent,
-					bedrooms: unit.floorplan.bedrooms,
-					bathrooms: unit.floorplan.bathrooms,
-					square_feet: unit.floorplan.square_feet,
-					availability: unit.availability,
-					available_date: unit.available_date
-				}
-				@units_with_floorplan_info << struct
+					 marketing_name: unit.marketing_name,
+					 market_rent: unit.effective_rent,
+					 bedrooms: unit.floorplan.bedrooms,
+					 bathrooms: unit.floorplan.bathrooms,
+					 square_feet: unit.floorplan.square_feet,
+					 availability: unit.availability,
+					 available_date: unit.available_date,
+					 floorplate_number: (unit.floorplate.present? ? unit.floorplate.number : 0) 
+			 	}
+				 @units_with_floorplan_info << struct
 	    end
 		end
 	end

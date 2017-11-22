@@ -1525,19 +1525,29 @@ ul.home-tabs li:hover a{
     padding: 1px 13px;
     border-radius: 19px;
 }
-.select-floor ul li a.selected{
+.select-floor ul li a.disabled{
 	color:#727d80;
 	cursor:not-allowed;
 	background:none;
 }
+.select-floor ul li a.disabled:hover{
+	color:#727d80;
+	cursor:not-allowed;
+	background:none;
+}
+.select-floor ul li a.selected{	
+	background-color:#008aff;
+	color: #fff;
+}
 .select-floor ul li a.selected:hover{
-	background-color:transparent;
+	
 	color:#727d80;
 }
 .select-floor ul li a:hover{
 	background:#008aff;
 	color:#fff;
 }
+
 .image-map{
 	width:80%;
 	height:100%;
