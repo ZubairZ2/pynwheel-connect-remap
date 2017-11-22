@@ -10,17 +10,18 @@ class WebpagesController < ApplicationController
 		  @floorplate_numbers = current_community.floorplates.map(&:number) 
 		else
     @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-		  @amenities = current_community.sitemap.amenities
+    @amenities = current_community.sitemap.amenities if current_community.sitemap.present?
 		end
 		if @units.size > 0
 			normalize_units
 			build_square_feet_range
 			build_market_rent_range
     	@units_with_floorplan_info = @units_with_floorplan_info.to_json
-    else
-      flash[:error] = "Plot units first."
-      redirect_to root_path	
-    end 
+    end
+    # else
+    #   flash[:error] = "Please plot units first."
+    #   # redirect_to root_path
+    # end 
 	end
 
 	def normalize_units
