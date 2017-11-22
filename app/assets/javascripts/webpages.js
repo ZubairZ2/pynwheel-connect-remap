@@ -293,6 +293,8 @@ function populate_current_units(){
   $('.marker').addClass('hidden');
   current_units = [];
   if(has_floorplate){
+    $('.amenity-marker').addClass('hidden'); // first hidding all amenity markers
+    $('#a_'+current_floorplate_number).removeClass('hidden'); // showing amenity markers on current floorplate 
     for(var i=0;i < units.length;i++){
       if (units[i]['floorplate_number'] == current_floorplate_number){
         current_units.push(units[i]);

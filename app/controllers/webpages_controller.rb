@@ -6,7 +6,8 @@ class WebpagesController < ApplicationController
 		if current_community.has_floorplates?
 		  @floorplate = current_community.floorplates.first
 		  @units =  current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-		  @amenities = @floorplate.amenities
+		  @amenities = current_community.floorplates.joins(:amenities).collect{|c| c.amenities}
+		  @amenities = @amenities.flatten
 		  @floorplate_numbers = current_community.floorplates.map(&:number) 
 		else
     @units = current_community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units

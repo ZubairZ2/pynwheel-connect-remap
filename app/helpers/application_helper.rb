@@ -68,5 +68,10 @@ module ApplicationHelper
 			return x
 		end
 	end
+
+	def find_floorplate_number(amenityable_id)
+      floorplate = Floorplate.find amenityable_id
+      return floorplate.number
+	end
 		
 end
