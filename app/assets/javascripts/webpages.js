@@ -2,7 +2,7 @@ $(document).ready(function(){
   if ($('.is-webpage')[0]){
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function(e) {
-      $(this).find('#unit-marketing-name').html($(e.relatedTarget).data('unit-marketing-name'));
+      $(this).find('#unit-marketing-name').html("APARTMENT: "+$(e.relatedTarget).data('unit-marketing-name'));
       $(this).find('#floorplan-name').html($(e.relatedTarget).data('floorplan-name'));
       $(this).find('#square-feet').html($(e.relatedTarget).data('square-feet'));
       $(this).find('#bathrooms').html($(e.relatedTarget).data('bathrooms'));
