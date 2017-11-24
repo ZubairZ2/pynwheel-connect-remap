@@ -84,7 +84,9 @@ class RealPageSvcService < BaseService
   def import_realpage_svc_units
     building_result = realpage_building
     begin
-      @array_of_dates = []
+      @array_of_dates = [{ready_date: Date.today,units: []}]
+      current_date = Date.today
+     
       url = REALPAGE_URL
       soap_action = REALPAGE_UNIT_ACTION
       pmc_id = credentials.pmc_id
@@ -122,6 +124,7 @@ class RealPageSvcService < BaseService
       unless result["Envelope"]["Body"]["Fault"].present?
         units = result["Envelope"]["Body"]["getunitsbypropertyResponse"]["getunitsbypropertyResult"]["GetUnitsByProperty"]["UnitObject"]
         units.each do |u|
+          hit = false
           unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u["UnitID"]).first_or_initialize
           #unit = Unit.new(provider: "realpagesvc",community_id: community_id)
           unit.property_id = u["SiteID"]
@@ -148,11 +151,26 @@ class RealPageSvcService < BaseService
           
          
           if unit.available_date < Date.today
-            @array_of_dates << Date.today
+            current_date = Date.today
           elsif unit.available_date != Date.parse("2099-1-1")
-            @array_of_dates << unit.available_date
+            current_date = unit.available_date
           end
-          @array_of_dates = @array_of_dates.uniq
+
+           @array_of_dates.each do |hash|
+            if hash[:ready_date] == current_date
+              hash[:units] << unit.id
+              hit = true
+            end
+          end
+
+          if !hit
+            struct = {
+              ready_date: current_date,
+              units: [unit.id]
+            }
+            @array_of_dates << struct
+          end
+          
 
           unit.building = ""
           bldgResult = getBuildingNumber(u["BuildingID"],building_result)
@@ -184,7 +202,8 @@ class RealPageSvcService < BaseService
       password = REALPAGESVC_PASSWORD
       license_key = REALPAGESVC_LICENSE_KEY
       community_id = credentials.community_id
-      @array_of_dates.each do |date|
+      
+      @array_of_dates.each do |hash|
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -212,7 +231,7 @@ class RealPageSvcService < BaseService
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>
-                                  <tem:singlevalue>'+date.to_s+'</tem:singlevalue>
+                                  <tem:singlevalue>'+hash[:ready_date].to_s+'</tem:singlevalue>
                                 </tem:ListCriterion>
                               </tem:listCriteria>
                               <tem:listCriteria>
@@ -229,20 +248,24 @@ class RealPageSvcService < BaseService
           units.each do |u|
             unit_no = u["Address"]["UnitID"].to_i
             unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no)
-            puts " ----------- ", unit_no
-            best_price = nil
+            hash[:units].each do |unit_in_array|
+              if unit_in_array == unit.first.id
+             
+                best_price = nil
 
-            u["RentMatrix"]["Rows"]["Row"]["Options"].each do |opt|
-              # units = result["Envelope"]["Body"]["getunitlistResponse"]["getunitlistResult"]["GetUnitList"]["UnitObjects"]["UnitObject"]["RentMatrix"]["Rows"]["Row"]["Options"]
-              opt["Option"].each do |o|
-                if o["Best"] == "true"
-                  best_price = o["Rent"]
+                u["RentMatrix"]["Rows"]["Row"]["Options"].each do |opt|
+                  # units = result["Envelope"]["Body"]["getunitlistResponse"]["getunitlistResult"]["GetUnitList"]["UnitObjects"]["UnitObject"]["RentMatrix"]["Rows"]["Row"]["Options"]
+                  opt["Option"].each do |o|
+                    if o["Best"] == "true"
+                      best_price = o["Rent"]
+                    end
+                  end
+                end
+                if best_price.present? && unit.present?
+                  unit.first.update_attributes(effective_rent: best_price)
+                  puts " **** price updated *** "
                 end
               end
-            end
-            if best_price.present? && unit.present?
-              unit.first.update_attributes(effective_rent: best_price)
-              puts " **** price updated *** "
             end
           end
         else
