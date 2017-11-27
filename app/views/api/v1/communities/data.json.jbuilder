@@ -30,7 +30,16 @@ json.homescreen do
 end
 
 json.apartments do
-	json.sitemap @community.sitemap.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+@community.sitemap.image.url : @community.sitemap.image.url) : nil
+	if @community.sitemap.present?
+		json.sitemap Rails.env.development? ? "http://192.168.101.77:3000"+@community.sitemap.image.url : @community.sitemap.image.url
+		json.sitemap_amenities @community.sitemap.amenities do |amenity|
+	  	json.name amenity.name
+	  	json.x_plot amenity.x_plot
+			json.y_plot amenity.y_plot
+	  end
+	else
+		json.sitemap nil
+	end
 	json.units @community.units.available_units do |unit|
 		json.marketing_name unit.marketing_name
 		json.rent unit.effective_rent
@@ -48,6 +57,7 @@ json.apartments do
 	  json.bathrooms unit.floorplan.present? ? convert_float_to_integer(unit.floorplan.bathrooms) : nil
 	  json.square_feet unit.floorplan.present? ? unit.floorplan.square_feet : nil
 	  json.image unit.floorplan.present? ? (unit.floorplan.image.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+unit.floorplan.image.url : unit.floorplan.image.url) : nil) : nil
+		json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
 	end
 	json.floorplans @community.floorplans do |floorplan|
 	  json.id floorplan.id
@@ -61,6 +71,23 @@ json.apartments do
 	  json.square_feet floorplan.square_feet
 	  json.description floorplan.description
 	  json.image floorplan.image.present? ? floorplan.image.url : nil
+	  json.amenities floorplan.amenities do |amenity|
+	  	json.name amenity.name
+	  	json.x_plot amenity.x_plot
+			json.y_plot amenity.y_plot
+	  end
+	end
+	json.floorplates @community.floorplates do |floorplate|
+	  json.id floorplate.id
+	  json.number floorplate.number
+	  json.name floorplate.name
+	  json.range floorplate.range
+	  json.image floorplate.image.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+floorplate.image.url : unit.floorplan.image.url) : nil
+	  json.amenities floorplate.amenities do |amenity|
+	  	json.name amenity.name
+	  	json.x_plot amenity.x_plot
+			json.y_plot amenity.y_plot
+	  end
 	end
 end
 

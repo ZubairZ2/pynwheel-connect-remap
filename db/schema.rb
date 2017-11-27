@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171026150459) do
+ActiveRecord::Schema.define(version: 20171115094114) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -84,6 +84,13 @@ ActiveRecord::Schema.define(version: 20171026150459) do
     t.string   "c_code"
     t.string   "p_code"
     t.index ["community_id"], name: "index_credentials_on_community_id", using: :btree
+  end
+
+  create_table "default_images", force: :cascade do |t|
+    t.string   "name"
+    t.string   "image"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "designs", force: :cascade do |t|
@@ -226,7 +233,7 @@ ActiveRecord::Schema.define(version: 20171026150459) do
     t.string   "provider_unit_id"
     t.string   "unit_type"
     t.integer  "marketing_name"
-    t.integer  "floorplan_id"
+    t.string   "floorplan_id"
     t.float    "market_rent"
     t.float    "effective_rent"
     t.string   "availability"
