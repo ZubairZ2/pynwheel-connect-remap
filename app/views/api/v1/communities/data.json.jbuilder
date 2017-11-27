@@ -1,6 +1,7 @@
+local_assets_base_url = "http://192.168.101.77:3000"
 json.ui_settigs do
   json.theme @community.theme_name
-  json.logo @community.logo.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+@community.logo.url : @community.logo.url) : nil
+  json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : nil
 end
 
 json.homescreen do
@@ -8,21 +9,21 @@ json.homescreen do
 		if @community.design.home_page_images.present?
 			json.images @community.design.home_page_images.order(:sort) do |img|
 			  json.filename img.name
-			  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image.url(:large) : img.image.url(:large)
+			  json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
 			end
 		else
 			json.images DefaultImage.all.each do |img|
 				json.filename img.name
-			  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image : asset_url(img.image)
+			  json.url Rails.env.development? ? local_assets_base_url+img.image : asset_url(img.image)
 			end
 		end
-		vid = @community.design.home_page_video.present? ? ( Rails.env.development? ? "http://192.168.101.77:3000"+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil
+		vid = @community.design.home_page_video.present? ? ( Rails.env.development? ? local_assets_base_url+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil
 		json.video vid
 		json.loop_type vid.present? ? @community.design.loop_type : "images"
 	else
 		json.images DefaultImage.all.each do |img|
 			json.filename img.name
-		  json.url Rails.env.development? ? "http://192.168.101.77:3000"+img.image : asset_url(img.image)
+		  json.url Rails.env.development? ? local_assets_base_url+img.image : asset_url(img.image)
 		end
 		json.video nil
 		json.loop_type "images"
@@ -31,7 +32,7 @@ end
 
 json.apartments do
 	if @community.sitemap.present?
-		json.sitemap Rails.env.development? ? "http://192.168.101.77:3000"+@community.sitemap.image.url : @community.sitemap.image.url
+		json.sitemap Rails.env.development? ? local_assets_base_url+@community.sitemap.image.url : @community.sitemap.image.url
 		json.sitemap_amenities @community.sitemap.amenities do |amenity|
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
@@ -56,7 +57,7 @@ json.apartments do
 		json.bedrooms unit.floorplan.present? ? unit.floorplan.bedrooms : nil
 	  json.bathrooms unit.floorplan.present? ? convert_float_to_integer(unit.floorplan.bathrooms) : nil
 	  json.square_feet unit.floorplan.present? ? unit.floorplan.square_feet : nil
-	  json.image unit.floorplan.present? ? (unit.floorplan.image.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+unit.floorplan.image.url : unit.floorplan.image.url) : nil) : nil
+	  json.image unit.floorplan.present? ? (unit.floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+unit.floorplan.image.url : unit.floorplan.image.url) : nil) : nil
 		json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
 	end
 	json.floorplans @community.floorplans do |floorplan|
@@ -82,7 +83,7 @@ json.apartments do
 	  json.number floorplate.number
 	  json.name floorplate.name
 	  json.range floorplate.range
-	  json.image floorplate.image.present? ? (Rails.env.development? ? "http://192.168.101.77:3000"+floorplate.image.url : unit.floorplan.image.url) : nil
+	  json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplate.image.url : unit.floorplan.image.url) : nil
 	  json.amenities floorplate.amenities do |amenity|
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
