@@ -81,6 +81,7 @@ Rails.application.routes.draw do
       end
     end
     resources :webpages, only: :index
+    resources :favorite_settings, only: [:index, :create, :update]
   end
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do

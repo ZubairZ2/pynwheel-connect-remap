@@ -68,7 +68,7 @@
           %i.fa.fa-bank
           %span Neighborhood
       %li
-        %a{:href => "#"}
+        %a{:href => "#{community_favorite_settings_path(current_community)}"}
           %i.fa.fa-star
           %span Favorites 
       %li.treeview{:class=>"#{controller_name =='settings' || (controller_name =='communities' && params[:action] =='import_page') ? 'active' : ''}"}

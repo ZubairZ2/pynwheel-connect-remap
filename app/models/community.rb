@@ -5,9 +5,10 @@ class Community < ApplicationRecord
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
   has_many :floorplates, dependent: :destroy
-  has_one :credential , dependent: :destroy
+  has_one :credential, dependent: :destroy
   has_one :design, dependent: :destroy
-  has_one :sitemap , dependent: :destroy
+  has_one :sitemap, dependent: :destroy
+  has_one :favorite_setting, dependent: :destroy
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
