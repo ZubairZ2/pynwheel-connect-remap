@@ -7,6 +7,11 @@ $(document).ready(function () {
         var address = buildAddress()
         find_geocodes(address);
     })
+    $(document).on('change', '#neighborhood_address', function() {
+        console.log(" * address changed *")
+        var address = document.getElementById('neighborhood_address').value;
+        find_geocodes(address);
+    })
 
 })
 
@@ -27,8 +32,8 @@ function find_geocodes(address) {
 }
 
 function showResult(latitude,longitude) {
-    document.getElementById('community_latitude').value = latitude;
-    document.getElementById('community_longitude').value = longitude;
+    document.getElementById('latitude').value = latitude;
+    document.getElementById('longitude').value = longitude;
 }
 
 function buildAddress(){

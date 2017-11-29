@@ -16,7 +16,7 @@
     .navbar-custom-menu
       - if user_signed_in?  
         %ul.nav.navbar-nav
-          %li.search-box
+          %li.search-box.hidden
             / search form
             %form#sidebar-form.sidebar-form{:action => "#", :method => "get"}
               .input-group
@@ -25,7 +25,7 @@
                   %button#search-btn.btn.btn-flat{:name => "search", :type => "submit"}
                     %i.fa.fa-search
             / /.search form
-          %li
+          %li.hidden
             %a{"data-toggle" => "control-sidebar", :href => "#"}
               %i.fa.fa-gear
           %li.dropdown.user.user-menu

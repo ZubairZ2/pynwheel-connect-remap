@@ -1,0 +1,24 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Address
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :address, :class=>"form-control validate[required]", :placeholder=>"Address",:maxlength=>"150"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Latitude
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :latitude, :class=>"form-control validate[required,custom[onlyLatitude]]", :placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Longitude
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :longitude, :class=>"form-control validate[required,custom[onlyLongitude]]", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Radius
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :radius, :class=>"form-control validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Radius" ,:maxlength=>"10"
