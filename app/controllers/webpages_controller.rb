@@ -69,6 +69,10 @@ class WebpagesController < ActionController::Base
 		end
 	end
 
+	def apply_now
+		
+	end
+
 	private
 
 	def set_community

@@ -16,6 +16,17 @@ $(document).ready(function(){
       else{
        $(this).find('#floorplan-image').attr('src','/assets/default.jpeg'); 
       }
+      if($(e.relatedTarget).data('provider') === 'psi'){
+        var website = $(e.relatedTarget).data('website');
+        console.log(website);
+        var uri = website.replace(/^https?\:\/\//,'');
+        console.log(uri);
+        $('#psi-anchor-tag').attr('data-community-property-id',$(e.relatedTarget).data('community-property-id'));
+        $('#psi-anchor-tag').attr('data-website',website);
+        $('#psi-anchor-tag').attr('data-uri',uri);
+        $('#psi-anchor-tag').attr('data-unit-provider-id',$(e.relatedTarget).data('unit-provider-id'));
+        $('#psi-anchor-tag').attr('data-floorplan-provider-id',$(e.relatedTarget).data('floorplan-provider-id'));
+      }
     });
     
     /////////////////////////////////////////
@@ -353,4 +364,10 @@ function select_units_according_to_filters(floorplate_units){
     rent_base_units = all_units
   var units_to_display = $.intersect(bedroom_base_units, availability_base_units,rent_base_units,square_feet_base_units);
   return units_to_display;
+}
+
+
+function set_psi_url(element){
+  var url = $(element).data('website')+"Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/15/?lease_start_date="+$('#leasing-start-date').val();
+  window.open(url,'_blank');
 }

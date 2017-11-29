@@ -36,6 +36,7 @@ class PsiService < BaseService
           end
           save_psi_units(units,property_id)
           save_psi_floorplans(floorplans,property_id)
+          save_website_column_of_community(response)
         else
           Thread.current[:errors] <<  response["response"]["error"]["message"]  
         end
@@ -66,20 +67,20 @@ class PsiService < BaseService
 	      end
 	    end
 	    unless vacateDate.present?
-	      vacateDate = Date.parse("2999-01-01")
+	      vacateDate = Date.parse("2099-01-01")
 	    end
 	    if u["Units"]["Unit"]["UnitOccupancyStatus"] == "occupied" && u["Availability"]["VacancyClass"] == "Occupied"
-	      unit.available_date = Date.parse("2999-01-01")
+	      unit.available_date = Date.parse("2099-01-01")
 	      unit.availability = "Occupied"
 	    else
 	      if vacateDate.present?
 	        if unit.availability == "Occupied" && vacateDate < Date.today
-	          unit.available_date = Date.parse("2999-01-01")
+	          unit.available_date = Date.parse("2099-01-01")
 	        else
 	          unit.available_date = vacateDate
 	        end
 	      else
-	        unit.available_date = Date.parse("2999-01-01")
+	        unit.available_date = Date.parse("2099-01-01")
 	      end
 	    end
 	    building = u["Units"]["Unit"]["BuildingName"]
@@ -172,4 +173,11 @@ class PsiService < BaseService
       Thread.current[:errors] << e.message
     end
   end
+
+  def save_website_column_of_community(response)
+    community = Community.find credentials.community_id
+    community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
+  end
+
+
 end
