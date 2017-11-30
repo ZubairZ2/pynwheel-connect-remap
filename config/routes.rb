@@ -83,6 +83,9 @@ Rails.application.routes.draw do
     resources :webpages, only: :index do
       collection do
         get :apply_now
+        get :save_favorite
+        get :delete_favorite
+        get :favorites
       end
     end
   end

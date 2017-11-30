@@ -10,12 +10,29 @@ $(document).ready(function(){
       $(this).find('#availability').html($(e.relatedTarget).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $(this).find('#available-date').html($(e.relatedTarget).data('available-date'));
       $(this).find('#market-rent').html('$'+$(e.relatedTarget).data('market-rent'));
+      ///////////////////////////////////////////
+      if(!$(e.relatedTarget).data('is-fav')){
+        var community_id = $(e.relatedTarget).data('community-id');
+        var unit_id = $(e.relatedTarget).data('unit-id');
+        var url = "/communities/"+community_id+"/webpages/save_favorite?unit_id="+unit_id;
+        var html = '<a href="'+url+'" data-remote="true"><i class="fa fa-heart-o"></i></a>';
+        $('#fav-icon-tag').html(html);
+      }
+      else{
+        var community_id = $(e.relatedTarget).data('community-id');
+        var unit_id = $(e.relatedTarget).data('unit-id');
+        var url = "/communities/"+community_id+"/webpages/delete_favorite?unit_id="+unit_id;
+        var html = '<a href="'+url+'" data-remote="true"><i class="fa fa-heart"></i></a>';
+        $('#fav-icon-tag').html(html);
+      }
+      /////////////////////////////////////////
       if ($(e.relatedTarget).data('floorplan-image') != ''){
         $(this).find('#floorplan-image').attr('src',$(e.relatedTarget).data('floorplan-image'));
       }
       else{
        $(this).find('#floorplan-image').attr('src','/assets/default.jpeg'); 
       }
+      //////////////////////////////////////////
       if($(e.relatedTarget).data('provider') === 'psi'){
         var website = $(e.relatedTarget).data('website');
         console.log(website);
