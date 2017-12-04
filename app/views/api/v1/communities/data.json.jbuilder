@@ -83,7 +83,7 @@ json.apartments do
 	  json.number floorplate.number
 	  json.name floorplate.name
 	  json.range floorplate.range
-	  json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplate.image.url : unit.floorplan.image.url) : nil
+	  json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplate.image.url : floorplate.image.url) : nil
 	  json.amenities floorplate.amenities do |amenity|
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
