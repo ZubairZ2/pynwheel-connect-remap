@@ -1,0 +1,60 @@
+
+/ Main content
+%section
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-image>
+        Gallery
+    / Start Tabs Secttions
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+      #myTabContent.tab-content
+        / Start image-slide section
+        #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+          .row
+            .col-lg-12
+              .pull-right
+                %span.btn.btn-success.btn-file.pull-right.text-UP
+                  %i.fa.fa-plus-circle
+                  Add Files
+                  %input#mutiple-files{:multiple => "multiple", :type => "file"}/
+          .row.slide-imgage-boxs
+            .col-lg-3
+              .slide-image
+                .image-box
+                  .images
+                    %img{:alt => "", :src => "images/homepage-slide-1.jpg", :title => ""}/
+                .icons
+                  %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                  %i.fa.fa-close
+            .col-lg-3
+              .slide-image
+                .image-box
+                  .images
+                    %img{:alt => "", :src => "images/homepage-slide-2.jpg", :title => ""}/
+                .icons
+                  %i.fa.fa-pencil{"data-target" => "#edit-image", "data-toggle" => "modal"}
+                  %i.fa.fa-close
+            .col-lg-3
+              .slide-image
+                .image-box
+                  .images
+                    %img{:alt => "", :src => "images/homepage-slide-3.jpg", :title => ""}/
+                .icons
+                  %i.fa.fa-pencil
+                  %i.fa.fa-close
+            .col-lg-3
+              .slide-image
+                .image-box
+                  .images
+                    %img{:alt => "", :src => "images/homepage-slide-4.jpg", :title => ""}/
+                .icons
+                  %i.fa.fa-pencil
+                  %i.fa.fa-close
+          .text-center.image-upload
+            %img{:alt => "", :src => "images/upload-image.png", :title => ""}/
+            %p Drag &amp; Drop fie to Upload
+        / End image-slide section
+    / End Tabs Secttions
+/ /.content
+/ End Body right Section

@@ -60,7 +60,7 @@
           %li{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
             = link_to "Floor Plates", community_floorplates_path(current_community)
       %li
-        %a{:href => "#"}
+        %a{:href => "#{community_galleries_path(current_community)}"}
           %i.fa.fa-cubes
           %span Galleries
       %li
