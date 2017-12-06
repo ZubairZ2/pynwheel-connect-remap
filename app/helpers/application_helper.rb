@@ -73,5 +73,14 @@ module ApplicationHelper
       floorplate = Floorplate.find amenityable_id
       return floorplate.number
 	end
+
+	def uri(website)
+        website.gsub(/^https?\:\/\//,'')
+	end
+
+	def unit_id_is_in_cookies?(cookies,fav_unit_id)
+		array = JSON.parse(cookies)
+		array.include? fav_unit_id.to_s
+	end
 		
 end

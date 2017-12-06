@@ -1830,8 +1830,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 
 }
 .custom-icon{
-	font-size: 20px;
-	color: #d40e0e;
+	font-size: 13px; color: #ffffff; width: 25px; height: 25px; border-radius: 100%; background-color: #d40e0e; text-align: center; display: inline-block; line-height: 22px;
 }
 .custom-icon-black{
 	font-size: 20px;
@@ -1940,6 +1939,113 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .plan-image-pop .icon-heart i{
 	color:#fff;
 	font-size:26px;
+}
+
+.date-select{
+ margin:35px 0 50px 0;
+}
+.date-select h5{
+ color:#2c2c2c;
+ font-weight:600;
+ text-transform:uppercase;
+}
+.date-select input{
+ border-radius:20px;
+ color:#2c2c2c;
+ height:39px;
+ box-shadow: 2px 1px 16px 4px #ddd;
+}
+.date-select .form-group {
+ position:relative;
+}
+.date-select .form-group i {
+ position:absolute;
+ right:20px;
+ top:10px;
+}
+.plan-image{
+ position:relative;
+}
+.plan-image .icon-heart{
+ position:absolute;
+ right:0;
+ top:0;
+ width:50px;
+ height:50px;
+ background:#000;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+}
+.plan-image .icon-heart i{
+ color:#fff;
+ font-size:26px;
+}
+.select-list-fav{
+ width:290px;
+}
+.select-list-fav .select-title{
+ margin-bottom:30px;
+ padding-bottom:15px;
+}
+.thank-u{
+ padding:20px 0 40px 0;
+}
+.thank-u p{
+ color:#fff;
+ font-size:13px;
+}
+.form-group{
+ position:relative;
+ padding-bottom:30px;
+}
+.send-to label{
+ color:#fff;
+}
+.form-group input[type="text"]{
+ background-color: transparent;
+ border-color: #8c9192;
+ color: #8c9192;
+}
+.form-group button.send-btn{
+ position:absolute;
+ right:10px;
+ top:6px;
+ background:none;
+ border:none;
+ font-size:20px;
+ transform: rotate(40deg);
+ color:#008aff;
+}
+.need-to{}
+.need-to h3{
+ color:#fff;
+ font-size:14px;
+ padding:20px 0;
+ font-weight:600;
+ text-transform:uppercase;
+}
+.need-to p{
+ color:#fff;
+ font-size:13px;
+ margin-bottom:50px;
+}
+.need-to .btn{
+ padding:15px;
+ border-radius:50px;
+ background-color:#2693ff;
+ text-transform:uppercase;
+}
+.modal-right{
+ border-radius:0;
+ width:79%;
+ margin:2% 0%;
+}
+.modal-right .plan-image img{
+ width:100%;
+}
+.modal-right .plane-details ul{
+ margin:15px 0 30px 0px
 }
 
 @media only screen and (min-width: 1200px) and (max-width: 1580px){

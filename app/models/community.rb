@@ -8,8 +8,8 @@ class Community < ApplicationRecord
   has_one :credential , dependent: :destroy
   has_one :design, dependent: :destroy
   has_one :sitemap , dependent: :destroy
-  has_many :favorites, dependent: :destroy
-  has_many :favorite_units, :through => :favorites,source: :unit
+  #has_many :favorites, dependent: :destroy
+  #has_many :favorite_units, :through => :favorites,source: :unit
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
