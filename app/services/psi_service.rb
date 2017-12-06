@@ -69,7 +69,7 @@ class PsiService < BaseService
       unit.available_date = vacateDate
 	    building = u["Units"]["Unit"]["BuildingName"]
 	    unit.building = building.present? ? building.gsub("Building ", "") : ""
-	    unit.save
+	    unit.save(validate: false)
 	 end
   end
 
@@ -145,8 +145,16 @@ class PsiService < BaseService
           if unit.present?
             unit = unit.first
             if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
-              puts '*****************************', u[1]["Rent"]["@attributes"]["MinRent"]
-              unit.update_attribute(:effective_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
+              u[1]['Rent']['TermRent'].each do |a|
+                if a["@attributes"]["IsBestPrice"] == "true"
+                  lease_term = a["@attributes"]["LeaseTerm"].split(" ")
+                  unit.effective_rent = a["@attributes"]["Rent"]
+                  unit.lease_term = lease_term[0]
+                  unit.save(validate: false)
+                  #unit.update_attributes(effective_rent: a["@attributes"]["Rent"],lease_term: lease_term[0])
+                end
+              end
+              
             end
           end
         end

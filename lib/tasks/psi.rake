@@ -35,9 +35,9 @@ namespace :provider do
         floorplans << f
       end
     end
-    save_units(units)
+    #save_units(units)
     #save_floorplans(floorplans)
-    #fill_pricing_details
+    fill_pricing_details
     # TODO Amenities
     # resp = response['response']['result']["PhysicalProperty"]["Property"][0]["ILS_Unit"][0]["Amenity"]
     # puts '*******', resp
@@ -169,14 +169,23 @@ namespace :provider do
     psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
     psi_units.each do |u|
       unit_no = u[1]["@attributes"]["UnitNumber"].to_i
-      unit = Unit.where(number: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
-      if unit.present?
-        unit = unit.first
+      #unit = Unit.where(number: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
+      #if unit.present?
+        #unit = unit.first
         if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
-          puts '*****************************', u[1]["Rent"]["@attributes"]["MinRent"]
-          unit.update_attribute(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
+          u[1]['Rent']['TermRent'].each do |a|
+           
+            if a["@attributes"]["IsBestPrice"] == "true"
+              puts '-------------------------' , a["@attributes"]["Rent"]
+              puts '*************************' , a["@attributes"]["LeaseTerm"]
+              lease_term = a["@attributes"]["LeaseTerm"].split(" ")
+              puts '----------*********-----------' , lease_term[0]
+            end
+          end
+          
+          #unit.update_attribute(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
         end
-      end
+      #end
     end
   end
 
