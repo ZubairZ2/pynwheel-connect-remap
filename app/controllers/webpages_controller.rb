@@ -69,6 +69,24 @@ class WebpagesController < ActionController::Base
 		end
 	end
 
+	def apply_now
+		
+	end
+
+	def save_favorite
+		@unit = Unit.find params[:unit_id]
+		@community.favorites.create(unit_id: params[:unit_id])
+	end
+
+	def delete_favorite
+		@unit = Unit.find params[:unit_id]
+		@community.favorites.where(unit_id: params[:unit_id]).destroy_all
+	end
+
+	def favorites
+		@favorites = @community.favorites
+	end
+
 	private
 
 	def set_community

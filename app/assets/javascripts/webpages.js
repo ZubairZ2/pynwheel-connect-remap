@@ -10,11 +10,40 @@ $(document).ready(function(){
       $(this).find('#availability').html($(e.relatedTarget).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $(this).find('#available-date').html($(e.relatedTarget).data('available-date'));
       $(this).find('#market-rent').html('$'+$(e.relatedTarget).data('market-rent'));
+      ///////////////////////////////////////////
+      if(!$(e.relatedTarget).data('is-fav')){
+        var community_id = $(e.relatedTarget).data('community-id');
+        var unit_id = $(e.relatedTarget).data('unit-id');
+        var url = "/communities/"+community_id+"/webpages/save_favorite?unit_id="+unit_id;
+        var html = '<a href="'+url+'" data-remote="true"><i class="fa fa-heart-o"></i></a>';
+        $('#fav-icon-tag').html(html);
+      }
+      else{
+        var community_id = $(e.relatedTarget).data('community-id');
+        var unit_id = $(e.relatedTarget).data('unit-id');
+        var url = "/communities/"+community_id+"/webpages/delete_favorite?unit_id="+unit_id;
+        var html = '<a href="'+url+'" data-remote="true"><i class="fa fa-heart"></i></a>';
+        $('#fav-icon-tag').html(html);
+      }
+      /////////////////////////////////////////
       if ($(e.relatedTarget).data('floorplan-image') != ''){
         $(this).find('#floorplan-image').attr('src',$(e.relatedTarget).data('floorplan-image'));
       }
       else{
        $(this).find('#floorplan-image').attr('src','/assets/default.jpeg'); 
+      }
+      //////////////////////////////////////////
+      if($(e.relatedTarget).data('provider') === 'psi'){
+        var website = $(e.relatedTarget).data('website');
+        console.log(website);
+        var uri = website.replace(/^https?\:\/\//,'');
+        console.log(uri);
+        $('#psi-anchor-tag').attr('data-community-property-id',$(e.relatedTarget).data('community-property-id'));
+        $('#psi-anchor-tag').attr('data-website',website);
+        $('#psi-anchor-tag').attr('data-uri',uri);
+        $('#psi-anchor-tag').attr('data-unit-provider-id',$(e.relatedTarget).data('unit-provider-id'));
+        $('#psi-anchor-tag').attr('data-floorplan-provider-id',$(e.relatedTarget).data('floorplan-provider-id'));
+        $('#psi-anchor-tag').attr('data-lease-term',$(e.relatedTarget).data('lease-term'));
       }
     });
     
@@ -353,4 +382,10 @@ function select_units_according_to_filters(floorplate_units){
     rent_base_units = all_units
   var units_to_display = $.intersect(bedroom_base_units, availability_base_units,rent_base_units,square_feet_base_units);
   return units_to_display;
+}
+
+
+function set_psi_url(element){
+  var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+$('#leasing-start-date').val();
+  window.open(url,'_blank');
 }

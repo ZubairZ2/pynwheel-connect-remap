@@ -1900,6 +1900,48 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     height: 49px;
     z-index: -1;
 }
+
+.date-select{
+ 	margin:35px 0 50px 0;
+}
+.date-select h5{
+	color:#2c2c2c;
+	font-weight:600;
+	text-transform:uppercase;
+}
+.date-select input{
+	border-radius:20px;
+	color:#2c2c2c;
+	height:39px;
+	box-shadow: 2px 1px 16px 4px #ddd;
+}
+.date-select .form-group {
+ 	position:relative;
+}
+.date-select .form-group i {
+	position:absolute;
+	right:20px;
+	top:10px;
+}
+.plan-image-pop{
+ 	position:relative;
+}
+.plan-image-pop .icon-heart{
+	position:absolute;
+	right:0;
+	top:0;
+	width:50px;
+	height:50px;
+	background:#000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.plan-image-pop .icon-heart i{
+	color:#fff;
+	font-size:26px;
+}
+
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
 	#s-theme .row .col-lg-3{

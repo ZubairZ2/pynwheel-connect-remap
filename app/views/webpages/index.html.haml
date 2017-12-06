@@ -125,7 +125,7 @@
           - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
           - units.each do |unit|
             - if unit.x_plot.to_i + unit.y_plot.to_i > 0
-              = link_to "<i class='fa fa-circle custom-icon'></i>".html_safe, "##", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.effective_rent,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil
+              = link_to "<i class='fa fa-circle custom-icon'></i>".html_safe, "##", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit.is_favorite?,"data-provider"=>@community.data_provider,"data-website"=>@community.website,"data-community-property-id"=>@community.credential.property_id,"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.effective_rent,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil,"data-lease-term"=>unit.lease_term
           - if @amenities.present?
             - if @community.has_floorplates?
               - @amenities.each do |amenity|
@@ -173,11 +173,25 @@
                      
                     .available-now
                       %p#availability
+                  - if @community.data_provider == "psi"    
+                    .date-select 
+                      %h5 Lease Start Date 
+                      .form-group 
+                        %input.form-control.datepicker#leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
+                        %i.fa.fa-calendar    
                   .btn-apply
-                    %a{:href => "#"} Apply Now
+                    - if @community.data_provider == "realpagesvc"
+                      = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank"
+                    - elsif @community.data_provider == "psi"
+                      = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag"
               .col-md-7
                 .plan-image-pop
                   %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
+                  .icon-heart#fav-icon-tag
+                    %a{:href => "##"}
+                      %i.fa.fa-heart-o
+                    %a.hide{:href => "##"}
+                      %i.fa.fa-heart
     / jQuery 3
     / %script{:src => "js/jquery.min.js"}
     / %script{:src => "js/bootstrap.min.js"}
@@ -186,6 +200,7 @@
     / %script{:src => "js/bootstrap-slider.js"}
     / %script{:src => "js/jquery.mCustomScrollbar.concat.min.js"}
 :javascript
+  $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
   (function($){
     $(window).on("load",function(){
         

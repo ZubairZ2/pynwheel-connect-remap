@@ -36,6 +36,7 @@ class PsiService < BaseService
           end
           save_psi_units(units,property_id)
           save_psi_floorplans(floorplans,property_id)
+          save_website_column_of_community(response)
         else
           Thread.current[:errors] <<  response["response"]["error"]["message"]  
         end
@@ -47,6 +48,7 @@ class PsiService < BaseService
 
 	def save_psi_units(units,property_id)
 	  units.each do |u|
+      vacateDate = Date.parse("2099-01-01")
       unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first_or_initialize
 	    #unit = Unit.new(provider: "psi",community_id: credentials.community_id)
 	    #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
@@ -58,33 +60,16 @@ class PsiService < BaseService
 	    unit.market_rent = u["Units"]["Unit"]["MarketRent"]
 	    unit.effective_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
 	    unit.availability = u["Availability"]["VacancyClass"]
-	    if u["Availability"]["VacateDate"].present?
-	      if  u["Availability"]["VacateDate"]["@year"].present?
-	          vacateDate = new Date(u["Availability"]["VacateDate"]["@year"],u["Availability"]["VacateDate"]["@month"],u["Availability"]["VacateDate"]["@day"])
-	      elsif u["Availability"]["VacateDate"].present? and u["Availability"]["VacateDate"]["@Year"].present?
-	          vacateDate = new Date(u["Availability"]["VacateDate"]["@Year"],u["Availability"]["VacateDate"]["@Month"],u["Availability"]["VacateDate"]["@Day"])
-	      end
-	    end
-	    unless vacateDate.present?
-	      vacateDate = Date.parse("2999-01-01")
-	    end
-	    if u["Units"]["Unit"]["UnitOccupancyStatus"] == "occupied" && u["Availability"]["VacancyClass"] == "Occupied"
-	      unit.available_date = Date.parse("2999-01-01")
-	      unit.availability = "Occupied"
-	    else
-	      if vacateDate.present?
-	        if unit.availability == "Occupied" && vacateDate < Date.today
-	          unit.available_date = Date.parse("2999-01-01")
-	        else
-	          unit.available_date = vacateDate
-	        end
-	      else
-	        unit.available_date = Date.parse("2999-01-01")
-	      end
-	    end
+	    if u["Availability"]["VacancyClass"] == "Unoccupied"
+        year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
+        month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
+        day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
+        vacateDate = Date.parse("#{year}-#{month}-#{day}")
+      end
+      unit.available_date = vacateDate
 	    building = u["Units"]["Unit"]["BuildingName"]
 	    unit.building = building.present? ? building.gsub("Building ", "") : ""
-	    unit.save
+	    unit.save(validate: false)
 	 end
   end
 
@@ -160,8 +145,16 @@ class PsiService < BaseService
           if unit.present?
             unit = unit.first
             if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
-              puts '*****************************', u[1]["Rent"]["@attributes"]["MinRent"]
-              unit.update_attribute(:effective_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
+              u[1]['Rent']['TermRent'].each do |a|
+                if a["@attributes"]["IsBestPrice"] == "true"
+                  lease_term = a["@attributes"]["LeaseTerm"].split(" ")
+                  unit.effective_rent = a["@attributes"]["Rent"]
+                  unit.lease_term = lease_term[0]
+                  unit.save(validate: false)
+                  #unit.update_attributes(effective_rent: a["@attributes"]["Rent"],lease_term: lease_term[0])
+                end
+              end
+              
             end
           end
         end
@@ -172,4 +165,11 @@ class PsiService < BaseService
       Thread.current[:errors] << e.message
     end
   end
+
+  def save_website_column_of_community(response)
+    community = Community.find credentials.community_id
+    community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
+  end
+
+
 end
