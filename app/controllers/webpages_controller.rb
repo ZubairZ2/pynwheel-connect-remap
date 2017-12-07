@@ -3,8 +3,11 @@ class WebpagesController < ActionController::Base
 	# layout false
 
 	def index
+		#cookies[:favorite_unit_ids] = nil
 		if cookies[:favorite_unit_ids].nil?
 			cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
+			cookies.permanent[:session_id] = SecureRandom.hex(8)
+			Favorite.create(session_id: cookies[:session_id],unit_ids: [])
 		end
 		@units_with_floorplan_info = []
 		if @community.has_floorplates?
@@ -81,7 +84,10 @@ class WebpagesController < ActionController::Base
 		@unit = Unit.find params[:unit_id]
 		#@community.favorites.create(unit_id: params[:unit_id])
 		array << params[:unit_id]
-		cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
+		cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
+		favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+		favorite.unit_ids << params[:unit_id]
+		favorite.save
 	end
 
 	def delete_favorite
@@ -90,10 +96,18 @@ class WebpagesController < ActionController::Base
 		#@community.favorites.where(unit_id: params[:unit_id]).destroy_all
 		array.delete params[:unit_id]
 		cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
+		favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+		favorite.unit_ids.delete params[:unit_id]
+		favorite.save
 	end
 
 	def favorites
 		@units = Unit.find JSON.parse(cookies[:favorite_unit_ids])
+	end
+
+	def favorites_share_link
+		@favorite = Favorite.find_by_session_id(params[:session_id])
+		@units = Unit.find @favorite.unit_ids
 	end
 
 	private

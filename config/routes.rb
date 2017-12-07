@@ -86,6 +86,7 @@ Rails.application.routes.draw do
         get :save_favorite
         get :delete_favorite
         get :favorites
+        get :favorites_share_link
       end
     end
   end
