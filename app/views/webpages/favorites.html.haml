@@ -29,7 +29,7 @@
     %link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
   %body.floor-plan{style: "background-color:#303a3c;"}
     / Main content
-    %section
+    %section.is-favorite
       %a#clickme{href: "#"} Select Filter
       .left-side.mydiv
         .select-list.select-list-fav
@@ -53,8 +53,8 @@
               %p Tap on an item to expand it and remove it from the list, or click the Clear button below.
               %button.btn.btn-primary.btn-block.btn-lg Clear All
       .right-side
-        - @favorites.each do |fav|
-          .row{:id=>"row-#{fav.id}"}
+        - @units.each do |unit|
+          .row{:id=>"row-#{unit.id}"}
             .col-md-12
               .modal-content.modal-right.plan-modal
                 .modal-body
@@ -62,21 +62,21 @@
                     .col-md-6
                       .plane-details
                         .name
-                          = fav.unit.floorplan.name
+                          = unit.floorplan.name
                         %ul
                           %li
-                            %b= fav.unit.floorplan.square_feet
+                            %b= unit.floorplan.square_feet
                             Sq Feet
                           %li
-                            %b= fav.unit.floorplan.bedrooms
+                            %b= unit.floorplan.bedrooms
                             Bedrooms
                           %li
-                            %b= fav.unit.floorplan.bathrooms
+                            %b= unit.floorplan.bathrooms
                             Bathrooms
                           
                         .price-details
                           .price-count.pull-left
-                            %span= fav.unit.effective_rent
+                            %span= unit.effective_rent
                             $ / month
                           .available-now
                             %p Available Now
@@ -90,16 +90,13 @@
                           - if @community.data_provider == "realpagesvc"
                             = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank"
                           - elsif @community.data_provider == "psi"
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>fav.unit.provider_unit_id,"data-floorplan-provider-id"=>fav.unit.floorplan.provider_floorplan_id,"data-lease-term"=>fav.unit.lease_term
+                            = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-lease-term"=>unit.lease_term
                     .col-md-6
                       .plan-image
-                        = image_tag fav.unit.floorplan.image.present? ? fav.unit.floorplan.image.url : 'default.jpeg'
+                        = image_tag unit.floorplan.image.present? ? unit.floorplan.image.url : 'default.jpeg'
                         .icon-heart
-                          %a{href: "##", onclick: "hide_div(#{fav.id});"}
-                            %i.fa.fa-heart-o
+                          %a{href: "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true","data-remote"=>"true"}
+                            %i.fa.fa-heart#fav-icon-tag
           }
 :javascript
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' });                             
-  function hide_div(fav_id){
-    $('#row-'+fav_id).hide();  
-  }

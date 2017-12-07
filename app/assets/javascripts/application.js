@@ -40,4 +40,5 @@
 //= require jquery.remotipart
 //= require jquery.mCustomScrollbar.concat.min
 //= require webpages
+//= require favorites
 // require_tree .

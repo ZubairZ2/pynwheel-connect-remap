@@ -91,7 +91,7 @@ class WebpagesController < ActionController::Base
 	end
 
 	def favorites
-		@favorites = @community.favorites
+		@units = Unit.find JSON.parse(cookies[:favorite_unit_ids])
 	end
 
 	private
