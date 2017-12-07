@@ -3,7 +3,9 @@ class WebpagesController < ActionController::Base
 	# layout false
 
 	def index
-		cookies[:favorite_unit_ids] ||= JSON.generate([]) 
+		if cookies[:favorite_unit_ids].nil?
+			cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
+		end
 		@units_with_floorplan_info = []
 		if @community.has_floorplates?
 		  @floorplate = @community.floorplates.first
@@ -79,7 +81,7 @@ class WebpagesController < ActionController::Base
 		@unit = Unit.find params[:unit_id]
 		#@community.favorites.create(unit_id: params[:unit_id])
 		array << params[:unit_id]
-		cookies[:favorite_unit_ids] = JSON.generate(array) 
+		cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
 	end
 
 	def delete_favorite
@@ -87,7 +89,7 @@ class WebpagesController < ActionController::Base
 		@unit = Unit.find params[:unit_id]
 		#@community.favorites.where(unit_id: params[:unit_id]).destroy_all
 		array.delete params[:unit_id]
-		cookies[:favorite_unit_ids] = JSON.generate(array) 
+		cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
 	end
 
 	def favorites
