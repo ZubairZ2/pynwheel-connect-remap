@@ -11,7 +11,7 @@ class WebpagesController < ActionController::Base
 		end
 		@units_with_floorplan_info = []
 		@units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-		@units_in_xy_group = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").select(:x_plot,:y_plot).group(:x_plot,:y_plot).having("count(*) > 1").size
+		@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
 	
 		if @community.has_floorplates?
 		  @floorplate = @community.floorplates.first
