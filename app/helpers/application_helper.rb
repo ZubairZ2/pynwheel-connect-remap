@@ -82,5 +82,19 @@ module ApplicationHelper
 		array = JSON.parse(cookies)
 		array.include? fav_unit_id.to_s
 	end
+
+	def unit_count(hash,plot_x,plot_y)
+		count = ""
+		hash.each do |h|
+			array_as_key = h[0] 
+			if plot_x == array_as_key[0] and plot_y == array_as_key[1]
+				value = h[1]
+				if value.to_i > 0
+				 count = value
+				end 
+			end
+		end
+		return count
+	end
 		
 end
