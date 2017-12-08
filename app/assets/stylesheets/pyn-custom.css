@@ -2048,6 +2048,15 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
  margin:15px 0 30px 0px
 }
 
+.view-btn{
+	background-color: #fff;
+	color: #008aff;
+	padding-top: 15px;
+    padding-bottom: 15px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
 	#s-theme .row .col-lg-3{
