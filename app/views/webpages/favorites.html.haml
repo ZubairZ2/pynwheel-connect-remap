@@ -30,7 +30,7 @@
   %body.floor-plan{style: "background-color:#303a3c;"}
     / Main content
     = render partial: "/messages"
-    %section.is-favorite
+    %section.is-favorites
       %a#clickme{href: "#"} Select Filter
       .left-side.mydiv
         .select-list.select-list-fav
@@ -123,9 +123,7 @@
       .modal-header
         Share Favorites Link
       .modal-body
-        = favorites_share_link_community_webpages_url(:community_id=>@community,:session_id=>@favorite.session_id)
+        %input.form-control#url{:value => favorites_share_link_community_webpages_url(:community_id=>@community,:session_id=>@favorite.session_id)}/
       .modal-footer
-        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} ok   
-        
-:javascript
-  $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' });                             
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} cancel
+        %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard     

@@ -1,5 +1,6 @@
 $(document).ready(function(){
-	if ($('.is-webpage')[0]){
-
+	if ($('.is-favorites')[0]){
+		$(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
+		new Clipboard('.clipboard-btn');
 	}//if ending curl
 });
