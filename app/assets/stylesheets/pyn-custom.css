@@ -2062,7 +2062,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     text-transform: uppercase;
     font-weight: 600;
 }
-
+.view-btn:hover{
+	background-color: #008aff;
+}
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
 	#s-theme .row .col-lg-3{
