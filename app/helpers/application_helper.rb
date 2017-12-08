@@ -89,7 +89,7 @@ module ApplicationHelper
 			array_as_key = h[0] 
 			if plot_x == array_as_key[0] and plot_y == array_as_key[1]
 				value = h[1]
-				if value.to_i > 0
+				if value.to_i > 1
 				 count = value
 				end 
 			end
