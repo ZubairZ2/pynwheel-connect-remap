@@ -10,6 +10,7 @@ class Community < ApplicationRecord
   has_one :sitemap, dependent: :destroy
   has_one :favorite_setting, dependent: :destroy
   has_one :neighborhood, dependent: :destroy
+  has_many :gallery_images, dependent: :destroy
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id

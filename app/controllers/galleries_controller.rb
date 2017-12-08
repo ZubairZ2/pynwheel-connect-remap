@@ -4,6 +4,12 @@ class GalleriesController < ApplicationController
 
 	def index
 		add_breadcrumb "Gallery", "#"
+		@gallery_images = @community.gallery_images
+	end
+
+	def save_gallery_image
+		@community.gallery_images.create(image: params[:src])
+		@gallery_images = @community.gallery_images.order(:sort).all
 	end
 
 	private 

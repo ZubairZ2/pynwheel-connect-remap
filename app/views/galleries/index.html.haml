@@ -1,4 +1,4 @@
-
+.divLoading.hidden
 / Main content
 %section
   .content
@@ -17,44 +17,24 @@
                 %span.btn.btn-success.btn-file.pull-right.text-UP
                   %i.fa.fa-plus-circle
                   Add Files
-                  %input#mutiple-files{:multiple => "multiple", :type => "file"}/
-          .row.slide-imgage-boxs
-            .col-lg-3
-              .slide-image
-                .image-box
-                  .images
-                    %img{:alt => "", :src => "images/homepage-slide-1.jpg", :title => ""}/
-                .icons
-                  %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
-                  %i.fa.fa-close
-            .col-lg-3
-              .slide-image
-                .image-box
-                  .images
-                    %img{:alt => "", :src => "images/homepage-slide-2.jpg", :title => ""}/
-                .icons
-                  %i.fa.fa-pencil{"data-target" => "#edit-image", "data-toggle" => "modal"}
-                  %i.fa.fa-close
-            .col-lg-3
-              .slide-image
-                .image-box
-                  .images
-                    %img{:alt => "", :src => "images/homepage-slide-3.jpg", :title => ""}/
-                .icons
-                  %i.fa.fa-pencil
-                  %i.fa.fa-close
-            .col-lg-3
-              .slide-image
-                .image-box
-                  .images
-                    %img{:alt => "", :src => "images/homepage-slide-4.jpg", :title => ""}/
-                .icons
-                  %i.fa.fa-pencil
-                  %i.fa.fa-close
+                  %input#gallery-images{:multiple => "multiple", :type => "file"}/
+          .row.slide-imgage-boxs.sortable
+            - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
+              .col-lg-3{:id=> id_tag}
+                .slide-image
+                  .image-box
+                    .images
+                      %a.preview-image{:href=>gallery_image.image? ? gallery_image.image.url(:large) : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery Image"}
+                        = image_tag gallery_image.image.url(:thumb)
+                  .icons
+                    %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                    %i.fa.fa-close
           .text-center.image-upload
-            %img{:alt => "", :src => "images/upload-image.png", :title => ""}/
-            %p Drag &amp; Drop fie to Upload
+            = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+            %p Drag &amp; Drop file to Upload
         / End image-slide section
     / End Tabs Secttions
 / /.content
 / End Body right Section
+:javascript
+  var community_id = #{params[:community_id]}

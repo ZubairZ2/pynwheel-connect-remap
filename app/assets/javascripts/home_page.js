@@ -14,6 +14,21 @@ $(document).ready(function(){
       }
       $(this).val(''); 
     });
+
+  $("#gallery-images").change(function(){
+      var files = $(this).prop("files")
+      for (var i = 0; i < files.length; i++) {
+          if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+            readGalleryImageSrc(files[i]);
+        } 
+      }
+      if(files.length == 1){
+        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+          $('#image-upload-warning').modal('show');
+        } 
+      }
+      $(this).val(''); 
+    });
   // below lines are doing drag and drop on home page
   imageDragNdrop();
 
@@ -116,6 +131,31 @@ function readHomePageImageSrc(file){
 
 function homePageImage(src,name){
 	var url = "/communities/"+community_id+"/home_page/save_home_page_image"
+    $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "script",
+        data: {
+            name: name,
+            src: src
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+ }
+
+ function readGalleryImageSrc(file){
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    galleryImage(e.target.result,file.name);
+  }
+  reader.readAsDataURL(file);
+}
+
+function galleryImage(src,name){
+  var url = "/communities/"+community_id+"/galleries/save_gallery_image"
     $.ajax({
         url: url,
         type: "POST",

@@ -83,7 +83,11 @@ Rails.application.routes.draw do
     resources :webpages, only: :index
     resources :favorite_settings, only: [:index, :create, :update]
     resources :neighborhoods, only: [:index, :create, :update]
-    resources :galleries, only: :index
+    resources :galleries, only: :index do
+      collection do
+        post :save_gallery_image
+      end
+    end
   end
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
