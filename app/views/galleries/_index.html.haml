@@ -11,7 +11,7 @@
             %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
           %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/galleries/delete_gallery_image?gallery_image_id=#{gallery_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
             %i.fa.fa-close
-.text-center.image-upload.gallery-drag-box#gallery-image--upload-holder
+.text-center.image-upload.home-page-drag-box#gallery-image--upload-holder
   = image_tag "upload-image.png",:class=>"drag-image-padding-top"
   %p Drag &amp; Drop file to Upload
 
