@@ -5,14 +5,7 @@
     .title-heading.mb-25
       %h4
         %i.fa.fa-home
-        Home Page
-    .row
-      / Start Panel left Side
-      .col-lg-12.col-md-12
-        .row
-          .col-md-6
-            %h4.title #{current_community.name.capitalize}    
-    
+        = @community.name.capitalize  
     .row
       .col-lg-10
         .form-group 

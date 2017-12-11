@@ -7,10 +7,10 @@
     /       Select Community
     /     .col-sm-12.col-lg-12.col-md-12.col-xs-12
     /       = select_tag :communities_at_floorplans, options_for_select(@communities.collect{|c| [c.name,c.id]},params[:community_id]), :class=>"form-control"
-    .title-heading
+    .title-heading.mb-25
       %h4
         %i.fa.fa-columns
-        Floor Plans
+        = @community.name.capitalize
     .row
       #floorplans-index
         = render 'index'
