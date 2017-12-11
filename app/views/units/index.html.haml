@@ -9,7 +9,7 @@
     /       = select_tag :communities_at_units, options_for_select(@communities.collect{|c| [c.name,c.id]},params[:community_id]), :class=>"form-control"
     .title-heading
       %h4
-        %i.fa.fa-columns
+        %i.fa.fa-laptop
         Units
     #units-index
       = render 'index'

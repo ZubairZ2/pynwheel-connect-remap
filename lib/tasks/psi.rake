@@ -35,8 +35,8 @@ namespace :provider do
         floorplans << f
       end
     end
-    save_units(units)
-    save_floorplans(floorplans)
+    #save_units(units)
+    #save_floorplans(floorplans)
     fill_pricing_details
     # TODO Amenities
     # resp = response['response']['result']["PhysicalProperty"]["Property"][0]["ILS_Unit"][0]["Amenity"]
@@ -46,43 +46,58 @@ namespace :provider do
   def save_units(units)
     units.each do |u|
       unit = Unit.new(provider: "psi",community_id: @community_id)
-      unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
-      unit.property_id = @property_id
-      unit.name = u["Units"]["Unit"]["UnitType"]
-      unit.number = u["Units"]["Unit"]["MarketingName"].to_i
+      vacateDate = Date.parse("2099-01-01")
+      #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
+      #unit.property_id = @property_id
+      #unit.name = u["Units"]["Unit"]["UnitType"]
+      #unit.number = u["Units"]["Unit"]["MarketingName"].to_i
 
-      unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-      unit.avg_rent = u["Units"]["Unit"]["MarketRent"]
-      unit.min_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
-      unit.max_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
+      #unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
+      #unit.avg_rent = u["Units"]["Unit"]["MarketRent"]
+      #unit.min_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
+      #unit.max_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
       unit.availability = u["Availability"]["VacancyClass"]
-      if u["Availability"]["VacateDate"].present?
-        if  u["Availability"]["VacateDate"]["@year"].present?
-          vacateDate = new Date(u["Availability"]["VacateDate"]["@year"],u["Availability"]["VacateDate"]["@month"],u["Availability"]["VacateDate"]["@day"])
-        elsif u["Availability"]["VacateDate"].present? and u["Availability"]["VacateDate"]["@Year"].present?
-          vacateDate = new Date(u["Availability"]["VacateDate"]["@Year"],u["Availability"]["VacateDate"]["@Month"],u["Availability"]["VacateDate"]["@Day"])
-        end
+      #puts ' -------------- - -start ----------------------'
+      #puts '-------------------' , u["Availability"]["VacancyClass"]
+      #puts '^^^^^^^^^^^^^^^^^^^' , u["Availability"]["VacateDate"]
+      #puts '*******************' , u["Availability"]
+      #puts ' -------------- - -end ----------------------'
+      # if u["Availability"]["VacateDate"].present?
+      #   if  u["Availability"]["VacateDate"]["@year"].present?
+      #     vacateDate = new Date(u["Availability"]["VacateDate"]["@year"],u["Availability"]["VacateDate"]["@month"],u["Availability"]["VacateDate"]["@day"])
+      #   elsif u["Availability"]["VacateDate"].present? and u["Availability"]["VacateDate"]["@Year"].present?
+      #     vacateDate = new Date(u["Availability"]["VacateDate"]["@Year"],u["Availability"]["VacateDate"]["@Month"],u["Availability"]["VacateDate"]["@Day"])
+      #   end
+      # end
+      # unless vacateDate.present?
+      #   vacateDate = Date.parse("2999-01-01")
+      # end
+      # if u["Units"]["Unit"]["UnitOccupancyStatus"] == "occupied" && u["Availability"]["VacancyClass"] == "Occupied"
+      #   unit.available_date = Date.parse("2099-01-01")
+      #   unit.availability = "Occupied"
+      # else
+      #   if vacateDate.present?
+      #     if unit.availability == "Occupied" && vacateDate < Date.today
+      #       unit.available_date = Date.parse("2999-01-01")
+      #     else
+      #       unit.available_date = vacateDate
+      #     end
+      #   else
+      #     unit.available_date = Date.parse("2999-01-01")
+      #   end
+      # end
+      if u["Availability"]["VacancyClass"] == "Unoccupied"
+        year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
+        month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
+        day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
+        puts '----------------' , u["Availability"]["VacateDate"]["@attributes"]
+        vacateDate = Date.parse("#{year}-#{month}-#{day}")
       end
-      unless vacateDate.present?
-        vacateDate = Date.parse("2999-01-01")
-      end
-      if u["Units"]["Unit"]["UnitOccupancyStatus"] == "occupied" && u["Availability"]["VacancyClass"] == "Occupied"
-        unit.available_date = Date.parse("2999-01-01")
-        unit.availability = "Occupied"
-      else
-        if vacateDate.present?
-          if unit.availability == "Occupied" && vacateDate < Date.today
-            unit.available_date = Date.parse("2999-01-01")
-          else
-            unit.available_date = vacateDate
-          end
-        else
-          unit.available_date = Date.parse("2999-01-01")
-        end
-      end
+      unit.available_date = vacateDate
+      puts '----------------------------' , unit.available_date
       building = u["Units"]["Unit"]["BuildingName"]
       unit.building = building.present? ? building.gsub("Building ", "") : ""
-      unit.save
+      #unit.save
     end
   end
 
@@ -154,14 +169,23 @@ namespace :provider do
     psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
     psi_units.each do |u|
       unit_no = u[1]["@attributes"]["UnitNumber"].to_i
-      unit = Unit.where(number: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
-      if unit.present?
-        unit = unit.first
+      #unit = Unit.where(number: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
+      #if unit.present?
+        #unit = unit.first
         if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
-          puts '*****************************', u[1]["Rent"]["@attributes"]["MinRent"]
-          unit.update_attribute(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
+          u[1]['Rent']['TermRent'].each do |a|
+           
+            if a["@attributes"]["IsBestPrice"] == "true"
+              puts '-------------------------' , a["@attributes"]["Rent"]
+              puts '*************************' , a["@attributes"]["LeaseTerm"]
+              lease_term = a["@attributes"]["LeaseTerm"].split(" ")
+              puts '----------*********-----------' , lease_term[0]
+            end
+          end
+          
+          #unit.update_attribute(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
         end
-      end
+      #end
     end
   end
 

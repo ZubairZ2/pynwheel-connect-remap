@@ -3,15 +3,23 @@ class WebpagesController < ActionController::Base
 	# layout false
 
 	def index
+		#cookies[:favorite_unit_ids] = nil
+		if cookies[:favorite_unit_ids].nil?
+			cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
+			cookies.permanent[:session_id] = SecureRandom.hex(8)
+			Favorite.create(session_id: cookies[:session_id],unit_ids: [])
+		end
 		@units_with_floorplan_info = []
+		@units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
+		@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
+	
 		if @community.has_floorplates?
 		  @floorplate = @community.floorplates.first
-		  @units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 		  @amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
 		  @amenities = @amenities.flatten
 		  @floorplate_numbers = @community.floorplates.map(&:number) 
 		else
-	    @units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
+	    #@units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 	    @amenities = @community.sitemap.amenities if @community.sitemap.present?
 		end
 		if @units.size > 0
@@ -67,6 +75,51 @@ class WebpagesController < ActionController::Base
 		market_rent_range_hash.each do |v|
 			@market_rent << v[1].to_s.gsub("..","-")
 		end
+	end
+
+	def apply_now
+		
+	end
+
+	def save_favorite
+		array = JSON.parse(cookies[:favorite_unit_ids])
+		@unit = Unit.find params[:unit_id]
+		#@community.favorites.create(unit_id: params[:unit_id])
+		array << params[:unit_id]
+		cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
+		favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+		favorite.unit_ids << params[:unit_id]
+		favorite.save
+	end
+
+	def delete_favorite
+		array = JSON.parse(cookies[:favorite_unit_ids])
+		@unit = Unit.find params[:unit_id]
+		#@community.favorites.where(unit_id: params[:unit_id]).destroy_all
+		array.delete params[:unit_id]
+		cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
+		favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+		favorite.unit_ids.delete params[:unit_id]
+		favorite.save
+	end
+
+	def favorites
+		@favorite = Favorite.find_by_session_id(cookies[:session_id])
+		@units = Unit.find JSON.parse(cookies[:favorite_unit_ids])
+	end
+
+	def favorites_share_link
+		@favorite = Favorite.find_by_session_id(params[:session_id])
+		@units = Unit.find @favorite.unit_ids
+	end
+
+	def clear_favorites
+		cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
+		favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+		favorite.unit_ids = []
+		favorite.save
+		flash[:notice] = "Favorites cleared successfully."
+		redirect_to :back
 	end
 
 	private

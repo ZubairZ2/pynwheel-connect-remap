@@ -80,7 +80,7 @@ Rails.application.routes.draw do
         delete :delete_home_page_video
       end
     end
-    resources :webpages, only: :index
+
     resources :favorite_settings, only: [:index, :create, :update]
     resources :neighborhoods, only: [:index, :create, :update]
     resources :galleries, only: :index do
@@ -89,6 +89,16 @@ Rails.application.routes.draw do
         post :save_gallery_image
         put :update_gallery_image
         delete :delete_gallery_image
+      end
+    end  
+    resources :webpages, only: :index do
+      collection do
+        get :apply_now
+        get :save_favorite
+        get :delete_favorite
+        get :favorites
+        get :favorites_share_link
+        get :clear_favorites
       end
     end
   end

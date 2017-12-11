@@ -1,0 +1,12 @@
+<%unless params[:from_favorites]%>
+  var community_id = "<%= @community.id%>";
+  var unit_id = "<%= @unit.id%>";
+  var marketing_name = "<%= @unit.marketing_name%>";
+  var url = "/communities/"+community_id+"/webpages/save_favorite?unit_id="+unit_id;
+  var html = '<a href="'+url+'" data-remote="true"><i class="fa fa-heart-o"></i></a>';
+  $('#fav-icon-tag').html(html);
+  $('#m_'+marketing_name).data('is-fav',false);
+<%else%>
+  var unit_id = "<%= @unit.id%>";
+  $('#row-'+unit_id).hide();  
+<%end%>
