@@ -17,14 +17,14 @@ class HomePageController < ApplicationController
 		@home_page_image = HomePageImage.find(params[:home_page_image_id])
 		@home_page_image.update(home_page_image_params)
 		flash[:notice] = "Image is edited successfully."
-		redirect_to :back
+		redirect_back(fallback_location: root_path)
 	end
 
 	def delete_home_page_image
 		@home_page_image = HomePageImage.find(params[:home_page_image_id])
 		@home_page_image.destroy
 		flash[:notice] = "Image deleted successfully."
-		redirect_to :back
+		redirect_back(fallback_location: root_path)
 	end
 
     def save_home_page_video

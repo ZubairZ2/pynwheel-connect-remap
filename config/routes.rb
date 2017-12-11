@@ -85,7 +85,10 @@ Rails.application.routes.draw do
     resources :neighborhoods, only: [:index, :create, :update]
     resources :galleries, only: :index do
       collection do
+        get :show_image_in_modal
         post :save_gallery_image
+        put :update_gallery_image
+        delete :delete_gallery_image
       end
     end
   end

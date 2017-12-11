@@ -18,23 +18,12 @@
                   %i.fa.fa-plus-circle
                   Add Files
                   %input#gallery-images{:multiple => "multiple", :type => "file"}/
-          .row.slide-imgage-boxs.sortable
-            - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
-              .col-lg-3{:id=> id_tag}
-                .slide-image
-                  .image-box
-                    .images
-                      %a.preview-image{:href=>gallery_image.image? ? gallery_image.image.url(:large) : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery Image"}
-                        = image_tag gallery_image.image.url(:thumb)
-                  .icons
-                    %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
-                    %i.fa.fa-close
-          .text-center.image-upload
-            = image_tag "upload-image.png",:class=>"drag-image-padding-top"
-            %p Drag &amp; Drop file to Upload
+          #images-index
+            = render 'index'
         / End image-slide section
     / End Tabs Secttions
 / /.content
 / End Body right Section
+#edit-image.modal.fade.edit-image
 :javascript
   var community_id = #{params[:community_id]}

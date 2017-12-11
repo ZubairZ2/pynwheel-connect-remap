@@ -31,6 +31,7 @@ $(document).ready(function(){
     });
   // below lines are doing drag and drop on home page
   imageDragNdrop();
+  imageGalleryDragNdrop()
 
   $('#images-loop-type-radio').click(function(){
     if ($(this).is(':checked')){
@@ -169,3 +170,26 @@ function galleryImage(src,name){
         console.log("success");
     });
  }
+
+ function imageGalleryDragNdrop(){
+  var gallery_image_upload_holder = document.getElementById('gallery-image--upload-holder');
+  if (gallery_image_upload_holder){
+      gallery_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files.length > 0){
+            for (var i = 0; i < files.length; i++) {
+              if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+                readGalleryImageSrc(files[i]);
+              }
+            }
+        }
+        if(files.length == 1){
+          console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+          if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+            $('#image-upload-warning').modal('show');
+          } 
+        }          
+    }
+  }
+}
