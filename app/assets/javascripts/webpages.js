@@ -1,5 +1,12 @@
 $(document).ready(function(){
   if ($('.is-webpage')[0]){
+    ////////////////////////////////////////////////
+    $('#leasing-start-date-icon').click(function(event){
+      event.preventDefault();
+      console.log('********************');
+      $('#leasing-start-date').focus();
+    });
+    ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function(e) {
       $(this).find('#unit-marketing-name').html("APARTMENT: "+$(e.relatedTarget).data('unit-marketing-name'));

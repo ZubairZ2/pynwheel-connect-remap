@@ -78,29 +78,31 @@
                             %b= unit.floorplan.square_feet
                             Sq Feet
                           %li
-                            %b= unit.floorplan.bedrooms
-                            Bedrooms
-                          %li
                             %b= unit.floorplan.bathrooms
                             Bathrooms
+                          %li
+                            %b= unit.floorplan.bedrooms
+                            Bedrooms
+                          %li 
+                            %b= unit.available_date
+                            Available Date  
                           
                         .price-details
                           .price-count.pull-left
-                            %span= unit.effective_rent
-                            $ / month
+                            %span= "$#{unit.effective_rent}" 
                           .available-now
-                            %p Available Now
+                            %p Available
                         - if @community.data_provider == "psi"      
                           .date-select
                             %h5 Lease Start Date
                             .form-group
-                              %input.form-control.datepicker#leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
+                              %input.form-control.datepicker.leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
                               %i.fa.fa-calendar
                         .btn-apply
                           - if @community.data_provider == "realpagesvc"
                             = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank"
                           - elsif @community.data_provider == "psi"
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-lease-term"=>unit.lease_term
+                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-lease-term"=>unit.lease_term
                     .col-md-6
                       .plan-image
                         = image_tag unit.floorplan.image.present? ? unit.floorplan.image.url : 'default.jpeg'

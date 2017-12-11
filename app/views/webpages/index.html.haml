@@ -182,7 +182,7 @@
                       %h5 Lease Start Date 
                       .form-group 
                         %input.form-control.datepicker#leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
-                        %i.fa.fa-calendar    
+                        %i.fa.fa-calendar#leasing-start-date-icon    
                   .btn-apply
                     - if @community.data_provider == "realpagesvc"
                       = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank"
