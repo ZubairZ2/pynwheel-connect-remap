@@ -2239,6 +2239,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	.plan-image img{
 		width:100%;
 	}
+	.modal-right{
+		width: 99%;
+	}
 	
 }
 @media (max-width:767px){
@@ -2249,9 +2252,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	.image-map{
 		overflow:scroll;
 	}
-	.modal-right{
-		width: 99%;
-	}
+	
 }
 
 
