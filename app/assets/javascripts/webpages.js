@@ -44,6 +44,7 @@ $(document).ready(function(){
         $('#psi-anchor-tag').attr('data-unit-provider-id',$(e.relatedTarget).data('unit-provider-id'));
         $('#psi-anchor-tag').attr('data-floorplan-provider-id',$(e.relatedTarget).data('floorplan-provider-id'));
         $('#psi-anchor-tag').attr('data-lease-term',$(e.relatedTarget).data('lease-term'));
+        $("#leasing-start-date").datepicker('setDate', new Date());
       }
     });
     

@@ -115,7 +115,10 @@ class WebpagesController < ActionController::Base
 
 	def clear_favorites
 		cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
-		flash[:notice] = "Favorites are cleared successfully."
+		favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+		favorite.unit_ids = []
+		favorite.save
+		flash[:notice] = "Favorites cleared successfully."
 		redirect_to :back
 	end
 
