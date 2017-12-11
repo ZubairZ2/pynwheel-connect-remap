@@ -107,7 +107,7 @@
                       .plan-image
                         = image_tag unit.floorplan.image.present? ? unit.floorplan.image.url : 'default.jpeg'
                         .icon-heart
-                          %a{href: "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true","data-remote"=>"true"}
+                          %a{"data-href"=> "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true",href: "##",onclick: "deleteFavorite(this);"}
                             %i.fa.fa-heart#fav-icon-tag
 #confirm-favorites-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog

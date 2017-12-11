@@ -18,3 +18,13 @@ function set_psi_url_on_favorite(element){
 	var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+date;
   window.open(url,'_blank');
 }
+
+function deleteFavorite(element){
+    var url = $(element).data('href');
+    $(element).html('<i class="fa fa-heart-o"></i>');
+    setTimeout(function(){ $.ajax({url: url});}, 1000);
+}
+
+function sendAjaxToDeleteFavorite(url){
+  $.ajax({url: url});
+}
