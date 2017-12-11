@@ -99,6 +99,7 @@ Rails.application.routes.draw do
         get :favorites
         get :favorites_share_link
         get :clear_favorites
+        get :ipad_version
       end
     end
   end
