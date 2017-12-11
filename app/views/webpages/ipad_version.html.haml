@@ -125,11 +125,11 @@
             - @community.floorplates.each do |floorplate|
               = image_tag floorplate.image.url,:class=>"floorplate-image #{floorplate.id == @floorplate.id ? '' : 'hidden'}",:id=>"f_#{floorplate.number}"
           - else
-            %img{:alt => "", :src => "#{@community.sitemap.present? ? @community.sitemap.image.url : "/assets/default.jpeg"}", :title => ""}/
+            %img{:alt => "", :src => "#{@community.sitemap.present? ? @community.sitemap.image.url(:ipad) : "/assets/default.jpeg"}", :title => ""}/
           - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
           - units.each do |unit|
             - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and !unit.floorplan.nil?
-              = link_to "<span class='custom-icon'>#{unit_count(@units_in_xy_group,unit.x_plot,unit.y_plot)}</span>".html_safe, "##", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community.data_provider,"data-website"=>@community.website,"data-community-property-id"=>@community.credential.property_id,"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.effective_rent,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil,"data-lease-term"=>unit.lease_term
+              = link_to "<span class='custom-icon'>#{unit_count(@units_in_xy_group,unit.x_plot,unit.y_plot)}</span>".html_safe, "##", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{(unit.x_plot.to_f/1.37890625)}px; top:#{unit.y_plot.to_f/1.378698225}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community.data_provider,"data-website"=>@community.website,"data-community-property-id"=>@community.credential.property_id,"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.effective_rent,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil,"data-lease-term"=>unit.lease_term
           - if @amenities.present?
             - if @community.has_floorplates?
               - @amenities.each do |amenity|
@@ -181,7 +181,7 @@
                     .date-select 
                       %h5 Lease Start Date 
                       .form-group 
-                        %input.form-control.datepicker#leasing-start-date{:type => "text",:readony=>true,:value=>Date.today.strftime("%m/%d/%Y")}/ 
+                        %input.form-control.datepicker#leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
                         %i.fa.fa-calendar#leasing-start-date-icon    
                   .btn-apply
                     - if @community.data_provider == "realpagesvc"

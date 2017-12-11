@@ -12,6 +12,10 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
 
+  version :ipad do
+    resize_to_fit(1024, 768)
+  end
+
   def filename
     @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
   end
