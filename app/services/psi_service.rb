@@ -43,7 +43,7 @@ class PsiService < BaseService
     rescue => e
       Thread.current[:errors] << e.message
     end
-    fill_psi_pricing_details if Thread.current[:errors].empty?
+    fill_psi_pricing_details #if Thread.current[:errors].empty?
 	end
 
 	def save_psi_units(units,property_id)

@@ -1,8 +1,8 @@
 class RealPageSvcService < BaseService
 	def perform
 		import_realpage_svc_floorplans
-    import_realpage_svc_units if Thread.current[:errors].empty?
-    import_realpage_svc_price if Thread.current[:errors].empty?
+    import_realpage_svc_units #if Thread.current[:errors].empty?
+    import_realpage_svc_price #if Thread.current[:errors].empty?
 	end
 
 	def import_realpage_svc_floorplans

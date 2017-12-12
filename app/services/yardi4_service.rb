@@ -26,10 +26,12 @@ class Yardi4Service < BaseService
         save_yardi4_units(ils_units,property_id)
         save_yardi4_floorplans(floorplans)
       else
-        Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
+        #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
+        puts "Invalid credentials.Please enter correct one and try again."
       end
     rescue => e
-      Thread.current[:errors] << e.message
+      #Thread.current[:errors] << e.message
+      puts '------------------------' , e.message
     end
 	end
     

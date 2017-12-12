@@ -54,28 +54,33 @@ class Community < ApplicationRecord
   end
 
   def import_psi_data
-    psi_service = PsiService.new(credential.attributes)
-    psi_service.perform  
+    #psi_service = PsiService.new(credential.attributes)
+    #psi_service.perform  
+    ImportPsiDataJob.perform_async credential.attributes.to_json
   end
 
   def import_yardirentcafe_data
-      yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
-      yardi_rent_cafe_service.perform
+      #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
+      #yardi_rent_cafe_service.perform
+      ImportYardirentcafeDataJob.perform_async credential.attributes.to_json
   end
 
   def import_yardi2_data
-    yardi2_service = Yardi2Service.new(credential.attributes)
-    yardi2_service.perform
+    #yardi2_service = Yardi2Service.new(credential.attributes)
+    #yardi2_service.perform
+    ImportYardi2DataJob.perform_async credential.attributes.to_json
   end
 
   def import_yardi4_data
-    yardi4_service = Yardi4Service.new(credential.attributes)
-    yardi4_service.perform
+    #yardi4_service = Yardi4Service.new(credential.attributes)
+    #yardi4_service.perform
+    ImportYardi4DataJob.perform_async credential.attributes.to_json
   end
 
   def import_realpage_svc_data
-    real_page_svc_service = RealPageSvcService.new(credential.attributes)
-    real_page_svc_service.perform
+    #real_page_svc_service = RealPageSvcService.new(credential.attributes)
+    #real_page_svc_service.perform
+    ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
 
   def credentials_are_present?
