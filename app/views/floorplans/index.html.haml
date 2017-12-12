@@ -7,7 +7,7 @@
     /       Select Community
     /     .col-sm-12.col-lg-12.col-md-12.col-xs-12
     /       = select_tag :communities_at_floorplans, options_for_select(@communities.collect{|c| [c.name,c.id]},params[:community_id]), :class=>"form-control"
-    .title-heading.mb-25
+    .title-heading
       %h4
         %i.fa.fa-columns
         = @community.name.capitalize

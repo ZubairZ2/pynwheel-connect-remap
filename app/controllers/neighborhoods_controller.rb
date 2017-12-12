@@ -10,7 +10,7 @@ class NeighborhoodsController < ApplicationController
 	def create
 		@neighborhood = @community.build_neighborhood(neighborhood_params)
     if @neighborhood.save
-      flash[:notice] = "neighborhood created successfully."
+      flash[:notice] = "Neighborhood created successfully."
       redirect_to community_neighborhoods_path(@community)
     else
       flash[:error] = @neighborhood.errors.full_messages.join(',')
@@ -21,7 +21,7 @@ class NeighborhoodsController < ApplicationController
 	def update
 		@neighborhood = @community.neighborhood
     if @neighborhood.update(neighborhood_params)
-      flash[:notice] = "neighborhood updated successfully."
+      flash[:notice] = "Neighborhood updated successfully."
       redirect_to community_neighborhoods_path(@community)
     else
       flash[:error] = @neighborhood.errors.full_messages.join(',')

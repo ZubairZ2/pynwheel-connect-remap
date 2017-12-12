@@ -3,14 +3,14 @@
   .content
     .title-heading
       %h4
-        %i.fa.fa-columns
-        Communities
+        %i.fa.fa-building-o
+        = current_company.name.capitalize
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
         .row
           .col-md-6
-            / %h4.title #{current_company.name.capitalize}
+            %h4.title Communities
           .col-md-6
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/communities/new"}

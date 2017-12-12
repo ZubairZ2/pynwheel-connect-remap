@@ -59,15 +59,15 @@
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
             = link_to "Floor Plates", community_floorplates_path(current_community)
-      %li
+      %li{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
         %a{:href => "#{community_galleries_path(current_community)}"}
           %i.fa.fa-cubes
           %span Galleries
-      %li
+      %li{:class=>"#{controller_name =='neighborhoods' ? 'active' : ''}"}
         %a{:href => "#{community_neighborhoods_path(current_community)}"}
           %i.fa.fa-bank
           %span Neighborhood
-      %li
+      %li{:class=>"#{controller_name =='favorite_settings' ? 'active' : ''}"}
         %a{:href => "#{community_favorite_settings_path(current_community)}"}
           %i.fa.fa-star
           %span Favorites 

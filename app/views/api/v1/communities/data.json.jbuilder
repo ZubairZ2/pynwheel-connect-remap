@@ -31,6 +31,11 @@ json.homescreen do
 end
 
 json.apartments do
+	if @community.floorplates.present?
+		json.map_type "floorplates"
+	else
+		json.map_type "sitemap"
+	end
 	if @community.sitemap.present?
 		json.sitemap Rails.env.development? ? local_assets_base_url+@community.sitemap.image.url : @community.sitemap.image.url
 		json.sitemap_amenities @community.sitemap.amenities do |amenity|
@@ -80,7 +85,7 @@ json.apartments do
 			json.y_plot amenity.y_plot
 	  end
 	end
-	json.floorplates @community.floorplates do |floorplate|
+	json.floorplates @community.floorplates.order(:number) do |floorplate|
 	  json.id floorplate.id
 	  json.number floorplate.number
 	  json.name floorplate.name
@@ -91,6 +96,22 @@ json.apartments do
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
 	  end
+	end
+end
+
+json.neighborhood do
+	if @community.neighborhood.present?
+	  json.latitude @community.neighborhood.latitude
+	  json.longitude @community.neighborhood.longitude
+	  json.radius @community.neighborhood.radius
+	  json.address @community.neighborhood.address
+	end
+end
+
+json.favorite do
+	if @community.favorite_setting.present?
+	  json.email_from @community.favorite_setting.email_from
+	  json.email_bcc @community.favorite_setting.email_bcc
 	end
 end
 
