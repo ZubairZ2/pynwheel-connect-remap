@@ -23,6 +23,10 @@ class Api::V1::CommunitiesController < ActionController::Base
 	def data
 	end
 
+	def list_communities
+		@communities = Community.all
+	end
+
 	private
 	def set_community
 		@community = Community.find(params[:id])

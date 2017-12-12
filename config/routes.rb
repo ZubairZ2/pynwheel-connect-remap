@@ -111,6 +111,7 @@ Rails.application.routes.draw do
         end
         collection do
           post :login
+          get :list_communities
         end
       end
     end
