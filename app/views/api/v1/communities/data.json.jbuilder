@@ -42,6 +42,7 @@ json.apartments do
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
+			json.sitemap_id @community.id
 	  end
 	else
 		json.sitemap nil
@@ -79,10 +80,11 @@ json.apartments do
 	  json.square_feet floorplan.square_feet
 	  json.description floorplan.description
 	  json.image floorplan.image.present? ? floorplan.image.url : nil
-	  json.amenities floorplan.amenities do |amenity|
+	  json.floorplan_amenities floorplan.amenities do |amenity|
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
+			json.floorplan_id floorplan.id
 	  end
 	end
 	json.floorplates @community.floorplates.order(:number) do |floorplate|
@@ -91,10 +93,11 @@ json.apartments do
 	  json.name floorplate.name
 	  json.range floorplate.range
 	  json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplate.image.url : floorplate.image.url) : nil
-	  json.amenities floorplate.amenities do |amenity|
+	  json.floorplate_amenities floorplate.amenities do |amenity|
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
+			json.floorplate_id floorplate.id
 	  end
 	end
 end
@@ -112,6 +115,14 @@ json.favorite do
 	if @community.favorite_setting.present?
 	  json.email_from @community.favorite_setting.email_from
 	  json.email_bcc @community.favorite_setting.email_bcc
+	end
+end
+
+json.gallery do
+	if @community.gallery_images.present?
+		json.images @community.gallery_images.order(:sort) do |img|
+		  json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+		end
 	end
 end
 

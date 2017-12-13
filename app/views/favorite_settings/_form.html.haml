@@ -9,4 +9,4 @@
     Email Bcc
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.email_field :email_bcc, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email Bcc" ,:maxlength=>"150"
+    = f.text_field :email_bcc, :class=>"form-control validate[required,custom[email_list]]", :placeholder=>"Email Bcc" ,:maxlength=>"150"

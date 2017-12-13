@@ -87,6 +87,11 @@
                     "regex": /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
                     "alertText": "* Invalid email address"
                 },
+                "email_list": {
+                    "regex": /^(([^@\s]+@[^@\s]+.[^@\s]+)\,)*(([^@\s]+@[^@\s]+.[^@\s\,.]+$))/,
+                    "alertText": "Add valid comma separated emails"
+
+                },
                 "fullname": {
                     "regex":/^([a-zA-Z]+[\'\,\.\-]?[a-zA-Z ]*)+[ ]([a-zA-Z]+[\'\,\.\-]?[a-zA-Z ]+)+$/,
                     "alertText":"* Must be first and last name"
