@@ -1710,13 +1710,19 @@ ul.home-tabs li:hover a{
 	border-color:#8c9192;
 }
 .select-price{
-	margin:20px 0 0px 0;
+	margin:0 0 0px 0;
 	float:left;
 	width:100%;
+}
+.select-price .form-group{
+	margin-bottom: 0;
+	padding-bottom: 30px;
+
 }
 .select-price h3{
 	font-size:15px;
 	color:#bebfc0;
+	margin-top: 0;
 	font-weight:700;
 	margin-bottom:15px;
 	font-family: 'Raleway', sans-serif;
@@ -1869,8 +1875,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     margin-right: -20px;
     padding-right: 20px;
 	position:relative;
-	margin-top:40px;
-	padding-bottom:50px;
+	margin-top:10px;
+	padding-bottom:20px;
 }
 .bg-bottom:before{
 	 content: "";
