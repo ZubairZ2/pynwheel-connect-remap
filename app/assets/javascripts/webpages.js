@@ -360,6 +360,13 @@ function select_units_according_to_filters(floorplate_units){
        availability_base_units.push(floorplate_units[i]['marketing_name']);
      }
    }
+   //show available units in 90 to 120 days
+   if($('#ninty-to-one-twenty-days-checkbox').is(':checked')){
+     var available_date = new Date(floorplate_units[i]['available_date']);
+     if (available_date >= ninty_days && available_date <= one_twenty_days){
+       availability_base_units.push(floorplate_units[i]['marketing_name']);
+     }
+   }
    //show available units in 120+ days
    if($('#one-twenty-plus-days-checkbox').is(':checked')){
      var available_date = new Date(floorplate_units[i]['available_date']);
@@ -383,7 +390,7 @@ function select_units_according_to_filters(floorplate_units){
     bedroom_base_units = all_units
   }
 
-  if (!($('#now-checkbox').is(':checked') || $('#thirty-days-checkbox').is(':checked') || $('#thirty-to-sixty-days-checkbox').is(':checked') || $('#sixty-to-ninty-days-checkbox').is(':checked') || $('#one-twenty-plus-days-checkbox').is(':checked'))){
+  if (!($('#now-checkbox').is(':checked') || $('#thirty-days-checkbox').is(':checked') || $('#thirty-to-sixty-days-checkbox').is(':checked') || $('#sixty-to-ninty-days-checkbox').is(':checked') || $('#ninty-to-one-twenty-days-checkbox').is(':checked') || $('#one-twenty-plus-days-checkbox').is(':checked'))){
     availability_base_units = all_units
   }
 
