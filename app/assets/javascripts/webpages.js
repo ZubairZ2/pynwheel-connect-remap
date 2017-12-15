@@ -370,7 +370,7 @@ function select_units_according_to_filters(floorplate_units){
    //show available units in 120+ days
    if($('#one-twenty-plus-days-checkbox').is(':checked')){
      var available_date = new Date(floorplate_units[i]['available_date']);
-     if (available_date > one_twenty_days && floorplate_units[i]['available_date'] != '2099-01-01'){
+     if (available_date > one_twenty_days){
        availability_base_units.push(floorplate_units[i]['marketing_name']);
      }
    }
