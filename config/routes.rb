@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     member do
       delete :remove_plots
       delete :remove_plots_from_floorplate
+      patch :update_neighborhood
     end
     get :import_page
     get :import
