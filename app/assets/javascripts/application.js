@@ -42,4 +42,5 @@
 //= require webpages
 //= require clipboard.min
 //= require favorites
+//= require panzoom
 // require_tree .
