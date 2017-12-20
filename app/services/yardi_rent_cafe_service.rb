@@ -2,7 +2,7 @@ class YardiRentCafeService < BaseService
 
 	def perform
 		import_yardirentcafe_floorplans
-		import_yardirentcafe_units if Thread.current[:errors].empty?
+		import_yardirentcafe_units #if Thread.current[:errors].empty?
 	end
 
 	def import_yardirentcafe_floorplans
