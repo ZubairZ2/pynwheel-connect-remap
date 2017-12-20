@@ -11,7 +11,7 @@ class Unit < ApplicationRecord
   scope :available_units, -> { where(availability: "Unoccupied") }
 
   def floorplan
-    Floorplan.find_by(provider_floorplan_id: self.floorplan_id)
+    Floorplan.where(provider_floorplan_id: floorplan_id,community_id: community_id).first
   end
 
   # def is_favorite?
