@@ -87,7 +87,7 @@ json.apartments do
 			json.floorplan_id floorplan.id
 	  end
 	end
-	json.floorplates @community.floorplates.order(:number) do |floorplate|
+	json.floorplates @community.floorplates.order("number DESC") do |floorplate|
 	  json.id floorplate.id
 	  json.number floorplate.number
 	  json.name floorplate.name
