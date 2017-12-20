@@ -48,7 +48,7 @@ json.apartments do
 		json.sitemap nil
 	end
 	json.units @community.units.available_units do |unit|
-		if unit.x_plot > 0 || unit.y_plot > 0
+		if (unit.x_plot > 0 || unit.y_plot > 0) && unit.floorplan.present?
 			json.marketing_name unit.marketing_name
 			json.rent unit.effective_rent
 			json.availability unit.availability
@@ -56,7 +56,7 @@ json.apartments do
 			json.x_plot unit.x_plot
 			json.y_plot unit.y_plot
 			json.building unit.building
-			json.floorplan_id unit.floorplan.present? ? unit.floorplan.id : unit.floorplan_id
+			json.floorplan_id unit.floorplan.id
 			json.unit_type unit.unit_type
 			json.provider_unit_id unit.provider_unit_id
 			json.id unit.id
@@ -87,7 +87,7 @@ json.apartments do
 			json.floorplan_id floorplan.id
 	  end
 	end
-	json.floorplates @community.floorplates.order(:number) do |floorplate|
+	json.floorplates @community.floorplates.order("number DESC") do |floorplate|
 	  json.id floorplate.id
 	  json.number floorplate.number
 	  json.name floorplate.name
