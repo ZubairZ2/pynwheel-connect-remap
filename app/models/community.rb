@@ -72,9 +72,9 @@ class Community < ApplicationRecord
   end
 
   def import_yardi4_data
-    yardi4_service = Yardi4Service.new(credential.attributes)
-    yardi4_service.perform
-    #ImportYardi4DataJob.perform_async credential.attributes.to_json
+    #yardi4_service = Yardi4Service.new(credential.attributes)
+    #yardi4_service.perform
+    ImportYardi4DataJob.perform_async credential.attributes.to_json
   end
 
   def import_realpage_svc_data
