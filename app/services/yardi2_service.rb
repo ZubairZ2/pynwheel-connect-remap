@@ -26,10 +26,12 @@ class Yardi2Service < BaseService
     	    save_yardi2_units(ils_units,property_id)
     	    save_yardi2_floorplans(floorplans)
         else
-          Thread.current[:errors] << result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"]  
+          #Thread.current[:errors] << result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"]  
+          puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
         end
       rescue => e
-        Thread.current[:errors] << e.message
+        #Thread.current[:errors] << e.message
+        puts '----------------------------------', e.message
       end
 	end
 

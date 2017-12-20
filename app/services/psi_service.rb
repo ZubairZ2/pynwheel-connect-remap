@@ -38,12 +38,14 @@ class PsiService < BaseService
           save_psi_floorplans(floorplans,property_id)
           save_website_column_of_community(response)
         else
-          Thread.current[:errors] <<  response["response"]["error"]["message"]  
+          #Thread.current[:errors] <<  response["response"]["error"]["message"]  
+          puts '-----------------------------' , response["response"]["error"]["message"]
         end
     rescue => e
-      Thread.current[:errors] << e.message
+      #Thread.current[:errors] << e.message
+      puts '----------------------------' , e.message
     end
-    fill_psi_pricing_details if Thread.current[:errors].empty?
+    fill_psi_pricing_details #if Thread.current[:errors].empty?
 	end
 
 	def save_psi_units(units,property_id)
@@ -159,10 +161,12 @@ class PsiService < BaseService
           end
         end
       else
-        Thread.current[:errors] << response["response"]["error"]["message"]  
+        #Thread.current[:errors] << response["response"]["error"]["message"]  
+        puts '---------------------------' , response["response"]["error"]["message"] 
       end
     rescue => e
-      Thread.current[:errors] << e.message
+      #Thread.current[:errors] << e.message
+      puts '----------------------------' , e.message
     end
   end
 

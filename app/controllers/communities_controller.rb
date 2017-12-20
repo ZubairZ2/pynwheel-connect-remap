@@ -76,7 +76,7 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
       if @community.data_is_imported and Thread.current[:errors].empty?
-        flash[:notice] = "Data is imported successfully."
+        flash[:notice] = "Your data will be imported shortly.Refresh your page after few minutes."
         redirect_to community_floorplans_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',') 

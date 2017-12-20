@@ -2,7 +2,7 @@ class YardiRentCafeService < BaseService
 
 	def perform
 		import_yardirentcafe_floorplans
-		import_yardirentcafe_units if Thread.current[:errors].empty?
+		import_yardirentcafe_units #if Thread.current[:errors].empty?
 	end
 
 	def import_yardirentcafe_floorplans
@@ -58,10 +58,12 @@ class YardiRentCafeService < BaseService
 
 			    end
 			else
-				Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."  
+				#Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
+				puts  "Invalid credentials.Please enter correct one and try again." 
 			end
 		rescue => e 
-			Thread.current[:errors] = e.message
+			#Thread.current[:errors] = e.message
+			puts '------------------------------' , e.message
 		end
   	end
 
@@ -95,10 +97,12 @@ class YardiRentCafeService < BaseService
 			      fp.save
 			    end
 			else
-				Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."    
+				#Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."    
+				puts '"Invalid credentials.Please enter correct one and try again."'
 			end
 	    rescue => e 
-			Thread.current[:errors] = e.message
+			#Thread.current[:errors] = e.message
+			puts '-------------------------' , e.message
 		end
   	end
 

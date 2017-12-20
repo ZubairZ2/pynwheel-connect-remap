@@ -1,8 +1,8 @@
 class RealPageSvcService < BaseService
 	def perform
 		import_realpage_svc_floorplans
-    import_realpage_svc_units if Thread.current[:errors].empty?
-    import_realpage_svc_price if Thread.current[:errors].empty?
+    import_realpage_svc_units #if Thread.current[:errors].empty?
+    import_realpage_svc_price #if Thread.current[:errors].empty?
 	end
 
 	def import_realpage_svc_floorplans
@@ -74,10 +74,12 @@ class RealPageSvcService < BaseService
           floorplan.save
         end
       else
-        Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]  
+        #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]  
+        puts '----------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"]  
       end
     rescue => e
-      Thread.current[:errors] << e.message
+      #Thread.current[:errors] << e.message
+      puts '--------------------------------' , e.message
     end
   end
 
@@ -184,11 +186,13 @@ class RealPageSvcService < BaseService
           unit.save
         end
       else
-         Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
+         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
+         puts '---------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
       end
       
     rescue => e
-      Thread.current[:errors] << e.message
+      #Thread.current[:errors] << e.message
+      puts '-------------------------------' , e.message
     end
   end
 
@@ -269,11 +273,13 @@ class RealPageSvcService < BaseService
             end
           end
         else
-           Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
+           #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
+           puts '-------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
         end
       end  
     rescue => e
-      Thread.current[:errors] << e.message
+      #Thread.current[:errors] << e.message
+      puts '-------------------------------' , e.message
     end
   end
 
@@ -316,10 +322,12 @@ class RealPageSvcService < BaseService
       unless result["Envelope"]["Body"]["Fault"].present?
         return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
       else
-         Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]    
+         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]    
+         puts '-----------------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
       end  
     rescue => e
-      Thread.current[:errors] << e.message
+      #Thread.current[:errors] << e.message
+      puts '-------------------------------------', e.message
     end
   end
 
