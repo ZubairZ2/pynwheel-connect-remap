@@ -75,11 +75,13 @@ class RealPageSvcService < BaseService
         end
       else
         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]  
-        puts '----------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"]  
+        puts '----------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"]
+        ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
       end
     rescue => e
       #Thread.current[:errors] << e.message
       puts '--------------------------------' , e.message
+      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
@@ -188,11 +190,13 @@ class RealPageSvcService < BaseService
       else
          #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
          puts '---------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
+         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
       end
       
     rescue => e
       #Thread.current[:errors] << e.message
       puts '-------------------------------' , e.message
+      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
@@ -275,11 +279,13 @@ class RealPageSvcService < BaseService
         else
            #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
            puts '-------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
+           ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
         end
       end  
     rescue => e
       #Thread.current[:errors] << e.message
       puts '-------------------------------' , e.message
+      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
@@ -324,10 +330,12 @@ class RealPageSvcService < BaseService
       else
          #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]    
          puts '-----------------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
+         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
       end  
     rescue => e
       #Thread.current[:errors] << e.message
       puts '-------------------------------------', e.message
+      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 

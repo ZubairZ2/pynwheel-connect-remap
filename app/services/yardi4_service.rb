@@ -28,10 +28,12 @@ class Yardi4Service < BaseService
       else
         #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
         puts "Invalid credentials.Please enter correct one and try again."
+        ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
       end
     rescue => e
       #Thread.current[:errors] << e.message
       puts '------------------------' , e.message
+      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
 	end
     

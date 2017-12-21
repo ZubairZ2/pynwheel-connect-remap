@@ -54,12 +54,19 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   config.action_mailer.delivery_method = :smtp
 
-  # config.action_mailer.smtp_settings = {
-  #      :address => "smtp.gmail.com",
-  #      :port => 587,
-  #      :user_name => ENV['SMTP_USER_NAME'],
-  #      :password => ENV['SMTP_PASSWORD'],
-  #      :authentication => :plain,
-  #      :enable_starttls_auto => true
-  # }
+  config.action_mailer.smtp_settings = {
+       :address => "smtp.gmail.com",
+       :port => 587,
+       :user_name => ENV['SMTP_USER_NAME'],
+       :password => ENV['SMTP_PASSWORD'],
+       :authentication => :plain,
+       :enable_starttls_auto => true
+  }
 end
+Rails.application.config.middleware.use ExceptionNotification::Rack,
+  :email => {
+    #:deliver_with => :deliver, # Rails >= 4.2.1 do not need this option since it defaults to :deliver_now
+    :email_prefix => "Pynwheel",
+    :sender_address => %{"notifier" <notifier@pynwheel.com>},
+    :exception_recipients => %w{irfan.shahzad@intagleo.com,absar.mushtaq@intagleo.com}
+  }
