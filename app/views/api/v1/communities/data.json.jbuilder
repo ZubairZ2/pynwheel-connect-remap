@@ -39,6 +39,7 @@ json.apartments do
 	if @community.sitemap.present?
 		json.sitemap Rails.env.development? ? local_assets_base_url+@community.sitemap.image.url : @community.sitemap.image.url
 		json.sitemap_amenities @community.sitemap.amenities do |amenity|
+			json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
@@ -79,8 +80,10 @@ json.apartments do
 	  json.bathrooms floorplan.bathrooms
 	  json.square_feet floorplan.square_feet
 	  json.description floorplan.description
-	  json.image floorplan.image.present? ? floorplan.image.url : nil
+	  json.image floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil
+	  json.virtual_tour floorplan.virtual_tour_url
 	  json.floorplan_amenities floorplan.amenities do |amenity|
+	  	json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
@@ -94,6 +97,7 @@ json.apartments do
 	  json.range floorplate.range
 	  json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplate.image.url : floorplate.image.url) : nil
 	  json.floorplate_amenities floorplate.amenities do |amenity|
+	  	json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
 	  	json.name amenity.name
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
