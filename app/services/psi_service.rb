@@ -1,7 +1,7 @@
 class PsiService < BaseService
 	def perform
     begin
-      url = credentials.url
+        url = credentials.url
         password = credentials.password
         username = credentials.username
         property_id = credentials.property_id
@@ -40,10 +40,12 @@ class PsiService < BaseService
         else
           #Thread.current[:errors] <<  response["response"]["error"]["message"]  
           puts '-----------------------------' , response["response"]["error"]["message"]
+          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
     rescue => e
       #Thread.current[:errors] << e.message
       puts '----------------------------' , e.message
+      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
     fill_psi_pricing_details #if Thread.current[:errors].empty?
 	end
@@ -163,10 +165,12 @@ class PsiService < BaseService
       else
         #Thread.current[:errors] << response["response"]["error"]["message"]  
         puts '---------------------------' , response["response"]["error"]["message"] 
+        ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
       end
     rescue => e
       #Thread.current[:errors] << e.message
       puts '----------------------------' , e.message
+      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
   end
 

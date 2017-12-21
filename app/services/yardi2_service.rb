@@ -28,10 +28,12 @@ class Yardi2Service < BaseService
         else
           #Thread.current[:errors] << result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"]  
           puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
+          ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"],community_id: credentials.community_id})  
         end
       rescue => e
         #Thread.current[:errors] << e.message
         puts '----------------------------------', e.message
+        ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
 	end
 
