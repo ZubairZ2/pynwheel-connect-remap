@@ -148,6 +148,17 @@ class Community < ApplicationRecord
     self.save
   end
 
-
+  def make_address
+    address = ""
+    address = self.address if self.address.present?
+    address = (address.present? ? ( address + " , " + self.city ) : ( self.city )) if self.city.present?
+    address = (address.present? ? ( address + " , " + self.state ) : ( self.state )) if self.state.present?
+    address = (address.present? ? ( address + " , " + self.zip ) : ( self.zip )) if self.zip.present?
+    if address.present?
+      return address
+    else
+      return nil
+    end
+  end
 
 end
