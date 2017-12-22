@@ -48,8 +48,10 @@ json.apartments do
 	else
 		json.sitemap nil
 	end
+	units_floorplans = []
 	json.units @community.units.available_units do |unit|
 		if (unit.x_plot > 0 || unit.y_plot > 0) && unit.floorplan.present?
+			units_floorplans << unit.floorplan
 			json.marketing_name unit.marketing_name
 			json.rent unit.effective_rent
 			json.availability unit.availability
@@ -69,7 +71,7 @@ json.apartments do
 			json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
 		end
 	end
-	json.floorplans @community.floorplans do |floorplan|
+	json.floorplans units_floorplans.uniq do |floorplan|
 	  json.id floorplan.id
 	  json.provider_floorplan_id floorplan.provider_floorplan_id
 	  json.name floorplan.name
