@@ -6,17 +6,33 @@ class SiteMapUploader < CarrierWave::Uploader::Base
 
   # Choose what kind of storage to use for this uploader:
   #storage :file
-  resize_to_fill(1412, 932)
+  process :set_file_dimensions
+  #resize_to_fill(1412, 932) 
+  #process convert: 'png' ,:if => :svg?
   storage Rails.env.development? ? :file : :fog 
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
+  version :svg_for_metro , :if => :svg? do
+    process convert: 'png'
+    #resize_to_fill(1412, 932)
+    def full_filename (for_file = model.image.file) 
+      "#{timestamp}-#{super.chomp(File.extname(super)) + '.png'}" if original_filename.present? 
+    end 
+  end
 
-  version :ipad do
-    resize_to_fit(1024, 768)
+  def set_file_dimensions
+    if image?(file)
+      resize_to_fill(1412, 932)
+    end
   end
 
   def filename
+    #if svg?(file)
+      #@name ||= "#{timestamp}-#{super.chomp(File.extname(super)) + '.png'}" if original_filename.present?
+    #else
+      #@name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+    #end
     @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
   end
 
@@ -27,6 +43,15 @@ class SiteMapUploader < CarrierWave::Uploader::Base
 
   def store_dir
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+  end
+  protected
+
+  def svg?(file)
+    file.content_type == 'image/svg+xml'
+  end
+
+  def image?(file)
+    file.content_type.include?('png') || file.content_type.include?('jpg') || file.content_type.include?('jpeg')
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:

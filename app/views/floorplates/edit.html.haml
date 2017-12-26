@@ -25,7 +25,6 @@
           = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"
 
 :javascript
-
   $("#floorplate_image").change(function(){
-      readURL(this);
+    readImageIncludingSVG(this);
   });

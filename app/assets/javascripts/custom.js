@@ -166,6 +166,27 @@ function readURL(input) {
     }
 }
 
+// preview image function including svg
+function readImageIncludingSVG(input) {  
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" || input.files[0].type == "image/svg+xml"){ 
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#preview-image').attr('src', e.target.result);
+              $('#preview-image').parent().attr('href', e.target.result);
+          }
+
+          reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $(input).val('');
+        $('#image-and-svg-upload-warning').modal('show');
+        //console.log($(input).val());
+      }
+    }
+}
+
 $(document).ready(function () {
     showDataTables();
     var data_provider = $("#community_data_provider").val();
