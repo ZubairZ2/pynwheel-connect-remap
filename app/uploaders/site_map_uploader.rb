@@ -17,7 +17,8 @@ class SiteMapUploader < CarrierWave::Uploader::Base
     process convert: 'png'
     #resize_to_fill(1412, 932)
     def full_filename (for_file = model.image.file) 
-      "#{timestamp}-#{super.chomp(File.extname(super)) + '.png'}" if original_filename.present? 
+      #{}"#{timestamp}-#{model.id.to_s + '.png'}"  
+      super.chomp(File.extname(super)) + '.jpg'
     end 
   end
 
