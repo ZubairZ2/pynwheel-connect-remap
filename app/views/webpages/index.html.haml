@@ -120,7 +120,7 @@
         .image-map#map{:style => "position: relative;"}
           .panzoom
             - if @community.has_floorplates?
-              - @community.floorplates.order(:number).each do |floorplate|
+              - @community.floorplates.order('number ASC').each do |floorplate|
                 = image_tag floorplate.image.url,:class=>"floorplate-image #{floorplate.id == @floorplate.id ? '' : 'hidden'}",:id=>"f_#{floorplate.number}"
             - else
               %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.sitemap.image.url : "/assets/default.jpeg"}", :title => ""}/
