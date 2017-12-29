@@ -102,6 +102,8 @@ $(document).ready(function(){
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function(){
       console.log('clicking on anchor tag');
+      var $section = $('#map');
+      $panzoom = $section.find('.panzoom').panzoom("reset");
       var floorplate_number_for_showing_image = $(this).attr('id');
       if (floorplate_number_for_showing_image !=  current_floorplate_number && !$(this).hasClass('disabled')){
         $('.floorplate-image').addClass('hidden');
@@ -116,6 +118,65 @@ $(document).ready(function(){
     $('.filter-label').click(function(){
       $(this).parent().find('input').click();
     });
+    ////////////////////////////////////////////
+    /*panzoom functionality*/
+    var $section = $('#map');
+    $panzoom = $section.find('.panzoom').panzoom({
+        $zoomIn: $section.find(".zoom-in"),
+        $zoomOut: $section.find(".zoom-out"),
+        $reset: $section.find(".reset"),
+        $set: $section.find(".parent"),
+        contain: 'automatic',
+        minScale: 0.7,
+      });
+
+    //Wait for the image to load
+    //Get container and image
+        var image = $section.find('.panzoom');
+        var container = $('#map');
+
+        //Get container dimensions
+        var container_height = container.height();
+        var container_width = container.width();
+
+        //Get image dimensions
+        var image_height = image.height();
+        var image_width = image.width();
+
+        //Calculate the center of image since origin is at x:50% y:50%
+        var image_center_left = image_width / 2.0;
+        var image_center_top = image_height / 2.0;
+
+        //Calculate scaling factor
+        var zoom_factor;
+
+        //Check to determine whether to stretch along width or heigh
+        if(image_height > image_width)
+            zoom_factor = container_height / image_height;
+        else
+            zoom_factor = container_width / image_width;
+
+        //Zoom by zoom_factor
+        console.log("******************"+zoom_factor+"*****************");
+        $panzoom.panzoom("zoom", zoom_factor, {animate: false});
+
+        //Calculate new image dimensions after zoom
+        image_width = image_width * zoom_factor;
+        image_height = image_height * zoom_factor;
+
+        //Calculate offset of the image after zoom
+        var image_offset_left = image_center_left - (image_width / 2.0);
+        var image_offset_top = image_center_top - (image_height / 2.0);
+
+        //Calculate desired offset for image
+        var new_offset_left = (container_width - image_width) / 2.0;
+        var new_offset_top = (container_height - image_height) / 2.0;
+
+        //Pan to set desired offset for image
+        var pan_left = new_offset_left - image_offset_left;
+        var pan_top = new_offset_top - image_offset_top;
+        console.log("***************"+pan_top+"******************");
+        $panzoom.panzoom("pan", pan_left, pan_top);
  } // if condition ending curl
 });
 
