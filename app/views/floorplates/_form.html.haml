@@ -22,7 +22,7 @@
       .col-sm-6.col-lg-6.col-md-3.col-xs-12
         = f.text_field :range, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"Range",:maxlength=>"4"
         %small Range
-.form-group
+.form-group.hidden
   %label.col-sm-12.col-lg-12.col-md-3.col-xs-12.control-label
     %p.text-warning
       Please upload image or svg of dimensions 1412x932 for best results.      
