@@ -15,7 +15,8 @@ class WebpagesController < ActionController::Base
 	
 		if @community.has_floorplates?
 		  @floorplate = @community.floorplates.first
-		  @amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
+		  #@amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
+		  @amenities =  @community.floorplates.joins("LEFT OUTER JOIN amenities ON amenities.amenityable_id = floorplates.id").collect{|c| c.amenities}
 		  @amenities = @amenities.flatten
 		  @floorplate_numbers = @community.floorplates.map(&:number) 
 		else
