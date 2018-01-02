@@ -1845,7 +1845,17 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 
 }
 .custom-icon{
-	font-size: 13px; color: #ffffff; width: 25px; height: 25px; border-radius: 100%; background-color: #d40e0e; text-align: center; display: inline-block; line-height: 24px;
+	font-size: 13px;     
+	border: 2px solid #fff;
+    box-shadow: 1px 1px 1px 1px #17171769;
+    color: #ffffff; 
+    width: 25px; 
+    height: 25px; 
+    border-radius: 100%; 
+    background-color: #d40e0e; 
+    text-align: center; 
+    display: inline-block; 
+    line-height: 24px;
 }
 .custom-icon-black{
 	font-size: 20px;
@@ -2102,6 +2112,62 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 
 	
 }
+
+@media (max-width:1366px){
+	.select-list .checkbox{
+		padding-bottom: 5px;
+	}
+	.select-list .checkbox:last-child{
+		padding-bottom: 0;
+	}
+	.bg-bottom:before{
+		display: none;
+	}
+	.bg-bottom:after{
+		display: none;
+	}
+	.list-select h4{
+		margin: 12px 0;
+	}
+	.select-price .form-group{
+		padding-bottom: 15px;
+	}
+	.view-btn{
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+	#unitModal .modal-dialog{
+		max-width: 1000px !important;
+	}
+	.plane-details ul{
+		margin: 0px 0 10px 0;
+	}
+	.plane-details ul li{
+		padding: 10px 0px 10px 10px;
+	}
+	.plane-details .name{
+		padding: 10px 30px;
+	}
+	.price-count{
+		padding: 10px 30px;	
+	}
+	.date-select{
+		margin: 5px 0;
+	}
+	.plane-details .form-group{
+		padding-bottom: 5px;
+	}
+	.available-now{
+		margin: 10px;
+	}
+	.btn-apply a{
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+	.btn-apply{
+		margin: 20px 0 7px 0;
+	}
+}
 /*@media (max-width:1040px){
 	.image-map img{
 		margin-top: 60px;
@@ -2142,8 +2208,15 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	.tab-content-new{
 		padding:15px !important;
 	}
-	
-
+	.plane-details{
+		margin-right: 0;
+	}
+	.plan-image-pop{
+		margin-top: 30px;
+	}
+	#unitModal .modal-dialog{
+		max-width: 96% !important;
+	}
 	
 }
 @media (max-width:850px){
