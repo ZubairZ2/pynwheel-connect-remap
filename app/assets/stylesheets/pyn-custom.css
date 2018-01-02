@@ -2084,6 +2084,19 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .view-btn:hover{
 	background-color: #008aff;
 }
+.popover h3.popover-title{
+	margin: 0px;
+	font-size: 16px;
+}
+.popupover-image{
+	height: 125px;
+	overflow: hidden;
+	margin-bottom: 10px;
+}
+.popupover-image img{
+	width: 100%;
+	height: 100%;
+}
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
 	#s-theme .row .col-lg-3{

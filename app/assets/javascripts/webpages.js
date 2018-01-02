@@ -7,6 +7,10 @@ $(document).ready(function(){
       $('#leasing-start-date').focus();
     });
     ////////////////////////////////////////////////
+    $('.panzoom a').on('mousedown touchstart', function( e ) {
+      e.stopImmediatePropagation();
+    });
+    ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function(e) {
       $(this).find('#unit-marketing-name').html("APARTMENT: "+$(e.relatedTarget).data('unit-marketing-name'));
