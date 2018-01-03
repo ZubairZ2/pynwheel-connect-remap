@@ -2360,9 +2360,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	}
 	.image-map{
 		overflow:scroll;
+		height: 400px;
 	}
 	.image-map img{
-		height: auto;
+		/*height: auto;*/
 	}
 	.custom-icon{
 		width: 14px;

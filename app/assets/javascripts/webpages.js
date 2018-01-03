@@ -106,7 +106,7 @@ $(document).ready(function(){
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function(){
       console.log('clicking on anchor tag');
-      var $section = $('#map');
+      var $section = $('#panzomm-container');
       $panzoom = $section.find('.panzoom').panzoom("reset");
       var floorplate_number_for_showing_image = $(this).attr('id');
       if (floorplate_number_for_showing_image !=  current_floorplate_number && !$(this).hasClass('disabled')){
@@ -124,7 +124,7 @@ $(document).ready(function(){
     });
     ////////////////////////////////////////////
     /*panzoom functionality*/
-    var $section = $('#map');
+    var $section = $('#panzomm-container');
     $panzoom = $section.find('.panzoom').panzoom({
         $zoomIn: $section.find(".zoom-in"),
         $zoomOut: $section.find(".zoom-out"),
@@ -150,8 +150,8 @@ $(document).ready(function(){
         $('#popover-available-date').html($(this).data('available-date'));
         $('#popover-price').html(('$'+$(this).data('market-rent')));
 
-        var new_dx = parseInt(event.pageX) - parseInt($('#map').offset().left) + parseInt($('#map').scrollLeft());
-        var new_dy = parseInt(event.pageY) - parseInt($('#map').offset().top) + parseInt($('#map').scrollTop());
+        var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
+        var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
         $('#marker-popover').css({left: (new_dx+100)+"px", top: (new_dy-120)+"px"});
         $('#marker-popover').removeClass('hidden');
       })
