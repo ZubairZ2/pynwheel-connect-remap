@@ -137,6 +137,7 @@ $(document).ready(function(){
     /*popover*/
     $(".marker" )
       .mouseenter(function(event) {
+        $('#popover-marketing-name').html("APARTMENT: <b>"+$(this).data('unit-marketing-name')+"</b>");
         if ($(this).data('floorplan-image') != ''){
           $('#media-object').attr('src',$(this).data('floorplan-image'));
         }
