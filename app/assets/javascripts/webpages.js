@@ -133,8 +133,68 @@ $(document).ready(function(){
         contain: 'automatic',
         minScale: 0.7,
       });
+    /////////////////////////////////////////////
+    /*popover*/
+    $(".marker" )
+      .mouseenter(function(event) {
+        if ($(this).data('floorplan-image') != ''){
+          $('#media-object').attr('src',$(this).data('floorplan-image'));
+        }
+        else{
+         $('#media-object').attr('src','/assets/default.jpeg'); 
+        }
+        $('#popover-square-feet').html($(this).data('square-feet'));
+        $('#popover-bathrooms').html($(this).data('bathrooms'));
+        $('#popover-bedrooms').html($(this).data('bedrooms'));
+        $('#popover-available-date').html($(this).data('available-date'));
+        $('#popover-price').html(('$'+$(this).data('market-rent')));
 
+        var new_dx = parseInt(event.pageX) - parseInt($('#map').offset().left) + parseInt($('#map').scrollLeft());
+        var new_dy = parseInt(event.pageY) - parseInt($('#map').offset().top) + parseInt($('#map').scrollTop());
+        $('#marker-popover').css({left: (new_dx+100)+"px", top: (new_dy-120)+"px"});
+        $('#marker-popover').removeClass('hidden');
+      })
+      .mouseleave(function() {
+        $('#marker-popover').addClass('hidden');
+      });
+    ///////////////////////////////////////////////
+    /*adjusting markers according to screen size*/
+    var in_browser_height = 0;
+    var in_browser_width = 0;
+    $('.floorplate-image').each(function(){
+      console.log("Image height: "+$(this).height());
+      console.log("In browser height: "+$(this).parent().height());
+      in_browser_height = $(this).parent().height();
+      console.log("In browser width: "+$(this).parent().width());
+      in_browser_width = $(this).parent().width();
+    });
+
+    var height_ratio = 932/parseFloat(in_browser_height);
+    var width_ratio = 1412/parseFloat(in_browser_width);
     
+    $('.marker').each(function(){
+      var x_plot = parseFloat($(this).data('unit-x-plot'));
+      var y_plot = parseFloat($(this).data('unit-y-plot'));
+      current_left = x_plot/width_ratio;
+      current_top = y_plot/height_ratio;
+      $(this).css({"left": current_left,"top": current_top});
+    }); 
+    
+    $('.amenity-marker').each(function(){
+      var x_plot = parseFloat($(this).data('amenity-x-plot'));
+      var y_plot = parseFloat($(this).data('amenity-y-plot'));
+      current_left = x_plot/width_ratio;
+      current_top = y_plot/height_ratio;
+      $(this).css({"left": current_left,"top": current_top});
+    });
+
+    $('.sitemap-amenity-marker').each(function(){
+      var x_plot = parseFloat($(this).data('amenity-x-plot'));
+      var y_plot = parseFloat($(this).data('amenity-y-plot'));
+      current_left = x_plot/width_ratio;
+      current_top = y_plot/height_ratio;
+      $(this).css({"left": current_left,"top": current_top});
+    });   
  } // if condition ending curl
 });
 

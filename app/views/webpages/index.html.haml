@@ -202,82 +202,30 @@
                       %i.fa.fa-heart-o
                     %a.hide{:href => "##"}
                       %i.fa.fa-heart
-    / jQuery 3
-    / %script{:src => "js/jquery.min.js"}
-    / %script{:src => "js/bootstrap.min.js"}
-    / / Morris.js charts
-    / %script{:src => "js/pyn.min.js"}
-    / %script{:src => "js/bootstrap-slider.js"}
-    / %script{:src => "js/jquery.mCustomScrollbar.concat.min.js"}
+#marker-popover.media.hidden
+  .popupover-image
+    %img#media-object{:alt => "Sample Image", :src => "/assets/default.jpeg"}/
+  .media-body
+    %p
+      %b#popover-square-feet
+      Square Feet
+    %p
+      %b#popover-bathrooms
+      Bathrooms
+    %p
+      %b#popover-bedrooms
+      Bedrooms
+    %p
+      %b#popover-available-date
+      Available Date
+    %p
+      %b#popover-price
+      Available  
 :javascript
-  var in_browser_height = 0;
-  var in_browser_width = 0;
-  $('.floorplate-image').each(function(){
-    console.log("Image height: "+$(this).height());
-    console.log("In browser height: "+$(this).parent().height());
-    in_browser_height = $(this).parent().height();
-    console.log("In browser width: "+$(this).parent().width());
-    in_browser_width = $(this).parent().width();
-  });
-
-  var height_ratio = 932/parseFloat(in_browser_height);
-  var width_ratio = 1412/parseFloat(in_browser_width);
-  
-  $('.marker').each(function(){
-    var x_plot = parseFloat($(this).data('unit-x-plot'));
-    var y_plot = parseFloat($(this).data('unit-y-plot'));
-    current_left = x_plot/width_ratio;
-    current_top = y_plot/height_ratio;
-    $(this).css({"left": current_left,"top": current_top});
-  }); 
-  
-  $('.amenity-marker').each(function(){
-    var x_plot = parseFloat($(this).data('amenity-x-plot'));
-    var y_plot = parseFloat($(this).data('amenity-y-plot'));
-    current_left = x_plot/width_ratio;
-    current_top = y_plot/height_ratio;
-    $(this).css({"left": current_left,"top": current_top});
-  });
-
-  $('.sitemap-amenity-marker').each(function(){
-    var x_plot = parseFloat($(this).data('amenity-x-plot'));
-    var y_plot = parseFloat($(this).data('amenity-y-plot'));
-    current_left = x_plot/width_ratio;
-    current_top = y_plot/height_ratio;
-    $(this).css({"left": current_left,"top": current_top});
-  });
-
-  $('.marker').popover({
-    placement : 'right',
-    trigger : 'hover',
-    html : true
-  });
-
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
-  (function($){
-    $(window).on("load",function(){
-        
-        $("#content-3").mCustomScrollbar({
-            scrollButtons:{enable:true},
-            theme:"light-thick",
-            scrollbarPosition:"outside"
-        });
-      
-        
-    });
-  })(jQuery);
-
-  $('#clickme').click(function() {
-      var $slider = $('.mydiv');
-    //$('.right-side').css('margin-left', '0');
-      $slider.animate({
-        left: parseInt($slider.css('left'),10) == -331 ?
-         0 : -331
-      });
-    });
-
+  
   var has_floorplate = "#{@community.has_floorplates?}";
   var current_floorplate_number = "#{@floorplate.present? ? @floorplate.number : 0}";
   var floorplate_numbers = "#{@floorplate_numbers.present? ? @floorplate_numbers : []}";
