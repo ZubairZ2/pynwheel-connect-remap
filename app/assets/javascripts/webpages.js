@@ -135,29 +135,31 @@ $(document).ready(function(){
       });
     /////////////////////////////////////////////
     /*popover*/
-    $(".marker" )
-      .mouseenter(function(event) {
-        $('#popover-marketing-name').html("APARTMENT: <b>"+$(this).data('unit-marketing-name')+"</b>");
-        if ($(this).data('floorplan-image') != ''){
-          $('#media-object').attr('src',$(this).data('floorplan-image'));
-        }
-        else{
-         $('#media-object').attr('src','/assets/default.jpeg'); 
-        }
-        $('#popover-square-feet').html($(this).data('square-feet'));
-        $('#popover-bathrooms').html($(this).data('bathrooms'));
-        $('#popover-bedrooms').html($(this).data('bedrooms'));
-        $('#popover-available-date').html($(this).data('available-date'));
-        $('#popover-price').html(('$'+$(this).data('market-rent')));
+    if (!hasTouch()){
+      $(".marker" )
+        .mouseenter(function(event) {
+          $('#popover-marketing-name').html("APARTMENT: <b>"+$(this).data('unit-marketing-name')+"</b>");
+          if ($(this).data('floorplan-image') != ''){
+            $('#media-object').attr('src',$(this).data('floorplan-image'));
+          }
+          else{
+           $('#media-object').attr('src','/assets/default.jpeg'); 
+          }
+          $('#popover-square-feet').html($(this).data('square-feet'));
+          $('#popover-bathrooms').html($(this).data('bathrooms'));
+          $('#popover-bedrooms').html($(this).data('bedrooms'));
+          $('#popover-available-date').html($(this).data('available-date'));
+          $('#popover-price').html(('$'+$(this).data('market-rent')));
 
-        var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
-        var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
-        $('#marker-popover').css({left: (new_dx+100)+"px", top: (new_dy-120)+"px"});
-        $('#marker-popover').removeClass('hidden');
-      })
-      .mouseleave(function() {
-        $('#marker-popover').addClass('hidden');
-      });
+          var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
+          var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
+          $('#marker-popover').css({left: (new_dx+100)+"px", top: (new_dy-120)+"px"});
+          $('#marker-popover').removeClass('hidden');
+        })
+        .mouseleave(function() {
+          $('#marker-popover').addClass('hidden');
+        });
+      }
     ///////////////////////////////////////////////
     /*adjusting markers according to screen size*/
     var in_browser_height = 0;
@@ -493,4 +495,8 @@ function set_realpagesvc_url(element){
   //http://localhost:3000/communities/25/webpages/apply_now?MoveInDate=12/15/2017&UnitId=346&SearchUrl=https%3A//localhost:3000#k=70697
   var url = apply_now_url+"?MoveInDate="+$('#leasing-start-date').val()+"&UnitId="+$(element).data('unit-provider-id')+"&SearchUrl="+redirect_url;
   window.open(url,'_blank');
+}
+
+function hasTouch() {
+ return 'ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 }
