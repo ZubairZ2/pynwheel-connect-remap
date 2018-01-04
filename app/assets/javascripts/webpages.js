@@ -1,6 +1,7 @@
 $(document).ready(function(){
   if ($('.is-webpage')[0]){
     $('#clickme').click(function() {
+      $("#clickme").html($("#clickme").html() == 'Select Filter' ? 'Hide Filter' : 'Select Filter');
       var $slider = $('.mydiv');
     //$('.right-side').css('margin-left', '0');
       $slider.animate({
