@@ -2366,8 +2366,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 		/*height: auto;*/
 	}
 	.custom-icon{
-		width: 14px;
-		height: 14px;
+		width: 20px;
+		height: 20px;
+		line-height: 14px;
 	}
 	.custom-icon-black{
 		font-size: 16px;

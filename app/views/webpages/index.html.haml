@@ -202,24 +202,28 @@
                     %a.hide{:href => "##"}
                       %i.fa.fa-heart
 #marker-popover.media.hidden
-  %p#popover-marketing-name
+  %b#popover-marketing-name
+  %p#popover-floorplan
   .popupover-image
     %img#media-object{:alt => "Sample Image", :src => "/assets/default.jpeg"}/
   .media-body
     %p
       %b#popover-square-feet
-      Square Feet
+      %small
+        Square Feet
     %p
       %b#popover-bathrooms
-      Bathrooms
+      %small
+        Bathrooms
     %p
       %b#popover-bedrooms
-      Bedrooms
+      %small
+        Bedrooms
     %p
       %b#popover-available-date
-      Available Date
+      %small Available
     %p
-      %b#popover-price
+      .btn.btn-sm.btn-primary.btn-block#popover-price
        
 :javascript
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
