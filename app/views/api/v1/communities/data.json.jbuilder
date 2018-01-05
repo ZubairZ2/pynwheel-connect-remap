@@ -37,7 +37,8 @@ json.apartments do
 		json.map_type "sitemap"
 	end
 	if @community.sitemap.present?
-		json.sitemap Rails.env.development? ? local_assets_base_url+@community.sitemap.image.url : @community.sitemap.image.url
+		image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
+		json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
 		json.sitemap_amenities @community.sitemap.amenities do |amenity|
 			json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
 	  	json.name amenity.name
@@ -93,11 +94,12 @@ json.apartments do
 	  end
 	end
 	json.floorplates @community.floorplates.order("number DESC") do |floorplate|
+		image_url = floorplate.image.url(:svg_for_metro).present? ? floorplate.image.url(:svg_for_metro) : floorplate.image.url
 	  json.id floorplate.id
 	  json.number floorplate.number
 	  json.name floorplate.name
 	  json.range floorplate.range
-	  json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplate.image.url : floorplate.image.url) : nil
+	  json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+image_url : floorplate.image_url) : nil
 	  json.floorplate_amenities floorplate.amenities do |amenity|
 	  	json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
 	  	json.name amenity.name
