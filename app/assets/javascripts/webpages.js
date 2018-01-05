@@ -1,10 +1,23 @@
 $(document).ready(function(){
   if ($('.is-webpage')[0]){
+    $('#clickme').click(function() {
+      $("#clickme").html($("#clickme").html() == 'Select Filter' ? 'Hide Filter' : 'Select Filter');
+      var $slider = $('.mydiv');
+    //$('.right-side').css('margin-left', '0');
+      $slider.animate({
+        left: parseInt($slider.css('left'),10) == -331 ?
+         0 : -331
+      });
+    });
     ////////////////////////////////////////////////
     $('#leasing-start-date-icon').click(function(event){
       event.preventDefault();
       console.log('********************');
       $('#leasing-start-date').focus();
+    });
+    ////////////////////////////////////////////////
+    $('.panzoom a').on('mousedown touchstart', function( e ) {
+      e.stopImmediatePropagation();
     });
     ////////////////////////////////////////////////
     /* unit modal*/
@@ -102,7 +115,7 @@ $(document).ready(function(){
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function(){
       console.log('clicking on anchor tag');
-      var $section = $('#map');
+      var $section = $('#panzomm-container');
       $panzoom = $section.find('.panzoom').panzoom("reset");
       var floorplate_number_for_showing_image = $(this).attr('id');
       if (floorplate_number_for_showing_image !=  current_floorplate_number && !$(this).hasClass('disabled')){
@@ -120,7 +133,7 @@ $(document).ready(function(){
     });
     ////////////////////////////////////////////
     /*panzoom functionality*/
-    var $section = $('#map');
+    var $section = $('#panzomm-container');
     $panzoom = $section.find('.panzoom').panzoom({
         $zoomIn: $section.find(".zoom-in"),
         $zoomOut: $section.find(".zoom-out"),
@@ -129,54 +142,72 @@ $(document).ready(function(){
         contain: 'automatic',
         minScale: 0.7,
       });
+    /////////////////////////////////////////////
+    /*popover*/
+    if (!hasTouch()){
+      $(".marker" )
+        .mouseenter(function(event) {
+          $('#popover-marketing-name').html("APARTMENT: <b>"+$(this).data('unit-marketing-name')+"</b>");
+          $('#popover-floorplan').html($(this).data('floorplan-name'))
+          if ($(this).data('floorplan-image') != ''){
+            $('#media-object').attr('src',$(this).data('floorplan-image'));
+          }
+          else{
+           $('#media-object').attr('src','/assets/default.jpeg'); 
+          }
+          $('#popover-square-feet').html($(this).data('square-feet'));
+          $('#popover-bathrooms').html($(this).data('bathrooms'));
+          $('#popover-bedrooms').html($(this).data('bedrooms'));
+          $('#popover-available-date').html($(this).data('available-date'));
+          $('#popover-price').html(('$'+$(this).data('market-rent')));
 
-    //Wait for the image to load
-    //Get container and image
-        var image = $section.find('.panzoom');
-        var container = $('#map');
+          var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
+          var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
+          $('#marker-popover').css({left: (new_dx+100)+"px", top: (new_dy-120)+"px"});
+          $('#marker-popover').removeClass('hidden');
+        })
+        .mouseleave(function() {
+          $('#marker-popover').addClass('hidden');
+        });
+      }
+    ///////////////////////////////////////////////
+    /*adjusting markers according to screen size*/
+    var in_browser_height = 0;
+    var in_browser_width = 0;
+    $('.floorplate-image').each(function(){
+      console.log("Image height: "+$(this).height());
+      console.log("In browser height: "+$(this).parent().height());
+      in_browser_height = $(this).parent().height();
+      console.log("In browser width: "+$(this).parent().width());
+      in_browser_width = $(this).parent().width();
+    });
 
-        //Get container dimensions
-        var container_height = container.height();
-        var container_width = container.width();
+    var height_ratio = 932/parseFloat(in_browser_height);
+    var width_ratio = 1412/parseFloat(in_browser_width);
+    
+    $('.marker').each(function(){
+      var x_plot = parseFloat($(this).data('unit-x-plot'));
+      var y_plot = parseFloat($(this).data('unit-y-plot'));
+      current_left = x_plot/width_ratio;
+      current_top = y_plot/height_ratio;
+      $(this).css({"left": current_left,"top": current_top});
+    }); 
+    
+    $('.amenity-marker').each(function(){
+      var x_plot = parseFloat($(this).data('amenity-x-plot'));
+      var y_plot = parseFloat($(this).data('amenity-y-plot'));
+      current_left = x_plot/width_ratio;
+      current_top = y_plot/height_ratio;
+      $(this).css({"left": current_left,"top": current_top});
+    });
 
-        //Get image dimensions
-        var image_height = image.height();
-        var image_width = image.width();
-
-        //Calculate the center of image since origin is at x:50% y:50%
-        var image_center_left = image_width / 2.0;
-        var image_center_top = image_height / 2.0;
-
-        //Calculate scaling factor
-        var zoom_factor;
-
-        //Check to determine whether to stretch along width or heigh
-        if(image_height > image_width)
-            zoom_factor = container_height / image_height;
-        else
-            zoom_factor = container_width / image_width;
-
-        //Zoom by zoom_factor
-        console.log("******************"+zoom_factor+"*****************");
-        $panzoom.panzoom("zoom", zoom_factor, {animate: false});
-
-        //Calculate new image dimensions after zoom
-        image_width = image_width * zoom_factor;
-        image_height = image_height * zoom_factor;
-
-        //Calculate offset of the image after zoom
-        var image_offset_left = image_center_left - (image_width / 2.0);
-        var image_offset_top = image_center_top - (image_height / 2.0);
-
-        //Calculate desired offset for image
-        var new_offset_left = (container_width - image_width) / 2.0;
-        var new_offset_top = (container_height - image_height) / 2.0;
-
-        //Pan to set desired offset for image
-        var pan_left = new_offset_left - image_offset_left;
-        var pan_top = new_offset_top - image_offset_top;
-        console.log("***************"+pan_top+"******************");
-        $panzoom.panzoom("pan", pan_left, pan_top);
+    $('.sitemap-amenity-marker').each(function(){
+      var x_plot = parseFloat($(this).data('amenity-x-plot'));
+      var y_plot = parseFloat($(this).data('amenity-y-plot'));
+      current_left = x_plot/width_ratio;
+      current_top = y_plot/height_ratio;
+      $(this).css({"left": current_left,"top": current_top});
+    });   
  } // if condition ending curl
 });
 
@@ -474,4 +505,8 @@ function set_realpagesvc_url(element){
   //http://localhost:3000/communities/25/webpages/apply_now?MoveInDate=12/15/2017&UnitId=346&SearchUrl=https%3A//localhost:3000#k=70697
   var url = apply_now_url+"?MoveInDate="+$('#leasing-start-date').val()+"&UnitId="+$(element).data('unit-provider-id')+"&SearchUrl="+redirect_url;
   window.open(url,'_blank');
+}
+
+function hasTouch() {
+ return 'ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 }

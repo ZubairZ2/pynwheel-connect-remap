@@ -115,36 +115,35 @@
                           = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number
                           
                     
-      .right-side.parent
+      .right-side.parent#panzomm-container
         / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
-        .image-map#map{:style => "position: relative;"}
-          .panzoom
+        .image-map.panzoom#map{:style => "position: relative;"}        
+          - if @community.has_floorplates?
+            - @community.floorplates.order('number ASC').each do |floorplate|
+              = image_tag floorplate.image.url,:class=>"floorplate-image #{floorplate.id == @floorplate.id ? '' : 'hidden'}",:id=>"f_#{floorplate.number}"
+          - else
+            %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.sitemap.image.url : "/assets/default.jpeg"}", :title => ""}/
+            =# image_tag "410.svg",:height=>"400",:width=>"400"
+          - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
+          - units.each do |unit|
+            - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and !unit.floorplan.nil?
+              = link_to "<span class='custom-icon'>#{unit_count(@units_in_xy_group,unit.x_plot,unit.y_plot)}</span>".html_safe, "##", :class => "marker", :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community.data_provider,"data-website"=>@community.website,"data-community-property-id"=>(@community.credential.property_id.present? ? @community.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.effective_rent,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil,"data-lease-term"=>unit.lease_term,"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot
+          - if @amenities.present?
             - if @community.has_floorplates?
-              - @community.floorplates.order('number ASC').each do |floorplate|
-                = image_tag floorplate.image.url,:class=>"floorplate-image #{floorplate.id == @floorplate.id ? '' : 'hidden'}",:id=>"f_#{floorplate.number}"
+              - @amenities.each do |amenity|
+                - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
+                  = link_to "<i class='fa fa-star custom-icon-black'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{find_floorplate_number(amenity.amenityable_id)} amenity-marker hidden","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot
             - else
-              %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.sitemap.image.url : "/assets/default.jpeg"}", :title => ""}/
-              =# image_tag "410.svg",:height=>"400",:width=>"400"
-            - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
-            - units.each do |unit|
-              - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and !unit.floorplan.nil?
-                = link_to "<span class='custom-icon'>#{unit_count(@units_in_xy_group,unit.x_plot,unit.y_plot)}</span>".html_safe, "##", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community.data_provider,"data-website"=>@community.website,"data-community-property-id"=>(@community.credential.property_id.present? ? @community.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.effective_rent,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil,"data-lease-term"=>unit.lease_term,"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot
-            - if @amenities.present?
-              - if @community.has_floorplates?
-                - @amenities.each do |amenity|
-                  - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                    = link_to "<i class='fa fa-star custom-icon-black'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{find_floorplate_number(amenity.amenityable_id)} amenity-marker hidden","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot
-              - else
-                - @amenities.each do |amenity|
-                  - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                    = link_to "<i class='fa fa-star custom-icon-black'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot
-          .buttons{:style=>"position: absolute; right: 10px; top: 5px;"}
-            %button.btn.btn-sm.btn-primary.zoom-in
-              %i.fa.fa-plus
-            %button.btn.btn-sm.btn-primary.zoom-out 
-              %i.fa.fa-minus
-            %button.btn.btn-sm.btn-primary.reset
-              %i.fa.fa-refresh          
+              - @amenities.each do |amenity|
+                - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
+                  = link_to "<i class='fa fa-star custom-icon-black'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot
+        .buttons{:style=>"position: absolute; right: 10px; top: 5px;"}
+          %button.btn.btn-sm.btn-primary.zoom-in
+            %i.fa.fa-plus
+          %button.btn.btn-sm.btn-primary.zoom-out 
+            %i.fa.fa-minus
+          %button.btn.btn-sm.btn-primary.reset
+            %i.fa.fa-refresh          
     / /.content
     / Trigger the modal with a button
     / Modal
@@ -202,78 +201,35 @@
                       %i.fa.fa-heart-o
                     %a.hide{:href => "##"}
                       %i.fa.fa-heart
-    / jQuery 3
-    / %script{:src => "js/jquery.min.js"}
-    / %script{:src => "js/bootstrap.min.js"}
-    / / Morris.js charts
-    / %script{:src => "js/pyn.min.js"}
-    / %script{:src => "js/bootstrap-slider.js"}
-    / %script{:src => "js/jquery.mCustomScrollbar.concat.min.js"}
+#marker-popover.media.hidden
+  %b#popover-marketing-name
+  %p#popover-floorplan
+  .popupover-image
+    %img#media-object{:alt => "Sample Image", :src => "/assets/default.jpeg"}/
+  .media-body
+    %p
+      %b#popover-square-feet
+      %small
+        Square Feet
+    %p
+      %b#popover-bathrooms
+      %small
+        Bathrooms
+    %p
+      %b#popover-bedrooms
+      %small
+        Bedrooms
+    %p
+      %b#popover-available-date
+      %small Available
+    %p
+      .btn.btn-sm.btn-primary.btn-block#popover-price
+       
 :javascript
-  var in_browser_height = 0;
-  var in_browser_width = 0;
-  $('.floorplate-image').each(function(){
-    console.log("Image height: "+$(this).height());
-    console.log("In browser height: "+$(this).parent().height());
-    in_browser_height = $(this).parent().height();
-    console.log("In browser width: "+$(this).parent().width());
-    in_browser_width = $(this).parent().width();
-  });
-
-  var height_ratio = 932/parseFloat(in_browser_height);
-  var width_ratio = 1412/parseFloat(in_browser_width);
-  
-  $('.marker').each(function(){
-    var x_plot = parseFloat($(this).data('unit-x-plot'));
-    var y_plot = parseFloat($(this).data('unit-y-plot'));
-    current_left = x_plot/width_ratio;
-    current_top = y_plot/height_ratio;
-    $(this).css({"left": current_left,"top": current_top});
-  }); 
-  
-  $('.amenity-marker').each(function(){
-    var x_plot = parseFloat($(this).data('amenity-x-plot'));
-    var y_plot = parseFloat($(this).data('amenity-y-plot'));
-    current_left = x_plot/width_ratio;
-    current_top = y_plot/height_ratio;
-    $(this).css({"left": current_left,"top": current_top});
-  });
-
-  $('.sitemap-amenity-marker').each(function(){
-    var x_plot = parseFloat($(this).data('amenity-x-plot'));
-    var y_plot = parseFloat($(this).data('amenity-y-plot'));
-    current_left = x_plot/width_ratio;
-    current_top = y_plot/height_ratio;
-    $(this).css({"left": current_left,"top": current_top});
-  });
-
-
-
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
-  (function($){
-    $(window).on("load",function(){
-        
-        $("#content-3").mCustomScrollbar({
-            scrollButtons:{enable:true},
-            theme:"light-thick",
-            scrollbarPosition:"outside"
-        });
-      
-        
-    });
-  })(jQuery);
-
-  $('#clickme').click(function() {
-      var $slider = $('.mydiv');
-    //$('.right-side').css('margin-left', '0');
-      $slider.animate({
-        left: parseInt($slider.css('left'),10) == -331 ?
-         0 : -331
-      });
-    });
-
+  
   var has_floorplate = "#{@community.has_floorplates?}";
   var current_floorplate_number = "#{@floorplate.present? ? @floorplate.number : 0}";
   var floorplate_numbers = "#{@floorplate_numbers.present? ? @floorplate_numbers : []}";
