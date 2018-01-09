@@ -110,7 +110,7 @@
                 #content-3.content
                   .select-floor
                     %ul
-                      - @community.floorplates.each do |floorplate|
+                      - @community.floorplates.order('number ASC').each do |floorplate|
                         %li
                           = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number
                           
