@@ -1682,6 +1682,9 @@ ul.home-tabs li:hover a{
 	width:100%;
 	border-bottom:1px solid #454e50;
 }
+.select-title .checkbox.active label{
+	color: #fff;
+}
 .select-title h3{
 	color:#FFF;
 	font-size:18px;

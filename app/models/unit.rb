@@ -4,7 +4,7 @@ class Unit < ApplicationRecord
   belongs_to :floorplate
   #has_many :favorites
   #has_many :favorite_communities, :through => :favorites,source: :community
-  validates :effective_rent, :numericality => { :greater_than => 0 }
+  validates :effective_rent, :numericality => { :greater_than => 0 }, :length => { :maximum => 7}
   validates_uniqueness_of :marketing_name, scope: :community_id
   has_many :amenities, as: :amenityable
 
