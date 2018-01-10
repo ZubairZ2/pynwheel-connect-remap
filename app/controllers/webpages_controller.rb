@@ -69,7 +69,7 @@ class WebpagesController < ActionController::Base
 
 	def normalize_units
 		@units.each do |unit|
-			if unit.floorplan.present? && unit.floorplan.market_rent > 1
+			if unit.floorplan.present? && unit.floorplan.market_rent > 1 && (unit.x_plot > 0 || unit.y_plot > 0)
 				struct = {
 					 marketing_name: unit.marketing_name,
 					 market_rent: unit.effective_rent,

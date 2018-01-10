@@ -26,7 +26,17 @@ $(document).ready(function(){
       $(this).find('#floorplan-name').html($(e.relatedTarget).data('floorplan-name'));
       $(this).find('#square-feet').html($(e.relatedTarget).data('square-feet'));
       $(this).find('#bathrooms').html($(e.relatedTarget).data('bathrooms'));
+      if ($(this).find('#bathrooms').html() == '1.0'){
+        $(this).find('#bathrooms').parents().siblings(".bathrooms").html("bathroom")
+      }else{
+        $(this).find('#bathrooms').parents().siblings(".bathrooms").html("bathrooms")
+      }
       $(this).find('#bedrooms').html($(e.relatedTarget).data('bedrooms'));
+      if ($(this).find('#bedrooms').html() == '1'){
+        $(this).find('#bedrooms').parents().siblings(".bedrooms").html("bedroom")
+      }else{
+        $(this).find('#bedrooms').parents().siblings(".bedrooms").html("bedrooms")
+      }
       $(this).find('#availability').html($(e.relatedTarget).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $(this).find('#available-date').html($(e.relatedTarget).data('available-date'));
       $(this).find('#market-rent').html('$'+$(e.relatedTarget).data('market-rent'));

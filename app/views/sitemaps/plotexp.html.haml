@@ -22,7 +22,7 @@
           .row
             .col-lg-9#container
               .map-block#map{:style=>"position: relative;"}
-                = image_tag @sitemap.present? ? @sitemap.image.url : "",:class=>"#{@sitemap.image.file.extension == "svg" ? 'svg-file' : ''}"
+                = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "",:class=>"#{@sitemap.present? && @sitemap.image.present? && @sitemap.image.file.extension == "svg" ? 'svg-file' : ''}"
                 - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
                 - units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i > 0

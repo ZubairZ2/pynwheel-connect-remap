@@ -101,11 +101,13 @@ json.apartments do
 	  json.range floorplate.range
 	  json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
 	  json.floorplate_amenities floorplate.amenities do |amenity|
-	  	json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
-	  	json.name amenity.name
-	  	json.x_plot amenity.x_plot
-			json.y_plot amenity.y_plot
-			json.floorplate_id floorplate.id
+	  	if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
+		  	json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
+		  	json.name amenity.name
+		  	json.x_plot amenity.x_plot
+				json.y_plot amenity.y_plot
+				json.floorplate_id floorplate.id
+			end
 	  end
 	end
 end

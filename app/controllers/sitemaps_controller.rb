@@ -1,9 +1,9 @@
 class SitemapsController < ApplicationController
   before_action :set_community
   add_breadcrumb "Home", :root_path
-  add_breadcrumb "Property Map", "##"
 
   def map
+    add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Add Site Map", map_community_sitemaps_path
     @sitemap = @community.sitemap || @community.build_sitemap
   end
@@ -30,6 +30,7 @@ class SitemapsController < ApplicationController
   end
 
   def plotexp
+    add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
     @sitemap = @community.sitemap
     unless @community.units.size > 0
@@ -65,6 +66,7 @@ class SitemapsController < ApplicationController
   end
 
   def plot_amenities
+    add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Plot Property Map Amenities", plot_amenities_community_sitemaps_path(current_community) 
     @sitemap = @community.sitemap
     @amenities = @sitemap.amenities

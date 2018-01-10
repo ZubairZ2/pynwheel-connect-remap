@@ -1,23 +1,25 @@
 class SitemapAmenitiesController < ApplicationController
 	add_breadcrumb "Home", :root_path
-  add_breadcrumb "Property Map", "##"
 	before_action :authenticate_user!
 	before_action :set_community_and_sitemap
 
 	def index
 		@sitemap = @community.sitemap
     @amenities = @sitemap.amenities.order(id: :desc)
+    add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
     add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
 	end
 
 	def new
 		@amenity = @community.sitemap.amenities.build
+		add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
 		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
     add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
 	end
 
 	def edit
 		@amenity = @community.sitemap.amenities.find(params[:id])
+		add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
 		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
     add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
 	end
