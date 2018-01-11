@@ -131,14 +131,20 @@ class Community < ApplicationRecord
 
   def delete_plots
     self.units.where(floorplate_id: nil).each do |unit|
-      unit.update_attributes!(x_plot: 0, y_plot: 0)
+      #unit.update_attributes(x_plot: 0, y_plot: 0) # effective rent validation fails for 0
+      unit.x_plot = 0
+      unit.y_plot = 0
+      unit.save(validate: false)
     end
     true
   end
 
   def delete_plots_from_floorplate(floorplate_id)
     self.units.where(floorplate_id: floorplate_id).each do |unit|
-      unit.update_attributes(x_plot: 0, y_plot: 0,floorplate_id: nil)
+      # unit.update_attributes(x_plot: 0, y_plot: 0,floorplate_id: nil) # effective rent validation fails for 0
+      unit.x_plot = 0
+      unit.y_plot = 0
+      unit.save(validate: false)
     end
     true
   end
