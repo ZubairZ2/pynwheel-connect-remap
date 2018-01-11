@@ -25,9 +25,11 @@ class WebpagesController < ActionController::Base
 		end
 		if @units.size > 0
 			normalize_units
-			build_square_feet_range
-			build_market_rent_range
-    	@units_with_floorplan_info = @units_with_floorplan_info.to_json
+			if @units_with_floorplan_info.present?
+				build_square_feet_range
+				build_market_rent_range
+	    	@units_with_floorplan_info = @units_with_floorplan_info.to_json
+	    end
     end
     # else
     #   flash[:error] = "Please plot units first."
