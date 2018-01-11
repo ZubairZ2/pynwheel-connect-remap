@@ -36,7 +36,7 @@ class SitemapsController < ApplicationController
     unless @community.units.size > 0
       flash[:error] = "Please import unit data first"
     end
-    @units = @community.units.order(:building, :unit_type)
+    @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type)
     # get member(:plotexp) do
     #   authorize! :plot, Sitemap
     #   @map = @sitemap

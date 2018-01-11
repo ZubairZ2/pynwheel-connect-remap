@@ -40,6 +40,7 @@ class FloorplansController < ApplicationController
         format.js {render js: "$('#flash-message').html('#{message}')"}
       else
         format.html { render :edit }
+        flash[:error] = @floorplan.errors.full_messages.join(',')
         message = '<div class="alert alert-warning">'+@floorplan.errors.full_messages.join(',')+'</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       end

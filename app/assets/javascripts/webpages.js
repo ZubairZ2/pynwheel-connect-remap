@@ -167,7 +167,17 @@ $(document).ready(function(){
           }
           $('#popover-square-feet').html($(this).data('square-feet'));
           $('#popover-bathrooms').html($(this).data('bathrooms'));
+          if ($('#popover-bathrooms').html() == '1.0'){
+            $('#popover-bathrooms').siblings("small").html("bathroom")
+          }else{
+            $('#popover-bathrooms').siblings("small").html("bathrooms")
+          }
           $('#popover-bedrooms').html($(this).data('bedrooms'));
+          if ($('#popover-bedrooms').html() == '1'){
+            $('#popover-bedrooms').siblings("small").html("bedroom")
+          }else{
+            $('#popover-bedrooms').siblings("small").html("bedrooms")
+          }
           $('#popover-available-date').html($(this).data('available-date'));
           $('#popover-price').html(('$'+$(this).data('market-rent')));
 
