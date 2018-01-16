@@ -1,6 +1,6 @@
 .modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
   .modal-content
-    = form_for @gallery_image,url: update_gallery_image_community_galleries_path(@community,gallery_image_id: @gallery_image.id),method: :put do |f|
+    = form_for @gallery_image,url: update_gallery_image_community_gallery_path(@community,@gallery,gallery_image_id: @gallery_image.id),method: :put do |f|
       .modal-body
         .image-crop{:style=>"overflow-y: auto;"}
           = image_tag @gallery_image.image.url(:large), id: "cropbox"

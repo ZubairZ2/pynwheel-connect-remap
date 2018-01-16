@@ -83,12 +83,13 @@ Rails.application.routes.draw do
 
     resources :favorite_settings, only: [:index, :create, :update]
     resources :neighborhoods, only: [:index, :create, :update]
-    resources :galleries, only: :index do
-      collection do
+    resources :galleries do
+      member do
         get :show_image_in_modal
         post :save_gallery_image
         put :update_gallery_image
         delete :delete_gallery_image
+        get :show_images
       end
     end  
     resources :webpages, only: :index do
