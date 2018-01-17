@@ -118,6 +118,9 @@ json.neighborhood do
 	  json.longitude @community.neighborhood.longitude
 	  json.radius @community.neighborhood.radius
 	  json.address @community.neighborhood.address
+		json.categories ["Dining","Shopping","Entertainment","Schools","Banks","Parks","Errands"].each do |val|
+			json.title val
+		end
 	end
 end
 
@@ -129,10 +132,11 @@ json.favorite do
 end
 
 json.gallery do
-	if GalleryImage.where(community_id: @community.id).present?
-		json.images GalleryImage.where(community_id: @community.id).order(:sort).each_with_index.to_a do |(img,index)|
+	if @community.gallery_images.present?
+		json.categories @community.galleries.pluck(:name)
+		json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
 		  json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
-		  json.type index%2==0 ? "COMMUNITY" : "APARTMENTS"
+		  json.type img.gallery.name
 		end
 	end
 end
