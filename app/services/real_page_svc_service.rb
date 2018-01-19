@@ -71,7 +71,7 @@ class RealPageSvcService < BaseService
           floorplan.units_available = -1
           floorplan.deposit = 0
           floorplan.file_url = ""
-          floorplan.save
+          floorplan.save(:validate => false)
         end
       else
         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]  
@@ -185,7 +185,7 @@ class RealPageSvcService < BaseService
               unit.building = bldgResult
             end
           end
-          unit.save
+          unit.save(:validate => false)
         end
       else
          #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
@@ -256,22 +256,26 @@ class RealPageSvcService < BaseService
           units.each do |u|
             unit_no = u["Address"]["UnitID"].to_i
             unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no)
-            hash[:units].each do |unit_in_array|
-              if unit_in_array == unit.first.id
-             
-                best_price = nil
-
-                u["RentMatrix"]["Rows"]["Row"]["Options"].each do |opt|
-                  # units = result["Envelope"]["Body"]["getunitlistResponse"]["getunitlistResult"]["GetUnitList"]["UnitObjects"]["UnitObject"]["RentMatrix"]["Rows"]["Row"]["Options"]
-                  opt["Option"].each do |o|
-                    if o["Best"] == "true"
-                      best_price = o["Rent"]
+            if unit.present?
+              hash[:units].each do |unit_in_array|
+                if unit_in_array == unit.first.id
+               
+                  best_price = nil
+                  if u["RentMatrix"].present?
+                    u["RentMatrix"]["Rows"]["Row"]["Options"].each do |opt|
+                      # units = result["Envelope"]["Body"]["getunitlistResponse"]["getunitlistResult"]["GetUnitList"]["UnitObjects"]["UnitObject"]["RentMatrix"]["Rows"]["Row"]["Options"]
+                      opt["Option"].each do |o|
+                        if o["Best"] == "true"
+                          best_price = o["Rent"]
+                        end
+                      end
+                    end
+                    if best_price.present? && unit.present?
+                      unit.first.effective_rent = best_price
+                      unit.first.save(:validate => false)
+                      puts " **** price updated *** "
                     end
                   end
-                end
-                if best_price.present? && unit.present?
-                  unit.first.update_attributes(effective_rent: best_price)
-                  puts " **** price updated *** "
                 end
               end
             end
@@ -340,8 +344,9 @@ class RealPageSvcService < BaseService
   end
 
   def getBuildingNumber(building_no, building_result)
-    if building_result["Value"] == building_no
-      return building_result["Text"]
+    building = building_result.select{|x| x if x['Value'] == building_no}
+    if building.present?
+      return building.first["Text"]
     else
       return ""
     end
