@@ -2108,6 +2108,62 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	width: 100%;
 	height: 100%;
 }
+.multiselect{
+    background-color: #fff;
+    border:1px solid #8c9192;
+    color: #8c9192;
+    border-radius: 3px;
+    padding: 5px 15px;
+    font-size: 14px;
+    font-weight: 300;
+    height: 38px;
+    position: relative;
+}
+.multiselect:before{
+    position: absolute;
+    right: 10px;
+    top: 8px;
+    content: "\f0d7";
+    font-family: 'FontAwesome';
+}
+.multiselect ul{
+	list-style: none;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    top: 37px;
+    background: #efefef;
+    width: 100%;
+    left: 0;
+    border: 1px solid #8c9192;
+    border-radius: 0px 0px 3px 3px;
+    border-top: navajowhite;
+	
+}
+.multiselect li{
+	padding: 5px 15px;
+}
+.multiselect ul li a{
+	font-size: 14px;
+}
+.multiselect ul li a i{
+	display: none;
+}
+.multiselect ul li:hover{
+	background-color: #3c8dbc;
+}
+.multiselect ul li:hover a{
+	color: #fff;
+}
+.multiselect ul li.active{
+	background-color: #3c8dbc;
+}
+.multiselect ul li.active a i{
+	display: inline-block;
+}
+.multiselect ul li.active a{
+	color: #fff;
+}
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
 	#s-theme .row .col-lg-3{

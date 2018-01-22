@@ -1,5 +1,26 @@
 $(document).ready(function(e){
+
+  ////////// Custom Code for Neighborhood Categories Multi Select starts here //////////
+  $('body').on("click", function(e){
+    $("#multiselect").hide();
+  })
    
+  $('body').on("click", ".multiselect", function(e){
+    $("#multiselect").toggle();
+    e.stopPropagation();
+  })
+
+  $("#multiselect li").click(function(e){
+    if ($(this).hasClass("active")){
+      $(this).removeClass("active")
+    }else{
+      $(this).addClass("active")
+    }
+    //$("#categories_field").val('Dining,Parks')
+    populate_multiselect()
+    e.stopPropagation()
+  })
+  ////////// Custom Code for Neighborhood Categories Multi Select ends here //////////
 
     $('.preview-image').click(function(event){  
       event.preventDefault();
@@ -402,4 +423,22 @@ function rgbaToHex (rgba) {
       return ('#' + r.toString(16) + g.toString(16) + b.toString(16) + (a * 255).toString(16).substring(0,2));
     }
    }   
+}
+
+function populate_multiselect(){
+  var categories = []
+  $("#multiselect li").each(function(){
+    if ($(this).hasClass('active')){
+      categories.push($(this).data('title'))
+    }
+  })
+  var txt = ""
+  for (i = 0; i < categories.length; i++){
+    txt += categories[i];
+    if ((categories.length-i) > 1){
+      txt += ','
+    }
+  }
+  $("#categories_field").val(txt)
+  $(".show-categories").text(txt)
 }

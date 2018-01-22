@@ -15,7 +15,12 @@ namespace :dataprovider do
     platform = 'SQL Server'
     property_id = "000161"
     interface_entity = "Pynwheel"
-    license_key = "MIIBEAYJKwYBBAGCN1gDoIIBATCB/gYKKwYBBAGCN1gDAaCB7zCB7AIDAgABAgJoAQICAIAEAAQQb2bdpX8B3jHdPljSivbiuASByOvAt9PkhRChGWsa5YG3AL9BJALXDVPHpDmcs0H+kJNxj3/BusZJQ5xAehvRVRxtU2fZvQ7KR2RMavloRYvMX4yDMDfCKGiiBUcHgwXMXArK1clII0o1gNYu+NcrCGxFC5EqDY6os308AssprSKJ6c4qbtw2lNE1SgYdHsEQFpetjRj8Ps8QIseOWA9M0s1FLABpdm3dGODEB9VXjswmM7qNzZyNTN5MSKBgIAjDQ3tmz2eEzgYxD9NxCZwB/eOvCJVq8ZZ+MoM4"
+    license_key = "MIIBEAYJKwYBBAGCN1gDoIIBATCB/gYKKwYBBAGCN1gDAaCB7zCB7AIDAgABAgJo
+AQICAIAEAAQQnfAySgqwPMdhHb1iJd95EgSByDKj+CmyfBfUL7Qhit2NcOp+3in1
+KSEHomH7eFp/el4OgiuJpY/oMdhtAuPF1aY+MQdv4J8Q2Mf3plIjRCmfT3A1lHCs
+oSs6PDY2Ee6JUtDu8JZsF79OSsJqo5aHh5iVacBPxEFTv9Il4QPB8BLWE0PjRjZE
+cgNVisG7LcOH8pbd8zDLyyTnlsHhpBSFH3r47s2HNpIY3F1M9QwRqhWiQOC/Bsvr
+ODNi09KobeykeYuHsR2EgZH79PgzhT29IgszCykEgBy4QqbZ"
     response = HTTParty.post(
         url,
         :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
@@ -33,12 +38,13 @@ namespace :dataprovider do
       unit = Unit.new(provider: "yardi2",community_id: 4)
       unit.property_id = @prop_id
       unit.provider_unit_id = u["Id"]
-      unit.name = u["Id"]
-      unit.number = u["Id"]
+      unit.marketing_name = u["Id"]
+      unit.unit_type = u["Id"]
       unit.floorplan_id = u["Unit"]["Information"]["UnitType"]
-      unit.avg_rent = 0 #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
-      unit.min_rent = u["EffectiveRent"]["Min"]
-      unit.max_rent = u["EffectiveRent"]["Max"]
+      # unit.avg_rent = 0 #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
+      # unit.min_rent = u["EffectiveRent"]["Min"]
+      # unit.max_rent = u["EffectiveRent"]["Max"]
+      unit.effective_rent = u["EffectiveRent"]["Min"]
       #if (rentType == "EffectiveRent")
       # {
       # u.MinRent=Number(o.EffectiveRent.@Min.toString());

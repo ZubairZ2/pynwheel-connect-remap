@@ -96,5 +96,14 @@ module ApplicationHelper
 		end
 		return count
 	end
+
+	def set_active_class(x,categories)
+		arr = categories.split(',')
+		if arr.include? x
+			return 'active'
+		else
+			return ''
+		end
+	end
 		
 end
