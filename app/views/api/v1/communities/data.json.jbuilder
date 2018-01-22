@@ -118,7 +118,8 @@ json.neighborhood do
 	  json.longitude @community.neighborhood.longitude
 	  json.radius @community.neighborhood.radius
 	  json.address @community.neighborhood.address
-		json.categories ["Dining","Shopping","Entertainment","Schools","Banks","Parks","Errands"].each do |val|
+	  arr = @community.neighborhood.category.split(',')
+		json.categories arr.each do |val|
 			json.title val
 		end
 	end
