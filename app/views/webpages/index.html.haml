@@ -33,7 +33,6 @@
           .select-title
             %h3.pull-left
               Filter
-              %span Map
             .pull-right
               .checkbox.checkbox-primary.pb-10
                 %input#select-all-filters-checkbox{:type => "checkbox",:name=>"all-filters-checkbox"}/
@@ -90,14 +89,14 @@
                   In 121+ days
             - if @market_rent.present?
               .select-price
-                %h3 Maximum Price Range
+                %h3 Maximum Price
                 .form-group
-                  = select_tag :market_rent, options_for_select(@market_rent),{:class=>"form-control", :include_blank => "select price range"}
+                  = select_tag :market_rent, options_for_select(@market_rent),{:class=>"form-control", :include_blank => "Select Max Price"}
             - if @square_feet.present?
               .select-price
-                %h3 Maximum Square Footage
+                %h3 Minimum Square Footage
                 .form-group
-                  = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control", :include_blank => "select area range"}
+                  = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control", :include_blank => "Select Min Sq Ft"}
                 %div
                   = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "_blank"
                      
