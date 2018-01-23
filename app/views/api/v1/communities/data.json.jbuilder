@@ -119,6 +119,7 @@ json.neighborhood do
 	  json.radius @community.neighborhood.radius
 	  json.address @community.neighborhood.address
 	  arr = @community.neighborhood.category.split(',')
+	  arr.insert(0,'All')
 		json.categories arr.each do |val|
 			json.title val
 		end
