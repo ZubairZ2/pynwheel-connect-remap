@@ -53,7 +53,7 @@ class GalleriesController < ApplicationController
 
 	def save_gallery_image
 		@gallery = @community.galleries.find(params[:id])
-		@gallery.gallery_images.create(image: params[:src])
+		@gallery.gallery_images.create(image: params[:src], community_id: @community.id)
 		@gallery_images = @gallery.gallery_images.order(:sort).all
 	end
 

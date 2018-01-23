@@ -344,11 +344,19 @@ class RealPageSvcService < BaseService
   end
 
   def getBuildingNumber(building_no, building_result)
-    building = building_result.select{|x| x if x['Value'] == building_no}
-    if building.present?
-      return building.first["Text"]
+    if building_result.is_a?(Array)
+      building = building_result.select{|x| x if x['Value'] == building_no}
+      if building.present?
+        return building.first["Text"]
+      else
+        return ""
+      end
     else
-      return ""
+      if building_result["Value"] == building_no
+        return building_result["Text"]
+      else
+        return ""
+      end
     end
   end
 end

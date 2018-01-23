@@ -1460,7 +1460,7 @@ ul.home-tabs li:hover a{
 }
 .image-map{
 	 height:1003px;
- overflow:scroll;
+ overflow:hidden;
  overflow-y: hidden;
 }
 .image-map h3{
@@ -1557,7 +1557,7 @@ ul.home-tabs li:hover a{
 }
 .showcase #content-3.content{
 	background-image: none;
-	min-height:680px;
+	min-height:100vh;
 	width:60px;
 	background: #1d2425;
 	padding:0;
