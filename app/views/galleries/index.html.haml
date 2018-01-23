@@ -1,29 +1,46 @@
-.divLoading.hidden
+- content_for :title, "Galleries - Pynwheel"
 / Main content
 %section
   .content
-    .title-heading.mb-25
+    .title-heading
       %h4
         %i.fa.fa-cubes
         = @community.name.capitalize
-    / Start Tabs Secttions
-    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
-      #myTabContent.tab-content
-        / Start image-slide section
-        #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12
+            .mt-35
+              = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success pull-right mb-20" do
+                %i.fa.fa-plus-circle
+                ADD GALLERY
+              / %a.btn.btn-success.pull-right.mb-20{"data-target" => "#addGallery", "data-toggle" => "modal", :href => "#"}
+              /   %i.fa.fa-plus-circle
+              /   ADD GALLERY
+        .box.box-widget.panel-box
           .row
-            .col-lg-12
-              .pull-right
-                %span.btn.btn-success.btn-file.pull-right.text-UP
-                  %i.fa.fa-plus-circle
-                  Add Files
-                  %input#gallery-images{:multiple => "multiple", :type => "file"}/
-          #images-index
-            = render 'index'
-        / End image-slide section
-    / End Tabs Secttions
+            .col-md-12
+              %table.table.table-bordered.table-striped.table-hover.table-responsive
+                %thead
+                  %tr
+                    %th{:width => "79"} Sr #
+                    %th Gallery Name
+                    %th{:width => "100"} Actions
+                %tbody
+                  - @galleries.each_with_index do |gallery,index|
+                    %tr
+                      %td= index+1
+                      %td
+                        = link_to gallery.name, show_images_community_gallery_path(@community,gallery.id)
+                      %td
+                        %a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
+                          %i.fa.fa-eye
+                        = link_to edit_community_gallery_path(@community,gallery), remote: true, class: "text-success ml-5" do
+                          %i.fa.fa-edit
+                        %a.text-danger{"data-name"=>"Gallery","data-href" => "/communities/#{@community.id}/galleries/#{gallery.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                          %i.fa.fa-trash
+      / End Panel left Side
 / /.content
-/ End Body right Section
-#edit-image.modal.fade.edit-image
-:javascript
-  var community_id = #{params[:community_id]}
+#show_modal
+

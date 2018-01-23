@@ -134,9 +134,10 @@ end
 
 json.gallery do
 	if @community.gallery_images.present?
+		json.categories @community.galleries.pluck(:name)
 		json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
 		  json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
-		  json.type index%2==0 ? "COMMUNITY" : "APARTMENTS"
+		  json.type img.gallery.name
 		end
 	end
 end

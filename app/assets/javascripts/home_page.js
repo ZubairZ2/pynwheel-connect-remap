@@ -156,7 +156,7 @@ function homePageImage(src,name){
 }
 
 function galleryImage(src,name){
-  var url = "/communities/"+community_id+"/galleries/save_gallery_image"
+  var url = "/communities/"+community_id+"/galleries/"+gallery_id+"/save_gallery_image"
     $.ajax({
         url: url,
         type: "POST",

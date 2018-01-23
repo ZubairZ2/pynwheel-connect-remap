@@ -1,6 +1,6 @@
 class GalleryImage < ApplicationRecord
 	include RailsSortable::Model
-  belongs_to :community
+  belongs_to :gallery
   set_sortable :sort  
 	mount_base64_uploader :image, ImageUploader
 	after_update :crop_image
