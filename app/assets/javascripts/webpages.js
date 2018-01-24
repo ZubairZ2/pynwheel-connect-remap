@@ -1,5 +1,22 @@
 $(document).ready(function(){
   if ($('.is-webpage')[0]){
+    ////////////// Diable browser zoom for webpage  starts here ////////////////
+    $(document).keydown(function(event) {
+      if (event.ctrlKey==true && (event.which == '61' || event.which == '107' || event.which == '173' || event.which == '109'  || event.which == '187'  || event.which == '189'  ) ) {
+          event.preventDefault();
+      }
+        // 107 Num Key  +
+        // 109 Num Key  -
+        // 173 Min Key  hyphen/underscor Hey
+        // 61 Plus key  +/= key
+    });
+
+    $(window).bind('mousewheel DOMMouseScroll', function (event) {
+      if (event.ctrlKey == true) {
+        event.preventDefault();
+      }
+    });
+    ////////////// Diable browser zoom for webpage  ends here ////////////////
     $('#clickme').click(function() {
       $("#clickme").html($("#clickme").html() == 'Select Filter' ? 'Hide Filter' : 'Select Filter');
       var $slider = $('.mydiv');
@@ -26,16 +43,16 @@ $(document).ready(function(){
       $(this).find('#floorplan-name').html($(e.relatedTarget).data('floorplan-name'));
       $(this).find('#square-feet').html($(e.relatedTarget).data('square-feet'));
       $(this).find('#bathrooms').html($(e.relatedTarget).data('bathrooms'));
-      if ($(this).find('#bathrooms').html() == '1.0'){
-        $(this).find('#bathrooms').parents().siblings(".bathrooms").html("bathroom")
+      if ($(this).find('#bathrooms').html() == '1'){
+        $(this).find('#bathrooms').parents().siblings(".bathrooms").html("Bathroom")
       }else{
-        $(this).find('#bathrooms').parents().siblings(".bathrooms").html("bathrooms")
+        $(this).find('#bathrooms').parents().siblings(".bathrooms").html("Bathrooms")
       }
       $(this).find('#bedrooms').html($(e.relatedTarget).data('bedrooms'));
       if ($(this).find('#bedrooms').html() == '1'){
-        $(this).find('#bedrooms').parents().siblings(".bedrooms").html("bedroom")
+        $(this).find('#bedrooms').parents().siblings(".bedrooms").html("Bedroom")
       }else{
-        $(this).find('#bedrooms').parents().siblings(".bedrooms").html("bedrooms")
+        $(this).find('#bedrooms').parents().siblings(".bedrooms").html("Bedrooms")
       }
       $(this).find('#availability').html($(e.relatedTarget).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $(this).find('#available-date').html($(e.relatedTarget).data('available-date'));
@@ -157,6 +174,11 @@ $(document).ready(function(){
     if (!hasTouch()){
       $(".marker" )
         .mouseenter(function(event) {
+          if ($(this).data('is-fav')){
+            $('.fav-heart').removeClass('hidden')
+          }else{
+            $('.fav-heart').addClass('hidden')
+          }
           $('#popover-marketing-name').html("APARTMENT: <b>"+$(this).data('unit-marketing-name')+"</b>");
           $('#popover-floorplan').html($(this).data('floorplan-name'))
           if ($(this).data('floorplan-image') != ''){
@@ -167,16 +189,16 @@ $(document).ready(function(){
           }
           $('#popover-square-feet').html($(this).data('square-feet'));
           $('#popover-bathrooms').html($(this).data('bathrooms'));
-          if ($('#popover-bathrooms').html() == '1.0'){
-            $('#popover-bathrooms').siblings("small").html("bathroom")
+          if ($('#popover-bathrooms').html() == '1'){
+            $('#popover-bathrooms').siblings("small").html("Bathroom")
           }else{
-            $('#popover-bathrooms').siblings("small").html("bathrooms")
+            $('#popover-bathrooms').siblings("small").html("Bathrooms")
           }
           $('#popover-bedrooms').html($(this).data('bedrooms'));
           if ($('#popover-bedrooms').html() == '1'){
-            $('#popover-bedrooms').siblings("small").html("bedroom")
+            $('#popover-bedrooms').siblings("small").html("Bedroom")
           }else{
-            $('#popover-bedrooms').siblings("small").html("bedrooms")
+            $('#popover-bedrooms').siblings("small").html("Bedrooms")
           }
           $('#popover-available-date').html($(this).data('available-date'));
           $('#popover-price').html(('$'+$(this).data('market-rent')));
