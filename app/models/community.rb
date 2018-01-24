@@ -16,6 +16,7 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
   after_create :set_default_theme
+  after_create :create_default_gallery
 
   def is_futurist?
     theme_name == "futurist"
@@ -153,6 +154,10 @@ class Community < ApplicationRecord
   def set_default_theme
     self.theme_name = "futurist"
     self.save
+  end
+
+  def create_default_gallery
+    self.galleries.create(name: 'default')
   end
 
   def make_address
