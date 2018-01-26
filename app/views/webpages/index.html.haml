@@ -35,7 +35,7 @@
               Filter
             .pull-right
               .checkbox.checkbox-primary.pb-10
-                %input#select-all-filters-checkbox{:type => "checkbox",:name=>"all-filters-checkbox"}/
+                %input#select-all-filters-checkbox{:type => "checkbox",:name=>"all-filters-checkbox",checked: true}/
                 %label.filter-label
                   Select All
           .list-select
@@ -45,46 +45,46 @@
             /   %label
             /     All
             .checkbox.checkbox-primary.pb-15.hidden
-              %input.filters#one-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
+              %input.filters#one-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
               %label.filter-label
                 1 Bedroom
             .checkbox.checkbox-primary.pb-15.hidden
-              %input.filters#two-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
+              %input.filters#two-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
               %label.filter-label
                 2 Bedrooms
             .checkbox.checkbox-primary.pb-15.hidden
-              %input.filters#three-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
+              %input.filters#three-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
               %label.filter-label
                 3 Bedrooms
             .checkbox.checkbox-primary.pb-15.hidden
-              %input.filters#four-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
+              %input.filters#four-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
               %label.filter-label
                 4 Bedrooms
           .bg-bottom
             .list-select
               %h4 Available
               .checkbox.checkbox-primary.pb-15
-                %input.filters#now-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#now-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   Now
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#thirty-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#thirty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In the next 30 days
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#thirty-to-sixty-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#thirty-to-sixty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In 31-60 days
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#sixty-to-ninty-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#sixty-to-ninty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In 61-90 days
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#ninty-to-one-twenty-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#ninty-to-one-twenty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In 91-120 days
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In 121+ days
             - if @market_rent.present?
@@ -111,7 +111,7 @@
                     %ul
                       - @community.floorplates.order('number ASC').each do |floorplate|
                         %li
-                          = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number
+                          = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number, "data-toggle"=>"tooltip", "data-title"=>"9 matches", "data-placement"=>"right"
                           
                     
       .right-side.parent#panzomm-container

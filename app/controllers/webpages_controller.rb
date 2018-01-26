@@ -92,7 +92,7 @@ class WebpagesController < ActionController::Base
 		minimum_square_feet = @units_with_floorplan_info.min_by{|k| k[:square_feet] }[:square_feet]
 		@square_feet = []
 		square_feet_range = minimum_square_feet.to_i..maximum_square_feet.to_i
-		square_feet_range_hash = square_feet_range.each_slice(square_feet_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first.to_s+'-'+a.last.to_s]=a.first }
+		square_feet_range_hash = square_feet_range.each_slice(square_feet_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first.to_s+'-'+maximum_square_feet.to_s]=a.first }
 		square_feet_range_hash = square_feet_range_hash.invert
 		square_feet_range_hash.each do |v|
 			@square_feet << v
@@ -106,7 +106,8 @@ class WebpagesController < ActionController::Base
 	    
 		@market_rent = []
 		market_rent_range = minimum_market_rent.to_i..maximum_market_rent.to_i
-		market_rent_range_hash = market_rent_range.each_slice(market_rent_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first.to_s+'-'+a.last.to_s]=a.last }
+		# market_rent_range_hash = market_rent_range.each_slice(market_rent_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first.to_s+'-'+a.last.to_s]=a.last }
+		market_rent_range_hash = market_rent_range.each_slice(market_rent_range.last/4).with_index.with_object({}) { |(a,i),h| h[minimum_market_rent.to_i.to_s+'-'+a.last.to_s]=a.last }
 		market_rent_range_hash = market_rent_range_hash.invert
 		market_rent_range_hash.each do |v|
 			@market_rent << v
