@@ -146,13 +146,20 @@ $(document).ready(function(){
       var $section = $('#panzomm-container');
       $panzoom = $section.find('.panzoom').panzoom("reset");
       var floorplate_number_for_showing_image = $(this).attr('id');
-      if (floorplate_number_for_showing_image !=  current_floorplate_number && !$(this).hasClass('disabled')){
+      if (floorplate_number_for_showing_image !=  current_floorplate_number){ // && !$(this).hasClass('no-units')
         $('.floorplate-image').addClass('hidden');
         $('#f_'+floorplate_number_for_showing_image).removeClass('hidden');
         $('.floorplate-anchor').removeClass('selected');
         $('#'+floorplate_number_for_showing_image).addClass('selected');
         current_floorplate_number = floorplate_number_for_showing_image
         populate_current_units();
+        if ($(this).hasClass('no-units'))
+          $(".alert").show()
+        else
+          $(".alert").hide()
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 6000); // <-- time in milliseconds
       }
     });
     ////////////////////////////////////////////
@@ -439,10 +446,16 @@ function disabled_enabled_anchors(){
      console.log(units_to_display.length);
      if(units_to_display.length == 0){
       //console.log(floorplate_numbers[i]);
-      $('#'+floorplate_numbers[i]).addClass('disabled');
+      $('#'+floorplate_numbers[i]).addClass('no-units');
+      if ($('#'+floorplate_numbers[i]).hasClass('selected')){
+        $('.alert').show()
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 6000); // <-- time in milliseconds
+      }
      }
      else{
-      $('#'+floorplate_numbers[i]).removeClass('disabled');
+      $('#'+floorplate_numbers[i]).removeClass('no-units');
      }
     if (units_to_display.length == 1)
       var str = " match"
