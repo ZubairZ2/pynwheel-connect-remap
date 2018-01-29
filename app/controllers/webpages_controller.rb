@@ -14,7 +14,7 @@ class WebpagesController < ActionController::Base
 		@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
 	
 		if @community.has_floorplates?
-		  @floorplate = @community.floorplates.first
+		  @floorplate = @community.floorplates.order('number ASC').first
 		  #@amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
 		  @amenities =  @community.floorplates.joins("LEFT OUTER JOIN amenities ON amenities.amenityable_id = floorplates.id").collect{|c| c.amenities}
 		  @amenities = @amenities.flatten
