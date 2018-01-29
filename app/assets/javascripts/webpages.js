@@ -1,6 +1,6 @@
 $(document).ready(function(){
   if ($('.is-webpage')[0]){
-    $('[data-toggle="tooltip"]').tooltip(); // initialize bootstrap tooltip
+    $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" }); // initialize bootstrap tooltip
     ////////////// Disable browser zoom for webpage  starts here ////////////////
     $(document).keydown(function(event) {
       if (event.ctrlKey==true && (event.which == '61' || event.which == '107' || event.which == '173' || event.which == '109'  || event.which == '187'  || event.which == '189'  ) ) {
@@ -266,6 +266,8 @@ function setFilters(){
  var two_bedroom = false;
  var three_bedroom = false;
  var four_bedroom = false;
+ var five_bedroom = false;
+ var six_bedroom = false;
  var units_available_now = false;
  var units_available_in_thirty_days = false;
  var units_available_in_thirty_to_sixty_days = false;
@@ -291,6 +293,12 @@ function setFilters(){
    }
    if (units[i]['bedrooms'] == '4'){
      four_bedroom = true
+   }
+   if (units[i]['bedrooms'] == '5'){
+     five_bedroom = true
+   }
+   if (units[i]['bedrooms'] == '6'){
+     six_bedroom = true
    }
    if (units[i]['available_date'] != '2099-01-01'){
      var available_date = new Date(units[i]['available_date']);
@@ -384,6 +392,19 @@ function setFilters(){
   $('#four-bedroom-checkbox').parent().remove();
  }
 
+ if(five_bedroom){
+  $('#five-bedroom-checkbox').addClass('active-filter');
+  $('#five-bedroom-checkbox').parent().removeClass('hidden');
+ }else{
+  $('#five-bedroom-checkbox').parent().remove();
+ }
+
+ if(six_bedroom){
+  $('#six-bedroom-checkbox').addClass('active-filter');
+  $('#six-bedroom-checkbox').parent().removeClass('hidden');
+ }else{
+  $('#six-bedroom-checkbox').parent().remove();
+ }
  //var today = new Date();
  //console.log(today);
  //var thirty_days = new Date(today).setDate(today.getDate()+30); 
@@ -512,6 +533,18 @@ function select_units_according_to_filters(floorplate_units){
        bedroom_base_units.push(floorplate_units[i]['marketing_name']);
      }
    }
+   //show five bedroom markers
+   if($('#five-bedroom-checkbox').is(':checked')){
+     if (floorplate_units[i]['bedrooms'] == '5'){
+       bedroom_base_units.push(floorplate_units[i]['marketing_name']);
+     }
+   }
+   //show six bedroom markers
+   if($('#six-bedroom-checkbox').is(':checked')){
+     if (floorplate_units[i]['bedrooms'] == '6'){
+       bedroom_base_units.push(floorplate_units[i]['marketing_name']);
+     }
+   }
    //show available now
    if($('#now-checkbox').is(':checked')){
     var available_date = new Date(floorplate_units[i]['available_date']);
@@ -570,7 +603,7 @@ function select_units_according_to_filters(floorplate_units){
   var availability_filter_present = true
   var price_filter_present = true
   var area_filter_present = true
-  if (!($('#one-bedroom-checkbox').is(':checked') || $('#two-bedroom-checkbox').is(':checked') || $('#three-bedroom-checkbox').is(':checked') || $('#four-bedroom-checkbox').is(':checked'))){
+  if (!($('#one-bedroom-checkbox').is(':checked') || $('#two-bedroom-checkbox').is(':checked') || $('#three-bedroom-checkbox').is(':checked') || $('#four-bedroom-checkbox').is(':checked') || $('#five-bedroom-checkbox').is(':checked') || $('#six-bedroom-checkbox').is(':checked'))){
     bedroom_base_units = all_units
     bedroom_filter_present = false
   }

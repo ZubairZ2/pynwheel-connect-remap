@@ -106,7 +106,7 @@ module ApplicationHelper
 		end
 	end
 
-	def display_bathrooms(x)
+	def hide_decimals(x)
 		if x%1 == 0
 			return x.to_i
 		else
