@@ -141,6 +141,7 @@ json.gallery do
 		json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
 		  json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
 		  json.type img.gallery.name
+		  json.id img.id
 		end
 	end
 end
