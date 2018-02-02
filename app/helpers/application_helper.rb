@@ -105,5 +105,13 @@ module ApplicationHelper
 			return ''
 		end
 	end
+
+	def hide_decimals(x)
+		if x%1 == 0
+			return x.to_i
+		else
+			return x
+		end
+	end
 		
 end

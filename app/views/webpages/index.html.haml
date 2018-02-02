@@ -33,10 +33,9 @@
           .select-title
             %h3.pull-left
               Filter
-              %span Map
             .pull-right
               .checkbox.checkbox-primary.pb-10
-                %input#select-all-filters-checkbox{:type => "checkbox",:name=>"all-filters-checkbox"}/
+                %input#select-all-filters-checkbox{:type => "checkbox",:name=>"all-filters-checkbox",checked: true}/
                 %label.filter-label
                   Select All
           .list-select
@@ -46,58 +45,66 @@
             /   %label
             /     All
             .checkbox.checkbox-primary.pb-15.hidden
-              %input.filters#one-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
+              %input.filters#one-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
               %label.filter-label
                 1 Bedroom
             .checkbox.checkbox-primary.pb-15.hidden
-              %input.filters#two-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
+              %input.filters#two-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
               %label.filter-label
                 2 Bedrooms
             .checkbox.checkbox-primary.pb-15.hidden
-              %input.filters#three-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
+              %input.filters#three-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
               %label.filter-label
                 3 Bedrooms
             .checkbox.checkbox-primary.pb-15.hidden
-              %input.filters#four-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms"}/
+              %input.filters#four-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
               %label.filter-label
                 4 Bedrooms
+            .checkbox.checkbox-primary.pb-15.hidden
+              %input.filters#five-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
+              %label.filter-label
+                5 Bedrooms
+            .checkbox.checkbox-primary.pb-15.hidden
+              %input.filters#six-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
+              %label.filter-label
+                6 Bedrooms
           .bg-bottom
             .list-select
               %h4 Available
               .checkbox.checkbox-primary.pb-15
-                %input.filters#now-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#now-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   Now
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#thirty-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#thirty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In the next 30 days
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#thirty-to-sixty-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#thirty-to-sixty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In 31-60 days
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#sixty-to-ninty-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#sixty-to-ninty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In 61-90 days
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#ninty-to-one-twenty-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#ninty-to-one-twenty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In 91-120 days
               .checkbox.checkbox-primary.pb-15.hidden
-                %input.filters#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available"}/
+                %input.filters#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
                 %label.filter-label
                   In 121+ days
             - if @market_rent.present?
               .select-price
-                %h3 Maximum Price Range
+                %h3 Maximum Price
                 .form-group
-                  = select_tag :market_rent, options_for_select(@market_rent),{:class=>"form-control", :include_blank => "select price range"}
+                  = select_tag :market_rent, options_for_select(@market_rent),{:class=>"form-control", :include_blank => "Select Max Price"}
             - if @square_feet.present?
               .select-price
-                %h3 Maximum Square Footage
+                %h3 Minimum Square Footage
                 .form-group
-                  = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control", :include_blank => "select area range"}
+                  = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control", :include_blank => "Select Min Sq Ft"}
                 %div
                   = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "_blank"
                      
@@ -112,7 +119,7 @@
                     %ul
                       - @community.floorplates.order('number ASC').each do |floorplate|
                         %li
-                          = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number
+                          = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number, "data-toggle"=>"tooltip", "data-title"=>"9 matches", "data-placement"=>"right"
                           
                     
       .right-side.parent#panzomm-container
@@ -127,7 +134,7 @@
           - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
           - units.each do |unit|
             - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and !unit.floorplan.nil?
-              = link_to "<span class='custom-icon'>#{unit_count(@units_in_xy_group,unit.x_plot,unit.y_plot)}</span>".html_safe, "##", :class => "marker", :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community.data_provider,"data-website"=>@community.website,"data-community-property-id"=>(@community.credential.present? && @community.credential.property_id.present? ? @community.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=>unit.effective_rent,"data-square-feet"=>unit.floorplan.present? ? unit.floorplan.square_feet : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date,"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? unit.floorplan.bathrooms : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil,"data-lease-term"=>unit.lease_term,"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot
+              = link_to "<span class='custom-icon'>#{unit_count(@units_in_xy_group,unit.x_plot,unit.y_plot)}</span>".html_safe, "##", :class => "marker", :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community.data_provider,"data-website"=>@community.website,"data-community-property-id"=>(@community.credential.present? && @community.credential.property_id.present? ? @community.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>unit.floorplan.present? ? hide_decimals(unit.floorplan.square_feet) : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.strftime("%m/%d/%Y"),"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? hide_decimals(unit.floorplan.bathrooms) : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil,"data-lease-term"=>unit.lease_term,"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot
           - if @amenities.present?
             - if @community.has_floorplates?
               - @amenities.each do |amenity|
@@ -143,7 +150,10 @@
           %button.btn.btn-sm.btn-primary.zoom-out 
             %i.fa.fa-minus
           %button.btn.btn-sm.btn-primary.reset
-            %i.fa.fa-refresh          
+            %i.fa.fa-refresh
+        .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:1px;width:100%;"}
+          %strong Oops!
+          There is nothing available on this floor that matches the parameters that you have selected.      
     / /.content
     / Trigger the modal with a button
     / Modal
@@ -176,25 +186,26 @@
                       %span.bedrooms
                         Bedrooms
                     %li
+                      Available on
                       %b
                         %span#available-date 
-                      Available Date  
                   .price-details
                     .price-count.pull-left#market-rent
                      
                     .available-now
                       %p#availability
-                  - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc"     
-                    .date-select 
-                      %h5= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date" 
-                      .form-group 
-                        %input.form-control.datepicker#leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/ 
-                        %i.fa.fa-calendar#leasing-start-date-icon    
-                  .btn-apply
-                    - if @community.data_provider == "realpagesvc"
-                      = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag"
-                    - elsif @community.data_provider == "psi"
-                      = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag"
+                  - if @community.credential.apply_now 
+                    - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc"   
+                      .date-select 
+                        %h5= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date" 
+                        .form-group 
+                          %input.form-control.datepicker#leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/ 
+                          %i.fa.fa-calendar#leasing-start-date-icon    
+                    .btn-apply
+                      - if @community.data_provider == "realpagesvc"
+                        = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag"
+                      - elsif @community.data_provider == "psi"
+                        = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag"
               .col-md-7
                 .plan-image-pop
                   %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
@@ -205,6 +216,7 @@
                       %i.fa.fa-heart
 #marker-popover.media.hidden
   %b#popover-marketing-name
+  %i.fa.fa-heart.fav-heart.hidden
   %p#popover-floorplan
   .popupover-image
     %img#media-object{:alt => "Sample Image", :src => "/assets/default.jpeg"}/
@@ -222,10 +234,10 @@
       %small
         Bedrooms
     %p
+      %small Available on
       %b#popover-available-date
-      %small Available
     %p
-      .btn.btn-sm.btn-primary.btn-block#popover-price
+      %b#popover-price
        
 :javascript
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"

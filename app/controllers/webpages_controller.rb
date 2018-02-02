@@ -14,7 +14,7 @@ class WebpagesController < ActionController::Base
 		@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
 	
 		if @community.has_floorplates?
-		  @floorplate = @community.floorplates.first
+		  @floorplate = @community.floorplates.order('number ASC').first
 		  #@amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
 		  @amenities =  @community.floorplates.joins("LEFT OUTER JOIN amenities ON amenities.amenityable_id = floorplates.id").collect{|c| c.amenities}
 		  @amenities = @amenities.flatten
@@ -92,10 +92,11 @@ class WebpagesController < ActionController::Base
 		minimum_square_feet = @units_with_floorplan_info.min_by{|k| k[:square_feet] }[:square_feet]
 		@square_feet = []
 		square_feet_range = minimum_square_feet.to_i..maximum_square_feet.to_i
-		square_feet_range_hash = square_feet_range.each_slice(square_feet_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first..a.last]=i }
+		square_feet_range_hash = square_feet_range.each_slice(square_feet_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first.to_i.to_s+'-'+maximum_square_feet.to_f.ceil.to_s]=a.first }
 		square_feet_range_hash = square_feet_range_hash.invert
 		square_feet_range_hash.each do |v|
-			@square_feet << v[1].to_s.gsub("..","-")
+			@square_feet << v
+			# @square_feet << v[1].to_s.gsub("..","-")
 		end
 	end
 
@@ -105,10 +106,11 @@ class WebpagesController < ActionController::Base
 	    
 		@market_rent = []
 		market_rent_range = minimum_market_rent.to_i..maximum_market_rent.to_i
-		market_rent_range_hash = market_rent_range.each_slice(market_rent_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first..a.last]=i }
+		# market_rent_range_hash = market_rent_range.each_slice(market_rent_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first.to_s+'-'+a.last.to_s]=a.last }
+		market_rent_range_hash = market_rent_range.each_slice(market_rent_range.last/4).with_index.with_object({}) { |(a,i),h| h[minimum_market_rent.to_i.to_s+'-'+a.last.to_s]=a.last }
 		market_rent_range_hash = market_rent_range_hash.invert
 		market_rent_range_hash.each do |v|
-			@market_rent << v[1].to_s.gsub("..","-")
+			@market_rent << v
 		end
 	end
 
