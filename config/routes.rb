@@ -109,6 +109,7 @@ Rails.application.routes.draw do
       resources :communities, only: :index do
         member do
           get :data
+          post :email_favorites
         end
         collection do
           post :login

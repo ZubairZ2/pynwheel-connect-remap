@@ -173,4 +173,44 @@ class Community < ApplicationRecord
     end
   end
 
+  def email_favorites(params)
+    email_to = params[:favorites][:email_to]
+    floorplans = populate_floorplans(params[:favorites][:floorplans])
+    units = populate_units(params[:favorites][:units])
+    galleries = populate_galleries(params[:favorites][:galleries])
+    email_bcc = self.favorite_setting.email_bcc
+    email_from = self.favorite_setting.email_from
+    FavoriteMailer.email_favorites(email_from,email_to,email_bcc,floorplans,units,galleries).deliver
+    return true
+  end
+
+  private
+
+  def populate_floorplans(floorplans_objs)
+    floorplans = []
+    floorplans_objs.each do |f|
+      fp = self.floorplans.where(id: f["id"])
+      floorplans << fp.first if fp.present?
+    end
+    return floorplans
+  end
+
+  def populate_units(units_objs)
+    units = []
+    units_objs.each do |u|
+      unit = self.units.where(id: u["id"])
+      units << unit.first if unit.present?
+    end
+    return units
+  end
+
+  def populate_galleries(galleries_objs)
+    galleries = []
+    galleries_objs.each do |g|
+      gallery = self.gallery_images.where(id: g["id"])
+      galleries << gallery.first if gallery.present?
+    end
+    return galleries
+  end
+
 end

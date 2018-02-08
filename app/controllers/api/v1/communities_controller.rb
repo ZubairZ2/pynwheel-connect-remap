@@ -1,5 +1,5 @@
 class Api::V1::CommunitiesController < ActionController::Base
-	before_action :set_community, only: [:data]
+	before_action :set_community, only: [:data,:email_favorites]
 
 	def login
 		begin
@@ -21,6 +21,18 @@ class Api::V1::CommunitiesController < ActionController::Base
 	end
 
 	def data
+	end
+
+	def email_favorites
+		begin
+			if @community.email_favorites(params) == true
+				render :json=> {:success=>true, :message => "success", :operation => "email favorites"}
+			else
+				render :json=> {:success=>false, :message => "email failed"}
+			end
+		rescue Exception => e   
+			render :json=> {:success=>false, :message => e.message}, :status=>500
+		end
 	end
 
 	def list_communities
