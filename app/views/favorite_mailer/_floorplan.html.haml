@@ -43,15 +43,15 @@
                                   /   %b $ 300 a month
                                   / %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                   /   %b 2018-01-23
-                                  %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%;text-transform:uppercase;"}
-                                    Units Aviable for
-                                    %br/
-                                    this floorplan
-                                  - units = Unit.where(floorplan_id: floorplan.provider_floorplan_id, community_id: floorplan.community_id)
-                                  - if units.present?
-                                    - units.each do |unit|
-                                      %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%;text-transform:uppercase;"}
-                                        %span{:style => "font-size:11px; color:#fff; background-color:#000; padding:5px;"} #{unit.marketing_name}
+                                  / %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%;text-transform:uppercase;"}
+                                  /   Units Aviable for
+                                  /   %br/
+                                  /   this floorplan
+                                  / - units = Unit.where(floorplan_id: floorplan.provider_floorplan_id, community_id: floorplan.community_id)
+                                  / - if units.present?
+                                  /   - units.each do |unit|
+                                  /     %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%;text-transform:uppercase;"}
+                                  /       %span{:style => "font-size:11px; color:#fff; background-color:#000; padding:5px;"} #{unit.marketing_name}
                               %tr
                                 %td
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#4c4d4e;", :width => "100%"}
