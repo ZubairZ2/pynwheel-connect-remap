@@ -12,7 +12,7 @@
     = f.text_field :email_bcc, :class=>"form-control validate[required,custom[email_list]]", :placeholder=>"Email Bcc" ,:maxlength=>"150"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Email Text
+    Email Body
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :email_body, :class=>"tinymce", :rows => 20, :cols => 80
