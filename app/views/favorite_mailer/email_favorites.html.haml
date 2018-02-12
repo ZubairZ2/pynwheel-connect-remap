@@ -324,6 +324,20 @@
                                   %td.textContent{:align => "center", :style => "padding: 8px 20px;", :valign => "top"}
                                     %h1{:style => "margin-bottom:0px;text-align:left;"}
                                       %img{:src => "https://swoop-cms-v2.herokuapp.com/assets/pynwheel-logo.png"}/
+              - if @email_body.present?
+                %tr
+                  %td{:align => "center", :valign => "top"}
+                    %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
+                      %tr
+                        %td{:align => "center", :valign => "top"}
+                          %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "600"}
+                            %tr
+                              %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "600"}
+                                %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                                  %tr
+                                    %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                                      %p
+                                        = @email_body.html_safe
               - @favorites.each do |f|
                 - if f.is_a?(Unit)
                   = render :partial => 'unit', :locals => {:unit => f}

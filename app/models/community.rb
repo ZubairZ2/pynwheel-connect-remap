@@ -178,8 +178,9 @@ class Community < ApplicationRecord
     favorites = populate_favorites(params[:favorites][:items])
     email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil 
     email_from = self.favorite_setting.present? ? self.favorite_setting.email_from : nil
+    email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     if favorites.present?
-      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,favorites).deliver
+      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites).deliver
       return true
     else
       return false

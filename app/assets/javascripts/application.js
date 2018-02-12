@@ -43,4 +43,5 @@
 //= require clipboard.min
 //= require favorites
 //= require panzoom
+//= require tinymce
 // require_tree .
