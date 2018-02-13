@@ -2,6 +2,7 @@ local_assets_base_url = "http://192.168.101.77:3000"
 json.ui_settigs do
   json.theme @community.theme_name
   json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : nil
+  json.name @community.name
 end
 
 json.homescreen do
@@ -139,7 +140,14 @@ json.gallery do
 			json.title name
 		end
 		json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
-		  json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+			if img.image.file.extension.downcase == 'mp4'
+				json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
+				json.video true
+				json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/547/-1516710331-Lighthouse.jpg"
+			else
+		  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+		  	json.video false
+		  end
 		  json.type img.gallery.name
 		  json.id img.id
 		end
