@@ -111,6 +111,18 @@
          .flexibleImage{
            height:auto;
          }
+         .video-wrapper {display:none;}
+         @media (-webkit-min-device-pixel-ratio: 0) and (min-device-width:1024px) 
+         {
+          .video-wrapper { display:block!important; }
+          .video-fallback { display:none!important; }
+         }
+          @supports (-webkit-overflow-scrolling:touch) and (color:#ffffffff) {
+            div[class^=video-wrapper] { display:block!important; }
+            div[class^=video-fallback] { display:none!important; }
+          }
+          #MessageViewBody .video-wrapper { display:block!important; }
+          #MessageViewBody .video-fallback { display:none!important; }
          .linkRemoveBorder{
            border-bottom:0 !important;
          }

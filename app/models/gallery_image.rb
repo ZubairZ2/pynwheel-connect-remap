@@ -10,6 +10,6 @@ class GalleryImage < ApplicationRecord
   end
 
   def is_video?
-		image.file.extension.downcase == 'mp4' || image.file.extension.downcase == 'webm'
+		image.file.extension.downcase == 'mp4' 
 	end
 end
