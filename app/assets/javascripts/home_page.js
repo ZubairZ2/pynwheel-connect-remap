@@ -69,7 +69,7 @@ $(document).ready(function(){
   }
 
   $("#home_page_video_video").change(function(){
-      if(this.files[0].type == "video/mp4" || this.files[0].type == "video/webm"){
+      if(this.files[0].type == "video/mp4"){
         $(".divLoading").removeClass("hidden"); 
         $('#home-page-video-form').submit();
       }
@@ -80,7 +80,7 @@ $(document).ready(function(){
   });
 
   $("#gallery_page_video").change(function(){
-      if(this.files[0].type == "video/mp4" || this.files[0].type == "video/webm"){
+      if(this.files[0].type == "video/mp4"){
         $(".divLoading").removeClass("hidden"); 
         $('#gallery-page-video-form').submit();
       }
