@@ -2,13 +2,15 @@ class ImageUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
    include CarrierWave::RMagick
+   include CarrierWave::Video  # for your video processing
+  include CarrierWave::Video::Thumbnailer
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
   #storage :file
 
   storage Rails.env.development? ? :file : :fog 
-  resize_to_fit(1920, 1080)
+  #resize_to_fit(1920, 1080)
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
 
@@ -29,13 +31,24 @@ class ImageUploader < CarrierWave::Uploader::Base
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
   end
 
-  version :thumb , from_version: :large do
+  version :thumb , from_version: :large, :if => :image? do
     resize_to_fit(640, 360)
   end
 
-  version :large do
+  version :video_thumbnail, :if => :video? do
+    process thumbnail: [{format: 'png', quality: 10, size: 192, strip: true, logger: Rails.logger}]
+    def full_filename for_file
+      png_name for_file, version_name
+    end
+  end
+
+  version :large, :if => :image? do
     process :crop
     resize_to_fit(1920, 1080)
+  end
+
+  def png_name for_file, version_name
+    %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
   end
 
 
@@ -57,6 +70,14 @@ class ImageUploader < CarrierWave::Uploader::Base
   def secure_token
     var = :"@#{mounted_as}_secure_token"
     model.instance_variable_get(var) or model.instance_variable_set(var, SecureRandom.uuid)
+  end
+
+  def image?(new_file)
+    new_file.content_type.start_with? 'image'
+  end
+
+  def video?(new_file)
+    new_file.content_type.start_with? 'application'
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:

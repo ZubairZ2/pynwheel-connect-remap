@@ -76,6 +76,12 @@ class GalleriesController < ApplicationController
 		redirect_back(fallback_location: root_path)
 	end
 
+	def save_gallery_video
+		@gallery = @community.galleries.find(params[:id])
+		@gallery.gallery_images.create!(image: params[:gallery_page_video], community_id: @community.id)
+		@gallery_images = @gallery.gallery_images.order(:sort).all
+	end
+
 	private 
 
 	def set_community
@@ -87,6 +93,6 @@ class GalleriesController < ApplicationController
 	end
 
 	def gallery_params
-		params.require(:gallery).permit(:name)
+		params.require(:gallery).permit!
 	end
 end

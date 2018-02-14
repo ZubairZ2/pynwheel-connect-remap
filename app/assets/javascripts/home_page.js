@@ -79,6 +79,17 @@ $(document).ready(function(){
       }
   });
 
+  $("#gallery_page_video").change(function(){
+      if(this.files[0].type == "video/mp4" || this.files[0].type == "video/webm"){
+        $(".divLoading").removeClass("hidden"); 
+        $('#gallery-page-video-form').submit();
+      }
+      else{
+        $(this).val('');
+        $('#video-upload-warning').modal('show');
+      }
+  });
+
 });
 
 function imageDragNdrop(){

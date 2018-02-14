@@ -18,8 +18,14 @@
               .mt-35
                 %span.btn.btn-success.btn-file.pull-right.text-UP
                   %i.fa.fa-plus-circle
-                  Add Files
+                  Add Images
                   %input#gallery-images{:multiple => "multiple", :type => "file"}/
+              .mt-35
+                = form_tag save_gallery_video_community_gallery_path(@community,@gallery),:method=>"POST",:id=>"gallery-page-video-form",:multipart => true,:remote=>true  do 
+                  %span.btn.btn-primary.btn-file.pull-right.mr-5.text-UP
+                    %i.fa.fa-plus-circle
+                    Add Video
+                    = file_field_tag :gallery_page_video
           #images-index
             = render 'index'
         / End image-slide section

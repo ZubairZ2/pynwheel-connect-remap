@@ -8,4 +8,8 @@ class GalleryImage < ApplicationRecord
 	def crop_image
     image.recreate_versions! if crop_x.present?
   end
+
+  def is_video?
+		image.file.extension.downcase == 'mp4' || image.file.extension.downcase == 'webm'
+	end
 end

@@ -90,6 +90,7 @@ Rails.application.routes.draw do
         put :update_gallery_image
         delete :delete_gallery_image
         get :show_images
+        post :save_gallery_video
       end
     end  
     resources :webpages, only: :index do
