@@ -59,8 +59,9 @@ class GalleriesController < ApplicationController
 
 	def delete_gallery_image
 		@gallery_image = GalleryImage.find(params[:gallery_image_id])
+		file_type = @gallery_image.is_video? ? 'Video' : 'Image'
 		@gallery_image.destroy
-		flash[:notice] = "Image deleted successfully."
+		flash[:notice] = "#{file_type} deleted successfully."
 		redirect_back(fallback_location: root_path)
 	end
 
