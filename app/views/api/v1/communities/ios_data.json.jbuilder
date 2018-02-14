@@ -142,9 +142,9 @@ json.gallery do
 			unless img.is_video?
 		  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
 		  	json.video false
+		  	json.type img.gallery.name
+		    json.id img.id
 		  end
-		  json.type img.gallery.name
-		  json.id img.id
 		end
 	end
 end
