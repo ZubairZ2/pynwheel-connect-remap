@@ -1,5 +1,5 @@
 class Api::V1::CommunitiesController < ActionController::Base
-	before_action :set_community, only: [:data,:email_favorites]
+	before_action :set_community, only: [:data,:ios_data,:email_favorites]
 
 	def login
 		begin
@@ -21,6 +21,10 @@ class Api::V1::CommunitiesController < ActionController::Base
 	end
 
 	def data
+	end
+
+	def ios_data
+
 	end
 
 	def email_favorites
