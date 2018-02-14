@@ -31,6 +31,7 @@
                                       %img{:alt => "", :src => "#{img.image.url(:large)}", :width => "580", :height => "400", :style => "max-width:350px; height:350px; margin:auto;", :title => ""}/
                             - else
                               %a{:href => img.image.url, :target => "_blank",:style=>"font-size: 16px; color: #0366d6; font-family: arial; display: inline-block; margin: 20px;"} 
-                                = img.image.file.filename          
+                                %img{:alt => "", :src => "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/home_page_image/image/346/thumb_3eb0ef47-d667-47be-b845-9b3218703fb8.jpeg", :style => "width:800px;height:350px;border:0;"}/
+                                /= img.image.file.filename          
                             
 
