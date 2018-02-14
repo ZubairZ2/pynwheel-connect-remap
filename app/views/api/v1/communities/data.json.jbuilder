@@ -143,7 +143,7 @@ json.gallery do
 			if img.image.file.extension.downcase == 'mp4'
 				json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
 				json.video true
-				json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/-1518623667-video-thumbnail.jpg"
+				json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
 			else
 		  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
 		  	json.video false
