@@ -30,8 +30,11 @@
                                     %div{:style => "width:100%; height:420px; overflow:hidden;"}
                                       %img{:alt => "", :src => "#{img.image.url(:large)}", :width => "580", :height => "400", :style => "max-width:580px; height:350px; margin:auto;", :title => ""}/
                             - else
-                              %a{:href => img.image.url, :target => "_blank",:style=>"font-size: 16px; color: #0366d6; font-family: arial; display: inline-block; margin: 20px;"} 
-                                %img{:alt => "", :src => "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg", :width => "580", :height => "400"}/
+                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                                %tr
+                                  %td
+                                    %a{:href => img.image.url, :target => "_blank",:style=>"font-size: 16px; color: #0366d6; font-family: arial; display: inline-block; margin: 20px;"} 
+                                      %img{:alt => "", :src => "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg", :width => "580", :height => "400"}/
                                 /= img.image.file.filename          
                             
 
