@@ -85,7 +85,7 @@ json.apartments do
 	  json.square_feet floorplan.square_feet
 	  json.description floorplan.description
 	  json.image floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil
-	  json.virtual_tour floorplan.virtual_tour_url
+	  json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
 	  json.floorplan_amenities floorplan.amenities do |amenity|
 	  	json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
 	  	json.name amenity.name
@@ -140,16 +140,25 @@ json.gallery do
 			json.title name
 		end
 		json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
-			if img.image.file.extension.downcase == 'mp4'
-				json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
-				json.video true
-				json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
+			unless params[:action] == "ios_data"
+				if img.image.file.extension.downcase == 'mp4'
+					json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
+					json.video true
+					json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
+				else
+			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+			  	json.video false
+			  end
+			  json.type img.gallery.name
+			  json.id img.id
 			else
-		  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
-		  	json.video false
-		  end
-		  json.type img.gallery.name
-		  json.id img.id
+				unless img.is_video?
+			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+			  	json.video false
+			  	json.type img.gallery.name
+			    json.id img.id
+			  end
+			end
 		end
 	end
 end

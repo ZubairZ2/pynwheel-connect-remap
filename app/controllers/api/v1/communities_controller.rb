@@ -24,7 +24,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 	end
 
 	def ios_data
-
+		render 'data'
 	end
 
 	def email_favorites
