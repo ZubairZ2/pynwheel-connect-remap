@@ -46,6 +46,7 @@ json.apartments do
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
 			json.sitemap_id @community.id
+			json.id amenity.id
 	  end
 	else
 		json.sitemap nil
@@ -92,6 +93,7 @@ json.apartments do
 	  	json.x_plot amenity.x_plot
 			json.y_plot amenity.y_plot
 			json.floorplan_id floorplan.id
+			json.id amenity.id
 	  end
 	end
 	json.floorplates @community.floorplates.order("number DESC") do |floorplate|
@@ -108,6 +110,7 @@ json.apartments do
 		  	json.x_plot amenity.x_plot
 				json.y_plot amenity.y_plot
 				json.floorplate_id floorplate.id
+				json.id amenity.id
 			end
 	  end
 	end
@@ -146,14 +149,14 @@ json.gallery do
 					json.video true
 					json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
 				else
-			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
 			  	json.video false
 			  end
 			  json.type img.gallery.name
 			  json.id img.id
 			else
 				unless img.is_video?
-			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
 			  	json.video false
 			  	json.type img.gallery.name
 			    json.id img.id
