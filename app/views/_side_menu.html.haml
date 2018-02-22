@@ -15,23 +15,31 @@
             %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             %a{:href => "/communities"} Communities
-      %li{:class=>"#{controller_name =='home_page' ? 'active' : ''}"}
-        = link_to community_home_page_index_path(current_community) do
-          %i.fa.fa-home
-          %span Home Page
       %li{:class=>"#{controller_name =='design' ? 'active' : ''}"}
         = link_to community_design_index_path(current_community) do
           %i.fa.fa-tv
           %span Design
-      %li.treeview{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
-        %a{:href => "#{community_floorplans_path(current_community)}"}
-          %i.fa.fa-columns
-          %span Apartments
+      %li.treeview{:class=>"#{controller_name =='settings' || (controller_name =='communities' && params[:action] =='import_page') ? 'active' : ''}"}
+        %a{:href => "javascript::;"}
+          %i.fa.fa-gears
+          %span Data
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
-        %ul.treeview-menu
-          %li{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
-            = link_to "Floor Plans", community_floorplans_path(current_community)
+        %ul.treeview-menu 
+          - if can? :add_settings, current_user   
+            %li{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
+              = link_to "Add Credentials",community_settings_path(current_community)
+          %li{:class=>"#{controller_name =='communities' && params[:action] =='import_page' ? 'active' : ''}"}
+            = link_to "Import Unit Data" , community_import_page_path(current_community)  
+      %li{:class=>"#{controller_name =='home_page' ? 'active' : ''}"}
+        = link_to community_home_page_index_path(current_community) do
+          %i.fa.fa-home
+          %span Home Page
+      %li{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
+        %a{:href => "#{community_floorplans_path(current_community)}"}
+          %i.fa.fa-columns
+          %span Floor Plans
+          %span.pull-right-container
       %li{:class=>"#{controller_name =='units' ? 'active' : ''}"}
         = link_to community_units_path(current_community)  do 
           %i.fa.fa-laptop
@@ -50,15 +58,11 @@
           - if Sitemap.exists? community_id: current_community.id  
             %li{:class=>"#{controller_name =='sitemap_amenities' && params[:action] == 'index' ? 'active' : ''}"}
               = link_to "Amenities",  community_sitemap_amenities_path(current_community,current_community.sitemap)  
-      %li.treeview{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
-        %a{:href => "#"}
+      %li{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
+        %a{:href => "#{community_floorplates_path(current_community)}"}
           %i.fa.fa-database
           %span Floor Plates
           %span.pull-right-container
-            %i.fa.fa-angle-right.pull-right
-        %ul.treeview-menu
-          %li{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
-            = link_to "Floor Plates", community_floorplates_path(current_community)
       %li{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
         %a{:href => "#{community_galleries_path(current_community)}"}
           %i.fa.fa-cubes
@@ -70,18 +74,6 @@
       %li{:class=>"#{controller_name =='favorite_settings' ? 'active' : ''}"}
         %a{:href => "#{community_favorite_settings_path(current_community)}"}
           %i.fa.fa-star
-          %span Favorites 
-      %li.treeview{:class=>"#{controller_name =='settings' || (controller_name =='communities' && params[:action] =='import_page') ? 'active' : ''}"}
-        %a{:href => "javascript::;"}
-          %i.fa.fa-gears
-          %span Settings
-          %span.pull-right-container
-            %i.fa.fa-angle-right.pull-right
-        %ul.treeview-menu 
-          - if can? :add_settings, current_user   
-            %li{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
-              = link_to "Add Credentials",community_settings_path(current_community)
-          %li{:class=>"#{controller_name =='communities' && params[:action] =='import_page' ? 'active' : ''}"}
-            = link_to "Import Unit Data" , community_import_page_path(current_community)      
+          %span Favorites    
   / /.sidebar
 / End menu nav left Section

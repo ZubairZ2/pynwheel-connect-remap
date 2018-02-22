@@ -2,7 +2,7 @@ class GalleryImage < ApplicationRecord
 	include RailsSortable::Model
   belongs_to :gallery
   set_sortable :sort  
-	mount_base64_uploader :image, ImageUploader
+	mount_base64_uploader :image, GalleryUploader
 	after_update :crop_image
 
 	def crop_image

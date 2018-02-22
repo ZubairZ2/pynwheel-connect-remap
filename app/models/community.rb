@@ -192,7 +192,7 @@ class Community < ApplicationRecord
   def populate_favorites(items_objs)
     favorites = []
     items_objs.each do |item|
-      favorite = item['type'].classify.constantize.where(id: item["id"],community_id: self.id)
+      favorite = item['type'].classify.constantize.where(id: item["id"])
       favorites << favorite.first if favorite.present?
     end
     return favorites

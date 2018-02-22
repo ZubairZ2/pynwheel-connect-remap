@@ -149,14 +149,14 @@ json.gallery do
 					json.video true
 					json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
 				else
-			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
+			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
 			  	json.video false
 			  end
 			  json.type img.gallery.name
 			  json.id img.id
 			else
 				unless img.is_video?
-			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
+			  	json.url Rails.env.development? ? local_assets_base_url+img.image.url(:ios) : img.image.url(:ios)
 			  	json.video false
 			  	json.type img.gallery.name
 			    json.id img.id
