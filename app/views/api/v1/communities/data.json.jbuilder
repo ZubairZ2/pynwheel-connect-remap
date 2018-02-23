@@ -13,7 +13,7 @@ json.homescreen do
 			  json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
 			end
 		else
-			json.images DefaultImage.all.each do |img|
+			json.images DefaultImage.find_each do |img|
 				json.filename img.name
 			  json.url Rails.env.development? ? local_assets_base_url+img.image : asset_url(img.image)
 			end
@@ -22,7 +22,7 @@ json.homescreen do
 		json.video vid
 		json.loop_type vid.present? ? @community.design.loop_type : "images"
 	else
-		json.images DefaultImage.all.each do |img|
+		json.images DefaultImage.find_each do |img|
 			json.filename img.name
 		  json.url Rails.env.development? ? local_assets_base_url+img.image : asset_url(img.image)
 		end
