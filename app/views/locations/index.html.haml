@@ -1,0 +1,48 @@
+- content_for :title, "Custom Locations - Pynwheel"
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-cubes
+        = @community.name.capitalize
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12
+            .mt-35
+              = link_to new_community_neighborhood_location_path(@community,@neighborhood), remote: true, class: "btn btn-success pull-right mb-20" do
+                %i.fa.fa-plus-circle
+                ADD LOCATION
+              / %a.btn.btn-success.pull-right.mb-20{"data-target" => "#addlocation", "data-toggle" => "modal", :href => "#"}
+              /   %i.fa.fa-plus-circle
+              /   ADD location
+        .box.box-widget.panel-box
+          .row
+            .col-md-12
+              %table.table.table-bordered.table-striped.table-hover.table-responsive
+                %thead
+                  %tr
+                    %th{:width => "79"} Sr #
+                    %th Title
+                    %th Category
+                    %th{:width => "100"} Actions
+                %tbody
+                  - if @locations.present?
+                    - @locations.each_with_index do |location,index|
+                      %tr
+                        %td= index+1
+                        %td
+                          = location.title
+                        %td
+                          = location.category
+                        %td
+                          = link_to  edit_community_neighborhood_location_path(@community,@neighborhood,location), remote: true, class: "text-success ml-5" do
+                            %i.fa.fa-edit
+                          %a.text-danger{"data-name"=>"location","data-href" => "/communities/#{@community.id}/neighborhoods/#{@neighborhood.id}/locations/#{location.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                            %i.fa.fa-trash
+      / End Panel left Side
+/ /.content
+#show_modal
+

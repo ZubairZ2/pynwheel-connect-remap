@@ -1,0 +1,33 @@
+#addLocation.modal.fade{:role => "dialog"}
+	= form_for [@community,@neighborhood,@location], remote: true do |f|
+		.modal-dialog
+			/ Modal content
+			.modal-content
+				.modal-header
+					%button.close{"data-dismiss" => "modal", :type => "button"} ×
+					%h4.modal-title Add Location
+				.modal-body
+					.row
+						.col-md-12
+							.mt-25.mb-40
+								%label Title
+								= f.text_field :title, class: "form-control"
+						.col-md-12
+							.mt-25.mb-40
+								%label Address
+								= f.text_field :address, class: "form-control"
+						.col-md-12
+							.mt-25.mb-40
+								%label Latitude
+								= f.text_field :latitude, class: "form-control"
+						.col-md-12
+							.mt-25.mb-40
+								%label Longitude
+								= f.text_field :longitude, class: "form-control"
+						.col-md-12
+							.mt-25.mb-40
+								%label Category
+								= f.select :category, ['Dining','Shopping','Entertainment','Schools','Banks','Parks','Errands'],{}, class: "form-control"
+				.modal-footer
+					= f.submit "Save", :class=>"btn btn-primary"
+					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel

@@ -82,7 +82,9 @@ Rails.application.routes.draw do
     end
 
     resources :favorite_settings, only: [:index, :create, :update]
-    resources :neighborhoods, only: [:index, :create, :update]
+    resources :neighborhoods, only: [:index, :create, :update] do
+      resources :locations
+    end
     resources :galleries do
       member do
         get :show_image_in_modal

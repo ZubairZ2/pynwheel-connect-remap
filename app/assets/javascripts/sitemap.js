@@ -67,6 +67,46 @@ $(document).ready(function(){
             doDraggable();
           }
         }
+      });    
+    $("#sitemap_image").change(function(){
+      readSitemapImageSrcFromInput(this);
+    });
+    function readSitemapImageSrcFromInput(input){
+      if (input.files && input.files[0]) {
+          if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" || input.files[0].type == "image/svg+xml"){ 
+          var reader = new FileReader(); 
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                // $('#preview-image').attr('src', e.target.result);
+                // $('#preview-image').parent().attr('href', e.target.result);
+                sitemapImage(e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+        else{
+          $(input).val('');
+          $('#image-upload-warning').modal('show');
+          //console.log($(input).val());
+        }
+      }
+    }
+    function sitemapImage(src){
+      $(".divLoading").removeClass("hidden");
+      var url = "/communities/"+community_id+"/sitemaps/"+sitemap_id;
+      $.ajax({
+          url: url,
+          type: "PUT",
+          dataType: "script",
+          data: {
+              sitemap: {image: src}
+          }
+      }).done(function(){
+          $(".divLoading").addClass("hidden");
+          console.log("success");
       });
+   }
+
   }  	
 });

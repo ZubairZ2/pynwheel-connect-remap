@@ -566,6 +566,7 @@ table.upload-image tr td{
 .select-logo-logo{
 	width:100%;
 	height:100%;
+	overflow: hidden;
 }
 .panel-box .dataTables_filter{		
 	margin-bottom: 10px;		
@@ -1400,7 +1401,7 @@ ul.home-tabs li:hover a{
 	border-radius:4px;
 }
 .image-upload{
-	margin-top:20%;
+	margin-top:50px;
 	margin-bottom:50px;
 	color:#a7a7a7;
 	font-size:12px;

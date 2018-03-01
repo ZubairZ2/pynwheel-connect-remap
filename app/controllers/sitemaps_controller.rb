@@ -22,17 +22,17 @@ class SitemapsController < ApplicationController
   def update
     if @community.sitemap.update(sitemap_params)
       flash[:notice] = "Sitemap updated successfully."
-      redirect_to map_community_sitemaps_path
+      # redirect_to map_community_sitemaps_path
     else
-      flash[:error] = @sitemap.errors.full_messages.join(',')
-      render :new
+      flash[:error] = @community.sitemap.errors.full_messages.join(',')
+      # render :new
     end
   end
 
   def plotexp
     add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
-    @sitemap = @community.sitemap
+    @sitemap = @community.sitemap || @community.build_sitemap
     unless @community.units.size > 0
       flash[:error] = "Please import unit data first"
     end

@@ -23,6 +23,12 @@
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_field :radius, :class=>"form-control validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Radius", :value=> @neighborhood.radius.present? ? @neighborhood.radius : 1000,:maxlength=>"10"
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Zoom
+
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :zoom, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"Zoom", :value=> @neighborhood.zoom.present? ? @neighborhood.zoom : 14, :maxlength=>"2"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Categories

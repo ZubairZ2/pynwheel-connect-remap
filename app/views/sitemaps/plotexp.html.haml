@@ -1,4 +1,5 @@
 - content_for :title, "Plot Unit - Pynwheel"
+.divLoading.hidden
 %section.is-sitemap
   .content
     .title-heading.mb-25
@@ -15,6 +16,11 @@
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
           %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} Reset all plots
+        .pull-right.mr-5
+          %span.btn.btn-primary.btn-file
+            %i.fa.fa-upload
+            Upload File
+            = file_field_tag :image, :id => "sitemap_image"
       / /.box-header
       / form start
       %form.form-horizontal
@@ -46,6 +52,7 @@
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 :javascript
-  var arr = #{raw arr}
-  var community_id = #{params[:community_id]}
+  var arr = #{raw arr};
+  var community_id = #{params[:community_id]};
   var addmode = false;
+  var sitemap_id = '#{@sitemap.id}';
