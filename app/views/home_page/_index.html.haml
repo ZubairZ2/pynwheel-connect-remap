@@ -1,3 +1,6 @@
+.text-center.image-upload.home-page-drag-box#home-page-image--upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+  %p Drag &amp; Drop images to Upload
 .row.slide-imgage-boxs.sortable
   - sortable_fetch(@home_page_images) do |home_page_image, id_tag|
     .col-lg-3{:id=> id_tag}
@@ -13,9 +16,6 @@
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_image?home_page_image_id=#{home_page_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
               %i.fa.fa-close
         %h4= home_page_image.name    
-.text-center.image-upload.home-page-drag-box#home-page-image--upload-holder
-  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
-  %p Drag &amp; Drop images to Upload
 
 
 .modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}

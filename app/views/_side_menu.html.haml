@@ -4,6 +4,11 @@
   %section.sidebar
     / Sidebar user panel
     %ul.sidebar-menu{"data-widget" => "tree"}
+      - if params[:community_id].present?
+        %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
+          = link_to edit_community_path(current_community) do
+            %i.fa.fa-info
+            %span Community Info
       %li.treeview{:class=>"#{(controller_name =='communities' && params[:action] != 'import_page') || controller_name =='companies' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-building-o
@@ -15,7 +20,7 @@
             %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             %a{:href => "/communities"} Communities
-      %li{:class=>"#{controller_name =='design' ? 'active' : ''}"}
+      %li{:class=>"#{controller_name =='design' && params[:action] !='logo' ? 'active' : ''}"}
         = link_to community_design_index_path(current_community) do
           %i.fa.fa-tv
           %span Design
@@ -31,6 +36,10 @@
               = link_to "Add Credentials",community_settings_path(current_community)
           %li{:class=>"#{controller_name =='communities' && params[:action] =='import_page' ? 'active' : ''}"}
             = link_to "Import Unit Data" , community_import_page_path(current_community)  
+      %li{:class=>"#{controller_name =='design' && params[:action] =='logo' ? 'active' : ''}"}
+        = link_to logo_community_design_index_path(current_community) do
+          %i.fa.fa-image
+          %span Logo
       %li{:class=>"#{controller_name =='home_page' ? 'active' : ''}"}
         = link_to community_home_page_index_path(current_community) do
           %i.fa.fa-home

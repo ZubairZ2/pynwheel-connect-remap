@@ -69,7 +69,11 @@ Rails.application.routes.draw do
       end
     end
     resources :settings , only: :index
-    resources :design, only: :index
+    resources :design, only: :index do
+      collection do
+        get :logo
+      end
+    end
     resources :home_page, only: :index do
       collection do
         get :show_image_in_modal

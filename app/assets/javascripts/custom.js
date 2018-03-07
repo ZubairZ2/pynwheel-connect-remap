@@ -247,6 +247,9 @@ function selectDataProvider(data_provider){
         case "psi":
             showPsiFields();
             break;
+        case "spreadsheet":
+            showFileFields();
+            break;
     }
 }
 
@@ -298,6 +301,13 @@ function showRealPageSVCFields(){
     $('#community_credential_attributes_pmc_id').addClass("validate[required]");
     $('#site_id').show();
     $('#community_credential_attributes_site_id').addClass("validate[required]");    
+}
+
+function showFileFields(){
+    $('.credential_fields').hide();
+    removeValidationsClass();
+    $('#spreadsheet').show();
+    $('#community_credential_attributes_file').addClass("validate[required]"); 
 }
 
 function showCredentialsForm(){

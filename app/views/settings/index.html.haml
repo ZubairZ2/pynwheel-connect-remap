@@ -6,6 +6,9 @@
       %h4
         %i.fa.fa-gears
         = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
     .row.mt-25.mb-20
       .form-group{:style=>"display: none;"}
         %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label

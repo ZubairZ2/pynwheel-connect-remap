@@ -127,6 +127,15 @@ json.neighborhood do
 		json.categories arr.each do |val|
 			json.title val
 		end
+		if @community.neighborhood.locations.present?
+			json.locations @community.neighborhood.locations.each do |location|
+				json.title location.title
+				json.address location.address
+				json.latitude location.latitude
+				json.longitude location.longitude
+				json.category location.category
+			end
+		end
 	end
 end
 

@@ -12,6 +12,11 @@ $(document).ready(function () {
         var address = document.getElementById('neighborhood_address').value;
         find_geocodes(address);
     })
+    $(document).on('change', '#location_address', function() {
+        console.log(" * address changed *")
+        var address = document.getElementById('location_address').value;
+        find_geocodes(address);
+    })
 
 })
 

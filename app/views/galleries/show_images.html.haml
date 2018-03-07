@@ -6,6 +6,9 @@
       %h4
         %i.fa.fa-cubes
         = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
     / Start Tabs Secttions
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content

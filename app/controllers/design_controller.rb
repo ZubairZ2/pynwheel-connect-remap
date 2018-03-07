@@ -10,6 +10,11 @@ class DesignController < ApplicationController
 		@home_screen = @design.home_screen ||  @design.create_home_screen	
 	end
 
+	def logo
+		add_breadcrumb "Logo", "##"
+		@design = current_community.design || current_community.create_design
+	end
+
 	private 
 
 	def set_community

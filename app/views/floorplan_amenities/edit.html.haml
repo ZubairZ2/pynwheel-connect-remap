@@ -5,6 +5,9 @@
       %h4
         %i.fa.fa-columns
         = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
     .box.box-info.add-plan
       .box-header
         %h3.box-title

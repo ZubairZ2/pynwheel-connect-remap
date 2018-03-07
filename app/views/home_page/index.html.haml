@@ -6,32 +6,33 @@
       %h4
         %i.fa.fa-home
         = @community.name.capitalize  
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
     .row
       .col-lg-10
         .form-group 
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            .radio.radio-primary.pull-left
-              %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>current_community.design.has_images_loop_type? ? true : false}
-                %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
-                  Images
-            .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
-              %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
-                %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
-                  Video
+          .radio.radio-primary.pull-left
+            %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>current_community.design.has_images_loop_type? ? true : false}
+              %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
+                Images
+          .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
+            %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
+              %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
+                Video
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
         / Start image-slide section
         #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
           .row
             .col-lg-12
-              .mt-30
-                .title-home
-                  %h4 Slide Show Images
-                  %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-                  %span.btn.btn-success.btn-file.pull-right.text-UP
-                    %i.fa.fa-plus-circle
-                    Add Files
-                    %input#home-page-images{:type => "file",:multiple=>"multiple"}
+              .title-home
+                %h4 Slide Show Images
+                / %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                %span.btn.btn-success.btn-file.text-UP
+                  %i.fa.fa-plus-circle
+                  Add Files
+                  %input#home-page-images{:type => "file",:multiple=>"multiple"}
           .row
             .col-lg-12
               .pull-right
@@ -41,15 +42,14 @@
         #video-slide.tab-pane.fade{:role => "tabpanel"}
           .row
             .col-lg-12
-              .mt-30
-                .title-home
-                  %h4 Video Show
-                  %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-                  = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:multipart => true },:remote=>true  do |f|
-                    %span.btn.btn-success.btn-file.pull-right.text-UP
-                      %i.fa.fa-plus-circle
-                      Add Video
-                      = f.file_field :video
+              .title-home
+                %h4 Video Show
+                %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+                = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:multipart => true },:remote=>true  do |f|
+                  %span.btn.btn-success.btn-file.pull-right.text-UP
+                    %i.fa.fa-plus-circle
+                    Add Video
+                    = f.file_field :video
                     
           .row.slide-imgage-boxs
             #videos-index

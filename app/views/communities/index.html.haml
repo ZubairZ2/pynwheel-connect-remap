@@ -5,6 +5,9 @@
       %h4
         %i.fa.fa-building-o
         = current_company.name.capitalize
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
