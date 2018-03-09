@@ -326,9 +326,11 @@ function readyJsOnAjaxCall(){
 
 function showDataTables(){
     $('#miyazaki.table').DataTable({
-        "ordering": false,
-        "stateSave": true
+        "ordering": true,
+        "stateSave": true,
+        "paging": false
     });
+    $("#miyazaki_info").detach().prependTo('#miyazaki_wrapper');
     $('#communities.table').DataTable({
         initComplete : function() {
             $("#communities_filter").detach().appendTo('#new-search-area');
