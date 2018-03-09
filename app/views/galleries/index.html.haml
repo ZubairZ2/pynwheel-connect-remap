@@ -12,15 +12,6 @@
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
-        .row
-          .col-md-12
-            .mt-35
-              = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success pull-right mb-20" do
-                %i.fa.fa-plus-circle
-                ADD GALLERY
-              / %a.btn.btn-success.pull-right.mb-20{"data-target" => "#addGallery", "data-toggle" => "modal", :href => "#"}
-              /   %i.fa.fa-plus-circle
-              /   ADD GALLERY
         .box.box-widget.panel-box
           .row
             .col-md-12
@@ -43,6 +34,14 @@
                           %i.fa.fa-edit
                         %a.text-danger{"data-name"=>"Gallery","data-href" => "/communities/#{@community.id}/galleries/#{gallery.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                           %i.fa.fa-trash
+        .row
+          .col-md-12
+            = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success pull-right mb-20" do
+              %i.fa.fa-plus-circle
+              ADD GALLERY
+            / %a.btn.btn-success.pull-right.mb-20{"data-target" => "#addGallery", "data-toggle" => "modal", :href => "#"}
+            /   %i.fa.fa-plus-circle
+            /   ADD GALLERY
       / End Panel left Side
 / /.content
 #show_modal

@@ -1,3 +1,6 @@
+.text-center.image-upload.home-page-drag-box#gallery-image--upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+  %p Drag &amp; Drop Images to Upload
 .row.slide-imgage-boxs.sortable
   - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
     .col-lg-3{:id=> id_tag}
@@ -15,9 +18,6 @@
               %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
           %a.text-danger{"data-name"=>"#{gallery_image.is_video? ? 'Video' : 'Image'}","data-href" => "/communities/#{@community.id}/galleries/#{@gallery.id}/delete_gallery_image?gallery_image_id=#{gallery_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
             %i.fa.fa-close
-.text-center.image-upload.home-page-drag-box#gallery-image--upload-holder
-  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
-  %p Drag &amp; Drop Images to Upload
 
 .modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
