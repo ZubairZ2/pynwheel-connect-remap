@@ -71,6 +71,22 @@ $(document).ready(function(){
     $("#sitemap_image").change(function(){
       readSitemapImageSrcFromInput(this);
     });
+
+    var sitemap_image_upload_holder = document.getElementById('sitemap-image--upload-holder');
+    if (sitemap_image_upload_holder){
+        sitemap_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;    
+          if(files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg"){ 
+            readSitemapImageSrc(files[0]);
+          }
+          else{
+            console.log('file type is not allowed');
+            $('#image-upload-warning').modal('show');
+          }          
+      }
+    }
+
     function readSitemapImageSrcFromInput(input){
       if (input.files && input.files[0]) {
           if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" || input.files[0].type == "image/svg+xml"){ 
@@ -107,6 +123,17 @@ $(document).ready(function(){
           console.log("success");
       });
    }
+
+    function readSitemapImageSrc(file){
+      $(".divLoading").removeClass("hidden");
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        $('#preview-image').attr('src', e.target.result);
+        $('#preview-image').parent().attr('href', e.target.result);
+        sitemapImage(e.target.result);
+      }
+      reader.readAsDataURL(file);
+    }
 
   }  	
 });

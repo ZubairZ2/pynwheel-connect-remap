@@ -9,6 +9,13 @@
         %br
           %small.text-primary
             = @community.company.name + '@' + @community.name
+    %span.btn.btn-primary.btn-file
+      %i.fa.fa-upload
+      Upload File
+      = file_field_tag :image, :id => "sitemap_image"
+    .text-center.image-upload.home-page-drag-box#sitemap-image--upload-holder
+      = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+      %p Drag &amp; Drop images to Upload
     .box.box-info.add-plan
       .box-header
         %h3.box-title
@@ -19,11 +26,6 @@
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
           %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} Reset all plots
-        .pull-right.mr-5
-          %span.btn.btn-primary.btn-file
-            %i.fa.fa-upload
-            Upload File
-            = file_field_tag :image, :id => "sitemap_image"
       / /.box-header
       / form start
       %form.form-horizontal
@@ -37,9 +39,23 @@
                   - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                     = link_to "<i class='fa fa-asterisk'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => unit.marketing_name, :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.marketing_name}/remove_plot"
             .col-lg-3
+              / %ul.nav.nav-tabs.mt-35
+              /   %li.active
+              /     %a{"data-toggle" => "tab", :href => "#home"} Units
+              /   %li
+              /     %a{"data-toggle" => "tab", :href => "#menu1"} Amenities
+              / .tab-content
+              /   #home.tab-pane.fade.in.active
+              /     %h3 HOME
+              /     %p Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              /   #menu1.tab-pane.fade
+              /     %h3 Menu 1
+              /     %p Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+
               %h5.mt-40.mb-20 SELECT UNITS TO PLOT
               %select.amenities-list.form-control
-                %option{:value => ""} -- select unit --
+                %option{:value => ""} -- select unit(s) --
                 - arr = []
                 - units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0

@@ -6,7 +6,7 @@
     else if ( typeof floorplate_id !== 'undefined'){
       saveFloorplateUnit(id, dx, dy);
     }
-    else if ( typeof sitemap_id !== 'undefined'){
+    else if ( typeof isPlotAmenity !== 'undefined'){
       saveAmenityPlot(id, dx, dy);
     }
     else if ( typeof floorplate_id_for_amenity !== 'undefined'){

@@ -53,8 +53,8 @@
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
-          %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'map' ? 'active' : ''}"}
-            = link_to "Sitemap", map_community_sitemaps_path(current_community)
+          / %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'map' ? 'active' : ''}"}
+          /   = link_to "Sitemap", map_community_sitemaps_path(current_community)
           %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'plotexp' ? 'active' : ''}"}
             = link_to "Plot Units", plotexp_community_sitemaps_path(current_community)
           - if Sitemap.exists? community_id: current_community.id  
