@@ -264,6 +264,7 @@ function showPsiFields(){
     $('#community_credential_attributes_username').addClass("validate[required]");
     $('#property_id').show();
     $('#community_credential_attributes_property_id').addClass("validate[required]");
+    $('#data-connection-buttons').show();
 }
 
 function showYardiFields(){
@@ -283,6 +284,7 @@ function showYardiFields(){
     $('#property_id').show();
     $('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#interface_entity').show();
+    $('#data-connection-buttons').show();
 }
 
 function showYardiRentCafeFields(){
@@ -292,6 +294,7 @@ function showYardiRentCafeFields(){
     $('#community_credential_attributes_c_code').addClass("validate[required]");
     $('#p_code').show();
     $('#community_credential_attributes_p_code').addClass("validate[required]");
+    $('#data-connection-buttons').show();
 }
 
 function showRealPageSVCFields(){
@@ -300,13 +303,15 @@ function showRealPageSVCFields(){
     $('#pmc_id').show();
     $('#community_credential_attributes_pmc_id').addClass("validate[required]");
     $('#site_id').show();
-    $('#community_credential_attributes_site_id').addClass("validate[required]");    
+    $('#community_credential_attributes_site_id').addClass("validate[required]"); 
+    $('#data-connection-buttons').show();   
 }
 
 function showFileFields(){
     $('.credential_fields').hide();
     removeValidationsClass();
     $('#spreadsheet').show();
+    $('#data-connection-buttons').hide();
     $('#community_credential_attributes_file').addClass("validate[required]"); 
 }
 

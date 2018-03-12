@@ -47,8 +47,10 @@ class CommunitiesController < ApplicationController
   end
 
   def alert_message
-    if params[:community][:data_provider].present? 
+    if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
+    elsif params[:community][:data_provider].present? and params[:community][:data_provider] == 'spreadsheet'
+      '<div class="alert alert-success">Data is imported successfully.</div>'  
     elsif params[:community][:logo].present?
       '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
@@ -93,7 +95,7 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
       if json = @community.connect_to_provider
-        render :json => json
+        render :xml => json.to_xml
       else
         flash[:error] = "Please enter correct credentials in settings before importing data."
         redirect_to community_import_page_path(current_community) 

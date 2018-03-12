@@ -25,6 +25,15 @@
         Only mp4 files are allowed
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok
+#spreadsheet-file-upload-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Warning
+      .modal-body
+        Only xlsx files are allowed
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok        
 #marker-plotting-error.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
