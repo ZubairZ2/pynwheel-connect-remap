@@ -18,6 +18,8 @@ Rails.application.routes.draw do
     get :import
     get :credentials
     get :test_connection
+    post :save_temporary_image
+    delete :delete_temporary_image
     resources :floorplans do
       resources :amenities,controller: "floorplan_amenities" do
         post :plot_amenity

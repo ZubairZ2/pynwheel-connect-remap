@@ -36,6 +36,17 @@
                 %input#mutiple-files{:type => "file",:multiple=>true}
               %table.table-striped.table.upload-image#pre-save-floorplan-images-table
                 %tr{:valign => "middle"}
+                - if current_community.has_temporary_images?
+                  - current_community.temporary_images.each do |image|
+                    %tr{:valign => "middle",:id=>"row#{image.position}"}
+                      %td{:align => "left"}
+                        .drop-img.generated-class{:ondragover => "allowDrop(event)", :ondrop => "dropBack(event)",:id=>"parent-#{image.position}"}
+                          %img{:alt => "", :draggable => "true", :ondragstart => "drag(event)", :src => "#{image.image}", :title => "",:id=>"drag-#{image.position}"}/
+                      %td{:id=>"img-name-#{image.position}"}
+                        = image.name
+                      %td
+                        %a.btn.btn-danger.btn-sm{:href => "javascript::;", :onclick => "removeDivWithTemporaryImage(#{image.position});"} Remove
+                        //.text-center.mt-10.drag-drop-section
               .text-center.mt-10.drag-drop-section
                 %img{:alt => "", :src => "/assets/upload-image.png", :style => "max-width:100%;", :title => ""}
                 %p.mt-10

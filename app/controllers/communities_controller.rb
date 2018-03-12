@@ -125,6 +125,16 @@ class CommunitiesController < ApplicationController
     redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "All plots have been deleted successfully."
   end
 
+  def save_temporary_image
+    TemporaryImage.create(community_id: params[:community_id],image: params[:image],position: params[:position],name: params[:name])
+    render :json=>{"status"=>"success"}
+  end
+
+  def delete_temporary_image
+    TemporaryImage.where(community_id: params[:community_id],position: params[:position]).destroy_all
+    render :json=>{"status"=>"success"}
+  end
+
   private
 
   def set_community
