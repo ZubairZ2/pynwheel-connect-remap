@@ -22,7 +22,7 @@
             %span Settings
         #settings-form
 
-    .row
+    .row#data-connection-buttons
       / Start Panel left Side
       .col-lg-12.col-md-12
         .row
@@ -53,9 +53,20 @@
   $.ajax({
         url: "/communities/"+community_id+"/credentials",
         type: "GET"
+    }).done(function(){
+      //validation for xlsx
+      $("#community_credential_attributes_file").on('change',function(){
+          if(this.files[0].type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"){
+            $(this).val('');
+            $('#spreadsheet-file-upload-warning').modal('show');
+          }
+      });
     });
+
   $('#communities_on_settings').on('change', function() {
     showCredentialsForm(); 
-  });        
+  });  
+
+        
 
       

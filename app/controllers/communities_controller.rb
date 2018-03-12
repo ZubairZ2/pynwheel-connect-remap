@@ -34,6 +34,7 @@ class CommunitiesController < ApplicationController
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
     respond_to do |format|
       if @community.update(community_params)
+        @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
         format.html { redirect_to communities_path,notice: 'Community updated successfully.' }
         format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
       else
@@ -46,8 +47,10 @@ class CommunitiesController < ApplicationController
   end
 
   def alert_message
-    if params[:community][:data_provider].present? 
+    if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
+    elsif params[:community][:data_provider].present? and params[:community][:data_provider] == 'spreadsheet'
+      '<div class="alert alert-success">Data is imported successfully.</div>'  
     elsif params[:community][:logo].present?
       '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
@@ -92,7 +95,7 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
       if json = @community.connect_to_provider
-        render :json => json
+        render :xml => json.to_xml
       else
         flash[:error] = "Please enter correct credentials in settings before importing data."
         redirect_to community_import_page_path(current_community) 
@@ -123,6 +126,16 @@ class CommunitiesController < ApplicationController
   def remove_plots_from_floorplate
     @community.delete_plots_from_floorplate(params[:floorplate_id])
     redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "All plots have been deleted successfully."
+  end
+
+  def save_temporary_image
+    TemporaryImage.create(community_id: params[:community_id],image: params[:image],position: params[:position],name: params[:name])
+    render :json=>{"status"=>"success"}
+  end
+
+  def delete_temporary_image
+    TemporaryImage.where(community_id: params[:community_id],position: params[:position]).destroy_all
+    render :json=>{"status"=>"success"}
   end
 
   private

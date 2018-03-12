@@ -18,6 +18,7 @@
               %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
           %a.text-danger{"data-name"=>"#{gallery_image.is_video? ? 'Video' : 'Image'}","data-href" => "/communities/#{@community.id}/galleries/#{@gallery.id}/delete_gallery_image?gallery_image_id=#{gallery_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
             %i.fa.fa-close
+        %h4= gallery_image.name        
 
 .modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog

@@ -111,7 +111,7 @@ var holder = document.getElementById('holder');
                     $('#row'+id[1]).show();
                     console.log("ok");
                     $('#parent-'+id[1]).append($(draging_image));
-                    deleteFloorPlanImage(floorplan_id);
+                    deleteFloorPlanImage(floorplan_id,$(draging_image).attr("src"),id[1],$('#img-name-'+id[1]).html());
                 }
             }
     }  
@@ -158,7 +158,7 @@ function drop(ev) {
         var id = $(img_object).attr("id");
         id = id.split('-');
         $('#row'+id[1]).hide();
-        saveFloorPlanImage($(img_object).attr("src"),ev.target.id);
+        saveFloorPlanImage($(img_object).attr("src"),ev.target.id,id[1]);
    }
    else{
      return;
@@ -264,6 +264,7 @@ function showPsiFields(){
     $('#community_credential_attributes_username').addClass("validate[required]");
     $('#property_id').show();
     $('#community_credential_attributes_property_id').addClass("validate[required]");
+    $('#data-connection-buttons').show();
 }
 
 function showYardiFields(){
@@ -283,6 +284,7 @@ function showYardiFields(){
     $('#property_id').show();
     $('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#interface_entity').show();
+    $('#data-connection-buttons').show();
 }
 
 function showYardiRentCafeFields(){
@@ -292,6 +294,7 @@ function showYardiRentCafeFields(){
     $('#community_credential_attributes_c_code').addClass("validate[required]");
     $('#p_code').show();
     $('#community_credential_attributes_p_code').addClass("validate[required]");
+    $('#data-connection-buttons').show();
 }
 
 function showRealPageSVCFields(){
@@ -300,13 +303,15 @@ function showRealPageSVCFields(){
     $('#pmc_id').show();
     $('#community_credential_attributes_pmc_id').addClass("validate[required]");
     $('#site_id').show();
-    $('#community_credential_attributes_site_id').addClass("validate[required]");    
+    $('#community_credential_attributes_site_id').addClass("validate[required]"); 
+    $('#data-connection-buttons').show();   
 }
 
 function showFileFields(){
     $('.credential_fields').hide();
     removeValidationsClass();
     $('#spreadsheet').show();
+    $('#data-connection-buttons').hide();
     $('#community_credential_attributes_file').addClass("validate[required]"); 
 }
 
@@ -375,15 +380,16 @@ function readImageSrc(file){
       var reader = new FileReader();
       reader.onload = function (e) {
         index++
-        var s = "'#row"+index+"'";
-        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img generated-class" ondrop="dropBack(event)" ondragover="allowDrop(event)" id="parent-'+index+'"><img src="'+e.target.result+'" alt="" title=""  draggable="true" ondragstart="drag(event)" id="drag-'+index+'"> </div></td><td> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="$('+s+').remove();">Remove</a></td></tr>';
+        //var s = "'#row"+index+"'";
+        var tr_tag = '<tr valign="middle" id="row'+index+'"><td align="left"><div class="drop-img generated-class" ondrop="dropBack(event)" ondragover="allowDrop(event)" id="parent-'+index+'"><img src="'+e.target.result+'" alt="" title=""  draggable="true" ondragstart="drag(event)" id="drag-'+index+'"> </div></td><td id="img-name-'+index+'"> '+file.name+' </td><td><a href="javascript::;" class="btn btn-danger btn-sm" onclick="removeDivWithTemporaryImage('+index+')">Remove</a></td></tr>';
         $('#pre-save-floorplan-images-table').append(tr_tag);
+        saveTemporaryImage(e.target.result,index,file.name);
       }
       reader.readAsDataURL(file);
   }
 
 
-   function saveFloorPlanImage(src,floorplan_id){
+   function saveFloorPlanImage(src,floorplan_id,position){
     //var community_id = $('#communities_at_floorplans').val();
     $.ajax({
         url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
@@ -395,11 +401,12 @@ function readImageSrc(file){
             }
         }
     }).done(function(){
-        console.log("success");
+        console.log("floorplan image is saved and now going to delete temporary image");
+        deleteTemporaryImage(position);
     });
    }
 
-   function deleteFloorPlanImage(floorplan_id){
+   function deleteFloorPlanImage(floorplan_id,src,position,name){
     //var community_id = $('#communities_at_floorplans').val();
     $.ajax({
         url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
@@ -411,7 +418,8 @@ function readImageSrc(file){
             }
         }
     }).done(function(){
-        console.log("success");
+        console.log("floorplan image is deleted successfully now going to save temporary image");
+        saveTemporaryImage(src,position,name);
     });
    }
 
@@ -453,4 +461,36 @@ function populate_multiselect(){
   }
   $("#categories_field").val(txt)
   $(".show-categories").text(txt)
+  $('.neighborhood-form').submit();
+}
+
+function saveTemporaryImage(base64_src,position,name){
+  $.ajax({
+        url: "/communities/"+community_id+"/save_temporary_image",
+        type: "POST",
+        dataType: "script",
+        data: {
+            image: base64_src,
+            position: position,
+            name: name
+        }
+    });
+}
+
+function deleteTemporaryImage(position){
+  $.ajax({
+        url: "/communities/"+community_id+"/delete_temporary_image",
+        type: "DELETE",
+        dataType: "script",
+        data: {
+            position: position
+        }
+    }).done(function(){
+      console.log('Temporary Image is deleted successfully.');
+    });
+}
+
+function removeDivWithTemporaryImage(position){
+  $('#row'+position).remove();
+  deleteTemporaryImage(position)
 }
