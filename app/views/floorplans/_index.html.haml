@@ -16,7 +16,7 @@
                 %th Sq.Ft
                 %th Bedrooms
                 %th Bathrooms
-                %th Amenities
+                %th Images
                 %th Image
                 %th Actions
             %tbody
@@ -28,7 +28,7 @@
                   %td= f.bedrooms
                   %td= f.bathrooms
                   %td
-                    = link_to "Amenties",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
+                    = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
                   %td
                     - if f.image.present?
                       .drop-img.drop-img-left

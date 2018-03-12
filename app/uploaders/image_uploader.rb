@@ -30,7 +30,7 @@ class ImageUploader < CarrierWave::Uploader::Base
   end
 
   version :thumb , from_version: :large do
-    resize_to_fit(640, 360)
+    resize_to_fit(384, 210)
   end
 
   version :large do

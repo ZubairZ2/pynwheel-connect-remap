@@ -1,22 +1,26 @@
-- content_for :title, "Amenities - Pynwheel"
+- content_for :title, "Images - Pynwheel"
 %section
   .content
     .title-heading
       %h4
         %i.fa.fa-columns
         = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
         .row
           .col-md-6
-            %h4.title Amenities
+            %h4.title 
+              = @floorplan.name + " Floor Plan Images"
+            = link_to "Plot Images on Floor Plan", plot_amenities_community_floorplan_amenities_path(@community,@floorplan), class: "btn btn-primary mb-20"
           .col-md-6
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/#{@floorplan.id}/amenities/new"}
                 %i.fa.fa-plus-circle
-                ADD AMENITY
-              = link_to "Plot Now", plot_amenities_community_floorplan_amenities_path(@community,@floorplan), class: "btn btn-primary mr-5 pull-right"
+                ADD Image
             .divLoading.hidden
         .box.box-widget.panel-box
           .box-header
@@ -28,7 +32,7 @@
                     %tr
                       %th{:width => "79"} Sr #
 
-                      %th Amenity Name
+                      %th Image Name
                       %th Image
                       %th{:width => "250"} Actions
                   %tbody

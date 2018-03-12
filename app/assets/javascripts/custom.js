@@ -247,6 +247,9 @@ function selectDataProvider(data_provider){
         case "psi":
             showPsiFields();
             break;
+        case "spreadsheet":
+            showFileFields();
+            break;
     }
 }
 
@@ -300,6 +303,13 @@ function showRealPageSVCFields(){
     $('#community_credential_attributes_site_id').addClass("validate[required]");    
 }
 
+function showFileFields(){
+    $('.credential_fields').hide();
+    removeValidationsClass();
+    $('#spreadsheet').show();
+    $('#community_credential_attributes_file').addClass("validate[required]"); 
+}
+
 function showCredentialsForm(){
     var community_id = $('#communities_on_settings').val();
     $.ajax({
@@ -316,9 +326,11 @@ function readyJsOnAjaxCall(){
 
 function showDataTables(){
     $('#miyazaki.table').DataTable({
-        "ordering": false,
-        "stateSave": true
+        "ordering": true,
+        "stateSave": true,
+        "paging": false
     });
+    $("#miyazaki_info").detach().prependTo('#miyazaki_wrapper');
     $('#communities.table').DataTable({
         initComplete : function() {
             $("#communities_filter").detach().appendTo('#new-search-area');

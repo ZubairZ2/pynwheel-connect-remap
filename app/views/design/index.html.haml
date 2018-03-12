@@ -6,15 +6,18 @@
       %h4
         %i.fa.fa-tv
         = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12.mt-30
         .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
           %ul#myTabs.nav.nav-tabs{:role => "tablist"}
-            %li.active{:role => "presentation"}
-              %a#home-tab{"aria-expanded" => "true", "data-toggle" => "tab", :href => "#home", :role => "tab"} Logo Options
+            / %li.active{:role => "presentation"}
+            /   %a#home-tab{"aria-expanded" => "true", "data-toggle" => "tab", :href => "#home", :role => "tab"} Logo Options
             - if can? :select_theme, current_user  
-              %li{:role => "presentation"}
+              %li.active{:role => "presentation"}
                 %a#theme-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-theme", :role => "tab"} Select Theme     
             %li.hidden{:role => "presentation"}
               %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
@@ -33,9 +36,9 @@
                   %a#button-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#u-button", :role => "tab"} Upload Menu Buttons
           #myTabContent.tab-content.add-plan
             / Start L>ogo Upload section
-            #home.tab-pane.fade.active.in{:role => "tabpanel"}
-              = render 'logo'
-            #s-theme.tab-pane.fade{:role => "tabpanel"}
+            / #home.tab-pane.fade.active.in{:role => "tabpanel"}
+            /   = render 'logo'
+            #s-theme.tab-pane.fade.active.in{:role => "tabpanel"}
               = render 'theme'
             #s-overlay.tab-pane.fade{:role => "tabpanel"}
               = render 'overlay'    

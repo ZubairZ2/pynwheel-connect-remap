@@ -11,6 +11,9 @@
       %h4
         %i.fa.fa-laptop
         = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
     #units-index
       = render 'index'
 :javascript

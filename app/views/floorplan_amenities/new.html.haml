@@ -1,4 +1,4 @@
-- content_for :title, "Add Amenity - Pynwheel"
+- content_for :title, "Add Image - Pynwheel"
 %section
   .content
     .title-heading.mb-25
@@ -9,7 +9,7 @@
       .box-header
         %h3.box-title
           Add
-          %span Amenity
+          %span Image
 
       = form_for @amenity,:url=>community_floorplan_amenities_path(@community,@floorplan),:html=>{:class=>"form-horizontal"} do |f|
         .box-body
@@ -19,4 +19,4 @@
         / /.box-body
         .box-footer
           = link_to "CANCEL" , community_floorplan_amenities_path(@community,@floorplan), :class=>"btn btn-default pull-right"
-          = f.submit "ADD AMENITY", :class=>"btn btn-success pull-right mr-10"
+          = f.submit "ADD IMAGE", :class=>"btn btn-success pull-right mr-10"
