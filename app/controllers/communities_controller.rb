@@ -34,6 +34,7 @@ class CommunitiesController < ApplicationController
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
     respond_to do |format|
       if @community.update(community_params)
+        @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
         format.html { redirect_to communities_path,notice: 'Community updated successfully.' }
         format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
       else
