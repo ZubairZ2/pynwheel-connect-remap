@@ -461,6 +461,7 @@ function populate_multiselect(){
   }
   $("#categories_field").val(txt)
   $(".show-categories").text(txt)
+  $('.neighborhood-form').submit();
 }
 
 function saveTemporaryImage(base64_src,position,name){

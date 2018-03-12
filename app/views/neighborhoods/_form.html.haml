@@ -3,32 +3,32 @@
     Address
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :address, :class=>"form-control validate[required]", :placeholder=>"Address", :maxlength=>"150", :value=> @neighborhood.address.present? ? @neighborhood.address : @community.make_address
+    = f.text_field :address, :class=>"form-control validate[required] neighborhood-form-field", :placeholder=>"Address", :maxlength=>"150", :value=> @neighborhood.address.present? ? @neighborhood.address : @community.make_address
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Latitude
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :latitude, :class=>"form-control validate[required,custom[onlyLatitude]]", :placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude", :value=> @neighborhood.latitude.present? ? @neighborhood.latitude : @community.latitude
+    = f.text_field :latitude, :class=>"form-control validate[required,custom[onlyLatitude]] neighborhood-form-field", :placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude", :value=> @neighborhood.latitude.present? ? @neighborhood.latitude : @community.latitude
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Longitude
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :longitude, :class=>"form-control validate[required,custom[onlyLongitude]]", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude", :value=> @neighborhood.longitude.present? ? @neighborhood.longitude : @community.longitude
+    = f.text_field :longitude, :class=>"form-control validate[required,custom[onlyLongitude]] neighborhood-form-field", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude", :value=> @neighborhood.longitude.present? ? @neighborhood.longitude : @community.longitude
 - if current_user.is_super_admin?    
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Radius
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_field :radius, :class=>"form-control validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Radius", :value=> @neighborhood.radius.present? ? @neighborhood.radius : 1000,:maxlength=>"10"
+      = f.text_field :radius, :class=>"form-control validate[required,custom[onlyNumber&Decimal]] neighborhood-form-field", :placeholder=>"Radius", :value=> @neighborhood.radius.present? ? @neighborhood.radius : 1000,:maxlength=>"10"
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Zoom
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_field :zoom, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"Zoom", :value=> @neighborhood.zoom.present? ? @neighborhood.zoom : 14, :maxlength=>"2"
+      = f.text_field :zoom, :class=>"form-control validate[required,custom[onlyNumber]] neighborhood-form-field", :placeholder=>"Zoom", :value=> @neighborhood.zoom.present? ? @neighborhood.zoom : 14, :maxlength=>"2"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Categories
@@ -65,4 +65,4 @@
           %a
             %i.fa.fa-check 
             Errands
-= f.hidden_field :category, :multiple => true, id: "categories_field"
+= f.hidden_field :category, :multiple => true, id: "categories_field",:class=>"neighborhood-form-field"
