@@ -53,6 +53,31 @@ class FloorplatesController < ApplicationController
 		redirect_to community_floorplates_path(current_community)
 	end
 
+	def grid_overlay
+		@floorplate = Floorplate.find params[:floorplate_id]
+    @units = @floorplate.units.order(:building, :unit_type)
+    add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+		add_breadcrumb "Grid Overlay", community_floorplate_grid_overlay_path(current_community,@floorplate)
+  end
+
+  def adjust_marker_positions
+    @floorplate = Floorplate.find params[:floorplate_id]
+    @units = @floorplate.units.where("x_plot > ? and y_plot > ?", 0,0).order(:building, :unit_type)
+    
+    @units.each do |unit|
+      if params[:horizontal_position].present?
+        unit.x_plot = unit.x_plot.to_f + params[:horizontal_position].to_f
+      end
+      if params[:vertical_position].present?
+        unit.y_plot = unit.y_plot.to_f + params[:vertical_position].to_f
+      end
+      unit.save(validate: false)
+    end
+    
+    flash[:notice] = "Markers positions are adjusted successfully."
+    redirect_to community_floorplate_grid_overlay_path(current_community,@floorplate)
+  end
+
 	def plotexp
 		@floorplate = Floorplate.find params[:floorplate_id]
 	    unless current_community.units.size > 0

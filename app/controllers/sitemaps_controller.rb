@@ -29,6 +29,30 @@ class SitemapsController < ApplicationController
     end
   end
 
+  def grid_overlay
+    add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
+    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path(current_community)
+    add_breadcrumb "Grid Overlay", grid_overlay_community_sitemaps_path(current_community)
+    @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type)
+  end
+
+  def adjust_marker_positions
+    @units = @community.units.where(floorplate_id: nil).where("x_plot > ? and y_plot > ?", 0,0)
+    
+    @units.each do |unit|
+      if params[:horizontal_position].present?
+        unit.x_plot = unit.x_plot.to_f + params[:horizontal_position].to_f
+      end
+      if params[:vertical_position].present?
+        unit.y_plot = unit.y_plot.to_f + params[:vertical_position].to_f
+      end
+      unit.save(validate: false)
+    end
+    
+    flash[:notice] = "Markers positions are adjusted successfully."
+    redirect_to grid_overlay_community_sitemaps_path(@community)
+  end
+
   def plotexp
     add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path

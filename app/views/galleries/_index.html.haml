@@ -3,10 +3,10 @@
   %p Drag &amp; Drop Images to Upload
 .row.slide-imgage-boxs.sortable
   - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
-    .col-lg-3{:id=> id_tag}
+    .col-lg-2{:id=> id_tag}
       .slide-image
         .image-box.video-box
-          .images
+          .images.height-200
             - if gallery_image.is_video?
               = video_tag gallery_image.image.url, :controls => true, :autobuffer => true
             - else 
