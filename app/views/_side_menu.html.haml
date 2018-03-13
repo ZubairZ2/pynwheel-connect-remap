@@ -46,20 +46,15 @@
         = link_to community_units_path(current_community)  do 
           %i.fa.fa-laptop
           %span Units
-      %li.treeview{:class=>"#{controller_name =='sitemaps' || controller_name == 'sitemap_amenities' ? 'active' : ''}"}
-        %a{:href => "#"}
+      %li{:class=>"#{controller_name =='sitemap_amenities' ? 'active' : ''}"}
+        = link_to community_sitemap_amenities_path(current_community,current_community.sitemap)  do 
+          %i.fa.fa-plus-square
+          %span Amenities
+      %li{:class=>"#{controller_name =='sitemaps' ? 'active' : ''}"}
+        %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
           %i.fa.fa-map-marker
           %span Property Map
-          %span.pull-right-container
-            %i.fa.fa-angle-right.pull-right
-        %ul.treeview-menu
-          / %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'map' ? 'active' : ''}"}
-          /   = link_to "Sitemap", map_community_sitemaps_path(current_community)
-          %li{:class=>"#{controller_name =='sitemaps' && params[:action] == 'plotexp' ? 'active' : ''}"}
-            = link_to "Plot Units", plotexp_community_sitemaps_path(current_community)
-          - if Sitemap.exists? community_id: current_community.id  
-            %li{:class=>"#{controller_name =='sitemap_amenities' && params[:action] == 'index' ? 'active' : ''}"}
-              = link_to "Amenities",  community_sitemap_amenities_path(current_community,current_community.sitemap)  
+          %span.pull-right-container 
       %li{:class=>"#{controller_name =='floorplates' ? 'active' : ''}"}
         %a{:href => "#{community_floorplates_path(current_community)}"}
           %i.fa.fa-database

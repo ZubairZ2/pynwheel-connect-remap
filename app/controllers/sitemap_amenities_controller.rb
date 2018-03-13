@@ -5,9 +5,13 @@ class SitemapAmenitiesController < ApplicationController
 
 	def index
 		@sitemap = @community.sitemap
-    @amenities = @sitemap.amenities.order(id: :desc)
-    add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
-    add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
+		if @community.floorplates.present?
+			@floorplates = current_community.floorplates.order(id: :desc)
+		else
+	    @amenities = @sitemap.amenities.order(id: :desc)
+	    add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
+	    add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
+	  end
 	end
 
 	def new
