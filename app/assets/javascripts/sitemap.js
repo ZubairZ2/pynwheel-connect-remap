@@ -36,13 +36,13 @@ $(document).ready(function(){
       });
 
      
-      $(document).on("click", ".marker" , function() {
-        console.log($(this).attr("title"));
-        $(this).attr('data-name' , 'plot');
-        $(this).attr('data-target' , '#confirm-delete');
-        $(this).attr('data-toggle' , 'modal');
-        $(this).attr('data-href' , '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot');
-      });
+      // $(document).on("click", ".marker" , function() {
+      //   console.log($(this).attr("title"));
+      //   $(this).attr('data-name' , 'plot');
+      //   $(this).attr('data-target' , '#confirm-delete');
+      //   $(this).attr('data-toggle' , 'modal');
+      //   $(this).attr('data-href' , '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot');
+      // });
 
       $("#map").mouseup(function(e) {
         // first check if user is clicking on scrollbar
@@ -91,8 +91,6 @@ $(document).ready(function(){
       if (input.files && input.files[0]) {
           if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" || input.files[0].type == "image/svg+xml"){ 
           var reader = new FileReader(); 
-            var reader = new FileReader();
-
             reader.onload = function (e) {
                 // $('#preview-image').attr('src', e.target.result);
                 // $('#preview-image').parent().attr('href', e.target.result);
