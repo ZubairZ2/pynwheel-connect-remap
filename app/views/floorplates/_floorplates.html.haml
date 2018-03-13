@@ -1,0 +1,50 @@
+.row
+  / Start Panel left Side
+  .col-lg-12.col-md-12
+    .divLoading.hidden
+    .box.box-widget.panel-box
+      .box-header  
+        .row
+          .col-md-12
+            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+              %thead
+                %tr
+                  %th{:width => "79"} Sr #
+
+                  %th Name
+                  %th Number
+                  %th Building
+                  %th Range
+                  %th Image
+                  %th Amenities
+              %tbody
+                - @floorplates.each_with_index  do |f,index|
+                  %tr
+                    %td
+                      = index+1
+                    %td
+                      = f.name
+                    %td
+                      = f.number 
+                    %td
+                      = f.building
+                    %td
+                      = f.range 
+                    %td
+                      - if f.image.present?
+                        .drop-img.drop-img-left
+                          = image_tag f.image.url
+                      - else  
+                        .drop-img.drop-img-left
+                    %td
+                      = link_to "Amenties",community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"
+                        
+                      
+
+        
+              
+  / End Panel left Side
+  / Start Panel Right Side
+  .col-lg-4.col-md-12
+    .row
+      .col-md-12

@@ -4,7 +4,11 @@ class FloorplatesController < ApplicationController
 	before_action :set_floorplate, only: [:edit,:update,:destroy]
 	def index
 		@floorplates = current_community.floorplates.order(id: :desc)
-		add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+		if params[:amenities].present?
+			@amenities = true
+		else
+			add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+		end
 	end
 
 	def new
