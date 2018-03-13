@@ -44,6 +44,8 @@ Rails.application.routes.draw do
         end
       end
       get :plotexp
+      get :grid_overlay
+      post :adjust_marker_positions
     end
     resources :units do
       member do
@@ -51,6 +53,7 @@ Rails.application.routes.draw do
         post :ajaxplotunitforfloorplate
         delete :remove_plot
         delete :remove_plot_from_floorplate
+        post :adjust_position
       end
     end
     resources :sitemaps do
@@ -68,6 +71,8 @@ Rails.application.routes.draw do
         get :map
         get :list_amenities
         get :plot_amenities
+        get :grid_overlay
+        post :adjust_marker_positions
       end
     end
     resources :settings , only: :index

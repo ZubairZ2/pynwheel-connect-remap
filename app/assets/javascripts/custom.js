@@ -137,6 +137,14 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
     $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
 });
 
+$('#markers-modal').on('show.bs.modal', function(e) {
+    $(this).find('#u-name').html($(e.relatedTarget).attr('title'));
+    $(this).find('.delete-marker-ok').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find("form").attr("action",$(e.relatedTarget).data('unit-form-url'));
+    $(this).find('#horizontal_position').val($(e.relatedTarget).data('horizontal'));
+    $(this).find('#vertical_position').val($(e.relatedTarget).data('vertical'));
+});
+
 });
 
 function allowDrop(ev) {

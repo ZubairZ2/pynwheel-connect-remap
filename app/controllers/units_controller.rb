@@ -108,6 +108,19 @@ class UnitsController < ApplicationController
     end
   end
 
+  def adjust_position
+    @unit = Unit.find params[:id]
+    if params[:horizontal_position].present?
+      @unit.x_plot = params[:horizontal_position].to_f
+    end
+    if params[:vertical_position].present?
+      @unit.y_plot = params[:vertical_position].to_f
+    end
+    @unit.save(validate: false)
+    flash[:notice] = "Marker position is adjusted successfully."
+    redirect_to params[:redirect_path]
+  end
+
   private
   def set_community
     @community = Community.find(params[:community_id])
