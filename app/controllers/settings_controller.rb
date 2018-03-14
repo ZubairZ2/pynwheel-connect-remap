@@ -1,6 +1,6 @@
 	class SettingsController < ApplicationController
 	add_breadcrumb "Home", :root_path
-	add_breadcrumb "Settings", "##"
+	add_breadcrumb "Data", "##"
     before_action :set_community
 	def index
 		authorize! :add_settings,current_user
