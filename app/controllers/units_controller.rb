@@ -67,6 +67,7 @@ class UnitsController < ApplicationController
     unit = @community.units.where(marketing_name: params[:id])
     if unit.present?
       #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      unit = unit.first
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]
       unit.floorplate_id = params[:floorplate_id]
