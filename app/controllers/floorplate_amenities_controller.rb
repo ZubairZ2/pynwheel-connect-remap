@@ -24,16 +24,8 @@ class FloorplateAmenitiesController < ApplicationController
 	end
 
 	def create
-		@amenity = @floorplate.amenities.build(amenity_params)
-		if @amenity.save
-			redirect_to community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity created successfully"
-		else
-			add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-      add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
-      add_breadcrumb "Add Amenity",new_community_floorplate_amenity_path
-			flash[:error] = @amenity.errors.full_messages.join(',')
-      render :new
-		end
+		@floorplate.amenities.create(image: params[:src],name: params[:name])
+		@amenities = @floorplate.amenities.order(id: :desc)
 	end
 
 	def update

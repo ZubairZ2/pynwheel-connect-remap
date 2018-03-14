@@ -28,6 +28,7 @@ $(document).ready(function(){
         // hide from unused list
         $(this).css({"display": "none"});
         plotMode();
+        $("#imageselect").toggle();
         e.stopPropagation()
       })
 
@@ -115,5 +116,6 @@ $(document).ready(function(){
           }
         }
       });
-  }  	
+  } 
+
 });

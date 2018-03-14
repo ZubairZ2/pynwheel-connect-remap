@@ -1,0 +1,39 @@
+.text-center.image-upload.home-page-drag-box#sitemap-amenity-image--upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+  %p Drag &amp; Drop Images to Upload
+.row.slide-imgage-boxs
+  - @amenities.each do |amenity, id_tag|
+    .col-lg-3{:id=> id_tag}
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+              = image_tag amenity.image.url
+        .icons
+          = link_to edit_community_sitemap_amenity_path(@community,@sitemap,amenity), remote: true do 
+            %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+          %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+            %i.fa.fa-close
+        %h4= amenity.name        
+
+.modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-body
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+        #carousel-example-generic.carousel.slide
+          / Wrapper for slides
+          .carousel-inner{:style=>"height: 500px;"}
+            - @amenities.each_with_index do |amenity,index|
+              .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
+                = image_tag amenity.image.url
+                .carousel-caption
+                  image  
+            
+          / Controls
+          %a.left.carousel-control{"data-slide" => "prev", :href => "#carousel-example-generic", :role => "button"}
+            %span.glyphicon.glyphicon-chevron-left
+          %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
+            %span.glyphicon.glyphicon-chevron-right

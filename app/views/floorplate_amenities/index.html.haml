@@ -16,46 +16,20 @@
             %h4.title Amenities
           .col-md-6
             .mt-35 
-              %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplates/#{@floorplate.id}/amenities/new"}
+              %span.btn.btn-success.btn-file.pull-right.mb-20
                 %i.fa.fa-plus-circle
-                ADD AMENITY
+                Add Amenity
+                %input#amenity-images{:multiple => "multiple", :type => "file"}/ 
+              / %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplates/#{@floorplate.id}/amenities/new"}
+              /   %i.fa.fa-plus-circle
+              /   ADD AMENITY
               = link_to "Plot Amenties",plot_amenities_community_floorplate_amenities_path(@community,@floorplate), :class=>"btn btn-primary pull-right mr-5"
             .divLoading.hidden
-        .box.box-widget.panel-box
-          .box-header
-            
-            .row
-              .col-md-12
-                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
-                  %thead
-                    %tr
-                      %th{:width => "79"} Sr #
-
-                      %th Amenity Name
-                      %th Image
-                      %th{:width => "250"} Actions
-                  %tbody
-                    - @amenities.each_with_index  do |f,index|
-                      %tr
-                        %td
-                          = index+1
-                        %td
-                          = f.name
-                        %td
-                          .drop-img.drop-img-left
-                            = image_tag f.image.url if f.image.present?
-                        %td
-                          %a.text-success{:href => "/communities/#{@community.id}/floorplates/#{@floorplate.id}/amenities/#{f.id}/edit"}
-                            %i.fa.fa-edit
-                          %a.text-danger{"data-name"=>"Amenity","data-href" => "/communities/#{@community.id}/floorplates/#{@floorplate.id}/amenities/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-                            %i.fa.fa-trash
-
-            
-                  
-      / End Panel left Side
-      / Start Panel Right Side
-      .col-lg-4.col-md-12
-        .row
-          .col-md-12
+        #images-index
+          = render :partial=>'index'
+#edit-image.modal.fade.edit-image
+:javascript
+  var community_id = #{params[:community_id]}
+  var floorplate_id = #{@floorplate.id}
 
         

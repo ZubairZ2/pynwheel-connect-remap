@@ -29,15 +29,8 @@ class SitemapAmenitiesController < ApplicationController
 	end
 
 	def create
-		@amenity = @community.sitemap.amenities.build(amenity_params)
-		if @amenity.save
-			redirect_to community_sitemap_amenities_path(@community,@sitemap), notice: "Amenity created successfully"
-		else
-			add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-      add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
-			flash[:error] = @amenity.errors.full_messages.join(',')
-      render :new
-		end
+		@sitemap.amenities.create(image: params[:src],name: params[:name])
+		@amenities = @sitemap.amenities.order(id: :desc)
 	end
 
 	def update

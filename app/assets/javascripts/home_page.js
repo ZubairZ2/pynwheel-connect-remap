@@ -29,9 +29,58 @@ $(document).ready(function(){
       }
       $(this).val(''); 
     });
+
+  $("#amenity-images").change(function(){
+      var files = $(this).prop("files")
+      for (var i = 0; i < files.length; i++) {
+          if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+            readAmenityImageSrc(files[i],'floorplate');
+        } 
+      }
+      if(files.length == 1){
+        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+          $('#image-upload-warning').modal('show');
+        } 
+      }
+      $(this).val(''); 
+    });
+
+    $("#floorplan-amenity-images").change(function(){
+      var files = $(this).prop("files")
+      for (var i = 0; i < files.length; i++) {
+          if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+            readAmenityImageSrc(files[i],'floorplan');
+        } 
+      }
+      if(files.length == 1){
+        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+          $('#image-upload-warning').modal('show');
+        } 
+      }
+      $(this).val(''); 
+    });
+
+    $("#sitemap-amenity-images").change(function(){
+      var files = $(this).prop("files")
+      for (var i = 0; i < files.length; i++) {
+          if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+            readAmenityImageSrc(files[i],'sitemap');
+        } 
+      }
+      if(files.length == 1){
+        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+          $('#image-upload-warning').modal('show');
+        } 
+      }
+      $(this).val(''); 
+    });
+
   // below lines are doing drag and drop on home page
   imageDragNdrop();
   imageGalleryDragNdrop()
+  imageAmenityDragNdrop()
+  imageFloorplanAmenityDragNdrop()
+  imageSitemapAmenityDragNdrop()
 
   $('#images-loop-type-radio').click(function(){
     if ($(this).is(':checked')){
@@ -204,3 +253,102 @@ function galleryImage(src,name){
     }
   }
 }
+
+  function readAmenityImageSrc(file,type){
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      AmenityImage(e.target.result,file.name,type);
+    }
+    reader.readAsDataURL(file);
+  }
+
+  function AmenityImage(src,name,type){
+    if (type == "floorplate")
+      var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/amenities"
+    else if (type == "floorplan")
+      var url = "/communities/"+community_id+"/floorplans/"+floorplan_id+"/amenities"
+    else
+      var url = "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/amenities"
+      $.ajax({
+          url: url,
+          type: "POST",
+          dataType: "script",
+          data: {
+              name: name,
+              src: src
+          }
+      }).done(function(){
+          $(".divLoading").addClass("hidden");
+          console.log("success");
+      });
+    }
+
+  function imageAmenityDragNdrop(){
+    var amenity_image_upload_holder = document.getElementById('amenity-image--upload-holder');
+    if (amenity_image_upload_holder){
+        amenity_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;
+          if (files.length > 0){
+              for (var i = 0; i < files.length; i++) {
+                if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+                  readAmenityImageSrc(files[i],'floorplate');
+                }
+              }
+          }
+          if(files.length == 1){
+            console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+              $('#image-upload-warning').modal('show');
+            } 
+          }          
+      }
+    }
+  }
+
+  function imageFloorplanAmenityDragNdrop(){
+    var amenity_image_upload_holder = document.getElementById('floorplan-amenity-image--upload-holder');
+    if (amenity_image_upload_holder){
+        amenity_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;
+          if (files.length > 0){
+              for (var i = 0; i < files.length; i++) {
+                if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+                  readAmenityImageSrc(files[i],'floorplan');
+                }
+              }
+          }
+          if(files.length == 1){
+            console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+              $('#image-upload-warning').modal('show');
+            } 
+          }          
+      }
+    }
+  }
+
+  function imageSitemapAmenityDragNdrop(){
+    var amenity_image_upload_holder = document.getElementById('sitemap-amenity-image--upload-holder');
+    if (amenity_image_upload_holder){
+        amenity_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;
+          if (files.length > 0){
+              for (var i = 0; i < files.length; i++) {
+                if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+                  readAmenityImageSrc(files[i],'sitemap');
+                }
+              }
+          }
+          if(files.length == 1){
+            console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+              $('#image-upload-warning').modal('show');
+            } 
+          }          
+      }
+    }
+  }
