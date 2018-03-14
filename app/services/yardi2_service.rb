@@ -38,68 +38,80 @@ class Yardi2Service < BaseService
 	end
 
 	def save_yardi2_units(ils_units,property_id)
-      ils_units.each do |u|
-      unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize  
-      #unit = Unit.new(provider: "yardi2",community_id: credentials.communty_id)
-      unit.property_id = property_id
-      #unit.provider_unit_id = u["Id"]
-      unit.unit_type = u["Id"]
-      unit.marketing_name = u["Id"]
-      unit.floorplan_id = u["Unit"]["Information"]["UnitType"]
-      unit.market_rent = 0 #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
-      unit.effective_rent = u["EffectiveRent"]["Min"]
+    ils_units.each do |u|
+      begin
+        unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize  
+        #unit = Unit.new(provider: "yardi2",community_id: credentials.communty_id)
+        unit.property_id = property_id
+        #unit.provider_unit_id = u["Id"]
+        unit.unit_type = u["Id"]
+        unit.marketing_name = u["Id"]
+        unit.floorplan_id = u["Unit"]["Information"]["UnitType"]
+        unit.market_rent = 0 #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
+        unit.effective_rent = u["EffectiveRent"]["Min"]
 
-      vacate_date = Date.today
-      if u["Availability"].present?
-        if u["Availability"]["VacateDate"]["Year"].present?
-          vacate_date = Date.parse("#{u["Availability"]["VacateDate"]["Year"]}-#{u["Availability"]["VacateDate"]["Month"]}-#{u["Availability"]["VacateDate"]["Day"]}")
-        end
-        if u["Availability"]["MadeReadyDate"]["Year"].present?
-          vacate_date = Date.parse("#{u["Availability"]["MadeReadyDate"]["Year"]}-#{u["Availability"]["MadeReadyDate"]["Month"]}-#{u["Availability"]["MadeReadyDate"]["Day"]}")
-        end
-        if vacate_date >= Date.today && u["Availability"]["VacancyClass"] == "Occupied"
-          is_available = true
+        vacate_date = Date.today
+        if u["Availability"].present?
+          if u["Availability"]["VacateDate"]["Year"].present? and u["Availability"]["VacateDate"]["Year"] != '0'
+            vacate_date = Date.parse("#{u["Availability"]["VacateDate"]["Year"]}-#{u["Availability"]["VacateDate"]["Month"]}-#{u["Availability"]["VacateDate"]["Day"]}")
+          end
+          if u["Availability"]["MadeReadyDate"]["Year"].present?
+            vacate_date = Date.parse("#{u["Availability"]["MadeReadyDate"]["Year"]}-#{u["Availability"]["MadeReadyDate"]["Month"]}-#{u["Availability"]["MadeReadyDate"]["Day"]}")
+          end
+          if vacate_date >= Date.today && u["Availability"]["VacancyClass"] == "Occupied"
+            is_available = true
+          else
+            is_available = false
+            vacate_date = Date.parse("2099-1-1")
+          end
         else
           is_available = false
-          vacate_date = Date.parse("2099-1-1")
+          vacate_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
         end
-      else
-        is_available = false
-        vacate_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
+        unit.availability = is_available ? "Unoccupied" : "Occupied"
+        unit.available_date = vacate_date
+        unit.save
+      rescue => e
+        #Thread.current[:errors] << e.message
+        puts '----------------------------------', e.message
+        ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
-      unit.availability = is_available ? "Unoccupied" : "Occupied"
-      unit.available_date = vacate_date
-      unit.save
     end
   end
 
   def save_yardi2_floorplans(floorplans)
     floorplans.each do |f|
-      fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize  
-      #fp = Floorplan.new(provider: "yardi2",community_id: credentials.communty_id)
-      #fp.provider_floorplan_id = f["Id"]
-      rooms = f["Room"]
-      rooms.each do |room|
-        if room["Type"] == "Bedroom"
-          fp.bedrooms = room["Count"]
-        else
-          fp.bathrooms = room["Count"]
+      begin
+        fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize  
+        #fp = Floorplan.new(provider: "yardi2",community_id: credentials.communty_id)
+        #fp.provider_floorplan_id = f["Id"]
+        rooms = f["Room"]
+        rooms.each do |room|
+          if room["Type"] == "Bedroom"
+            fp.bedrooms = room["Count"]
+          else
+            fp.bathrooms = room["Count"]
+          end
         end
+        fp.name = f["Name"]
+        if f["MarketRent"]["Min"].to_f > 0
+          fp.market_rent = f["MarketRent"]["Min"]
+        else
+          fp.market_rent = f["MarketRent"]["Max"]
+        end
+        if f["SquareFeet"]["Min"].to_f > 0
+          fp.square_feet = f["SquareFeet"]["Min"]
+        else
+          fp.square_feet = f["SquareFeet"]["Max"]
+        end
+        fp.unit_count = f["UnitCount"]
+        fp.units_available = -1
+        fp.save
+      rescue => e
+        #Thread.current[:errors] << e.message
+        puts '----------------------------------', e.message
+        ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
-      fp.name = f["Name"]
-      if f["MarketRent"]["Min"].to_f > 0
-        fp.market_rent = f["MarketRent"]["Min"]
-      else
-        fp.market_rent = f["MarketRent"]["Max"]
-      end
-      if f["SquareFeet"]["Min"].to_f > 0
-        fp.square_feet = f["SquareFeet"]["Min"]
-      else
-        fp.square_feet = f["SquareFeet"]["Max"]
-      end
-      fp.unit_count = f["UnitCount"]
-      fp.units_available = -1
-      fp.save
     end
   end
 

@@ -129,7 +129,8 @@ class RealPageSvcService < BaseService
         units = result["Envelope"]["Body"]["getunitsbypropertyResponse"]["getunitsbypropertyResult"]["GetUnitsByProperty"]["UnitObject"]
         units.each do |u|
           hit = false
-          unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u["UnitID"]).first_or_initialize
+          #unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u["UnitID"],marketing_name: u["UnitNumber"]).first_or_initialize
+          unit = Unit.where(provider: "realpagesvc",community_id: community_id,marketing_name: u["UnitNumber"]).first_or_initialize
           #unit = Unit.new(provider: "realpagesvc",community_id: community_id)
           unit.property_id = u["SiteID"]
           #unit.provider_unit_id = u["UnitID"]
