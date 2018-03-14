@@ -38,8 +38,8 @@
                 %ul#imageselect{:style => "display: none;"}
                   - amenity_arr = []
                   - @amenities.each do |amenity|
-                    %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
-                      - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                      %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
                         %a
                           = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                           %span.ml-5

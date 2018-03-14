@@ -25,6 +25,7 @@
           
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
+          = link_to "Plot Amenities" , plot_amenities_community_sitemaps_path(@community), :class=>"btn btn-success"
           = link_to "Grid Overlay" , grid_overlay_community_sitemaps_path(@community), :class=>"btn btn-primary"
           %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} Reset all plots
       / /.box-header
