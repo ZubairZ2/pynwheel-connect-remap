@@ -66,7 +66,11 @@ class UnitsController < ApplicationController
   def ajaxplotunitforfloorplate
     unit = @community.units.where(marketing_name: params[:id])
     if unit.present?
-      unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      unit.x_plot = params[:x_plot]
+      unit.y_plot = params[:y_plot]
+      unit.floorplate_id = params[:floorplate_id]
+      unit.save(validate: false)
       render json: {unit: unit.first}, status: 200
     else
       render json: {}, status: 404
