@@ -10,6 +10,11 @@ $(document).ready(function(e){
     e.stopPropagation();
   })
 
+  $('body').on("click", ".imageselect", function(e){
+    $("#imageselect").toggle();
+    e.stopPropagation();
+  })
+
   $("#multiselect li").click(function(e){
     if ($(this).hasClass("active")){
       $(this).removeClass("active")
