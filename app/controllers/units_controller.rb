@@ -72,7 +72,7 @@ class UnitsController < ApplicationController
       unit.y_plot = params[:y_plot]
       unit.floorplate_id = params[:floorplate_id]
       unit.save(validate: false)
-      render json: {unit: unit.first}, status: 200
+      render json: {unit: unit}, status: 200
     else
       render json: {}, status: 404
     end
