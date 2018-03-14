@@ -56,7 +56,13 @@ class SitemapsController < ApplicationController
   def plotexp
     add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
-    @sitemap = @community.sitemap || @community.build_sitemap
+    #@sitemap = @community.sitemap || @community.create_sitemap
+    if @community.sitemap.present?
+      @sitemap = @community.sitemap
+    else
+      @sitemap = Sitemap.new(community_id: @community.id)
+      @sitemap.save(validate: false)
+    end
     unless @community.units.size > 0
       flash[:error] = "Please import unit data first"
     end
