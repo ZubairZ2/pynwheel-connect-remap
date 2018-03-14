@@ -7,7 +7,7 @@
         = current_company.name.capitalize
         %br
           %small.text-primary
-            = @community.company.name + '@' + @community.name
+            = @community.company.name + '@' + @community.name if @community.present?
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12

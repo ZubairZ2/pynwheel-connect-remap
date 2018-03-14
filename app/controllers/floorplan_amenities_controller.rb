@@ -1,6 +1,5 @@
 class FloorplanAmenitiesController < ApplicationController
 	add_breadcrumb "Home", :root_path
-	add_breadcrumb "Apartments", "##"
 	before_action :authenticate_user!
 	before_action :set_community_and_floorplan
 
@@ -64,7 +63,7 @@ class FloorplanAmenitiesController < ApplicationController
 
 	def plot_amenities
 		add_breadcrumb "Floor plans", community_floorplans_path(current_community)
-		add_breadcrumb "Plot Amenities", plot_amenities_community_floorplan_amenities_path(@community,@floorplan)
+		add_breadcrumb "Plot Images", plot_amenities_community_floorplan_amenities_path(@community,@floorplan)
 		@sitemap = @floorplan
     @amenities = @floorplan.amenities
     if @floorplan.image.blank? 
@@ -90,7 +89,7 @@ class FloorplanAmenitiesController < ApplicationController
 			amenity.y_plot = 0
 			amenity.save(validate: false)
 		end
-		redirect_to plot_amenities_community_floorplan_amenities_path(@community,@floorplan), notice: "Amenity plot have been deleted successfully."
+		redirect_to plot_amenities_community_floorplan_amenities_path(@community,@floorplan), notice: "Image plot have been deleted successfully."
 	end
 
 	private

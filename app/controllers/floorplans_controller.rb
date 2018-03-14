@@ -1,6 +1,5 @@
 class FloorplansController < ApplicationController
   add_breadcrumb "Home", :root_path
-  add_breadcrumb "Appartments", "##"
   before_action :set_community
   before_action :set_floorplan, only: [:edit,:update,:destroy]
 
