@@ -1,6 +1,6 @@
-.text-center.image-upload.home-page-drag-box#home-page-image--upload-holder
+.text-center.image-upload.home-page-drag-box#home-page-image-upload-holder
   = image_tag "upload-image.png",:class=>"drag-image-padding-top"
-  %p Drag &amp; Drop images to Upload
+  %p Drop files here or click to upload.
 .row.slide-imgage-boxs.sortable
   - sortable_fetch(@home_page_images) do |home_page_image, id_tag|
     .col-lg-3{:id=> id_tag}
@@ -48,4 +48,5 @@
   else{
     $('#slideshow-button').show();
   }
-                      
+  
+  

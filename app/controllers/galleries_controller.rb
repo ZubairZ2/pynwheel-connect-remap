@@ -53,8 +53,9 @@ class GalleriesController < ApplicationController
 
 	def save_gallery_image
 		@gallery = @community.galleries.find(params[:id])
-		@gallery.gallery_images.create(image: params[:src], community_id: @community.id,name: params[:name])
-		@gallery_images = @gallery.gallery_images.order(:sort).all
+		@gallery.gallery_images.create(image: params[:file], community_id: @community.id)
+		#@gallery_images = @gallery.gallery_images.order(:sort).all
+		render :json=>{"status"=>"success"}
 	end
 
 	def delete_gallery_image
@@ -77,11 +78,11 @@ class GalleriesController < ApplicationController
 		redirect_back(fallback_location: root_path)
 	end
 
-	def save_gallery_video
-		@gallery = @community.galleries.find(params[:id])
-		@gallery.gallery_images.create!(image: params[:gallery_page_video], community_id: @community.id)
-		@gallery_images = @gallery.gallery_images.order(:sort).all
-	end
+	# def save_gallery_video
+	# 	@gallery = @community.galleries.find(params[:id])
+	# 	@gallery.gallery_images.create!(image: params[:gallery_page_video], community_id: @community.id)
+	# 	@gallery_images = @gallery.gallery_images.order(:sort).all
+	# end
 
 	private 
 

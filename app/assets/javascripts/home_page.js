@@ -1,34 +1,56 @@
 $(document).ready(function(){
   $('.sortable').railsSortable(); 
-	$("#home-page-images").change(function(){
-      var files = $(this).prop("files")
-      for (var i = 0; i < files.length; i++) {
-          if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-            readHomePageImageSrc(files[i]);
-        } 
-      }
-      if(files.length == 1){
-        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
-          $('#image-upload-warning').modal('show');
-        } 
-      }
-      $(this).val(''); 
-    });
+  // $("#home-page-images").change(function(){
+ //      var files = $(this).prop("files")
+ //      for (var i = 0; i < files.length; i++) {
+ //          if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+ //            readHomePageImageSrc(files[i]);
+ //        } 
+ //      }
+ //      if(files.length == 1){
+ //        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+ //          $('#image-upload-warning').modal('show');
+ //        } 
+ //      }
+ //      $(this).val(''); 
+ //    });
 
-  $("#gallery-images").change(function(){
-      var files = $(this).prop("files")
-      for (var i = 0; i < files.length; i++) {
-          if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-            readGalleryImageSrc(files[i]);
-        } 
-      }
-      if(files.length == 1){
-        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
-          $('#image-upload-warning').modal('show');
-        } 
-      }
-      $(this).val(''); 
-    });
+ 
+ Dropzone.prototype.defaultOptions['headers'] = {
+    'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+  };
+  //************************* Home Page Images Upload using dropzone plugin **************//
+  if ($("#home-page-image-upload-holder").length){
+    saveHomePageImage();
+  } 
+  //************************* Home Page Images Upload using dropzone plugin **************//
+
+  //************************* Home Page Video Upload using dropzone plugin **************//
+  if ($("#home-page-video-upload-holder").length){
+    saveHomePageVideo(); 
+  }
+  //************************* Home Page Video Upload using dropzone plugin **************//
+
+  //************************* Gallery Images Upload using dropzone plugin **************//
+  if ($("#gallery-image-upload-holder").length){
+    saveGalleryImage(); 
+  }
+  //************************* Gallery Images Upload using dropzone plugin **************//
+
+  // $("#gallery-images").change(function(){
+  //     var files = $(this).prop("files")
+  //     for (var i = 0; i < files.length; i++) {
+  //         if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+  //           readGalleryImageSrc(files[i]);
+  //       } 
+  //     }
+  //     if(files.length == 1){
+  //       if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+  //         $('#image-upload-warning').modal('show');
+  //       } 
+  //     }
+  //     $(this).val(''); 
+  //   });
 
   $("#amenity-images").change(function(){
       var files = $(this).prop("files")
@@ -76,8 +98,8 @@ $(document).ready(function(){
     });
 
   // below lines are doing drag and drop on home page
-  imageDragNdrop();
-  imageGalleryDragNdrop()
+  //imageDragNdrop();
+  //imageGalleryDragNdrop()
   imageAmenityDragNdrop()
   imageFloorplanAmenityDragNdrop()
   imageSitemapAmenityDragNdrop()
@@ -117,52 +139,52 @@ $(document).ready(function(){
     $('#video-slide').addClass('in');
   }
 
-  $("#home_page_video_video").change(function(){
-      if(this.files[0].type == "video/mp4"){
-        $(".divLoading").removeClass("hidden"); 
-        $('#home-page-video-form').submit();
-      }
-      else{
-        $(this).val('');
-        $('#video-upload-warning').modal('show');
-      }
-  });
+  // $("#home_page_video_video").change(function(){
+  //     if(this.files[0].type == "video/mp4"){
+  //       $(".divLoading").removeClass("hidden"); 
+  //       $('#home-page-video-form').submit();
+  //     }
+  //     else{
+  //       $(this).val('');
+  //       $('#video-upload-warning').modal('show');
+  //     }
+  // });
 
-  $("#gallery_page_video").change(function(){
-      if(this.files[0].type == "video/mp4"){
-        $(".divLoading").removeClass("hidden"); 
-        $('#gallery-page-video-form').submit();
-      }
-      else{
-        $(this).val('');
-        $('#video-upload-warning').modal('show');
-      }
-  });
+  // $("#gallery_page_video").change(function(){
+  //     if(this.files[0].type == "video/mp4"){
+  //       $(".divLoading").removeClass("hidden"); 
+  //       $('#gallery-page-video-form').submit();
+  //     }
+  //     else{
+  //       $(this).val('');
+  //       $('#video-upload-warning').modal('show');
+  //     }
+  // });
 
 });
 
-function imageDragNdrop(){
-  var home_page_image_upload_holder = document.getElementById('home-page-image--upload-holder');
-  if (home_page_image_upload_holder){
-      home_page_image_upload_holder.ondrop = function (e) {
-        e.preventDefault();
-        files = e.dataTransfer.files;
-        if (files.length > 0){
-            for (var i = 0; i < files.length; i++) {
-              if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-                readHomePageImageSrc(files[i]);
-              }
-            }
-        }
-        if(files.length == 1){
-          console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
-          if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
-            $('#image-upload-warning').modal('show');
-          } 
-        }          
-    }
-  }
-}
+// function imageDragNdrop(){
+//   var home_page_image_upload_holder = document.getElementById('home-page-image--upload-holder');
+//   if (home_page_image_upload_holder){
+//       home_page_image_upload_holder.ondrop = function (e) {
+//         e.preventDefault();
+//         files = e.dataTransfer.files;
+//         if (files.length > 0){
+//             for (var i = 0; i < files.length; i++) {
+//               if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+//                 readHomePageImageSrc(files[i]);
+//               }
+//             }
+//         }
+//         if(files.length == 1){
+//           console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+//           if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+//             $('#image-upload-warning').modal('show');
+//           } 
+//         }          
+//     }
+//   }
+// }
 
 function saveLoopType(loop_type){
     console.log(loop_type);
@@ -180,79 +202,79 @@ function saveLoopType(loop_type){
     });
 }
 
-function readHomePageImageSrc(file){
-  $(".divLoading").removeClass("hidden");
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    homePageImage(e.target.result,file.name);
-  }
-  reader.readAsDataURL(file);
-}
+// function readHomePageImageSrc(file){
+//   $(".divLoading").removeClass("hidden");
+//   var reader = new FileReader();
+//   reader.onload = function (e) {
+//     homePageImage(e.target.result,file.name);
+//   }
+//   reader.readAsDataURL(file);
+// }
 
 
-function homePageImage(src,name){
-	var url = "/communities/"+community_id+"/home_page/save_home_page_image"
-    $.ajax({
-        url: url,
-        type: "POST",
-        dataType: "script",
-        data: {
-            name: name,
-            src: src
-        }
-    }).done(function(){
-        $(".divLoading").addClass("hidden");
-        console.log("success");
-    });
- }
+// function homePageImage(src,name){
+//  var url = "/communities/"+community_id+"/home_page/save_home_page_image"
+//     $.ajax({
+//         url: url,
+//         type: "POST",
+//         dataType: "script",
+//         data: {
+//             name: name,
+//             src: src
+//         }
+//     }).done(function(){
+//         $(".divLoading").addClass("hidden");
+//         console.log("success");
+//     });
+//  }
 
- function readGalleryImageSrc(file){
-  $(".divLoading").removeClass("hidden");
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    galleryImage(e.target.result,file.name);
-  }
-  reader.readAsDataURL(file);
-}
+//  function readGalleryImageSrc(file){
+//   $(".divLoading").removeClass("hidden");
+//   var reader = new FileReader();
+//   reader.onload = function (e) {
+//     galleryImage(e.target.result,file.name);
+//   }
+//   reader.readAsDataURL(file);
+// }
 
-function galleryImage(src,name){
-  var url = "/communities/"+community_id+"/galleries/"+gallery_id+"/save_gallery_image"
-    $.ajax({
-        url: url,
-        type: "POST",
-        dataType: "script",
-        data: {
-            name: name,
-            src: src
-        }
-    }).done(function(){
-        $(".divLoading").addClass("hidden");
-        console.log("success");
-    });
- }
+// function galleryImage(src,name){
+//   var url = "/communities/"+community_id+"/galleries/"+gallery_id+"/save_gallery_image"
+//     $.ajax({
+//         url: url,
+//         type: "POST",
+//         dataType: "script",
+//         data: {
+//             name: name,
+//             src: src
+//         }
+//     }).done(function(){
+//         $(".divLoading").addClass("hidden");
+//         console.log("success");
+//     });
+//  }
 
- function imageGalleryDragNdrop(){
-  var gallery_image_upload_holder = document.getElementById('gallery-image--upload-holder');
-  if (gallery_image_upload_holder){
-      gallery_image_upload_holder.ondrop = function (e) {
-        e.preventDefault();
-        files = e.dataTransfer.files;
-        if (files.length > 0){
-            for (var i = 0; i < files.length; i++) {
-              if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-                readGalleryImageSrc(files[i]);
-              }
-            }
-        }
-        if(files.length == 1){
-          console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
-          if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
-            $('#image-upload-warning').modal('show');
-          } 
-        }          
-    }
-  }
-}
+//  function imageGalleryDragNdrop(){
+//   var gallery_image_upload_holder = document.getElementById('gallery-image--upload-holder');
+//   if (gallery_image_upload_holder){
+//       gallery_image_upload_holder.ondrop = function (e) {
+//         e.preventDefault();
+//         files = e.dataTransfer.files;
+//         if (files.length > 0){
+//             for (var i = 0; i < files.length; i++) {
+//               if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+//                 readGalleryImageSrc(files[i]);
+//               }
+//             }
+//         }
+//         if(files.length == 1){
+//           console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+//           if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+//             $('#image-upload-warning').modal('show');
+//           } 
+//         }          
+//     }
+//   }
+// }
 
   function readAmenityImageSrc(file,type){
     $(".divLoading").removeClass("hidden");
@@ -352,3 +374,105 @@ function galleryImage(src,name){
       }
     }
   }
+
+function fetchHomePageImages(){
+  var url = "/communities/"+community_id+"/home_page"
+  $.ajax({
+      url: url,
+      type: "GET",
+      dataType: "script"
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("home page images are fetch successfully.");
+    });
+}
+
+function fetchHomePageVideo(){
+  var url = "/communities/"+community_id+"/home_page/show_home_page_video"
+  $.ajax({
+      url: url,
+      type: "GET",
+      dataType: "script"
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("Video is fetch successfully.");
+    });
+}
+
+function fetchGalleryImages(){
+  var url = "/communities/"+community_id+"/galleries/"+gallery_id+"/show_images"
+  $.ajax({
+      url: url,
+      type: "GET",
+      dataType: "script"
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("gallery images are fetch successfully.");
+    });
+}
+
+function saveGalleryImage(){
+  var galleryImageDropzone = new Dropzone("#gallery-image-upload-holder", { url: "/communities/"+community_id+"/galleries/"+gallery_id+"/save_gallery_image"});
+  Dropzone.options.galleryImageDropzone = {
+    uploadMultiple: true
+  };
+
+  galleryImageDropzone.on("complete", function(file) {
+    console.log(file);
+    fetchGalleryImages();
+  });
+  
+  galleryImageDropzone.on("addedfile", function(file) {
+    console.log(file.type);
+    $(".divLoading").removeClass("hidden");
+    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg" || file.type == "video/mp4")) {
+      $(".divLoading").addClass("hidden");
+      $('#image-and-video-upload-warning').modal('show');
+      galleryImageDropzone.removeFile(file);
+    }
+  });
+}
+
+function saveHomePageImage(){
+  var homePageImageDropzone = new Dropzone("#home-page-image-upload-holder", { url: "/communities/"+community_id+"/home_page/save_home_page_image"});
+  Dropzone.options.homePageImageDropzone = {
+    uploadMultiple: true
+  };
+
+  homePageImageDropzone.on("complete", function(file) {
+    console.log(file);
+    fetchHomePageImages();
+  });
+  
+  homePageImageDropzone.on("addedfile", function(file) {
+    console.log(file.type);
+    $(".divLoading").removeClass("hidden");
+    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
+      $(".divLoading").addClass("hidden");
+      $('#image-upload-warning').modal('show');
+      homePageImageDropzone.removeFile(file);
+    }
+  });
+}
+
+function saveHomePageVideo(){
+  var homePageVideoDropzone = new Dropzone("#home-page-video-upload-holder", { url: "/communities/"+community_id+"/home_page/save_home_page_video"});
+  Dropzone.options.homePageVideoDropzone = {
+    uploadMultiple: true,
+  };
+
+  homePageVideoDropzone.on("complete", function(file) {
+    console.log(file);
+    fetchHomePageVideo();
+  });
+  
+  homePageVideoDropzone.on("addedfile", function(file) {
+    console.log(file.type);
+    $(".divLoading").removeClass("hidden");
+    if (!(file.type == "video/mp4")) {
+      $(".divLoading").addClass("hidden");
+      $('#video-upload-warning').modal('show');
+      homePageVideoDropzone.removeFile(file);
+    }
+  });
+}
