@@ -3,7 +3,7 @@
     Address
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :address, :class=>"form-control validate[required] neighborhood-form-field", :placeholder=>"Address", :maxlength=>"150", :value=> @neighborhood.address.present? ? @neighborhood.address : @community.make_address
+    = f.text_field :address, :class=>"form-control validate[required]", :placeholder=>"Address", :maxlength=>"150", :value=> @neighborhood.address.present? ? @neighborhood.address : @community.make_address
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Latitude

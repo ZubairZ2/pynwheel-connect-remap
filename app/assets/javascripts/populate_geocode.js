@@ -10,7 +10,7 @@ $(document).ready(function () {
     $(document).on('change', '#neighborhood_address', function() {
         console.log(" * address changed *")
         var address = document.getElementById('neighborhood_address').value;
-        find_geocodes(address);
+        find_geocodes_on_neighborhood_page(address);
     })
     $(document).on('change', '#location_address', function() {
         console.log(" * address changed *")
@@ -31,6 +31,23 @@ function find_geocodes(address) {
             if (latitude != null){
                 // console.log(longitude)
                 showResult(latitude,longitude)
+            }
+        }
+    });
+}
+
+function find_geocodes_on_neighborhood_page(address) {
+    var geocoder = new google.maps.Geocoder();
+
+    geocoder.geocode( { 'address': address}, function(results, status) {
+
+        if (status == google.maps.GeocoderStatus.OK) {
+            var latitude = results[0].geometry.location.lat().toFixed(6);
+            var longitude = results[0].geometry.location.lng().toFixed(6);
+            if (latitude != null){
+                // console.log(longitude)
+                showResult(latitude,longitude);
+                $('.neighborhood-form').submit();
             }
         }
     });
