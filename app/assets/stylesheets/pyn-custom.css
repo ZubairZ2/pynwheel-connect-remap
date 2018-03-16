@@ -2543,6 +2543,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	border: 2px dashed #e8e8e8;
 	background-color: azure;
     height: 175px;
+    cursor: pointer;
 }
 .drag-image-padding-top{
 	padding-top: 62px;
@@ -2554,4 +2555,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .svg-file{
 	width: 1412px;
 	height: 932px;
+}
+.dz-preview{
+	display: none !important;
 }

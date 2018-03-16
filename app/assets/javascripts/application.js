@@ -44,4 +44,5 @@
 //= require favorites
 //= require panzoom
 //= require tinymce
+//= require dropzone
 // require_tree .

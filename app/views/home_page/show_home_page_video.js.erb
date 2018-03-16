@@ -1,0 +1,8 @@
+$('#videos-index').html("<%= escape_javascript render 'videos_index' %>");
+ $(".divLoading").addClass("hidden");
+var message = '<div class="alert alert-success">Video uploaded successfully.</div>'
+saveHomePageVideo();
+$('#flash-message').html(message);
+setTimeout(function() {
+    $('.alert').fadeOut('slow');
+}, 10000);

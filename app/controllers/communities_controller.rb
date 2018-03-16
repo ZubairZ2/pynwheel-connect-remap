@@ -94,8 +94,8 @@ class CommunitiesController < ApplicationController
   def test_connection
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
-      if json = @community.connect_to_provider
-        render :xml => json.to_xml
+      if xml = @community.connect_to_provider
+        render :xml => xml
       else
         flash[:error] = "Please enter correct credentials in settings before importing data."
         redirect_to community_import_page_path(current_community) 

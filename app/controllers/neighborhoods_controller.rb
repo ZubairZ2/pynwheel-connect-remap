@@ -4,7 +4,7 @@ class NeighborhoodsController < ApplicationController
   before_action :set_community
 
 	def index
-		@neighborhood = @community.neighborhood || @community.build_neighborhood
+		@neighborhood = @community.neighborhood || @community.create_neighborhood
 	end
 
 	def create

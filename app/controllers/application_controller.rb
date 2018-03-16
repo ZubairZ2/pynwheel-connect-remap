@@ -9,6 +9,8 @@ class ApplicationController < ActionController::Base
 	  	@community ||= Community.find params[:community_id]
 	  elsif controller_name =='communities' && params[:id].present?
 		  @community ||= Community.find params[:id]
+    else
+      @community ||= Community.first
 	  end  	
   end	
 

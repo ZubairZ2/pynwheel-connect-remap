@@ -4,7 +4,7 @@ $('#flash-message').html(message);
 setTimeout(function() {
     $('.alert').fadeOut('slow');
 }, 10000);
-//imageDragNdrop();
+saveGalleryImage();
 $('.sortable').railsSortable(); 
 
 $('.preview-image').click(function(event){  
@@ -12,4 +12,4 @@ $('.preview-image').click(function(event){
   $(this).ekkoLightbox({
     alwaysShowClose: true
   });  
-}); 
+});

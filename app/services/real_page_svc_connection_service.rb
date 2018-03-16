@@ -34,7 +34,7 @@ class RealPageSvcConnectionService < BaseService
                         </soapenv:Body>
                       </soapenv:Envelope>
                       ')
-      Hash.from_xml(response.body) 
+      #Hash.from_xml(response.body) 
      rescue
       false
      end 

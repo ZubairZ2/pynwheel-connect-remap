@@ -17,19 +17,19 @@
           .row
             .col-md-6
               %h4 #{@gallery.name.capitalize} Gallery - #{@gallery_images.count} #{@gallery_images.count > 1 ? "images" : "image"}
-          .row
-            .col-md-6
-              .mt-35
-                %span.btn.btn-success.btn-file.text-UP.pull-left
-                  %i.fa.fa-plus-circle
-                  Add Images
-                  %input#gallery-images{:multiple => "multiple", :type => "file"}/
-              .mt-35
-                = form_tag save_gallery_video_community_gallery_path(@community,@gallery),:method=>"POST",:id=>"gallery-page-video-form",:multipart => true,:remote=>true  do 
-                  %span.btn.btn-primary.btn-file.ml-5.text-UP.pull-left
-                    %i.fa.fa-plus-circle
-                    Add Video
-                    = file_field_tag :gallery_page_video
+          / .row
+          /   .col-md-6
+          /     .mt-35
+          /       %span.btn.btn-success.btn-file.text-UP.pull-left
+          /         %i.fa.fa-plus-circle
+          /         Add Images
+          /         %input#gallery-images{:multiple => "multiple", :type => "file"}/
+          /     .mt-35
+          /       = form_tag save_gallery_video_community_gallery_path(@community,@gallery),:method=>"POST",:id=>"gallery-page-video-form",:multipart => true,:remote=>true  do 
+          /         %span.btn.btn-primary.btn-file.ml-5.text-UP.pull-left
+          /           %i.fa.fa-plus-circle
+          /           Add Video
+          /           = file_field_tag :gallery_page_video
           #images-index
             = render 'index'
         / End image-slide section
