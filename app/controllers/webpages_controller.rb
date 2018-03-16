@@ -4,7 +4,9 @@ class WebpagesController < ActionController::Base
 
 	def index
 		#cookies[:favorite_unit_ids] = nil
-		if cookies[:favorite_unit_ids].nil?
+		puts '-----------------------', cookies[:favorite_unit_ids].class
+		array = JSON.parse(cookies[:favorite_unit_ids])
+		if array.blank?
 			cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
 			cookies.permanent[:session_id] = SecureRandom.hex(8)
 			Favorite.create(session_id: cookies[:session_id],unit_ids: [])

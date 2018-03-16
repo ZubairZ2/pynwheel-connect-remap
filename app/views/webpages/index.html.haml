@@ -139,11 +139,11 @@
             - if @community.has_floorplates?
               - @amenities.each do |amenity|
                 - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                  = link_to "<i class='fa fa-star custom-icon-black'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{find_floorplate_number(amenity.amenityable_id)} amenity-marker hidden","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot
+                  = link_to "<i class='custom-icon-camera'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{find_floorplate_number(amenity.amenityable_id)} amenity-marker hidden","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot
             - else
               - @amenities.each do |amenity|
                 - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                  = link_to "<i class='fa fa-star custom-icon-black'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot
+                  = link_to "<i class='custom-icon-camera'></i>".html_safe, amenity.image.url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
         .buttons{:style=>"position: absolute; right: 10px; top: 5px;"}
           %button.btn.btn-sm.btn-primary.zoom-in
             %i.fa.fa-plus

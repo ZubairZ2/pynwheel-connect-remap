@@ -1685,8 +1685,11 @@ ul.home-tabs li:hover a{
 .right-side{
 	margin-left:331px;
 	position: absolute;
-    width: calc(98% - 300px);
+    width: calc(98.3% - 305px);
     height: 100%;
+}
+.panzoom{
+	border: 3px solid #fff;
 }
 .middle-units{
 	margin-left:216px;
@@ -1875,20 +1878,28 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .custom-icon{
 	font-size: 13px;     
 	border: 2px solid #fff;
-    box-shadow: 1px 1px 1px 1px #17171769;
-    color: #ffffff; 
-    width: 25px; 
-    height: 25px; 
-    border-radius: 100%; 
-    background-color: #d40e0e; 
-    text-align: center; 
-    display: inline-block; 
-    line-height: 24px;
+  box-shadow: 1px 1px 1px 1px #17171769;
+  color: #ffffff; 
+  width: 25px; 
+  height: 25px; 
+  border-radius: 100%; 
+  background: rgba(247, 0, 0, 0.61);
+  text-align: center; 
+  display: inline-block; 
+  line-height: 24px;
 }
 .custom-icon-black{
 	font-size: 20px;
 	color: black;
 }
+.custom-icon-camera{
+	background: url('camera.png') no-repeat;
+	width: 35px;
+  height: 35px;
+  display: inline-block;
+  background-size: 100%;
+}
+
 .plan-modal{}
 .plan-modal .modal-header{}
 .plan-modal .modal-header h4.modal-title{
@@ -2329,6 +2340,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	.btn-apply{
 		margin: 20px 0 7px 0;
 	}
+	.right-side{
+    width: calc(97.7% - 300px);
+}
 }
 /*@media (max-width:1040px){
 	.image-map img{
