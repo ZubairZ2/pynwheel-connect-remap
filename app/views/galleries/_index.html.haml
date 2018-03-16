@@ -1,5 +1,5 @@
 .text-center.image-upload.home-page-drag-box#gallery-image-upload-holder
-  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
   %p Drop files here or click to Upload
 .row.slide-imgage-boxs.sortable
   - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
