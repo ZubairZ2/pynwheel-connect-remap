@@ -507,3 +507,12 @@ function removeDivWithTemporaryImage(position){
   $('#row'+position).remove();
   deleteTemporaryImage(position)
 }
+
+function showHideOverlayGrid(){
+  if($('.grid-graph').hasClass('hidden')){
+    $('.grid-graph').removeClass('hidden');
+  }
+  else{
+   $('.grid-graph').addClass('hidden'); 
+  }
+}
