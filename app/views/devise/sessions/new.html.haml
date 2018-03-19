@@ -19,12 +19,12 @@
           .form-group
             = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password",:maxlength=>"50", autocomplete: "off"
             %i.fa.fa-key
-          .checkbox
+          .mb-30
             - if devise_mapping.rememberable?   
-              %label
+              %span
                 = f.check_box :remember_me 
                 Remember
-            = link_to "Forgot Password ?", new_user_password_path,class: "pull-right"
+            = link_to "Forgot Password ?", new_user_password_path,class: "pull-right mt-5"
           = f.submit "Login", :class => "btn btn-primary btn-block" 
         .text-center
           %p.copy-right © 2017 Pynwheel                     
