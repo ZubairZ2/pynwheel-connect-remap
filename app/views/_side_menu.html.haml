@@ -6,9 +6,9 @@
     %ul.sidebar-menu{"data-widget" => "tree"}
       - if params[:community_id].present?
         %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
-          / = link_to edit_community_path(current_community) do
-          /   %i.fa.fa-info
-          /   %span Community Info
+          = link_to edit_company_community_path(current_company,current_community) do
+            %i.fa.fa-info
+            %span Community Info
       %li.treeview{:class=>"#{(controller_name =='communities' && params[:action] != 'import_page') || controller_name =='companies' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-building-o
