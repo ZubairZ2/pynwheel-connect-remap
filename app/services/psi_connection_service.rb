@@ -21,7 +21,8 @@ class PsiConnectionService < BaseService
         }
         }.to_json,
         :headers => { 'Content-Type' => 'application/json' } )
-        JSON.parse(response.body)
+        hash = JSON.parse(response.body)
+        Gyoku.xml(hash)
     rescue=>e
       false
     end    
