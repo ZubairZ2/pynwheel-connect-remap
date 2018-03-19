@@ -30,9 +30,9 @@
                 %h4 Slide Show Images
                 
                 / %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
-                / %span.btn.btn-success.btn-file.text-UP
-                /   %i.fa.fa-plus-circle
-                /   Add Files
+                %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-image-upload-holder').click();"}
+                  %i.fa.fa-plus-circle
+                  Add Files
                 /   %input#home-page-images{:type => "file",:multiple=>"multiple"}
           .row
             .col-lg-12
@@ -47,9 +47,9 @@
                 %h4 Video Show
                 %p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
                 / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
-                /   %span.btn.btn-success.btn-file.pull-right.text-UP
-                /     %i.fa.fa-plus-circle
-                /     Add Video
+                %span.btn.btn-success.btn-file.pull-right.text-UP{:onclick=>"$('#home-page-video-upload-holder').click();"}
+                  %i.fa.fa-plus-circle
+                  Add Video
                 /     = f.file_field :video
                     
           .row.slide-imgage-boxs
