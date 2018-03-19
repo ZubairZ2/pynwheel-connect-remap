@@ -17,15 +17,16 @@
           
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
-          = link_to "Grid Overlay" , community_floorplate_grid_overlay_path(@community,@floorplate), :class=>"btn btn-primary"
+          / = link_to "Grid Overlay" , community_floorplate_grid_overlay_path(@community,@floorplate), :class=>"btn btn-primary"
           %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
       / /.box-header
       / form start
       %form.form-horizontal
         .box-body.map-body-top
           .row
-            .col-lg-9#container
+            .col-lg-9#container.p-0
               .map-block#map{:style=>"position: relative;"}
+                .grid-graph
                 = image_tag @floorplate.image? ? @floorplate.image.url : ""
                 - community_units = @community_units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
                 - floorplate_units = @floorplate_units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
