@@ -12,7 +12,7 @@ class CommunitiesController < ApplicationController
 
   def new
     add_breadcrumb "Add Community", new_community_path
-    @community = Community.new
+    @community = current_company.communities.new
   end
 
   def create
