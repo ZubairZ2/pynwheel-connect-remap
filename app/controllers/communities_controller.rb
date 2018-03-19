@@ -19,7 +19,7 @@ class CommunitiesController < ApplicationController
     @community = current_company.communities.new(community_params)
     if @community.save
       flash[:notice] = "Community created successfully."
-      redirect_to communities_path
+      redirect_to company_communities_path(current_company)
     else
       flash[:error] = @community.errors.full_messages.join(',')
       render :new
@@ -35,7 +35,7 @@ class CommunitiesController < ApplicationController
     respond_to do |format|
       if @community.update(community_params)
         @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
-        format.html { redirect_to communities_path,notice: 'Community updated successfully.' }
+        format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
         format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
       else
         flash[:error] = @community.errors.full_messages.join(',')
