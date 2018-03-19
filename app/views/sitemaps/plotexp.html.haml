@@ -26,15 +26,17 @@
           %span.hidden#active_y_plot 0
         .pull-right.btn-btn-danger
           = link_to "Plot Amenities" , plot_amenities_community_sitemaps_path(@community), :class=>"btn btn-success"
-          = link_to "Grid Overlay" , grid_overlay_community_sitemaps_path(@community), :class=>"btn btn-primary"
+          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} Grid Overlay
           %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} Reset all plots
       / /.box-header
       / form start
       %form.form-horizontal
         .box-body.map-body-top
           .row
-            .col-lg-9#container
+            .col-lg-9#container.p-0
+
               .map-block#map{:style=>"position: relative;"}
+                .grid-graph.hidden
                 = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "",:class=>"#{@sitemap.present? && @sitemap.image.present? && @sitemap.image.file.extension == "svg" ? 'svg-file' : ''}"
                 - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
                 - units.each do |unit|

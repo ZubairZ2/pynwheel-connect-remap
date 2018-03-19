@@ -870,6 +870,7 @@ DEPENDENCIES
   figaro
   fog
   font-awesome-rails
+  gyoku (~> 1.0)
   haml
   httparty
   jbuilder (~> 2.5)
@@ -902,4 +903,4 @@ RUBY VERSION
    ruby 2.4.1p111
 
 BUNDLED WITH
-   1.15.4
+   1.16.1

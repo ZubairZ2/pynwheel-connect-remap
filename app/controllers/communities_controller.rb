@@ -3,7 +3,7 @@ class CommunitiesController < ApplicationController
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page]
-  add_breadcrumb "Communities", :communities_path, except: [:import_page]
+  add_breadcrumb "Communities", :company_communities_path, except: [:import_page]
 
   def index
     #@communities = Community.page(params[:page]).per(10)
@@ -11,7 +11,7 @@ class CommunitiesController < ApplicationController
   end
 
   def new
-    add_breadcrumb "Add Community", new_community_path
+    add_breadcrumb "Add Community", new_company_community_path(current_company)
     @community = current_company.communities.new
   end
 
@@ -27,7 +27,7 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
-    add_breadcrumb "Edit Community", edit_community_path(@community)  
+    add_breadcrumb "Edit Community", edit_company_community_path(current_company,@community)  
   end
 
   def update

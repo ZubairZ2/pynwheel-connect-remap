@@ -24,7 +24,7 @@
       %form.form-horizontal
         .box-body.map-body-top
           .row
-            .col-lg-9#container
+            .col-lg-9#container.p-0
               .map-block#map{:style=>"position: relative;"}
                 = image_tag @sitemap.present? ? @sitemap.image.url : ""
                 - @amenities.each do |amenity|

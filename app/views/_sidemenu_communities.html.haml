@@ -14,7 +14,7 @@
           %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
             %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
-            %a{:href => "/communities"} Communities
+            = link_to "Communities", company_communities_path(current_company)
       - if can? :manage, current_user    
         %li{:class=>"#{controller_name =='users' ? 'active' : ''}"}
           = link_to company_employees_path(current_company) do 

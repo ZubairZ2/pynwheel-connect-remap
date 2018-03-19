@@ -9,23 +9,19 @@ class ApplicationController < ActionController::Base
 	  	@community ||= Community.find params[:community_id]
 	  elsif controller_name =='communities' && params[:id].present?
 		  @community ||= Community.find params[:id]
-    else
-      @community ||= Community.first
 	  end  	
   end	
 
   def current_company
-    begin
-      if params[:company_id].present?
-        session[:company_id] = params[:company_id]
-        @company = Company.find params[:company_id]
-      elsif current_community.present? && !current_community.new_record?
-        @company = current_community.company   
-      elsif session[:company_id].present?  
-        @company = Company.find session[:company_id]
-      end
-    rescue
-      @company = Company.first
+    if params[:company_id].present?
+      session[:company_id] = params[:company_id]
+      @company = Company.find params[:company_id]
+    elsif current_community.present? && !current_community.new_record?
+      @company = current_community.company
+      session[:company_id] = @company.id
+      @company
+    else
+      @company = Company.find session[:company_id]
     end
   end
 
