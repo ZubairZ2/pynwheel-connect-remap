@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
       if params[:company_id].present?
         session[:company_id] = params[:company_id]
         @company = Company.find params[:company_id]
-      elsif current_community.present? 
+      elsif current_community.present? && !current_community.new_record?
         @company = current_community.company   
       elsif session[:company_id].present?  
         @company = Company.find session[:company_id]
