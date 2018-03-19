@@ -324,87 +324,88 @@ function setFilters(){
  }
  if(units_available_now){
   $('#now-checkbox').addClass('active-filter');
-  $('#now-checkbox').parent().removeClass('hidden');
+  $('#now-checkbox').parent().removeClass('disabled');
  }else{
-  $('#now-checkbox').parent().remove();
+  $('#now-checkbox').prop('checked', false);
  }
 
  if(units_available_in_thirty_days){
   $('#thirty-days-checkbox').addClass('active-filter');
-  $('#thirty-days-checkbox').parent().removeClass('hidden');
+  $('#thirty-days-checkbox').parent().removeClass('disabled');
  }else{
-  $('#thirty-days-checkbox').parent().remove();
+  $('#thirty-days-checkbox').prop('checked', false);
  }
 
  if(units_available_in_thirty_to_sixty_days){
   $('#thirty-to-sixty-days-checkbox').addClass('active-filter');
-  $('#thirty-to-sixty-days-checkbox').parent().removeClass('hidden');
+  $('#thirty-to-sixty-days-checkbox').parent().removeClass('disabled');
  }else{
-  $('#thirty-to-sixty-days-checkbox').parent().remove();
+  $('#thirty-to-sixty-days-checkbox').prop('checked', false);
  }
 
  if(units_available_in_sixty_to_ninty_days){
   $('#sixty-to-ninty-days-checkbox').addClass('active-filter');
-  $('#sixty-to-ninty-days-checkbox').parent().removeClass('hidden');
+  $('#sixty-to-ninty-days-checkbox').parent().removeClass('disabled');
  }else{
-  $('#sixty-to-ninty-days-checkbox').parent().remove();
+  $('#sixty-to-ninty-days-checkbox').prop('checked', false);
  }
 
  if(units_available_in_ninty_to_one_twenty_days){
   $('#ninty-to-one-twenty-days-checkbox').addClass('active-filter');
-  $('#ninty-to-one-twenty-days-checkbox').parent().removeClass('hidden');
+  $('#ninty-to-one-twenty-days-checkbox').parent().removeClass('disabled');
  }else{
-  $('#ninty-to-one-twenty-days-checkbox').parent().remove();
+  $('#ninty-to-one-twenty-days-checkbox').prop('checked', false);
  }
 
  if(units_available_in_one_twenty_plus_days){
   $('#one-twenty-plus-days-checkbox').addClass('active-filter');
-  $('#one-twenty-plus-days-checkbox').parent().removeClass('hidden');
+  $('#one-twenty-plus-days-checkbox').parent().removeClass('disabled');
  }else{
-  $('#one-twenty-plus-days-checkbox').parent().remove();
+  $('#one-twenty-plus-days-checkbox').prop('checked', false);
  }
 
  if(one_bedroom){
   $('#one-bedroom-checkbox').addClass('active-filter');
-  $('#one-bedroom-checkbox').parent().removeClass('hidden');
+  $('#one-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#one-bedroom-checkbox').parent().remove();
+  $('#one-bedroom-checkbox').prop('checked', false);
  }
 
  if(two_bedroom){
   $('#two-bedroom-checkbox').addClass('active-filter');
-  $('#two-bedroom-checkbox').parent().removeClass('hidden');
+  $('#two-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#two-bedroom-checkbox').parent().remove();
+  $('#two-bedroom-checkbox').prop('checked', false);
  }
 
  if(three_bedroom){
   $('#three-bedroom-checkbox').addClass('active-filter');
-  $('#three-bedroom-checkbox').parent().removeClass('hidden');
+  $('#three-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#three-bedroom-checkbox').parent().remove();
+  $('#three-bedroom-checkbox').prop('checked', false);
  }
 
  if(four_bedroom){
   $('#four-bedroom-checkbox').addClass('active-filter');
-  $('#four-bedroom-checkbox').parent().removeClass('hidden');
+  $('#four-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#four-bedroom-checkbox').parent().remove();
+  $('#four-bedroom-checkbox').prop('checked', false);
  }
 
  if(five_bedroom){
   $('#five-bedroom-checkbox').addClass('active-filter');
-  $('#five-bedroom-checkbox').parent().removeClass('hidden');
+  $('#five-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#five-bedroom-checkbox').parent().remove();
+  $('#five-bedroom-checkbox').prop('checked', false);
  }
 
  if(six_bedroom){
   $('#six-bedroom-checkbox').addClass('active-filter');
-  $('#six-bedroom-checkbox').parent().removeClass('hidden');
+  $('#six-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#six-bedroom-checkbox').parent().remove();
+  $('#six-bedroom-checkbox').prop('checked', false);
  }
+ $(".disabled").click(false);
  //var today = new Date();
  //console.log(today);
  //var thirty_days = new Date(today).setDate(today.getDate()+30); 
@@ -672,9 +673,9 @@ function disable_rent_filter_options(min_rent){
     var option_rent = option.value.split('-');
     var maximum_option_rent = parseFloat(option_rent[1]);
     if (min_rent >= maximum_option_rent)
-      $("#market_rent option[value="+option.value+"]").hide()
+      $("#market_rent option[value="+option.value+"]").prop('disabled', 'disabled');
     else
-      $("#market_rent option[value="+option.value+"]").show()    
+      $("#market_rent option[value="+option.value+"]").prop('disabled', false);
   } 
 }
 
@@ -685,8 +686,8 @@ function disable_area_filter_options(max_area){
     var option_area = option.value.split('-');
     var minimum_option_rent = parseFloat(option_area[0]);
     if (max_area <= minimum_option_rent)
-      $("#square_feet option[value="+option.value+"]").hide()
+      $("#square_feet option[value="+option.value+"]").prop('disabled', 'disabled');
     else
-      $("#square_feet option[value="+option.value+"]").show()    
+      $("#square_feet option[value="+option.value+"]").prop('disabled', false);
   } 
 }
