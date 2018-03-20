@@ -5,7 +5,7 @@ class VideoUploader < CarrierWave::Uploader::Base
   # include CarrierWave::MiniMagick
   #include CarrierWave::Video  # for your video processing
   #include CarrierWave::Video::Thumbnailer
-
+  include ::CarrierWave::Backgrounder::Delay
   # Choose what kind of storage to use for this uploader:
   #storage :file
 
