@@ -45,54 +45,54 @@
             /   %label
             /     All
             .checkbox.checkbox-primary.pb-15.disabled
-              %input.filters#one-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
+              %input.filters#one-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
               %label.filter-label
                 1 Bedroom
             .checkbox.checkbox-primary.pb-15.disabled
-              %input.filters#two-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
+              %input.filters#two-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
               %label.filter-label
                 2 Bedrooms
             .checkbox.checkbox-primary.pb-15.disabled
-              %input.filters#three-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
+              %input.filters#three-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
               %label.filter-label
                 3 Bedrooms
             .checkbox.checkbox-primary.pb-15.disabled
-              %input.filters#four-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
+              %input.filters#four-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
               %label.filter-label
                 4 Bedrooms
             .checkbox.checkbox-primary.pb-15.disabled
-              %input.filters#five-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
+              %input.filters#five-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
               %label.filter-label
                 5 Bedrooms
             .checkbox.checkbox-primary.pb-15.disabled
-              %input.filters#six-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true}/
+              %input.filters#six-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
               %label.filter-label
                 6 Bedrooms
           .bg-bottom
             .list-select
               %h4 Available
               .checkbox.checkbox-primary.pb-15
-                %input.filters#now-checkbox{:type => "checkbox",:name=>"available",checked: true}/
+                %input.filters#now-checkbox{:type => "checkbox",:name=>"available",checked: true,"data-toggle"=>"tooltip", "data-title"=>""}/
                 %label.filter-label
                   Now
               .checkbox.checkbox-primary.pb-15.disabled
-                %input.filters#thirty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
+                %input.filters#thirty-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
                 %label.filter-label
                   In the next 30 days
               .checkbox.checkbox-primary.pb-15.disabled
-                %input.filters#thirty-to-sixty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
+                %input.filters#thirty-to-sixty-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
                 %label.filter-label
                   In 31-60 days
               .checkbox.checkbox-primary.pb-15.disabled
-                %input.filters#sixty-to-ninty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
+                %input.filters#sixty-to-ninty-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
                 %label.filter-label
                   In 61-90 days
               .checkbox.checkbox-primary.pb-15.disabled
-                %input.filters#ninty-to-one-twenty-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
+                %input.filters#ninty-to-one-twenty-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
                 %label.filter-label
                   In 91-120 days
               .checkbox.checkbox-primary.pb-15.disabled
-                %input.filters#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available",checked: true}/
+                %input.filters#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
                 %label.filter-label
                   In 121+ days
             - if @market_rent.present?
@@ -139,7 +139,7 @@
             - if @community.has_floorplates?
               - @amenities.each do |amenity|
                 - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                  = link_to "<i class='custom-icon-camera'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{find_floorplate_number(amenity.amenityable_id)} amenity-marker hidden","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot
+                  = link_to "<i class='custom-icon-camera'></i>".html_safe, "##", :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{find_floorplate_number(amenity.amenityable_id)} amenity-marker hidden","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, "data-toggle"=>"lightbox","data-title"=>amenity.name
             - else
               - @amenities.each do |amenity|
                 - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
