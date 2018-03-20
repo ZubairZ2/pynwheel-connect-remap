@@ -405,6 +405,7 @@ function setFilters(){
  }else{
   $('#six-bedroom-checkbox').prop('checked', false);
  }
+ $(".disabled input").attr('data-original-title', 'none available');
  $(".disabled").click(false);
  //var today = new Date();
  //console.log(today);
@@ -673,9 +674,9 @@ function disable_rent_filter_options(min_rent){
     var option_rent = option.value.split('-');
     var maximum_option_rent = parseFloat(option_rent[1]);
     if (min_rent >= maximum_option_rent)
-      $("#market_rent option[value="+option.value+"]").prop('disabled', 'disabled');
+      $("#market_rent option[value="+option.value+"]").hide()
     else
-      $("#market_rent option[value="+option.value+"]").prop('disabled', false);
+      $("#market_rent option[value="+option.value+"]").show()
   } 
 }
 
@@ -686,8 +687,8 @@ function disable_area_filter_options(max_area){
     var option_area = option.value.split('-');
     var minimum_option_rent = parseFloat(option_area[0]);
     if (max_area <= minimum_option_rent)
-      $("#square_feet option[value="+option.value+"]").prop('disabled', 'disabled');
+      $("#square_feet option[value="+option.value+"]").hide()
     else
-      $("#square_feet option[value="+option.value+"]").prop('disabled', false);
+      $("#square_feet option[value="+option.value+"]").show()
   } 
 }

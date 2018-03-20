@@ -4,11 +4,6 @@
   %section.sidebar
     / Sidebar user panel
     %ul.sidebar-menu{"data-widget" => "tree"}
-      - if params[:community_id].present?
-        %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
-          = link_to edit_company_community_path(current_company,current_community) do
-            %i.fa.fa-info
-            %span Community Info
       %li.treeview{:class=>"#{(controller_name =='communities' && params[:action] != 'import_page') || controller_name =='companies' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-building-o
@@ -20,6 +15,11 @@
             %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             = link_to "Communities", company_communities_path(current_company)
+      - if params[:community_id].present?
+        %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
+          = link_to edit_company_community_path(current_company,current_community) do
+            %i.fa.fa-info
+            %span Community Info
       %li{:class=>"#{controller_name =='design' && params[:action] !='logo' ? 'active' : ''}"}
         = link_to community_design_index_path(current_community) do
           %i.fa.fa-tv
