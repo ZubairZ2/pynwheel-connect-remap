@@ -8,7 +8,8 @@ end
 json.homescreen do
 	if @community.design.present?
 		if @community.design.home_page_images.present?
-			json.images @community.design.home_page_images.order(:sort) do |img|
+			#json.images @community.design.home_page_images.order(:sort) do |img|
+			json.images @community.design.home_page_images do |img|
 			  json.filename img.name
 			  json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
 			end
@@ -37,7 +38,7 @@ json.apartments do
 	else
 		json.map_type "sitemap"
 	end
-	if @community.sitemap.present?
+	if @community.sitemap.present? and !@community.floorplates.present? 
 		image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
 		json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
 		json.sitemap_amenities @community.sitemap.amenities do |amenity|
@@ -52,9 +53,12 @@ json.apartments do
 		json.sitemap nil
 	end
 	units_floorplans = []
-	json.units @community.units.available_units do |unit|
-		if (unit.x_plot > 0 || unit.y_plot > 0) && unit.floorplan.present?
-			units_floorplans << unit.floorplan
+	#json.units @community.units.available_units do |unit|
+	floorplans = @community.floorplans
+	json.units @community.units do |unit|
+		if (unit.x_plot > 0 || unit.y_plot > 0) && floorplans.any?{|f| f.provider_floorplan_id == unit.floorplate_id}
+			floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplate_id}
+			units_floorplans << floorplan
 			json.marketing_name unit.marketing_name
 			json.rent unit.effective_rent
 			json.availability unit.availability
@@ -66,11 +70,11 @@ json.apartments do
 			json.unit_type unit.unit_type
 			json.provider_unit_id unit.provider_unit_id
 			json.id unit.id
-			json.floorplan_name unit.floorplan.present? ? unit.floorplan.name : nil
-			json.bedrooms unit.floorplan.present? ? unit.floorplan.bedrooms : 0
-		  json.bathrooms unit.floorplan.present? ? convert_float_to_integer(unit.floorplan.bathrooms) : 0
-		  json.square_feet unit.floorplan.present? ? unit.floorplan.square_feet : 0
-		  json.image unit.floorplan.present? ? (unit.floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+unit.floorplan.image.url : unit.floorplan.image.url) : nil) : nil
+			json.floorplan_name floorplan.present? ? floorplan.name : nil
+			json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
+		  json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
+		  json.square_feet floorplan.present? ? floorplan.square_feet : 0
+		  json.image floorplan.present? ? (floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil) : nil
 			json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
 		end
 	end
@@ -96,7 +100,8 @@ json.apartments do
 			json.id amenity.id
 	  end
 	end
-	json.floorplates @community.floorplates.order("number DESC") do |floorplate|
+	#json.floorplates @community.floorplates.order("number DESC") do |floorplate|
+	json.floorplates @community.floorplates do |floorplate|
 		image_url = floorplate.image.url(:svg_for_metro).present? ? floorplate.image.url(:svg_for_metro) : floorplate.image.url
 	  json.id floorplate.id
 	  json.number floorplate.number
@@ -151,7 +156,8 @@ json.gallery do
 		json.categories @community.galleries.pluck(:name).each do |name|
 			json.title name
 		end
-		json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
+		#json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
+		json.images @community.gallery_images.each_with_index.to_a do |(img,index)|
 			unless params[:action] == "ios_data"
 				if img.image.file.extension.downcase == 'mp4'
 					json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
