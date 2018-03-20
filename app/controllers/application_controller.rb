@@ -20,8 +20,10 @@ class ApplicationController < ActionController::Base
       @company = current_community.company
       session[:company_id] = @company.id
       @company
-    else
+    elsif session[:company_id].present?
       @company = Company.find session[:company_id]
+    else
+      @company = Company.first
     end
   end
 
