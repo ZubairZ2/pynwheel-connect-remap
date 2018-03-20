@@ -75,23 +75,23 @@
                           = unit.floorplan.name
                         %ul
                           %li
-                            %b= unit.floorplan.square_feet
+                            %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.square_feet) : nil
                             Sq Feet
                           %li
-                            %b= unit.floorplan.bathrooms
+                            %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.bathrooms) : nil
                             Bathrooms
                           %li
-                            %b= unit.floorplan.bedrooms
+                            %b= unit.floorplan.present? ? unit.floorplan.bedrooms : nil
                             Bedrooms
                           %li 
-                            %b= unit.available_date
+                            %b= unit.available_date.strftime("%m/%d/%Y")
                             Available Date  
                           
                         .price-details
                           .price-count.pull-left
-                            %span= "$#{unit.effective_rent}" 
+                            %span= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}" 
                           .available-now
-                            %p Available
+                            %p= unit.availability == "Unoccupied" ? "Available" : ""
                         - if @community.data_provider == "psi"      
                           .date-select
                             %h5 Lease Start Date
