@@ -66,6 +66,8 @@ gem 'tinymce-rails'
 gem 'gyoku', '~> 1.0'
 gem 'carrierwave_backgrounder', :git => 'https://github.com/lardawge/carrierwave_backgrounder.git'
 gem 'delayed_job_active_record'
+gem 'bullet', group: 'development'
+#gem 'ruby_gntp'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
