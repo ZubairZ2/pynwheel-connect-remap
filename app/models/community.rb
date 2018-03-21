@@ -13,6 +13,8 @@ class Community < ApplicationRecord
   has_many :galleries, dependent: :destroy
   has_many :gallery_images
   has_many :temporary_images, dependent: :destroy
+  has_many :webpages, dependent: :destroy
+  has_many :imagepages, dependent: :destroy
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id

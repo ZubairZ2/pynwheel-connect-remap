@@ -77,6 +77,10 @@
       %li{:class=>"#{controller_name =='favorite_settings' ? 'active' : ''}"}
         %a{:href => "#{community_favorite_settings_path(current_community)}"}
           %i.fa.fa-star
-          %span Favorites    
+          %span Favorites   
+      %li{:class=>"#{controller_name =='additional_pages' ? 'active' : ''}"}
+        %a{:href => "#{community_additional_pages_path(current_community)}"}
+          %i.fa.fa-pagelines
+          %span Additional Pages
   / /.sidebar
-/ End menu nav left Section
+/ End menu nav left Section 

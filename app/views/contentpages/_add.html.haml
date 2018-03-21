@@ -1,0 +1,25 @@
+#addWebpage.modal.fade{:role => "dialog"}
+	- if @webpage.new_record?
+		- url = community_contentpages_path(@community)
+	- else
+		- url = community_contentpage_path(@community,@webpage)
+	= form_for [@community,@webpage], url: url, remote: true do |f|
+		.modal-dialog
+			/ Modal content
+			.modal-content
+				.modal-header
+					%button.close{"data-dismiss" => "modal", :type => "button"} ×
+					%h4.modal-title Add Webpage
+				.modal-body
+					.row
+						.col-md-12
+							.mt-25.mb-40
+								%label Enter Name
+								= f.text_field :name, class: "form-control"
+						.col-md-12
+							.mt-25.mb-40
+								%label Enter URL
+								= f.text_field :url, class: "form-control"
+				.modal-footer
+					= f.submit "Save", :class=>"btn btn-primary"
+					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel

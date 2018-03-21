@@ -35,6 +35,10 @@ $(document).ready(function(){
   if ($("#gallery-image-upload-holder").length){
     saveGalleryImage(); 
   }
+
+  if ($("#additional-image-upload-holder").length){
+    saveAdditionalImage(); 
+  }
   //************************* Gallery Images Upload using dropzone plugin **************//
 
   // $("#gallery-images").change(function(){
@@ -411,6 +415,18 @@ function fetchGalleryImages(){
     });
 }
 
+function fetchAdditionalImages(){
+  var url = "/communities/"+community_id+"/imagepages/"+gallery_id
+  $.ajax({
+      url: url,
+      type: "GET",
+      dataType: "script"
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("gallery images are fetch successfully.");
+    });
+}
+
 function saveGalleryImage(){
   var galleryImageDropzone = new Dropzone("#gallery-image-upload-holder", { url: "/communities/"+community_id+"/galleries/"+gallery_id+"/save_gallery_image"});
   Dropzone.options.galleryImageDropzone = {
@@ -429,6 +445,28 @@ function saveGalleryImage(){
       $(".divLoading").addClass("hidden");
       $('#image-and-video-upload-warning').modal('show');
       galleryImageDropzone.removeFile(file);
+    }
+  });
+}
+
+function saveAdditionalImage(){
+  var additionalImageDropzone = new Dropzone("#additional-image-upload-holder", { url: "/communities/"+community_id+"/imagepages/"+gallery_id+"/save_additional_image"});
+  Dropzone.options.additionalImageDropzone = {
+    uploadMultiple: true
+  };
+
+  additionalImageDropzone.on("complete", function(file) {
+    console.log(file);
+    fetchAdditionalImages();
+  });
+  
+  additionalImageDropzone.on("addedfile", function(file) {
+    console.log(file.type);
+    $(".divLoading").removeClass("hidden");
+    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
+      $(".divLoading").addClass("hidden");
+      $('#image-and-video-upload-warning').modal('show');
+      additionalImageDropzone.removeFile(file);
     }
   });
 }

@@ -118,6 +118,16 @@ Rails.application.routes.draw do
         get :ipad_version
       end
     end
+    resources :additional_pages, only: :index
+    resources :contentpages
+    resources :imagepages do
+      member do
+        get :show_image_in_modal
+        post :save_additional_image
+        put :update_additional_image
+        delete :delete_additional_image
+      end
+    end
   end
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do

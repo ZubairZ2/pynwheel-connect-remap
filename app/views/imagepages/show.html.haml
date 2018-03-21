@@ -1,0 +1,42 @@
+.divLoading.hidden
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-cubes
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
+    / Start Tabs Secttions
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+      #myTabContent.tab-content
+        / Start image-slide section
+        #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+          .row
+            .col-md-6
+              %h4 #{@imagepage.name.capitalize} Gallery - #{@page_images.count} #{@page_images.count > 1 ? "images" : "image"}
+          .row
+            .col-md-6
+              .mt-35
+                %span.btn.btn-success.btn-file.text-UP.pull-left{:onclick=>"$('#page-image-upload-holder').click();"}
+                  %i.fa.fa-plus-circle
+                  Add Files
+                  / %input#gallery-images{:multiple => "multiple", :type => "file"}/
+              .mt-35
+          /       = form_tag save_gallery_video_community_gallery_path(@community,@gallery),:method=>"POST",:id=>"gallery-page-video-form",:multipart => true,:remote=>true  do 
+          /         %span.btn.btn-primary.btn-file.ml-5.text-UP.pull-left
+          /           %i.fa.fa-plus-circle
+          /           Add Video
+          /           = file_field_tag :gallery_page_video
+          #images-index
+            = render 'index'
+        / End image-slide section
+    / End Tabs Secttions
+/ /.content
+/ End Body right Section
+#edit-image.modal.fade.edit-image
+:javascript
+  var community_id = #{params[:community_id]}
+  var gallery_id = #{params[:id]}
