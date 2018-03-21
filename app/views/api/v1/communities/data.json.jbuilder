@@ -56,7 +56,7 @@ json.apartments do
   #json.units @community.units.available_units do |unit|
   floorplans = @community.floorplans
   json.units @community.units do |unit|
-    if (unit.x_plot > 0 || unit.y_plot > 0) && floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+    if (unit.x_plot > 0 || unit.y_plot > 0) && unit.availability == "Unoccupied" && floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
       units_floorplans << floorplan
       json.marketing_name unit.marketing_name

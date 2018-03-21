@@ -46,7 +46,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def include_application_data
-    @community = Community.includes(:floorplans,:favorite_setting,:sitemap,:floorplates,:units,:gallery_images).where(:units=>{availability: "Unoccupied"}).find(params[:id])
+    @community = Community.includes(:floorplans,:favorite_setting,:sitemap,:floorplates,:units,:gallery_images).find(params[:id])
   end
 
   private
