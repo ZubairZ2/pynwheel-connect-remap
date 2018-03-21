@@ -46,7 +46,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def include_application_data
-    @community = Community.includes(:floorplans,:favorite_setting,:sitemap,:floorplates,:units,:gallery_images,:galleries,{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video]}).find(params[:id])
+    @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},:units,{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video]}).find(params[:id])
   end
 
   private

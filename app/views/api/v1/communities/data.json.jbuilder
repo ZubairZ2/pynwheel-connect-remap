@@ -66,7 +66,7 @@ json.apartments do
       json.x_plot unit.x_plot
       json.y_plot unit.y_plot
       json.building unit.building
-      json.floorplan_id unit.floorplan.id
+      json.floorplan_id floorplan.id
       json.unit_type unit.unit_type
       json.provider_unit_id unit.provider_unit_id
       json.id unit.id
