@@ -183,5 +183,26 @@ json.gallery do
   end
 end
 
+json.additional_pages do
+  if @community.webpages.present?
+    json.webpages @community.webpages.each do |webpage|
+      json.title webpage.name
+      json.url webpage.url
+    end
+  end
+  if @community.imagepages.present?
+    json.imagepages @community.imagepages.each do |imagepage|
+      json.title imagepage.name
+      json.slideshow imagepage.is_slideshow
+      if imagepage.additional_images.present?
+        json.images imagepage.additional_images.each do |image|
+          json.title image.name
+          json.image image.image.url
+        end
+      end
+    end
+  end
+end
+
 json.message "success"
 json.operation "data"
