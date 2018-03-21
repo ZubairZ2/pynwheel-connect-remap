@@ -42,7 +42,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def list_communities
-    @communities = Community.all
+    @communities = Community.select(:id,:name,:company_id).includes(:company)
   end
 
   def include_application_data
