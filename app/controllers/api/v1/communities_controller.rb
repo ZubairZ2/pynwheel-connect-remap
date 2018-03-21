@@ -21,12 +21,11 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def data
-    #@community = Community.find(params[:id])
-    @community = Community.includes(:floorplans,:favorite_setting,:sitemap,:floorplates,:units,:gallery_images).where(:units=>{availability: "Unoccupied"}).find(params[:id])
+    include_application_data
   end
 
   def ios_data
-    @community =  Community.includes(:favorite_setting,:sitemap,:floorplates,:units,:neighborhood,:gallery_images,:galleries,{design: [:home_page_images,:home_page_video]},{neighborhood: [:locations]}).where(:units=>{availability: "Unoccupied"}).find(params[:id])
+    include_application_data
     render 'data'
   end
 
@@ -44,6 +43,10 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def list_communities
     @communities = Community.all
+  end
+
+  def include_application_data
+    @community = Community.includes(:floorplans,:favorite_setting,:sitemap,:floorplates,:units,:gallery_images).where(:units=>{availability: "Unoccupied"}).find(params[:id])
   end
 
   private
