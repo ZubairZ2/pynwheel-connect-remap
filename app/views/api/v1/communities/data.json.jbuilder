@@ -101,7 +101,9 @@ json.apartments do
     end
   end
   #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
-  json.floorplates @community.floorplates do |floorplate|
+  floorplates = @community.floorplates
+  floorplates = floorplates.sort_by { |f| -f.number }
+  json.floorplates floorplates do |floorplate|
     image_url = floorplate.image.url(:svg_for_metro).present? ? floorplate.image.url(:svg_for_metro) : floorplate.image.url
     json.id floorplate.id
     json.number floorplate.number
