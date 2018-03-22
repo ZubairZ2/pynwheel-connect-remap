@@ -4,10 +4,10 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-6.col-md-3.col-xs-12
-        = f.select :floorplan_id, options_for_select(@community.floorplans.collect{|f| [f.name,f.provider_floorplan_id]}),{},{ :class=>"form-control"}
+        = f.select :floorplan_id, @community.floorplans.collect{|f| [f.name,f.provider_floorplan_id]},{},{ :class=>"form-control"}
         %small Floor plan 
       .col-sm-6.col-lg-6.col-md-3.col-xs-12
-        = f.select :availability, options_for_select(["Occupied","Unoccupied"]),{},{ :class=>"form-control"} 
+        = f.select :availability, [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']],{},{ :class=>"form-control"} 
         %small Availability 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
