@@ -30,11 +30,11 @@
                     %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name }
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => u.floorplan_id }
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
-                    %td= best_in_place u, :availability, :type => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
+                    %td= best_in_place u, :availability, :as => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
                     %td
-                      -#%a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
-                      -#  %i.fa.fa-edit
+                      %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
+                        %i.fa.fa-edit
                       %a.text-danger{"data-name"=>"Unit","data-href" => "#{community_unit_path(@community,u)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                         %i.fa.fa-trash
 

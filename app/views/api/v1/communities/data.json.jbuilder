@@ -1,8 +1,7 @@
 local_assets_base_url = "http://192.168.101.77:3000"
 json.ui_settigs do
   json.theme @community.theme_name
-  json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : nil
-  json.name @community.name
+  json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_path("logo-small.png")
 end
 
 json.homescreen do
@@ -74,7 +73,8 @@ json.apartments do
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.square_feet floorplan.present? ? floorplan.square_feet : 0
-      json.image floorplan.present? ? (floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil) : nil
+      json.image unit.image.present? ? (Rails.env.development? ? local_assets_base_url+unit.image.url : unit.image.url) : (floorplan.present? && floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil)
+      # json.image floorplan.present? ? (floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil) : nil
       json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
     end
   end
