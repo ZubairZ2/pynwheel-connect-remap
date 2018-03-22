@@ -76,7 +76,7 @@ if (tablebody != null) {
     $(this).addClass("active")
 })*/
 
-$("#company_logo,#community_logo,#user_avatar,#amenity_image").change(function(){
+$("#company_logo,#community_logo,#user_avatar,#amenity_image,#unit_image").change(function(){
     readURL(this);
 });
 
