@@ -135,6 +135,7 @@ Rails.application.routes.draw do
         member do
           get :data
           get :ios_data
+          get :minimum_data
           post :email_favorites
         end
         collection do
