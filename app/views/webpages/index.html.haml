@@ -109,7 +109,7 @@
                   = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "_blank"
                      
        
-        - if @community.has_floorplates?          
+        - if @community_info.floorplates.present?          
           .select-floorP
             %h4 Select Floor
             .select-floor-bg
@@ -117,7 +117,7 @@
                 #content-3.content
                   .select-floor
                     %ul
-                      - @community.floorplates.order('number ASC').each do |floorplate|
+                      - @sorted_floorplates.each do |floorplate|
                         %li
                           = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number, "data-toggle"=>"tooltip", "data-title"=>"9 matches", "data-placement"=>"right"
                           
@@ -125,18 +125,19 @@
       .right-side.parent#panzomm-container
         / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
         .image-map.panzoom#map{:style => "position: relative;"}        
-          - if @community.has_floorplates?
-            - @community.floorplates.order('number ASC').each do |floorplate|
+          - if @community_info.floorplates.present?
+            - @sorted_floorplates.each do |floorplate|
               = image_tag floorplate.image.url,:class=>"floorplate-image #{floorplate.id == @floorplate.id ? '' : 'hidden'}",:id=>"f_#{floorplate.number}"
           - else
             %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.sitemap.image.url : "/assets/default.jpeg"}", :title => ""}/
             =# image_tag "410.svg",:height=>"400",:width=>"400"
-          - units = @units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
+          - units = @community_info.units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
           - units.each do |unit|
-            - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and !unit.floorplan.nil?
-              = link_to "<span class='custom-icon'>#{unit_count(@units_in_xy_group,unit.x_plot,unit.y_plot)}</span>".html_safe, "##", :class => "marker", :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community.data_provider,"data-website"=>@community.website,"data-community-property-id"=>(@community.credential.present? && @community.credential.property_id.present? ? @community.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-floorplan-name"=>unit.floorplan.present? ? unit.floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>unit.floorplan.present? ? hide_decimals(unit.floorplan.square_feet) : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.strftime("%m/%d/%Y"),"data-bedrooms"=>unit.floorplan.present? ? unit.floorplan.bedrooms : nil,"data-bathrooms"=>unit.floorplan.present? ? hide_decimals(unit.floorplan.bathrooms) : nil,"data-floorplan-image"=>unit.floorplan.present? ? unit.floorplan.image : nil,"data-lease-term"=>unit.lease_term,"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot
+            - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+              - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+              = link_to "<span class='custom-icon'>#{unit_count(@units_in_xy_group,unit.x_plot,unit.y_plot)}</span>".html_safe, "##", :class => "marker", :id => "m_#{unit.marketing_name}", :style => "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community_info.data_provider,"data-website"=>@community_info.website,"data-community-property-id"=>(@community_info.credential.present? && @community_info.credential.property_id.present? ? @community_info.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-floorplan-name"=>floorplan.present? ? floorplan.name : '',"data-unit-marketing-name"=>unit.marketing_name,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>floorplan.present? ? hide_decimals(floorplan.square_feet) : nil,"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.strftime("%m/%d/%Y"),"data-bedrooms"=>floorplan.present? ? floorplan.bedrooms : nil,"data-bathrooms"=>floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil,"data-floorplan-image"=>floorplan.present? ? floorplan.image : nil,"data-lease-term"=>unit.lease_term,"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot
           - if @amenities.present?
-            - if @community.has_floorplates?
+            - if @community_info.floorplates.present?
               - @amenities.each do |amenity|
                 - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
                   = link_to "<i class='custom-icon-camera'></i>".html_safe, amenity.image.url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{find_floorplate_number(amenity.amenityable_id)} amenity-marker hidden preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, "data-toggle"=>"lightbox","data-title"=>amenity.name
@@ -194,15 +195,15 @@
                      
                     .available-now
                       %p#availability
-                  - if @community.credential.apply_now 
-                    - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc"   
+                  - if @community_info.credential.apply_now 
+                    - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc"   
                       .date-select 
-                        %h5= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date" 
+                        %h5= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date" 
                         .form-group 
                           %input.form-control.datepicker#leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/ 
                           %i.fa.fa-calendar#leasing-start-date-icon    
                     .btn-apply
-                      - if @community.data_provider == "realpagesvc"
+                      - if @community_info.data_provider == "realpagesvc"
                         = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag"
                       - elsif @community.data_provider == "psi"
                         = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag"
@@ -244,7 +245,7 @@
   var redirect_url = "#{community_webpages_url(@community)}"
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
   
-  var has_floorplate = "#{@community.has_floorplates?}";
+  var has_floorplate = "#{@community_info.floorplates.present?}";
   var current_floorplate_number = "#{@floorplate.present? ? @floorplate.number : 0}";
   var floorplate_numbers = "#{@floorplate_numbers.present? ? @floorplate_numbers : []}";
   floorplate_numbers = JSON.parse(floorplate_numbers);

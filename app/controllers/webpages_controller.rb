@@ -12,20 +12,28 @@ class WebpagesController < ActionController::Base
 			Favorite.create(session_id: cookies[:session_id],unit_ids: [])
 		end
 		@units_with_floorplan_info = []
-		@units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.community_id = units.community_id and floorplans.provider_floorplan_id = units.floorplan_id").available_units
+		#@units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.community_id = units.community_id and floorplans.provider_floorplan_id = units.floorplan_id").available_units
+		@community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
+		#@units = @community_info.units
 		@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
 	
-		if @community.has_floorplates?
-		  @floorplate = @community.floorplates.order('number ASC').first
+		if @community_info.floorplates.present?
+		  #!@floorplate = @community.floorplates.order('number ASC').first
 		  #@amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
-		  @amenities =  @community.floorplates.joins("LEFT OUTER JOIN amenities ON amenities.amenityable_id = floorplates.id").collect{|c| c.amenities}
-		  @amenities = @amenities.flatten
-		  @floorplate_numbers = @community.floorplates.map(&:number) 
+		  #!@amenities =  @community.floorplates.joins("LEFT OUTER JOIN amenities ON amenities.amenityable_id = floorplates.id").collect{|c| c.amenities}
+		  #!@amenities = @amenities.flatten
+		  #!@floorplate_numbers = @community.floorplates.map(&:number) 
+		  @floorplates = @community_info.floorplates
+      @sorted_floorplates = @floorplates.sort_by { |f| -f.number }
+      @floorplate = @sorted_floorplates.first
+      @floorplate_numbers = @sorted_floorplates.map(&:number)
+      @amenities = @sorted_floorplates.collect{|c| c.amenities}
+      @amenities = @amenities.flatten
 		else
 	    #@units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-	    @amenities = @community.sitemap.amenities if @community.sitemap.present?
+	    @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
 		end
-		if @units.size > 0
+		if @community_info.units.size > 0
 			normalize_units
 			if @units_with_floorplan_info.present?
 				build_square_feet_range
@@ -33,53 +41,20 @@ class WebpagesController < ActionController::Base
 	    	@units_with_floorplan_info = @units_with_floorplan_info.to_json
 	    end
     end
-    # else
-    #   flash[:error] = "Please plot units first."
-    #   # redirect_to root_path
-    # end 
 	end
 
-	# def ipad_version
-	# 	#cookies[:favorite_unit_ids] = nil
-	# 	if cookies[:favorite_unit_ids].nil?
-	# 		cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
-	# 		cookies.permanent[:session_id] = SecureRandom.hex(8)
-	# 		Favorite.create(session_id: cookies[:session_id],unit_ids: [])
-	# 	end
-	# 	@units_with_floorplan_info = []
-	# 	@units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-	# 	@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
-	
-	# 	if @community.has_floorplates?
-	# 	  @floorplate = @community.floorplates.first
-	# 	  @amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
-	# 	  @amenities = @amenities.flatten
-	# 	  @floorplate_numbers = @community.floorplates.map(&:number) 
-	# 	else
-	#     #@units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
-	#     @amenities = @community.sitemap.amenities if @community.sitemap.present?
-	# 	end
-	# 	if @units.size > 0
-	# 		normalize_units
-	# 		build_square_feet_range
-	# 		build_market_rent_range
- #    	@units_with_floorplan_info = @units_with_floorplan_info.to_json
- #    end
- #    # else
- #    #   flash[:error] = "Please plot units first."
- #    #   # redirect_to root_path
- #    # end 
-	# end
-
 	def normalize_units
-		@units.each do |unit|
-			if unit.floorplan.present? && unit.effective_rent >= 1 && (unit.x_plot > 0 || unit.y_plot > 0)
+		@floorplans = @community_info.floorplans
+		@community_info.units.each do |unit|
+			#!if unit.floorplan.present? && unit.effective_rent >= 1 && (unit.x_plot > 0 || unit.y_plot > 0)
+			if (unit.x_plot > 0 || unit.y_plot > 0) && unit.availability == "Unoccupied" && unit.effective_rent >= 1 && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+				floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
 				struct = {
 					 marketing_name: unit.marketing_name,
 					 market_rent: unit.effective_rent,
-					 bedrooms: unit.floorplan.bedrooms,
-					 bathrooms: unit.floorplan.bathrooms,
-					 square_feet: unit.floorplan.square_feet,
+					 bedrooms: floorplan.bedrooms,
+					 bathrooms: floorplan.bathrooms,
+					 square_feet: floorplan.square_feet,
 					 availability: unit.availability,
 					 available_date: unit.available_date,
 					 floorplate_number: (unit.floorplate.present? ? unit.floorplate.number : 0)
