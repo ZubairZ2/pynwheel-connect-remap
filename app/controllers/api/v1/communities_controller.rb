@@ -29,6 +29,11 @@ class Api::V1::CommunitiesController < ActionController::Base
     render 'data'
   end
 
+  def minimum_data
+    @community = Community.includes(:imagepages,:webpages).find(params[:id])
+    render :json=>{"status"=>"success","imagepages"=>@community.imagepages,"webpages"=>@community.webpages}
+  end
+
   def email_favorites
     begin
       if @community.email_favorites(params)
