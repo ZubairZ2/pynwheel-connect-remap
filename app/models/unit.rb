@@ -1,5 +1,5 @@
 class Unit < ApplicationRecord
-  mount_base64_uploader :image, AvatarUploader
+  mount_uploader :image, AvatarUploader
   belongs_to :community
   belongs_to :floorplan
   belongs_to :floorplate
