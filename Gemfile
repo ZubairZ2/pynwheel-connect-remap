@@ -69,6 +69,7 @@ gem 'delayed_job_active_record'
 gem 'bullet', group: 'development'
 #gem 'ruby_gntp'
 gem 'derailed'
+gem 'gc_stats', '~> 1.0'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
