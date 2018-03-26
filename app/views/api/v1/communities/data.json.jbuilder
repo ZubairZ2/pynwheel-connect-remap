@@ -185,14 +185,14 @@ end
 
 json.additional_pages do
   if @community.webpages.present?
-    json.webpages @community.webpages.each do |webpage|
+    json.webpages @community.webpages.active.each do |webpage|
       json.id webpage.id
       json.title webpage.name
       json.url webpage.url
     end
   end
   if @community.imagepages.present?
-    json.imagepages @community.imagepages.each do |imagepage|
+    json.imagepages @community.imagepages.active.each do |imagepage|
       json.id imagepage.id
       json.title imagepage.name
       json.slideshow imagepage.is_slideshow
