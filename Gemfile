@@ -54,7 +54,7 @@ gem "fog-aws"
 gem 'devise'
 gem 'devise_invitable'
 gem 'cancancan', '~> 2.0'
-gem 'themes_on_rails'
+#gem 'themes_on_rails'
 gem 'rmagick', :require => 'RMagick'
 gem 'jquery-ui-rails'
 gem 'rails_sortable'
@@ -68,6 +68,7 @@ gem 'carrierwave_backgrounder', :git => 'https://github.com/lardawge/carrierwave
 gem 'delayed_job_active_record'
 gem 'bullet', group: 'development'
 #gem 'ruby_gntp'
+gem 'derailed'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
