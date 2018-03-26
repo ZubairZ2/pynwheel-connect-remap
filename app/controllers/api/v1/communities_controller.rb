@@ -6,11 +6,15 @@ class Api::V1::CommunitiesController < ActionController::Base
       str = params[:community_string].split("@")
       company = Company.find_by_name(str[0])
       if company.present?
-        community = company.communities.where(name: str[1])
-        if community.present?
-          render :json=> {:success=>true, :community => community.first.id, :message => "success", :operation => "login"}
+        if company.inactivate == false
+          community = company.communities.where(name: str[1])
+          if community.present?
+            render :json=> {:success=>true, :community => community.first.id, :message => "success", :operation => "login"}
+          else
+            render :json=> {:success=>false, :message => "Community not found"}
+          end
         else
-          render :json=> {:success=>false, :message => "Community not found"}
+          render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
         end
       else
         render :json=> {:success=>false, :message => "Community not found"}

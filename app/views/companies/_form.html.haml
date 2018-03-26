@@ -35,4 +35,13 @@
         %small Zip
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
         = f.text_field :phone, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Phone",:maxlength=>"20"
-        %small Phone     
+        %small Phone 
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Inactivate
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :inactivate
+          %label Inactivate
