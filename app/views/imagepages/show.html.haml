@@ -4,7 +4,7 @@
   .content
     .title-heading
       %h4
-        %i.fa.fa-cubes
+        %i.fa.fa-pagelines
         = @community.name.capitalize
         %br
           %small.text-primary
@@ -20,7 +20,7 @@
           .row
             .col-md-6
               .mt-35
-                %span.btn.btn-success.btn-file.text-UP.pull-left{:onclick=>"$('#page-image-upload-holder').click();"}
+                %span.btn.btn-success.btn-file.text-UP.pull-left{:onclick=>"$('#additional-image-upload-holder').click();"}
                   %i.fa.fa-plus-circle
                   Add Files
                   / %input#gallery-images{:multiple => "multiple", :type => "file"}/
@@ -39,4 +39,4 @@
 #edit-image.modal.fade.edit-image
 :javascript
   var community_id = #{params[:community_id]}
-  var gallery_id = #{params[:id]}
+  var imagepage_id = #{params[:id]}

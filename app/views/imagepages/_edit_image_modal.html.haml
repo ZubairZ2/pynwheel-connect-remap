@@ -1,0 +1,15 @@
+.modal-dialog{:style=>"overflow-y: initial width: 700px !important; width: 700px;"}
+  .modal-content
+    = form_for @additional_image,url: update_additional_image_community_imagepage_path(@community,@imagepage,additional_image_id: @additional_image.id),method: :put do |f|
+      .modal-body
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+        .form-group
+          %label Image Title
+          = f.text_field :name , class: "form-control", placeholder: "Name"    
+        .form-group
+          %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
+            Apply Changes
+            %i.fa.fa-check
+        .clearfix

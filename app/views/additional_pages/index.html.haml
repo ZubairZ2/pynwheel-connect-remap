@@ -4,7 +4,7 @@
   .content
     .title-heading
       %h4
-        %i.fa.fa-cubes
+        %i.fa.fa-pagelines
         = @community.name.capitalize
         %br
           %small.text-primary
@@ -36,12 +36,12 @@
                           %a.text-danger{"data-name"=>"Page","data-href" => "/communities/#{@community.id}/contentpages/#{page.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                             %i.fa.fa-trash
                         - else
-                          %a.text-blue.ml-5{:href => "#{community_imagepage_path(@community,page)}"}
-                            %i.fa.fa-eye
                           = link_to edit_community_imagepage_path(@community,page), remote: true, class: "text-success ml-5" do
                             %i.fa.fa-edit
                           %a.text-danger{"data-name"=>"Page","data-href" => "/communities/#{@community.id}/imagepages/#{page.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                             %i.fa.fa-trash
+                          %a.text-blue.ml-5{:href => "#{community_imagepage_path(@community,page)}"}
+                            %i.fa.fa-eye
         .row
           .col-md-12
             = link_to new_community_contentpage_path(@community), remote: true, class: "btn btn-success pull-right mb-20" do

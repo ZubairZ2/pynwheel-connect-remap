@@ -416,14 +416,14 @@ function fetchGalleryImages(){
 }
 
 function fetchAdditionalImages(){
-  var url = "/communities/"+community_id+"/imagepages/"+gallery_id
+  var url = "/communities/"+community_id+"/imagepages/"+imagepage_id
   $.ajax({
       url: url,
       type: "GET",
       dataType: "script"
     }).done(function(){
         $(".divLoading").addClass("hidden");
-        console.log("gallery images are fetch successfully.");
+        console.log("Images are fetch successfully.");
     });
 }
 
@@ -450,7 +450,7 @@ function saveGalleryImage(){
 }
 
 function saveAdditionalImage(){
-  var additionalImageDropzone = new Dropzone("#additional-image-upload-holder", { url: "/communities/"+community_id+"/imagepages/"+gallery_id+"/save_additional_image"});
+  var additionalImageDropzone = new Dropzone("#additional-image-upload-holder", { url: "/communities/"+community_id+"/imagepages/"+imagepage_id+"/save_additional_image"});
   Dropzone.options.additionalImageDropzone = {
     uploadMultiple: true
   };
@@ -465,7 +465,7 @@ function saveAdditionalImage(){
     $(".divLoading").removeClass("hidden");
     if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
       $(".divLoading").addClass("hidden");
-      $('#image-and-video-upload-warning').modal('show');
+      $('#image-upload-warning').modal('show');
       additionalImageDropzone.removeFile(file);
     }
   });

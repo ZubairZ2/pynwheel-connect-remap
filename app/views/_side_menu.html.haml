@@ -78,7 +78,7 @@
         %a{:href => "#{community_favorite_settings_path(current_community)}"}
           %i.fa.fa-star
           %span Favorites   
-      %li{:class=>"#{controller_name =='additional_pages' ? 'active' : ''}"}
+      %li{:class=>"#{controller_name =='additional_pages' || controller_name =='imagepages' ? 'active' : ''}"}
         %a{:href => "#{community_additional_pages_path(current_community)}"}
           %i.fa.fa-pagelines
           %span Additional Pages

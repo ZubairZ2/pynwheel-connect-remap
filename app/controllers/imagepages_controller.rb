@@ -1,6 +1,7 @@
 class ImagepagesController < ApplicationController
 	before_action :set_community
 	add_breadcrumb "Home", :root_path
+	add_breadcrumb "Additional Pages", :community_additional_pages_path
 
 	def new
 		@imagepage = @community.imagepages.new
@@ -39,6 +40,7 @@ class ImagepagesController < ApplicationController
 	end
 
 	def show
+		add_breadcrumb "Image Page"
 		@imagepage = @community.imagepages.find(params[:id])
 		@page_images = @imagepage.additional_images.order(:sort).all
 	end
@@ -50,6 +52,27 @@ class ImagepagesController < ApplicationController
 		render :json=>{"status"=>"success"}
 	end
 
+	def delete_additional_image
+		@imagepage = @community.imagepages.find(params[:id])
+		@additional_image = @imagepage.additional_images.find(params[:additional_image_id])
+		@additional_image.destroy
+		flash[:notice] = "Image deleted successfully."
+		redirect_back(fallback_location: root_path)
+	end
+
+	def show_image_in_modal
+		@imagepage = @community.imagepages.find(params[:id])
+		@additional_image = @imagepage.additional_images.find(params[:additional_image_id])
+	end
+
+	def update_additional_image
+		@imagepage = @community.imagepages.find(params[:id])
+		@additional_image = @imagepage.additional_images.find(params[:additional_image_id])
+		@additional_image.update(additional_image_params)
+		flash[:notice] = "Image is edited successfully."
+		redirect_back(fallback_location: root_path)
+	end
+
 	private 
 
 	def set_community
@@ -57,6 +80,10 @@ class ImagepagesController < ApplicationController
 	end
 
 	def imagepage_params
-		params.require(:imagepage).permit(:name,:is_slideshow)
+		params.require(:imagepage).permit(:name,:is_slideshow,:hide_page)
+	end
+
+	def additional_image_params
+		params.require(:additional_image).permit(:name)
 	end
 end

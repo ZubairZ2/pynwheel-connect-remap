@@ -16,10 +16,19 @@
 							.mt-25.mb-40
 								%label Enter Name
 								= f.text_field :name, class: "form-control"
-						.col-md-12
+					.row
+						.col-md-4
 							.mt-25.mb-40
-								%label Slideshow
-								= f.text_field :is_slideshow, class: "form-control"
+								.checkbox
+									= f.check_box :is_slideshow
+									%label
+										Slideshow
+						.col-md-4
+							.mt-25.mb-40
+								.checkbox
+									= f.check_box :hide_page
+									%label 
+										Hide this page
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
 					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel
