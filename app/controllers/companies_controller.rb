@@ -57,7 +57,7 @@ class CompaniesController < ApplicationController
     @company = Company.find params[:id]
   end
   def company_params
-    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo)
+    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate)
   end
 
 end
