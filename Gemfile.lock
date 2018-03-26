@@ -131,7 +131,6 @@ GEM
     font-awesome-rails (4.7.0.3)
       railties (>= 3.2, < 5.2)
     formatador (0.2.5)
-    gc_stats (1.0.0)
     get_process_mem (0.2.1)
     globalid (0.4.1)
       activesupport (>= 4.2.0)
@@ -328,7 +327,6 @@ DEPENDENCIES
   figaro
   fog-aws
   font-awesome-rails
-  gc_stats (~> 1.0)
   gyoku (~> 1.0)
   haml
   httparty
