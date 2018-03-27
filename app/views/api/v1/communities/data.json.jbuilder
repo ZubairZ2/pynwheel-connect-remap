@@ -74,7 +74,7 @@ json.apartments do
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.square_feet floorplan.present? ? floorplan.square_feet : 0
       json.image unit.image.present? ? (Rails.env.development? ? local_assets_base_url+unit.image.url : unit.image.url) : (floorplan.present? && floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil)
-      # json.image floorplan.present? ? (floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil) : nil
+      json.floorplan_image floorplan.present? ? (floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil) : nil
       json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
     end
   end
@@ -128,6 +128,7 @@ json.neighborhood do
     json.latitude @community.neighborhood.latitude
     json.longitude @community.neighborhood.longitude
     json.radius @community.neighborhood.radius
+    json.zoom @community.neighborhood.zoom
     json.address @community.neighborhood.address
     arr = @community.neighborhood.category.split(',')
     arr.insert(0,'All')
