@@ -268,64 +268,77 @@ function selectDataProvider(data_provider){
 
 function showPsiFields(){
     $('.credential_fields').hide();
-    removeValidationsClass();
+    //removeValidationsClass();
     $('#url').show();
-    $('#community_credential_attributes_url').addClass("validate[required]");
+    //$('#community_credential_attributes_url').addClass("validate[required]");
     $('#password').show();
-    $('#community_credential_attributes_password').addClass("validate[required]");
+    //$('#community_credential_attributes_password').addClass("validate[required]");
     $('#username').show();
-    $('#community_credential_attributes_username').addClass("validate[required]");
+    //$('#community_credential_attributes_username').addClass("validate[required]");
     $('#property_id').show();
-    $('#community_credential_attributes_property_id').addClass("validate[required]");
+    //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
 }
 
 function showYardiFields(){
     $('.credential_fields').hide();
-    removeValidationsClass();
+    //removeValidationsClass();
     $('#url').show();
-    $('#community_credential_attributes_url').addClass("validate[required]");
+    //$('#community_credential_attributes_url').addClass("validate[required]");
     $('#username').show();
-    $('#community_credential_attributes_username').addClass("validate[required]");
+    //$('#community_credential_attributes_username').addClass("validate[required]");
     $('#password').show();
-    $('#community_credential_attributes_password').addClass("validate[required]");
+    //$('#community_credential_attributes_password').addClass("validate[required]");
     $('#server_name').show();
-    $('#community_credential_attributes_server_name').addClass("validate[required]");
+    //$('#community_credential_attributes_server_name').addClass("validate[required]");
     $('#database').show();
-    $('#community_credential_attributes_database').addClass("validate[required]");
+    //$('#community_credential_attributes_database').addClass("validate[required]");
     $('#platform').show();
     $('#property_id').show();
-    $('#community_credential_attributes_property_id').addClass("validate[required]");
+    //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#interface_entity').show();
     $('#data-connection-buttons').show();
 }
 
 function showYardiRentCafeFields(){
     $('.credential_fields').hide();
-    removeValidationsClass();
-    $('#c_code').show();
-    $('#community_credential_attributes_c_code').addClass("validate[required]");
+    //removeValidationsClass();
+    //$('#c_code').show();
+    showYardiRentCafeCodeInputOption($('#yardirentcafe_code_option').val());
+    //$('#community_credential_attributes_c_code').addClass("validate[required]");
     $('#p_code').show();
-    $('#community_credential_attributes_p_code').addClass("validate[required]");
+    //$('#community_credential_attributes_p_code').addClass("validate[required]");
     $('#data-connection-buttons').show();
+    $('#yardirentcafe_option').show();
 }
 
 function showRealPageSVCFields(){
     $('.credential_fields').hide();
-    removeValidationsClass();
+    //removeValidationsClass();
     $('#pmc_id').show();
-    $('#community_credential_attributes_pmc_id').addClass("validate[required]");
+    //$('#community_credential_attributes_pmc_id').addClass("validate[required]");
     $('#site_id').show();
-    $('#community_credential_attributes_site_id').addClass("validate[required]"); 
+    //$('#community_credential_attributes_site_id').addClass("validate[required]"); 
     $('#data-connection-buttons').show();   
 }
 
 function showFileFields(){
     $('.credential_fields').hide();
-    removeValidationsClass();
+    //removeValidationsClass();
     $('#spreadsheet').show();
     $('#data-connection-buttons').hide();
-    $('#community_credential_attributes_file').addClass("validate[required]"); 
+    //$('#community_credential_attributes_file').addClass("validate[required]"); 
+}
+
+function showYardiRentCafeCodeInputOption(value){
+  if (value == "Company Code"){
+    $('#api_token').hide();
+    $('#c_code').show();
+  }
+  else{
+   $('#api_token').show();
+   $('#c_code').hide(); 
+  }
 }
 
 function showCredentialsForm(){
