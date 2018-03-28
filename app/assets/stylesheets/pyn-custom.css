@@ -1801,6 +1801,8 @@ ul.home-tabs li:hover a{
 }
 a#clickme{ display:none !important;  background:#444; cursor:pointer;display:block; position:absolute; left:0; top:0; z-index:100; padding:5px 15px; color:#fff;
 font-size:16px;}
+a#favoriteclickme{ display:none !important;  background:#444; cursor:pointer;display:block; position:absolute; left:0; top:0; z-index:100; padding:5px 15px; color:#fff;
+font-size:16px;}
 div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; background: #303a3c; z-index:90;}
 .plane-details{
 	margin-right:10%;
@@ -2492,6 +2494,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 		position:absolute;
 	}
 	a#clickme{
+		display:block !important;
+	}
+	a#favoriteclickme{
 		display:block !important;
 	}
 	.right-side{

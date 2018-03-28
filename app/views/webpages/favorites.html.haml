@@ -31,7 +31,7 @@
     / Main content
     = render partial: "/messages"
     %section.is-favorites
-      %a#clickme{href: "#"} Select Filter
+      %a#favoriteclickme{href: "#"} Share and Clear
       .left-side.mydiv
         .select-list.select-list-fav
           / .select-title
@@ -50,14 +50,14 @@
           /       %i.fa.fa-location-arrow
           .bg-bottom
             .need-to
-              %h3 Need to pare down your list?
-              %p Tap the heart to remove an item from the page, or click the clear button below to remove all items.
-              %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All
-          .bg-bottom
-            .need-to
               %h3 Want to share your list?
               %p Click the share button and share your favorites link
-              %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share    
+              %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
+          .bg-bottom
+            .need-to
+              %h3 Need to pare down your list?
+              %p Tap the heart to remove an item from the page, or click the clear button below to remove all items.
+              %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
       .right-side
         - @units.each do |unit|
           .row{:id=>"row-#{unit.id}"}
