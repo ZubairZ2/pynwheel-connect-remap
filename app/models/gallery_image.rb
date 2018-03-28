@@ -5,6 +5,7 @@ class GalleryImage < ApplicationRecord
 	#mount_base64_uploader :image, GalleryUploader
 	mount_uploader :image, GalleryUploader
 	before_save :set_image_name
+	before_save :populate_image_urls
 	after_update :crop_image
 
 	def crop_image
@@ -17,6 +18,14 @@ class GalleryImage < ApplicationRecord
 
 	def set_image_name
   	self.name = image.file.filename
+  end
+
+  def populate_image_urls
+  	if self.image.present?
+  		self.image_url = self.image.url
+  		self.large_image_url = self.image.url(:large)
+  		self.ios_image_url = self.image.url(:ios)
+  	end
   end
   
 end
