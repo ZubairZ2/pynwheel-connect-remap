@@ -70,8 +70,6 @@ gem 'bullet', group: 'development'
 #gem 'ruby_gntp'
 gem 'derailed_benchmarks', group: :development
 gem 'stackprof', group: :development
-gem 'oj'
-gem 'oj_mimic_json', '~> 1.0', '>= 1.0.1'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
