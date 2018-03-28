@@ -13,7 +13,7 @@
       .box-header     
         .row
           .col-md-12
-            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units
               %thead
                 %tr
                   %th{:width => "79"} Sr #
@@ -22,6 +22,7 @@
                   %th Rent
                   %th Availability
                   %th Available Date
+                  %th Image
                   %th Actions
               %tbody
                 - @units.each_with_index  do |u,index|
@@ -32,6 +33,9 @@
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
                     %td= best_in_place u, :availability, :as => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
+                    %td
+                      .drop-img
+                        = image_tag u.unit_image if u.unit_image.present?
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit
