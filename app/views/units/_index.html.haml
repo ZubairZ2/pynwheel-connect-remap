@@ -25,17 +25,19 @@
                   %th Image
                   %th Actions
               %tbody
-                - @units.each_with_index  do |u,index|
+                - units = @community_info.units.sort_by { |u| u.id }
+                - units.each_with_index  do |u,index|
+                  - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
                   %tr
                     %td= index+1
                     %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name }
-                    %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => u.floorplan_id }
+                    %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.id }
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
                     %td= best_in_place u, :availability, :as => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
                     %td
                       .drop-img
-                        = image_tag u.unit_image if u.unit_image.present?
+                        = u.image.present? ? u.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : nil)
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit

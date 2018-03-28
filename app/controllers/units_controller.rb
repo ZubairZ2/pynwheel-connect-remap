@@ -4,7 +4,7 @@ class UnitsController < ApplicationController
   before_action :set_unit, only: [:edit,:update,:destroy]
   def index
     #@units = @community.units.page(params[:page]).per(10)
-    @units = @community.units.order(id: :desc)
+    @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
     @communities = current_company.communities
     add_breadcrumb "Units", community_units_path(@community)
   end

@@ -15,9 +15,9 @@ class Unit < ApplicationRecord
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
   end
 
-  def unit_image
-    self.image.present? ? self.image.url : (self.floorplan.present? && self.floorplan.image.present? ? self.floorplan.image.url : nil)
-  end
+  # def unit_image
+  #   self.image.present? ? self.image.url : (self.floorplan.present? && self.floorplan.image.present? ? self.floorplan.image.url : nil)
+  # end
 
   # def is_favorite?
   #   favorite_communities.count > 0
