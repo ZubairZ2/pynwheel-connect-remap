@@ -66,6 +66,7 @@ gem 'tinymce-rails'
 gem 'gyoku', '~> 1.0'
 gem 'carrierwave_backgrounder', :git => 'https://github.com/lardawge/carrierwave_backgrounder.git'
 gem 'delayed_job_active_record'
+gem 'oj'
 gem 'bullet', group: 'development'
 #gem 'ruby_gntp'
 gem 'derailed_benchmarks', group: :development
