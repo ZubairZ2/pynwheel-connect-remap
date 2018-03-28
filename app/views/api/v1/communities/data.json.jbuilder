@@ -160,7 +160,7 @@ json.gallery do
       json.title name
     end
     #json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
-    json.images @community.gallery_images.each_with_index.to_a do |(img,index)|
+    json.images @community.gallery_images.each do |img|
       unless params[:action] == "ios_data"
         if img.image.file.extension.downcase == 'mp4'
           json.url Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
