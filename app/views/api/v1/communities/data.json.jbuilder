@@ -200,7 +200,7 @@ json.additional_pages do
       if imagepage.additional_images.present?
         json.images imagepage.additional_images.each do |image|
           json.title image.name
-          json.image image.image.url
+          json.image Rails.env.development? ? local_assets_base_url+image.image.url : image.image.url
         end
       end
     end
