@@ -1,7 +1,7 @@
 $(document).ready(function(){
 	if ($('.is-favorites')[0]){
-		$('#clickme').click(function() {
-      $("#clickme").html($("#clickme").html() == 'Select Filter' ? 'Hide Filter' : 'Select Filter');
+		$('#favoriteclickme').click(function() {
+      $("#favoriteclickme").html($("#favoriteclickme").html() == 'Share and Clear' ? 'Hide Options' : 'Share and Clear');
     var $slider = $('.mydiv');
 	//$('.right-side').css('margin-left', '0');
     $slider.animate({
