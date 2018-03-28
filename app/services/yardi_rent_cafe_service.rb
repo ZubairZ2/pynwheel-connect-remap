@@ -9,9 +9,14 @@ class YardiRentCafeService < BaseService
     begin
         request_type = "apartmentavailability"
         company_code = credentials.c_code
+        api_token = credentials.api_token
         property_code = credentials.p_code
-        
-        response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
+        if api_token.present?
+          @url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
+        else
+          @url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
+        end
+        response = HTTParty.get(@url)
         response = JSON.parse(response.body)
         
       if response[0]["Error"].nil?
@@ -77,9 +82,14 @@ class YardiRentCafeService < BaseService
     begin
       request_type = "floorplan"
       company_code = credentials.c_code
+      api_token = credentials.api_token
       property_code = credentials.p_code
-
-      response = HTTParty.get("https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1")
+      if api_token.present?
+        @url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
+      else
+        @url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
+      end
+      response = HTTParty.get(@url)
       response = JSON.parse(response.body)
       if response[0]["Error"].nil?
         response.each do |r|

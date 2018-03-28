@@ -303,11 +303,13 @@ function showYardiFields(){
 function showYardiRentCafeFields(){
     $('.credential_fields').hide();
     removeValidationsClass();
-    $('#c_code').show();
+    //$('#c_code').show();
+    showYardiRentCafeCodeInputOption($('#yardirentcafe_code_option').val());
     $('#community_credential_attributes_c_code').addClass("validate[required]");
     $('#p_code').show();
     $('#community_credential_attributes_p_code').addClass("validate[required]");
     $('#data-connection-buttons').show();
+    $('#yardirentcafe_option').show();
 }
 
 function showRealPageSVCFields(){
@@ -326,6 +328,17 @@ function showFileFields(){
     $('#spreadsheet').show();
     $('#data-connection-buttons').hide();
     $('#community_credential_attributes_file').addClass("validate[required]"); 
+}
+
+function showYardiRentCafeCodeInputOption(value){
+  if (value == "Company Code"){
+    $('#api_token').hide();
+    $('#c_code').show();
+  }
+  else{
+   $('#api_token').show();
+   $('#c_code').hide(); 
+  }
 }
 
 function showCredentialsForm(){
