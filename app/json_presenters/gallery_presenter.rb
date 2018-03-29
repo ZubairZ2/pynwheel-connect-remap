@@ -17,6 +17,7 @@ class GalleryPresenter < JsonPresenters
         #puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.image_url #this also slows down the loop
         puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.large_image_url
         puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.ios_image_url 
+        puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.ios_image_url.include?(".mp4") 
         # struct = {}
         # unless action == "ios_data"
         #   if img.image_url.include?(".mp4")
