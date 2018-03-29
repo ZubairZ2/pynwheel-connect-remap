@@ -17,7 +17,7 @@ class NeighborhoodPresenter < JsonPresenters
 	    hash[:categories] = categories
 	    if community.neighborhood.locations.present?
 	    	locations = []
-	      json.locations community.neighborhood.locations.each do |location|
+	      community.neighborhood.locations.each do |location|
 	      	struct = {
 		      	title: location.title,
 		        address: location.address,
