@@ -17,7 +17,7 @@ port        ENV.fetch("PORT") { 3000 }
 environment ENV.fetch("RAILS_ENV") { "development" }
 
 # SETTING WORKERS TO 1 BY INTAGLEO
-workers 1
+workers 2
 
 preload_app!
 
