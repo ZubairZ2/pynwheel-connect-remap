@@ -9,7 +9,7 @@ class GalleryPresenter < JsonPresenters
       end
       hash[:categories] = categories
       images = []
-      gallery_images.each do |img| 
+      gallery_images.map do |img| 
         puts '*******************************' , Time.now
         struct = {}
         unless action == "ios_data"
