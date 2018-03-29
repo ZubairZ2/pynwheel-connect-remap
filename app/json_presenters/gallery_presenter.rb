@@ -37,7 +37,7 @@ class GalleryPresenter < JsonPresenters
       #     end
       #   end
       #   images << struct
-      # end
+       end
       hash[:images] = images
     end
     hash
