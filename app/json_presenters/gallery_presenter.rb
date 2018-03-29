@@ -11,27 +11,29 @@ class GalleryPresenter < JsonPresenters
       images = []
       for img in community.gallery_images do
         puts '-----------------------------' , Time.now 
-        struct = {}
-        unless action == "ios_data"
-          if img.image_url.include?(".mp4")
-            struct[:url] = img.image_url
-            struct[:video] = true
-            struct[:poster] = "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
-          else
-            struct[:url] = img.large_image_url
-            struct[:video] = false
-          end
-          struct[:type] = img.gallery.name
-          struct[:id] = img.id
-        else
-          unless img.image_url.include?(".mp4")
-            struct[:url] = img.ios_image_url
-            struct[:video] = false
-            struct[:type] = img.gallery.name
-            struct[:id]= img.id
-          end
-        end
-        images << struct
+        puts '**********************************' , img.gallery.name
+        puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.id
+        # struct = {}
+        # unless action == "ios_data"
+        #   if img.image_url.include?(".mp4")
+        #     struct[:url] = img.image_url
+        #     struct[:video] = true
+        #     struct[:poster] = "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
+        #   else
+        #     struct[:url] = img.large_image_url
+        #     struct[:video] = false
+        #   end
+        #   struct[:type] = img.gallery.name
+        #   struct[:id] = img.id
+        # else
+        #   unless img.image_url.include?(".mp4")
+        #     struct[:url] = img.ios_image_url
+        #     struct[:video] = false
+        #     struct[:type] = img.gallery.name
+        #     struct[:id]= img.id
+        #   end
+        # end
+        #images << struct
       end
       hash[:images] = images
     end
