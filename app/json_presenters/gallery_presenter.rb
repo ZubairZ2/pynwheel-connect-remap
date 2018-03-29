@@ -13,6 +13,7 @@ class GalleryPresenter < JsonPresenters
         puts '-----------------------------' , Time.now 
         puts '**********************************' , img.gallery.name
         puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.id
+        puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.image_url.include?(".mp4")
         # struct = {}
         # unless action == "ios_data"
         #   if img.image_url.include?(".mp4")
