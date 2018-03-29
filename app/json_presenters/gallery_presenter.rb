@@ -13,8 +13,8 @@ class GalleryPresenter < JsonPresenters
         puts '-----------------------------' , Time.now 
         puts '**********************************' , img.gallery.name
         puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.id
-        #puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.image_url.include?(".mp4") this slows down the loop
-        puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.image_url
+        #puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.image_url.include?(".mp4") #this slows down the loop
+        #puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.image_url #this also slows down the loop
         # struct = {}
         # unless action == "ios_data"
         #   if img.image_url.include?(".mp4")
