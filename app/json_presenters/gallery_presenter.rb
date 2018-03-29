@@ -10,6 +10,7 @@ class GalleryPresenter < JsonPresenters
       hash[:categories] = categories
       images = []
       for img in community.gallery_images do 
+        puts '*******************************' , Time.now
         struct = {}
         unless action == "ios_data"
           if img.image.file.extension.downcase == 'mp4'
