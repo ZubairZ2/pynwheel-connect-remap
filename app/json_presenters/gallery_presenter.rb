@@ -9,22 +9,22 @@ class GalleryPresenter < JsonPresenters
       end
       hash[:categories] = categories
       images = []
-      community.gallery_images.each do |img|
+      for img in community.gallery_images do 
         struct = {}
         unless action == "ios_data"
           if img.image.file.extension.downcase == 'mp4'
-            struct[:url] = Rails.env.development? ? local_assets_base_url+img.image.url : img.image.url
+            struct[:url] = img.image.url
             struct[:video] = true
             struct[:poster] = "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
           else
-            struct[:url] = Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+            struct[:url] = img.image.url(:large)
             struct[:video] = false
           end
           struct[:type] = img.gallery.name
           struct[:id] = img.id
         else
           unless img.is_video?
-            struct[:url] = Rails.env.development? ? local_assets_base_url+img.image.url(:ios) : img.image.url(:ios)
+            struct[:url] = img.image.url(:ios)
             struct[:video] = false
             struct[:type] = img.gallery.name
             struct[:id]= img.id
