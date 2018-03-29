@@ -11,6 +11,7 @@ class GalleryPresenter < JsonPresenters
       images = []
       community.gallery_images.map do |img| 
          puts '*******************************' , Time.now
+         puts '--------------------------------' , img.gallery.name
       #   struct = {}
       #   unless action == "ios_data"
       #     if img.image.file.extension.downcase == 'mp4'
