@@ -14,8 +14,8 @@ class GalleryPresenter < JsonPresenters
         #puts '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', img.image_url #this also slows down the loop
         struct = {}
         unless action == "ios_data"
-          if img.ios_image_url.include?(".mp4")
-            struct[:url] = img.large_image_url
+          if img.standard_image_url.include?(".mp4")
+            struct[:url] = img.standard_image_url
             struct[:video] = true
             struct[:poster] = "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
           else
@@ -25,7 +25,7 @@ class GalleryPresenter < JsonPresenters
           struct[:type] = img.gallery.name
           struct[:id] = img.id
         else
-          unless img.ios_image_url.include?(".mp4")
+          unless img.standard_image_url.include?(".mp4")
             struct[:url] = img.ios_image_url
             struct[:video] = false
             struct[:type] = img.gallery.name
