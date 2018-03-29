@@ -5,6 +5,7 @@ class FavoritePresenter < JsonPresenters
     if community.favorite_setting.present?
       hash[:email_from] = community.favorite_setting.email_from
       hash[:email_bcc] = community.favorite_setting.email_bcc
+      hash
     end
   end
 end
