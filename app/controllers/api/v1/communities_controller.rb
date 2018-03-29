@@ -34,8 +34,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def minimum_data
-    @community = Community.includes(:imagepages,:webpages).find(params[:id])
-    render :json=>{"status"=>"success","imagepages"=>@community.imagepages,"webpages"=>@community.webpages}
+    include_application_data
+    render json: {:ui_settigs=>UiPresenter.minimal_hash(@community),:homescreen=>HomescreenPresenter.minimal_hash(@community),:apartments=>ApartmentsPresenter.minimal_hash(@community,params[:action]),:neighborhood=>NeighborhoodPresenter.minimal_hash(@community),:favorite=>FavoritePresenter.minimal_hash(@community),:gallery=>GalleryPresenter.minimal_hash(@community,params[:action]),:additional_pages=>AdditionalPagesPresenter.minimal_hash(@community)}
   end
 
   def email_favorites
