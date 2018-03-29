@@ -36,6 +36,11 @@ class GalleryPresenter < JsonPresenters
         #   end
         # end
         #images << struct
+        struct = {
+          id: img.id,
+          type: img.gallery.name
+        }
+        images << struct
       end
       hash[:images] = images
     end
