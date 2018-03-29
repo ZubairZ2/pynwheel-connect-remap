@@ -1,5 +1,5 @@
 class GalleryPresenter < JsonPresenters
-  def self.minimal_hash(community,action)
+  def self.minimal_hash(community,action,gallery_images)
     local_assets_base_url = "http://192.168.101.77:3000"
     hash = {}
     if community.gallery_images.present?
@@ -9,7 +9,7 @@ class GalleryPresenter < JsonPresenters
       end
       hash[:categories] = categories
       images = []
-      for img in community.gallery_images do 
+      gallery_images.each do |img| 
         puts '*******************************' , Time.now
         struct = {}
         unless action == "ios_data"
