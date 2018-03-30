@@ -101,6 +101,15 @@ class SitemapsController < ApplicationController
     @sitemap = @community.sitemap
     @amenities = @sitemap.amenities
   end
+
+  def save_sitemap_image
+    sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
+    if sitemap.update_attribute(:image,params[:file])
+      render :json=>{"status"=>"success"}
+    else
+      render :json=>{"status"=>"fail"}
+    end
+  end
     
   private
 

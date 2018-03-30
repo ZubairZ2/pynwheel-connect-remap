@@ -68,70 +68,33 @@ $(document).ready(function(){
           }
         }
       });    
-    $("#sitemap_image").change(function(){
-      readSitemapImageSrcFromInput(this);
-    });
+    
 
-    var sitemap_image_upload_holder = document.getElementById('sitemap-image--upload-holder');
-    if (sitemap_image_upload_holder){
-        sitemap_image_upload_holder.ondrop = function (e) {
-          e.preventDefault();
-          files = e.dataTransfer.files;    
-          if(files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg"){ 
-            readSitemapImageSrc(files[0]);
-          }
-          else{
-            console.log('file type is not allowed');
-            $('#image-upload-warning').modal('show');
-          }          
-      }
-    }
-
-    function readSitemapImageSrcFromInput(input){
-      if (input.files && input.files[0]) {
-          if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" || input.files[0].type == "image/svg+xml"){ 
-          var reader = new FileReader(); 
-            reader.onload = function (e) {
-                // $('#preview-image').attr('src', e.target.result);
-                // $('#preview-image').parent().attr('href', e.target.result);
-                sitemapImage(e.target.result);
-            }
-
-            reader.readAsDataURL(input.files[0]);
-        }
-        else{
-          $(input).val('');
-          $('#image-upload-warning').modal('show');
-          //console.log($(input).val());
-        }
-      }
-    }
-    function sitemapImage(src){
-      $(".divLoading").removeClass("hidden");
-      var url = "/communities/"+community_id+"/sitemaps/"+sitemap_id;
-      $.ajax({
-          url: url,
-          type: "PUT",
-          dataType: "script",
-          data: {
-              sitemap: {image: src}
-          }
-      }).done(function(){
-          $(".divLoading").addClass("hidden");
-          console.log("success");
-      });
-   }
-
-    function readSitemapImageSrc(file){
-      $(".divLoading").removeClass("hidden");
-      var reader = new FileReader();
-      reader.onload = function (e) {
-        $('#preview-image').attr('src', e.target.result);
-        $('#preview-image').parent().attr('href', e.target.result);
-        sitemapImage(e.target.result);
-      }
-      reader.readAsDataURL(file);
+    if ($("#sitemap-image-upload-holder").length){
+      saveSiteMapImageOrSvg();
     }
 
   }  	
 });
+
+function saveSiteMapImageOrSvg(){
+  var siteMapImageDropzone = new Dropzone("#sitemap-image-upload-holder", { url: "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/save_sitemap_image"});
+  Dropzone.options.siteMapImageDropzone = {
+    uploadMultiple: true
+  };
+
+  siteMapImageDropzone.on("complete", function(file) {
+    console.log(file);
+    location.reload();
+  });
+  
+  siteMapImageDropzone.on("addedfile", function(file) {
+    console.log(file.type);
+    $(".divLoading").removeClass("hidden");
+    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg" || file.type == "image/svg+xml")) {
+      $(".divLoading").addClass("hidden");
+      $('#image-and-svg-upload-warning').modal('show');
+      siteMapImageDropzone.removeFile(file);
+    }
+  });
+}

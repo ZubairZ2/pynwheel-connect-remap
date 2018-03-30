@@ -66,6 +66,7 @@ Rails.application.routes.draw do
           delete :remove_amenity
         end
       end
+      post :save_sitemap_image
       collection do
         get :plotexp
         get :map
