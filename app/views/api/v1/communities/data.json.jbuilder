@@ -174,7 +174,7 @@ json.gallery do
         json.id img.id
       else
         unless img.standard_image_url.include?(".mp4")
-          json.url Rails.env.development? ? local_assets_base_url+img.ios_image_url : img.image.ios_image_url
+          json.url Rails.env.development? ? local_assets_base_url+img.ios_image_url : img.ios_image_url
           json.video false
           json.type img.gallery.name
           json.id img.id
