@@ -39,7 +39,7 @@ class Yardi4Service < BaseService
     
 
    def save_yardi4_units(ils_units,property_id)
-      ils_units.each do |u|
+      ils_units.lazy.each do |u|
       unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first_or_initialize   
       #unit = Unit.new(provider: "yardi4",community_id: credentials.community_id)
       unit.property_id = property_id
@@ -76,7 +76,7 @@ class Yardi4Service < BaseService
   end
 
   def save_yardi4_floorplans(floorplans)
-    floorplans.each do |f|
+    floorplans.lazy.each do |f|
       fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize  
       #fp = Floorplan.new(provider: "yardi4",community_id: credentials.community_id)
       #fp.provider_floorplan_id = f["IDValue"]
