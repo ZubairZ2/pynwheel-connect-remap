@@ -1,5 +1,9 @@
 $(document).ready(function(){
   if ($('.is-webpage')[0]){
+    $(".panzoom").addClass("transform-none");
+    $(".buttons").click(function(){
+      $(".panzoom").removeClass("transform-none");
+    })
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" }); // initialize bootstrap tooltip
     ////////////// Disable browser zoom for webpage  starts here ////////////////
     $(document).keydown(function(event) {
@@ -142,6 +146,7 @@ $(document).ready(function(){
     });
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function(){
+      $(".panzoom").addClass("transform-none");
       // console.log('clicking on anchor tag');
       var $section = $('#panzomm-container');
       $panzoom = $section.find('.panzoom').panzoom("reset");

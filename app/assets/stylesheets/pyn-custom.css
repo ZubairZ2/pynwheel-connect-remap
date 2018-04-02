@@ -1695,6 +1695,8 @@ ul.home-tabs li:hover a{
 }
 .panzoom{
 	border: 3px solid #fff;
+}
+.transform-none{
 	transform: none !important;
 }
 .middle-units{
