@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     end
     get :import_page
     get :import
+    get :experimental_import
     get :credentials
     get :test_connection
     post :save_temporary_image

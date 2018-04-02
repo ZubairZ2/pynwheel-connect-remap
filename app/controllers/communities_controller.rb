@@ -91,6 +91,12 @@ class CommunitiesController < ApplicationController
     end
   end
 
+  def experimental_import
+    @community = Community.find params[:community_id]
+    @community.experimental_data
+    render :json=>{"status"=>"Importing"}
+  end
+
   def test_connection
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
