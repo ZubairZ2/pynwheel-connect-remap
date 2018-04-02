@@ -1334,10 +1334,12 @@ ul.home-tabs li:hover a{
 }
 .height-200{
 	height: 200px;
+	display: flex;
+	align-items: center;
 }
 .height-200 img{
 	width: 100%;
-	height: 100%;
+	/*height: 100%;*/
 }
 .slide-image .images img{
 	/*width:100%;*/
@@ -1693,6 +1695,7 @@ ul.home-tabs li:hover a{
 }
 .panzoom{
 	border: 3px solid #fff;
+	transform: none !important;
 }
 .middle-units{
 	margin-left:216px;
@@ -2530,10 +2533,17 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 		left:0;
 		top:25%;
 	}
+	.custom-icon-camera{
+		width: 25px;
+		height: 25px;
+	}
 	.image-map{
 		overflow:scroll;
 		height: 400px;
 	}
+	/*.panzoom img{
+		height: auto !important;
+	}*/
 	.image-map img{
 		/*height: auto;*/
 	}
