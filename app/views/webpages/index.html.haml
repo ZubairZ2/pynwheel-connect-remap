@@ -119,7 +119,7 @@
                     %ul
                       - @sorted_floorplates.each do |floorplate|
                         %li
-                          = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number, "data-toggle"=>"tooltip", "data-title"=>"9 matches", "data-placement"=>"right"
+                          = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"right"
                           
                     
       .right-side.parent#panzomm-container
