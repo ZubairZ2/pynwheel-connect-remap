@@ -119,12 +119,12 @@ class WebpagesController < ActionController::Base
 
 	def favorites
 		@favorite = Favorite.find_by_session_id(cookies[:session_id])
-		@units = Unit.find JSON.parse(cookies[:favorite_unit_ids])
+		@units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]))
 	end
 
 	def favorites_share_link
 		@favorite = Favorite.find_by_session_id(params[:session_id])
-		@units = Unit.find @favorite.unit_ids
+		@units = Unit.where(id: @favorite.unit_ids)
 	end
 
 	def clear_favorites
