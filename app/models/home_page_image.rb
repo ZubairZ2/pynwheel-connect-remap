@@ -4,7 +4,7 @@ class HomePageImage < ApplicationRecord
   #mount_base64_uploader :image, ImageUploader
   mount_uploader :image, ImageUploader
   belongs_to :design
-  before_save :set_image_name
+  before_create :set_image_name
   after_update :crop_image
 
   def crop_image

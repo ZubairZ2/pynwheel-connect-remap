@@ -1,4 +1,4 @@
-- content_for :title, "Plot Unit - Pynwheel"
+- content_for :title, "Property Map - Pynwheel"
 .divLoading.hidden
 %section.is-sitemap
   .content
@@ -9,11 +9,11 @@
         %br
           %small.text-primary
             = @community.company.name + '@' + @community.name
-    %span.btn.btn-primary.btn-file
+    %span.btn.btn-primary.btn-file{:onclick=>"$('#sitemap-image-upload-holder').click();"}
       %i.fa.fa-upload
       Upload File
-      = file_field_tag :image, :id => "sitemap_image"
-    .text-center.image-upload.home-page-drag-box#sitemap-image--upload-holder
+      
+    .text-center.image-upload.home-page-drag-box#sitemap-image-upload-holder
       = image_tag "upload-image.png",:class=>"drag-image-padding-top"
       %p Drag &amp; Drop images to Upload
     .box.box-info.add-plan

@@ -3,7 +3,7 @@
   .content
     .title-heading
       %h4
-        %i.fa.fa-database
+        %i.fa{:class=>"#{params[:amenities].present? ? 'fa-plus-square' : 'fa-database'}"}
         = @community.name.capitalize
         %br
           %small.text-primary
