@@ -113,5 +113,21 @@ module ApplicationHelper
 			return x
 		end
 	end
+
+	def bathroom_text(unit)
+		if unit.floorplan.present?
+			unit.floorplan.bathrooms <= 1 ? "Bathroom" : "Bathrooms"
+		else
+			"Bathroom" 
+		end
+	end
+
+	def bedroom_text(unit)
+		if unit.floorplan.present?
+			unit.floorplan.bedrooms == "1" ? "Bedroom" : "Bedrooms"
+		else
+			"Bedroom" 
+		end
+	end
 		
 end

@@ -52,10 +52,10 @@
                             Sq Feet
                           %li
                             %b= unit.floorplan.present? ? unit.floorplan.bedrooms : nil
-                            Bedrooms
+                            = "#{bedroom_text(unit)}"
                           %li
                             %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.bathrooms) : nil
-                            Bathrooms
+                            = "#{bathroom_text(unit)}"
                           
                         .price-details
                           .price-count.pull-left
@@ -70,5 +70,5 @@
                               %i.fa.fa-calendar
                     .col-md-6
                       .plan-image
-                        = image_tag unit.floorplan.image.present? ? unit.floorplan.image.url : 'default.jpeg'
+                        = image_tag unit.unit_image
                                                     
