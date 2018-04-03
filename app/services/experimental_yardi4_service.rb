@@ -1,6 +1,6 @@
-class Yardi4Service < BaseService
+class ExperimentalYardi4Service < BaseService
 	def perform
-    begin
+    #begin
       property_id = ""
       ils_units = []
       floorplans = []
@@ -21,37 +21,27 @@ class Yardi4Service < BaseService
           url,
           :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
           :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
-      #result = Hash.from_xml(response.body) # This method consumes a lot of memory on heroku
       result = Ox.load(response.body, mode: :hash)
-      if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
-        property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
-        property_response.each do |pr|
-          if pr.key?(:IDValue)
-            property_id = pr[:IDValue]
-          end
-          if pr.key?(:Floorplan)
-            floorplans << pr[:Floorplan]
-          end
-          if pr.key?(:ILS_Unit)
-            ils_units << pr[:ILS_Unit]
-          end
+      property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
+      property_response.each do |pr|
+        if pr.key?(:IDValue)
+          property_id = pr[:IDValue]
         end
-        save_yardi4_units(ils_units,property_id)
-        save_yardi4_floorplans(floorplans)
-      else
-        #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
-        puts "Invalid credentials.Please enter correct one and try again."
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
+        if pr.key?(:Floorplan)
+          floorplans << pr[:Floorplan]
+        end
+        if pr.key?(:ILS_Unit)
+          ils_units << pr[:ILS_Unit]
+        end
       end
-    rescue => e
-      #Thread.current[:errors] << e.message
-      puts '------------------------' , e.message
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
-    end
+      save_yardi4_units(ils_units,property_id)
+      save_yardi4_floorplans(floorplans)
 	end
+
+
     
 
-  def save_yardi4_units(ils_units,property_id)
+   def save_yardi4_units(ils_units,property_id)
     ils_units.lazy.each do |u|
       u = u[1]
       unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue]).first_or_initialize   

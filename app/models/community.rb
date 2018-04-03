@@ -92,6 +92,10 @@ class Community < ApplicationRecord
     ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
 
+  def experimental_data
+    ImportExperimentalYardi4DataJob.perform_async credential.attributes.to_json
+  end
+
   def credentials_are_present?
     credential.present?
   end
