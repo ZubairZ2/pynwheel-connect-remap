@@ -126,18 +126,14 @@ class Yardi4Service < BaseService
       end
       
       rooms.each do |room|
-        if room[:RoomType] == "Bedroom"
-          fp.bedrooms = room[:Count]
+        if room[:Room][0][:RoomType] == "Bedroom"
+          fp.bedrooms = room[:Room][1][:Count]
         else
-          fp.bathrooms = room[:Count]
+          fp.bathrooms = room[:Room][1][:Count]
         end
       end
       
-      
-      
-      
       fp.units_available = -1
-
       fp.save
     end
   end
