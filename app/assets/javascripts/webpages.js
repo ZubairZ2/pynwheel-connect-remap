@@ -267,6 +267,7 @@ $(document).ready(function(){
 });
 
 function setFilters(){
+ var zero_bedroom = false;
  var one_bedroom = false;
  var two_bedroom = false;
  var three_bedroom = false;
@@ -287,22 +288,25 @@ function setFilters(){
  //In below for loop hide and show filters on the basis of units data available
 	for(var i=0;i < units.length;i++){
    //console.log(units[i]);
-   if (units[i]['bedrooms'] == '1'){
+   if (parseInt(units[i]['bedrooms']) == 0){
+     zero_bedroom = true
+   }
+   if (parseInt(units[i]['bedrooms']) == 1){
      one_bedroom = true
    }
-   if (units[i]['bedrooms'] == '2'){
+   if (parseInt(units[i]['bedrooms']) == 2){
      two_bedroom = true
    }
-   if (units[i]['bedrooms'] == '3'){
+   if (parseInt(units[i]['bedrooms']) == 3){
      three_bedroom = true
    }
-   if (units[i]['bedrooms'] == '4'){
+   if (parseInt(units[i]['bedrooms']) == 4){
      four_bedroom = true
    }
-   if (units[i]['bedrooms'] == '5'){
+   if (parseInt(units[i]['bedrooms']) == 5){
      five_bedroom = true
    }
-   if (units[i]['bedrooms'] == '6'){
+   if (parseInt(units[i]['bedrooms']) == 6){
      six_bedroom = true
    }
    // if (units[i]['available_date'] != '2099-01-01'){
@@ -367,6 +371,13 @@ function setFilters(){
   $('#one-twenty-plus-days-checkbox').parent().removeClass('disabled');
  }else{
   $('#one-twenty-plus-days-checkbox').prop('checked', false);
+ }
+
+ if(zero_bedroom){
+  $('#zero-bedroom-checkbox').addClass('active-filter');
+  $('#zero-bedroom-checkbox').parent().removeClass('disabled');
+ }else{
+  $('#zero-bedroom-checkbox').prop('checked', false);
  }
 
  if(one_bedroom){
@@ -534,40 +545,47 @@ function select_units_according_to_filters(floorplate_units){
 
   for(var i=0;i < floorplate_units.length;i++){
     all_units.push(floorplate_units[i]);
+    //show zero bedroom markers  
+   if($('#zero-bedroom-checkbox').is(':checked')){
+     if (parseInt(floorplate_units[i]['bedrooms']) == 0){
+       //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
+       bedroom_base_units.push(floorplate_units[i]);
+     }
+   }
    //show one bedroom markers  
    if($('#one-bedroom-checkbox').is(':checked')){
-     if (floorplate_units[i]['bedrooms'] == '1'){
+     if (parseInt(floorplate_units[i]['bedrooms']) == 1){
        //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
        bedroom_base_units.push(floorplate_units[i]);
      }
    }
    //show two bedroom markers
    if($('#two-bedroom-checkbox').is(':checked')){
-     if (floorplate_units[i]['bedrooms'] == '2'){
+     if (parseInt(floorplate_units[i]['bedrooms']) == 2){
        bedroom_base_units.push(floorplate_units[i]);
      }
    }
    //show three bedroom markers
    if($('#three-bedroom-checkbox').is(':checked')){
-     if (floorplate_units[i]['bedrooms'] == '3'){
+     if (parseInt(floorplate_units[i]['bedrooms']) == 3){
        bedroom_base_units.push(floorplate_units[i]);
      }
    }
    //show four bedroom markers
    if($('#four-bedroom-checkbox').is(':checked')){
-     if (floorplate_units[i]['bedrooms'] == '4'){
+     if (parseInt(floorplate_units[i]['bedrooms']) == 4){
        bedroom_base_units.push(floorplate_units[i]);
      }
    }
    //show five bedroom markers
    if($('#five-bedroom-checkbox').is(':checked')){
-     if (floorplate_units[i]['bedrooms'] == '5'){
+     if (parseInt(floorplate_units[i]['bedrooms']) == 5){
        bedroom_base_units.push(floorplate_units[i]);
      }
    }
    //show six bedroom markers
    if($('#six-bedroom-checkbox').is(':checked')){
-     if (floorplate_units[i]['bedrooms'] == '6'){
+     if (parseInt(floorplate_units[i]['bedrooms']) == 6){
        bedroom_base_units.push(floorplate_units[i]);
      }
    }
@@ -629,7 +647,7 @@ function select_units_according_to_filters(floorplate_units){
   var availability_filter_present = true
   var price_filter_present = true
   var area_filter_present = true
-  if (!($('#one-bedroom-checkbox').is(':checked') || $('#two-bedroom-checkbox').is(':checked') || $('#three-bedroom-checkbox').is(':checked') || $('#four-bedroom-checkbox').is(':checked') || $('#five-bedroom-checkbox').is(':checked') || $('#six-bedroom-checkbox').is(':checked'))){
+  if (!($('#zero-bedroom-checkbox').is(':checked') || $('#one-bedroom-checkbox').is(':checked') || $('#two-bedroom-checkbox').is(':checked') || $('#three-bedroom-checkbox').is(':checked') || $('#four-bedroom-checkbox').is(':checked') || $('#five-bedroom-checkbox').is(':checked') || $('#six-bedroom-checkbox').is(':checked'))){
     bedroom_base_units = all_units
     bedroom_filter_present = false
   }
