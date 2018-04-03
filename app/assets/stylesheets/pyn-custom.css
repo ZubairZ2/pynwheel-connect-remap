@@ -1226,6 +1226,10 @@ ul.images-tabs li a span{
 	height:700px;
 	overflow:scroll;
 }
+.map-block img{
+	width: 1412px;
+	height: 932px;
+}
 ul.amenities-list{
 	margin:0;
 	padding:0;
