@@ -45,6 +45,10 @@
             /   %label
             /     All
             .checkbox.checkbox-primary.pb-15.disabled
+              %input.filters#zero-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
+              %label.filter-label
+                Studio
+            .checkbox.checkbox-primary.pb-15.disabled
               %input.filters#one-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
               %label.filter-label
                 1 Bedroom

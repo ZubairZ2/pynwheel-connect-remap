@@ -24,7 +24,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
 
   def set_file_dimensions
     if image?(file)
-      resize_to_fit(1412, 932)
+      resize_to_fill(1412, 932)
     end
   end
 
