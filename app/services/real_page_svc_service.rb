@@ -1,8 +1,8 @@
 class RealPageSvcService < BaseService
 	def perform
-		#import_realpage_svc_floorplans
+		import_realpage_svc_floorplans
     import_realpage_svc_units 
-    import_realpage_svc_price 
+    #import_realpage_svc_price TODO will look into it when marker will be plotted on the basis of provider unit id. 
 	end
 
 	def import_realpage_svc_floorplans
@@ -130,10 +130,10 @@ class RealPageSvcService < BaseService
             u = u[:UnitObject]
             hit = false
             
-            unit = Unit.where(provider: "realpagesvc",community_id: community_id,marketing_name: u[:UnitNumber]).first_or_initialize
+            unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
             
             unit.property_id = u[:SiteID]
-            #unit.provider_unit_id = u["UnitID"]
+            unit.provider_unit_id = u[:UnitID]
             unit.unit_type = u[:UnitNumber]
             unit.marketing_name = u[:UnitNumber]
             unit.floorplan_id = u[:FloorplanID]
