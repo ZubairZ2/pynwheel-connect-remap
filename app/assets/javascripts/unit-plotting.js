@@ -30,7 +30,7 @@
        console.debug(data.unit.x_plot);
        console.debug(data.unit.y_plot);
        console.debug(data.unit.marketing_name);
-       arr.push([data.unit.marketing_name, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+       arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
        doDraggable();
        // delete from unused list
        $('.amenities-list option').each(function(){
@@ -89,7 +89,7 @@
        console.debug(data.unit.x_plot);
        console.debug(data.unit.y_plot);
        console.debug(data.unit.marketing_name);
-       arr.push([data.unit.marketing_name, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+       arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
        doDraggable();
        // delete from unused list
        $('.amenities-list option').each(function(){
