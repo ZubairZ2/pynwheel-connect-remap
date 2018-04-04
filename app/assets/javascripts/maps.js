@@ -24,16 +24,16 @@
     $('#map').mousemove(function(event) {
       var dx = parseInt(event.pageX) - parseInt($('#map').offset().left) + parseInt($('#map').scrollLeft());
       var dy = parseInt(event.pageY) - parseInt($('#map').offset().top) + parseInt($('#map').scrollTop());
-      $('#active_x_plot').html(dx);
-      $('#active_y_plot').html(dy);
+      $('#active_x_plot').html(dx)+3;
+      $('#active_y_plot').html(dy)+3;
     });
 
     // place maker on click
     $("#map").click(function(event) {
       $(this).css('cursor','default');
       event.preventDefault();
-      var dx = parseInt($('#active_x_plot').html());
-      var dy = parseInt($('#active_y_plot').html());
+      var dx = parseInt($('#active_x_plot').html()+3);
+      var dy = parseInt($('#active_y_plot').html()+3);
       $('#new-aj-popup #x_plot').val(dx);
       $('#new-aj-popup #y_plot').val(dy);
       if (addmode) {
