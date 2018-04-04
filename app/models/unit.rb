@@ -6,7 +6,7 @@ class Unit < ApplicationRecord
   #has_many :favorites
   #has_many :favorite_communities, :through => :favorites,source: :community
   validates :effective_rent, :numericality => { :greater_than => 0, :less_than => 1000000 }, :length => { :maximum => 10}
-  validates_uniqueness_of :marketing_name, scope: :community_id
+  validates_uniqueness_of :provider_unit_id, scope: :community_id
   has_many :amenities, as: :amenityable
 
   scope :available_units, -> { where(availability: "Unoccupied") }
