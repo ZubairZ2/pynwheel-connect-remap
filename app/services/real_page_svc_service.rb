@@ -1,8 +1,8 @@
 class RealPageSvcService < BaseService
 	def perform
 		import_realpage_svc_floorplans
-    import_realpage_svc_units #if Thread.current[:errors].empty?
-    import_realpage_svc_price #if Thread.current[:errors].empty?
+    import_realpage_svc_units 
+    #import_realpage_svc_price TODO will look into it when marker will be plotted on the basis of provider unit id. 
 	end
 
 	def import_realpage_svc_floorplans
@@ -42,51 +42,48 @@ class RealPageSvcService < BaseService
   '
       )
 
-      result = Hash.from_xml(response.body)
-      unless result["Envelope"]["Body"]["Fault"].present?
-        
-
-        floorplans = result["Envelope"]["Body"]["getfloorplanlistResponse"]["getfloorplanlistResult"]["GetFloorPlanList"]["FloorPlanObject"]
-
+      #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
+      result = Ox.load(response.body, mode: :hash)
+      if result[:"s:Envelope"][1][:"s:Body"][1].present?  
+        floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplanlistResponse][1][:getfloorplanlistResult][:GetFloorPlanList]
         floorplans.each do |fp|
-          floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp["FloorPlanID"]).first_or_initialize  
-          #floorplan = Floorplan.new(provider: "realpagesvc",community_id: community_id)
-          #floorplan.provider_floorplan_id = fp["FloorPlanID"]
-          if fp["FloorPlanNameMarketing"].present?
-            floorplan.name = fp["FloorPlanNameMarketing"]
-          elsif fp["FloorPlanCode"].present?
-            if fp["FloorPlanCode"] != fp["FloorPlanName"]
-              floorplan.name = fp["FloorPlanCode"] + " - " + fp["FloorPlanName"]
+          if fp.key?(:FloorPlanObject)
+            fp = fp[:FloorPlanObject]
+            floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize  
+            
+            if fp[:FloorPlanNameMarketing].present?
+              floorplan.name = fp[:FloorPlanNameMarketing]
+            elsif fp[:FloorPlanCode].present?
+              if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+              else
+                floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+              end
             else
-              floorplan.name = fp["FloorPlanCode"] + " - " + fp["FloorPlanNameMarketing"]
+              floorplan.name = fp[:FloorPlanName]
             end
-          else
-            floorplan.name = fp["FloorPlanName"]
+            floorplan.bathrooms = fp[:Bathrooms]
+            floorplan.bedrooms = fp[:Bedrooms]
+            floorplan.market_rent = fp[:RentMin]
+            floorplan.square_feet = fp[:GrossSquareFootage]
+            floorplan.unit_count = -1
+            floorplan.units_available = -1
+            floorplan.deposit = 0
+            floorplan.file_url = ""
+            floorplan.save(:validate => false)
           end
-          floorplan.bathrooms = fp["Bathrooms"]
-          floorplan.bedrooms = fp["Bedrooms"]
-          floorplan.market_rent = fp["RentMin"]
-          floorplan.square_feet = fp["GrossSquareFootage"]
-          floorplan.unit_count = -1
-          floorplan.units_available = -1
-          floorplan.deposit = 0
-          floorplan.file_url = ""
-          floorplan.save(:validate => false)
         end
       else
-        #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]  
-        puts '----------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"]
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
+        ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
       end
     rescue => e
-      #Thread.current[:errors] << e.message
       puts '--------------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
   def import_realpage_svc_units
-    building_result = realpage_building
+    #building_result = realpage_building #Ignore it for now
     begin
       @array_of_dates = [{ready_date: Date.today,units: []}]
       current_date = Date.today
@@ -124,74 +121,76 @@ class RealPageSvcService < BaseService
                         </soapenv:Body>
                       </soapenv:Envelope>
                       ')
-      result = Hash.from_xml(response.body)
-      unless result["Envelope"]["Body"]["Fault"].present?
-        units = result["Envelope"]["Body"]["getunitsbypropertyResponse"]["getunitsbypropertyResult"]["GetUnitsByProperty"]["UnitObject"]
+      #result = Hash.from_xml(response.body)
+      result = Ox.load(response.body, mode: :hash)
+      if result[:"s:Envelope"][1][:"s:Body"][1].present?  
+        units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
         units.each do |u|
-          hit = false
-          #unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u["UnitID"],marketing_name: u["UnitNumber"]).first_or_initialize
-          unit = Unit.where(provider: "realpagesvc",community_id: community_id,marketing_name: u["UnitNumber"]).first_or_initialize
-          #unit = Unit.new(provider: "realpagesvc",community_id: community_id)
-          unit.property_id = u["SiteID"]
-          #unit.provider_unit_id = u["UnitID"]
-          unit.unit_type = u["UnitNumber"]
-          unit.marketing_name = u["UnitNumber"]
-          unit.floorplan_id = u["FloorplanID"]
-          unit.market_rent = u["BaseRentAmount"]
-          unit.effective_rent = u["BaseRentAmount"]
-          unit.availability = u["AvailableBit"] == "true" ? "Unoccupied" : "Occupied"
-          if u["AvailableDate"].present?
-            unit.available_date = u["AvailableDate"]
-          end
-
-          if u["MadeReadyDate"].present?
-            unit.available_date = u["MadeReadyDate"]
-          end
-          if unit.available_date.year == 1900
-            unit.available_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
-          end
-          if unit.availability == "Occupied" && unit.available_date < Date.today
-            unit.available_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
-          end
-          
-         
-          if unit.available_date < Date.today
-            current_date = Date.today
-          elsif unit.available_date != Date.parse("2099-1-1")
-            current_date = unit.available_date
-          end
-
-           @array_of_dates.each do |hash|
-            if hash[:ready_date] == current_date
-              hash[:units] << unit.id
-              hit = true
+          if u.key?(:UnitObject)
+            u = u[:UnitObject]
+            hit = false
+            
+            unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
+            
+            unit.property_id = u[:SiteID]
+            unit.provider_unit_id = u[:UnitID]
+            unit.unit_type = u[:UnitNumber]
+            unit.marketing_name = u[:UnitNumber]
+            unit.floorplan_id = u[:FloorplanID]
+            unit.market_rent = u[:BaseRentAmount]
+            unit.effective_rent = u[:BaseRentAmount]
+            unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+            if u[:AvailableDate].present?
+              unit.available_date = u[:AvailableDate]
             end
-          end
 
-          if !hit
-            struct = {
-              ready_date: current_date,
-              units: [unit.id]
-            }
-            @array_of_dates << struct
-          end
-          
-
-          unit.building = ""
-          bldgResult = getBuildingNumber(u["BuildingID"],building_result)
-          if bldgResult.present?
-            if bldgResult == "N/A"
-              unit.building = ""
-            else
-              unit.building = bldgResult
+            if u[:MadeReadyDate].present?
+              unit.available_date = u[:MadeReadyDate]
             end
+            if unit.available_date.year == 1900
+              unit.available_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
+            end
+            if unit.availability == "Occupied" && unit.available_date < Date.today
+              unit.available_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
+            end
+            
+           
+            if unit.available_date < Date.today
+              current_date = Date.today
+            elsif unit.available_date != Date.parse("2099-1-1")
+              current_date = unit.available_date
+            end
+
+             @array_of_dates.each do |hash|
+              if hash[:ready_date] == current_date
+                hash[:units] << unit.id
+                hit = true
+              end
+            end
+
+            if !hit
+              struct = {
+                ready_date: current_date,
+                units: [unit.id]
+              }
+              @array_of_dates << struct
+            end
+            
+
+            # unit.building = ""
+            # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
+            # if bldgResult.present?
+            #   if bldgResult == "N/A"
+            #     unit.building = ""
+            #   else
+            #     unit.building = bldgResult
+            #   end
+            # end
+            unit.save(:validate => false)
           end
-          unit.save(:validate => false)
         end
       else
-         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
-         puts '---------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
-         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
+         ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
       end
       
     rescue => e
@@ -202,7 +201,7 @@ class RealPageSvcService < BaseService
   end
 
   def import_realpage_svc_price
-    begin
+    #begin
       url = REALPAGE_URL
       soap_action = REALPAGE_PRICE_ACTION 
       pmc_id = credentials.pmc_id
@@ -251,23 +250,26 @@ class RealPageSvcService < BaseService
 
                           </soapenv:Body>
                         </soapenv:Envelope>')
-        result = Hash.from_xml(response.body)
-        unless result["Envelope"]["Body"]["Fault"].present?
-          units = result["Envelope"]["Body"]["getunitlistResponse"]["getunitlistResult"]["GetUnitList"]["UnitObjects"]["UnitObject"]
+        #result = Hash.from_xml(response.body)
+        result = Ox.load(response.body, mode: :hash)
+        if result[:"s:Envelope"][1][:"s:Body"][1].present? 
+          
+          units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units.each do |u|
-            unit_no = u["Address"]["UnitID"].to_i
+            unit_no = u[:Address][:UnitID].to_i
             unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no)
             if unit.present?
+            
               hash[:units].each do |unit_in_array|
                 if unit_in_array == unit.first.id
-               
+                  dddd
                   best_price = nil
-                  if u["RentMatrix"].present?
-                    u["RentMatrix"]["Rows"]["Row"]["Options"].each do |opt|
+                  if u[:RentMatrix].present?
+                    u[:RentMatrix][:Rows][:Row][:Options].each do |opt|
                       # units = result["Envelope"]["Body"]["getunitlistResponse"]["getunitlistResult"]["GetUnitList"]["UnitObjects"]["UnitObject"]["RentMatrix"]["Rows"]["Row"]["Options"]
-                      opt["Option"].each do |o|
-                        if o["Best"] == "true"
-                          best_price = o["Rent"]
+                      opt[:Option].each do |o|
+                        if o[:Best] == "true"
+                          best_price = o[:Rent]
                         end
                       end
                     end
@@ -282,16 +284,14 @@ class RealPageSvcService < BaseService
             end
           end
         else
-           #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]   
-           puts '-------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
-           ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
+           ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
         end
       end  
-    rescue => e
-      #Thread.current[:errors] << e.message
-      puts '-------------------------------' , e.message
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
-    end
+    # rescue => e
+    #   #Thread.current[:errors] << e.message
+    #   puts '-------------------------------' , e.message
+    #   ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
+    # end
   end
 
   def realpage_building

@@ -1,6 +1,9 @@
 class Yardi2Service < BaseService
 	def perform
       begin
+        property_id = ""
+        ils_units = []
+        floorplans = []
   		  url = credentials.url
         arr = url.split('/')
   	    post = "#{arr[3]}/Webservices/itfilsguestcard20.asmx HTTP/1.1"
@@ -18,61 +21,75 @@ class Yardi2Service < BaseService
   	          url,
   	          :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
   	          :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
-  	    result = Hash.from_xml(response.body)
-        unless result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"].present?
-    	    ils_units = result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["ILS_Unit"]
-    	    floorplans = result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["Floorplan"]
-    	    property_id =  result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["PhysicalProperty"]["Property"]["PropertyID"]["Identification"]["PrimaryID"]
-    	    save_yardi2_units(ils_units,property_id)
-    	    save_yardi2_floorplans(floorplans)
+  	    #result = Hash.from_xml(response.body) This method consumes a lot of memory on heroku
+        result = Ox.load(response.body, mode: :hash)
+        if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
+    	    property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
+          property_response.each do |pr|
+            if pr[0].to_s == "PropertyID"
+              property_id = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
+            end
+            if pr[0].to_s == "Floorplan"
+              floorplans << pr[1]
+            end
+            if pr[0].to_s == "ILS_Unit"
+              ils_units << pr[1]
+            end
+          end
+          
+          save_yardi2_units(ils_units,property_id)
+          save_yardi2_floorplans(floorplans)
         else
-          #Thread.current[:errors] << result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"]  
-          puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"],community_id: credentials.community_id})  
+          #puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
+          ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
         end
       rescue => e
-        #Thread.current[:errors] << e.message
         puts '----------------------------------', e.message
         ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
 	end
 
 	def save_yardi2_units(ils_units,property_id)
-    ils_units.lazy.each do |u|
+    ils_units[0].lazy.each do |unit_entries|
       begin
-        unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize  
+        unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id]).first_or_initialize  
         #unit = Unit.new(provider: "yardi2",community_id: credentials.communty_id)
         unit.property_id = property_id
-        #unit.provider_unit_id = u["Id"]
-        unit.unit_type = u["Id"]
-        unit.marketing_name = u["Id"]
-        unit.floorplan_id = u["Unit"]["Information"]["UnitType"]
-        unit.market_rent = 0 #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
-        unit.effective_rent = u["EffectiveRent"]["Min"]
-
-        vacate_date = Date.today
-        if u["Availability"].present?
-          if u["Availability"]["VacateDate"]["Year"].present? and u["Availability"]["VacateDate"]["Year"] != '0'
-            vacate_date = Date.parse("#{u["Availability"]["VacateDate"]["Year"]}-#{u["Availability"]["VacateDate"]["Month"]}-#{u["Availability"]["VacateDate"]["Day"]}")
+        unit.unit_type = unit_entries[0][:Id]
+        unit.marketing_name = unit_entries[0][:Id]
+        unit_entries.each do |u|
+          if u.key?(:Unit)
+            unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
           end
-          if u["Availability"]["MadeReadyDate"]["Year"].present?
-            vacate_date = Date.parse("#{u["Availability"]["MadeReadyDate"]["Year"]}-#{u["Availability"]["MadeReadyDate"]["Month"]}-#{u["Availability"]["MadeReadyDate"]["Day"]}")
+          if u.key?(:EffectiveRent)
+            unit.market_rent = u[:EffectiveRent][0][:Min] 
+            unit.effective_rent = u[:EffectiveRent][0][:Min]
           end
-          if vacate_date >= Date.today && u["Availability"]["VacancyClass"] == "Occupied"
-            is_available = true
-          else
-            is_available = false
-            vacate_date = Date.parse("2099-1-1")
+          if u.key?(:Availability)
+            vacate_date = Date.today
+            if u[:Availability].present?
+              if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
+                vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
+              end
+              if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
+                vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
+              end
+              if vacate_date >= Date.today && u[:Availability][:VacancyClass] == "Occupied"
+                is_available = true
+              else
+                is_available = false
+                vacate_date = Date.parse("2099-1-1")
+              end
+            else
+              is_available = false
+              vacate_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
+            end
+            unit.availability = is_available ? "Unoccupied" : "Occupied"
+            unit.available_date = vacate_date
           end
-        else
-          is_available = false
-          vacate_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
-        end
-        unit.availability = is_available ? "Unoccupied" : "Occupied"
-        unit.available_date = vacate_date
+        end  
         unit.save
       rescue => e
-        #Thread.current[:errors] << e.message
         puts '----------------------------------', e.message
         ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
@@ -80,35 +97,55 @@ class Yardi2Service < BaseService
   end
 
   def save_yardi2_floorplans(floorplans)
-    floorplans.lazy.each do |f|
+    floorplans[0].lazy.each do |floorplan|
       begin
-        fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize  
-        #fp = Floorplan.new(provider: "yardi2",community_id: credentials.communty_id)
-        #fp.provider_floorplan_id = f["Id"]
-        rooms = f["Room"]
+        fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id]).first_or_initialize  
+        
+
+        rooms = []
+        floorplan.each do |f|
+          
+          if f.key?(:Room)
+            rooms << f
+          end
+
+          if f.key?(:Name)
+            fp.name = f[:Name]
+          end
+
+          if f.key?(:MarketRent)
+            if f[:MarketRent][0][:Min].to_f > 0
+              fp.market_rent = f[:MarketRent][0][:Min]
+            else
+              fp.market_rent = f[:MarketRent][0][:Max]
+            end
+          end
+
+          if f.key?(:SquareFeet)
+            if f[:SquareFeet][0][:Min].to_f > 0
+              fp.square_feet = f[:SquareFeet][0][:Min]
+            else
+              fp.square_feet = f[:SquareFeet][0][:Max]
+            end
+          end
+
+          if f.key?(:UnitCount)
+            fp.unit_count = f[:UnitCount]
+          end
+
+        end
+        
         rooms.each do |room|
-          if room["Type"] == "Bedroom"
-            fp.bedrooms = room["Count"]
+          if room[:Room][0][:Type] == "Bedroom"
+            fp.bedrooms = room[:Room][1][:Count]
           else
-            fp.bathrooms = room["Count"]
+            fp.bathrooms = room[:Room][1][:Count]
           end
         end
-        fp.name = f["Name"]
-        if f["MarketRent"]["Min"].to_f > 0
-          fp.market_rent = f["MarketRent"]["Min"]
-        else
-          fp.market_rent = f["MarketRent"]["Max"]
-        end
-        if f["SquareFeet"]["Min"].to_f > 0
-          fp.square_feet = f["SquareFeet"]["Min"]
-        else
-          fp.square_feet = f["SquareFeet"]["Max"]
-        end
-        fp.unit_count = f["UnitCount"]
+        
         fp.units_available = -1
-        fp.save
+        fp.save 
       rescue => e
-        #Thread.current[:errors] << e.message
         puts '----------------------------------', e.message
         ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end

@@ -30,45 +30,44 @@
   %body.floor-plan{style: "background-color:#303a3c;"}
     / Main content
     %section.is-favorite
-     
-      .middle-units
+      .container
         - @units.each do |unit|
-          .row{:id=>"row-#{unit.id}"}
-            .col-md-12
-              .modal-content.modal-right.plan-modal
-                .modal-body
-                  .row
-                    .col-md-6
-                      .plane-details
-                        .plan-modal
-                          .modal-header
-                            %h4.modal-title 
-                              = "APARTMENT: #{unit.marketing_name}"
-                        .name
-                          = unit.floorplan.name
-                        %ul
-                          %li
-                            %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.square_feet) : nil
-                            Sq Feet
-                          %li
-                            %b= unit.floorplan.present? ? unit.floorplan.bedrooms : nil
-                            = "#{bedroom_text(unit)}"
-                          %li
-                            %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.bathrooms) : nil
-                            = "#{bathroom_text(unit)}"
-                          
-                        .price-details
-                          .price-count.pull-left
-                            %span= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                          .available-now
-                            %p= unit.availability == "Unoccupied" ? "Available" : ""
-                        - if @community.data_provider == "psi"      
-                          .date-select
-                            %h5 Lease Start Date
-                            .form-group
-                              %input.form-control.datepicker#leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
-                              %i.fa.fa-calendar
-                    .col-md-6
-                      .plan-image
-                        = image_tag unit.unit_image
-                                                    
+          .modal-content.plan-modal.mb-30
+          
+            .modal-body
+              .row
+                .col-md-6
+                  .plane-details
+                    .plan-modal
+                      .modal-header
+                        %h4.modal-title 
+                          = "APARTMENT: #{unit.marketing_name}"
+                    .name
+                      = unit.floorplan.name
+                    %ul
+                      %li
+                        %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.square_feet) : nil
+                        Sq Feet
+                      %li
+                        %b= unit.floorplan.present? ? unit.floorplan.bedrooms : nil
+                        = "#{bedroom_text(unit)}"
+                      %li
+                        %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.bathrooms) : nil
+                        = "#{bathroom_text(unit)}"
+                      
+                    .price-details
+                      .price-count.pull-left
+                        %span= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                      .available-now
+                        %p= unit.availability == "Unoccupied" ? "Available" : ""
+                    - if @community.data_provider == "psi"      
+                      .date-select
+                        %h5 Lease Start Date
+                        .form-group
+                          %input.form-control.datepicker#leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
+                          %i.fa.fa-calendar
+                .col-md-6
+                  .plan-image.plan-image-pop
+                    = image_tag unit.unit_image
+              .clear-fix      
+                                                      
