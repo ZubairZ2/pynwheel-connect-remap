@@ -25,7 +25,7 @@ $(document).ready(function(){
           // add to selected list
           $("#selected-units").empty();
           for (i=0; i<selected.length; i++) {
-            $("#selected-units").append('<li class="s-unit" data-id='+i+'>' + selected[i][1] + '</li>');
+            $("#selected-units").append('<li class="s-unit" data-id='+i+' data-provider-unit-id='+selected[i][0]+'>' + selected[i][1] + '</li>');
           }
           $('#newmsg').hide();
 

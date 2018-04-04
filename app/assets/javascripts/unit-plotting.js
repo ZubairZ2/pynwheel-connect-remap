@@ -110,7 +110,7 @@
     //selected.splice( $.inArray("1001", selected), 1 )
     var remove_index = parseInt($(this).attr("data-id"))
     selected.splice(remove_index,remove_index+1)
-    $('.amenities-list option').val($(this).html()).css({"display": "block"})
+    $('.amenities-list option').val($(this).attr("data-unit-provider-id")).css({"display": "block"})
     $(this).remove()
     if (selected.length > 0)
       resetDataIds()
