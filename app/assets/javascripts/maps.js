@@ -24,8 +24,8 @@
     $('#map').mousemove(function(event) {
       var dx = parseInt(event.pageX) - parseInt($('#map').offset().left) + parseInt($('#map').scrollLeft());
       var dy = parseInt(event.pageY) - parseInt($('#map').offset().top) + parseInt($('#map').scrollTop());
-      $('#active_x_plot').html(dx)+3;
-      $('#active_y_plot').html(dy)+3;
+      $('#active_x_plot').html(dx);
+      $('#active_y_plot').html(dy);
     });
 
     // place maker on click
