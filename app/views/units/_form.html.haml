@@ -3,12 +3,15 @@
     
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
-      .col-sm-6.col-lg-6.col-md-3.col-xs-12
+      .col-sm-6.col-lg-4.col-md-3.col-xs-12
         = f.select :floorplan_id, @community.floorplans.collect{|f| [f.name,f.provider_floorplan_id]},{},{ :class=>"form-control"}
         %small Floor plan 
-      .col-sm-6.col-lg-6.col-md-3.col-xs-12
+      .col-sm-6.col-lg-4.col-md-3.col-xs-12
         = f.select :availability, [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']],{},{ :class=>"form-control"} 
         %small Availability 
+      .col-sm-6.col-lg-4.col-md-3.col-xs-12
+        = f.text_field :provider_unit_id, :class=>"form-control validate[required]", :placeholder=>"Provider Unit ID",:maxlength=>"7"
+        %small Provider Unit ID  
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
    

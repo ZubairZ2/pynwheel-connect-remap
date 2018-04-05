@@ -30,14 +30,18 @@
        console.debug(data.unit.x_plot);
        console.debug(data.unit.y_plot);
        console.debug(data.unit.marketing_name);
-       arr.push([data.unit.marketing_name, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+       arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
        doDraggable();
        // delete from unused list
-       $('.amenities-list option').each(function(){
-         if ($(this).val() == id) {
-           $(this).remove();
-         }
-       });
+       // $('.amenities-list option').each(function(){
+       //   if ($(this).val() == id) {
+       //     $(this).remove();
+       //   }
+       // });
+
+       $('#'+data.unit.provider_unit_id+'-selectable').remove();
+       $('#'+data.unit.provider_unit_id+'-selection').remove();
+
      });
   }
 
@@ -89,7 +93,7 @@
        console.debug(data.unit.x_plot);
        console.debug(data.unit.y_plot);
        console.debug(data.unit.marketing_name);
-       arr.push([data.unit.marketing_name, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+       arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
        doDraggable();
        // delete from unused list
        $('.amenities-list option').each(function(){
@@ -110,7 +114,9 @@
     //selected.splice( $.inArray("1001", selected), 1 )
     var remove_index = parseInt($(this).attr("data-id"))
     selected.splice(remove_index,remove_index+1)
-    $('.amenities-list option').val($(this).html()).css({"display": "block"})
+    var data_provider_unit_id = $(this).attr("data-provider-unit-id");
+    //$('.amenities-list option').val($(this).attr("data-unit-provider-id")).css({"display": "block"})
+    $('.amenities-list option[value="'+data_provider_unit_id+'"]').css({"display": "block"})
     $(this).remove()
     if (selected.length > 0)
       resetDataIds()
@@ -138,11 +144,11 @@
         // temp array of just markers at same x/y
         temp=[];
         if (arr != null) {
-    for (i=0; i<arr.length; i++) {
-      if (arr[i][1] == xpos && arr[i][2] == ypos) {
-        temp.push(arr[i][0])
-      }
-    }
+          for (i=0; i<arr.length; i++) {
+            if (arr[i][1] == xpos && arr[i][2] == ypos) {
+              temp.push(arr[i][0])
+            }
+          }
         }
       },
       // when dragging stops
@@ -151,23 +157,23 @@
         xmove = ui.position.left - xpos;
         ymove = ui.position.top - ypos;
         if (temp != null) {
-    for (i=0; i<temp.length; i++) {
-      $('#m_' + temp[i]).css({"left": ui.position.left, "top": ui.position.top});
-    }
+          for (i=0; i<temp.length; i++) {
+            $('#m_' + temp[i]).css({"left": ui.position.left, "top": ui.position.top});
+          }
         }
       },
       stop: function(event, ui) {
         if (temp != null) {
-    for (i=0; i<temp.length; i++) {
-      console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
-      for (j=0; j<arr.length; j++) {
-        if (arr[j][0] == temp[i]) {
-          arr[j][1] = Math.round(ui.position.left);
-          arr[j][2] = Math.round(ui.position.top);
-        }
-      }
-      savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
-    }
+          for (i=0; i<temp.length; i++) {
+            console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+            for (j=0; j<arr.length; j++) {
+              if (arr[j][0] == temp[i]) {
+                arr[j][1] = Math.round(ui.position.left);
+                arr[j][2] = Math.round(ui.position.top);
+              }
+            }
+            savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+          }
         }
       }
     });
@@ -206,3 +212,12 @@
        });
      });
   }
+
+
+function removeUnitFromSelectedArray(value){
+  for(i=0; i<selected.length; i++){
+    if (selected[i][0] == value){
+      selected.splice(i,i+1);
+    }
+  }
+}  

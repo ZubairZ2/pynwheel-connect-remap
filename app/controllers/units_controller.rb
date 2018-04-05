@@ -50,7 +50,7 @@ class UnitsController < ApplicationController
   end
 
   def ajaxplotunit
-    unit = @community.units.where(floorplate_id: nil,marketing_name: params[:id])
+    unit = @community.units.where(floorplate_id: nil,provider_unit_id: params[:id])
     if unit.present?
       unit = unit.first
       #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot])
@@ -64,7 +64,7 @@ class UnitsController < ApplicationController
   end
 
   def ajaxplotunitforfloorplate
-    unit = @community.units.where(marketing_name: params[:id])
+    unit = @community.units.where(provider_unit_id: params[:id])
     if unit.present?
       #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
       unit = unit.first
@@ -79,7 +79,7 @@ class UnitsController < ApplicationController
   end
 
   def remove_plot
-    @unit = @community.units.where(marketing_name: params[:id]) 
+    @unit = @community.units.where(provider_unit_id: params[:id]) 
     if @unit.present?
       x_plot = @unit.first.x_plot
       y_plot = @unit.first.y_plot
@@ -97,7 +97,7 @@ class UnitsController < ApplicationController
 
   def remove_plot_from_floorplate
     @floorplate = Floorplate.find params[:floorplate_id]
-    @unit = @community.units.where(marketing_name: params[:id])
+    @unit = @community.units.where(provider_unit_id: params[:id])
     if @unit.present?
       x_plot = @unit.first.x_plot
       y_plot = @unit.first.y_plot
