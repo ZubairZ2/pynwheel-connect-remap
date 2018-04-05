@@ -45,6 +45,4 @@
 //= require panzoom
 //= require tinymce
 //= require dropzone
-//= require fastsearch
-//= require fastselect
 // require_tree .
