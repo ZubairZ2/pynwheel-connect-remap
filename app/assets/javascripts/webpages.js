@@ -1,9 +1,9 @@
 $(document).ready(function(){
   if ($('.is-webpage')[0]){
     $(".panzoom").addClass("transform-none");
-    $(".buttons").click(function(){
+    $(document).on("click touchstart", ".zoom-controls", function (){
       $(".panzoom").removeClass("transform-none");
-    })
+    });
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" }); // initialize bootstrap tooltip
     ////////////// Disable browser zoom for webpage  starts here ////////////////
     $(document).keydown(function(event) {
