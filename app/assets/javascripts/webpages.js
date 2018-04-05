@@ -229,16 +229,33 @@ $(document).ready(function(){
     /*adjusting markers according to screen size*/
     var in_browser_height = 0;
     var in_browser_width = 0;
+    var actual_height = 0;
+    var actual_width =0;
     $('.floorplate-image').each(function(){
       // console.log("Image height: "+$(this).height());
       // console.log("In browser height: "+$(this).parent().height());
-      in_browser_height = $(this).parent().height();
+      in_browser_height = parseFloat($(this).parent().height());
       // console.log("In browser width: "+$(this).parent().width());
-      in_browser_width = $(this).parent().width();
+      in_browser_width = parseFloat($(this).parent().width());
+      // actual_height = parseInt($(this).data("height"));
+      // actual_width = parseInt($(this).data("width");
     });
-
-    var height_ratio = 932/parseFloat(in_browser_height);
-    var width_ratio = 1412/parseFloat(in_browser_width);
+    if (has_floorplate == 'true'){
+      actual_height = parseInt($('#f_'+current_floorplate_number).data("height"))
+      actual_width = parseInt($('#f_'+current_floorplate_number).data("width"))
+    }else{
+      actual_height = parseInt($('.floorplate-image').data("height"))
+      actual_width = parseInt($('.floorplate-image').data("width"))
+    }
+    if (actual_width<1412 && actual_width<in_browser_width)
+      var width_ratio = 0/in_browser_width;
+    else
+      var width_ratio = actual_width/in_browser_width;
+    if (actual_height<932 && actual_height<in_browser_height)
+      var height_ratio = 0/in_browser_height;
+    else
+      var height_ratio = actual_height/in_browser_height;
+    
     
     $('.marker').each(function(){
       var x_plot = parseFloat($(this).data('unit-x-plot'));

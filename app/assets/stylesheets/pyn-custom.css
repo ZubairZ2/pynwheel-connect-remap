@@ -1221,14 +1221,20 @@ ul.images-tabs li a span{
 .drag-box-new{
 	height:168px !important;
 }
+.plot-image{
+/*	width: 100%;
+	max-width: 1412px;
+	height: 100%;
+	max-height: 932px;*/
+	display: inline-block;
+}
 .map-block{
 	width:100%;
 	height:700px;
 	overflow:scroll;
 }
 .map-block img{
-	width: 1412px;
-	height: 932px;
+	
 }
 ul.amenities-list{
 	margin:0;
@@ -1493,9 +1499,10 @@ ul.home-tabs li:hover a{
 	top:4px;
 }
 .image-map{
-	 height:1003px;
+	 /*height:1003px;
  overflow:hidden;
- overflow-y: hidden;
+ overflow-y: hidden;*/
+ border: 3px solid #fff;
 }
 .image-map h3{
 	color:#313131;
@@ -1504,10 +1511,17 @@ ul.home-tabs li:hover a{
 		font-weight:700;
 		margin:24px 0 24px 30px;
 }
-.image-map img{
-	width: 100%;
+.plot-image-webpage{
+/*	width: 100%;
+	max-width: 1415px;
 	height: 100%;
+	max-height: 935px;*/
+	border: 3px solid #fff;
 }
+.image-map img{
+	max-width: 100%;
+}
+
 .building-plan{
 	position:absolute;
 	right:0px;
@@ -1587,7 +1601,7 @@ ul.home-tabs li:hover a{
 
 .image-map{
 	width:100%;
-	height:100vh;
+	/*height:100vh;*/
 }
 .showcase #content-3.content{
 	background-image: none;
@@ -1696,9 +1710,6 @@ ul.home-tabs li:hover a{
 	position: absolute;
     width: calc(98.3% - 305px);
     height: 100%;
-}
-.panzoom{
-	border: 3px solid #fff;
 }
 .transform-none{
 	transform: none !important;
@@ -2545,7 +2556,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	}
 	.image-map{
 		overflow:scroll;
-		height: 400px;
+		/*height: 400px;*/
 	}
 	/*.panzoom img{
 		height: auto !important;

@@ -32,8 +32,8 @@
     $("#map").click(function(event) {
       $(this).css('cursor','default');
       event.preventDefault();
-      var dx = parseInt($('#active_x_plot').html());
-      var dy = parseInt($('#active_y_plot').html());
+      var dx = parseInt($('#active_x_plot').html()+3);
+      var dy = parseInt($('#active_y_plot').html()+3);
       $('#new-aj-popup #x_plot').val(dx);
       $('#new-aj-popup #y_plot').val(dy);
       if (addmode) {
