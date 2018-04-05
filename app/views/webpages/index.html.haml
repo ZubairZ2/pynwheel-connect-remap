@@ -150,11 +150,11 @@
                 - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
                   = link_to "<i class='custom-icon-camera'></i>".html_safe, amenity.image.url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
         .buttons{:style=>"position: absolute; right: 10px; top: 5px;"}
-          %button.btn.btn-sm.btn-primary.zoom-in
+          %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls{:href => "#"}
             %i.fa.fa-plus
-          %button.btn.btn-sm.btn-primary.zoom-out 
+          %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls{:href => "#"}
             %i.fa.fa-minus
-          %button.btn.btn-sm.btn-primary.reset
+          %a.btn.btn-sm.btn-primary.reset.zoom-controls{:href => "#"}
             %i.fa.fa-refresh
         .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:1px;width:100%;"}
           %strong Oops!
