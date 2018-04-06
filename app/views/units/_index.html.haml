@@ -20,7 +20,7 @@
                   %th Marketing Name
                   %th Floor Plan
                   %th Rent
-                  %th Availability
+                  / %th Availability
                   %th Available Date
                   %th Image
                   %th Actions
@@ -33,7 +33,7 @@
                     %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name }
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil }
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
-                    %td= best_in_place u, :availability, :as => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
+                    / %td= best_in_place u, :availability, :as => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
                     %td
                       .drop-img

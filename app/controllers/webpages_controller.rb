@@ -33,7 +33,7 @@ class WebpagesController < ActionController::Base
 	    #@units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 	    @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
 		end
-		if @community_info.units.size > 0
+		if @community_info.units.available_units.size > 0
 			normalize_units
 			if @units_with_floorplan_info.present?
 				build_square_feet_range
@@ -45,9 +45,10 @@ class WebpagesController < ActionController::Base
 
 	def normalize_units
 		@floorplans = @community_info.floorplans
-		@community_info.units.each do |unit|
+		@community_info.units.available_units.each do |unit|
 			#!if unit.floorplan.present? && unit.effective_rent >= 1 && (unit.x_plot > 0 || unit.y_plot > 0)
-			if (unit.x_plot > 0 || unit.y_plot > 0) && unit.availability == "Unoccupied" && unit.effective_rent >= 1 && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+			# if (unit.x_plot > 0 || unit.y_plot > 0) && unit.availability == "Unoccupied" && unit.effective_rent >= 1 && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+			if unit.effective_rent.present? && unit.effective_rent >= 1 && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
 				floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
 				struct = {
 					 marketing_name: unit.marketing_name,
