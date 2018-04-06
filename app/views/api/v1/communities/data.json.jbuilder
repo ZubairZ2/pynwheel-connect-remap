@@ -2,6 +2,29 @@ local_assets_base_url = "http://192.168.101.77:3000"
 json.ui_settigs do
   json.theme @community.theme_name
   json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_path("logo-small.png")
+  if @community.theme_name != "futurist" && @community.design.present?
+    json.fonts do
+      json.primary_font_family @community.design.primary_font_family
+      json.primary_font_size @community.design.primary_font_size
+      json.primary_font_weight @community.design.primary_font_weight
+      json.primary_text_align @community.design.primary_text_align
+      json.primary_font_color @community.design.primary_font_color
+      json.secondary_font_family @community.design.secondary_font_family
+      json.secondary_font_size @community.design.secondary_font_size
+      json.secondary_font_weight @community.design.secondary_font_weight
+      json.secondary_text_align @community.design.secondary_text_align
+      json.secondary_font_color @community.design.secondary_font_color
+    end
+    json.menu do
+      json.menu_position @community.design.menu.position
+      json.horizontal_menu_position @community.design.menu.horizontal_menu_position
+      json.vertical_menu_position @community.design.menu.vertical_menu_position
+      json.manage_background @community.design.menu.manage_background
+      json.background_color @community.design.menu.background_color
+      json.primary_color @community.design.primary_color
+      json.secondary_color @community.design.secondary_color
+    end
+  end
 end
 
 json.homescreen do
