@@ -1,4 +1,4 @@
-var do_on_load = function(){
+ $(window).bind('load', function(){
   if ($('.is-webpage')[0]){
     $(".panzoom").addClass("transform-none");
     $(document).on("click touchstart", ".zoom-controls", function (){
@@ -240,6 +240,7 @@ var do_on_load = function(){
       // actual_height = parseInt($(this).data("height"));
       // actual_width = parseInt($(this).data("width");
     });
+    console.log("-- inside load function --")
     if (has_floorplate == 'true'){
       actual_height = parseInt($('#f_'+current_floorplate_number).data("height"))
       actual_width = parseInt($('#f_'+current_floorplate_number).data("width"))
@@ -281,9 +282,7 @@ var do_on_load = function(){
       $(this).css({"left": current_left,"top": current_top});
     });   
  } // if condition ending curl
-};
-$(document).ready(do_on_load)
-$(window).bind('page:change', do_on_load)
+});
 
 function setFilters(){
  var zero_bedroom = false;
