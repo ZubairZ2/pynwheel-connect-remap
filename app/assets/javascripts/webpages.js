@@ -1,4 +1,4 @@
-jQuery(function($) {
+$(document).ready(function(){
   if ($('.is-webpage')[0]){
     $(".panzoom").addClass("transform-none");
     $(document).on("click touchstart", ".zoom-controls", function (){
@@ -281,7 +281,7 @@ jQuery(function($) {
       $(this).css({"left": current_left,"top": current_top});
     });   
  } // if condition ending curl
-})(jQuery);
+});
 
 function setFilters(){
  var zero_bedroom = false;
