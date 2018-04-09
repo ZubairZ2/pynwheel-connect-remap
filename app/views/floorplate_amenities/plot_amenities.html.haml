@@ -45,7 +45,7 @@
                           = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                           %span.ml-5
                             = amenity.name
-                      - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
+                    - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
 
               %h5.mt-40 SELECTED IMAGES
               .add-plan.mt-10.mb-20
