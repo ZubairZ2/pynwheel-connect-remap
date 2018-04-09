@@ -240,7 +240,6 @@
       // actual_height = parseInt($(this).data("height"));
       // actual_width = parseInt($(this).data("width");
     });
-    console.log("-- inside load function --")
     if (has_floorplate == 'true'){
       actual_height = parseInt($('#f_'+current_floorplate_number).data("height"))
       actual_width = parseInt($('#f_'+current_floorplate_number).data("width"))
@@ -248,11 +247,11 @@
       actual_height = parseInt($('.floorplate-image').data("height"))
       actual_width = parseInt($('.floorplate-image').data("width"))
     }
-    if (actual_width<1412 && actual_width<in_browser_width)
+    if (actual_width<in_browser_width)
       var width_ratio = 0/in_browser_width;
     else
       var width_ratio = actual_width/in_browser_width;
-    if (actual_height<932 && actual_height<in_browser_height)
+    if (actual_height<in_browser_height)
       var height_ratio = 0/in_browser_height;
     else
       var height_ratio = actual_height/in_browser_height;
