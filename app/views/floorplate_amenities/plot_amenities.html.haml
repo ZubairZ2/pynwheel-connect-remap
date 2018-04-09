@@ -27,7 +27,7 @@
             .col-lg-9#container.p-0
               .map-block{:style=>"position: relative;"}
                 .plot-image#map
-                  = image_tag @sitemap.present? ? @sitemap.image.url : ""
+                  = image_tag @sitemap.present? ? @sitemap.image.url : "default.jpeg"
                   - @amenities.each do |amenity|
                     - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
                       = link_to "<i class='fa fa-star'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
