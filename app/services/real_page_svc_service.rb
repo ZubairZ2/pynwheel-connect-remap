@@ -2,7 +2,7 @@ class RealPageSvcService < BaseService
 	def perform
 		import_realpage_svc_floorplans
     import_realpage_svc_units 
-    #import_realpage_svc_price TODO will look into it when marker will be plotted on the basis of provider unit id. 
+    import_realpage_svc_price 
 	end
 
 	def import_realpage_svc_floorplans
@@ -201,7 +201,7 @@ class RealPageSvcService < BaseService
   end
 
   def import_realpage_svc_price
-    #begin
+    begin
       url = REALPAGE_URL
       soap_action = REALPAGE_PRICE_ACTION 
       pmc_id = credentials.pmc_id
@@ -250,7 +250,7 @@ class RealPageSvcService < BaseService
 
                           </soapenv:Body>
                         </soapenv:Envelope>')
-        #result = Hash.from_xml(response.body)
+        #result = Hash.from_xml(response.body) This method consumes too much memory on heroku
         result = Ox.load(response.body, mode: :hash)
         if result[:"s:Envelope"][1][:"s:Body"][1].present? 
           
@@ -259,15 +259,13 @@ class RealPageSvcService < BaseService
             unit_no = u[:Address][:UnitID].to_i
             unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no)
             if unit.present?
-            
               hash[:units].each do |unit_in_array|
                 if unit_in_array == unit.first.id
-                  dddd
                   best_price = nil
                   if u[:RentMatrix].present?
-                    u[:RentMatrix][:Rows][:Row][:Options].each do |opt|
-                      # units = result["Envelope"]["Body"]["getunitlistResponse"]["getunitlistResult"]["GetUnitList"]["UnitObjects"]["UnitObject"]["RentMatrix"]["Rows"]["Row"]["Options"]
-                      opt[:Option].each do |o|
+                    u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
+                      if opt.key?(:Option)  
+                        o  = opt[:Option][0]
                         if o[:Best] == "true"
                           best_price = o[:Rent]
                         end
@@ -287,11 +285,10 @@ class RealPageSvcService < BaseService
            ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
         end
       end  
-    # rescue => e
-    #   #Thread.current[:errors] << e.message
-    #   puts '-------------------------------' , e.message
-    #   ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
-    # end
+    rescue => e
+      puts '-------------------------------' , e.message
+      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
+    end
   end
 
   def realpage_building
