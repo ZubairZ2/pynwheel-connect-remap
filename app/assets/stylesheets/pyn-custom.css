@@ -2291,6 +2291,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   left: 0px;
   top: 0px;
 }
+.multi-select-units .ms-container{
+	width: 100%;
+}
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
 	#s-theme .row .col-lg-3{
