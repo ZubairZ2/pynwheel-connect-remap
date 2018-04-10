@@ -54,7 +54,7 @@ class SitemapsController < ApplicationController
   end
 
   def plotexp
-    add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
+    #add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
     #@sitemap = @community.sitemap || @community.create_sitemap
     if @community.sitemap.present?
