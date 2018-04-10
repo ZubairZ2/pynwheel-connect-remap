@@ -96,11 +96,15 @@
        arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
        doDraggable();
        // delete from unused list
-       $('.amenities-list option').each(function(){
-         if ($(this).val() == id) {
-           $(this).remove();
-         }
-       });
+       // $('.amenities-list option').each(function(){
+       //   if ($(this).val() == id) {
+       //     $(this).remove();
+       //   }
+       // });
+
+       $('#'+data.unit.provider_unit_id+'-selectable').remove();
+       $('#'+data.unit.provider_unit_id+'-selection').remove();
+       
      });
   }
 
