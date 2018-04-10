@@ -3,7 +3,6 @@ class SitemapsController < ApplicationController
   add_breadcrumb "Home", :root_path
 
   def map
-    add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Add Site Map", map_community_sitemaps_path
     @sitemap = @community.sitemap || @community.build_sitemap
   end
@@ -30,7 +29,6 @@ class SitemapsController < ApplicationController
   end
 
   def grid_overlay
-    add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path(current_community)
     add_breadcrumb "Grid Overlay", grid_overlay_community_sitemaps_path(current_community)
     @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type)
@@ -54,9 +52,7 @@ class SitemapsController < ApplicationController
   end
 
   def plotexp
-    #add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
-    #@sitemap = @community.sitemap || @community.create_sitemap
     if @community.sitemap.present?
       @sitemap = @community.sitemap
     else
@@ -96,7 +92,7 @@ class SitemapsController < ApplicationController
   end
 
   def plot_amenities
-    add_breadcrumb "Property Map", map_community_sitemaps_path(current_community)
+    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
     add_breadcrumb "Plot Property Map Amenities", plot_amenities_community_sitemaps_path(current_community) 
     @sitemap = @community.sitemap
     @amenities = @sitemap.amenities
