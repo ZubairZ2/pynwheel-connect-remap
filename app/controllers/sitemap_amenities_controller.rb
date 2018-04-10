@@ -9,14 +9,14 @@ class SitemapAmenitiesController < ApplicationController
 			@floorplates = current_community.floorplates.order(id: :desc)
 		else
 	    @amenities = @sitemap.amenities.order(id: :desc)
-	    add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
+	    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
 	    add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
 	  end
 	end
 
 	def new
 		@amenity = @community.sitemap.amenities.build
-		add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
+		#add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
 		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
     add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
 	end
