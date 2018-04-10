@@ -1457,6 +1457,8 @@ ul.home-tabs li:hover a{
 	}
 #edit-image .image-crop{
 	width:100%;
+    max-height: 400px;
+    overflow: scroll;
 }	
 
 .title-home{

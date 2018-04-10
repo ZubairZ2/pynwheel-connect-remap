@@ -1,4 +1,4 @@
-.modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
+.modal-dialog
   .modal-content
     = form_for @gallery_image,url: update_gallery_image_community_gallery_path(@community,@gallery,gallery_image_id: @gallery_image.id),method: :put do |f|
       .modal-body

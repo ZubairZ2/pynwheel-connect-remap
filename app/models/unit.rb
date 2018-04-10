@@ -21,7 +21,7 @@ class Unit < ApplicationRecord
   end
 
   def unit_image
-    self.image.present? ? self.image.url : (self.floorplan.present? && self.floorplan.image.present? ? self.floorplan.image.url : "default.jpeg")
+    self.image.present? ? self.image.url : (self.floorplan.present? && self.floorplan.image.present? ? self.floorplan.image.url : "/assets/default.jpeg")
   end
 
   # def is_favorite?
