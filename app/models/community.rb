@@ -37,6 +37,22 @@ class Community < ApplicationRecord
     theme_name == "expressionist"
   end
 
+  def is_gables_organic?
+    theme_name == "gables_organic"
+  end
+
+  def is_gables_refined?
+    theme_name == "gables_refined"
+  end
+
+  def is_gables_energetic?
+    theme_name == "gables_energetic"
+  end
+
+  def is_gables_natural?
+    theme_name == "gables_natural"
+  end
+
   def has_floorplates?
     floorplates.size > 0
   end
