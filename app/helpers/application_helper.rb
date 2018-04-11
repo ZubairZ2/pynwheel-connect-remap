@@ -121,5 +121,9 @@ module ApplicationHelper
 	def bedroom_text(floorplan)
 		floorplan.bedrooms == "1" ? "Bedroom" : "Bedrooms"
 	end
+
+	def style_themes
+		["modernist","cubist","expressionist"]
+	end
 		
 end
