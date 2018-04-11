@@ -17,6 +17,11 @@ textarea { resize: none; }
 	text-align:left;
 	margin-left:10px;
 }
+.logo-lg{
+	white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .skin-blue .main-header .logo:hover{
 	background-color:transparent;
 }
@@ -1883,7 +1888,12 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	display:inline-block;
 	margin:20px;
 	font-size:18px;
+    height: 25px;
 }
+.available-now p{
+	margin-bottom: 0;
+}
+
 .btn-apply{
 	margin-top:30px;
 	margin-bottom: 20px;
@@ -1913,7 +1923,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   background: rgba(247, 0, 0, 0.61);
   text-align: center; 
   display: inline-block; 
-  line-height: 24px;
+  line-height: 20px;
+}
+.custom-icon .fa-camera{
+	margin-top: 3px;
 }
 .custom-icon-black{
 	font-size: 20px;

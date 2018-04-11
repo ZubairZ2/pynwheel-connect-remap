@@ -11,8 +11,8 @@ class Unit < ApplicationRecord
 
   # scope :available_units, -> { where(availability: "Unoccupied") }
   scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
-  scope :has_x_plot, -> { where("x_plot > ? and available_date > ?", 0, Date.today) }
-  scope :has_y_plot, -> { where("y_plot > ? and available_date > ?", 0, Date.today) }
+  scope :has_x_plot, -> { where("x_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+1.year) }
+  scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+1.year) }
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   scope :available_units, -> { ploted_units.or(past_available_units) }
 
