@@ -33,7 +33,7 @@
         = link_to logo_community_design_index_path(current_community) do
           %i.fa.fa-image
           %span Logo
-      %li{:class=>"#{controller_name =='home_page' ? 'active' : ''}"}
+      %li{:class=>"#{controller_name =='home_page' || controller_name =='homepage_icons' ? 'active' : ''}"}
         = link_to community_home_page_index_path(current_community) do
           %i.fa.fa-home
           %span Home Page

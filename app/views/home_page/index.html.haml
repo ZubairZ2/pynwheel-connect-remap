@@ -10,7 +10,7 @@
           %small.text-primary
             = @community.company.name + '@' + @community.name
     .row
-      .col-lg-10
+      .col-lg-12
         .form-group 
           .radio.radio-primary.pull-left
             %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>current_community.design.has_images_loop_type? ? true : false}
@@ -20,6 +20,8 @@
             %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
               %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
                 Video
+          - if gables_theme(@community)
+            = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
         / Start image-slide section

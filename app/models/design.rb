@@ -4,6 +4,7 @@ class Design < ApplicationRecord
 	has_one :home_screen,dependent: :destroy
 	has_one :main_screen,dependent: :destroy
 	has_many :home_page_images, -> { order(:sort) }, dependent: :destroy
+	has_many :homepage_icons, -> { order(:sort) }, dependent: :destroy
 	has_one :home_page_video, dependent: :destroy
 	belongs_to :community
 	accepts_nested_attributes_for :menu

@@ -23,6 +23,10 @@ $(document).ready(function(){
   if ($("#home-page-image-upload-holder").length){
     saveHomePageImage();
   } 
+
+  if ($("#home-page-icon-upload-holder").length){
+    saveHomePageIcon();
+  } 
   //************************* Home Page Images Upload using dropzone plugin **************//
 
   //************************* Home Page Video Upload using dropzone plugin **************//
@@ -387,7 +391,19 @@ function fetchHomePageImages(){
       dataType: "script"
     }).done(function(){
         $(".divLoading").addClass("hidden");
-        console.log("home page images are fetch successfully.");
+        console.log("home page images are fetched successfully.");
+    });
+}
+
+function fetchHomePageIcons(){
+  var url = "/communities/"+community_id+"/homepage_icons"
+  $.ajax({
+      url: url,
+      type: "GET",
+      dataType: "script"
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("home page secondary images are fetched successfully.");
     });
 }
 
@@ -489,6 +505,28 @@ function saveHomePageImage(){
       $(".divLoading").addClass("hidden");
       $('#image-upload-warning').modal('show');
       homePageImageDropzone.removeFile(file);
+    }
+  });
+}
+
+function saveHomePageIcon(){
+  var homePageIconDropzone = new Dropzone("#home-page-icon-upload-holder", { url: "/communities/"+community_id+"/homepage_icons/save_homepage_icon"});
+  Dropzone.options.homePageIconDropzone = {
+    uploadMultiple: true
+  };
+
+  homePageIconDropzone.on("complete", function(file) {
+    console.log(file);
+    fetchHomePageIcons();
+  });
+  
+  homePageIconDropzone.on("addedfile", function(file) {
+    console.log(file.type);
+    $(".divLoading").removeClass("hidden");
+    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
+      $(".divLoading").addClass("hidden");
+      $('#image-upload-warning').modal('show');
+      homePageIconDropzone.removeFile(file);
     }
   });
 }

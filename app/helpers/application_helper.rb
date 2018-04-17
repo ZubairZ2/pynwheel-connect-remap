@@ -125,5 +125,14 @@ module ApplicationHelper
 	def style_themes
 		["modernist","cubist","expressionist"]
 	end
+
+	def gables_theme(community)
+		name = community.theme_name.split('_')
+		if name[0] == 'gables'
+			return true
+		else
+			return false
+		end
+	end
 		
 end
