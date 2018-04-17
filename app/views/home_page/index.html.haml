@@ -20,7 +20,8 @@
             %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
               %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
                 Video
-          = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
+          - if gables_theme(@community)
+            = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
         / Start image-slide section
