@@ -1,0 +1,21 @@
+- content_for :title, "Home Page - Pynwheel"
+.divLoading.hidden
+%section.is-home_page
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-home
+        = @community.name.capitalize  
+        %br
+          %small.text-primary
+            = @community.company.name + '@' + @community.name
+    %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-icon-upload-holder').click();"}
+      %i.fa.fa-plus-circle
+      Add Files
+    #images-index
+      = render 'index'
+#edit-image.modal.fade.edit-image   
+:javascript
+  var community_id = #{params[:community_id]}
+  var design_id = #{current_community.design.id}
+  

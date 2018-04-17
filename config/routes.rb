@@ -95,6 +95,15 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :homepage_icons, only: :index do
+      collection do
+        get :show_image_in_modal
+        post :save_homepage_icon
+        put :update_homepage_icon
+        delete :delete_homepage_icon
+      end
+    end
+
     resources :favorite_settings, only: [:index, :create, :update]
     resources :neighborhoods, only: [:index, :create, :update] do
       resources :locations
