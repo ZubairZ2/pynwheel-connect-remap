@@ -154,11 +154,11 @@ end
 
 json.neighborhood do
   if @community.neighborhood.present?
-    json.latitude @community.neighborhood.latitude
-    json.longitude @community.neighborhood.longitude
-    json.radius @community.neighborhood.radius
-    json.zoom @community.neighborhood.zoom
-    json.address @community.neighborhood.address
+    json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
+    json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+    json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 1000
+    json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
+    json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
     arr = @community.neighborhood.category.split(',')
     arr.insert(0,'All')
     json.categories arr.each do |val|
