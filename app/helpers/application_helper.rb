@@ -127,9 +127,13 @@ module ApplicationHelper
 	end
 
 	def gables_theme(community)
-		name = community.theme_name.split('_')
-		if name[0] == 'gables'
-			return true
+		if community.theme_name.present?
+			name = community.theme_name.split('_')
+			if name[0] == 'gables'
+				return true
+			else
+				return false
+			end
 		else
 			return false
 		end
