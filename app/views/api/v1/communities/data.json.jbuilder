@@ -22,7 +22,7 @@ json.ui_settigs do
       json.manage_background @community.design.menu.manage_background
       json.background_color @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
       json.primary_color @community.design.primary_color.present? ? @community.design.primary_color : "#CF492F"
-      json.secondary_color @community.design.secondary_color.present? : @community.design.secondary_color : "#4F4F4F"
+      json.secondary_color @community.design.secondary_color.present? ? @community.design.secondary_color : "#4F4F4F"
     end
   end
 end
