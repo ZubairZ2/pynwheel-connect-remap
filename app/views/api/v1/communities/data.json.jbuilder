@@ -44,10 +44,10 @@ json.homescreen do
     vid = @community.design.home_page_video.present? ? ( Rails.env.development? ? local_assets_base_url+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil
     json.video vid
     json.loop_type vid.present? ? @community.design.loop_type : "images"
-    if @community.design.homepage_icons.present?
-      json.secondary_images @community.design.homepage_icons do |img|
+    if gables_theme(@community) && @community.design.secondary_images.present?
+      json.secondary_images @community.design.secondary_images.each do |img|
         json.filename img.name
-        json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+        json.url img.is_a?(DefaultImage) ? asset_url(img.image) : (Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large))
       end
     end
   else
