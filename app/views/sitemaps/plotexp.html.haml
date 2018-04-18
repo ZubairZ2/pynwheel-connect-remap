@@ -8,7 +8,7 @@
         = @community.name.capitalize
         %br
           %small.text-primary
-            = @community.company.name + '@' + @community.name
+            = @community.code
     %span.btn.btn-primary.btn-file{:onclick=>"$('#sitemap-image-upload-holder').click();"}
       %i.fa.fa-upload
       Upload File

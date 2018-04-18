@@ -8,7 +8,7 @@
         = @community.name.capitalize
         %br
           %small.text-primary
-            = @community.company.name + '@' + @community.name
+            = @community.code
     - if can? :add_settings, current_user 
       .row.mt-25.mb-20
         .form-group{:style=>"display: none;"}

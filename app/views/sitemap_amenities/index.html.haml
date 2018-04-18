@@ -7,7 +7,7 @@
         = @community.name.capitalize
         %br
           %small.text-primary
-            = @community.company.name + '@' + @community.name
+            = @community.code
     - if @floorplates.present?
       = render :partial=>'floorplates'
     - else
