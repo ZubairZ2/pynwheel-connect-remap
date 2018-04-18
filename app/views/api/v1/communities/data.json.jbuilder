@@ -8,7 +8,7 @@ json.ui_settigs do
       json.primary_font_size @community.design.primary_font_size
       json.primary_font_weight @community.design.primary_font_weight
       json.primary_text_align @community.design.primary_text_align
-      json.primary_font_color @community.design.primary_font_color
+      json.primary_font_color @community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF"
       json.secondary_font_family @community.design.secondary_font_family
       json.secondary_font_size @community.design.secondary_font_size
       json.secondary_font_weight @community.design.secondary_font_weight
@@ -20,9 +20,9 @@ json.ui_settigs do
       json.horizontal_menu_position @community.design.menu.horizontal_menu_position
       json.vertical_menu_position @community.design.menu.vertical_menu_position
       json.manage_background @community.design.menu.manage_background
-      json.background_color @community.design.menu.background_color
-      json.primary_color @community.design.primary_color
-      json.secondary_color @community.design.secondary_color
+      json.background_color @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
+      json.primary_color @community.design.primary_color.present? ? @community.design.primary_color : "#CF492F"
+      json.secondary_color @community.design.secondary_color.present? : @community.design.secondary_color : "#4F4F4F"
     end
   end
 end

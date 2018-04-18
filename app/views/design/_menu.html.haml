@@ -54,7 +54,8 @@
                 Background color
                 %span Select menu background color
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .input-group.colorpicker-style#rgba-format-colorpicker
+                / .input-group.colorpicker-style#rgba-format-colorpicker (it returned 5 digit color code as well)
+                .input-group.colorpicker-style.hex-format-colorpicker
                   .input-group-addon
                     %i
                     = m.text_field :background_color,id: "c-style-background-color-text-field",class: "form-control menu-field",autocomplete: false
