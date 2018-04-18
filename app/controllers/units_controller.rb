@@ -79,19 +79,13 @@ class UnitsController < ApplicationController
   end
 
   def remove_plot
-    @unit = @community.units.where(provider_unit_id: params[:id]) 
-    if @unit.present?
-      x_plot = @unit.first.x_plot
-      y_plot = @unit.first.y_plot
-      units = @community.units.where(x_plot: x_plot,y_plot: y_plot)
-      # For multiple plots
-      units.each do |unit|
-        # unit.update_attributes(x_plot: 0,y_plot:0) # effective rent validation fails for 0
-        unit.x_plot = 0
-        unit.y_plot = 0
-        unit.save(validate: false)
-      end
+    @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id) 
+    @unit.x_plot = 0
+    @unit.y_plot = 0
+    if @unit.save(validate: false)
       redirect_to plotexp_community_sitemaps_path(@community), notice: "The plot has been deleted successfully."
+    else
+      redirect_to plotexp_community_sitemaps_path(@community), error: "Something went wrong."
     end
   end
 
