@@ -156,7 +156,7 @@ $('#markers-modal').on('show.bs.modal', function(e) {
         else{
          button_style = "btn-default" 
         }
-        $('.unit-buttons').append('<button class="btn modal-unit-button '+button_style+'" type="button" data-href="'+$(this).data('href')+'" data-unit-form-url="'+$(this).data('unit-form-url')+'" onclick="setHrefAndFormUrl(this);">'+$(this).data('title')+'</button>');
+        $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 '+button_style+'" type="button" data-href="'+$(this).data('href')+'" data-unit-form-url="'+$(this).data('unit-form-url')+'" onclick="setHrefAndFormUrl(this);">'+$(this).data('title')+'</button>');
       });
     }
     $(this).find('#u-name').html($(e.relatedTarget).attr('title'));
