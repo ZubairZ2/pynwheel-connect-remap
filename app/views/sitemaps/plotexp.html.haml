@@ -37,7 +37,7 @@
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   .grid-graph.hidden
-                  = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  = image_tag @sitemap.present? ? @community.image_src : "default.jpeg"
                   - units = @units.sort_by{|u| u.marketing_name}#@units.to_a.sort!{ |a,b| [a['building'].to_s,a['marketing_name'].to_s] <=> [b['building'].to_s,b['marketing_name'].to_s] }
                   - units.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0

@@ -215,6 +215,14 @@ class Community < ApplicationRecord
     end
   end
 
+  def image_src
+    if sitemap.image.present?
+      sitemap.image.url(:svg_for_metro).present? ? sitemap.image.url(:svg_for_metro) : sitemap.image.url
+    else
+      "/assets/default.jpeg"
+    end
+  end
+
   private
 
   def populate_favorites(items_objs)
