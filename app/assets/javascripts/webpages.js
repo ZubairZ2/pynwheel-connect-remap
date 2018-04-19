@@ -207,11 +207,11 @@
       actual_width = parseInt($('.floorplate-image').data("width"))
     }
     if (actual_width<in_browser_width)
-      var width_ratio = 0/in_browser_width;
+      var width_ratio = 1;
     else
       var width_ratio = actual_width/in_browser_width;
     if (actual_height<in_browser_height)
-      var height_ratio = 0/in_browser_height;
+      var height_ratio = 1;
     else
       var height_ratio = actual_height/in_browser_height;
     

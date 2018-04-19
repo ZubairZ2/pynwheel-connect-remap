@@ -19,5 +19,24 @@ class Design < ApplicationRecord
 		loop_type == "video"
 	end
 
+	def secondary_images
+		count = homepage_icons.count
+		if homepage_icons.blank?
+			return DefaultImage.limit(5)
+		elsif count >= 5
+			return homepage_icons
+		elsif count < 5
+			arr = []
+			homepage_icons.each do |i|
+				arr << i
+			end
+			DefaultImage.limit(5-count).each do |d|
+				arr << d
+			end
+			return arr
+		end
+		return nil			
+	end
+
 
 end
