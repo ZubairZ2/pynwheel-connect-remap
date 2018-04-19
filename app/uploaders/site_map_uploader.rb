@@ -1,8 +1,9 @@
 class SiteMapUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
-   include CarrierWave::RMagick
-  # include CarrierWave::MiniMagick
+  include CarrierWave::RMagick
+  # Include the Sprockets helpers
+  include Sprockets::Rails::Helper
 
   # Choose what kind of storage to use for this uploader:
   #storage :file
@@ -24,6 +25,12 @@ class SiteMapUploader < CarrierWave::Uploader::Base
 
   def set_file_dimensions
     if image?(file)
+      # manipulate! do |source|
+      #   overlay_path = Rails.root.join("app/assets/images/bg.png")
+      #   overlay = Magick::Image.read(overlay_path).first
+      #   source = source.resize_to_fit(1412, 932)
+      #   overlay.composite!(source, Magick::CenterGravity, Magick::OverCompositeOp)
+      # end
       resize_to_fit(1412, 932)
     end
   end

@@ -419,7 +419,7 @@ function showTabsAccordingToTheme(theme){
     $('#custom-style-tab').parent().parent().parent().removeClass('hidden'); 
     $('#overlay-tab').parent().removeClass('hidden');  
   }
-  if (theme == 'futurist'){
+  if (theme == 'futurist' || theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural'){
     $('#font-tab').parent().addClass('hidden');
     $('#menu-tab').parent().addClass('hidden');
     $('#custom-style-tab').parent().parent().parent().addClass('hidden');

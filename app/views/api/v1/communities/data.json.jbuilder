@@ -2,7 +2,7 @@ local_assets_base_url = "http://192.168.101.77:3000"
 json.ui_settigs do
   json.theme @community.theme_name
   json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_path("logo-small.png")
-  if @community.theme_name != "futurist" && @community.design.present?
+  if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
       json.primary_font_size @community.design.primary_font_size
@@ -44,6 +44,12 @@ json.homescreen do
     vid = @community.design.home_page_video.present? ? ( Rails.env.development? ? local_assets_base_url+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil
     json.video vid
     json.loop_type vid.present? ? @community.design.loop_type : "images"
+    if @community.design.homepage_icons.present?
+      json.secondary_images @community.design.homepage_icons do |img|
+        json.filename img.name
+        json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+      end
+    end
   else
     json.images DefaultImage.find_each do |img|
       json.filename img.name
@@ -148,11 +154,11 @@ end
 
 json.neighborhood do
   if @community.neighborhood.present?
-    json.latitude @community.neighborhood.latitude
-    json.longitude @community.neighborhood.longitude
-    json.radius @community.neighborhood.radius
-    json.zoom @community.neighborhood.zoom
-    json.address @community.neighborhood.address
+    json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
+    json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+    json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 1000
+    json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
+    json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
     arr = @community.neighborhood.category.split(',')
     arr.insert(0,'All')
     json.categories arr.each do |val|

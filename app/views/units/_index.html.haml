@@ -37,7 +37,7 @@
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
                     %td
                       .drop-img
-                        = image_tag u.unit_image
+                        = image_tag u.image.present? ? u.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit

@@ -114,19 +114,24 @@ module ApplicationHelper
 		end
 	end
 
-	def bathroom_text(unit)
-		if unit.floorplan.present?
-			unit.floorplan.bathrooms <= 1 ? "Bathroom" : "Bathrooms"
-		else
-			"Bathroom" 
-		end
+	def bathroom_text(floorplan)
+		floorplan.bathrooms <= 1 ? "Bathroom" : "Bathrooms"
 	end
 
-	def bedroom_text(unit)
-		if unit.floorplan.present?
-			unit.floorplan.bedrooms == "1" ? "Bedroom" : "Bedrooms"
+	def bedroom_text(floorplan)
+		floorplan.bedrooms == "1" ? "Bedroom" : "Bedrooms"
+	end
+
+	def style_themes
+		["modernist","cubist","expressionist"]
+	end
+
+	def gables_theme(community)
+		name = community.theme_name.split('_')
+		if name[0] == 'gables'
+			return true
 		else
-			"Bedroom" 
+			return false
 		end
 	end
 		

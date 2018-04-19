@@ -60,9 +60,10 @@
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
       .right-side
         - @units.each do |unit|
+          - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
           .row{:id=>"row-#{unit.id}"}
             .col-md-12
-              .modal-content.modal-right.plan-modal
+              .modal-content.plan-modal
                 .modal-body
                   .row
                     .col-md-6
@@ -72,17 +73,17 @@
                             %h4.modal-title 
                               = "APARTMENT: #{unit.marketing_name}"
                         .name
-                          = unit.floorplan.name
+                          = floorplan.name
                         %ul
                           %li
-                            %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.square_feet) : nil
+                            %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil
                             Sq Feet
                           %li
-                            %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.bathrooms) : nil
-                            = "#{bathroom_text(unit)}"
+                            %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
+                            = "#{bathroom_text(floorplan)}"
                           %li
-                            %b= unit.floorplan.present? ? unit.floorplan.bedrooms : nil
-                            = "#{bedroom_text(unit)}"
+                            %b= floorplan.present? ? floorplan.bedrooms : nil
+                            = "#{bedroom_text(floorplan)}"
                           %li 
                             %b= unit.available_date.strftime("%m/%d/%Y")
                             Available Date  
@@ -102,10 +103,10 @@
                           - if @community.data_provider == "realpagesvc"
                             = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank"
                           - elsif @community.data_provider == "psi"
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>unit.floorplan.provider_floorplan_id,"data-lease-term"=>unit.lease_term
+                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-lease-term"=>unit.lease_term
                     .col-md-6
                       .plan-image
-                        = image_tag unit.unit_image
+                        = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
                         .icon-heart
                           %a{"data-href"=> "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true",href: "##",onclick: "deleteFavorite(this);"}
                             %i.fa.fa-heart#fav-icon-tag

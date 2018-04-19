@@ -32,6 +32,7 @@
     %section.is-favorite
       .container
         - @units.each do |unit|
+          - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
           .modal-content.plan-modal.mb-30.mt-30
           
             .modal-body
@@ -43,17 +44,17 @@
                         %h4.modal-title 
                           = "APARTMENT: #{unit.marketing_name}"
                     .name
-                      = unit.floorplan.name
+                      = floorplan.name
                     %ul
                       %li
-                        %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.square_feet) : nil
+                        %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil
                         Sq Feet
                       %li
-                        %b= unit.floorplan.present? ? unit.floorplan.bedrooms : nil
-                        = "#{bedroom_text(unit)}"
+                        %b= floorplan.present? ? floorplan.bedrooms : nil
+                        = "#{bedroom_text(floorplan)}"
                       %li
-                        %b= unit.floorplan.present? ? hide_decimals(unit.floorplan.bathrooms) : nil
-                        = "#{bathroom_text(unit)}"
+                        %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
+                        = "#{bathroom_text(floorplan)}"
                       
                     .price-details
                       .price-count.pull-left
@@ -68,6 +69,6 @@
                           %i.fa.fa-calendar
                 .col-md-6
                   .plan-image.plan-image-pop
-                    = image_tag unit.unit_image
+                    = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
               .clear-fix      
                                                       

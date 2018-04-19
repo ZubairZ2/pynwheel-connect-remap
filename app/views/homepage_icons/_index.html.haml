@@ -1,0 +1,33 @@
+.text-center.image-upload.home-page-drag-box#home-page-icon-upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
+  %p Drop files here or click to upload.
+.row.slide-imgage-boxs.sortable
+  - sortable_fetch(@homepage_icons) do |homepage_icon, id_tag|
+    .col-lg-3{:id=> id_tag}
+      .slide-image
+        .image-box
+          .images.galleryimage-home{:style=>"background: url(#{homepage_icon.image.url(:thumb)}); background-repeat: no-repeat;height: 210px;background-position: center center;background-size: cover;"}
+            %a.preview-image{:href=>homepage_icon.image? ? homepage_icon.image.url(:large) : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"#{homepage_icon.name}"}
+              
+          .icons
+            = link_to show_image_in_modal_community_homepage_icons_path(current_community,homepage_icon_id: homepage_icon.id), remote: true do 
+              %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+            
+            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/homepage_icons/delete_homepage_icon?homepage_icon_id=#{homepage_icon.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+              %i.fa.fa-close
+        %h4= homepage_icon.name
+.modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-body
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+        #carousel-example-generic.carousel.slide
+          / Wrapper for slides
+          .carousel-inner{:style=>"height: 500px;"}
+            - @homepage_icons.each_with_index do |homepage_icon,index|
+              .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
+                = image_tag homepage_icon.image.url(:thumb)
+                .carousel-caption
+                  = homepage_icon.name
