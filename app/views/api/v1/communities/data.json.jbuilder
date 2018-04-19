@@ -2,13 +2,13 @@ local_assets_base_url = "http://192.168.101.77:3000"
 json.ui_settigs do
   json.theme @community.theme_name
   json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_path("logo-small.png")
-  if @community.theme_name != "futurist" && @community.design.present?
+  if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
       json.primary_font_size @community.design.primary_font_size
       json.primary_font_weight @community.design.primary_font_weight
       json.primary_text_align @community.design.primary_text_align
-      json.primary_font_color @community.design.primary_font_color
+      json.primary_font_color @community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF"
       json.secondary_font_family @community.design.secondary_font_family
       json.secondary_font_size @community.design.secondary_font_size
       json.secondary_font_weight @community.design.secondary_font_weight
@@ -20,9 +20,9 @@ json.ui_settigs do
       json.horizontal_menu_position @community.design.menu.horizontal_menu_position
       json.vertical_menu_position @community.design.menu.vertical_menu_position
       json.manage_background @community.design.menu.manage_background
-      json.background_color @community.design.menu.background_color
-      json.primary_color @community.design.primary_color
-      json.secondary_color @community.design.secondary_color
+      json.background_color @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
+      json.primary_color @community.design.primary_color.present? ? @community.design.primary_color : "#CF492F"
+      json.secondary_color @community.design.secondary_color.present? ? @community.design.secondary_color : "#4F4F4F"
     end
   end
 end
@@ -44,6 +44,12 @@ json.homescreen do
     vid = @community.design.home_page_video.present? ? ( Rails.env.development? ? local_assets_base_url+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil
     json.video vid
     json.loop_type vid.present? ? @community.design.loop_type : "images"
+    if gables_theme(@community) && @community.design.secondary_images.present?
+      json.secondary_images @community.design.secondary_images.each do |img|
+        json.filename img.name
+        json.url img.is_a?(DefaultImage) ? asset_url(img.image) : (Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large))
+      end
+    end
   else
     json.images DefaultImage.find_each do |img|
       json.filename img.name
@@ -148,11 +154,11 @@ end
 
 json.neighborhood do
   if @community.neighborhood.present?
-    json.latitude @community.neighborhood.latitude
-    json.longitude @community.neighborhood.longitude
-    json.radius @community.neighborhood.radius
-    json.zoom @community.neighborhood.zoom
-    json.address @community.neighborhood.address
+    json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
+    json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+    json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 1000
+    json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
+    json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
     arr = @community.neighborhood.category.split(',')
     arr.insert(0,'All')
     json.categories arr.each do |val|

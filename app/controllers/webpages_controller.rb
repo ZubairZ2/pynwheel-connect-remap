@@ -121,11 +121,13 @@ class WebpagesController < ActionController::Base
 	def favorites
 		@favorite = Favorite.find_by_session_id(cookies[:session_id])
 		@units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]))
+		@floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
 	end
 
 	def favorites_share_link
 		@favorite = Favorite.find_by_session_id(params[:session_id])
 		@units = Unit.where(id: @favorite.unit_ids)
+		@floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
 	end
 
 	def clear_favorites

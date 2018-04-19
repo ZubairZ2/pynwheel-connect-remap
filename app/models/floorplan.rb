@@ -3,4 +3,5 @@ class Floorplan < ApplicationRecord
   belongs_to :community
   has_many :amenities, as: :amenityable
   validates_uniqueness_of :name, scope: :community, on: :create
+  validates_uniqueness_of :provider_floorplan_id, scope: :community
 end
