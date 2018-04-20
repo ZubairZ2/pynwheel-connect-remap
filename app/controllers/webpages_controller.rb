@@ -58,7 +58,9 @@ class WebpagesController < ActionController::Base
 					 square_feet: floorplan.square_feet,
 					 availability: unit.availability,
 					 available_date: unit.available_date,
-					 floorplate_number: (unit.floorplate.present? ? unit.floorplate.number : 0)
+					 floorplate_number: (unit.floorplate.present? ? unit.floorplate.number : 0),
+					 x_plot: unit.x_plot,
+					 y_plot: unit.y_plot
 			 	}
 				 @units_with_floorplan_info << struct
 	    end

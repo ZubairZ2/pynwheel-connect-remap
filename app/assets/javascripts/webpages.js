@@ -45,6 +45,7 @@
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function(e) {
       $('.unit-buttons').empty();
+      $('.unit-buttons').addClass('hidden');
       if ($('.h-'+$(e.relatedTarget).data('unit-x-plot')+'-'+$(e.relatedTarget).data('unit-y-plot')).length > 1){
         $('.h-'+$(e.relatedTarget).data('unit-x-plot')+'-'+$(e.relatedTarget).data('unit-y-plot')).each(function(){
           console.log('CLick on marker for deleting or updating');
@@ -57,6 +58,7 @@
           else{
            button_style = "btn-default" 
           }
+          $('.unit-buttons').removeClass('hidden');
           $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 '+button_style+'" type="button" data-title="'+$(this).data('title')+'" data-community-id="'+$(this).data('community-id')+'" data-unit-id="'+$(this).data('unit-id')+'" data-is-fav="'+$(this).data('is-fav')+'" data-provider="'+$(this).data('provider')+'" data-website="'+$(this).data('website')+'" data-community-property-id="'+$(this).data('community-property-id')+'" data-unit-provider-id="'+$(this).data('unit-provider-id')+'" data-floorplan-provider-id="'+$(this).data('floorplan-provider-id')+'" data-floorplan-name="'+$(this).data('floorplan-name')+'" data-unit-marketing-name="'+$(this).data('unit-marketing-name')+'" data-market-rent="'+$(this).data('market-rent')+'" data-square-feet="'+$(this).data('square-feet')+'" data-availability="'+$(this).data('availability')+'" data-available-date="'+$(this).data('available-date')+'" data-bedrooms="'+$(this).data('bedrooms')+'" data-bathrooms="'+$(this).data('bathrooms')+'" data-floorplan-image="'+$(this).data('floorplan-image')+'" data-lease-term="'+$(this).data('lease-term')+'" onclick="setUnitAttributes(this);">'+$(this).data('title')+'</button>');
         });
       }
@@ -424,9 +426,29 @@ function showMarkers(){
     disable_rent_filter_options(min_rent)
     disable_area_filter_options(max_area)
   }
- // console.log(units_to_display); 
+ var json_object = {}
  for(var i=0;i < units_to_display.length;i++){
-   $('#m_'+units_to_display[i]['marketing_name']).removeClass('hidden');
+   if($('#m_'+units_to_display[i]['marketing_name']).hasClass('overlapping-unit')){
+      if(!json_object.hasOwnProperty(units_to_display[i]['x_plot']+'-'+units_to_display[i]['y_plot'])){
+        var overlapping_units = [];
+        overlapping_units.push(units_to_display[i])
+        console.log('pushing overlapping units');
+        json_object[units_to_display[i]['x_plot']+'-'+units_to_display[i]['y_plot']] = overlapping_units
+      }
+      else{
+        overlapping_units = json_object[units_to_display[i]['x_plot']+'-'+units_to_display[i]['y_plot']]
+        overlapping_units.push(units_to_display[i])
+        json_object[units_to_display[i]['x_plot']+'-'+units_to_display[i]['y_plot']] = overlapping_units
+      }
+   }
+   else{  
+     $('#m_'+units_to_display[i]['marketing_name']).removeClass('hidden');
+   }
+ }
+ 
+ for (var key in json_object) {
+   var units_from_json = json_object[key];
+   $('#m_'+units_from_json[0]['marketing_name']).removeClass('hidden');     
  }
  disabled_enabled_anchors();
 } //function ending curl
