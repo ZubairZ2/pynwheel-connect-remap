@@ -449,7 +449,7 @@ function showMarkers(){
  }
  for (var key in json_object) {
    var units_from_json = json_object[key]; 
-   $('#m_'+units_to_display[0]['marketing_name']+' span').html(units_from_json.length > 1 ? units_from_json.length : '')
+   $('#m_'+units_from_json[0]['marketing_name']+' span').html(units_from_json.length > 1 ? units_from_json.length : '')
    $('#m_'+units_from_json[0]['marketing_name']).removeClass('hidden');     
  }
  disabled_enabled_anchors();
