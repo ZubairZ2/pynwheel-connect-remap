@@ -48,7 +48,7 @@
       $('.unit-buttons').addClass('hidden');
       if ($('.h-'+$(e.relatedTarget).data('unit-x-plot')+'-'+$(e.relatedTarget).data('unit-y-plot')).length > 1){
         $('.h-'+$(e.relatedTarget).data('unit-x-plot')+'-'+$(e.relatedTarget).data('unit-y-plot')).each(function(){
-          console.log('CLick on marker for deleting or updating');
+          console.log('CLick on marker for displaying multiple units');
           var target_id = $(e.relatedTarget).attr('id');
           var underneath_unit_id = $(this).attr('id');
           var button_style = ""
@@ -416,7 +416,7 @@ function showMarkers(){
   // console.log('showing units on the basis of filters');
   
   $('.marker').addClass('hidden');
-  
+  $('.hidden-units').empty();
 
   
   var units_to_display = select_units_according_to_filters(current_units)
@@ -429,6 +429,8 @@ function showMarkers(){
  var json_object = {}
  for(var i=0;i < units_to_display.length;i++){
    if($('#m_'+units_to_display[i]['marketing_name']).hasClass('overlapping-unit')){
+      var element = $('#m_'+units_to_display[i]['marketing_name']);
+      $('.hidden-units').append('<div class="hidden h-'+$(element).data('unit-x-plot')+'-'+$(element).data('unit-y-plot')+'" id="h-'+$(element).data('title')+'" data-title="'+$(element).data('title')+'" data-community-id="'+$(element).data('community-id')+'" data-unit-id="'+$(element).data('unit-id')+'" data-is-fav="'+$(element).data('is-fav')+'" data-provider="'+$(element).data('provider')+'" data-website="'+$(element).data('website')+'" data-community-property-id="'+$(element).data('community-property-id')+'" data-unit-provider-id="'+$(element).data('unit-provider-id')+'" data-floorplan-provider-id="'+$(element).data('floorplan-provider-id')+'" data-floorplan-name="'+$(element).data('floorplan-name')+'" data-unit-marketing-name="'+$(element).data('unit-marketing-name')+'" data-market-rent="'+$(element).data('market-rent')+'" data-square-feet="'+$(element).data('square-feet')+'" data-availability="'+$(element).data('availability')+'" data-available-date="'+$(element).data('available-date')+'" data-bedrooms="'+$(element).data('bedrooms')+'" data-bathrooms="'+$(element).data('bathrooms')+'" data-floorplan-image="'+$(element).data('floorplan-image')+'" data-lease-term="'+$(element).data('lease-term')+'"></div>');
       if(!json_object.hasOwnProperty(units_to_display[i]['x_plot']+'-'+units_to_display[i]['y_plot'])){
         var overlapping_units = [];
         overlapping_units.push(units_to_display[i])
@@ -441,13 +443,13 @@ function showMarkers(){
         json_object[units_to_display[i]['x_plot']+'-'+units_to_display[i]['y_plot']] = overlapping_units
       }
    }
-   else{  
+   else{ 
      $('#m_'+units_to_display[i]['marketing_name']).removeClass('hidden');
    }
  }
- 
  for (var key in json_object) {
-   var units_from_json = json_object[key];
+   var units_from_json = json_object[key]; 
+   $('#m_'+units_to_display[0]['marketing_name']+' span').html(units_from_json.length > 1 ? units_from_json.length : '')
    $('#m_'+units_from_json[0]['marketing_name']).removeClass('hidden');     
  }
  disabled_enabled_anchors();
