@@ -11,4 +11,19 @@ class Floorplate < ApplicationRecord
 	def reset_units_plots
 		self.units.update_all(x_plot: 0,y_plot: 0, floorplate_id: nil)
 	end
+
+	def floors
+		floors = []
+		if range.include? '-'
+			arr = range.split('-')
+			for n in arr[0].to_i..arr[1].to_i
+				floors << n
+			end
+		elsif range.include? ','
+			floors = range.split(',')
+		else
+			floors << range.to_i
+		end
+		floors
+	end
 end

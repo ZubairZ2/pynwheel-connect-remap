@@ -2491,9 +2491,6 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	  margin:auto;
 	  margin-top:-15px;
 	 }
-	 .add-plan .form-group{
-		 margin-bottom:20px;
-	}
 	.content-header>.breadcrumb{
 		margin-top:0;
 	}
@@ -2504,7 +2501,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 		padding-left:15px;
 	}
 	.add-plan .form-group{
-		margin-bottom:0 !important;
+		margin-bottom:20px !important;
 
 	}
 	.margin-bottom-30{
