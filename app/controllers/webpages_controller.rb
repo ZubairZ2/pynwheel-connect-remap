@@ -15,7 +15,7 @@ class WebpagesController < ActionController::Base
 		#@units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.community_id = units.community_id and floorplans.provider_floorplan_id = units.floorplan_id").available_units
 		@community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
 		#@units = @community_info.units
-		@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
+		#@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
 	
 		if @community_info.floorplates.present?
 		  #!@floorplate = @community.floorplates.order('number ASC').first
@@ -58,7 +58,9 @@ class WebpagesController < ActionController::Base
 					 square_feet: floorplan.square_feet,
 					 availability: unit.availability,
 					 available_date: unit.available_date,
-					 floorplate_number: (unit.floorplate.present? ? unit.floorplate.number : 0)
+					 floorplate_number: (unit.floorplate.present? ? unit.floorplate.number : 0),
+					 x_plot: unit.x_plot,
+					 y_plot: unit.y_plot
 			 	}
 				 @units_with_floorplan_info << struct
 	    end
