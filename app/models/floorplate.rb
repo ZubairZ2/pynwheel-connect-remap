@@ -26,4 +26,9 @@ class Floorplate < ApplicationRecord
 		end
 		floors
 	end
+
+	def fetch_units
+		units = Unit.where(floor: self.floors)
+	end
+
 end

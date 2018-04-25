@@ -82,7 +82,8 @@ class FloorplatesController < ApplicationController
 	    unless current_community.units.size > 0
 	      flash[:error] = "Please import unit data first"
 	    end
-	    @community_units = current_community.units.order(:building, :unit_type)
+	    # @community_units = current_community.units.order(:building, :unit_type)
+	    @community_units = @floorplate.fetch_units
 	    @floorplate_units = @floorplate.units.order(:building, :unit_type)
 	    add_breadcrumb "Floor plates", community_floorplates_path(current_community)
 	    add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)
