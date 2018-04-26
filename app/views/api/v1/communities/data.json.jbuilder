@@ -104,7 +104,8 @@ json.apartments do
       json.square_feet floorplan.present? ? floorplan.square_feet : 0
       json.image unit.image.present? ? (Rails.env.development? ? local_assets_base_url+unit.image.url : unit.image.url) : (floorplan.present? && floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil)
       json.floorplan_image floorplan.present? ? (floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil) : nil
-      json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
+      # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
+      json.floorplate_number unit.floor.present? ? unit.floor : 0
     end
   end
   json.floorplans units_floorplans.uniq do |floorplan|
@@ -131,13 +132,16 @@ json.apartments do
   end
   #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
   floorplates = @community.floorplates
-  floorplates = floorplates.sort_by { |f| -f.number }
-  json.floorplates floorplates do |floorplate|
+  floors = floorplates.map{|f| f.floors}.flatten.sort
+  # floorplates = floorplates.sort_by { |f| -f.number }
+  json.floorplates floors do |floor|
+    floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
     image_url = floorplate.image.url(:svg_for_metro).present? ? floorplate.image.url(:svg_for_metro) : floorplate.image.url
-    json.id floorplate.id
-    json.number floorplate.number
+    # json.id floorplate.id
+    json.id floor
+    json.number floor
     json.name floorplate.name
-    json.range floorplate.range
+    # json.range floorplate.range
     json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
     json.floorplate_amenities floorplate.amenities do |amenity|
       if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
