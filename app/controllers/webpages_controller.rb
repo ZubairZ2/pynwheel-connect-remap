@@ -1,10 +1,7 @@
 class WebpagesController < ActionController::Base
 	before_action :set_community
-	# layout false
 
 	def index
-		#cookies[:favorite_unit_ids] = nil
-		#puts '-----------------------', cookies[:favorite_unit_ids].class
 		@floorplans = []
 		if cookies[:favorite_unit_ids] == nil
 			cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
@@ -12,27 +9,14 @@ class WebpagesController < ActionController::Base
 			Favorite.create(session_id: cookies[:session_id],unit_ids: [])
 		end
 		@units_with_floorplan_info = []
-		#@units =  @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.community_id = units.community_id and floorplans.provider_floorplan_id = units.floorplan_id").available_units
 		@community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
-		#@units = @community_info.units
-		#@units_in_xy_group = @community.units.available_units.select(:x_plot,:y_plot).group(:x_plot,:y_plot).size
 	
 		if @community_info.floorplates.present?
-		  #!@floorplate = @community.floorplates.order('number ASC').first
-		  #@amenities = @community.floorplates.joins(:amenities).collect{|c| c.amenities}
-		  #!@amenities =  @community.floorplates.joins("LEFT OUTER JOIN amenities ON amenities.amenityable_id = floorplates.id").collect{|c| c.amenities}
-		  #!@amenities = @amenities.flatten
-		  #!@floorplate_numbers = @community.floorplates.map(&:number) 
 		  @floorplates = @community_info.floorplates
 		  @floors = @floorplates.map{|f| f.floors}.flatten.sort
-		  
-      #@sorted_floorplates = @floorplates.sort_by { |f| -f.number }
-      #@floorplate = @sorted_floorplates.first
-      #@floorplate_numbers = @sorted_floorplates.map(&:number)
       @amenities =  @community_info.floorplates.collect{|c| c.amenities}
       @amenities = @amenities.flatten
 		else
-	    #@units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
 	    @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
 		end
 		if @community_info.units.available_units.size > 0
@@ -48,8 +32,6 @@ class WebpagesController < ActionController::Base
 	def normalize_units
 		@floorplans = @community_info.floorplans
 		@community_info.units.available_units.each do |unit|
-			#!if unit.floorplan.present? && unit.effective_rent >= 1 && (unit.x_plot > 0 || unit.y_plot > 0)
-			# if (unit.x_plot > 0 || unit.y_plot > 0) && unit.availability == "Unoccupied" && unit.effective_rent >= 1 && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
 			if unit.effective_rent.present? && unit.effective_rent >= 1 && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
 				floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
 				struct = {
@@ -78,7 +60,6 @@ class WebpagesController < ActionController::Base
 		square_feet_range_hash = square_feet_range_hash.invert
 		square_feet_range_hash.each do |v|
 			@square_feet << v
-			# @square_feet << v[1].to_s.gsub("..","-")
 		end
 	end
 
@@ -88,7 +69,6 @@ class WebpagesController < ActionController::Base
 	    
 		@market_rent = []
 		market_rent_range = minimum_market_rent.to_i..maximum_market_rent.to_i
-		# market_rent_range_hash = market_rent_range.each_slice(market_rent_range.last/4).with_index.with_object({}) { |(a,i),h| h[a.first.to_s+'-'+a.last.to_s]=a.last }
 		market_rent_range_hash = market_rent_range.each_slice((market_rent_range.last/4 > 0 ? market_rent_range.last/4 : 1)).with_index.with_object({}) { |(a,i),h| h[minimum_market_rent.to_i.to_s+'-'+a.last.to_s]=a.last }
 		market_rent_range_hash = market_rent_range_hash.invert
 		market_rent_range_hash.each do |v|
@@ -103,7 +83,6 @@ class WebpagesController < ActionController::Base
 	def save_favorite
 		array = JSON.parse(cookies[:favorite_unit_ids])
 		@unit = Unit.find params[:unit_id]
-		#@community.favorites.create(unit_id: params[:unit_id])
 		array << params[:unit_id]
 		cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
 		favorite = Favorite.find_by_session_id(cookies[:session_id]) 
@@ -114,8 +93,6 @@ class WebpagesController < ActionController::Base
 	def delete_favorite
 		array = JSON.parse(cookies[:favorite_unit_ids])
 		@unit = Unit.find params[:unit_id]
-		#@community.favorites.where(unit_id: params[:unit_id]).destroy_all
-		array.delete params[:unit_id]
 		cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
 		favorite = Favorite.find_by_session_id(cookies[:session_id]) 
 		favorite.unit_ids.delete params[:unit_id]
