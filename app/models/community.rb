@@ -18,7 +18,7 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
-  validates_uniqueness_of :code
+  # validates_uniqueness_of :code
   after_create :set_default_theme
   after_create :create_default_gallery
 
@@ -213,6 +213,14 @@ class Community < ApplicationRecord
       return true
     else
       return false
+    end
+  end
+
+  def image_src
+    if sitemap.image.present?
+      sitemap.image.url(:svg_for_metro).present? ? sitemap.image.url(:svg_for_metro) : sitemap.image.url
+    else
+      "/assets/default.jpeg"
     end
   end
 

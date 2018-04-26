@@ -40,6 +40,7 @@
                   = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
                   - units = @units.sort_by{|u| u.marketing_name}
                   - coordinates_array = []
+
                   - units.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot,unit.y_plot])

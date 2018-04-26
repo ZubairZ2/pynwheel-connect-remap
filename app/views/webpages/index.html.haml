@@ -135,7 +135,7 @@
               - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
               = image_tag floorplate.image.url,:class=>"floorplate-image #{floor == @floors.first ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.image.height}","data-width"=>"#{floorplate.image.width}"
           - else
-            %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.url : "/assets/default.jpeg"}", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
+            %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
             =# image_tag "410.svg",:height=>"400",:width=>"400"
           - units = @community_info.units.available_units
           - coordinates_array = []
