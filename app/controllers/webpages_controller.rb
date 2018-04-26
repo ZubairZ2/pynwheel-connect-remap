@@ -24,10 +24,12 @@ class WebpagesController < ActionController::Base
 		  #!@amenities = @amenities.flatten
 		  #!@floorplate_numbers = @community.floorplates.map(&:number) 
 		  @floorplates = @community_info.floorplates
-      @sorted_floorplates = @floorplates.sort_by { |f| -f.number }
-      @floorplate = @sorted_floorplates.first
-      @floorplate_numbers = @sorted_floorplates.map(&:number)
-      @amenities = @sorted_floorplates.collect{|c| c.amenities}
+		  @floors = @floorplates.map{|f| f.floors}.flatten.sort
+		  
+      #@sorted_floorplates = @floorplates.sort_by { |f| -f.number }
+      #@floorplate = @sorted_floorplates.first
+      #@floorplate_numbers = @sorted_floorplates.map(&:number)
+      @amenities =  @community_info.floorplates.collect{|c| c.amenities}
       @amenities = @amenities.flatten
 		else
 	    #@units = @community.units.joins("LEFT OUTER JOIN floorplans ON floorplans.provider_floorplan_id = units.floorplan_id").available_units
@@ -58,9 +60,9 @@ class WebpagesController < ActionController::Base
 					 square_feet: floorplan.square_feet,
 					 availability: unit.availability,
 					 available_date: unit.available_date,
-					 floorplate_number: (unit.floorplate.present? ? unit.floorplate.number : 0),
 					 x_plot: unit.x_plot,
-					 y_plot: unit.y_plot
+					 y_plot: unit.y_plot,
+					 floor: unit.floor
 			 	}
 				 @units_with_floorplan_info << struct
 	    end
