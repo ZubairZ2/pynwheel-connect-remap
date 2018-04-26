@@ -111,13 +111,13 @@
       // console.log('clicking on anchor tag');
       var $section = $('#panzomm-container');
       $panzoom = $section.find('.panzoom').panzoom("reset");
-      var floorplate_number_for_showing_image = $(this).attr('id');
-      if (floorplate_number_for_showing_image !=  current_floorplate_number){ // && !$(this).hasClass('no-units')
+      var floor_for_showing_image = $(this).attr('id');
+      if (floor_for_showing_image !=  current_floor){ // && !$(this).hasClass('no-units')
         $('.floorplate-image').addClass('hidden');
-        $('#f_'+floorplate_number_for_showing_image).removeClass('hidden');
+        $('#f_'+floor_for_showing_image).removeClass('hidden');
         $('.floorplate-anchor').removeClass('selected');
-        $('#'+floorplate_number_for_showing_image).addClass('selected');
-        current_floorplate_number = floorplate_number_for_showing_image
+        $('#'+floor_for_showing_image).addClass('selected');
+        current_floor = floor_for_showing_image
         populate_current_units();
         if ($(this).hasClass('no-units'))
           $(".alert").show()
@@ -202,8 +202,8 @@
       // actual_width = parseInt($(this).data("width");
     });
     if (has_floorplate == 'true'){
-      actual_height = parseInt($('#f_'+current_floorplate_number).data("height"))
-      actual_width = parseInt($('#f_'+current_floorplate_number).data("width"))
+      actual_height = parseInt($('#f_'+current_floor).data("height"))
+      actual_width = parseInt($('#f_'+current_floor).data("width"))
     }else{
       actual_height = parseInt($('.floorplate-image').data("height"))
       actual_width = parseInt($('.floorplate-image').data("width"))
@@ -461,9 +461,9 @@ function populate_current_units(){
   current_units = [];
   if(has_floorplate == 'true'){
     $('.amenity-marker').addClass('hidden'); // first hidding all amenity markers
-    $('.a_'+current_floorplate_number).removeClass('hidden'); // showing amenity markers on current floorplate 
+    $('.a_'+current_floor).removeClass('hidden'); // showing amenity markers on current floorplate 
     for(var i=0;i < units.length;i++){
-      if (units[i]['floorplate_number'] == current_floorplate_number){
+      if (units[i]['floor'] == current_floor){
         current_units.push(units[i]);
       }
     }
@@ -479,11 +479,11 @@ function populate_current_units(){
 function disabled_enabled_anchors(){
   var min_market_rent = 100000
   var max_area = 0
-  for(var i = 0; i < floorplate_numbers.length; i++){
+  for(var i = 0; i < floors.length; i++){
     var floorplate_units = [];
     
     for(var j=0; j < units.length; j++){
-      if (units[j]['floorplate_number'] == floorplate_numbers[i]){
+      if (units[j]['floor'] == floors[i]){
         floorplate_units.push(units[j]);
       }
     }
@@ -492,9 +492,9 @@ function disabled_enabled_anchors(){
 
      // console.log(units_to_display.length);
      if(units_to_display.length == 0){
-      //console.log(floorplate_numbers[i]);
-      $('#'+floorplate_numbers[i]).addClass('no-units');
-      if ($('#'+floorplate_numbers[i]).hasClass('selected')){
+      //console.log(floors[i]);
+      $('#'+floors[i]).addClass('no-units');
+      if ($('#'+floors[i]).hasClass('selected')){
         $('.alert').show()
         setTimeout(function() {
             $('.alert').fadeOut('slow');
@@ -502,7 +502,7 @@ function disabled_enabled_anchors(){
       }
      }
      else{
-      $('#'+floorplate_numbers[i]).removeClass('no-units');
+      $('#'+floors[i]).removeClass('no-units');
       var min_rent_floorplate = Math.min.apply(Math,units_to_display.map(function(o){return o.market_rent;}))
       var max_area_floorplate = Math.max.apply(Math,units_to_display.map(function(o){return o.square_feet;}))
       if (min_rent_floorplate < min_market_rent)
@@ -514,9 +514,9 @@ function disabled_enabled_anchors(){
       var str = " match"
     else
       var str = " matches"
-    $('#'+floorplate_numbers[i]).attr('data-original-title', (units_to_display.length.toString()+str));
+    $('#'+floors[i]).attr('data-original-title', (units_to_display.length.toString()+str));
   }
-  if((floorplate_numbers.length>0)){
+  if((floors.length>0)){
     disable_rent_filter_options(min_market_rent)
     disable_area_filter_options(max_area)
   }

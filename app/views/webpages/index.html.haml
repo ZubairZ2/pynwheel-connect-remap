@@ -121,17 +121,19 @@
                 #content-3.content
                   .select-floor
                     %ul
-                      - @sorted_floorplates.each do |floorplate|
+                      - @floors.each do |floor|
+                        - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                         %li
-                          = link_to floorplate.number,'javascript:;;', :class=>"floorplate-anchor #{floorplate.id == @floorplate.id ? 'selected' : ''}",:id=>floorplate.number, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"right"
+                          = link_to floor,'javascript:;;', :class=>"floorplate-anchor #{floor == @floors.first ? 'selected' : ''}",:id=>floor, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"right"
                           
                     
       .right-side.parent#panzomm-container
         / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
         .image-map.panzoom#map{:style => "position: relative;"}        
           - if @community_info.floorplates.present?
-            - @sorted_floorplates.each do |floorplate|
-              = image_tag floorplate.image.url,:class=>"floorplate-image #{floorplate.id == @floorplate.id ? '' : 'hidden'}",:id=>"f_#{floorplate.number}","data-height"=>"#{floorplate.image.height}","data-width"=>"#{floorplate.image.width}"
+            - @floors.each do |floor|
+              - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
+              = image_tag floorplate.image.url,:class=>"floorplate-image #{floor == @floors.first ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.image.height}","data-width"=>"#{floorplate.image.width}"
           - else
             %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
             =# image_tag "410.svg",:height=>"400",:width=>"400"
@@ -265,9 +267,9 @@
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
   
   var has_floorplate = "#{@community_info.floorplates.present?}";
-  var current_floorplate_number = "#{@floorplate.present? ? @floorplate.number : 0}";
-  var floorplate_numbers = "#{@floorplate_numbers.present? ? @floorplate_numbers : []}";
-  floorplate_numbers = JSON.parse(floorplate_numbers);
+  var current_floor = "#{@floors.size > 0 ? @floors.first : 0}";
+  var floors = "#{@floors.size > 0 ? @floors : []}";
+  floors = JSON.parse(floors);
   /////////////////////////////////////////
   var current_units = [];
   /////////////////////////////////////////
