@@ -64,7 +64,7 @@ $(document).ready(function(){
       var files = $(this).prop("files")
       for (var i = 0; i < files.length; i++) {
           if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-            readAmenityImageSrc(files[i],'floorplate');
+            readAmenityImageSrc(files[i],'community');
         } 
       }
       if(files.length == 1){
@@ -298,6 +298,8 @@ function saveLoopType(loop_type){
       var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/amenities"
     else if (type == "floorplan")
       var url = "/communities/"+community_id+"/floorplans/"+floorplan_id+"/amenities"
+    else if (type == "community")
+      var url = "/communities/"+community_id+"/amenities"
     else
       var url = "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/amenities"
       $.ajax({
