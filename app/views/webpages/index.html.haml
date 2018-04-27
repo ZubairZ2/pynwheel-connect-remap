@@ -267,8 +267,8 @@
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
   
   var has_floorplate = "#{@community_info.floorplates.present?}";
-  var current_floor = "#{@floors.size > 0 ? @floors.first : 0}";
-  var floors = "#{@floors.size > 0 ? @floors : []}";
+  var current_floor = "#{@floors.present? and @floors.size > 0 ? @floors.first : 0}";
+  var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
   floors = JSON.parse(floors);
   /////////////////////////////////////////
   var current_units = [];
