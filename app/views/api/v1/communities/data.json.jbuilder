@@ -23,6 +23,8 @@ json.ui_settigs do
       json.background_color @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
       json.primary_color @community.design.primary_color.present? ? @community.design.primary_color : "#CF492F"
       json.secondary_color @community.design.secondary_color.present? ? @community.design.secondary_color : "#4F4F4F"
+      json.navigation_text_color @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#543636"
+      json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#543636"
     end
   end
 end
