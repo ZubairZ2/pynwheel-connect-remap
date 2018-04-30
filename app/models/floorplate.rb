@@ -20,7 +20,10 @@ class Floorplate < ApplicationRecord
 				floors << n
 			end
 		elsif range.include? ','
-			floors = range.split(',')
+			flrs = range.split(',')
+			flrs.each do |f|
+				floors << f.to_i
+			end
 		else
 			floors << range.to_i
 		end
