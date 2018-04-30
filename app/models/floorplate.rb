@@ -6,6 +6,7 @@ class Floorplate < ApplicationRecord
 	validates_uniqueness_of :name, scope: :community_id
 	# validates_uniqueness_of :number, scope: :community_id
 	validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}
+	validates_with FloorValidator
 	before_destroy :reset_units_plots
 
 	def reset_units_plots
@@ -32,6 +33,11 @@ class Floorplate < ApplicationRecord
 
 	def fetch_units
 		units = Unit.where(floor: self.floors)
+	end
+
+	def community_floors
+		floorplates = community.floorplates.select{|f| f.id != self.id}
+		floorplates.map{|f| f.floors}.flatten.sort
 	end
 
 end
