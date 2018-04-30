@@ -26,7 +26,11 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def ios_data
     include_application_data
-    render 'data'
+    if !(@community.locked == true) && @community.company.inactivate == false
+      render 'data'
+    else
+      render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
+    end
   end
 
   def minimum_data
