@@ -7,7 +7,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       community = Community.where(code: str)
       if community.present?
         company = community.first.company
-        if company.inactivate == false
+        if company.inactivate == false && !(community.first.locked == true)
           render :json=> {:success=>true, :community => community.first.id, :message => "success", :operation => "login"}      
         else
           render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
