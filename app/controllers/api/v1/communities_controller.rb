@@ -3,16 +3,12 @@ class Api::V1::CommunitiesController < ActionController::Base
   before_action :set_community, only: :email_favorites
   def login
     begin
-      str = params[:community_string].split("@")
-      company = Company.find_by_name(str[0])
-      if company.present?
+      str = params[:community_string]
+      community = Community.where(code: str)
+      if community.present?
+        company = community.first.company
         if company.inactivate == false
-          community = company.communities.where(name: str[1])
-          if community.present?
-            render :json=> {:success=>true, :community => community.first.id, :message => "success", :operation => "login"}
-          else
-            render :json=> {:success=>false, :message => "Community not found"}
-          end
+          render :json=> {:success=>true, :community => community.first.id, :message => "success", :operation => "login"}      
         else
           render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
         end
