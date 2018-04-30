@@ -134,7 +134,7 @@ json.apartments do
   end
   #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
   floorplates = @community.floorplates
-  floors = floorplates.map{|f| f.floors}.flatten.sort
+  floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
   # floorplates = floorplates.sort_by { |f| -f.number }
   json.floorplates floors do |floor|
     floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
