@@ -69,10 +69,10 @@ module ApplicationHelper
 		end
 	end
 
-	def find_floorplate_number(amenityable_id)
-      floorplate = Floorplate.find amenityable_id
-      return floorplate.number
-	end
+	# def find_floorplate_number(amenityable_id)
+ #      floorplate = Floorplate.find amenityable_id
+ #      return floorplate.number
+	# end
 
 	def uri(website)
         website.gsub(/^https?\:\/\//,'')

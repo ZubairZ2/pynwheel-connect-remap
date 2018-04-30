@@ -156,9 +156,11 @@
 
           - if @amenities.present?
             - if @community_info.floorplates.present?
-              - @amenities.each do |amenity|
-                - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                  = link_to "<span class='custom-icon'><i class='fa fa-camera'</i></span>".html_safe, amenity.image.url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{find_floorplate_number(amenity.amenityable_id)} amenity-marker hidden preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, "data-toggle"=>"lightbox","data-title"=>amenity.name
+              - @floors.each do |floor|
+                - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
+                - floorplate.amenities.each do |amenity|
+                  - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
+                    = link_to "<span class='custom-icon'><i class='fa fa-camera'</i></span>".html_safe, amenity.image.url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{floor} amenity-marker hidden preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, "data-toggle"=>"lightbox","data-title"=>amenity.name
             - else
               - @amenities.each do |amenity|
                 - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0

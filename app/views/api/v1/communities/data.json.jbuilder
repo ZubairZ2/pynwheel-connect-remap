@@ -23,6 +23,8 @@ json.ui_settigs do
       json.background_color @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
       json.primary_color @community.design.primary_color.present? ? @community.design.primary_color : "#CF492F"
       json.secondary_color @community.design.secondary_color.present? ? @community.design.secondary_color : "#4F4F4F"
+      json.navigation_text_color @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#543636"
+      json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#543636"
     end
   end
 end
@@ -132,7 +134,7 @@ json.apartments do
   end
   #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
   floorplates = @community.floorplates
-  floors = floorplates.map{|f| f.floors}.flatten.sort
+  floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
   # floorplates = floorplates.sort_by { |f| -f.number }
   json.floorplates floors do |floor|
     floorplate = floorplates.select{|f| f.floors.include?(floor)}.first

@@ -47,15 +47,10 @@
           %i.fa.fa-laptop
           %span Units
       - if (current_community.sitemap.present? && !(current_community.sitemap.new_record?)) || current_community.floorplates.present?
-        %li{:class=>"#{controller_name =='sitemap_amenities' || controller_name =='floorplate_amenities' || (controller_name =='floorplates' && params[:amenities].present?) || params[:action] == 'plot_amenities' ? 'active' : ''}"}
-          - if current_community.floorplates.present?
-            = link_to community_floorplates_path(current_community,:amenities=>true)  do 
-              %i.fa.fa-plus-square
-              %span Amenities
-          - else
-            = link_to community_sitemap_amenities_path(current_community,current_community.sitemap)  do 
-              %i.fa.fa-plus-square
-              %span Amenities
+        %li{:class=>"#{controller_name =='sitemap_amenities' || controller_name =='floorplate_amenities' || controller_name =='amenities' || (controller_name =='floorplates' && params[:amenities].present?) || params[:action] == 'plot_amenities' ? 'active' : ''}"}
+          = link_to community_amenities_path(current_community)  do 
+            %i.fa.fa-plus-square
+            %span Amenities
       %li{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
         %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
           %i.fa.fa-map-marker
