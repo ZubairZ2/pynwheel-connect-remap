@@ -1,7 +1,7 @@
 (function($){
-    var numerics_regex = new RegExp(/^\d+$/);
-    var hash_separated_numbers = new RegExp(/\d+-\d+$/);
-    var comman_separated_numbers = new RegExp(/\d+(,\d+)+$/);
+    var numerics_regex = new RegExp(/^[0-9]+$/);
+    var hash_separated_numbers = new RegExp(/^[0-9]+-[0-9]+$/);
+    var comman_separated_numbers = new RegExp(/^[0-9]+(,[0-9]+)+$/);
     var range_regex = new RegExp(numerics_regex.source + "|" + hash_separated_numbers.source + "|" + comman_separated_numbers.source);
     $.fn.validationEngineLanguage = function(){
     };
