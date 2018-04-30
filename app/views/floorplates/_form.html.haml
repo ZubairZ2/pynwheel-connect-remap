@@ -22,7 +22,7 @@
     %span Enter the range of floors this floorplate covers
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
 
-    = f.text_field :range, :class=>"form-control validate[required]", :placeholder=>"Range",:maxlength=>"4"
+    = f.text_field :range, :class=>"form-control validate[required,custom[onlyRange]]", :placeholder=>"Range",:maxlength=>"4"
     %small Valid formats: '3' one floor, '3-10' range, '3,5,7,[...]' for specific floors
 .form-group.hidden
   %label.col-sm-12.col-lg-12.col-md-3.col-xs-12.control-label
