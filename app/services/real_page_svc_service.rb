@@ -126,10 +126,10 @@ class RealPageSvcService < BaseService
       if result[:"s:Envelope"][1][:"s:Body"][1].present?  
         units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
         units.each do |u|
+
           if u.key?(:UnitObject)
             u = u[:UnitObject]
             hit = false
-            
             unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
             
             unit.property_id = u[:SiteID]
@@ -140,6 +140,7 @@ class RealPageSvcService < BaseService
             unit.market_rent = u[:BaseRentAmount]
             unit.effective_rent = u[:BaseRentAmount]
             unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+            unit.floor = u[:FloorNumber] rescue 0
             if u[:AvailableDate].present?
               unit.available_date = u[:AvailableDate]
             end
