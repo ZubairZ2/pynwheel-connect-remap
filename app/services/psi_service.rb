@@ -28,7 +28,6 @@ class PsiService < BaseService
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
             pro["ILS_Unit"].each do |ils|
               units << ils
-              # puts '***********', ils
             end
             pro["Floorplan"].each do |f|
               floorplans << f
@@ -38,24 +37,20 @@ class PsiService < BaseService
           save_psi_floorplans(floorplans,property_id)
           save_website_column_of_community(response)
         else
-          #Thread.current[:errors] <<  response["response"]["error"]["message"]  
           puts '-----------------------------' , response["response"]["error"]["message"]
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
     rescue => e
-      #Thread.current[:errors] << e.message
       puts '----------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
-    fill_psi_pricing_details #if Thread.current[:errors].empty?
+    fill_psi_pricing_details
 	end
 
 	def save_psi_units(units,property_id)
 	  units.each do |u|
       vacateDate = Date.parse("2099-01-01")
       unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first_or_initialize
-	    #unit = Unit.new(provider: "psi",community_id: credentials.community_id)
-	    #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
 	    unit.property_id = property_id
 	    unit.unit_type = u["Units"]["Unit"]["UnitType"]
 	    unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
@@ -80,9 +75,7 @@ class PsiService < BaseService
   def save_psi_floorplans(floorplans,property_id)
     floorplans.each do |f|
       floorplan = Floorplan.where(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize  
-      #floorplan = Floorplan.new(provider: "psi",community_id: credentials.community_id)
       floorplan.property_id = property_id
-      #floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
       floorplan.name = f["Name"]
       floorplan.unit_count = f["UnitsAvailable"]
       floorplan.units_available = f["DisplayedUnitsAvailable"]
@@ -144,31 +137,25 @@ class PsiService < BaseService
       if response["response"]["code"] == 200
         psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
         psi_units.each do |u|
-          unit_no = u[1]["@attributes"]["UnitNumber"].to_i
-          unit = Unit.where(marketing_name: unit_no,provider_unit_id: u[1]["@attributes"]["PropertyUnitId"])
+          unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
           if unit.present?
-            unit = unit.first
             if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
               u[1]['Rent']['TermRent'].each do |a|
                 if a["@attributes"]["IsBestPrice"] == "true"
                   lease_term = a["@attributes"]["LeaseTerm"].split(" ")
-                  unit.effective_rent = a["@attributes"]["Rent"]
+                  unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
                   unit.lease_term = lease_term[0]
                   unit.save(validate: false)
-                  #unit.update_attributes(effective_rent: a["@attributes"]["Rent"],lease_term: lease_term[0])
                 end
               end
               
             end
           end
         end
-      else
-        #Thread.current[:errors] << response["response"]["error"]["message"]  
-        puts '---------------------------' , response["response"]["error"]["message"] 
+      else 
         ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
       end
     rescue => e
-      #Thread.current[:errors] << e.message
       puts '----------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
