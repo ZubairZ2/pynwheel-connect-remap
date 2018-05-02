@@ -10,21 +10,22 @@ class WebpagesController < ActionController::Base
 		end
 		@units_with_floorplan_info = []
 		@community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
-	
-		if @community_info.floorplates.present?
-		  @floorplates = @community_info.floorplates
-		  @floors = @floorplates.map{|f| f.floors}.flatten.sort
-      @amenities =  @community_info.floorplates.collect{|c| c.amenities}
-      @amenities = @amenities.flatten
-		else
-	    @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
-		end
-		if @community_info.units.available_units.size > 0
-			normalize_units
-			if @units_with_floorplan_info.present?
-				build_square_feet_range
-				build_market_rent_range
-	    	@units_with_floorplan_info = @units_with_floorplan_info.to_json
+	  unless @community_info.locked
+			if @community_info.floorplates.present?
+			  @floorplates = @community_info.floorplates
+			  @floors = @floorplates.map{|f| f.floors}.flatten.sort
+	      @amenities =  @community_info.floorplates.collect{|c| c.amenities}
+	      @amenities = @amenities.flatten
+			else
+		    @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
+			end
+			if @community_info.units.available_units.size > 0
+				normalize_units
+				if @units_with_floorplan_info.present?
+					build_square_feet_range
+					build_market_rent_range
+		    	@units_with_floorplan_info = @units_with_floorplan_info.to_json
+		    end
 	    end
     end
 	end
