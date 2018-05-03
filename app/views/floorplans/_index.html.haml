@@ -30,9 +30,9 @@
                   %td
                     = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
                   %td
-                    - if f.image.present?
+                    - if f.standard_image_url.present?
                       .drop-img.drop-img-left
-                        = image_tag f.image.url
+                        = image_tag f.standard_image_url
                     - else  
                       .drop-img.drop-img-left.image-holder{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id}
                   %td

@@ -28,7 +28,7 @@
           .carousel-inner{:style=>"height: 500px;"}
             - @amenities.each_with_index do |amenity,index|
               .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
-                = image_tag amenity.image.url
+                = image_tag amenity.standard_image_url
                 .carousel-caption
                   image  
             
