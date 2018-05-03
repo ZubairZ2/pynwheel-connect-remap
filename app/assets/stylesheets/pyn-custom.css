@@ -1700,6 +1700,8 @@ ul.home-tabs li:hover a{
 	top:78px;
 	background: #1d2425;
 	z-index:10;
+	overflow: hidden;
+	height: 99vh;
 }
 .mCSB_scrollTools .mCSB_dragger .mCSB_dragger_bar{
 	height:100px;
