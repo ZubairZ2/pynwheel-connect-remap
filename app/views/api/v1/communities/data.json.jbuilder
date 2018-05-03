@@ -23,8 +23,8 @@ json.ui_settigs do
       json.background_color @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
       json.primary_color @community.design.primary_color.present? ? @community.design.primary_color : "#CF492F"
       json.secondary_color @community.design.secondary_color.present? ? @community.design.secondary_color : "#4F4F4F"
-      json.navigation_text_color @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#543636"
-      json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#543636"
+      json.navigation_text_color @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#636363"
+      json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#FDFDFD"
     end
   end
 end
@@ -104,8 +104,8 @@ json.apartments do
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.square_feet floorplan.present? ? floorplan.square_feet : 0
-      json.image unit.image.present? ? (Rails.env.development? ? local_assets_base_url+unit.image.url : unit.image.url) : (floorplan.present? && floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil)
-      json.floorplan_image floorplan.present? ? (floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil) : nil
+      json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : (floorplan.present? && floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil)
+      json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
     end
@@ -121,10 +121,10 @@ json.apartments do
     json.bathrooms floorplan.bathrooms
     json.square_feet floorplan.square_feet
     json.description floorplan.description
-    json.image floorplan.image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.image.url : floorplan.image.url) : nil
+    json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
     json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
     json.floorplan_amenities floorplan.amenities do |amenity|
-      json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
+      json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
       json.name amenity.name
       json.x_plot amenity.x_plot
       json.y_plot amenity.y_plot
@@ -138,16 +138,16 @@ json.apartments do
   # floorplates = floorplates.sort_by { |f| -f.number }
   json.floorplates floors do |floor|
     floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
-    image_url = floorplate.image.url(:svg_for_metro).present? ? floorplate.image.url(:svg_for_metro) : floorplate.image.url
+    image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
     # json.id floorplate.id
     json.id floor
     json.number floor
     json.name floorplate.name
     # json.range floorplate.range
-    json.image floorplate.image.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
+    json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
     json.floorplate_amenities floorplate.amenities do |amenity|
       if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
-        json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
+        json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
         json.name amenity.name
         json.x_plot amenity.x_plot
         json.y_plot amenity.y_plot

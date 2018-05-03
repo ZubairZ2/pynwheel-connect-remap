@@ -1,10 +1,9 @@
 class Unit < ApplicationRecord
+  include StandardUrl
   mount_uploader :image, AvatarUploader
   belongs_to :community
   belongs_to :floorplan
   belongs_to :floorplate
-  #has_many :favorites
-  #has_many :favorite_communities, :through => :favorites,source: :community
   validates :effective_rent, :numericality => { :greater_than => 0, :less_than => 1000000 }, :length => { :maximum => 10}
   validates_uniqueness_of :provider_unit_id, scope: :community_id
   has_many :amenities, as: :amenityable
@@ -15,6 +14,7 @@ class Unit < ApplicationRecord
   scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+1.year) }
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   scope :available_units, -> { ploted_units.or(past_available_units) }
+  after_commit :populate_image_urls
 
   def floorplan
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
@@ -24,7 +24,9 @@ class Unit < ApplicationRecord
     self.image.present? ? self.image.url : (self.floorplan.present? && self.floorplan.image.present? ? self.floorplan.image.url : "/assets/default.jpeg")
   end
 
-  # def is_favorite?
-  #   favorite_communities.count > 0
-  # end
+  def populate_image_urls
+    if image.present?
+      set_standard_url('Unit',id)
+    end
+  end
 end
