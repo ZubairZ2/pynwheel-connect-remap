@@ -10,6 +10,7 @@
     = stylesheet_link_tag    'application', media: 'all'
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
     = javascript_include_tag 'jquery.arrayUtilities'
+    = javascript_include_tag 'slick'
     /%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
     /%link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
@@ -22,7 +23,6 @@
     / %link{:href => "css/pyn-custom.css", :rel => "stylesheet"}/
     / HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries
     / WARNING: Respond.js doesn't work if you view the page via file://
-    
     /%link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
   %body.floor-plan{:style => "background-color:#303a3c;"}
     / Main content
@@ -121,7 +121,7 @@
                 .showcase
                   #content-3.content
                     .select-floor
-                      %ul
+                      %ul#slider
                         - @floors.each do |floor|
                           - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                           %li
@@ -267,6 +267,37 @@
       %b#popover-price
        
 :javascript
+  if ($("#slider")[0]){
+    const $slider = $("#slider");
+    $slider
+      .on('init', () => {
+        mouseWheel($slider)
+      })
+      .slick({
+        dots: false,
+        prevArrow: false,
+        nextArrow: false,
+        vertical: true,
+        infinite: false,
+        speed: 6
+      })
+    function mouseWheel($slider) {
+      $(window).on('wheel', { $slider: $slider }, mouseWheelHandler)
+    }
+    function mouseWheelHandler(event) {
+      event.preventDefault()
+      const $slider = event.data.$slider
+      const delta = event.originalEvent.deltaY
+      if(delta > 0) {
+        $slider.slick('slickPrev')
+      }
+      else {
+        $slider.slick('slickNext')
+      }
+    }
+  }
+
+
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 

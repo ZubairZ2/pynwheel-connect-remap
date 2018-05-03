@@ -1808,6 +1808,8 @@ ul.home-tabs li:hover a{
 	text-align:center;
 	background:#1a1f20;
 	padding: 29px 0 18px 0;
+	position: relative;
+	z-index: 1000;
 	margin:0;
 	border-bottom: 1px solid #454e50;
 }
