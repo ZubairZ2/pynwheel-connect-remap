@@ -7,6 +7,7 @@
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
     = csrf_meta_tags
     = stylesheet_link_tag 'jquery.mCustomScrollbar.css'
+    = stylesheet_link_tag 'slick.css'
     = stylesheet_link_tag    'application', media: 'all'
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
     = javascript_include_tag 'jquery.arrayUtilities'
@@ -240,7 +241,8 @@
                       %a.hide{:href => "##"}
                         %i.fa.fa-heart
     - else
-      .alert.alert-danger Community is Inactivated.                        
+      .alert.alert-danger Community is Inactivated.
+%button.btn.btn-sm.btn-primary.top-arrow                              
 #marker-popover.media.hidden
   %b#popover-marketing-name
   %i.fa.fa-heart.fav-heart.hidden
@@ -275,11 +277,13 @@
       })
       .slick({
         dots: false,
-        prevArrow: false,
-        nextArrow: false,
+        slidesToShow: 14,
+        slidesToScroll: 14,
         vertical: true,
         infinite: false,
-        speed: 6
+        speed: 6,
+        prevArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-up"></i></button>',
+        nextArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-down"></i></button>'
       })
     function mouseWheel($slider) {
       $(window).on('wheel', { $slider: $slider }, mouseWheelHandler)

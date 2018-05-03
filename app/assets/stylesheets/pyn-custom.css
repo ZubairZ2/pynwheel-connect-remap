@@ -2326,6 +2326,14 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	margin: 20px;
 
 }
+.view-btn-arrow{
+	background: none;
+	border: none;
+}
+.view-btn-arrow i{
+	font-size: 20px;
+	color: #fff;
+}
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
 	#s-theme .row .col-lg-3{
