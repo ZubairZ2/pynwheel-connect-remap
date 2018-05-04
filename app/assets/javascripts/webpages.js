@@ -448,7 +448,7 @@ function showMarkers(){
    else{ 
      if (has_floorplate == 'true'){
        console.log('Adjusting markers');
-       adjustMarkerAndAmenitiesPositions($('#m_'+units_to_display[i]['marketing_name']));  
+       adjustMarkerPosition($('#m_'+units_to_display[i]['marketing_name']));  
      } 
      $('#m_'+units_to_display[i]['marketing_name']).removeClass('hidden');
    }
@@ -457,7 +457,7 @@ function showMarkers(){
    var units_from_json = json_object[key]; 
    $('#m_'+units_from_json[0]['marketing_name']+' span').html(units_from_json.length > 1 ? units_from_json.length : '')
    if (has_floorplate == 'true'){
-    adjustMarkerAndAmenitiesPositions($('#m_'+units_to_display[0]['marketing_name']));  
+    adjustMarkerPosition($('#m_'+units_to_display[0]['marketing_name']));  
    }
    $('#m_'+units_from_json[0]['marketing_name']).removeClass('hidden');     
  }
@@ -471,6 +471,7 @@ function populate_current_units(){
   if(has_floorplate == 'true'){
     $('.amenity-marker').addClass('hidden'); // first hidding all amenity markers
     $('.a_'+current_floor).removeClass('hidden'); // showing amenity markers on current floorplate 
+    adjustAmenitiesPosition();
     for(var i=0;i < units.length;i++){
       if (units[i]['floor'] == current_floor){
         current_units.push(units[i]);
@@ -798,7 +799,7 @@ function setUnitAttributes(element){
 }
 
 
-function adjustMarkerAndAmenitiesPositions(marker){
+function adjustMarkerPosition(marker){
   /*adjusting markers according to screen size*/
   var in_browser_height = 0;
   var in_browser_width = 0;
@@ -824,6 +825,28 @@ function adjustMarkerAndAmenitiesPositions(marker){
   var current_left = x_plot/width_ratio;
   var current_top = y_plot/height_ratio;
   $(marker).css({"left": current_left,"top": current_top});
+}
+
+function adjustAmenitiesPosition(){
+  /*adjusting markers according to screen size*/
+  var in_browser_height = 0;
+  var in_browser_width = 0;
+  var actual_height = 0;
+  var actual_width =0;  
+  in_browser_height = parseFloat($('#f_'+current_floor).parent().height());
+  in_browser_width = parseFloat($('#f_'+current_floor).parent().width());
+    
+  actual_height = parseInt($('#f_'+current_floor).data("height"))
+  actual_width = parseInt($('#f_'+current_floor).data("width"))
+  
+  if (actual_width<in_browser_width)
+    var width_ratio = 1;
+  else
+    var width_ratio = actual_width/in_browser_width;
+  if (actual_height<in_browser_height)
+    var height_ratio = 1;
+  else
+    var height_ratio = actual_height/in_browser_height;
 
   // adjusting amenity markers
   $('.a_'+current_floor).each(function(){
