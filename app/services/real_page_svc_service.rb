@@ -138,7 +138,7 @@ class RealPageSvcService < BaseService
             unit.marketing_name = u[:UnitNumber]
             unit.floorplan_id = u[:FloorplanID]
             unit.market_rent = u[:BaseRentAmount]
-            unit.effective_rent = u[:BaseRentAmount]
+            unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1 
             unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
             unit.floor = u[:FloorNumber] rescue 0
             if u[:AvailableDate].present?
@@ -187,7 +187,7 @@ class RealPageSvcService < BaseService
             #     unit.building = bldgResult
             #   end
             # end
-            unit.save(:validate => false)
+            unit.save
           end
         end
       else
