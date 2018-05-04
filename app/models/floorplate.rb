@@ -34,7 +34,7 @@ class Floorplate < ApplicationRecord
   end
 
   def fetch_units
-    units = Unit.where(floor: self.floors)
+    units = Unit.where(community_id: community_id,floor: self.floors)
   end
 
   def community_floors
