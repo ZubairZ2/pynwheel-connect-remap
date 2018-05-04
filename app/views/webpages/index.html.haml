@@ -131,14 +131,16 @@
                       
         .right-side.parent#panzomm-container
           / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
-          .image-map.panzoom#map{:style => "position: relative;"}        
+          .image-map.panzoom#map    
             - if @community_info.floorplates.present?
               - @floors.each do |floor|
                 - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                = image_tag floorplate.standard_image_url,:class=>"floorplate-image #{floor == @floors.first ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.height}","data-width"=>"#{floorplate.width}"
+                %div{:style => "position: relative;"}    
+                  = image_tag floorplate.standard_image_url,:class=>"floorplate-image #{floor == @floors.first ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.height}","data-width"=>"#{floorplate.width}"
             - else
-              %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
-              =# image_tag "410.svg",:height=>"400",:width=>"400"
+              %div{:style => "position: relative;"}
+                %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
+              
             - units = @community_info.units.available_units
             - coordinates_array = []
             - units.each do |unit|
