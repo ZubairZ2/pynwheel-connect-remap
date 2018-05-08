@@ -115,7 +115,7 @@
                     = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "_blank"
                        
          
-          - if @community_info.floorplates.present?          
+          - if @community_info.has_floorplates?          
             .select-floorP
               %h4 Select Floor
               .select-floor-bg
@@ -132,7 +132,7 @@
         .right-side.parent#panzomm-container
           / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
           .image-map.panzoom#map    
-            - if @community_info.floorplates.present?
+            - if @community_info.has_floorplates?
               - @floors.each do |floor|
                 - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                 %div{:style => "position: relative;"}    
@@ -159,7 +159,7 @@
 
 
             - if @amenities.present?
-              - if @community_info.floorplates.present?
+              - if @community_info.has_floorplates?
                 - @floors.each do |floor|
                   - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                   - floorplate.amenities.each do |amenity|
@@ -308,7 +308,7 @@
   var redirect_url = "#{community_webpages_url(@community)}"
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
   
-  var has_floorplate = "#{@community_info.floorplates.present?}";
+  var has_floorplate = "#{@community_info.has_floorplates?}";
   var current_floor = "#{@floors.present? and @floors.size > 0 ? @floors.first : 0}";
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
   floors = JSON.parse(floors);

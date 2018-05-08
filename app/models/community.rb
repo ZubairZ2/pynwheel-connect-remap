@@ -56,7 +56,7 @@ class Community < ApplicationRecord
   end
 
   def has_floorplates?
-    floorplates.size > 0
+    !is_sitemap
   end
 
   def has_temporary_images?

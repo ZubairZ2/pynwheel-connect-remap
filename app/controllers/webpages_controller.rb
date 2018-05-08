@@ -11,7 +11,7 @@ class WebpagesController < ActionController::Base
 		@units_with_floorplan_info = []
 		@community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
 	  unless @community_info.locked
-			if @community_info.floorplates.present?
+			if @community_info.has_floorplates?
 			  @floorplates = @community_info.floorplates
 			  @floors = @floorplates.map{|f| f.floors}.flatten.sort
 	      @amenities =  @community_info.floorplates.collect{|c| c.amenities}

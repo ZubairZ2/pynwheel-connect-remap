@@ -63,12 +63,12 @@ json.homescreen do
 end
 
 json.apartments do
-  if @community.floorplates.present?
+  if @community.has_floorplates?
     json.map_type "floorplates"
   else
     json.map_type "sitemap"
   end
-  if @community.sitemap.present? and !@community.floorplates.present? 
+  if @community.sitemap.present? and !@community.has_floorplates? 
     image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
     json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
     json.sitemap_amenities @community.sitemap.amenities do |amenity|
@@ -133,28 +133,32 @@ json.apartments do
     end
   end
   #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
-  floorplates = @community.floorplates
-  floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
-  # floorplates = floorplates.sort_by { |f| -f.number }
-  json.floorplates floors do |floor|
-    floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
-    image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
-    # json.id floorplate.id
-    json.id floor
-    json.number floor
-    json.name floorplate.name
-    # json.range floorplate.range
-    json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
-    json.floorplate_amenities floorplate.amenities do |amenity|
-      if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
-        json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-        json.name amenity.name
-        json.x_plot amenity.x_plot
-        json.y_plot amenity.y_plot
-        json.floorplate_id floor
-        json.id amenity.id
+  if @community.has_floorplates?
+    floorplates = @community.floorplates
+    floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
+    # floorplates = floorplates.sort_by { |f| -f.number }
+    json.floorplates floors do |floor|
+      floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
+      image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
+      # json.id floorplate.id
+      json.id floor
+      json.number floor
+      json.name floorplate.name
+      # json.range floorplate.range
+      json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
+      json.floorplate_amenities floorplate.amenities do |amenity|
+        if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
+          json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+          json.name amenity.name
+          json.x_plot amenity.x_plot
+          json.y_plot amenity.y_plot
+          json.floorplate_id floor
+          json.id amenity.id
+        end
       end
     end
+  else
+    json.floorplates nil  
   end
 end
 
