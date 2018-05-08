@@ -58,10 +58,8 @@ class Yardi4Service < BaseService
       #unit = Unit.new(provider: "yardi4",community_id: credentials.community_id)
       unit.property_id = property_id
       #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
-      puts '-------------------------' , u[:Units][:Unit][:Identification][0][:IDValue]
       unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
       unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
-      puts '--------------------------' , unit.marketing_name
       unit.floorplan_id = u[:Units][:Unit][:UnitType]
       unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
       unit.effective_rent = u[:Units][:Unit][:MarketRent]
@@ -88,7 +86,6 @@ class Yardi4Service < BaseService
       unit.availability = is_available ? "Unoccupied" : "Occupied"
       unit.available_date = vacate_date
       unit.save
-      puts '--------------------------' , unit.marketing_name
     end
   end
 
