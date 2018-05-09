@@ -192,6 +192,8 @@
     var in_browser_width = 0;
     var actual_height = 0;
     var actual_width =0;
+    populate_current_units();
+
     $('.floorplate-image').each(function(){
       // console.log("Image height: "+$(this).height());
       // console.log("In browser height: "+$(this).parent().height());
@@ -829,10 +831,7 @@ function adjustMarkerPosition(marker){
 
 function adjustAmenitiesPosition(){
   /*adjusting markers according to screen size*/
-  var in_browser_height = 0;
-  var in_browser_width = 0;
-  var actual_height = 0;
-  var actual_width =0;  
+  
   in_browser_height = parseFloat($('#f_'+current_floor).parent().height());
   in_browser_width = parseFloat($('#f_'+current_floor).parent().width());
     
