@@ -541,7 +541,7 @@ function saveHomePageVideo(){
 
   homePageVideoDropzone.on("complete", function(file) {
     console.log(file);
-    fetchHomePageVideo();
+    location.reload();
   });
   
   homePageVideoDropzone.on("addedfile", function(file) {
