@@ -1,6 +1,6 @@
 class Webpage < ApplicationRecord
   belongs_to :community
-  validates_uniqueness_of :name
+  validates_uniqueness_of :name, scope: :community_id
   validates_presence_of :url, :name
   validates_length_of :name, :maximum => 10
 
