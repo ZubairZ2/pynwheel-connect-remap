@@ -5,7 +5,7 @@ class Floorplan < ApplicationRecord
   has_many :amenities, as: :amenityable
   validates_uniqueness_of :name, scope: :community, on: :create
   validates_uniqueness_of :provider_floorplan_id, scope: :community
-  after_commit :populate_image_urls
+  after_commit :populate_image_urls, on: [:create,:update]
 
   def populate_image_urls
     if image.present?

@@ -2274,7 +2274,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     border: 1px solid #8c9192;
     border-radius: 0px 0px 3px 3px;
     border-top: navajowhite;
-	
+	overflow-y: scroll;
+	height: 75vh;
 }
 .imageselect li{
 	padding: 10px 15px;

@@ -15,7 +15,7 @@ class Unit < ApplicationRecord
   scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+1.year) }
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   scope :available_units, -> { ploted_units.or(past_available_units) }
-  after_commit :populate_image_urls
+  after_commit :populate_image_urls, on: [:create,:update]
 
   def floorplan
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)

@@ -4,7 +4,7 @@ class Amenity < ApplicationRecord
   belongs_to :amenityable, polymorphic: true
   belongs_to :community
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
-  after_commit :populate_image_urls
+  after_commit :populate_image_urls, on: [:create,:update]
 
   def populate_image_urls
     if image.present?
