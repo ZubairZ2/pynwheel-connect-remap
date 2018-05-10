@@ -1,10 +1,10 @@
 class Yardi4Service < BaseService
-	def perform
+  def perform
     begin
       property_id = ""
       ils_units = []
       floorplans = []
-	    url = credentials.url
+      url = credentials.url
       arr = url.split('/')
       post = "/#{arr[3]}/Webservices/itfilsguestcard.asmx HTTP/1.1"
       host = arr[2]
@@ -44,16 +44,15 @@ class Yardi4Service < BaseService
         ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
       end
     rescue => e
-      #Thread.current[:errors] << e.message
-      puts '------------------------' , e.message
+      #puts '------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
-	end
+  end
     
 
   def save_yardi4_units(ils_units,property_id)
-    ils_units.lazy.each do |u|
-      u = u[1]
+    ils_units.lazy.each do |api_unit|
+      u = api_unit[1]
       unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue]).first_or_initialize   
       #unit = Unit.new(provider: "yardi4",community_id: credentials.community_id)
       unit.property_id = property_id
@@ -62,29 +61,33 @@ class Yardi4Service < BaseService
       unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
       unit.floorplan_id = u[:Units][:Unit][:UnitType]
       unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
-      unit.effective_rent = u[:Units][:Unit][:MarketRent]
-
+      #unit.effective_rent = u[:Units][:Unit][:MarketRent]
       is_available = false
-      vacate_date = Date.today
-      if u[:Availability].present?
-        if u[:Availability][:VacateDate][:Year].present? && u[:Availability][:VacateDate][:Year].to_i > 0 && u[:Availability][:VacateDate][:Month].to_i > 0 && u[:Availability][:VacateDate][:Day].to_i > 0
-          vacate_date = Date.parse("#{u[:Availability][:VacateDate][:Year]}-#{u[:Availability][:VacateDate][:Month]}-#{u[:Availability][:VacateDate][:Day]}")
+      vacate_date = Date.parse("2099-1-1")
+      api_unit.each do |unit_with_key|
+        if unit_with_key.key?(:Availability)
+            
+          if unit_with_key[:Availability][:VacateDate][0][:Year].present? && unit_with_key[:Availability][:VacateDate][0][:Year].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Month].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Day].to_i > 0
+            vacate_date = Date.parse("#{unit_with_key[:Availability][:VacateDate][0][:Year]}-#{unit_with_key[:Availability][:VacateDate][0][:Month]}-#{unit_with_key[:Availability][:VacateDate][0][:Day]}")
+            is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false 
+          end
+          if unit_with_key[:Availability][:MadeReadyDate][0][:Year].present?
+            vacate_date = Date.parse("#{unit_with_key[:Availability][:MadeReadyDate][0][:Year]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Month]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Day]}")
+            is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false 
+          end
+          # if vacate_date <= Date.today && unit_with_key[:Availability][:VacancyClass] == "Unoccupied"
+          #   is_available = true
+          # elsif vacate_date >= Date.today
+          #   is_available = true
+          # end         
         end
-        if u[:Availability][:MadeReadyDate][:Year].present?
-          vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][:Year]}-#{u[:Availability][:MadeReadyDate][:Month]}-#{u[:Availability][:MadeReadyDate][:Day]}")
+        if unit_with_key.key?(:EffectiveRent)
+          unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
         end
-        if vacate_date >= Date.today && u[:Availability][:VacancyClass] == "Occupied"
-          is_available = true
-        else
-          is_available = false
-          vacate_date = Date.parse("2099-1-1")
-        end
-      else
-        is_available = false
-        vacate_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
+        
       end
       unit.availability = is_available ? "Unoccupied" : "Occupied"
-      unit.available_date = vacate_date
+      unit.available_date = vacate_date 
       unit.save
     end
   end
