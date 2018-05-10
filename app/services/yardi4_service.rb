@@ -63,7 +63,7 @@ class Yardi4Service < BaseService
       unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
       unit.effective_rent = u[:Units][:Unit][:MarketRent]
       is_available = false
-      vacate_date = Date.parse("2099-1-1")
+      vacate_date = ""
       api_unit.each do |unit_with_key|
         if unit_with_key.key?(:Availability)
             
@@ -122,10 +122,6 @@ class Yardi4Service < BaseService
           end
         end
 
-        if f.key?(:UnitCount)
-          fp.unit_count = f[:UnitCount]
-        end
-
       end
       
       rooms.each do |room|
@@ -136,8 +132,7 @@ class Yardi4Service < BaseService
         end
       end
       
-      fp.units_available = -1
-      fp.save
+      fp.save(validate: false)
     end
   end
 
