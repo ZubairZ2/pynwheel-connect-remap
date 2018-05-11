@@ -9,7 +9,7 @@ class Floorplate < ApplicationRecord
   validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}
   validates_with FloorValidator
   before_destroy :reset_units_plots
-  after_commit :populate_image_urls
+  after_commit :populate_image_urls, on: [:create,:update]
 
   def reset_units_plots
     self.units.update_all(x_plot: 0,y_plot: 0, floorplate_id: nil)
