@@ -49,7 +49,7 @@ class PsiService < BaseService
 
 	def save_psi_units(units,property_id)
 	  units.each do |u|
-      vacateDate = Date.parse("2099-01-01")
+      vacateDate = ""
       unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first_or_initialize
 	    unit.property_id = property_id
 	    unit.unit_type = u["Units"]["Unit"]["UnitType"]
