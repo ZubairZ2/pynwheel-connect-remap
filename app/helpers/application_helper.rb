@@ -1,6 +1,6 @@
 module ApplicationHelper
 	def sidemenu_communities_actions 
-		["index","new","edit"]
+		["index","new","edit","create","update"]
 	end
 	def flash_class(level)
 		case level
