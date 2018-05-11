@@ -21,7 +21,7 @@ class ApplicationController < ActionController::Base
       session[:company_id] = @company.id
       @company
     elsif session[:company_id].present?
-      @company = Company.find session[:company_id]
+      @company = Company.find session[:company_id] rescue Company.first
     else
       @company = Company.first
     end
