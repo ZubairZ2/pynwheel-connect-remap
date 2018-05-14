@@ -123,7 +123,7 @@ json.apartments do
     json.description floorplan.description
     json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
     json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
-    json.floorplan_amenities floorplan.amenities do |amenity|
+    json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
       json.name amenity.name
       json.x_plot amenity.x_plot
