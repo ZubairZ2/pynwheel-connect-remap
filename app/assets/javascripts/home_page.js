@@ -325,7 +325,7 @@ function saveLoopType(loop_type){
           if (files.length > 0){
               for (var i = 0; i < files.length; i++) {
                 if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-                  readAmenityImageSrc(files[i],'floorplate');
+                  readAmenityImageSrc(files[i],'community');
                 }
               }
           }
