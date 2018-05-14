@@ -2,6 +2,9 @@ local_assets_base_url = "http://192.168.101.77:3000"
 json.ui_settigs do
   json.theme @community.theme_name
   json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("logo-small.png")
+  if gables_theme(@community)
+    json.secondary_logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("logo-small.png")
+  end  
   if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family

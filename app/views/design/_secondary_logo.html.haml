@@ -1,0 +1,26 @@
+.row
+  .col-md-12
+    %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+.row
+  .col-lg-12
+    .form-group
+      %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+        Upload Logo
+        %span Upload site logo to display in page
+    %span.btn.btn-primary.btn-file.ml-15
+      %i.fa.fa-upload
+      Upload File
+      = file_field_tag :secondary_logo  
+
+.text-center.drag-box.mt-15.image-upload#design-page-secondary-logo-upload-holder
+  %span.icon-upload
+    = image_tag "upload-image.png"
+    %p Drag &amp; Drop file to Upload  
+      
+.row
+  .col-lg-12
+    .form-group
+      .select-logo.center-img.mb-20.mt-30
+        .select-logo-logo
+          %a.preview-image{:href=>current_community.secondary_logo.present? ? current_community.secondary_logo.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Logo"}
+            = image_tag current_community.secondary_logo.present? ? current_community.secondary_logo.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"preview-image"                  

@@ -82,6 +82,7 @@ Rails.application.routes.draw do
     resources :design, only: :index do
       collection do
         get :logo
+        get :secondary_logo
       end
     end
     resources :home_page, only: :index do
