@@ -16,6 +16,7 @@ class DesignController < ApplicationController
   end
 
   def secondary_logo
+    add_breadcrumb "Secondary Logo"
     @design = current_community.design
   end
 

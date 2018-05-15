@@ -20,7 +20,7 @@
           = link_to edit_company_community_path(current_company,current_community) do
             %i.fa.fa-info
             %span Community Info
-      %li{:class=>"#{controller_name =='design' && params[:action] !='logo' ? 'active' : ''}"}
+      %li{:class=>"#{controller_name =='design' && params[:action] != 'logo' && params[:action] != 'secondary_logo' ? 'active' : ''}"}
         = link_to community_design_index_path(current_community) do
           %i.fa.fa-tv
           %span Design
@@ -29,7 +29,7 @@
           %i.fa.fa-gears
           %span Data
           %span.pull-right-container
-      %li{:class=>"#{controller_name =='design' && params[:action] =='logo' ? 'active' : ''}"}
+      %li{:class=>"#{controller_name =='design' && (params[:action] =='logo' || params[:action] =='secondary_logo') ? 'active' : ''}"}
         = link_to logo_community_design_index_path(current_community) do
           %i.fa.fa-image
           %span Logo
