@@ -3,7 +3,7 @@ class Imagepage < ApplicationRecord
   has_many :additional_images, dependent: :destroy
   validates_uniqueness_of :name, scope: :community_id
   validates_presence_of :name
-  validates_length_of :name, :maximum => 10
+  validates_length_of :name, :maximum => 50
 
   scope :active, -> { where(hide_page: false) }
 end
