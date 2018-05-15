@@ -1,5 +1,44 @@
  $(window).bind('load', function(){
   if ($('.is-webpage')[0]){
+    var window_height = window.innerHeight;
+    var slides_to_show = 14;
+    if (window_height < 800){
+      slides_to_show = 8;
+    }
+
+    if ($("#slider")[0]){
+      const $slider = $("#slider");
+      $slider
+        .on('init', () => {
+          mouseWheel($slider)
+        })
+        .slick({
+          dots: false,
+          slidesToShow: slides_to_show,
+          slidesToScroll: slides_to_show,
+          vertical: true,
+          infinite: false,
+          speed: 6,
+          prevArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-up"></i></button>',
+          nextArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-down"></i></button>'
+        })
+      function mouseWheel($slider) {
+        $(window).on('wheel', { $slider: $slider }, mouseWheelHandler)
+      }
+      function mouseWheelHandler(event) {
+        event.preventDefault()
+        const $slider = event.data.$slider
+        const delta = event.originalEvent.deltaY
+        if(delta > 0) {
+          $slider.slick('slickNext')
+        }
+        else {
+          $slider.slick('slickPrev')
+        }
+      }
+    }
+
+
     $(".panzoom").addClass("transform-none");
     $(document).on("click touchstart", ".zoom-controls", function (){
       $(".panzoom").removeClass("transform-none");
