@@ -1,5 +1,5 @@
 class ApplicationController < ActionController::Base
-  #before_action :authenticate_user! , unless: :devise_controller?
+  before_action :authenticate_user!
   layout :layout_by_resource
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
@@ -27,7 +27,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  protect_from_forgery #with: :exception
+  protect_from_forgery with: :exception
   rescue_from CanCan::AccessDenied do |exception|
     respond_to do |format|
       format.json { head :forbidden, content_type: 'text/html' }
