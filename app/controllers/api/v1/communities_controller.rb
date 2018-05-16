@@ -40,15 +40,15 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def email_favorites
-    begin
+    #begin
       if @community.email_favorites(params)
         render :json=> {:success=>true, :message => "success", :operation => "email favorites"}
       else
         render :json=> {:success=>false, :message => "No valid favorites present"}
       end
-    rescue Exception => e   
-      render :json=> {:success=>false, :message => e.message}, :status=>500
-    end
+    #rescue Exception => e   
+      #render :json=> {:success=>false, :message => e.message}, :status=>500
+    #end
   end
 
   def list_communities
