@@ -1,5 +1,7 @@
  $(window).bind('load', function(){
   if ($('.is-webpage')[0]){
+    
+
     $(".panzoom").addClass("transform-none");
     $(document).on("click touchstart", ".zoom-controls", function (){
       $(".panzoom").removeClass("transform-none");

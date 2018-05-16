@@ -271,6 +271,14 @@
       %b#popover-price
        
 :javascript
+
+  var window_height = window.innerHeight;
+  
+  var slides_to_show = 14;
+  if (window_height < 900){
+    slides_to_show = 6;
+  }
+
   if ($("#slider")[0]){
     const $slider = $("#slider");
     $slider
@@ -279,8 +287,8 @@
       })
       .slick({
         dots: false,
-        slidesToShow: 14,
-        slidesToScroll: 14,
+        slidesToShow: slides_to_show,
+        slidesToScroll: slides_to_show,
         vertical: true,
         infinite: false,
         speed: 6,
@@ -302,7 +310,6 @@
       }
     }
   }
-
 
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
