@@ -27,7 +27,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  protect_from_forgery with: :null_session
+  protect_from_forgery prepend: true
   rescue_from CanCan::AccessDenied do |exception|
     respond_to do |format|
       format.json { head :forbidden, content_type: 'text/html' }
