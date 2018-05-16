@@ -211,7 +211,7 @@ class Community < ApplicationRecord
     email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     ios = params[:favorites][:device_type].present? && params[:favorites][:device_type] == "iOS" ? true : false
     if favorites.present?
-      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,ios).deliver
+      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,ios,self).deliver
       return true
     else
       return false
