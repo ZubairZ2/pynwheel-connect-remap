@@ -272,12 +272,12 @@
        
 :javascript
 
-  var window_height = window.innerHeight;
+  //var window_height = window.innerHeight;
   
-  var slides_to_show = 14;
-  if (window_height < 900){
-    slides_to_show = 6;
-  }
+  //var slides_to_show = 14;
+  //if (window_height < 900){
+    //slides_to_show = 6;
+  //}
 
   if ($("#slider")[0]){
     const $slider = $("#slider");
@@ -287,8 +287,8 @@
       })
       .slick({
         dots: false,
-        slidesToShow: slides_to_show,
-        slidesToScroll: slides_to_show,
+        slidesToShow: 14,
+        slidesToScroll: 14,
         vertical: true,
         infinite: false,
         speed: 6,
