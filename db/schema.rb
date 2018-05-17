@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171115094114) do
+ActiveRecord::Schema.define(version: 20180516151358) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,6 +28,8 @@ ActiveRecord::Schema.define(version: 20171115094114) do
     t.integer  "y_plot"
     t.string   "amenityable_type"
     t.integer  "amenityable_id"
+    t.integer  "community_id"
+    t.string   "standard_image_url"
     t.index ["amenityable_type", "amenityable_id"], name: "index_amenities_on_amenityable_type_and_amenityable_id", using: :btree
   end
 
@@ -46,9 +48,13 @@ ActiveRecord::Schema.define(version: 20171115094114) do
     t.boolean  "locked"
     t.string   "data_provider"
     t.integer  "company_id"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
     t.string   "theme_name"
+    t.string   "website"
+    t.string   "code"
+    t.boolean  "is_sitemap",     default: true
+    t.string   "secondary_logo"
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
 
@@ -118,6 +124,32 @@ ActiveRecord::Schema.define(version: 20171115094114) do
     t.string   "global_navigation_position"
   end
 
+  create_table "favorite_images", force: :cascade do |t|
+    t.string   "image"
+    t.integer  "favorite_setting_id"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+    t.index ["favorite_setting_id"], name: "index_favorite_images_on_favorite_setting_id", using: :btree
+  end
+
+  create_table "favorite_settings", force: :cascade do |t|
+    t.integer  "community_id"
+    t.string   "email_from"
+    t.string   "email_bcc"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.text     "email_body"
+    t.index ["community_id"], name: "index_favorite_settings_on_community_id", using: :btree
+  end
+
+  create_table "favorites", force: :cascade do |t|
+    t.integer  "community_id"
+    t.string   "session_id"
+    t.json     "unit_ids"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+  end
+
   create_table "floorplans", force: :cascade do |t|
     t.integer  "community_id"
     t.string   "provider"
@@ -137,6 +169,8 @@ ActiveRecord::Schema.define(version: 20171115094114) do
     t.datetime "created_at",            null: false
     t.datetime "updated_at",            null: false
     t.string   "image"
+    t.string   "virtual_tour_url"
+    t.string   "standard_image_url"
   end
 
   create_table "floorplates", force: :cascade do |t|
@@ -146,8 +180,12 @@ ActiveRecord::Schema.define(version: 20171115094114) do
     t.integer  "range"
     t.string   "image"
     t.integer  "community_id"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+    t.string   "standard_image_url"
+    t.string   "svg_image_url"
+    t.float    "height"
+    t.float    "width"
   end
 
   create_table "home_page_images", force: :cascade do |t|
@@ -208,14 +246,16 @@ ActiveRecord::Schema.define(version: 20171115094114) do
     t.string   "border_color"
     t.string   "button_background_color"
     t.string   "button_hover_color"
-    t.boolean  "manage_background",        default: false
+    t.boolean  "manage_background",           default: false
     t.string   "background_color"
     t.integer  "design_id"
-    t.datetime "created_at",                               null: false
-    t.datetime "updated_at",                               null: false
+    t.datetime "created_at",                                  null: false
+    t.datetime "updated_at",                                  null: false
     t.float    "background_opacity"
     t.string   "vertical_menu_position"
     t.string   "horizontal_menu_position"
+    t.string   "navigation_text_color"
+    t.string   "navigation_background_color"
   end
 
   create_table "sitemaps", force: :cascade do |t|
@@ -232,18 +272,22 @@ ActiveRecord::Schema.define(version: 20171115094114) do
     t.string   "property_id"
     t.string   "provider_unit_id"
     t.string   "unit_type"
-    t.integer  "marketing_name"
+    t.string   "marketing_name"
     t.string   "floorplan_id"
     t.float    "market_rent"
     t.float    "effective_rent"
     t.string   "availability"
     t.date     "available_date"
     t.string   "building"
-    t.datetime "created_at",                   null: false
-    t.datetime "updated_at",                   null: false
-    t.integer  "x_plot",           default: 0
-    t.integer  "y_plot",           default: 0
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
+    t.integer  "x_plot",             default: 0
+    t.integer  "y_plot",             default: 0
     t.integer  "floorplate_id"
+    t.integer  "lease_term",         default: 12
+    t.string   "image"
+    t.integer  "floor"
+    t.string   "standard_image_url"
   end
 
   create_table "users", force: :cascade do |t|
@@ -281,5 +325,14 @@ ActiveRecord::Schema.define(version: 20171115094114) do
 
   add_foreign_key "communities", "companies"
   add_foreign_key "credentials", "communities"
+  add_foreign_key "favorite_images", "favorite_settings"
+  add_foreign_key "favorite_settings", "communities"
+  add_foreign_key "galleries", "communities"
+  add_foreign_key "gallery_images", "communities"
+  add_foreign_key "gallery_images", "galleries"
+  add_foreign_key "homepage_icons", "designs"
+  add_foreign_key "imagepages", "communities"
+  add_foreign_key "locations", "neighborhoods"
+  add_foreign_key "neighborhoods", "communities"
   add_foreign_key "sitemaps", "communities"
 end
