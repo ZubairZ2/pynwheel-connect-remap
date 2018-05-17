@@ -33,6 +33,7 @@ Rails.application.routes.draw do
         end
       end
     end
+    resources :amenities
     resources :floorplates do
       resources :amenities,controller: "floorplate_amenities" do
         post :plot_amenity
@@ -81,6 +82,7 @@ Rails.application.routes.draw do
     resources :design, only: :index do
       collection do
         get :logo
+        get :secondary_logo
       end
     end
     resources :home_page, only: :index do

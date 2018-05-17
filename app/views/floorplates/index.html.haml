@@ -7,7 +7,7 @@
         = @community.name.capitalize
         %br
           %small.text-primary
-            = @community.company.name + '@' + @community.name
+            = @community.code
     - if @amenities.present?
       = render :partial=>'floorplates'
     - else
@@ -33,7 +33,7 @@
                         %th{:width => "79"} Sr #
 
                         %th Name
-                        %th Number
+                        / %th Number
                         %th Building
                         %th Range
                         %th Image
@@ -47,8 +47,8 @@
                             = index+1
                           %td
                             = f.name
-                          %td
-                            = f.number 
+                          / %td
+                          /   = f.number 
                           %td
                             = f.building
                           %td
@@ -62,7 +62,7 @@
                           %td
                             = link_to "Plot Now",community_floorplate_plotexp_path(current_community,f), :class=>"btn btn-default black-button" 
                           %td
-                            = link_to "Amenties",community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"
+                            = link_to "Amenties",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn-info btn-xs mr-5"
 
                           %td
                             = link_to edit_community_floorplate_path(current_community,f), :class=>"text-success" do

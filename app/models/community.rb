@@ -1,6 +1,7 @@
 class Community < ApplicationRecord
   #mount_uploader :logo, AvatarUploader
   mount_base64_uploader :logo, AvatarUploader
+  mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
@@ -15,9 +16,11 @@ class Community < ApplicationRecord
   has_many :temporary_images, dependent: :destroy
   has_many :webpages, dependent: :destroy
   has_many :imagepages, dependent: :destroy
+  has_many :amenities, dependent: :destroy
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
+  validates_uniqueness_of :code
   after_create :set_default_theme
   after_create :create_default_gallery
 
@@ -54,7 +57,7 @@ class Community < ApplicationRecord
   end
 
   def has_floorplates?
-    floorplates.size > 0
+    !is_sitemap
   end
 
   def has_temporary_images?
@@ -208,7 +211,7 @@ class Community < ApplicationRecord
     email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     ios = params[:favorites][:device_type].present? && params[:favorites][:device_type] == "iOS" ? true : false
     if favorites.present?
-      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,ios).deliver
+      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,ios,self).deliver
       return true
     else
       return false

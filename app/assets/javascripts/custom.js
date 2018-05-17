@@ -143,6 +143,23 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
 });
 
 $('#markers-modal').on('show.bs.modal', function(e) {
+    console.log("Displaying plotted unit information in markers modal");
+    $('.unit-buttons').empty();
+    if ($('.h-'+$(e.relatedTarget).data('horizontal')+'-'+$(e.relatedTarget).data('vertical')).length > 1){
+      $('.h-'+$(e.relatedTarget).data('horizontal')+'-'+$(e.relatedTarget).data('vertical')).each(function(){
+        console.log('CLick on marker for deleting or updating');
+        var target_id = $(e.relatedTarget).attr('id');
+        var underneath_unit_id = $(this).attr('id');
+        var button_style = ""
+        if(target_id.split('_')[1] == underneath_unit_id.split('-')[1]){
+          button_style = "btn-primary"
+        }
+        else{
+         button_style = "btn-default" 
+        }
+        $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 '+button_style+'" type="button" data-href="'+$(this).data('href')+'" data-unit-form-url="'+$(this).data('unit-form-url')+'" onclick="setHrefAndFormUrl(this);">'+$(this).data('title')+'</button>');
+      });
+    }
     $(this).find('#u-name').html($(e.relatedTarget).attr('title'));
     $(this).find('.delete-marker-ok').attr('href', $(e.relatedTarget).data('href'));
     $(this).find("form").attr("action",$(e.relatedTarget).data('unit-form-url'));
@@ -528,4 +545,16 @@ function showHideOverlayGrid(){
   else{
    $('.grid-graph').addClass('hidden'); 
   }
+}
+
+function setHrefAndFormUrl(element){
+  $('.modal-unit-button').each(function(){
+    $(this).removeClass('btn-primary');
+    $(this).addClass('btn-default');
+  });
+  $(element).removeClass('btn-default');
+  $(element).addClass('btn-primary');
+  $('#markers-modal').find('#u-name').html($(element).html());
+  $('#markers-modal').find('.delete-marker-ok').attr('href', $(element).data('href'));
+  $('#markers-modal').find("form").attr("action",$(element).data('unit-form-url'));
 }

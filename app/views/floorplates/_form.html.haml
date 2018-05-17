@@ -4,24 +4,26 @@
     %span Specify name here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Floor Plate Name",:maxlength=>"30"
+/ .form-group
+/   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+/     Number
+/     %span Specify number here
+/   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+/     = f.text_field :number, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"Number",:maxlength=>"4"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Number
-    %span Specify number here
+    Building
+    %span Specify building info here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :number, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"Number",:maxlength=>"4"
+    = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"4"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Floor Plate Info
-    %span Specify info here
+    Range
+    %span Enter the range of floors this floorplate covers
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .row
-      .col-sm-6.col-lg-6.col-md-3.col-xs-12
-        = f.text_field :building, :class=>"form-control validate[required]", :placeholder=>"Building",:maxlength=>"4"
-        %small Building
-      .col-sm-6.col-lg-6.col-md-3.col-xs-12
-        = f.text_field :range, :class=>"form-control validate[required,custom[onlyNumber]]", :placeholder=>"Range",:maxlength=>"4"
-        %small Range
+
+    = f.text_field :range, :class=>"form-control validate[required,custom[onlyRange]]", :placeholder=>"Range",:maxlength=>"20"
+    %small Valid formats: '3' one floor, '3-10' range, '3,5,7,[...]' for specific floors
 .form-group.hidden
   %label.col-sm-12.col-lg-12.col-md-3.col-xs-12.control-label
     %p.text-warning

@@ -1,6 +1,6 @@
 module ApplicationHelper
 	def sidemenu_communities_actions 
-		["index","new","edit"]
+		["index","new","edit","create","update"]
 	end
 	def flash_class(level)
 		case level
@@ -69,10 +69,10 @@ module ApplicationHelper
 		end
 	end
 
-	def find_floorplate_number(amenityable_id)
-      floorplate = Floorplate.find amenityable_id
-      return floorplate.number
-	end
+	# def find_floorplate_number(amenityable_id)
+ #      floorplate = Floorplate.find amenityable_id
+ #      return floorplate.number
+	# end
 
 	def uri(website)
         website.gsub(/^https?\:\/\//,'')
@@ -83,19 +83,19 @@ module ApplicationHelper
 		array.include? fav_unit_id.to_s
 	end
 
-	def unit_count(hash,plot_x,plot_y)
-		count = ""
-		hash.each do |h|
-			array_as_key = h[0] 
-			if plot_x == array_as_key[0] and plot_y == array_as_key[1]
-				value = h[1]
-				if value.to_i > 1
-				 count = value
-				end 
-			end
-		end
-		return count
-	end
+	# def unit_count(hash,plot_x,plot_y)
+	# 	count = ""
+	# 	hash.each do |h|
+	# 		array_as_key = h[0] 
+	# 		if plot_x == array_as_key[0] and plot_y == array_as_key[1]
+	# 			value = h[1]
+	# 			if value.to_i > 1
+	# 			 count = value
+	# 			end 
+	# 		end
+	# 	end
+	# 	return count
+	# end
 
 	def set_active_class(x,categories)
 		arr = categories.split(',')

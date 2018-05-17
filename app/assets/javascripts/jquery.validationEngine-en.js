@@ -1,4 +1,8 @@
 (function($){
+    var numerics_regex = new RegExp(/^[0-9]+$/);
+    var hash_separated_numbers = new RegExp(/^[0-9]+-[0-9]+$/);
+    var comman_separated_numbers = new RegExp(/^[0-9]+(,[0-9]+)+$/);
+    var range_regex = new RegExp(numerics_regex.source + "|" + hash_separated_numbers.source + "|" + comman_separated_numbers.source);
     $.fn.validationEngineLanguage = function(){
     };
     $.validationEngineLanguage = {
@@ -220,6 +224,10 @@
                "onlyNumber&Decimal": {
                     "regex":  /^[1-9]\d*(\.\d+)?$/,
                     "alertText": "* Numbers only"
+               },
+               "onlyRange": {
+                    "regex":  range_regex,
+                    "alertText": "* Invalid Range"
                },
             };
             

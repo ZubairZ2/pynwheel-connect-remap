@@ -6,6 +6,12 @@
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name",:maxlength=>"30"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Code
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :code, :class=>"form-control validate[required]", :placeholder=>"Code",:maxlength=>"30"    
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -55,3 +61,22 @@
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.select :company_id, Company.all.collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Property Map / Floor Plates
+
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :is_sitemap, true
+    = f.label :is_sitemap, "Property Map", :value => "true"
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :is_sitemap, false
+    = f.label :is_sitemap, "Floor Plates", :value => "false"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Inactivate
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :locked
+          %label Inactivate

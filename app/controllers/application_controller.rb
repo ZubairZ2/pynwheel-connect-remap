@@ -21,13 +21,13 @@ class ApplicationController < ActionController::Base
       session[:company_id] = @company.id
       @company
     elsif session[:company_id].present?
-      @company = Company.find session[:company_id]
+      @company = Company.find session[:company_id] rescue Company.first
     else
       @company = Company.first
     end
   end
 
-  protect_from_forgery with: :exception
+  protect_from_forgery prepend: true
   rescue_from CanCan::AccessDenied do |exception|
     respond_to do |format|
       format.json { head :forbidden, content_type: 'text/html' }

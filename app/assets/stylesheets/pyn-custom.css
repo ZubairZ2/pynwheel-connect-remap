@@ -17,6 +17,11 @@ textarea { resize: none; }
 	text-align:left;
 	margin-left:10px;
 }
+.logo-lg{
+	white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .skin-blue .main-header .logo:hover{
 	background-color:transparent;
 }
@@ -1695,6 +1700,8 @@ ul.home-tabs li:hover a{
 	top:78px;
 	background: #1d2425;
 	z-index:10;
+	overflow: hidden;
+	height: 99vh;
 }
 .mCSB_scrollTools .mCSB_dragger .mCSB_dragger_bar{
 	height:100px;
@@ -1803,6 +1810,8 @@ ul.home-tabs li:hover a{
 	text-align:center;
 	background:#1a1f20;
 	padding: 29px 0 18px 0;
+	position: relative;
+	z-index: 1000;
 	margin:0;
 	border-bottom: 1px solid #454e50;
 }
@@ -1883,7 +1892,12 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	display:inline-block;
 	margin:20px;
 	font-size:18px;
+    height: 25px;
 }
+.available-now p{
+	margin-bottom: 0;
+}
+
 .btn-apply{
 	margin-top:30px;
 	margin-bottom: 20px;
@@ -1913,7 +1927,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   background: rgba(247, 0, 0, 0.61);
   text-align: center; 
   display: inline-block; 
-  line-height: 24px;
+  line-height: 20px;
+}
+.custom-icon .fa-camera{
+	margin-top: 3px;
 }
 .custom-icon-black{
 	font-size: 20px;
@@ -2257,7 +2274,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     border: 1px solid #8c9192;
     border-radius: 0px 0px 3px 3px;
     border-top: navajowhite;
-	
+	overflow-y: scroll;
+	height: 75vh;
 }
 .imageselect li{
 	padding: 10px 15px;
@@ -2308,6 +2326,14 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .is-favorites .right-side .modal-content{
 	margin: 20px;
 
+}
+.view-btn-arrow{
+	background: none;
+	border: none;
+}
+.view-btn-arrow i{
+	font-size: 20px;
+	color: #fff;
 }
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
@@ -2478,9 +2504,6 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	  margin:auto;
 	  margin-top:-15px;
 	 }
-	 .add-plan .form-group{
-		 margin-bottom:20px;
-	}
 	.content-header>.breadcrumb{
 		margin-top:0;
 	}
@@ -2491,7 +2514,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 		padding-left:15px;
 	}
 	.add-plan .form-group{
-		margin-bottom:0 !important;
+		margin-bottom:20px !important;
 
 	}
 	.margin-bottom-30{

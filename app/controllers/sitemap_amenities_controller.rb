@@ -3,59 +3,61 @@ class SitemapAmenitiesController < ApplicationController
 	before_action :authenticate_user!
 	before_action :set_community_and_sitemap
 
-	def index
-		@sitemap = @community.sitemap
-		if @community.floorplates.present?
-			@floorplates = current_community.floorplates.order(id: :desc)
-		else
-	    @amenities = @sitemap.amenities.order(id: :desc)
-	    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
-	    add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-	  end
-	end
+	# def index
+	# 	@sitemap = @community.sitemap
+	# 	if @community.floorplates.present?
+	# 		@floorplates = current_community.floorplates.order(id: :desc)
+	# 	else
+	#     @amenities = @sitemap.amenities.order(id: :desc)
+	#     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
+	#     add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
+	#   end
+	# end
 
-	def new
-		@amenity = @community.sitemap.amenities.build
-		#add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
-		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-    add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
-	end
+	# def new
+	# 	@amenity = @community.sitemap.amenities.build
+	# 	#add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
+	# 	add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
+ #    add_breadcrumb "Add Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/new"
+	# end
 
-	def edit
-		@amenity = @community.sitemap.amenities.find(params[:id])
-		add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
-		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-    add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
-	end
+	# def edit
+	# 	@amenity = @community.sitemap.amenities.find(params[:id])
+	# 	add_breadcrumb "Property Map", map_community_sitemaps_path(@community)
+	# 	add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
+ #    add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
+	# end
 
-	def create
-		@sitemap.amenities.create(image: params[:src],name: params[:name])
-		@amenities = @sitemap.amenities.order(id: :desc)
-	end
+	# def create
+	# 	@sitemap.amenities.create(image: params[:src],name: params[:name])
+	# 	@amenities = @sitemap.amenities.order(id: :desc)
+	# end
 
-	def update
-		@amenity = @community.sitemap.amenities.find(params[:id])
-		if @amenity.update_attributes(amenity_params)
-			redirect_to community_sitemap_amenities_path(@community,@sitemap), notice: "Amenity updated successfully"
-		else
-			add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
-      add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
-			flash[:error] = @amenity.errors.full_messages.join(',')
-      render :edit
-		end
-	end
+	# def update
+	# 	@amenity = @community.sitemap.amenities.find(params[:id])
+	# 	if @amenity.update_attributes(amenity_params)
+	# 		redirect_to community_sitemap_amenities_path(@community,@sitemap), notice: "Amenity updated successfully"
+	# 	else
+	# 		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
+ #      add_breadcrumb "Edit Amenity","/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{@amenity.id}/edit"
+	# 		flash[:error] = @amenity.errors.full_messages.join(',')
+ #      render :edit
+	# 	end
+	# end
 
-	def destroy
-		@amenity = @community.sitemap.amenities.find (params[:id])
-		if @amenity.destroy
-			redirect_to community_sitemap_amenities_path(@community,@sitemap), notice: "Amenity deleted successfully"
-		else
-			redirect_to community_sitemap_amenities_path(@community,@sitemap), error: @amenity.errors.full_messages.join(',')
-		end
-	end
+	# def destroy
+	# 	@amenity = @community.sitemap.amenities.find (params[:id])
+	# 	if @amenity.destroy
+	# 		redirect_to community_sitemap_amenities_path(@community,@sitemap), notice: "Amenity deleted successfully"
+	# 	else
+	# 		redirect_to community_sitemap_amenities_path(@community,@sitemap), error: @amenity.errors.full_messages.join(',')
+	# 	end
+	# end
 
 	def plot_amenity
-		@amenity = @community.sitemap.amenities.find (params[:amenity_id])
+		@amenity = Amenity.find (params[:amenity_id])
+		@amenity.amenityable_type = "Sitemap"
+		@amenity.amenityable_id = params[:sitemap_id]
 		@amenity.x_plot = params[:x_plot]
 		@amenity.y_plot = params[:y_plot]
 		if @amenity.save(validate: false)
@@ -69,6 +71,8 @@ class SitemapAmenitiesController < ApplicationController
 		@community.sitemap.amenities.each do |amenity|
 			amenity.x_plot = 0
 			amenity.y_plot = 0
+			amenity.amenityable_type = nil
+		  amenity.amenityable_id = nil
 			amenity.save(validate: false)
 		end
 		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap), notice: "All plots have been deleted successfully."
@@ -80,6 +84,8 @@ class SitemapAmenitiesController < ApplicationController
 		amenities.each do |amenity|
 			amenity.x_plot = 0
 			amenity.y_plot = 0
+			amenity.amenityable_type = nil
+		  amenity.amenityable_id = nil
 			amenity.save(validate: false)
 		end
 		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap),notice: "Amenity plot have been deleted successfully."

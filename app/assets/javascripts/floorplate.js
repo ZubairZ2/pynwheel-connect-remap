@@ -37,7 +37,7 @@ $(document).ready(function(){
       $('.amenities-list').multiSelect();
       $('.ms-elem-selectable').click(function(){
         console.log($(this).children('span').text());
-        selected.push([$(this).attr('id').split('-')[0],$(this).children('span').text()]);
+        selected.push([$(this).attr('id').replace("-selectable",""),$(this).children('span').text()]);
         // $("#selected-units").empty();
         // for (i=0; i<selected.length; i++) {
         //   $("#selected-units").append('<li class="s-unit" data-id='+i+' data-provider-unit-id='+selected[i][0]+'>' + selected[i][1] + '</li>');

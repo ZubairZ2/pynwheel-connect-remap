@@ -19,28 +19,26 @@ class RealPageSvcService < BaseService
           url,
           :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
           :body => '<soapenv:Envelope
-  	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-  	xmlns:tem="http://tempuri.org/"
-  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  	<soapenv:Header/>
-  	<soapenv:Body>
+                  	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  	xmlns:tem="http://tempuri.org/"
+                  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                  	<soapenv:Header/>
+                  	<soapenv:Body>
 
-  		<tem:getfloorplanlist>
-  			<tem:auth>
-  				<tem:pmcid>'+pmc_id+'</tem:pmcid>
-  				<tem:siteid>'+site_id+'</tem:siteid>
-  				<tem:username>'+username+'</tem:username>
-  				<tem:password>'+password+'</tem:password>
-  				<tem:licensekey>'+license_key+'</tem:licensekey>
-  				<tem:system>OneSite</tem:system>
-  			</tem:auth>
-  		</tem:getfloorplanlist>
+                  		<tem:getfloorplanlist>
+                  			<tem:auth>
+                  				<tem:pmcid>'+pmc_id+'</tem:pmcid>
+                  				<tem:siteid>'+site_id+'</tem:siteid>
+                  				<tem:username>'+username+'</tem:username>
+                  				<tem:password>'+password+'</tem:password>
+                  				<tem:licensekey>'+license_key+'</tem:licensekey>
+                  				<tem:system>OneSite</tem:system>
+                  			</tem:auth>
+                  		</tem:getfloorplanlist>
 
-  	</soapenv:Body>
-  </soapenv:Envelope>
-  '
-      )
+                  	</soapenv:Body>
+                  </soapenv:Envelope>')
 
       #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
       result = Ox.load(response.body, mode: :hash)
@@ -126,10 +124,10 @@ class RealPageSvcService < BaseService
       if result[:"s:Envelope"][1][:"s:Body"][1].present?  
         units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
         units.each do |u|
+
           if u.key?(:UnitObject)
             u = u[:UnitObject]
             hit = false
-            
             unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
             
             unit.property_id = u[:SiteID]
@@ -138,8 +136,9 @@ class RealPageSvcService < BaseService
             unit.marketing_name = u[:UnitNumber]
             unit.floorplan_id = u[:FloorplanID]
             unit.market_rent = u[:BaseRentAmount]
-            unit.effective_rent = u[:BaseRentAmount]
+            unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1 
             unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+            unit.floor = u[:FloorNumber] rescue 0
             if u[:AvailableDate].present?
               unit.available_date = u[:AvailableDate]
             end
@@ -148,17 +147,17 @@ class RealPageSvcService < BaseService
               unit.available_date = u[:MadeReadyDate]
             end
             if unit.available_date.year == 1900
-              unit.available_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
+              unit.available_date = ""
             end
-            if unit.availability == "Occupied" && unit.available_date < Date.today
-              unit.available_date = Date.parse("2099-1-1") #set a newer date 1/1/2099
+            if unit.availability == "Occupied" #&& unit.available_date < Date.today
+              unit.available_date = "" 
             end
             
-           
-            if unit.available_date < Date.today
-              current_date = Date.today
-            elsif unit.available_date != Date.parse("2099-1-1")
+            if unit.available_date.present?  
               current_date = unit.available_date
+            elsif unit.available_date.present? && unit.available_date < Date.today
+              current_date = Date.today
+            #elsif unit.available_date != Date.parse("2099-1-1")
             end
 
              @array_of_dates.each do |hash|
@@ -186,7 +185,7 @@ class RealPageSvcService < BaseService
             #     unit.building = bldgResult
             #   end
             # end
-            unit.save(:validate => false)
+            unit.save
           end
         end
       else
@@ -194,8 +193,7 @@ class RealPageSvcService < BaseService
       end
       
     rescue => e
-      #Thread.current[:errors] << e.message
-      puts '-------------------------------' , e.message
+      #puts '-------------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end

@@ -73,17 +73,17 @@
                             %h4.modal-title 
                               = "APARTMENT: #{unit.marketing_name}"
                         .name
-                          = floorplan.name
+                          = floorplan.present? ? floorplan.name : nil
                         %ul
                           %li
                             %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil
                             Sq Feet
                           %li
                             %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
-                            = "#{bathroom_text(floorplan)}"
+                            = "#{bathroom_text(floorplan)}" if floorplan.present?
                           %li
                             %b= floorplan.present? ? floorplan.bedrooms : nil
-                            = "#{bedroom_text(floorplan)}"
+                            = "#{bedroom_text(floorplan)}" if floorplan.present?
                           %li 
                             %b= unit.available_date.strftime("%m/%d/%Y")
                             Available Date  

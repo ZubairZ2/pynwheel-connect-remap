@@ -10,10 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180516151358) do
+ActiveRecord::Schema.define(version: 20180424130138) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "additional_images", force: :cascade do |t|
+    t.string   "image"
+    t.integer  "sort"
+    t.string   "name"
+    t.integer  "imagepage_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["imagepage_id"], name: "index_additional_images_on_imagepage_id", using: :btree
+  end
 
   create_table "amenities", force: :cascade do |t|
     t.string   "provider_amenity_id"
@@ -68,8 +78,9 @@ ActiveRecord::Schema.define(version: 20180516151358) do
     t.string   "phone"
     t.string   "logo"
     t.boolean  "locked"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+    t.boolean  "inactivate", default: false
   end
 
   create_table "credentials", force: :cascade do |t|
@@ -83,12 +94,15 @@ ActiveRecord::Schema.define(version: 20180516151358) do
     t.string   "database"
     t.string   "platform"
     t.string   "interface_entity"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",                       null: false
+    t.datetime "updated_at",                       null: false
     t.string   "url"
     t.string   "site_id"
     t.string   "c_code"
     t.string   "p_code"
+    t.boolean  "apply_now",        default: false
+    t.string   "file"
+    t.string   "api_token"
     t.index ["community_id"], name: "index_credentials_on_community_id", using: :btree
   end
 
@@ -97,6 +111,21 @@ ActiveRecord::Schema.define(version: 20180516151358) do
     t.string   "image"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "delayed_jobs", force: :cascade do |t|
+    t.integer  "priority",   default: 0, null: false
+    t.integer  "attempts",   default: 0, null: false
+    t.text     "handler",                null: false
+    t.text     "last_error"
+    t.datetime "run_at"
+    t.datetime "locked_at"
+    t.datetime "failed_at"
+    t.string   "locked_by"
+    t.string   "queue"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.index ["priority", "run_at"], name: "delayed_jobs_priority", using: :btree
   end
 
   create_table "designs", force: :cascade do |t|
@@ -177,7 +206,7 @@ ActiveRecord::Schema.define(version: 20180516151358) do
     t.string   "name"
     t.integer  "number"
     t.string   "building"
-    t.integer  "range"
+    t.string   "range"
     t.string   "image"
     t.integer  "community_id"
     t.datetime "created_at",         null: false
@@ -186,6 +215,33 @@ ActiveRecord::Schema.define(version: 20180516151358) do
     t.string   "svg_image_url"
     t.float    "height"
     t.float    "width"
+  end
+
+  create_table "galleries", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "community_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["community_id"], name: "index_galleries_on_community_id", using: :btree
+  end
+
+  create_table "gallery_images", force: :cascade do |t|
+    t.string   "image"
+    t.float    "crop_x"
+    t.float    "crop_y"
+    t.float    "crop_w"
+    t.float    "crop_h"
+    t.integer  "sort"
+    t.integer  "community_id"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+    t.integer  "gallery_id"
+    t.string   "name"
+    t.string   "standard_image_url"
+    t.string   "ios_image_url"
+    t.string   "large_image_url"
+    t.index ["community_id"], name: "index_gallery_images_on_community_id", using: :btree
+    t.index ["gallery_id"], name: "index_gallery_images_on_gallery_id", using: :btree
   end
 
   create_table "home_page_images", force: :cascade do |t|
@@ -225,6 +281,42 @@ ActiveRecord::Schema.define(version: 20180516151358) do
     t.string   "building_button"
   end
 
+  create_table "homepage_icons", force: :cascade do |t|
+    t.string   "image"
+    t.string   "name"
+    t.integer  "sort"
+    t.integer  "design_id"
+    t.float    "crop_x"
+    t.float    "crop_y"
+    t.float    "crop_w"
+    t.float    "crop_h"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["design_id"], name: "index_homepage_icons_on_design_id", using: :btree
+  end
+
+  create_table "imagepages", force: :cascade do |t|
+    t.string   "name"
+    t.boolean  "is_slideshow"
+    t.integer  "community_id"
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
+    t.boolean  "hide_page",    default: false
+    t.index ["community_id"], name: "index_imagepages_on_community_id", using: :btree
+  end
+
+  create_table "locations", force: :cascade do |t|
+    t.string   "address"
+    t.decimal  "latitude"
+    t.decimal  "longitude"
+    t.string   "category"
+    t.string   "title"
+    t.integer  "neighborhood_id"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.index ["neighborhood_id"], name: "index_locations_on_neighborhood_id", using: :btree
+  end
+
   create_table "main_screens", force: :cascade do |t|
     t.string   "appartments_button"
     t.string   "galleries_button"
@@ -258,12 +350,34 @@ ActiveRecord::Schema.define(version: 20180516151358) do
     t.string   "navigation_background_color"
   end
 
+  create_table "neighborhoods", force: :cascade do |t|
+    t.integer  "community_id"
+    t.string   "address"
+    t.decimal  "latitude"
+    t.decimal  "longitude"
+    t.float    "radius"
+    t.datetime "created_at",                                                                         null: false
+    t.datetime "updated_at",                                                                         null: false
+    t.string   "category",     default: "Dining,Shopping,Entertainment,Schools,Banks,Parks,Errands"
+    t.integer  "zoom"
+    t.index ["community_id"], name: "index_neighborhoods_on_community_id", using: :btree
+  end
+
   create_table "sitemaps", force: :cascade do |t|
     t.string   "image"
     t.integer  "community_id"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
     t.index ["community_id"], name: "index_sitemaps_on_community_id", using: :btree
+  end
+
+  create_table "temporary_images", force: :cascade do |t|
+    t.text     "image"
+    t.integer  "position"
+    t.integer  "community_id"
+    t.string   "name"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "units", force: :cascade do |t|
@@ -323,6 +437,17 @@ ActiveRecord::Schema.define(version: 20180516151358) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
   end
 
+  create_table "webpages", force: :cascade do |t|
+    t.string   "name"
+    t.string   "url"
+    t.integer  "community_id"
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
+    t.boolean  "hide_page",    default: false
+    t.index ["community_id"], name: "index_webpages_on_community_id", using: :btree
+  end
+
+  add_foreign_key "additional_images", "imagepages"
   add_foreign_key "communities", "companies"
   add_foreign_key "credentials", "communities"
   add_foreign_key "favorite_images", "favorite_settings"
@@ -335,4 +460,5 @@ ActiveRecord::Schema.define(version: 20180516151358) do
   add_foreign_key "locations", "neighborhoods"
   add_foreign_key "neighborhoods", "communities"
   add_foreign_key "sitemaps", "communities"
+  add_foreign_key "webpages", "communities"
 end

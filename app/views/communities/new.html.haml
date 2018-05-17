@@ -7,7 +7,7 @@
           Add
           %span Community
 
-      = form_for @community,:url=>company_communities_path(current_company) do |f|
+      = form_for @community,:url=>company_communities_path(current_company),:html=>{:class=>"form-horizontal"} do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
