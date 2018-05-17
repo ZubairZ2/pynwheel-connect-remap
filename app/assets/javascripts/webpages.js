@@ -190,26 +190,16 @@
       }
     ///////////////////////////////////////////////
     /*adjusting markers according to screen size*/
-    var in_browser_height = 0;
-    var in_browser_width = 0;
-    var actual_height = 0;
-    var actual_width =0;
+    
     populate_current_units();
 
-    $('.floorplate-image').each(function(){
-      // console.log("Image height: "+$(this).height());
-      // console.log("In browser height: "+$(this).parent().height());
-      in_browser_height = parseFloat($(this).parent().height());
-      // console.log("In browser width: "+$(this).parent().width());
-      in_browser_width = parseFloat($(this).parent().width());
-      // actual_height = parseInt($(this).data("height"));
-      // actual_width = parseInt($(this).data("width");
-    });
-    // if (has_floorplate == 'true'){
-    //   actual_height = parseInt($('#f_'+current_floor).data("height"))
-    //   actual_width = parseInt($('#f_'+current_floor).data("width"))
-    // }
     if (!(has_floorplate == 'true')){
+      var in_browser_height = 0;
+      var in_browser_width = 0;
+      var actual_height = 0;
+      var actual_width =0;
+      in_browser_height = parseFloat($('.floorplate-image').parent().height());
+      in_browser_width = parseFloat($('.floorplate-image').parent().width());
       actual_height = parseInt($('.floorplate-image').data("height"));
       actual_width = parseInt($('.floorplate-image').data("width"));
       if (actual_width<in_browser_width)
@@ -230,13 +220,6 @@
         $(this).css({"left": current_left,"top": current_top});
       }); 
       
-      // $('.amenity-marker').each(function(){
-      //   var x_plot = parseFloat($(this).data('amenity-x-plot'));
-      //   var y_plot = parseFloat($(this).data('amenity-y-plot'));
-      //   current_left = x_plot/width_ratio;
-      //   current_top = y_plot/height_ratio;
-      //   $(this).css({"left": current_left,"top": current_top});
-      // });
 
       $('.sitemap-amenity-marker').each(function(){
         var x_plot = parseFloat($(this).data('amenity-x-plot'));
@@ -461,7 +444,7 @@ function showMarkers(){
    var units_from_json = json_object[key]; 
    $('#m_'+units_from_json[0]['marketing_name']+' span').html(units_from_json.length > 1 ? units_from_json.length : '')
    if (has_floorplate == 'true'){
-    adjustMarkerPosition($('#m_'+units_to_display[0]['marketing_name']));  
+    adjustMarkerPosition($('#m_'+units_from_json[0]['marketing_name']));  
    }
    $('#m_'+units_from_json[0]['marketing_name']).removeClass('hidden');     
  }
