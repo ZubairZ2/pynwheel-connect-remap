@@ -143,6 +143,7 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
 });
 
 $('#markers-modal').on('show.bs.modal', function(e) {
+    console.log("Displaying plotted unit information in markers modal");
     $('.unit-buttons').empty();
     if ($('.h-'+$(e.relatedTarget).data('horizontal')+'-'+$(e.relatedTarget).data('vertical')).length > 1){
       $('.h-'+$(e.relatedTarget).data('horizontal')+'-'+$(e.relatedTarget).data('vertical')).each(function(){
