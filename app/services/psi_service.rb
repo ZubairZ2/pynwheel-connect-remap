@@ -1,5 +1,5 @@
 class PsiService < BaseService
-	def perform
+  def perform
     begin
         url = credentials.url
         password = credentials.password
@@ -45,31 +45,31 @@ class PsiService < BaseService
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
     fill_psi_pricing_details
-	end
+  end
 
-	def save_psi_units(units,property_id)
-	  units.each do |u|
+  def save_psi_units(units,property_id)
+    units.each do |u|
       vacateDate = ""
       unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first_or_initialize
-	    unit.property_id = property_id
-	    unit.unit_type = u["Units"]["Unit"]["UnitType"]
-	    unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
+      unit.property_id = property_id
+      unit.unit_type = u["Units"]["Unit"]["UnitType"]
+      unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
 
-	    unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-	    unit.market_rent = u["Units"]["Unit"]["MarketRent"]
-	    unit.effective_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
-	    unit.availability = u["Availability"]["VacancyClass"]
-	    if u["Availability"]["VacancyClass"] == "Unoccupied"
+      unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
+      unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+      unit.effective_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
+      unit.availability = u["Availability"]["VacancyClass"]
+      if u["Availability"]["VacancyClass"] == "Unoccupied"
         year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
         month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
         day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
         vacateDate = Date.parse("#{year}-#{month}-#{day}")
       end
       unit.available_date = vacateDate
-	    building = u["Units"]["Unit"]["BuildingName"]
-	    unit.building = building.present? ? building.gsub("Building ", "") : ""
-	    unit.save(validate: false)
-	 end
+      building = u["Units"]["Unit"]["BuildingName"]
+      unit.building = building.present? ? building.gsub("Building ", "") : ""
+      unit.save(validate: false)
+   end
   end
 
   def save_psi_floorplans(floorplans,property_id)
@@ -137,20 +137,19 @@ class PsiService < BaseService
       if response["response"]["code"] == 200
         psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
         psi_units.each do |u|
-          unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
-          if unit.present?
             if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
               u[1]['Rent']['TermRent'].each do |a|
                 if a["@attributes"]["IsBestPrice"] == "true"
-                  lease_term = a["@attributes"]["LeaseTerm"].split(" ")
-                  unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
-                  unit.lease_term = lease_term[0]
-                  unit.save(validate: false)
+                  unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
+                  if unit.present?
+                    lease_term = a["@attributes"]["LeaseTerm"].split(" ")
+                    unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
+                    unit.lease_term = lease_term[0]
+                    unit.save(validate: false)
+                  end
                 end
-              end
-              
+              end       
             end
-          end
         end
       else 
         ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
