@@ -17,6 +17,9 @@ textarea { resize: none; }
 	text-align:left;
 	margin-left:10px;
 }
+.alert{
+	border-radius: 0;
+}
 .logo-lg{
 	white-space: nowrap;
     overflow: hidden;

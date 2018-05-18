@@ -1,19 +1,9 @@
 $(document).ready(function(){
   $('.sortable').railsSortable(); 
-  // $("#home-page-images").change(function(){
- //      var files = $(this).prop("files")
- //      for (var i = 0; i < files.length; i++) {
- //          if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
- //            readHomePageImageSrc(files[i]);
- //        } 
- //      }
- //      if(files.length == 1){
- //        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
- //          $('#image-upload-warning').modal('show');
- //        } 
- //      }
- //      $(this).val(''); 
- //    });
+  
+  $('#animation').on('change',function(){
+    saveAnimation($(this).val());
+  });
 
  
  Dropzone.prototype.defaultOptions['headers'] = {
@@ -207,6 +197,21 @@ function saveLoopType(loop_type){
     }).done(function(){
         $(".divLoading").addClass("hidden");
         console.log("success");
+    });
+}
+
+
+function saveAnimation(value){
+    console.log(value);
+    var url = "/communities/"+community_id+"/home_page/update_animation";
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+          design_id: design_id,
+          animation: value
+        }
     });
 }
 
