@@ -189,7 +189,8 @@ class RealPageSvcService < BaseService
           end
         end
       else
-         ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
+         puts '------------------------ Something went wrong. --------------------' 
+         #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
       end
       
     rescue => e
@@ -307,7 +308,8 @@ class RealPageSvcService < BaseService
             end
           end
         else
-           ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
+          puts '------------------------ Something went wrong. --------------------' 
+           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
         end
       end  
     rescue => e
