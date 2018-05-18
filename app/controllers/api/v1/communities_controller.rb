@@ -41,7 +41,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def email_favorites
     begin
-      if @community.favorite_setting.email_from.blank?
+      if !@community.favorite_setting.present? || @community.favorite_setting.email_from.blank?
         render :json=> {:success=>false, :message => "Please specify sender email address in CMS first. Email from can't be empty.", :operation => "email favorites"}
       else
         if @community.email_favorites(params)
