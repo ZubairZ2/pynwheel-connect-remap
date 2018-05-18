@@ -19,9 +19,15 @@
           .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
             %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
               %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
-                Video
+                Video           
           - if gables_theme(@community)
             = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
+    .row
+      .col-lg-4        
+        .form-group        
+          %label
+            Animation
+          = select_tag :animation, options_for_select(["none","bouncing effects"],@community.design.animation),{:class=>"form-control"}    
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
         / Start image-slide section

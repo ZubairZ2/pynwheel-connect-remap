@@ -94,6 +94,7 @@ Rails.application.routes.draw do
         post :save_home_page_video
         delete :delete_home_page_video
         get :show_home_page_video
+        put :update_animation
       end
     end
 

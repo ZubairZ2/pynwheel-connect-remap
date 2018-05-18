@@ -50,6 +50,18 @@ class HomePageController < ApplicationController
     redirect_to community_home_page_index_path(current_community,tab: "videos")
   end
 
+  def update_animation
+    @design = Design.find params[:design_id]
+    @design.animation = params[:animation]
+    if @design.save
+      message = '<div class="alert alert-success">Animation updated successfully.</div>'
+      render js: "$('#flash-message').html('#{message}')"
+    else
+      message = '<div class="alert alert-warning">Unable to update Animation.</div>'
+      render js: "$('#flash-message').html('#{message}')"
+    end
+  end
+
   private
 
   def home_page_image_params
