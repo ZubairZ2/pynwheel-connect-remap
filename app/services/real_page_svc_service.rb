@@ -1,11 +1,11 @@
 class RealPageSvcService < BaseService
-	def perform
-		import_realpage_svc_floorplans
+  def perform
+    import_realpage_svc_floorplans
     import_realpage_svc_units 
     import_realpage_svc_price 
-	end
+  end
 
-	def import_realpage_svc_floorplans
+  def import_realpage_svc_floorplans
     begin
       url = REALPAGE_URL
       soap_action = REALPAGE_FLOORPLAN_ACTION
@@ -19,25 +19,25 @@ class RealPageSvcService < BaseService
           url,
           :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
           :body => '<soapenv:Envelope
-                  	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  	xmlns:tem="http://tempuri.org/"
-                  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                  	<soapenv:Header/>
-                  	<soapenv:Body>
+                    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                    xmlns:tem="http://tempuri.org/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                    <soapenv:Header/>
+                    <soapenv:Body>
 
-                  		<tem:getfloorplanlist>
-                  			<tem:auth>
-                  				<tem:pmcid>'+pmc_id+'</tem:pmcid>
-                  				<tem:siteid>'+site_id+'</tem:siteid>
-                  				<tem:username>'+username+'</tem:username>
-                  				<tem:password>'+password+'</tem:password>
-                  				<tem:licensekey>'+license_key+'</tem:licensekey>
-                  				<tem:system>OneSite</tem:system>
-                  			</tem:auth>
-                  		</tem:getfloorplanlist>
+                      <tem:getfloorplanlist>
+                        <tem:auth>
+                          <tem:pmcid>'+pmc_id+'</tem:pmcid>
+                          <tem:siteid>'+site_id+'</tem:siteid>
+                          <tem:username>'+username+'</tem:username>
+                          <tem:password>'+password+'</tem:password>
+                          <tem:licensekey>'+license_key+'</tem:licensekey>
+                          <tem:system>OneSite</tem:system>
+                        </tem:auth>
+                      </tem:getfloorplanlist>
 
-                  	</soapenv:Body>
+                    </soapenv:Body>
                   </soapenv:Envelope>')
 
       #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
@@ -162,7 +162,7 @@ class RealPageSvcService < BaseService
 
              @array_of_dates.each do |hash|
               if hash[:ready_date] == current_date
-                hash[:units] << unit.id
+                hash[:units] << unit.provider_unit_id
                 hit = true
               end
             end
@@ -170,7 +170,7 @@ class RealPageSvcService < BaseService
             if !hit
               struct = {
                 ready_date: current_date,
-                units: [unit.id]
+                units: [unit.provider_unit_id]
               }
               @array_of_dates << struct
             end
@@ -253,28 +253,55 @@ class RealPageSvcService < BaseService
         if result[:"s:Envelope"][1][:"s:Body"][1].present? 
           
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
+
+
+          #Old code
+          # units.each do |u|
+          #   unit_no = u[:Address][:UnitID].to_i
+          #   unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no)
+          #   if unit.present?
+          #     hash[:units].each do |unit_in_array|
+          #       if unit_in_array == unit.first.id
+          #         best_price = nil
+          #         if u[:RentMatrix].present?
+          #           u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
+          #             if opt.key?(:Option)  
+          #               o  = opt[:Option][0]
+          #               if o[:Best] == "true"
+          #                 best_price = o[:Rent]
+          #               end
+          #             end
+          #           end
+          #           if best_price.present? && unit.present?
+          #             unit.first.effective_rent = best_price
+          #             unit.first.save(:validate => false)
+          #             puts " **** price updated *** "
+          #           end
+          #         end
+          #       end
+          #     end
+          #   end
+          # end
+
+          #Refactor code
           units.each do |u|
-            unit_no = u[:Address][:UnitID].to_i
-            unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no)
-            if unit.present?
-              hash[:units].each do |unit_in_array|
-                if unit_in_array == unit.first.id
-                  best_price = nil
-                  if u[:RentMatrix].present?
-                    u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
-                      if opt.key?(:Option)  
-                        o  = opt[:Option][0]
-                        if o[:Best] == "true"
-                          best_price = o[:Rent]
-                        end
-                      end
-                    end
-                    if best_price.present? && unit.present?
-                      unit.first.effective_rent = best_price
-                      unit.first.save(:validate => false)
-                      puts " **** price updated *** "
+            unit_no = u[:Address][:UnitID]
+            if hash[:units].include?(unit_no)
+              if u[:RentMatrix].present?
+                best_price = nil
+                u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
+                  if opt.key?(:Option)  
+                    o  = opt[:Option][0]
+                    if o[:Best] == "true"
+                      best_price = o[:Rent]
                     end
                   end
+                end
+                if best_price.present?
+                  unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
+                  unit.effective_rent = best_price
+                  unit.save(:validate => false)
+                  puts " **** price updated *** "
                 end
               end
             end
