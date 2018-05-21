@@ -13,6 +13,8 @@
         %h3.box-title
           Add
           %span Favorite Settings
+        .pull-right.btn-btn-danger
+          = link_to "Favorite Images", community_favorite_setting_favorite_images_path(@community,@favorite), class: "btn btn-primary"
 
       = form_for [@community,@favorite],:html=>{:class=>"form-horizontal"} do |f|
         .box-body
