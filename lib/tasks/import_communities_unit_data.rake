@@ -3,7 +3,6 @@ namespace :import do
   task :communities_unit_data => :environment do
     Community.find_each do |community|
       puts '****************************' , community.id
-      #community.data_is_imported
       case community.data_provider
         when "psi"
           #PsiService.new(community.credential.attributes).perform
@@ -18,6 +17,7 @@ namespace :import do
           #community.credential.url.include?("20") ? (Yardi2Service.new(community.credential.attributes).perform) : (Yardi4Service.new(community.credential.attributes).perform)
           community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
       end
+      sleep 10
     end
   end
 end
