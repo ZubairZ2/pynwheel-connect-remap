@@ -71,8 +71,8 @@ class RealPageSvcService < BaseService
             floorplan.save(:validate => false)
           end
         end
-      else
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
+      #else
+        #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
       end
     rescue => e
       puts '--------------------------------' , e.message
@@ -188,8 +188,8 @@ class RealPageSvcService < BaseService
             unit.save
           end
         end
-      else
-         puts '------------------------ Something went wrong. --------------------' 
+      #else
+         #puts '------------------------ Something went wrong. --------------------' 
          #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
       end
       
@@ -307,8 +307,8 @@ class RealPageSvcService < BaseService
               end
             end
           end
-        else
-          puts '------------------------ Something went wrong. --------------------' 
+        #else
+          #puts '------------------------ Something went wrong. --------------------' 
            #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
         end
       end  
