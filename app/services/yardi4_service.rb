@@ -38,10 +38,10 @@ class Yardi4Service < BaseService
         end
         save_yardi4_units(ils_units,property_id)
         save_yardi4_floorplans(floorplans)
-      else
+      #else
         #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
         puts "Invalid credentials.Please enter correct one and try again."
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
+        #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
       end
     rescue => e
       #puts '------------------------' , e.message

@@ -39,9 +39,9 @@ class Yardi2Service < BaseService
         
         save_yardi2_units(ils_units,property_id)
         save_yardi2_floorplans(floorplans)
-      else
+      #else
         #puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
+        #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
       end
     rescue => e
       #puts '----------------------------------', e.message

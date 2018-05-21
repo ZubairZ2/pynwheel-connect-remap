@@ -69,7 +69,7 @@ class YardiRentCafeService < BaseService
       else
         #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
         puts  "Invalid credentials.Please enter correct one and try again." 
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again." ,community_id: credentials.community_id})  
+        #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again." ,community_id: credentials.community_id})  
       end
     rescue => e 
       #Thread.current[:errors] = e.message
@@ -115,7 +115,7 @@ class YardiRentCafeService < BaseService
       else
         #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."    
         puts '"Invalid credentials.Please enter correct one and try again."'
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again." ,community_id: credentials.community_id})  
+        #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again." ,community_id: credentials.community_id})  
       end
     rescue => e 
       #Thread.current[:errors] = e.message
