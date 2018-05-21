@@ -9,6 +9,11 @@ module StandardUrl
       model.update_attribute(:height, model.image.height)
       model.update_attribute(:svg_image_url, model.image.url(:svg_for_metro)) if model.image.url(:svg_for_metro).present?
     end
+
+    if klass == "HomePageImage"
+      model.update_attribute(:thumb_image_url, model.image.url(:thumb))
+      model.update_attribute(:large_image_url, model.image.url(:large)) 
+    end
   end
 
 end

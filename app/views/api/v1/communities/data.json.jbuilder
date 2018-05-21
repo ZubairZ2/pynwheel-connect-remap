@@ -39,7 +39,7 @@ json.homescreen do
       #json.images @community.design.home_page_images.order(:sort) do |img|
       json.images @community.design.home_page_images do |img|
         json.filename img.name
-        json.url Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large)
+        json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
       end
     else
       json.images DefaultImage.find_each do |img|
