@@ -40,7 +40,7 @@ class HomePageController < ApplicationController
     else
       current_community.design.create_home_page_video(video: params[:file])
     end 
-    render :json=>{"status"=>"sucdess"}
+    render :json=>{"status"=>"success"}
   end
 
   def delete_home_page_video

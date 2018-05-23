@@ -205,7 +205,7 @@ json.gallery do
     #json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
     json.images @community.gallery_images.each do |img|
       unless params[:action] == "ios_data"
-        if img.standard_image_url.include?(".mp4")
+        if img.standard_image_url.include?(".mp4") || img.standard_image_url.include?(".MP4")
           json.url Rails.env.development? ? local_assets_base_url+img.standard_image_url : img.standard_image_url
           json.video true
           json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
@@ -216,7 +216,7 @@ json.gallery do
         json.type img.gallery.name
         json.id img.id
       else
-        unless img.standard_image_url.include?(".mp4")
+        if !img.standard_image_url.include?(".mp4") and !img.standard_image_url.include?(".MP4")
           json.url Rails.env.development? ? local_assets_base_url+img.ios_image_url : img.ios_image_url
           json.video false
           json.type img.gallery.name
