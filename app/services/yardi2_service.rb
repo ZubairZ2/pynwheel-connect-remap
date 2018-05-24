@@ -53,33 +53,35 @@ class Yardi2Service < BaseService
     ils_units[0].lazy.each do |unit_entries|
       begin
         unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id]).first_or_initialize  
-        unit.property_id = property_id
-        unit.unit_type = unit_entries[0][:Id]
-        unit.marketing_name = unit_entries[0][:Id]
-        is_available = false
-        vacate_date = ""
-        unit_entries.each do |u|
-          if u.key?(:Unit)
-            unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
-          end
-          if u.key?(:EffectiveRent)
-            unit.market_rent = u[:EffectiveRent][0][:Min] 
-            unit.effective_rent = u[:EffectiveRent][0][:Min]
-          end
-          if u.key?(:Availability)
-            if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
-              vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
-              is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false 
+        unless unit.updated_by_admin
+          unit.property_id = property_id
+          unit.unit_type = unit_entries[0][:Id]
+          unit.marketing_name = unit_entries[0][:Id]
+          is_available = false
+          vacate_date = ""
+          unit_entries.each do |u|
+            if u.key?(:Unit)
+              unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
             end
-            if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
-              vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
-              is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false 
+            if u.key?(:EffectiveRent)
+              unit.market_rent = u[:EffectiveRent][0][:Min] 
+              unit.effective_rent = u[:EffectiveRent][0][:Min]
+            end
+            if u.key?(:Availability)
+              if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
+                vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
+                is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false 
+              end
+              if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
+                vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
+                is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false 
+              end
             end
           end
+          unit.availability = is_available ? "Unoccupied" : "Occupied"
+          unit.available_date = vacate_date  
+          unit.save
         end
-        unit.availability = is_available ? "Unoccupied" : "Occupied"
-        unit.available_date = vacate_date  
-        unit.save
       rescue => e
         puts '----------------------------------', e.message
         ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
@@ -91,46 +93,47 @@ class Yardi2Service < BaseService
     floorplans[0].lazy.each do |floorplan|
       begin
         fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id]).first_or_initialize  
-        
+        unless fp.updated_by_admin
 
-        rooms = []
-        floorplan.each do |f|
+          rooms = []
+          floorplan.each do |f|
+            
+            if f.key?(:Room)
+              rooms << f
+            end
+
+            if f.key?(:Name)
+              fp.name = f[:Name]
+            end
+
+            if f.key?(:MarketRent)
+              if f[:MarketRent][0][:Min].to_f > 0
+                fp.market_rent = f[:MarketRent][0][:Min]
+              else
+                fp.market_rent = f[:MarketRent][0][:Max]
+              end
+            end
+
+            if f.key?(:SquareFeet)
+              if f[:SquareFeet][0][:Min].to_f > 0
+                fp.square_feet = f[:SquareFeet][0][:Min]
+              else
+                fp.square_feet = f[:SquareFeet][0][:Max]
+              end
+            end
+
+          end
           
-          if f.key?(:Room)
-            rooms << f
-          end
-
-          if f.key?(:Name)
-            fp.name = f[:Name]
-          end
-
-          if f.key?(:MarketRent)
-            if f[:MarketRent][0][:Min].to_f > 0
-              fp.market_rent = f[:MarketRent][0][:Min]
+          rooms.each do |room|
+            if room[:Room][0][:Type] == "Bedroom"
+              fp.bedrooms = room[:Room][1][:Count]
             else
-              fp.market_rent = f[:MarketRent][0][:Max]
+              fp.bathrooms = room[:Room][1][:Count]
             end
           end
-
-          if f.key?(:SquareFeet)
-            if f[:SquareFeet][0][:Min].to_f > 0
-              fp.square_feet = f[:SquareFeet][0][:Min]
-            else
-              fp.square_feet = f[:SquareFeet][0][:Max]
-            end
-          end
-
-        end
-        
-        rooms.each do |room|
-          if room[:Room][0][:Type] == "Bedroom"
-            fp.bedrooms = room[:Room][1][:Count]
-          else
-            fp.bathrooms = room[:Room][1][:Count]
-          end
-        end
-        
-        fp.save(validate: false) 
+          
+          fp.save(validate: false)
+        end 
       rescue => e
         puts '----------------------------------', e.message
         ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  

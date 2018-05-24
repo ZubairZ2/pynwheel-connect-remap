@@ -48,27 +48,28 @@ class RealPageSvcService < BaseService
           if fp.key?(:FloorPlanObject)
             fp = fp[:FloorPlanObject]
             floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize  
-            
-            if fp[:FloorPlanNameMarketing].present?
-              floorplan.name = fp[:FloorPlanNameMarketing]
-            elsif fp[:FloorPlanCode].present?
-              if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+            unless floorplan.updated_by_admin
+              if fp[:FloorPlanNameMarketing].present?
+                floorplan.name = fp[:FloorPlanNameMarketing]
+              elsif fp[:FloorPlanCode].present?
+                if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                else
+                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                end
               else
-                floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                floorplan.name = fp[:FloorPlanName]
               end
-            else
-              floorplan.name = fp[:FloorPlanName]
+              floorplan.bathrooms = fp[:Bathrooms]
+              floorplan.bedrooms = fp[:Bedrooms]
+              floorplan.market_rent = fp[:RentMin]
+              floorplan.square_feet = fp[:GrossSquareFootage]
+              floorplan.unit_count = -1
+              floorplan.units_available = -1
+              floorplan.deposit = 0
+              floorplan.file_url = ""
+              floorplan.save(:validate => false)
             end
-            floorplan.bathrooms = fp[:Bathrooms]
-            floorplan.bedrooms = fp[:Bedrooms]
-            floorplan.market_rent = fp[:RentMin]
-            floorplan.square_feet = fp[:GrossSquareFootage]
-            floorplan.unit_count = -1
-            floorplan.units_available = -1
-            floorplan.deposit = 0
-            floorplan.file_url = ""
-            floorplan.save(:validate => false)
           end
         end
       #else
@@ -129,63 +130,64 @@ class RealPageSvcService < BaseService
             u = u[:UnitObject]
             hit = false
             unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
-            
-            unit.property_id = u[:SiteID]
-            unit.provider_unit_id = u[:UnitID]
-            unit.unit_type = u[:UnitNumber]
-            unit.marketing_name = u[:UnitNumber]
-            unit.floorplan_id = u[:FloorplanID]
-            unit.market_rent = u[:BaseRentAmount]
-            unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1 
-            unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
-            unit.floor = u[:FloorNumber] rescue 0
-            if u[:AvailableDate].present?
-              unit.available_date = u[:AvailableDate]
-            end
-
-            if u[:MadeReadyDate].present?
-              unit.available_date = u[:MadeReadyDate]
-            end
-            if unit.available_date.year == 1900
-              unit.available_date = ""
-            end
-            if unit.availability == "Occupied" #&& unit.available_date < Date.today
-              unit.available_date = "" 
-            end
-            
-            if unit.available_date.present?  
-              current_date = unit.available_date
-            elsif unit.available_date.present? && unit.available_date < Date.today
-              current_date = Date.today
-            #elsif unit.available_date != Date.parse("2099-1-1")
-            end
-
-             @array_of_dates.each do |hash|
-              if hash[:ready_date] == current_date
-                hash[:units] << unit.provider_unit_id
-                hit = true
+            unless unit.updated_by_admin
+              unit.property_id = u[:SiteID]
+              unit.provider_unit_id = u[:UnitID]
+              unit.unit_type = u[:UnitNumber]
+              unit.marketing_name = u[:UnitNumber]
+              unit.floorplan_id = u[:FloorplanID]
+              unit.market_rent = u[:BaseRentAmount]
+              unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1 
+              unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+              unit.floor = u[:FloorNumber] rescue 0
+              if u[:AvailableDate].present?
+                unit.available_date = u[:AvailableDate]
               end
-            end
 
-            if !hit
-              struct = {
-                ready_date: current_date,
-                units: [unit.provider_unit_id]
-              }
-              @array_of_dates << struct
-            end
-            
+              if u[:MadeReadyDate].present?
+                unit.available_date = u[:MadeReadyDate]
+              end
+              if unit.available_date.year == 1900
+                unit.available_date = ""
+              end
+              if unit.availability == "Occupied" #&& unit.available_date < Date.today
+                unit.available_date = "" 
+              end
+              
+              if unit.available_date.present?  
+                current_date = unit.available_date
+              elsif unit.available_date.present? && unit.available_date < Date.today
+                current_date = Date.today
+              #elsif unit.available_date != Date.parse("2099-1-1")
+              end
 
-            # unit.building = ""
-            # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
-            # if bldgResult.present?
-            #   if bldgResult == "N/A"
-            #     unit.building = ""
-            #   else
-            #     unit.building = bldgResult
-            #   end
-            # end
-            unit.save
+               @array_of_dates.each do |hash|
+                if hash[:ready_date] == current_date
+                  hash[:units] << unit.provider_unit_id
+                  hit = true
+                end
+              end
+
+              if !hit
+                struct = {
+                  ready_date: current_date,
+                  units: [unit.provider_unit_id]
+                }
+                @array_of_dates << struct
+              end
+              
+
+              # unit.building = ""
+              # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
+              # if bldgResult.present?
+              #   if bldgResult == "N/A"
+              #     unit.building = ""
+              #   else
+              #     unit.building = bldgResult
+              #   end
+              # end
+              unit.save
+            end
           end
         end
       #else
