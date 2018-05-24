@@ -2,12 +2,12 @@ namespace :import do
   desc 'rake task for importing communities units and floorplans'
   task :communities_unit_data => :environment do
     community_count = Community.count 
-    number_of_pages = community_count/5
-    unless community_count%5 == 0
+    number_of_pages = community_count/3
+    unless community_count%3 == 0
       number_of_pages = number_of_pages + 1 
     end
     (1..number_of_pages).each do |page|
-      Community.page(page).per(5).each do |community|
+      Community.page(page).per(3).each do |community|
         puts '****************************' , community.id
         case community.data_provider
           when "psi"
@@ -24,7 +24,7 @@ namespace :import do
             community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
         end    
       end
-      puts 'Now waiting for 2 min for 5 background jobs to complete.'
+      puts 'Now waiting for 2 min for 3 background jobs to complete.'
       sleep 120
     end
   end
