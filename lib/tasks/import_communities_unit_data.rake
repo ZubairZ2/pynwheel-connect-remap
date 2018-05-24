@@ -1,7 +1,7 @@
 namespace :import do
   desc 'rake task for importing communities units and floorplans'
   task :communities_unit_data => :environment do
-   Community.first(2).each do |community|
+   Community.first(4).each do |community|
       puts '****************************' , community.id
       case community.data_provider
         when "psi"
