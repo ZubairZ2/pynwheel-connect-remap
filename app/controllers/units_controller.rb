@@ -37,7 +37,8 @@ class UnitsController < ApplicationController
         format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
         format.json { respond_with_bip(@unit) }
       else
-        format.html { render :action => "edit", :error => @unit.errors.full_messages.join(',') }
+        flash[:error] = @unit.errors.full_messages.join(',')
+        format.html { render :action => "edit" }
         format.json { respond_with_bip(@unit) }
       end
     end
