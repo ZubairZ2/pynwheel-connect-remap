@@ -197,6 +197,9 @@ GEM
     ox (2.9.0)
     pg (0.21.0)
     puma (3.11.3)
+    puma_worker_killer (0.1.0)
+      get_process_mem (~> 0.2)
+      puma (>= 2.7, < 4)
     rack (2.0.4)
     rack-test (0.6.3)
       rack (>= 1.0)
@@ -339,6 +342,7 @@ DEPENDENCIES
   ox
   pg (~> 0.21)
   puma
+  puma_worker_killer
   rails (~> 5.0.0)
   rails_sortable
   remotipart
