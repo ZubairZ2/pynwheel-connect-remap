@@ -234,6 +234,7 @@
 });
 
 function setFilters(){
+ console.log("Setting filters"); 
  var zero_bedroom = false;
  var one_bedroom = false;
  var two_bedroom = false;
@@ -344,49 +345,56 @@ function setFilters(){
   $('#zero-bedroom-checkbox').addClass('active-filter');
   $('#zero-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#zero-bedroom-checkbox').prop('checked', false);
+  //$('#zero-bedroom-checkbox').prop('checked', false);
+  $('#zero-bedroom-checkbox').parent().hide();
  }
 
  if(one_bedroom){
   $('#one-bedroom-checkbox').addClass('active-filter');
   $('#one-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#one-bedroom-checkbox').prop('checked', false);
+  //$('#one-bedroom-checkbox').prop('checked', false);
+  $('#one-bedroom-checkbox').parent().hide();
  }
 
  if(two_bedroom){
   $('#two-bedroom-checkbox').addClass('active-filter');
   $('#two-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#two-bedroom-checkbox').prop('checked', false);
+  //$('#two-bedroom-checkbox').prop('checked', false);
+  $('#two-bedroom-checkbox').parent().hide();
  }
 
  if(three_bedroom){
   $('#three-bedroom-checkbox').addClass('active-filter');
   $('#three-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#three-bedroom-checkbox').prop('checked', false);
+  //$('#three-bedroom-checkbox').prop('checked', false);
+  $('#three-bedroom-checkbox').parent().hide();
  }
 
  if(four_bedroom){
   $('#four-bedroom-checkbox').addClass('active-filter');
   $('#four-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#four-bedroom-checkbox').prop('checked', false);
+  //$('#four-bedroom-checkbox').prop('checked', false);
+  $('#four-bedroom-checkbox').parent().hide();
  }
 
  if(five_bedroom){
   $('#five-bedroom-checkbox').addClass('active-filter');
   $('#five-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#five-bedroom-checkbox').prop('checked', false);
+  //$('#five-bedroom-checkbox').prop('checked', false);
+  $('#five-bedroom-checkbox').parent().hide();
  }
 
  if(six_bedroom){
   $('#six-bedroom-checkbox').addClass('active-filter');
   $('#six-bedroom-checkbox').parent().removeClass('disabled');
  }else{
-  $('#six-bedroom-checkbox').prop('checked', false);
+  //$('#six-bedroom-checkbox').prop('checked', false);
+  $('#six-bedroom-checkbox').parent().hide();
  }
  $(".disabled input").attr('data-original-title', 'none available');
  $(".disabled").click(false);
