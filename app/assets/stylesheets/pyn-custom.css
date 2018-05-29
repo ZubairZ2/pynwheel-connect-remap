@@ -1946,6 +1946,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   display: inline-block;
   background-size: 100%;
 }
+.border-zero{
+	border-radius: 0;
+	background-color: #f5f5f5;
+}
 
 .plan-modal{}
 .plan-modal .modal-header{}

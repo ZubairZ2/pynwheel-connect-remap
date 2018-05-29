@@ -30,7 +30,24 @@
   %body.floor-plan{style: "background-color:#303a3c;"}
     / Main content
     %section.is-favorite
+      .modal-content.plan-modal.mb-10.border-zero
+        .modal-body
+          .container
+            .row
+              .col-md-10
+                .plane-details
+                  .plan-modal
+                    %h1.mb-20.text-primary
+                      My Favorites
+                    %h3= @community.name 
+                    %p= @community.address 
+                  
+              .col-md-2
+                .plan-image.plan-image-pop
+                  = image_tag @community.logo.present? ? @community.logo.url : "logo-small.png"
+              .clear-fix
       .container
+
         - @units.each do |unit|
           - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
           .modal-content.plan-modal.mb-30.mt-30
