@@ -83,7 +83,7 @@ class PsiService < BaseService
         floorplan.unit_count = f["UnitsAvailable"]
         floorplan.units_available = f["DisplayedUnitsAvailable"]
         floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
-        floorplan.file_url = f["File"][0]["Src"]
+        floorplan.availability_url = f["FloorplanAvailabilityURL"]
 
         room_types = f["Room"]
         room_types.each do |rt|

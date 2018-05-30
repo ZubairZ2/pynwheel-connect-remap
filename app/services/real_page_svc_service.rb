@@ -64,10 +64,10 @@ class RealPageSvcService < BaseService
               floorplan.bedrooms = fp[:Bedrooms]
               floorplan.market_rent = fp[:RentMin]
               floorplan.square_feet = fp[:GrossSquareFootage]
-              floorplan.unit_count = -1
-              floorplan.units_available = -1
-              floorplan.deposit = 0
-              floorplan.file_url = ""
+              #floorplan.unit_count = -1
+              #floorplan.units_available = -1
+              #floorplan.deposit = 0
+              #floorplan.file_url = ""
               floorplan.save(:validate => false)
             end
           end
