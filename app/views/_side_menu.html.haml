@@ -51,16 +51,18 @@
           = link_to community_amenities_path(current_community)  do 
             %i.fa.fa-plus-square
             %span Amenities
-      %li{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
-        %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
-          %i.fa.fa-map-marker
-          %span Property Map
-          %span.pull-right-container 
-      %li{:class=>"#{controller_name =='floorplates' && params[:amenities].blank? ? 'active' : ''}"}
-        %a{:href => "#{community_floorplates_path(current_community)}"}
-          %i.fa.fa-database
-          %span Floor Plates
-          %span.pull-right-container
+      - if current_community.is_sitemap
+        %li{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
+          %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
+            %i.fa.fa-map-marker
+            %span Property Map
+            %span.pull-right-container
+      - else
+        %li{:class=>"#{controller_name =='floorplates' && params[:amenities].blank? ? 'active' : ''}"}
+          %a{:href => "#{community_floorplates_path(current_community)}"}
+            %i.fa.fa-database
+            %span Floor Plates
+            %span.pull-right-container
       %li{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
         %a{:href => "#{community_galleries_path(current_community)}"}
           %i.fa.fa-cubes

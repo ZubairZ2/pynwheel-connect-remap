@@ -36,6 +36,6 @@ class FavoriteSettingsController < ApplicationController
 	end
 
 	def favorite_params
-    params.require(:favorite_setting).permit(:email_from, :email_bcc, :email_body)
+    params.require(:favorite_setting).permit(:email_from, :email_bcc, :email_body, :show_favorite, :favorite_name)
   end
 end
