@@ -146,6 +146,19 @@ class CommunitiesController < ApplicationController
     render :json=>{"status"=>"success"}
   end
 
+  def save_gallery_settings
+    @community = Community.find params[:community_id]
+    @community.show_gallery = params[:show_gallery].present? ? params[:show_gallery] : false
+    @community.gallery_page_name = params[:gallery_page_name] if params[:gallery_page_name].present?
+    if @community.save
+      flash[:notice] = "Gallery settings updated successfully."
+      redirect_to community_galleries_path(@community)
+    else
+      flash[:error] = @community.errors.full_messages.join(',')
+      redirect_back(fallback_location: root_path)
+    end
+  end
+
   private
 
   def set_community

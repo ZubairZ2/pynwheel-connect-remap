@@ -68,16 +68,16 @@
 = f.hidden_field :category, :multiple => true, id: "categories_field",:class=>"neighborhood-form-field"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Page Name
+
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :neighborhood_name, :class=>"form-control neighborhood-form-field" ,:maxlength=>"150"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Show Page
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .checkbox
       = f.check_box :show_neighborhood, class: "neighborhood-form-field"
       %label Show this page
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Page Name
-
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :neighborhood_name, :class=>"form-control neighborhood-form-field" ,:maxlength=>"150"

@@ -72,6 +72,8 @@ json.apartments do
   else
     json.map_type "sitemap"
   end
+  json.show_apartment_page @community.design.show_apartments
+  json.apartment_page_name @community.design.apartments_name
   if @community.sitemap.present? and !@community.has_floorplates? 
     image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
     json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
@@ -168,6 +170,8 @@ end
 
 json.neighborhood do
   if @community.neighborhood.present?
+    json.show_neighborhood_page @community.neighborhood.show_neighborhood
+    json.neighborhood_page_name @community.neighborhood.neighborhood_name
     json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
     json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
     json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 1000
@@ -192,12 +196,16 @@ end
 
 json.favorite do
   if @community.favorite_setting.present?
+    json.show_favorite_page @community.favorite_setting.show_favorite
+    json.favorite_page_name @community.favorite_setting.favorite_name
     json.email_from @community.favorite_setting.email_from
     json.email_bcc @community.favorite_setting.email_bcc
   end
 end
 
 json.gallery do
+  json.show_gallery_page @community.show_gallery
+  json.gallery_page_name @community.gallery_page_name
   if @community.gallery_images.present?
     json.categories @community.galleries.pluck(:name).each do |name|
       json.title name
