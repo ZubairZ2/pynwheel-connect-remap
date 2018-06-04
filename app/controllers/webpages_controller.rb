@@ -108,7 +108,7 @@ class WebpagesController < ActionController::Base
 
 	def favorites_share_link
 		@favorite = Favorite.find_by_session_id(params[:session_id])
-		@units = Unit.where(id: @favorite.unit_ids)
+		@units = Unit.where(id: @favorite.unit_ids).where.not(available_date: nil)
 		@floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
 	end
 
