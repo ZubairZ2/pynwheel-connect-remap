@@ -7,14 +7,14 @@
       %li.treeview{:class=>"#{(controller_name =='communities' && params[:action] != 'import_page') || controller_name =='companies' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-building-o
-          %span Companies
+          %span All Accounts
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
-            %a{:href => "/companies"} Companies
+            %a{:href => "/companies"} All Accounts
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
-            = link_to "Communities", company_communities_path(current_company)
+            = link_to "Communities", root_path
       - if params[:community_id].present?
         %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
           = link_to edit_company_community_path(current_company,current_community) do

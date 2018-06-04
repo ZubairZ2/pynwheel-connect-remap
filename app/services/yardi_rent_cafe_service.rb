@@ -2,7 +2,7 @@ class YardiRentCafeService < BaseService
 
   def perform
     import_yardirentcafe_floorplans
-    import_yardirentcafe_units #if Thread.current[:errors].empty?
+    import_yardirentcafe_units 
   end
 
   def import_yardirentcafe_floorplans
@@ -21,7 +21,6 @@ class YardiRentCafeService < BaseService
         
       if response[0]["Error"].nil?
           response.each do |r|
-            puts '-----------------' , r
             begin
               
                 unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
@@ -40,42 +39,20 @@ class YardiRentCafeService < BaseService
                     unit.availability = "Occupied"
                     unit.available_date = ""
                   end
+                  if unit.effective_rent <= 0
+                    unit.effective_rent = 1.0
+                  end
                   unit.save
                 end
-                # if r["Amenities"] != ""
-
-                #   amenities = r["Amenities"]
-                #   puts '*********************** a' , amenities.inspect
-                #   if amenities.index("^") == nil
-                #     amenity = Amenity.where(unit_id: unit.id).first_or_initialize
-                #     amenity.provider_amenity_id = amenities
-                #     amenity.save
-                #     puts '*********************** u' , amenity
-                #   else
-                #     amenities = amenities.split("^")
-                #     amenities.each do |a|
-                #       amenity = Amenity.where(unit_id: unit.id).first_or_initialize
-                #       amenity.provider_amenity_id = a
-                #       amenity.save
-                #       puts '*********************** l' , amenity
-                #     end
-                #   end
-                # end
-
-              
+                
             rescue => e 
-              puts '-------------------------' , e.message
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
             end
           end
       else
-        #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
         puts  "Invalid credentials.Please enter correct one and try again." 
-        #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again." ,community_id: credentials.community_id})  
       end
     rescue => e 
-      #Thread.current[:errors] = e.message
-      puts '------------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
@@ -95,8 +72,6 @@ class YardiRentCafeService < BaseService
       response = JSON.parse(response.body)
       if response[0]["Error"].nil?
         response.each do |r|
-          puts '-----------------' , r
-          #fp = Floorplan.new(provider: "yardirentcafe",community_id: 1)
           fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
           unless fp.updated_by_admin
             fp.property_id = r["PropertyId"]
@@ -116,14 +91,10 @@ class YardiRentCafeService < BaseService
             fp.save(validate: false)
           end
         end
-      else
-        #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."    
+      else 
         puts '"Invalid credentials.Please enter correct one and try again."'
-        #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again." ,community_id: credentials.community_id})  
       end
     rescue => e 
-      #Thread.current[:errors] = e.message
-      puts '-------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
     end
   end

@@ -62,7 +62,7 @@
                         %h4.modal-title 
                           = "APARTMENT: #{unit.marketing_name}"
                     .name
-                      = floorplan.name
+                      = floorplan.name rescue ""
                     %ul
                       %li
                         %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil
