@@ -3,7 +3,6 @@
   .container.text-center.login-top
     %a{:href => "/"}
       = image_tag "pynwheel-logo.png"
-    %p Dear user, log in to access the admin area!
 .login-from
   .container
     %i.fa.fa-caret-down
@@ -11,7 +10,7 @@
       .col-md-3.col-lg-4
       .col-md-6.col-lg-4
         .text-center
-          %h3 Login to your account
+          %h3 Log In to your account
         = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
           .form-group
             = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true 
@@ -25,7 +24,7 @@
                 = f.check_box :remember_me 
                 Remember
             = link_to "Forgot Password ?", new_user_password_path,class: "pull-right mt-5"
-          = f.submit "Login", :class => "btn btn-primary btn-block" 
+          = f.submit "Log In", :class => "btn btn-primary btn-block" 
         .text-center
           %p.copy-right
             = "© "+"#{Date.today.year}"+" Pynwheel"                  
