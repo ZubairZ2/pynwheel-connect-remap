@@ -72,8 +72,8 @@ json.apartments do
   else
     json.map_type "sitemap"
   end
-  json.show_apartment_page @community.design.show_apartments
-  json.apartment_page_name @community.design.apartments_name
+  json.show_apartment_page @community.show_apartment
+  json.apartment_page_name @community.apartment_page_name
   if @community.sitemap.present? and !@community.has_floorplates? 
     image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
     json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
