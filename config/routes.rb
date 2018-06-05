@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       delete :remove_plots_from_floorplate
     end
     post :save_gallery_settings
+    post :save_apartment_settings
     get :import_page
     get :import
     get :experimental_import

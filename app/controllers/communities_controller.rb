@@ -159,6 +159,19 @@ class CommunitiesController < ApplicationController
     end
   end
 
+  def save_apartment_settings
+    @community = Community.find params[:community_id]
+    @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
+    @community.apartment_page_name = params[:apartment_page_name] if params[:apartment_page_name].present?
+    if @community.save
+      flash[:notice] = "Apartment settings updated successfully."
+      redirect_to community_units_path(@community)
+    else
+      flash[:error] = @community.errors.full_messages.join(',')
+      redirect_back(fallback_location: root_path)
+    end
+  end
+
   private
 
   def set_community
