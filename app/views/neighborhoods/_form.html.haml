@@ -78,6 +78,8 @@
     Show Page
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .checkbox
+    .TriSea-technologies-Switch
+      %span.pr-15 No
       = f.check_box :show_neighborhood, class: "neighborhood-form-field"
-      %label Show this page
+      %label.label-primary{:for => "neighborhood_show_neighborhood"}
+      %span.pl-15 Yes
