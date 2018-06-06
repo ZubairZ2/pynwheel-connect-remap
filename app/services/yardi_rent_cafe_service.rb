@@ -28,6 +28,7 @@ class YardiRentCafeService < BaseService
                   unit.property_id = r["PropertyId"]
                   unit.unit_type = r["ApartmentName"]
                   unit.marketing_name = r["ApartmentName"]
+                  unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                   unit.floorplan_id = r["FloorplanId"]
                   unit.market_rent = r["MinimumRent"]
                   unit.effective_rent = r["MinimumRent"]

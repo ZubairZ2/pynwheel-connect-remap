@@ -121,6 +121,13 @@ class UnitsController < ApplicationController
     redirect_to params[:redirect_path]
   end
 
+
+  def set_floor_of_units
+    @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor],updated_by_admin: true)
+    flash[:notice] = "Floor is updated for units successfully."
+    redirect_to :back
+  end
+
   private
   def set_community
     @community = Community.find(params[:community_id])

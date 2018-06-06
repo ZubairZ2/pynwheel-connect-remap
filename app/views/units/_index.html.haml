@@ -9,6 +9,10 @@
           %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/units/new"}
             %i.fa.fa-plus-circle
             ADD UNIT
+          - unless @community.is_sitemap  
+            %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"}
+              %i.fa.fa-adjust
+              SET UNITS FLOOR   
     .box.box-widget.panel-box
       .box-header     
         .row
@@ -47,6 +51,23 @@
                         %i.fa.fa-edit
                       %a.text-danger{"data-name"=>"Unit","data-href" => "#{community_unit_path(@community,u)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                         %i.fa.fa-trash
+
+#modal-to-change-floor.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Set Floor
+      = form_tag set_floor_of_units_community_units_path(@community) do  
+        .modal-body.set-floor-modal-body
+          = text_field_tag :floor, nil,:class=>"form-control mb-20",:placeholder=>"Enter Floor"
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id
+                = h unit.marketing_name  
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                         
 
         
   / End Panel left Side

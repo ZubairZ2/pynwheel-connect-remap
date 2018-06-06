@@ -62,6 +62,7 @@ class Yardi4Service < BaseService
         unit.floorplan_id = u[:Units][:Unit][:UnitType]
         unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
         unit.effective_rent = u[:Units][:Unit][:MarketRent]
+        unit.floor = evaluate_floor(unit.marketing_name) rescue nil
         is_available = false
         vacate_date = ""
         api_unit.each do |unit_with_key|

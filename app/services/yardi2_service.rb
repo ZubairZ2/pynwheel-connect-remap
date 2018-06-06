@@ -57,6 +57,7 @@ class Yardi2Service < BaseService
           unit.property_id = property_id
           unit.unit_type = unit_entries[0][:Id]
           unit.marketing_name = unit_entries[0][:Id]
+          unit.floor = evaluate_floor(unit.marketing_name) rescue nil
           is_available = false
           vacate_date = ""
           unit_entries.each do |u|

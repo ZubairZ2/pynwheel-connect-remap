@@ -2342,6 +2342,14 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 	font-size: 20px;
 	color: #fff;
 }
+
+.set-floor-modal-body{
+    overflow: scroll;
+    overflow-x: scroll;
+    height: 500px;
+    overflow-x: hidden;
+}
+
 @media only screen and (min-width: 1200px) and (max-width: 1580px){
 	#s-theme{}
 	#s-theme .row .col-lg-3{
