@@ -2225,6 +2225,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     border: 1px solid #8c9192;
     border-radius: 0px 0px 3px 3px;
     border-top: navajowhite;
+    z-index: 100;
 	
 }
 .multiselect li{

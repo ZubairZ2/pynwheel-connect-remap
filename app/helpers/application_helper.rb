@@ -31,7 +31,7 @@ module ApplicationHelper
   end
 
   def vertical_menu_position
-    ["Left","Middle","Right"]
+    ["Right","Middle","Left"]
   end
 
   def horizontal_menu_position
