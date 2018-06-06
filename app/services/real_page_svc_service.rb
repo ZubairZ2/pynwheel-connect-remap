@@ -139,7 +139,8 @@ class RealPageSvcService < BaseService
               unit.market_rent = u[:BaseRentAmount]
               unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1 
               unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
-              unit.floor = u[:FloorNumber] rescue 0
+              #unit.floor = u[:FloorNumber] rescue 0
+              unit.floor = evaluate_floor(unit.marketing_name) rescue nil
               if u[:AvailableDate].present?
                 unit.available_date = u[:AvailableDate]
               end

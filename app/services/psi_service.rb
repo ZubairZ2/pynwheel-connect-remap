@@ -58,7 +58,8 @@ class PsiService < BaseService
 
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         unit.market_rent = u["Units"]["Unit"]["MarketRent"]
-        unit.effective_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 0.0
+        unit.effective_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 1.0
+        unit.floor = evaluate_floor(unit.marketing_name) rescue nil
         unit.availability = u["Availability"]["VacancyClass"]
         if u["Availability"]["VacancyClass"] == "Unoccupied"
           year = u["Availability"]["VacateDate"]["@attributes"]["Year"]

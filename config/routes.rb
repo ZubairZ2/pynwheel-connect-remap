@@ -59,6 +59,9 @@ Rails.application.routes.draw do
         delete :remove_plot_from_floorplate
         post :adjust_position
       end
+      collection do
+        post :set_floor_of_units
+      end
     end
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do
