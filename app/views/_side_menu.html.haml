@@ -36,7 +36,7 @@
         = link_to community_home_page_index_path(current_community) do
           %i.fa.fa-home
           %span Home Page
-      %li{:class=>"#{controller_name =='floorplans' ? 'active' : ''}"}
+      %li{:class=>"#{controller_name =='floorplans' || controller_name =='floorplan_amenities' ? 'active' : ''}"}
         %a{:href => "#{community_floorplans_path(current_community)}"}
           %i.fa.fa-columns
           %span Floor Plans
@@ -46,7 +46,7 @@
           %i.fa.fa-laptop
           %span Units
       - if (current_community.sitemap.present? && !(current_community.sitemap.new_record?)) || current_community.floorplates.present?
-        %li{:class=>"#{controller_name =='sitemap_amenities' || controller_name =='floorplate_amenities' || controller_name =='amenities' || (controller_name =='floorplates' && params[:amenities].present?) || params[:action] == 'plot_amenities' ? 'active' : ''}"}
+        %li{:class=>"#{controller_name =='sitemap_amenities' || controller_name =='floorplate_amenities' || controller_name =='amenities' || (controller_name =='floorplates' && params[:amenities].present?) || (params[:action] == 'plot_amenities' && controller_name != "floorplan_amenities" )? 'active' : ''}"}
           = link_to community_amenities_path(current_community)  do 
             %i.fa.fa-plus-square
             %span Amenities

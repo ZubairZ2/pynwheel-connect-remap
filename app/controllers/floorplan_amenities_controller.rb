@@ -6,7 +6,7 @@ class FloorplanAmenitiesController < ApplicationController
 	def index
     @amenities = @floorplan.amenities.order(id: :desc)
     add_breadcrumb "Floor plans", community_floorplans_path(current_community)
-    add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
+    add_breadcrumb "Manage Images", community_floorplan_amenities_path(current_community,@floorplan)
 	end
 
 	def new
