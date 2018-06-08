@@ -17,7 +17,7 @@ class DesignController < ApplicationController
 
   def secondary_logo
     add_breadcrumb "Logo",logo_community_design_index_path(@community)
-    add_breadcrumb "Secondary Logo"
+    add_breadcrumb "Home Page Logo"
     @design = current_community.design
   end
 

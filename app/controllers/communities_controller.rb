@@ -54,7 +54,7 @@ class CommunitiesController < ApplicationController
     elsif params[:community][:logo].present?
       '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:secondary_logo].present?
-      '<div class="alert alert-success">Secondary Logo updated successfully.</div>'  
+      '<div class="alert alert-success">Home Page Logo updated successfully.</div>'  
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
     elsif params[:overlay_tab].present? 
