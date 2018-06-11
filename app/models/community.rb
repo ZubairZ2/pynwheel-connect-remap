@@ -173,7 +173,7 @@ class Community < ApplicationRecord
 
   def delete_plots_from_floorplate(floorplate_id)
     floorplate = Floorplate.find floorplate_id
-    units = Unit.where(community_id: community_id,floor: floorplate.floors)
+    units = Unit.where(community_id: id,floor: floorplate.floors)
     units.each do |unit|
       unit.x_plot = 0
       unit.y_plot = 0
