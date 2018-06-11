@@ -91,6 +91,7 @@ class UnitsController < ApplicationController
   end
 
   def remove_plot_from_floorplate
+    @floorplate = Floorplate.find params[:floorplate_id]
     @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id) 
     @unit.x_plot = 0
     @unit.y_plot = 0
