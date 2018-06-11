@@ -172,10 +172,12 @@ class Community < ApplicationRecord
   end
 
   def delete_plots_from_floorplate(floorplate_id)
-    self.units.where(floorplate_id: floorplate_id).each do |unit|
-      # unit.update_attributes(x_plot: 0, y_plot: 0,floorplate_id: nil) # effective rent validation fails for 0
+    floorplate = Floorplate.find floorplate_id
+    units = Unit.where(community_id: community_id,floor: floorplate.floors)
+    units.each do |unit|
       unit.x_plot = 0
       unit.y_plot = 0
+      unit.floorplate_id = nil
       unit.save(validate: false)
     end
     true
