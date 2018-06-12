@@ -12,7 +12,7 @@
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
           %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
-            %a{:href => "/companies"} All Accounts
+            %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             = link_to "Communities", root_path
       %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
