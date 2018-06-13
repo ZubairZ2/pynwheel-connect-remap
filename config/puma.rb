@@ -56,6 +56,6 @@ before_fork do
   require 'puma_worker_killer'
 
   #PumaWorkerKiller.enable_rolling_restart(1 * 3600) # 1 hour in seconds
-  PumaWorkerKiller.enable_rolling_restart(900) # Every Fifteen minutes
-  #PumaWorkerKiller.start
+  #PumaWorkerKiller.enable_rolling_restart(900) # Every Fifteen minutes
+  PumaWorkerKiller.start
 end
