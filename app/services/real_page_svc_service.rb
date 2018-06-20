@@ -64,19 +64,12 @@ class RealPageSvcService < BaseService
               floorplan.bedrooms = fp[:Bedrooms]
               floorplan.market_rent = fp[:RentMin]
               floorplan.square_feet = fp[:GrossSquareFootage]
-              #floorplan.unit_count = -1
-              #floorplan.units_available = -1
-              #floorplan.deposit = 0
-              #floorplan.file_url = ""
               floorplan.save(:validate => false)
             end
           end
         end
-      #else
-        #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
       end
     rescue => e
-      puts '--------------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
@@ -120,7 +113,6 @@ class RealPageSvcService < BaseService
                         </soapenv:Body>
                       </soapenv:Envelope>
                       ')
-      #result = Hash.from_xml(response.body)
       result = Ox.load(response.body, mode: :hash)
       if result[:"s:Envelope"][1][:"s:Body"][1].present?  
         units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
@@ -139,7 +131,9 @@ class RealPageSvcService < BaseService
               unit.market_rent = u[:BaseRentAmount]
               unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1 
               unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
-              #unit.floor = u[:FloorNumber] rescue 0
+              if u[:RentSqFtCount].present?
+                Floorplan.where(provider_floorplan_id: u[:FloorplanID]).update_all(square_feet: u[:RentSqFtCount])
+              end
               unit.floor = evaluate_floor(unit.marketing_name) rescue nil
               if u[:AvailableDate].present?
                 unit.available_date = u[:AvailableDate]
@@ -159,7 +153,6 @@ class RealPageSvcService < BaseService
                 current_date = unit.available_date
               elsif unit.available_date.present? && unit.available_date < Date.today
                 current_date = Date.today
-              #elsif unit.available_date != Date.parse("2099-1-1")
               end
 
                @array_of_dates.each do |hash|
@@ -191,13 +184,9 @@ class RealPageSvcService < BaseService
             end
           end
         end
-      #else
-         #puts '------------------------ Something went wrong. --------------------' 
-         #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
       end
       
     rescue => e
-      #puts '-------------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
@@ -310,13 +299,9 @@ class RealPageSvcService < BaseService
               end
             end
           end
-        #else
-          #puts '------------------------ Something went wrong. --------------------' 
-           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Something went wrong",community_id: credentials.community_id})  
         end
       end  
     rescue => e
-      puts '-------------------------------' , e.message
       ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
