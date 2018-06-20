@@ -57,8 +57,10 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Home Page Logo updated successfully.</div>'  
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
-    elsif params[:overlay_tab].present? 
-      '<div class="alert alert-success">Expressionist options selected successfully.</div>'
+    # elsif params[:overlay_tab].present? 
+    #   '<div class="alert alert-success">Expressionist options selected successfully.</div>'
+    elsif params[:global_navigation_tab].present? 
+      '<div class="alert alert-success">Global Navigation options selected successfully.</div>'  
     elsif params[:menu_tab].present? 
       '<div class="alert alert-success">Menu options selected successfully.</div>'  
     elsif params[:custom_style_tab].present? 
@@ -179,7 +181,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:data_provider,:theme_name,:code,:is_sitemap,:locked,:website,:credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:api_token,:p_code,:apply_now,:file],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,:secondary_page_background_image,:loop_type,:primary_color,:secondary_color,:primary_font_family,:primary_font_size,:primary_font_weight,:primary_text_align,:primary_font_color,:secondary_font_family,:secondary_font_size,:secondary_font_weight,:secondary_text_align,:secondary_font_color,:menu_attributes=>[:id,:navigation_text_color,:navigation_background_color,:position,:button_style,:border_radius,:border_width,:border_color,:button_background_color,:button_hover_color,:manage_background,:background_color,:vertical_menu_position,:horizontal_menu_position],:main_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:menu_position,:manage_background,:background_color],:home_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:about_button,:building_button,:floorplan_button,:menu_position,:manage_background,:background_color]])
+    params.require(:community).permit(:name,:address,:city,:state,:zip,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:data_provider,:theme_name,:code,:is_sitemap,:locked,:website,:credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:api_token,:p_code,:apply_now,:file],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,:secondary_page_background_image,:loop_type,:primary_color,:secondary_color,:primary_font_family,:primary_font_size,:primary_font_weight,:primary_text_align,:primary_font_color,:secondary_font_family,:secondary_font_size,:secondary_font_weight,:secondary_text_align,:secondary_font_color,:global_navigation_font_color,:global_navigation_background_color,:global_navigation_button_color,:global_navigation_buttons_opacity,:global_nav_bg_opacity,:button_shape,:global_nav_buttons_height,:global_nav_buttons_width,:secondary_page_menu_border,:global_nav_button_on,:global_nav_button_off,:menu_attributes=>[:id,:navigation_text_color,:navigation_background_color,:position,:button_style,:border_radius,:border_width,:border_color,:button_background_color,:button_hover_color,:manage_background,:background_color,:vertical_menu_position,:horizontal_menu_position],:main_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:menu_position,:manage_background,:background_color],:home_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:about_button,:building_button,:floorplan_button,:menu_position,:manage_background,:background_color]])
   end
 
 end

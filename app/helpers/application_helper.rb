@@ -61,6 +61,22 @@ module ApplicationHelper
     ["Top","Bottom"]
   end
 
+  def opacity_options
+    ["0%","70%","100%"]
+  end
+
+  def button_shape
+    ["Circular","Rectangular"]
+  end
+
+  def button_height_options
+    ["100px","150px","200px"]
+  end
+
+  def button_width_options
+    ["100px","150px","200px"]
+  end
+
   def convert_float_to_integer(x)
     if x%1 == 0
       return x.to_i
