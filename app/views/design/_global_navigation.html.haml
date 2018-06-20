@@ -56,6 +56,20 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Secondary page menu border
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border),{},{class: "form-control global-navigation-field"}        
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Button shape 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field"}        
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Global navigation button height 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.select :global_nav_buttons_height , options_for_select(button_height_options,d.object.global_nav_buttons_height),{},{class: "form-control global-navigation-field"}

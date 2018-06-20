@@ -65,8 +65,12 @@ module ApplicationHelper
     ["0%","70%","100%"]
   end
 
-  def button_shape
+  def button_shape_options
     ["Circular","Rectangular"]
+  end
+
+  def border_options
+    ["dotted","dashed","solid","double","groove","ridge","insert","outset","none", "hidden"]
   end
 
   def button_height_options

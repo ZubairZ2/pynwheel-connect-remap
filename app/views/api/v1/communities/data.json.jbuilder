@@ -32,6 +32,23 @@ json.ui_settigs do
       json.navigation_text_color @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#636363"
       json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#FDFDFD"
     end
+    if @community.is_expressionist?
+      json.expressionist do
+        json.global_navigation do
+          json.global_navigation_font_color @community.design.global_navigation_font_color
+          json.global_navigation_background_color @community.design.global_navigation_background_color
+          json.global_navigation_button_color @community.design.global_navigation_button_color
+          json.global_navigation_buttons_opacity @community.design.global_navigation_buttons_opacity
+          json.global_nav_bg_opacity @community.design.global_nav_bg_opacity
+          json.button_shape @community.design.button_shape
+          json.global_nav_buttons_height @community.design.global_nav_buttons_height
+          json.global_nav_buttons_width @community.design.global_nav_buttons_width
+          json.secondary_page_menu_border @community.design.secondary_page_menu_border
+          json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : asset_url("pynwheel-default-logo.png")
+          json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : asset_url("pynwheel-default-logo.png")
+        end
+      end
+    end
   end
 end
 
