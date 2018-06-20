@@ -193,6 +193,9 @@ json.neighborhood do
         json.category location.category
       end
     end
+  else
+    json.show_neighborhood_page true
+    json.neighborhood_page_name "Neighborhood"
   end
 end
 
@@ -202,6 +205,9 @@ json.favorite do
     json.favorite_page_name @community.favorite_setting.favorite_name
     json.email_from @community.favorite_setting.email_from
     json.email_bcc @community.favorite_setting.email_bcc
+  else
+    json.show_favorite_page true
+    json.favorite_page_name "Favorites"
   end
 end
 

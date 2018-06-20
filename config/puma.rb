@@ -61,5 +61,7 @@ before_fork do
     config.percent_usage = 0.98
     config.rolling_restart_frequency = 1800 # 30 min in seconds
   end
+  #PumaWorkerKiller.enable_rolling_restart(1 * 3600) # 1 hour in seconds
+  #PumaWorkerKiller.enable_rolling_restart(900) # Every Fifteen minutes
   PumaWorkerKiller.start
 end

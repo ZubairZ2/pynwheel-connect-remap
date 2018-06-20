@@ -30,9 +30,8 @@
                   .grid-graph.hidden
                   = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg"
                   - community_units = @community_units
-                  - floorplate_units = @floorplate_units
                   - coordinates_array = []
-                  - floorplate_units.each do |unit|
+                  - community_units.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
                         - coordinates_array.push([unit.x_plot,unit.y_plot])
