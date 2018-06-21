@@ -44,6 +44,7 @@ json.ui_settigs do
           json.global_nav_buttons_height @community.design.global_nav_buttons_height
           json.global_nav_buttons_width @community.design.global_nav_buttons_width
           json.secondary_page_menu_border @community.design.secondary_page_menu_border
+          json.buttons_as_image @community.design.buttons_as_image 
           json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : asset_url("pynwheel-default-logo.png")
           json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : asset_url("pynwheel-default-logo.png")
         end
