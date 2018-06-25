@@ -69,17 +69,8 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Global navigation button width 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :global_nav_buttons_width , options_for_select(button_height_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}
-    .form-group
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-        Upload Image Buttons
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        .TriSea-technologies-Switch
-          %span.pr-15 No
-          = d.check_box :buttons_as_image, {class: "global-navigation-field"}
-          %label.label-primary{:for => "community_design_attributes_buttons_as_image"}
-          %span.pl-15 Yes        
-    .row#button-color-field.hidden
+            = d.select :global_nav_buttons_width , options_for_select(button_height_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}        
+    .row
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -89,6 +80,15 @@
               .input-group-addon
                 %i
                 = d.text_field :global_navigation_button_color , class: "form-control global-navigation-field",autocomplete: true
+    .form-group
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+        Upload Image Buttons
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        .TriSea-technologies-Switch
+          %span.pr-15 No
+          = d.check_box :buttons_as_image, {class: "global-navigation-field"}
+          %label.label-primary{:for => "community_design_attributes_buttons_as_image"}
+          %span.pl-15 Yes            
     #buttons-upload-fields.hidden                    
       .row
         .col-lg-10
@@ -134,16 +134,12 @@
   var buttons_as_image = "#{current_community.design.buttons_as_image}"       
   if(buttons_as_image == "true")
     $('#buttons-upload-fields').removeClass('hidden');
-  else
-    $('#button-color-field').removeClass('hidden');
 
   $('#community_design_attributes_buttons_as_image').change(function(){
     if($(this).is(':checked')){
-        $('#button-color-field').addClass('hidden');
         $('#buttons-upload-fields').removeClass('hidden');
       }
     else{
         $('#buttons-upload-fields').addClass('hidden');
-        $('#button-color-field').removeClass('hidden');
      }
   });  

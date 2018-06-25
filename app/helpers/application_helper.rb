@@ -70,7 +70,7 @@ module ApplicationHelper
   end
 
   def border_options
-    ["dotted","dashed","solid","double","groove","ridge","insert","outset","none", "hidden"]
+    ["Top","Bottom","All sides"]
   end
 
   def button_height_options

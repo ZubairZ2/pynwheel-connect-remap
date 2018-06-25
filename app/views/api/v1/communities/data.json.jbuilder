@@ -48,6 +48,30 @@ json.ui_settigs do
           json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : asset_url("pynwheel-default-logo.png")
           json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : asset_url("pynwheel-default-logo.png")
         end
+        json.filter_panel do
+          json.filter_panel_color @community.design.filter_panel_color
+          json.filter_panel_font_style @community.design.filter_panel_font_style
+          json.filter_panel_font_color @community.design.filter_panel_font_color
+          json.filter_button_color @community.design.filter_button_color
+          json.filter_button_font_style @community.design.filter_button_font_style
+          json.filter_button_font_color @community.design.filter_button_font_color
+          json.filter_panel_opacity @community.design.filter_panel_opacity
+          json.filter_buttons_opacity @community.design.filter_buttons_opacity
+          json.gallery_buttons_opacity @community.design.gallery_buttons_opacity
+          json.filter_menu_buttons_border @community.design.filter_menu_buttons_border
+          json.gallery_buttons_border @community.design.gallery_buttons_border 
+          json.filter_button @community.design.filter_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_button.url : @community.design.filter_button.url) : asset_url("pynwheel-default-logo.png")
+          json.gallery_button @community.design.gallery_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button.url : @community.design.gallery_button.url) : asset_url("pynwheel-default-logo.png")
+          json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : asset_url("pynwheel-default-logo.png")
+        end
+        json.home_page do
+          json.home_page_button_shape @community.design.home_page_button_shape
+          json.home_page_navigation_background_height @community.design.home_page_navigation_background_height
+          json.home_page_buttons_height @community.design.home_page_buttons_height
+          json.home_page_buttons_width @community.design.home_page_buttons_width
+          json.home_page_buttons_opacity @community.design.home_page_buttons_opacity
+          json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity
+        end
       end
     end
   end

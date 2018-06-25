@@ -81,6 +81,54 @@ $(document).ready(function(){
     }
 
 
+    var filter_button_image_upload_holder = document.getElementById('filter-button-image-upload-holder');
+    if (filter_button_image_upload_holder){
+        filter_button_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;    
+          if(files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg"){ 
+            filterButtonSrc(files[0]);
+          }
+          else{
+            console.log('file type is not allowed');
+            $('#image-upload-warning').modal('show');
+          }          
+      }
+    }
+
+
+    var gallery_button_image_upload_holder = document.getElementById('gallery-button-image-upload-holder');
+    if (gallery_button_image_upload_holder){
+        gallery_button_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;    
+          if(files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg"){ 
+            galleryButtonSrc(files[0]);
+          }
+          else{
+            console.log('file type is not allowed');
+            $('#image-upload-warning').modal('show');
+          }          
+      }
+    }
+
+
+    var filter_panel_background_button_image_upload_holder = document.getElementById('filter-panel-background-button-image-upload-holder');
+    if (filter_panel_background_button_image_upload_holder){
+        filter_panel_background_button_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;    
+          if(files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg"){ 
+            filterPanelBackgroundImageSrc(files[0]);
+          }
+          else{
+            console.log('file type is not allowed');
+            $('#image-upload-warning').modal('show');
+          }          
+      }
+    }
+
+
     if ($('#main-screen-radio').is(':checked')){
       $('#main-screen').show();
       $('#home-screen').hide();
@@ -124,6 +172,15 @@ $(document).ready(function(){
     $('#global_navigation_tab').submit();
   });
 
+  $('.filter-panel-field').change(function(){
+    $('#filter-panel-form').submit();
+  });
+
+  $('.home-page-field').change(function(){
+    $('#home-page-form').submit();
+  });
+
+
   $('.custom-style-field').change(function(){
     $('#custom-style-form').submit();
   });
@@ -163,6 +220,18 @@ $(document).ready(function(){
 
   $("#global_nav_button_off").change(function(){
     readGlobalNavButtonOffFromInput(this);
+  });
+
+  $("#filter_button").change(function(){
+    readFilterButtonFromInput(this);
+  });
+
+  $("#gallery_button").change(function(){
+    readGalleryButtonFromInput(this);
+  });
+
+  $("#filter_panel_background_image").change(function(){
+    readFilterPanelBackgroundImageFromInput(this);
   });
   
 
@@ -348,6 +417,39 @@ function readGlobalNavButtonOffSrc(file){
   reader.readAsDataURL(file);
 }
 
+function filterButtonSrc(file){
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#filter-button-preview-image').attr('src', e.target.result);
+    $('#filter-button-preview-image').parent().attr('href', e.target.result);
+    filterButtonImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+
+function galleryButtonSrc(file){
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#gallery-button-preview-image').attr('src', e.target.result);
+    $('#gallery-button-preview-image').parent().attr('href', e.target.result);
+    galleryButtonImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+
+
+function filterPanelBackgroundImageSrc(file){
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#filter-panel-background-preview-image').attr('src', e.target.result);
+    $('#filter-panel-background-preview-image').parent().attr('href', e.target.result);
+    filterPanelBackgroundImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
 
 function designPageLogo(src){
     $(".divLoading").removeClass("hidden");
@@ -422,6 +524,56 @@ function designPageLogo(src){
         dataType: "script",
         data: {
             community: {design_attributes: {id: design_id,global_nav_button_off: src}}
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+ }
+
+ function filterButtonImage(src){
+  $(".divLoading").removeClass("hidden");
+    var url = "/communities/"+community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id,filter_button: src}}
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+ }
+
+
+ function galleryButtonImage(src){
+  $(".divLoading").removeClass("hidden");
+    var url = "/communities/"+community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id,gallery_button: src}}
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+ }
+
+
+ function filterPanelBackgroundImage(src){
+  $(".divLoading").removeClass("hidden");
+    var url = "/communities/"+community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id,filter_panel_background_image: src}}
         }
     }).done(function(){
         $(".divLoading").addClass("hidden");
@@ -594,7 +746,73 @@ function readGlobalNavButtonOffFromInput(input) {
           reader.onload = function (e) {
               $('#global-nav-button-off-preview-image').attr('src', e.target.result);
               $('#global-nav-button-off-preview-image').parent().attr('href',e.target.result);
-              globalNavButtonOnImage(e.target.result);
+              globalNavButtonOffImage(e.target.result);
+          }
+
+          reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $(input).val('');
+        $('#image-upload-warning').modal('show');
+        //console.log($(input).val());
+      }
+    }
+}
+
+
+function readFilterButtonFromInput(input) {
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#filter-button-preview-image').attr('src', e.target.result);
+              $('#filter-button-preview-image').parent().attr('href',e.target.result);
+              filterButtonImage(e.target.result);
+          }
+
+          reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $(input).val('');
+        $('#image-upload-warning').modal('show');
+        //console.log($(input).val());
+      }
+    }
+}
+
+
+function readGalleryButtonFromInput(input) {
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#gallery-button-preview-image').attr('src', e.target.result);
+              $('#gallery-button-preview-image').parent().attr('href',e.target.result);
+              galleryButtonImage(e.target.result);
+          }
+
+          reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $(input).val('');
+        $('#image-upload-warning').modal('show');
+        //console.log($(input).val());
+      }
+    }
+}
+
+
+function readFilterPanelBackgroundImageFromInput(input) {
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#filter-panel-background-preview-image').attr('src', e.target.result);
+              $('#filter-panel-background-preview-image').parent().attr('href',e.target.result);
+              filterPanelBackgroundImage(e.target.result);
           }
 
           reader.readAsDataURL(input.files[0]);
@@ -624,7 +842,8 @@ function showTabsAccordingToTheme(theme){
     //$('#custom-style-tab').parent().parent().parent().addClass('hidden'); 
     //$('#overlay-tab').parent().addClass('hidden');
     $('#global-navigation-tab').parent().addClass('hidden'); 
-    $('#filter-panel-tab').parent().addClass('hidden');  
+    $('#filter-panel-tab').parent().addClass('hidden');
+    $('#home-page-tab').parent().addClass('hidden');  
   }
   if (theme == 'expressionist'){
     $('#font-tab').parent().addClass('hidden');
@@ -632,7 +851,8 @@ function showTabsAccordingToTheme(theme){
     //$('#custom-style-tab').parent().parent().parent().removeClass('hidden'); 
     //$('#overlay-tab').parent().removeClass('hidden'); 
     $('#global-navigation-tab').parent().removeClass('hidden');
-    $('#filter-panel-tab').parent().removeClass('hidden');  
+    $('#filter-panel-tab').parent().removeClass('hidden'); 
+    $('#home-page-tab').parent().removeClass('hidden'); 
   }
   if (theme == 'futurist' || theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural'){
     $('#font-tab').parent().addClass('hidden');
@@ -640,7 +860,8 @@ function showTabsAccordingToTheme(theme){
     //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
     //$('#overlay-tab').parent().addClass('hidden'); 
     $('#global-navigation-tab').parent().addClass('hidden');  
-    $('#filter-panel-tab').parent().addClass('hidden'); 
+    $('#filter-panel-tab').parent().addClass('hidden');
+    $('#home-page-tab').parent().addClass('hidden'); 
   }
 }
 
