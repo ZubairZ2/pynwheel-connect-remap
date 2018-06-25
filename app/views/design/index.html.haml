@@ -26,7 +26,9 @@
             %li.hidden{:role => "presentation"}
               %a#overlay-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-overlay", :role => "tab"} Expressionist Options
             %li.hidden{:role => "presentation"}
-              %a#global-navigation-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-global-navigation", :role => "tab"} Global Navigation     
+              %a#global-navigation-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-global-navigation", :role => "tab"} Global Navigation
+            %li.hidden{:role => "presentation"}
+              %a#filter-panel-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-filter-panel", :role => "tab"} Filter Panel       
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Style
@@ -45,7 +47,9 @@
             #s-overlay.tab-pane.fade{:role => "tabpanel"}
               = render 'overlay'
             #s-global-navigation.tab-pane.fade{:role => "tabpanel"}
-              = render 'global_navigation'      
+              = render 'global_navigation'
+            #s-filter-panel.tab-pane.fade{:role => "tabpanel"}
+              = render 'filter_panel'        
             #s-font.tab-pane.fade{:role => "tabpanel"}
               = render 'font'
             #s-menu.tab-pane.fade{:role => "tabpanel"}

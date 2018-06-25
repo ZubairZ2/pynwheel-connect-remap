@@ -623,14 +623,16 @@ function showTabsAccordingToTheme(theme){
     $('#menu-tab').parent().removeClass('hidden');
     //$('#custom-style-tab').parent().parent().parent().addClass('hidden'); 
     //$('#overlay-tab').parent().addClass('hidden');
-    $('#global-navigation-tab').parent().addClass('hidden');  
+    $('#global-navigation-tab').parent().addClass('hidden'); 
+    $('#filter-panel-tab').parent().addClass('hidden');  
   }
   if (theme == 'expressionist'){
     $('#font-tab').parent().addClass('hidden');
     $('#menu-tab').parent().addClass('hidden');
     //$('#custom-style-tab').parent().parent().parent().removeClass('hidden'); 
     //$('#overlay-tab').parent().removeClass('hidden'); 
-    $('#global-navigation-tab').parent().removeClass('hidden'); 
+    $('#global-navigation-tab').parent().removeClass('hidden');
+    $('#filter-panel-tab').parent().removeClass('hidden');  
   }
   if (theme == 'futurist' || theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural'){
     $('#font-tab').parent().addClass('hidden');
@@ -638,6 +640,7 @@ function showTabsAccordingToTheme(theme){
     //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
     //$('#overlay-tab').parent().addClass('hidden'); 
     $('#global-navigation-tab').parent().addClass('hidden');  
+    $('#filter-panel-tab').parent().addClass('hidden'); 
   }
 }
 
