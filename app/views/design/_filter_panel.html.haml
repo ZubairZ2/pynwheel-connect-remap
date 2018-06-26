@@ -96,64 +96,77 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Gallery buttons border 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :gallery_buttons_border , options_for_select(border_options,d.object.gallery_buttons_border),{},{class: "form-control filter-panel-field"} 
+            = d.select :gallery_buttons_border , options_for_select(border_options,d.object.gallery_buttons_border),{},{class: "form-control filter-panel-field"}    
     .row
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Filter button
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            .select-logo.mb-20.mt-30
-              .select-logo-logo
-                %a.preview-image{:href=>current_community.design.filter_button.present? ? current_community.design.filter_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter button Image"}
-                  = image_tag current_community.design.filter_button.present? ? current_community.design.filter_button.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-button-preview-image"
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            %span.btn.btn-primary.btn-file.mt-30
-              %i.fa.fa-upload
-              Upload File
-              = file_field_tag :filter_button
-    .text-center.drag-box.mt-15.image-upload#filter-button-image-upload-holder
-      %span.icon-upload
-        = image_tag "upload-image.png"
-        %p Drag &amp; Drop file to Upload
-    .row
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Gallery button
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            .select-logo.mb-20.mt-30
-              .select-logo-logo
-                %a.preview-image{:href=>current_community.design.gallery_button.present? ? current_community.design.gallery_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery button Image"}
-                  = image_tag current_community.design.gallery_button.present? ? current_community.design.gallery_button.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-preview-image"
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            %span.btn.btn-primary.btn-file.mt-30
-              %i.fa.fa-upload
-              Upload File
-              = file_field_tag :gallery_button
-    .text-center.drag-box.mt-15.image-upload#gallery-button-image-upload-holder
-      %span.icon-upload
-        = image_tag "upload-image.png"
-        %p Drag &amp; Drop file to Upload 
-    .row
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Filter panel background image
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            .select-logo.mb-20.mt-30
-              .select-logo-logo
-                %a.preview-image{:href=>current_community.design.filter_panel_background_image.present? ? current_community.design.filter_panel_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter panel background button Image"}
-                  = image_tag current_community.design.filter_panel_background_image.present? ? current_community.design.filter_panel_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-panel-background-preview-image"
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            %span.btn.btn-primary.btn-file.mt-30
-              %i.fa.fa-upload
-              Upload File
-              = file_field_tag :filter_panel_background_image
-    .text-center.drag-box.mt-15.image-upload#filter-panel-background-button-image-upload-holder
-      %span.icon-upload
-        = image_tag "upload-image.png"
-        %p Drag &amp; Drop file to Upload                       
+      .col-md-12
+        %ul.nav.nav-tabs
+          %li.active
+            %a{"data-toggle" => "tab", :href => "#s-filter-button"} Filter button
+          %li
+            %a{"data-toggle" => "tab", :href => "#s-gallery-button"} Gallery button
+          %li
+            %a{"data-toggle" => "tab", :href => "#s-filter-panel-background-image"} filter panel background image  
+        .tab-content
+          #s-filter-button.tab-pane.fade.in.active
+            .row
+              .col-lg-10
+                .form-group.mt-30
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Filter button
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .select-logo.mb-20.mt-30
+                      .select-logo-logo
+                        %a.preview-image{:href=>current_community.design.filter_button.present? ? current_community.design.filter_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter button Image"}
+                          = image_tag current_community.design.filter_button.present? ? current_community.design.filter_button.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-button-preview-image"
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    %span.btn.btn-primary.btn-file.mt-30
+                      %i.fa.fa-upload
+                      Upload File
+                      = file_field_tag :filter_button
+            .text-center.drag-box.mt-15.image-upload#filter-button-image-upload-holder
+              %span.icon-upload
+                = image_tag "upload-image.png"
+                %p Drag &amp; Drop file to Upload
+          #s-gallery-button.tab-pane.fade
+            .row
+              .col-lg-10
+                .form-group.mt-30
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Gallery button
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .select-logo.mb-20.mt-30
+                      .select-logo-logo
+                        %a.preview-image{:href=>current_community.design.gallery_button.present? ? current_community.design.gallery_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery button Image"}
+                          = image_tag current_community.design.gallery_button.present? ? current_community.design.gallery_button.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-preview-image"
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    %span.btn.btn-primary.btn-file.mt-30
+                      %i.fa.fa-upload
+                      Upload File
+                      = file_field_tag :gallery_button
+            .text-center.drag-box.mt-15.image-upload#gallery-button-image-upload-holder
+              %span.icon-upload
+                = image_tag "upload-image.png"
+                %p Drag &amp; Drop file to Upload
+          #s-filter-panel-background-image.tab-pane.fade
+            .row
+              .col-lg-10
+                .form-group.mt-30
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Filter panel background image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .select-logo.mb-20.mt-30
+                      .select-logo-logo
+                        %a.preview-image{:href=>current_community.design.filter_panel_background_image.present? ? current_community.design.filter_panel_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter panel background button Image"}
+                          = image_tag current_community.design.filter_panel_background_image.present? ? current_community.design.filter_panel_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-panel-background-preview-image"
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    %span.btn.btn-primary.btn-file.mt-30
+                      %i.fa.fa-upload
+                      Upload File
+                      = file_field_tag :filter_panel_background_image
+            .text-center.drag-box.mt-15.image-upload#filter-panel-background-button-image-upload-holder
+              %span.icon-upload
+                = image_tag "upload-image.png"
+                %p Drag &amp; Drop file to Upload                                        

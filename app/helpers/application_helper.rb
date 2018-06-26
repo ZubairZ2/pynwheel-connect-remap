@@ -11,7 +11,7 @@ module ApplicationHelper
   end
 
   def font_families
-    ["Agency FB","Arial","BankFuturistic" ,"Courier","Cursive","Decorative","Fantasy","Fraktur","Helvetica","Impact","Monospace","Open Sans","Palatino","Roman","Sans-serif","Serif","Times","Tw Cen MT"]
+    ["Arial","Gloucester MT Extra Condensed","Goudy Stout","Franklin Gothic Book","Gungsuh","Kristen ITC","Malgun Gothic","Times New Roman","Agency FB","Calibri","Brush Script MT","Cooper Black"]
   end
 
   def font_sizes
@@ -70,7 +70,7 @@ module ApplicationHelper
   end
 
   def border_options
-    ["Top","Bottom","All sides"]
+    ["Top-Bottom","Left-Right","All sides"]
   end
 
   def button_height_options
