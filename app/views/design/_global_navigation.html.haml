@@ -62,14 +62,14 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Global navigation button height 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :global_nav_buttons_height , options_for_select(button_height_options,d.object.global_nav_buttons_height),{},{class: "form-control global-navigation-field"}
+            = d.select :global_nav_buttons_height , options_for_select(navigation_button_height_options,d.object.global_nav_buttons_height),{},{class: "form-control global-navigation-field"}
     .row
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Global navigation button width 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :global_nav_buttons_width , options_for_select(button_height_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}        
+            = d.select :global_nav_buttons_width , options_for_select(navigation_button_width_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}        
     .row
       .col-lg-10
         .form-group.mt-30

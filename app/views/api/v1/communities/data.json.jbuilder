@@ -35,43 +35,43 @@ json.ui_settigs do
     if @community.is_expressionist?
       json.expressionist do
         json.global_navigation do
-          json.global_navigation_font_color @community.design.global_navigation_font_color
-          json.global_navigation_background_color @community.design.global_navigation_background_color
-          json.global_navigation_button_color @community.design.global_navigation_button_color
-          json.global_navigation_buttons_opacity @community.design.global_navigation_buttons_opacity
-          json.global_nav_bg_opacity @community.design.global_nav_bg_opacity
-          json.button_shape @community.design.button_shape
-          json.global_nav_buttons_height @community.design.global_nav_buttons_height
-          json.global_nav_buttons_width @community.design.global_nav_buttons_width
-          json.secondary_page_menu_border @community.design.secondary_page_menu_border
+          json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
+          json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#3B3B3B"
+          json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#565455"
+          json.global_navigation_buttons_opacity @community.design.global_navigation_buttons_opacity.present? ? @community.design.global_navigation_buttons_opacity : "0%" 
+          json.global_nav_bg_opacity @community.design.global_nav_bg_opacity.present? ? @community.design.global_nav_bg_opacity : "0%"
+          json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Circular"
+          json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
+          json.global_nav_buttons_width @community.design.global_nav_buttons_width.present? ? @community.design.global_nav_buttons_width : "110px"
+          json.secondary_page_menu_border @community.design.secondary_page_menu_border.present? ? @community.design.secondary_page_menu_border : "Top-Botton"
           json.buttons_as_image @community.design.buttons_as_image 
-          json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : asset_url("pynwheel-default-logo.png")
-          json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : asset_url("pynwheel-default-logo.png")
+          json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : "No Image"
+          json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : "No Image"
         end
         json.filter_panel do
-          json.filter_panel_color @community.design.filter_panel_color
-          json.filter_panel_font_style @community.design.filter_panel_font_style
-          json.filter_panel_font_color @community.design.filter_panel_font_color
-          json.filter_button_color @community.design.filter_button_color
-          json.filter_button_font_style @community.design.filter_button_font_style
-          json.filter_button_font_color @community.design.filter_button_font_color
-          json.filter_panel_opacity @community.design.filter_panel_opacity
-          json.filter_buttons_opacity @community.design.filter_buttons_opacity
-          json.gallery_buttons_opacity @community.design.gallery_buttons_opacity
-          json.filter_menu_buttons_border @community.design.filter_menu_buttons_border
-          json.gallery_buttons_border @community.design.gallery_buttons_border 
-          json.filter_button @community.design.filter_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_button.url : @community.design.filter_button.url) : asset_url("pynwheel-default-logo.png")
-          json.gallery_button @community.design.gallery_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button.url : @community.design.gallery_button.url) : asset_url("pynwheel-default-logo.png")
-          json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : asset_url("pynwheel-default-logo.png")
+          json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
+          json.filter_panel_font_style @community.design.filter_panel_font_style.present? ? @community.design.filter_panel_font_style : "Arial"
+          json.filter_panel_font_color @community.design.filter_panel_font_color.present? ? @community.design.filter_panel_font_color : "#ffff"
+          json.filter_button_color @community.design.filter_button_color.present? ? @community.design.filter_button_color : "#565455"
+          json.filter_button_font_style @community.design.filter_button_font_style.present? ? @community.design.filter_button_font_style : "Arial"
+          json.filter_button_font_color @community.design.filter_button_font_color.present? ? @community.design.filter_button_font_color : "#ffff"
+          json.filter_panel_opacity @community.design.filter_panel_opacity.present? ? @community.design.filter_panel_opacity : "0%"
+          json.filter_buttons_opacity @community.design.filter_buttons_opacity.present? ? @community.design.filter_buttons_opacity : "0%"
+          json.gallery_buttons_opacity @community.design.gallery_buttons_opacity.present? ? @community.design.gallery_buttons_opacity : "0%"
+          json.filter_menu_buttons_border @community.design.filter_menu_buttons_border.present? ? @community.design.filter_menu_buttons_border : "Top-Bottom"
+          json.gallery_buttons_border @community.design.gallery_buttons_border.present? ? @community.design.gallery_buttons_border : "Top-Bottom" 
+          json.filter_button @community.design.filter_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_button.url : @community.design.filter_button.url) : "No Image"
+          json.gallery_button @community.design.gallery_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button.url : @community.design.gallery_button.url) : "No Image"
+          json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
         end
         json.home_page do
-          json.home_page_button_shape @community.design.home_page_button_shape
-          json.home_page_buttons_border @community.design.home_page_buttons_border
-          json.home_page_navigation_background_height @community.design.home_page_navigation_background_height
-          json.home_page_buttons_height @community.design.home_page_buttons_height
-          json.home_page_buttons_width @community.design.home_page_buttons_width
-          json.home_page_buttons_opacity @community.design.home_page_buttons_opacity
-          json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity
+          json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Circular"
+          json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "Top-Bottom"
+          json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "100px"
+          json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "100px"
+          json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "100px"
+          json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "0%"
+          json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "0%"
         end
       end
     end

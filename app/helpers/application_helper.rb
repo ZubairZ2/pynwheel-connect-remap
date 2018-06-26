@@ -81,6 +81,15 @@ module ApplicationHelper
     ["100px","150px","200px"]
   end
 
+
+  def navigation_button_height_options
+    ["110px","120px","130px"]
+  end
+
+  def navigation_button_width_options
+    ["110px","120px","130px"]
+  end
+
   def convert_float_to_integer(x)
     if x%1 == 0
       return x.to_i
