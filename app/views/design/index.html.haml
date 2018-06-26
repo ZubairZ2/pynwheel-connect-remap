@@ -30,7 +30,9 @@
             %li.hidden{:role => "presentation"}
               %a#filter-panel-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-filter-panel", :role => "tab"} Filter Panel
             %li.hidden{:role => "presentation"}
-              %a#home-page-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-home-page", :role => "tab"} Home Page         
+              %a#home-page-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-home-page", :role => "tab"} Home Page
+            %li.hidden{:role => "presentation"}
+              %a#map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-map-marker", :role => "tab"} Map Marker           
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Style
@@ -53,7 +55,9 @@
             #s-filter-panel.tab-pane.fade{:role => "tabpanel"}
               = render 'filter_panel'
             #s-home-page.tab-pane.fade{:role => "tabpanel"}
-              = render 'home_page'          
+              = render 'home_page' 
+            #s-map-marker.tab-pane.fade{:role => "tabpanel"}
+              = render 'map_marker'           
             #s-font.tab-pane.fade{:role => "tabpanel"}
               = render 'font'
             #s-menu.tab-pane.fade{:role => "tabpanel"}
