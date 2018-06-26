@@ -66,6 +66,7 @@ json.ui_settigs do
         end
         json.home_page do
           json.home_page_button_shape @community.design.home_page_button_shape
+          json.home_page_buttons_border @community.design.home_page_buttons_border
           json.home_page_navigation_background_height @community.design.home_page_navigation_background_height
           json.home_page_buttons_height @community.design.home_page_buttons_height
           json.home_page_buttons_width @community.design.home_page_buttons_width
