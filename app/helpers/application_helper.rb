@@ -11,7 +11,7 @@ module ApplicationHelper
   end
 
   def font_families
-    ["Arial","Gloucester MT Extra Condensed","Goudy Stout","Franklin Gothic Book","Gungsuh","Kristen ITC","Malgun Gothic","Times New Roman","Agency FB","Calibri","Brush Script MT","Cooper Black"]
+    ["Arial","Agency FB","Brush Script MT","Calibri","Cooper Black","Franklin Gothic Book","Gloucester MT Extra Condensed","Goudy Stout","Gungsuh","Kristen ITC","Malgun Gothic","Times New Roman"]
   end
 
   def font_sizes

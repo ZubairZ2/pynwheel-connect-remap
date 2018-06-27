@@ -32,7 +32,9 @@
             %li.hidden{:role => "presentation"}
               %a#home-page-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-home-page", :role => "tab"} Home Page
             %li.hidden{:role => "presentation"}
-              %a#map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-map-marker", :role => "tab"} Map Marker           
+              %a#map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-map-marker", :role => "tab"} Map Marker
+            %li.hidden{:role => "presentation"}
+              %a#floorplan-unit-popup-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-floorplan-unit-popup", :role => "tab"} Floorplan/Unit Popup             
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Style
@@ -57,7 +59,9 @@
             #s-home-page.tab-pane.fade{:role => "tabpanel"}
               = render 'home_page' 
             #s-map-marker.tab-pane.fade{:role => "tabpanel"}
-              = render 'map_marker'           
+              = render 'map_marker'
+            #s-floorplan-unit-popup.tab-pane.fade{:role => "tabpanel"}
+              = render 'floorplan_unit_popup'             
             #s-font.tab-pane.fade{:role => "tabpanel"}
               = render 'font'
             #s-menu.tab-pane.fade{:role => "tabpanel"}

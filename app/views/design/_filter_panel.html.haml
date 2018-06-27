@@ -68,21 +68,21 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Filter panel opacity 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :filter_panel_opacity , options_for_select(opacity_options,d.object.filter_panel_opacity),{},{class: "form-control filter-panel-field"}
+            = d.select :filter_panel_opacity , options_for_select(opacity_options,d.object.filter_panel_opacity.present? ? d.object.filter_panel_opacity : "100%"),{},{class: "form-control filter-panel-field"}
     .row
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Filter buttons opacity 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :filter_buttons_opacity , options_for_select(opacity_options,d.object.filter_buttons_opacity),{},{class: "form-control filter-panel-field"}
+            = d.select :filter_buttons_opacity , options_for_select(opacity_options,d.object.filter_buttons_opacity.present? ? d.object.filter_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
     .row
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Gallery buttons opacity 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :gallery_buttons_opacity , options_for_select(opacity_options,d.object.gallery_buttons_opacity),{},{class: "form-control filter-panel-field"}
+            = d.select :gallery_buttons_opacity , options_for_select(opacity_options,d.object.gallery_buttons_opacity.present? ? d.object.gallery_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
     .row
       .col-lg-10
         .form-group.mt-30
@@ -105,7 +105,7 @@
           %li
             %a{"data-toggle" => "tab", :href => "#s-gallery-button"} Gallery button
           %li
-            %a{"data-toggle" => "tab", :href => "#s-filter-panel-background-image"} filter panel background image  
+            %a{"data-toggle" => "tab", :href => "#s-filter-panel-background-image"} Filter panel background image  
         .tab-content
           #s-filter-button.tab-pane.fade.in.active
             .row

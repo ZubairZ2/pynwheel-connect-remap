@@ -184,6 +184,10 @@ $(document).ready(function(){
     $('#map-marker-form').submit();
   });
 
+  $('.floorplan-unit-popup-field').change(function(){
+    $('#floorplan-unit-popup-form').submit();
+  });
+
   $('.custom-style-field').change(function(){
     $('#custom-style-form').submit();
   });
@@ -847,7 +851,8 @@ function showTabsAccordingToTheme(theme){
     $('#global-navigation-tab').parent().addClass('hidden'); 
     $('#filter-panel-tab').parent().addClass('hidden');
     $('#home-page-tab').parent().addClass('hidden'); 
-    $('#map-marker-tab').parent().addClass('hidden'); 
+    $('#map-marker-tab').parent().addClass('hidden');
+    $('#floorplan-unit-popup-tab').parent().addClass('hidden'); 
   }
   if (theme == 'expressionist'){
     $('#font-tab').parent().addClass('hidden');
@@ -858,6 +863,7 @@ function showTabsAccordingToTheme(theme){
     $('#filter-panel-tab').parent().removeClass('hidden'); 
     $('#home-page-tab').parent().removeClass('hidden'); 
     $('#map-marker-tab').parent().removeClass('hidden');
+    $('#floorplan-unit-popup-tab').parent().removeClass('hidden'); 
   }
   if (theme == 'futurist' || theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural'){
     $('#font-tab').parent().addClass('hidden');
@@ -868,6 +874,7 @@ function showTabsAccordingToTheme(theme){
     $('#filter-panel-tab').parent().addClass('hidden');
     $('#home-page-tab').parent().addClass('hidden'); 
     $('#map-marker-tab').parent().addClass('hidden');
+    $('#floorplan-unit-popup-tab').parent().addClass('hidden'); 
   }
 }
 
