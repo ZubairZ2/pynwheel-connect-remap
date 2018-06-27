@@ -73,6 +73,25 @@ json.ui_settigs do
           json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
           json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"
         end
+        json.map_marker do
+          json.marker_background_color @community.design.marker_background_color.present? ? @community.design.marker_background_color : "#565455"
+          json.marker_style @community.design.marker_style.present? ? @community.design.marker_style : "fa fa-marker"
+        end
+        json.floorplan_unit_popup do
+          json.header_bg_color @community.design.header_bg_color.present? ? @community.design.header_bg_color : "#565455"
+          json.header_font_color @community.design.header_font_color.present? ? @community.design.header_font_color : "#ffffff"
+          json.details_bg_color @community.design.details_bg_color.present? ? @community.design.details_bg_color : "#565455"
+          json.details_font_color @community.design.details_font_color.present? ? @community.design.details_font_color : "#ffff"
+          json.available_appartments_font_color @community.design.available_appartments_font_color.present? ? @community.design.available_appartments_font_color : "#ffff"
+          json.available_appartments_bg_color @community.design.available_appartments_bg_color.present? ? @community.design.available_appartments_bg_color : "#565455"
+          json.floor_bg_color @community.design.floor_bg_color.present? ? @community.design.floor_bg_color : "#565455"
+          json.unit_header_bg_color @community.design.unit_header_bg_color.present? ? @community.design.unit_header_bg_color : "#565455"
+          json.unit_details_font_color @community.design.unit_details_font_color.present? ? @community.design.unit_details_font_color : "#ffff"
+          json.unit_details_bg_color @community.design.unit_details_bg_color.present? ? @community.design.unit_details_bg_color : "#565455"
+          json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#565455"
+          json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
+          json.unit_bg_color @community.design.unit_bg_color.present? ? @community.design.unit_bg_color : "#565455"
+        end
       end
     end
   end
