@@ -56,4 +56,14 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Home page navigation background opacity
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :home_page_navigation_background_opacity , options_for_select(opacity_options,d.object.home_page_navigation_background_opacity.present? ? d.object.home_page_navigation_background_opacity : "100%"),{},{class: "form-control home-page-field"}                                                     
+            = d.select :home_page_navigation_background_opacity , options_for_select(opacity_options,d.object.home_page_navigation_background_opacity.present? ? d.object.home_page_navigation_background_opacity : "100%"),{},{class: "form-control home-page-field"}
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Home page navigation background color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :home_page_navigation_background_color , class: "form-control home-page-field",autocomplete: true                                                             
