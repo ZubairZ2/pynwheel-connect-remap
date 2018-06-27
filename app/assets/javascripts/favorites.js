@@ -10,7 +10,6 @@ $(document).ready(function(){
     });
   });
 		$(".leasing-start-date").datepicker({dateFormat: 'mm/dd/yy' }); 
-		new Clipboard('.clipboard-btn');
 	}//if ending curl
 });
 

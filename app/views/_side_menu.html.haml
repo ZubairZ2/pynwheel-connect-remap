@@ -77,6 +77,10 @@
       %li{:class=>"#{controller_name =='additional_pages' || controller_name =='imagepages' ? 'active' : ''}"}
         %a{:href => "#{community_additional_pages_path(current_community)}"}
           %i.fa.fa-pagelines
-          %span Additional Pages
+          %span Additional Pages    
+      %li
+        %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
+          %i.fa.fa-share
+          %span Webpages    
   / /.sidebar
 / End menu nav left Section 
