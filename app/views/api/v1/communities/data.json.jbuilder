@@ -8,7 +8,7 @@ json.ui_settigs do
   else
     json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   end  
-  if (style_themes.include? @community.theme_name) && @community.design.present?
+  #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
       json.primary_font_size @community.design.primary_font_size
@@ -95,7 +95,7 @@ json.ui_settigs do
       end
     end
     
-  end
+  #end
 end
 
 json.homescreen do
