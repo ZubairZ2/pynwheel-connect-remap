@@ -60,6 +60,9 @@ json.ui_settigs do
         json.gallery_buttons_opacity @community.design.gallery_buttons_opacity.present? ? @community.design.gallery_buttons_opacity : "100%"
         json.filter_menu_buttons_border @community.design.filter_menu_buttons_border.present? ? @community.design.filter_menu_buttons_border : "Top-Bottom"
         json.gallery_buttons_border @community.design.gallery_buttons_border.present? ? @community.design.gallery_buttons_border : "Top-Bottom" 
+        json.filter_button_as_image @community.design.filter_button_as_image
+        json.gallery_button_as_image @community.design.gallery_button_as_image
+        json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
         json.filter_button @community.design.filter_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_button.url : @community.design.filter_button.url) : "No Image"
         json.gallery_button @community.design.gallery_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button.url : @community.design.gallery_button.url) : "No Image"
         json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"

@@ -111,6 +111,17 @@
             .row
               .col-lg-10
                 .form-group.mt-30
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload Filter Button
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = d.check_box :filter_button_as_image, {class: "filter-panel-field"}
+                      %label.label-primary{:for => "community_design_attributes_filter_button_as_image"}
+                      %span.pl-15 Yes
+            .row.filter-button-upload-fields.hidden
+              .col-lg-10
+                .form-group.mt-30
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Filter button
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -124,12 +135,23 @@
                       %i.fa.fa-upload
                       Upload File
                       = file_field_tag :filter_button
-            .text-center.drag-box.mt-15.image-upload#filter-button-image-upload-holder
+            .text-center.drag-box.mt-15.image-upload#filter-button-image-upload-holder.filter-button-upload-fields.hidden
               %span.icon-upload
                 = image_tag "upload-image.png"
                 %p Drag &amp; Drop file to Upload
           #s-gallery-button.tab-pane.fade
             .row
+              .col-lg-10
+                .form-group.mt-30
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload Gallery Button
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = d.check_box :gallery_button_as_image, {class: "filter-panel-field"}
+                      %label.label-primary{:for => "community_design_attributes_gallery_button_as_image"}
+                      %span.pl-15 Yes
+            .row.gallery-button-upload-fields.hidden
               .col-lg-10
                 .form-group.mt-30
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -145,12 +167,23 @@
                       %i.fa.fa-upload
                       Upload File
                       = file_field_tag :gallery_button
-            .text-center.drag-box.mt-15.image-upload#gallery-button-image-upload-holder
+            .text-center.drag-box.mt-15.image-upload#gallery-button-image-upload-holder.gallery-button-upload-fields.hidden
               %span.icon-upload
                 = image_tag "upload-image.png"
                 %p Drag &amp; Drop file to Upload
           #s-filter-panel-background-image.tab-pane.fade
             .row
+              .col-lg-10
+                .form-group.mt-30
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload Filter Background Image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = d.check_box :filter_panel_background_as_image, {class: "filter-panel-field"}
+                      %label.label-primary{:for => "community_design_attributes_filter_panel_background_as_image"}
+                      %span.pl-15 Yes
+            .row.filter-panel-background-as-image-upload-fields.hidden
               .col-lg-10
                 .form-group.mt-30
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -166,7 +199,47 @@
                       %i.fa.fa-upload
                       Upload File
                       = file_field_tag :filter_panel_background_image
-            .text-center.drag-box.mt-15.image-upload#filter-panel-background-button-image-upload-holder
+            .text-center.drag-box.mt-15.image-upload#filter-panel-background-button-image-upload-holder.filter-panel-background-as-image-upload-fields.hidden
               %span.icon-upload
                 = image_tag "upload-image.png"
-                %p Drag &amp; Drop file to Upload                                        
+                %p Drag &amp; Drop file to Upload 
+:javascript 
+  var filter_button_as_image = "#{current_community.design.filter_button_as_image}" 
+  var gallery_button_as_image = "#{current_community.design.gallery_button_as_image}"       
+  var filter_panel_background_as_image = "#{current_community.design.filter_panel_background_as_image}"       
+
+  if(filter_button_as_image == "true")
+    $('.filter-button-upload-fields').removeClass('hidden');
+  if(gallery_button_as_image == "true")
+    $('.gallery-button-upload-fields').removeClass('hidden');
+  if(filter_panel_background_as_image == "true")
+    $('.filter-panel-background-as-image-upload-fields').removeClass('hidden');    
+
+  $('#community_design_attributes_filter_button_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.filter-button-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.filter-button-upload-fields').addClass('hidden');
+     }
+  }); 
+
+
+  $('#community_design_attributes_gallery_button_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.gallery-button-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.gallery-button-upload-fields').addClass('hidden');
+     }
+  });   
+
+
+  $('#community_design_attributes_filter_panel_background_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.filter-panel-background-as-image-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.filter-panel-background-as-image-upload-fields').addClass('hidden');
+     }
+  });                                                       
