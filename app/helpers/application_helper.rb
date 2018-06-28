@@ -87,11 +87,11 @@ module ApplicationHelper
 
 
   def navigation_button_height_options
-    ["110px","120px","130px"]
+    ["110px","120px","125px"]
   end
 
   def navigation_button_width_options
-    ["110px","120px","130px"]
+    ["110px","120px","125px"]
   end
 
   def convert_float_to_integer(x)
