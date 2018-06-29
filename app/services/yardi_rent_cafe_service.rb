@@ -54,7 +54,7 @@ class YardiRentCafeService < BaseService
         puts  "Invalid credentials.Please enter correct one and try again." 
       end
     rescue => e 
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
@@ -96,7 +96,7 @@ class YardiRentCafeService < BaseService
         puts '"Invalid credentials.Please enter correct one and try again."'
       end
     rescue => e 
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
     end
   end
 

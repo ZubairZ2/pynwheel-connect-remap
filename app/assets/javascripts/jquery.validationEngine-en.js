@@ -130,6 +130,17 @@
 				},                		
 			 "alertText": "* Invalid date, must be in YYYY-MM-DD format"
                 },
+
+                "zoomRange": {                    
+                    //  Check if zoom range is between 1 to 20
+                "func": function (field) {
+                        
+                        var range = field.val();
+                        range = parseInt(range);
+                        return (range >= 1 && range <= 20);
+                    },                      
+                 "alertText": "* Zoom range must be between 1 and 20"
+                    },
                 "ipv4": {
                     "regex": /^((([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))[.]){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))$/,
                     "alertText": "* Invalid IP address"

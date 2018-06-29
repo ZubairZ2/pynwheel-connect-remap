@@ -70,7 +70,7 @@ class RealPageSvcService < BaseService
         end
       end
     rescue => e
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
@@ -187,7 +187,7 @@ class RealPageSvcService < BaseService
       end
       
     rescue => e
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
@@ -302,7 +302,7 @@ class RealPageSvcService < BaseService
         end
       end  
     rescue => e
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
@@ -352,7 +352,7 @@ class RealPageSvcService < BaseService
     rescue => e
       #Thread.current[:errors] << e.message
       puts '-------------------------------------', e.message
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 

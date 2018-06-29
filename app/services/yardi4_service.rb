@@ -45,7 +45,7 @@ class Yardi4Service < BaseService
       end
     rescue => e
       #puts '------------------------' , e.message
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
   end
     

@@ -42,7 +42,7 @@ class PsiService < BaseService
         end
     rescue => e
       puts '----------------------------' , e.message
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
     fill_psi_pricing_details
   end
@@ -161,7 +161,7 @@ class PsiService < BaseService
       end
     rescue => e
       puts '----------------------------' , e.message
-      ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
   end
 
