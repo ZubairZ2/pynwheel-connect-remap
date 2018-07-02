@@ -12,7 +12,10 @@
           - unless @community.is_sitemap  
             %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"}
               %i.fa.fa-adjust
-              SET UNITS FLOOR   
+              SET UNITS FLOOR
+          %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-available-date", "data-toggle" => "modal"}
+            %i.fa.fa-adjust
+            SET Available Date       
     .box.box-widget.panel-box
       .box-header     
         .row
@@ -57,9 +60,9 @@
     .modal-content
       .modal-header
         Set Floor
-      = form_tag set_floor_of_units_community_units_path(@community) do  
+      = form_tag set_floor_community_units_path(@community) do  
         .modal-body.set-floor-modal-body
-          = text_field_tag :floor, nil,:class=>"form-control mb-20",:placeholder=>"Enter Floor"
+          = text_field_tag :floor, nil,:class=>"form-control mb-20 validate[required]",:placeholder=>"Enter Floor"
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
@@ -67,11 +70,28 @@
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
-          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                         
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+#modal-to-set-available-date.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Set Available Date
+      = form_tag set_available_date_community_units_path(@community) do  
+        .modal-body.set-floor-modal-body
+          = text_field_tag :available_date, nil,:class=>"form-control mb-20 datepicker",:placeholder=>"Enter Available Date",:readonly=>true
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id
+                = h unit.marketing_name  
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
 
         
   / End Panel left Side
   :javascript
+    $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' }); 
     $.datepicker.setDefaults({dateFormat: 'yy-mm-dd' }); 
     $('.best_in_place').bind("ajax:success", function () {
       var field = ""
