@@ -17,7 +17,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :header_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :header_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.header_bg_color.present? ? d.object.header_bg_color : "#565455"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -27,7 +27,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :header_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :header_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.header_font_color.present? ? d.object.header_font_color : "#ffffff"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -37,7 +37,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :details_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :details_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.details_bg_color.present? ? d.object.details_bg_color : "#565455"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -47,7 +47,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :details_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :details_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.details_font_color.present? ? d.object.details_font_color : "#ffff"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -57,7 +57,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :available_appartments_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :available_appartments_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.available_appartments_font_color.present? ? d.object.available_appartments_font_color : "#ffff"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -67,7 +67,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :available_appartments_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true 
+                = d.text_field :available_appartments_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.available_appartments_bg_color.present? ? d.object.available_appartments_bg_color : "#565455" 
     .row
       .col-lg-10
         .form-group.mt-30
@@ -77,7 +77,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :floor_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :floor_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.floor_bg_color.present? ? d.object.floor_bg_color : "#565455"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -87,17 +87,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :unit_header_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
-    .row
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Unit header background color
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            .input-group.colorpicker-style.hex-format-colorpicker
-              .input-group-addon
-                %i
-                = d.text_field :unit_header_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :unit_header_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.unit_header_bg_color.present? ? d.object.unit_header_bg_color : "#565455"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -107,7 +97,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :unit_header_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :unit_header_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.unit_header_font_color.present? ? d.object.unit_header_font_color : "#ffff"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -117,7 +107,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :unit_details_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :unit_details_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.unit_details_font_color.present? ? d.object.unit_details_font_color : "#ffff"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -127,7 +117,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :unit_details_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true
+                = d.text_field :unit_details_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.unit_details_bg_color.present? ? d.object.unit_details_bg_color : "#565455"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -137,7 +127,17 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :floorplan_name_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true 
+                = d.text_field :floorplan_name_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.floorplan_name_bg_color.present? ? d.object.floorplan_name_bg_color : "#565455" 
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Floor plan name font color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :floorplan_name_font_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.floorplan_name_font_color.present? ? d.object.floorplan_name_font_color : "#ffff"             
     .row
       .col-lg-10
         .form-group.mt-30
@@ -147,4 +147,4 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :unit_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true                                                                                                                                                              
+                = d.text_field :unit_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true ,:value=>d.object.unit_bg_color.present? ? d.object.unit_bg_color : "#565455"                                                                                                                                                             

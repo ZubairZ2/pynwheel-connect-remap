@@ -17,7 +17,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :filter_panel_color , class: "form-control filter-panel-field",autocomplete: true
+                = d.text_field :filter_panel_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_panel_color.present? ? d.object.filter_panel_color : "#3B3B3B"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -34,7 +34,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :filter_panel_font_color , class: "form-control filter-panel-field",autocomplete: true
+                = d.text_field :filter_panel_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_panel_font_color.present? ? d.object.filter_panel_font_color : "#ffff"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -44,7 +44,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :filter_button_color , class: "form-control filter-panel-field",autocomplete: true
+                = d.text_field :filter_button_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_button_color.present? ? d.object.filter_button_color : "#565455"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -61,7 +61,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :filter_button_font_color , class: "form-control filter-panel-field",autocomplete: true
+                = d.text_field :filter_button_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_button_font_color.present? ? d.object.filter_button_font_color : "#ffff"
     .row
       .col-lg-10
         .form-group.mt-30

@@ -292,17 +292,17 @@ $(document).ready(function(){
  //hide show main screen home screen on the basis of radio button
 
  $('#main-screen-radio').click(function(){
- 	if ($(this).is(':checked')){
- 		$('#main-screen').show();
- 		$('#home-screen').hide();
- 	}
+  if ($(this).is(':checked')){
+    $('#main-screen').show();
+    $('#home-screen').hide();
+  }
  });
 
  $('#home-screen-radio').click(function(){
- 	  if ($(this).is(':checked')){
- 		 $('#main-screen').hide();
- 		 $('#home-screen').show();
- 	  }
+    if ($(this).is(':checked')){
+     $('#main-screen').hide();
+     $('#home-screen').show();
+    }
   });
 
  showSelectedMenuPosition();
@@ -887,3 +887,19 @@ function hexToRgbA(hex){
     result = 'rgba('+r+','+g+','+b+','+o/255+')';
     return result;   
 }
+
+
+
+function setBorderOptions(border_element,value){
+  if(value == "Circular"){
+    $(border_element).children("option[value^=Top-Bottom]").hide();
+    $(border_element).children("option[value^=Left-Right]").hide();
+    $(border_element).val("All sides");
+    $('.button-width-field').hide();
+  }
+  else{
+    $(border_element).children("option[value^=Top-Bottom]").show();
+    $(border_element).children("option[value^=Left-Right]").show();
+    $('.button-width-field').show();
+  }
+}  

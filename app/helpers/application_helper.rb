@@ -11,7 +11,7 @@ module ApplicationHelper
   end
 
   def font_families
-    ["Arial","Agency FB","Brush Script MT","Calibri","Cooper Black","Franklin Gothic Book","Gloucester MT Extra Condensed","Goudy Stout","Gungsuh","Kristen ITC","Malgun Gothic","Times New Roman"]
+    ["Arial","Agency FB","Brush Script MT","Calibri","Franklin Gothic Book","Gungsuh","Kristen ITC","MV Boli","Rockwell","Sitka Display","Segoe Script","Times New Roman","Yu Mincho Light"]
   end
 
   def font_sizes
@@ -66,11 +66,11 @@ module ApplicationHelper
   end
 
   def button_shape_options
-    ["Circular","Rectangular"]
+    ["Rectangular","Circular"]
   end
 
   def border_options
-    ["Top-Bottom","Left-Right","All sides"]
+    ["Top-Bottom","Left-Right","All sides","No border"]
   end
 
   def button_height_options
@@ -78,7 +78,7 @@ module ApplicationHelper
   end
 
   def navigation_background_height_options
-    ["200px","250px","300px"]
+    ["250px","300px","350px"]
   end
 
   def button_width_options

@@ -12,6 +12,13 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Home page navigation background height 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :home_page_navigation_background_height , options_for_select(navigation_background_height_options,d.object.home_page_navigation_background_height),{},{class: "form-control home-page-field"}
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Home page button shape 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.select :home_page_button_shape , options_for_select(button_shape_options,d.object.home_page_button_shape),{},{class: "form-control home-page-field"}      
@@ -21,14 +28,7 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Home page buttons border 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :home_page_buttons_border , options_for_select(border_options,d.object.home_page_buttons_border),{},{class: "form-control home-page-field"}
-    .row
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Home page navigation background height 
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :home_page_navigation_background_height , options_for_select(navigation_background_height_options,d.object.home_page_navigation_background_height),{},{class: "form-control home-page-field"}
+            = d.select :home_page_buttons_border , options_for_select(border_options,d.object.home_page_buttons_border),{},{class: "form-control home-page-field"}        
     .row
       .col-lg-10
         .form-group.mt-30
@@ -36,7 +36,7 @@
             Home page buttons height 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.select :home_page_buttons_height , options_for_select(button_height_options,d.object.home_page_buttons_height),{},{class: "form-control home-page-field"}
-    .row
+    .row.button-width-field
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -66,7 +66,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :home_page_navigation_background_color , class: "form-control home-page-field",autocomplete: true
+                = d.text_field :home_page_navigation_background_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_background_color.present? ? d.object.home_page_navigation_background_color : "#565455"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -76,7 +76,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :home_page_navigation_button_color , class: "form-control home-page-field",autocomplete: true
+                = d.text_field :home_page_navigation_button_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_button_color.present? ? d.object.home_page_navigation_button_color : "#3B3B3B"
     .row
       .col-lg-10
         .form-group.mt-30
@@ -86,4 +86,10 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :home_page_navigation_font_color , class: "form-control home-page-field",autocomplete: true                                                                                     
+                = d.text_field :home_page_navigation_font_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_font_color.present? ? d.object.home_page_navigation_font_color : "#ffff"
+:javascript
+  setBorderOptions($("#community_design_attributes_home_page_buttons_border"),$('#community_design_attributes_home_page_button_shape').val());
+
+  $('#community_design_attributes_home_page_button_shape').change(function(){
+    setBorderOptions($("#community_design_attributes_home_page_buttons_border"),$(this).val());
+  });                                                                                                     
