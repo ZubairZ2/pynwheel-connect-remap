@@ -17,7 +17,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :marker_background_color , class: "form-control map-marker-field",autocomplete: true      
+                = d.text_field :marker_background_color , class: "form-control map-marker-field",autocomplete: true,:value=>d.object.marker_background_color.present? ? d.object.marker_background_color : "#565455"      
     .row
       .col-lg-10
         .form-group.mt-30
