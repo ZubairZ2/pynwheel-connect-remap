@@ -17,7 +17,7 @@
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
-                = d.text_field :global_navigation_font_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_font_color.present? ? d.design.global_navigation_font_color : "#ffff"
+                = d.text_field :global_navigation_font_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_font_color.present? ? d.object.global_navigation_font_color : "#ffff"
     .row
       .col-lg-10
         .form-group.mt-30
