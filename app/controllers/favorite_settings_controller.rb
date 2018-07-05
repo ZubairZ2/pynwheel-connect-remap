@@ -4,7 +4,7 @@ class FavoriteSettingsController < ApplicationController
   before_action :set_community
 
 	def index
-		@favorite = @community.favorite_setting || @community.build_favorite_setting
+		@favorite = @community.favorite_setting || @community.create_favorite_setting
 	end
 
 	def create

@@ -4,7 +4,7 @@ class FavoriteImagesController < ApplicationController
   before_action :set_community
 
   def index
-    @favorite_images = @community.favorite_setting.favorite_images 
+    @favorite_images = @community.favorite_setting.favorite_images.size > 0 ? @community.favorite_setting.favorite_images : []
   end
 
   def create

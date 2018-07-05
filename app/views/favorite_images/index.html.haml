@@ -16,7 +16,7 @@
           = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
           %p Drop files here or click to Upload
         .row.slide-imgage-boxs.sortable
-          - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
+          - sortable_fetch(@favorite_images) do |gallery_image, id_tag|
             .col-lg-2{:id=> id_tag}
               .slide-image
                 .image-box.video-box
@@ -44,7 +44,7 @@
                 #carousel-example-generic.carousel.slide
                   / Wrapper for slides
                   .carousel-inner{:style=>"height: 500px;"}
-                    - @gallery_images.each_with_index do |gallery_image,index|
+                    - @favorite_images.each_with_index do |gallery_image,index|
                       .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
                         - unless gallery_image.is_video? 
                           = image_tag gallery_image.image.url(:thumb)

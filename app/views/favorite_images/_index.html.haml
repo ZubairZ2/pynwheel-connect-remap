@@ -2,7 +2,7 @@
   = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
   %p Drop files here or click to Upload
 .row.slide-imgage-boxs.sortable
-  - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
+  - sortable_fetch(@favorite_images) do |gallery_image, id_tag|
     .col-lg-2{:id=> id_tag}
       .slide-image
         .image-box.video-box
