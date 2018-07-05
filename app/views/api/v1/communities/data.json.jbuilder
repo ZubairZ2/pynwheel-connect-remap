@@ -40,7 +40,7 @@ json.ui_settigs do
         json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#565455"
         json.global_navigation_buttons_opacity @community.design.global_navigation_buttons_opacity.present? ? @community.design.global_navigation_buttons_opacity : "100%" 
         json.global_nav_bg_opacity @community.design.global_nav_bg_opacity.present? ? @community.design.global_nav_bg_opacity : "100%"
-        json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Circular"
+        json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Rectangular"
         json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
         json.global_nav_buttons_width @community.design.global_nav_buttons_width.present? ? @community.design.global_nav_buttons_width : "110px"
         json.secondary_page_menu_border @community.design.secondary_page_menu_border.present? ? @community.design.secondary_page_menu_border : "Top-Botton"
@@ -68,20 +68,20 @@ json.ui_settigs do
         json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
       end
       json.home_page do
-        json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Circular"
+        json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Rectangular"
         json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "Top-Bottom"
-        json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "200px"
+        json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "250px"
         json.home_page_navigation_background_color @community.design.home_page_navigation_background_color.present? ? @community.design.home_page_navigation_background_color : "#565455"
         json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
         json.home_page_navigation_font_color @community.design.home_page_navigation_font_color.present? ? @community.design.home_page_navigation_font_color : "#ffff"
-        json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "100px"
-        json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "100px"
+        json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "110px"
+        json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "110px"
         json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
         json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"
       end
       json.map_marker do
         json.marker_background_color @community.design.marker_background_color.present? ? @community.design.marker_background_color : "#565455"
-        json.marker_style @community.design.marker_style.present? ? @community.design.marker_style : "fa fa-marker"
+        json.marker_style @community.design.marker_style.present? ? @community.design.marker_style : "Tear Drop"
       end
       json.floorplan_unit_popup do
         json.header_bg_color @community.design.header_bg_color.present? ? @community.design.header_bg_color : "#ada6a6"
