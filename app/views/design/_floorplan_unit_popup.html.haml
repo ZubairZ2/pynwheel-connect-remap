@@ -7,7 +7,7 @@
     .row
       .col-lg-12
         %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-          Floor Plan/Unit Pop Up Options
+          Floor Plan Pop Up Options
     .row
       .col-lg-10
         .form-group.mt-30
@@ -79,6 +79,10 @@
                 %i
                 = d.text_field :floor_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.floor_bg_color.present? ? d.object.floor_bg_color : "#565455"
     .row
+      .col-lg-12
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+          Unit Pop Up Options            
+    .row
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -122,7 +126,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Floor plan name background color
+            Unit floor plan name background color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -132,7 +136,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Floor plan name font color
+            Unit floor plan name font color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
