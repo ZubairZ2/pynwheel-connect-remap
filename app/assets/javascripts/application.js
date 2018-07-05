@@ -42,6 +42,7 @@
 //= require webpages
 //= require clipboard.min
 //= require favorites
+//= require bootstrap-tagsinput
 //= require panzoom
 //= require tinymce
 //= require dropzone
