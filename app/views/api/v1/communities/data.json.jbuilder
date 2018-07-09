@@ -36,8 +36,8 @@ json.ui_settigs do
     json.expressionist do
       json.global_navigation do
         json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
-        json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#3B3B3B"
-        json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#565455"
+        json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#565455"
+        json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#3B3B3B"
         json.global_navigation_buttons_opacity @community.design.global_navigation_buttons_opacity.present? ? @community.design.global_navigation_buttons_opacity : "100%" 
         json.global_nav_bg_opacity @community.design.global_nav_bg_opacity.present? ? @community.design.global_nav_bg_opacity : "100%"
         json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Rectangular"
