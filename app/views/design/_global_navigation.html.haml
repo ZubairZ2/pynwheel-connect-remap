@@ -41,21 +41,7 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Global navigation background opacity 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :global_nav_bg_opacity , options_for_select(opacity_options,d.object.global_nav_bg_opacity.present? ? d.object.global_nav_bg_opacity : "100%"),{},{class: "form-control global-navigation-field"}        
-    .row
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Button shape 
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field"}  
-    .row
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Secondary page menu border
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border),{},{class: "form-control global-navigation-field"}              
+            = d.select :global_nav_bg_opacity , options_for_select(opacity_options,d.object.global_nav_bg_opacity.present? ? d.object.global_nav_bg_opacity : "100%"),{},{class: "form-control global-navigation-field"}                      
     .row
       .col-lg-10
         .form-group.mt-30
@@ -80,6 +66,20 @@
               .input-group-addon
                 %i
                 = d.text_field :global_navigation_button_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_button_color.present? ? d.object.global_navigation_button_color : "#565455"
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Button shape 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field"}  
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Secondary page menu border
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border),{},{class: "form-control global-navigation-field"}            
     .form-group
       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
         Upload Image Buttons

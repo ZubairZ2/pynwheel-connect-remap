@@ -58,8 +58,8 @@ json.ui_settigs do
         json.filter_panel_opacity @community.design.filter_panel_opacity.present? ? @community.design.filter_panel_opacity : "100%"
         json.filter_buttons_opacity @community.design.filter_buttons_opacity.present? ? @community.design.filter_buttons_opacity : "100%"
         json.gallery_buttons_opacity @community.design.gallery_buttons_opacity.present? ? @community.design.gallery_buttons_opacity : "100%"
-        json.filter_menu_buttons_border @community.design.filter_menu_buttons_border.present? ? @community.design.filter_menu_buttons_border : "Top-Bottom"
-        json.gallery_buttons_border @community.design.gallery_buttons_border.present? ? @community.design.gallery_buttons_border : "Top-Bottom" 
+        json.filter_menu_buttons_border @community.design.filter_menu_buttons_border.present? ? @community.design.filter_menu_buttons_border : "All sides"
+        json.gallery_buttons_border @community.design.gallery_buttons_border.present? ? @community.design.gallery_buttons_border : "All sides" 
         json.filter_button_as_image @community.design.filter_button_as_image
         json.gallery_button_as_image @community.design.gallery_button_as_image
         json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
@@ -69,7 +69,7 @@ json.ui_settigs do
       end
       json.home_page do
         json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Rectangular"
-        json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "Top-Bottom"
+        json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "All sides"
         json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "250px"
         json.home_page_navigation_background_color @community.design.home_page_navigation_background_color.present? ? @community.design.home_page_navigation_background_color : "#565455"
         json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
