@@ -60,7 +60,8 @@ Rails.application.routes.draw do
         post :adjust_position
       end
       collection do
-        post :set_floor_of_units
+        post :set_floor
+        post :set_available_date
       end
     end
     resources :sitemaps do

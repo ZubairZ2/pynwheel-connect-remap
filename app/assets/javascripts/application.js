@@ -46,6 +46,10 @@
 //= require panzoom
 //= require tinymce
 //= require dropzone
+//= require bootstrap-select
 //= require jquery.multi-select 
 //made changes in jquery.multi-select according to our requirement in at library at line #488. Commented sanitize function
 // require_tree .
+$(document).ready(function(){
+	new Clipboard('.clipboard-btn');
+});

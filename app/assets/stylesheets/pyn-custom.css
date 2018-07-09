@@ -17,6 +17,7 @@ textarea { resize: none; }
 	text-align:left;
 	margin-left:10px;
 }
+.ui-datepicker{ z-index: 9999 !important;}
 .alert{
 	border-radius: 0;
 }

@@ -117,9 +117,15 @@ class UnitsController < ApplicationController
   end
 
 
-  def set_floor_of_units
+  def set_floor
     @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor],updated_by_admin: true)
     flash[:notice] = "Floor is updated for units successfully."
+    redirect_to :back
+  end
+
+  def set_available_date
+    @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date],updated_by_admin: true)
+    flash[:notice] = "Available date is updated for units successfully."
     redirect_to :back
   end
 

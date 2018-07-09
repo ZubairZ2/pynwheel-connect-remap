@@ -8,7 +8,7 @@ json.ui_settigs do
   else
     json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   end  
-  if (style_themes.include? @community.theme_name) && @community.design.present?
+  #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
       json.primary_font_size @community.design.primary_font_size
@@ -32,7 +32,76 @@ json.ui_settigs do
       json.navigation_text_color @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#636363"
       json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#FDFDFD"
     end
-  end
+    
+    json.expressionist do
+      json.global_navigation do
+        json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
+        json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#3B3B3B"
+        json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#565455"
+        json.global_navigation_buttons_opacity @community.design.global_navigation_buttons_opacity.present? ? @community.design.global_navigation_buttons_opacity : "100%" 
+        json.global_nav_bg_opacity @community.design.global_nav_bg_opacity.present? ? @community.design.global_nav_bg_opacity : "100%"
+        json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Rectangular"
+        json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
+        json.global_nav_buttons_width @community.design.global_nav_buttons_width.present? ? @community.design.global_nav_buttons_width : "110px"
+        json.secondary_page_menu_border @community.design.secondary_page_menu_border.present? ? @community.design.secondary_page_menu_border : "Top-Botton"
+        json.buttons_as_image @community.design.buttons_as_image 
+        json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : "No Image"
+        json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : "No Image"
+      end
+      json.filter_panel do
+        json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
+        json.filter_panel_font_style @community.design.filter_panel_font_style.present? ? @community.design.filter_panel_font_style : "Arial"
+        json.filter_panel_font_color @community.design.filter_panel_font_color.present? ? @community.design.filter_panel_font_color : "#ffff"
+        json.filter_button_color @community.design.filter_button_color.present? ? @community.design.filter_button_color : "#565455"
+        json.filter_button_font_style @community.design.filter_button_font_style.present? ? @community.design.filter_button_font_style : "Arial"
+        json.filter_button_font_color @community.design.filter_button_font_color.present? ? @community.design.filter_button_font_color : "#ffff"
+        json.filter_panel_opacity @community.design.filter_panel_opacity.present? ? @community.design.filter_panel_opacity : "100%"
+        json.filter_buttons_opacity @community.design.filter_buttons_opacity.present? ? @community.design.filter_buttons_opacity : "100%"
+        json.gallery_buttons_opacity @community.design.gallery_buttons_opacity.present? ? @community.design.gallery_buttons_opacity : "100%"
+        json.filter_menu_buttons_border @community.design.filter_menu_buttons_border.present? ? @community.design.filter_menu_buttons_border : "Top-Bottom"
+        json.gallery_buttons_border @community.design.gallery_buttons_border.present? ? @community.design.gallery_buttons_border : "Top-Bottom" 
+        json.filter_button_as_image @community.design.filter_button_as_image
+        json.gallery_button_as_image @community.design.gallery_button_as_image
+        json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
+        json.filter_button @community.design.filter_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_button.url : @community.design.filter_button.url) : "No Image"
+        json.gallery_button @community.design.gallery_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button.url : @community.design.gallery_button.url) : "No Image"
+        json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
+      end
+      json.home_page do
+        json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Rectangular"
+        json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "Top-Bottom"
+        json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "250px"
+        json.home_page_navigation_background_color @community.design.home_page_navigation_background_color.present? ? @community.design.home_page_navigation_background_color : "#565455"
+        json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
+        json.home_page_navigation_font_color @community.design.home_page_navigation_font_color.present? ? @community.design.home_page_navigation_font_color : "#ffff"
+        json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "110px"
+        json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "110px"
+        json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
+        json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"
+      end
+      json.map_marker do
+        json.marker_background_color @community.design.marker_background_color.present? ? @community.design.marker_background_color : "#565455"
+        json.marker_style @community.design.marker_style.present? ? @community.design.marker_style : "Tear Drop"
+      end
+      json.floorplan_unit_popup do
+        json.header_bg_color @community.design.header_bg_color.present? ? @community.design.header_bg_color : "#ada6a6"
+        json.header_font_color @community.design.header_font_color.present? ? @community.design.header_font_color : "#ffffff"
+        json.details_bg_color @community.design.details_bg_color.present? ? @community.design.details_bg_color : "#ada6a6"
+        json.details_font_color @community.design.details_font_color.present? ? @community.design.details_font_color : "#ffff"
+        json.available_appartments_font_color @community.design.available_appartments_font_color.present? ? @community.design.available_appartments_font_color : "#ffff"
+        json.available_appartments_bg_color @community.design.available_appartments_bg_color.present? ? @community.design.available_appartments_bg_color : "#ada6a6"
+        json.floor_bg_color @community.design.floor_bg_color.present? ? @community.design.floor_bg_color : "#565455"
+        json.unit_header_bg_color @community.design.unit_header_bg_color.present? ? @community.design.unit_header_bg_color : "#ada6a6"
+        json.unit_header_font_color @community.design.unit_header_font_color.present? ? @community.design.unit_header_font_color : "#ffff"
+        json.unit_details_font_color @community.design.unit_details_font_color.present? ? @community.design.unit_details_font_color : "#ffff"
+        json.unit_details_bg_color @community.design.unit_details_bg_color.present? ? @community.design.unit_details_bg_color : "#ada6a6"
+        json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
+        json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
+        json.unit_bg_color @community.design.unit_bg_color.present? ? @community.design.unit_bg_color : "#565455"
+      end
+    end
+    
+  #end
 end
 
 json.homescreen do

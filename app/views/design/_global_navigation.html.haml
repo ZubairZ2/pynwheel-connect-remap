@@ -1,0 +1,161 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"global-navigation-form"},:remote=>true  do |f|
+  = hidden_field_tag "global_navigation_tab", true
+  = f.fields_for :design do |d|
+    .row
+      .col-md-12
+        %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+    .row
+      .col-lg-12
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+          Global Navigation Options
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Global navigation font color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :global_navigation_font_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_font_color.present? ? d.object.global_navigation_font_color : "#ffff"
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Global navigation background color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :global_navigation_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>d.object.global_navigation_background_color.present? ? d.object.global_navigation_background_color : "#3B3B3B"
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Global navigation buttons opacity 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :global_navigation_buttons_opacity , options_for_select(opacity_options,d.object.global_navigation_buttons_opacity.present? ? d.object.global_navigation_buttons_opacity : "100%"),{},{class: "form-control global-navigation-field"}
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Global navigation background opacity 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :global_nav_bg_opacity , options_for_select(opacity_options,d.object.global_nav_bg_opacity.present? ? d.object.global_nav_bg_opacity : "100%"),{},{class: "form-control global-navigation-field"}        
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Button shape 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field"}  
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Secondary page menu border
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border),{},{class: "form-control global-navigation-field"}              
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Global navigation button height 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :global_nav_buttons_height , options_for_select(navigation_button_height_options,d.object.global_nav_buttons_height),{},{class: "form-control global-navigation-field"}
+    .row.button-width-field
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Global navigation button width 
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :global_nav_buttons_width , options_for_select(navigation_button_width_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}        
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Global navigation button color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :global_navigation_button_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_button_color.present? ? d.object.global_navigation_button_color : "#565455"
+    .form-group
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+        Upload Image Buttons
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        .TriSea-technologies-Switch
+          %span.pr-15 No
+          = d.check_box :buttons_as_image, {class: "global-navigation-field"}
+          %label.label-primary{:for => "community_design_attributes_buttons_as_image"}
+          %span.pl-15 Yes            
+    #buttons-upload-fields.hidden                    
+      .row
+        .col-md-12
+          %ul.nav.nav-tabs
+            %li.active
+              %a{"data-toggle" => "tab", :href => "#global-navigation-button-on"} Global navigation button on
+            %li
+              %a{"data-toggle" => "tab", :href => "#global-navigation-button-off"} Global navigation button off
+          .tab-content
+            #global-navigation-button-on.tab-pane.fade.in.active
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Global navigation button on
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.global_nav_button_on.present? ? current_community.design.global_nav_button_on.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                            = image_tag current_community.design.global_nav_button_on.present? ? current_community.design.global_nav_button_on.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-button-on-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :global_nav_button_on
+              .text-center.drag-box.mt-15.image-upload#global-nav-button-on-image-upload-holder
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            #global-navigation-button-off.tab-pane.fade
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Global navigation button off
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.global_nav_button_off.present? ? current_community.design.global_nav_button_off.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                            = image_tag current_community.design.global_nav_button_off.present? ? current_community.design.global_nav_button_off.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-button-off-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :global_nav_button_off
+              .text-center.drag-box.mt-15.image-upload#global-nav-button-off-image-upload-holder
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload    
+:javascript 
+  var buttons_as_image = "#{current_community.design.buttons_as_image}"       
+  if(buttons_as_image == "true")
+    $('#buttons-upload-fields').removeClass('hidden');
+
+  $('#community_design_attributes_buttons_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('#buttons-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('#buttons-upload-fields').addClass('hidden');
+     }
+  });
+  
+  setBorderOptions($("#community_design_attributes_secondary_page_menu_border"),$('#community_design_attributes_button_shape').val());
+
+  $('#community_design_attributes_button_shape').change(function(){
+    setBorderOptions($("#community_design_attributes_secondary_page_menu_border"),$(this).val());
+  });

@@ -11,7 +11,7 @@ module ApplicationHelper
   end
 
   def font_families
-    ["Agency FB","Arial","BankFuturistic" ,"Courier","Cursive","Decorative","Fantasy","Fraktur","Helvetica","Impact","Monospace","Open Sans","Palatino","Roman","Sans-serif","Serif","Times","Tw Cen MT"]
+    ["Arial","Agency FB","Brush Script MT","Calibri","Franklin Gothic Book","Gungsuh","Kristen ITC","MV Boli","Rockwell","Sitka Display","Segoe Script","Times New Roman","Yu Mincho Light"]
   end
 
   def font_sizes
@@ -59,6 +59,39 @@ module ApplicationHelper
 
   def global_navigation_position
     ["Top","Bottom"]
+  end
+
+  def opacity_options
+    ["0%","70%","100%"]
+  end
+
+  def button_shape_options
+    ["Rectangular","Circular"]
+  end
+
+  def border_options
+    ["Top-Bottom","Left-Right","All sides","No border"]
+  end
+
+  def button_height_options
+    ["110px","150px","200px"]
+  end
+
+  def navigation_background_height_options
+    ["250px","300px","350px"]
+  end
+
+  def button_width_options
+    ["100px","150px","200px"]
+  end
+
+
+  def navigation_button_height_options
+    ["110px","120px","125px"]
+  end
+
+  def navigation_button_width_options
+    ["110px","120px","125px"]
   end
 
   def convert_float_to_integer(x)
