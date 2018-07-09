@@ -113,7 +113,9 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :favorite_settings, only: [:index, :create, :update]
+    resources :favorite_settings, only: [:index, :create, :update] do
+      resources :favorite_images
+    end
     resources :neighborhoods, only: [:index, :create, :update] do
       resources :locations
     end

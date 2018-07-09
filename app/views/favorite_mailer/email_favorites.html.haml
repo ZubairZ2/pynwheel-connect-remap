@@ -333,7 +333,11 @@
                             %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                                 %tr
-                                  %td.textContent{:align => "center", :style => "padding: 8px 20px; background: url('https://s3.amazonaws.com/comencia-assets/csv_files/bg-top-email.png') repeat;", :valign => "top"}
+/ <<<<<<< HEAD
+/                                   %td.textContent{:align => "center", :style => "padding: 8px 20px; background: url('https://s3.amazonaws.com/comencia-assets/csv_files/bg-top-email.png') repeat;", :valign => "top"}
+/ =======
+                                  %td.textContent{:align => "center", :style => "padding: 8px 20px; background-image: url('https://s3.amazonaws.com/comencia-assets/csv_files/bg-top-email.png'); background-repeat: repeat;", :valign => "top"}
+/ >>>>>>> 28183a5e263cbc4d1187883658ca69701a4dc463
                                     %h1{:style => "margin-bottom:0px;text-align:left;"}
                                       %div{:style => "width: 350px;display: inline-block;overflow: hidden;"}
                                         %img{:src => "#{@community.logo.url}", width: '350', :style => "max-width: 100%;height:auto;object-fit: contain;"}/
