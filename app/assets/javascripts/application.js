@@ -27,6 +27,7 @@
 //= require cable
 //= require design
 //= require home_page
+//= require favorite
 //= require bootstrap-colorpicker.min
 //= require jcrop
 //= require jquery-ui/widgets/sortable

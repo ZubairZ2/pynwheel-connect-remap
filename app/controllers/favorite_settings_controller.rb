@@ -29,6 +29,25 @@ class FavoriteSettingsController < ApplicationController
     end
 	end
 
+  def show_images
+    @favorite_setting = FavoriteSetting.find(params[:id])
+    @favorite_images = @favorite_setting.favorite_images.order(:sort).all
+  end
+
+  def save_favorite_image
+    @favorite_setting = FavoriteSetting.find(params[:id])
+    @favorite_setting.favorite_images.create(image: params[:file])
+    render :json=>{"status"=>"success"}
+  end
+
+  def delete_favorite_image
+    @favorite_image = FavoriteImage.find(params[:favorite_image_id])
+    file_type = @favorite_image.is_video? ? 'Video' : 'Image'
+    @favorite_image.destroy
+    flash[:notice] = "#{file_type} deleted successfully."
+    redirect_back(fallback_location: root_path)
+  end
+
 	private
 
 	def set_community

@@ -115,6 +115,13 @@ Rails.application.routes.draw do
 
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images
+      member do
+        get :show_image_in_modal
+        post :save_favorite_image
+        put :update_favorite_image
+        delete :delete_favorite_image
+        get :show_images
+      end
     end
     resources :neighborhoods, only: [:index, :create, :update] do
       resources :locations
