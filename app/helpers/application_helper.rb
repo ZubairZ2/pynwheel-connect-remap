@@ -11,7 +11,7 @@ module ApplicationHelper
   end
 
   def font_families
-    ["Arial","Agency FB","Brush Script MT","Calibri","Franklin Gothic Book","Gungsuh","Kristen ITC","MV Boli","Rockwell","Sitka Display","Segoe Script","Times New Roman","Yu Mincho Light"]
+    ["Arial","Agency FB","Brush Script MT","Calibri","Franklin Gothic Book","Gungsuh","Kristen ITC","Rockwell","Segoe Script","Times New Roman"]
   end
 
   def font_sizes
