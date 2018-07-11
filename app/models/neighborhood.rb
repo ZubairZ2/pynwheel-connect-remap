@@ -1,6 +1,6 @@
 class Neighborhood < ApplicationRecord
   belongs_to :community
-  has_many :locations
+  has_many :locations, dependent: :destroy
   before_save do
 	  self.category.gsub!(/[\[\]\"]/, "") if attribute_present?("category")
 	end
