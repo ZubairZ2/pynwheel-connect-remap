@@ -358,6 +358,9 @@
                                     %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                       %p
                                         = @email_body.html_safe
+              - @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
+                - @community.favorite_setting.favorite_images.each do |img|
+                  = render :partial => 'favorite_image', :locals => {:img => img}                           
               - @favorites.each do |f|
                 - if f.is_a?(Unit)
                   = render :partial => 'unit', :locals => {:unit => f}
