@@ -89,14 +89,14 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Filter menu buttons border 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :filter_menu_buttons_border , options_for_select(border_options,d.object.filter_menu_buttons_border),{},{class: "form-control filter-panel-field"}
+            = d.select :filter_menu_buttons_border , options_for_select(border_options,d.object.filter_menu_buttons_border.present? ? d.object.filter_menu_buttons_border : 'All sides'),{},{class: "form-control filter-panel-field"}
     .row
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Gallery buttons border 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :gallery_buttons_border , options_for_select(border_options,d.object.gallery_buttons_border),{},{class: "form-control filter-panel-field"}    
+            = d.select :gallery_buttons_border , options_for_select(border_options,d.object.gallery_buttons_border.present? ? d.object.gallery_buttons_border : 'All sides'),{},{class: "form-control filter-panel-field"}    
     .row
       .col-md-12
         %ul.nav.nav-tabs

@@ -405,8 +405,10 @@
                                           %tr
                                             %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 20px; padding-left: 18px; color:#FFFFFF; text-align:center;", :valign => "top"}
                                               %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
-                                                = image_tag "equalhouselogo.png",width: '50', :style => "max-width: 100%; display: inline-block; border: none;"
-                                                = image_tag "handicam.png",width: '50', :style => "max-width: 100%; display: inline-block; border: none;"
+                                                - if @community.equal_housing_opportunity_logo
+                                                  = image_tag "equalhouselogo.png",width: '50', :style => "max-width: 100%; display: inline-block; border: none;"
+                                                - if @community.handicap_accessible_logo
+                                                  = image_tag "handicam.png",width: '50', :style => "max-width: 100%; display: inline-block; border: none;"
                                           %tr
                                             %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 20px; padding-left: 18px; color:#FFFFFF; text-align:center;", :valign => "top"}
                                               %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}

@@ -77,9 +77,9 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Secondary page menu border
+            Global navigation button color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border),{},{class: "form-control global-navigation-field"}            
+            = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border.present? ? d.object.secondary_page_menu_border : 'All sides'),{},{class: "form-control global-navigation-field"}            
     .form-group
       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
         Upload Image Buttons
