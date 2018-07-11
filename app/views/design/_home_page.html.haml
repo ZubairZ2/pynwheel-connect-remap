@@ -28,7 +28,7 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Home page buttons border 
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :home_page_buttons_border , options_for_select(border_options,d.object.home_page_buttons_border),{},{class: "form-control home-page-field"}        
+            = d.select :home_page_buttons_border , options_for_select(border_options,d.object.home_page_buttons_border.present? ? d.object.home_page_buttons_border : 'All sides'),{},{class: "form-control home-page-field"}        
     .row
       .col-lg-10
         .form-group.mt-30
