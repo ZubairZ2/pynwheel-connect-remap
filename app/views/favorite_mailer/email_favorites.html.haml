@@ -400,7 +400,7 @@
                                             %tr
                                               %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 5px; padding-left: 18px; color:#FFFFFF; text-align:center;", :valign => "top"}
                                                 %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
-                                                  = @community.address
+                                                  = "#{@community.address} #{@community.city}, #{@community.state} #{@community.zip}"
                                           - if @community.phone.present?      
                                             %tr
                                               %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 5px; padding-left: 18px; color:#FFFFFF; text-align:center;", :valign => "top"}
