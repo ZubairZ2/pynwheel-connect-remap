@@ -2679,6 +2679,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   max-width: 100%;
   line-height: 22px;
   cursor: text;
+  width: 100%;
+  height: 36px;
 }
 .bootstrap-tagsinput input {
   border: none;
