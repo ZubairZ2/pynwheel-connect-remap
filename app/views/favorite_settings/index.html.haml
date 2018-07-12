@@ -15,6 +15,8 @@
           %span Favorite Settings
         .pull-right.btn-btn-danger
           = link_to "Favorite Images", community_favorite_setting_favorite_images_path(@community,@favorite), class: "btn btn-primary"
+        .pull-right.btn-btn-danger.mr-20
+          = link_to "Ebrochure menu buttons", community_favorite_setting_ebrochure_menu_buttons_path(@community,@community.favorite_setting), class: "btn btn-primary"  
 
       = form_for [@community,@favorite],:html=>{:class=>"form-horizontal"} do |f|
         .box-body

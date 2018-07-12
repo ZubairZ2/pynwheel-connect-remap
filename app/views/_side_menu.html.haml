@@ -70,7 +70,7 @@
         %a{:href => "#{community_neighborhoods_path(current_community)}"}
           %i.fa.fa-bank
           %span Neighborhood
-      %li{:class=>"#{controller_name =='favorite_settings' ? 'active' : ''}"}
+      %li{:class=>"#{controller_name =='favorite_settings' || controller_name == 'ebrochure_menu_buttons' || controller_name == 'favorite_images' ? 'active' : ''}"}
         %a{:href => "#{community_favorite_settings_path(current_community)}"}
           %i.fa.fa-star
           %span Favorites   

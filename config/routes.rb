@@ -115,6 +115,7 @@ Rails.application.routes.draw do
 
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images
+      resources :ebrochure_menu_buttons
       member do
         get :show_image_in_modal
         post :save_favorite_image

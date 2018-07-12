@@ -1,7 +1,8 @@
 class FavoriteImagesController < ApplicationController
-  add_breadcrumb "Home", :root_path
-  add_breadcrumb "Favorites Images"
   before_action :set_community
+  add_breadcrumb "Home", :root_path
+  add_breadcrumb "Favorites", :community_favorite_settings_path
+  add_breadcrumb "Favorites Images"
 
   def index
     @favorite_images = @community.favorite_setting.favorite_images.size > 0 ? @community.favorite_setting.favorite_images : []
