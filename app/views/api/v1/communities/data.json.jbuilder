@@ -1,4 +1,5 @@
 local_assets_base_url = "http://192.168.101.77:3000"
+json.version '1.0.0.5'
 json.ui_settigs do
   json.theme @community.theme_name
   json.animation @community.design.animation
