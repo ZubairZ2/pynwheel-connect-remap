@@ -34,7 +34,9 @@
             %li.hidden{:role => "presentation"}
               %a#floorplan-unit-popup-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-floorplan-unit-popup", :role => "tab"} Floorplan/Unit Popup
             %li.hidden{:role => "presentation"}
-              %a#map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-map-marker", :role => "tab"} Map Marker               
+              %a#map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-map-marker", :role => "tab"} Map Marker
+            %li.hidden{:role => "presentation"}
+              %a#gables-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-gables", :role => "tab"} Gables                 
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Style
@@ -61,7 +63,9 @@
             #s-map-marker.tab-pane.fade{:role => "tabpanel"}
               = render 'map_marker'
             #s-floorplan-unit-popup.tab-pane.fade{:role => "tabpanel"}
-              = render 'floorplan_unit_popup'             
+              = render 'floorplan_unit_popup'
+            #s-gables.tab-pane.fade{:role => "tabpanel"}
+              = render 'gables_setting'               
             #s-font.tab-pane.fade{:role => "tabpanel"}
               = render 'font'
             #s-menu.tab-pane.fade{:role => "tabpanel"}

@@ -8,6 +8,7 @@ class DesignController < ApplicationController
     @menu = @design.menu ||  @design.create_menu
     @main_screen = @design.main_screen ||  @design.create_main_screen
     @home_screen = @design.home_screen ||  @design.create_home_screen 
+    @gable = @design.gable ||  @design.create_gable 
   end
 
   def logo

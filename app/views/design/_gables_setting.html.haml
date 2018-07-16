@@ -1,0 +1,72 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"gables-form"},:remote=>true  do |f|
+  = hidden_field_tag "gables_tab", true
+  = f.fields_for :design do |d|
+    = d.fields_for :gable do |g|
+      .row
+        .col-md-12
+          %p.title-box Customize Gables Theme
+      .row
+        .col-lg-12
+          %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+            Gables Options
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+              Hide tagline
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .TriSea-technologies-Switch
+                %span.pr-15 No
+                = g.check_box :hide_tagline, {class: "gables-field"}
+                %label.label-primary{:for => "community_design_attributes_gable_attributes_hide_tagline"}
+                %span.pl-15 Yes      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Appartment buton color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :appartment_button_color , class: "form-control gables-field",autocomplete: true,:value=>g.object.appartment_button_color.present? ? g.object.appartment_button_color : "#565455" 
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery buton color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :gallery_button_color , class: "form-control gables-field",autocomplete: true,:value=>g.object.gallery_button_color.present? ? g.object.gallery_button_color : "#565455" 
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Neighborhood buton color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :neighborhood_button_color , class: "form-control gables-field",autocomplete: true,:value=>g.object.neighborhood_button_color.present? ? g.object.appartment_button_color : "#565455" 
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Favorite buton color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :appartment_button_color , class: "form-control gables-field",autocomplete: true,:value=>g.object.favorite_button_color.present? ? g.object.favorite_button_color : "#565455" 
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :filter_panel_color , class: "form-control gables-field",autocomplete: true,:value=>g.object.filter_panel_color.present? ? g.object.filter_panel_color : "#565455"                                                        

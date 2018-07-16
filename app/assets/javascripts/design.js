@@ -188,6 +188,10 @@ $(document).ready(function(){
     $('#floorplan-unit-popup-form').submit();
   });
 
+  $('.gables-field').change(function(){
+    $('#gables-form').submit();
+  });
+
   $('.custom-style-field').change(function(){
     $('#custom-style-form').submit();
   });
@@ -853,6 +857,7 @@ function showTabsAccordingToTheme(theme){
     $('#home-page-tab').parent().addClass('hidden'); 
     $('#map-marker-tab').parent().addClass('hidden');
     $('#floorplan-unit-popup-tab').parent().addClass('hidden'); 
+    $('#gables-tab').parent().addClass('hidden'); 
   }
   if (theme == 'expressionist'){
     $('#font-tab').parent().addClass('hidden');
@@ -864,6 +869,19 @@ function showTabsAccordingToTheme(theme){
     $('#home-page-tab').parent().removeClass('hidden'); 
     $('#map-marker-tab').parent().removeClass('hidden');
     $('#floorplan-unit-popup-tab').parent().removeClass('hidden'); 
+    $('#gables-tab').parent().addClass('hidden'); 
+  }
+  if (theme == 'futurist' || theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural'){
+    $('#font-tab').parent().addClass('hidden');
+    $('#menu-tab').parent().addClass('hidden');
+    //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
+    //$('#overlay-tab').parent().addClass('hidden'); 
+    $('#global-navigation-tab').parent().addClass('hidden');  
+    $('#filter-panel-tab').parent().addClass('hidden');
+    $('#home-page-tab').parent().addClass('hidden'); 
+    $('#map-marker-tab').parent().addClass('hidden');
+    $('#floorplan-unit-popup-tab').parent().addClass('hidden');
+    $('#gables-tab').parent().addClass('hidden');  
   }
   if (theme == 'futurist' || theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural'){
     $('#font-tab').parent().addClass('hidden');
@@ -875,6 +893,7 @@ function showTabsAccordingToTheme(theme){
     $('#home-page-tab').parent().addClass('hidden'); 
     $('#map-marker-tab').parent().addClass('hidden');
     $('#floorplan-unit-popup-tab').parent().addClass('hidden'); 
+    $('#gables-tab').parent().removeClass('hidden'); 
   }
 }
 

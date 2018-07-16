@@ -6,6 +6,7 @@ class Design < ApplicationRecord
 	mount_base64_uploader :gallery_button, AvatarUploader
 	mount_base64_uploader :filter_panel_background_image, AvatarUploader
 	has_one :menu , dependent: :destroy
+	has_one :gable , dependent: :destroy
 	has_one :home_screen,dependent: :destroy
 	has_one :main_screen,dependent: :destroy
 	has_many :home_page_images, -> { order(:sort) }, dependent: :destroy
@@ -15,6 +16,7 @@ class Design < ApplicationRecord
 	accepts_nested_attributes_for :menu
 	accepts_nested_attributes_for :main_screen
 	accepts_nested_attributes_for :home_screen
+	accepts_nested_attributes_for :gable
 
 	def has_images_loop_type?
 		loop_type == "images"
