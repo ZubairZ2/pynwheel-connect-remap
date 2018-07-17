@@ -59,13 +59,13 @@
           .theme-img{:style => "background:url(#{asset_path('gables-organic.jpg')});"}
           .themes-detail
             .pull-left
-              %h4 Gables Organic
+              %h4 Gables
             .pull-right
               /%a{:href => "#"} View Theme
               = f.radio_button :theme_name,"gables_organic",style: "display: none;" 
               %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"gables_organic"} Select
           %i.fa.fa-check
-      .col-lg-3.col-md-6.col-sm-12
+      .col-lg-3.col-md-6.col-sm-12.hidden
         .select-theme#gables_refined-theme{:class=>"#{@community.is_gables_refined? ? 'active-theme' : 'active'}"}
           .theme-img{:style => "background:url(#{asset_path('gables-refined.jpg')});"}
           .themes-detail
@@ -76,7 +76,7 @@
               = f.radio_button :theme_name,"gables_refined",style: "display: none;" 
               %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"gables_refined"} Select
           %i.fa.fa-check
-      .col-lg-3.col-md-6.col-sm-12
+      .col-lg-3.col-md-6.col-sm-12.hidden
         .select-theme#gables_energetic-theme{:class=>"#{@community.is_gables_energetic? ? 'active-theme' : 'active'}"}
           .theme-img{:style => "background:url(#{asset_path('gables-energetic.jpg')});"}
           .themes-detail
@@ -87,7 +87,7 @@
               = f.radio_button :theme_name,"gables_energetic",style: "display: none;" 
               %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"gables_energetic"} Select
           %i.fa.fa-check
-      .col-lg-3.col-md-6.col-sm-12
+      .col-lg-3.col-md-6.col-sm-12.hidden
         .select-theme#gables_natural-theme{:class=>"#{@community.is_gables_natural? ? 'active-theme' : 'active'}"}
           .theme-img{:style => "background:url(#{asset_path('gables-natural.jpg')});"}
           .themes-detail
