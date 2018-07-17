@@ -33,6 +33,15 @@ json.ui_settigs do
       json.navigation_text_color @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#636363"
       json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#FDFDFD"
     end
+
+    json.gables do 
+      json.hide_tagline (@community.design.gable.present? and @community.design.gable.hide_tagline.present?) ? @community.design.gable.hide_tagline : false
+      json.appartment_button_color (@community.design.gable.present? and @community.design.gable.appartment_button_color.present?) ? @community.design.gable.appartment_button_color : "#565455" 
+      json.gallery_button_color (@community.design.gable.present? and @community.design.gable.gallery_button_color.present?) ? @community.design.gable.gallery_button_color : "#565455" 
+      json.neighborhood_button_color (@community.design.gable.present? and @community.design.gable.neighborhood_button_color.present?) ? @community.design.gable.neighborhood_button_color : "#565455" 
+      json.favorite_button_color (@community.design.gable.present? and @community.design.gable.favorite_button_color.present?) ? @community.design.gable.favorite_button_color : "#565455" 
+      json.filter_panel_color (@community.design.gable.present? and @community.design.gable.filter_panel_color.present?) ? @community.design.gable.filter_panel_color : "#565455" 
+    end
     
     json.expressionist do
       json.global_navigation do
