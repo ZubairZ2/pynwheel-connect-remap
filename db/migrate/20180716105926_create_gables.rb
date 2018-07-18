@@ -1,7 +1,7 @@
 class CreateGables < ActiveRecord::Migration[5.0]
   def change
     create_table :gables do |t|
-      t.boolean :hide_tagline
+      t.boolean :hide_tagline,default: true
       t.string :appartment_button_color
       t.string :gallery_button_color
       t.string :neighborhood_button_color
