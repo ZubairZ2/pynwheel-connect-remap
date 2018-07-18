@@ -41,6 +41,8 @@ json.ui_settigs do
       json.neighborhood_button_color (@community.design.gable.present? and @community.design.gable.neighborhood_button_color.present?) ? @community.design.gable.neighborhood_button_color : "#565455" 
       json.favorite_button_color (@community.design.gable.present? and @community.design.gable.favorite_button_color.present?) ? @community.design.gable.favorite_button_color : "#565455" 
       json.filter_panel_color (@community.design.gable.present? and @community.design.gable.filter_panel_color.present?) ? @community.design.gable.filter_panel_color : "#565455" 
+      json.webpages_button_color (@community.design.gable.present? and @community.design.gable.webpages_button_color.present?) ? @community.design.gable.webpages_button_color : "#565455" 
+      json.imagepages_button_color (@community.design.gable.present? and @community.design.gable.imagepages_button_color.present?) ? @community.design.gable.imagepages_button_color : "#565455" 
     end
     
     json.expressionist do
