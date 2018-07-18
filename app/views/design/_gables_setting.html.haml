@@ -70,3 +70,23 @@
                 .input-group-addon
                   %i
                   = g.text_field :filter_panel_color , class: "form-control gables-field",autocomplete: true,:value=>g.object.filter_panel_color.present? ? g.object.filter_panel_color : "#565455"                                                        
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Webpages button color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :webpages_button_color , class: "form-control gables-field",autocomplete: true,:value=>g.object.webpages_button_color.present? ? g.object.webpages_button_color : "#565455"                                                        
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Image pages button color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :imagepages_button_color , class: "form-control gables-field",autocomplete: true,:value=>g.object.imagepages_button_color.present? ? g.object.imagepages_button_color : "#565455"                                                        
