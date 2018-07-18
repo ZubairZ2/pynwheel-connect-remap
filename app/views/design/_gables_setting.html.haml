@@ -13,13 +13,14 @@
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-              Hide tagline
+              Tagline
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               .TriSea-technologies-Switch
                 %span.pr-15 No
                 = g.check_box :hide_tagline, {class: "gables-field"}
                 %label.label-primary{:for => "community_design_attributes_gable_attributes_hide_tagline"}
-                %span.pl-15 Yes      
+                %span.pl-15 Yes 
+      / = g.check_box :hide_tagline, {class: "gables-field"}     
       .row
         .col-lg-10
           .form-group.mt-30

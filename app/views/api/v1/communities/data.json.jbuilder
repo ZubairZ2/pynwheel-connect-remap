@@ -35,7 +35,7 @@ json.ui_settigs do
     end
 
     json.gables do 
-      json.hide_tagline (@community.design.gable.present? and @community.design.gable.hide_tagline.present?) ? @community.design.gable.hide_tagline : true
+      json.hide_tagline @community.design.gable.present? ? @community.design.gable.hide_tagline : true
       json.appartment_button_color (@community.design.gable.present? and @community.design.gable.appartment_button_color.present?) ? @community.design.gable.appartment_button_color : "#8A8A8D" 
       json.gallery_button_color (@community.design.gable.present? and @community.design.gable.gallery_button_color.present?) ? @community.design.gable.gallery_button_color : "#44797B" 
       json.neighborhood_button_color (@community.design.gable.present? and @community.design.gable.neighborhood_button_color.present?) ? @community.design.gable.neighborhood_button_color : "#0475A9" 
