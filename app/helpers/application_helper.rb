@@ -92,6 +92,10 @@ module ApplicationHelper
   def button_width_options
     ["100px","150px","200px"]
   end
+  
+  def home_page_button_width
+    ["350px","400px","450px"]
+  end
 
 
   def navigation_button_height_options

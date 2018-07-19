@@ -47,6 +47,10 @@ json.ui_settigs do
     
     json.expressionist do
       json.global_navigation do
+        json.display_global_navigation_button_border_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_border_color : true
+        json.display_global_navigation_button_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_bg_color : true
+        json.global_navigation_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_family.present?) ? @community.design.expressionist.global_navigation_button_font_family : "Arial"
+        json.global_navigation_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_size.present?) ? @community.design.expressionist.global_navigation_button_font_size : "8px"
         json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
         json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#565455"
         json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#3B3B3B"
@@ -96,7 +100,7 @@ json.ui_settigs do
         json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
         json.home_page_navigation_font_color @community.design.home_page_navigation_font_color.present? ? @community.design.home_page_navigation_font_color : "#ffff"
         json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "110px"
-        json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "110px"
+        json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "350px"
         json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
         json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"
       end
