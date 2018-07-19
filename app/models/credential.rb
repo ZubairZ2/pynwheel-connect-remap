@@ -1,5 +1,6 @@
 class Credential < ApplicationRecord
   belongs_to :community
+  before_save :set_https_in_url
   
   def import_data_from_spreadsheet(file)
     xlsx = Roo::Spreadsheet.open(file.open)
@@ -29,6 +30,14 @@ class Credential < ApplicationRecord
         floorplan.bedrooms = f[3]
         floorplan.bathrooms = f[4]
         floorplan.save(validate: false)
+      end
+    end
+  end
+  
+  def set_https_in_url
+    if self.url.present?
+      unless url.include?('https')
+        self.url = url.gsub('http','https')
       end
     end
   end
