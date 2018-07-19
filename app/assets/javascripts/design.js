@@ -127,6 +127,22 @@ $(document).ready(function(){
           }          
       }
     }
+    
+    var home_page_button_image_upload_holder = document.getElementById('home-page-button-image-upload-holder');
+    if (home_page_button_image_upload_holder){
+        
+        home_page_button_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;    
+          if(files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg"){ 
+            homePageButtonImageSrc(files[0]);
+          }
+          else{
+            console.log('file type is not allowed');
+            $('#image-upload-warning').modal('show');
+          }          
+      }
+    }
 
 
     if ($('#main-screen-radio').is(':checked')){
@@ -243,6 +259,10 @@ $(document).ready(function(){
 
   $("#filter_panel_background_image").change(function(){
     readFilterPanelBackgroundImageFromInput(this);
+  });
+  
+  $("#home_page_button_image").change(function(){
+    readHomePageButtonImageFromInput(this);
   });
   
 
@@ -462,6 +482,17 @@ function filterPanelBackgroundImageSrc(file){
   reader.readAsDataURL(file);
 }
 
+function homePageButtonImageSrc(file){
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#home-page-button-image-preview').attr('src', e.target.result);
+    $('#home-page-button-image-preview').parent().attr('href', e.target.result);
+    homePageButtonImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+
 function designPageLogo(src){
     $(".divLoading").removeClass("hidden");
     var url = "/communities/"+community_id;
@@ -585,6 +616,22 @@ function designPageLogo(src){
         dataType: "script",
         data: {
             community: {design_attributes: {id: design_id,filter_panel_background_image: src}}
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+ }
+ 
+ function homePageButtonImage(src){
+  $(".divLoading").removeClass("hidden");
+    var url = "/communities/"+community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id,expressionist_attributes: {id: expressionist_id,home_page_button_image: src}}}
         }
     }).done(function(){
         $(".divLoading").addClass("hidden");
@@ -824,6 +871,27 @@ function readFilterPanelBackgroundImageFromInput(input) {
               $('#filter-panel-background-preview-image').attr('src', e.target.result);
               $('#filter-panel-background-preview-image').parent().attr('href',e.target.result);
               filterPanelBackgroundImage(e.target.result);
+          }
+
+          reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $(input).val('');
+        $('#image-upload-warning').modal('show');
+        //console.log($(input).val());
+      }
+    }
+}
+
+function readHomePageButtonImageFromInput(input) {
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#home-page-button-image-preview').attr('src', e.target.result);
+              $('#home-page-button-image-preview').parent().attr('href',e.target.result);
+              homePageButtonImage(e.target.result);
           }
 
           reader.readAsDataURL(input.files[0]);

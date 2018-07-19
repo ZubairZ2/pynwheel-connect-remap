@@ -43,7 +43,7 @@ module ApplicationHelper
   end
   
   def home_page_logo_size
-    ["487*160","450*200","450*200","550*250","600*300"]
+    ["487x160","450x200","450x200","550x250","600x300"]
   end
 
   def button_style

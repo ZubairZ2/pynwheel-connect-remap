@@ -152,6 +152,26 @@
               .input-group-addon
                 %i
                 = d.text_field :home_page_navigation_font_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_font_color.present? ? d.object.home_page_navigation_font_color : "#ffff"
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Home page button image
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .select-logo.mb-20.mt-30
+              .select-logo-logo
+                %a.preview-image{:href=>current_community.design.expressionist.home_page_button_image.present? ? current_community.design.expressionist.home_page_button_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page button image"}
+                  = image_tag current_community.design.expressionist.home_page_button_image.present? ? current_community.design.expressionist.home_page_button_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-button-image-preview"
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            %span.btn.btn-primary.btn-file.mt-30
+              %i.fa.fa-upload
+              Upload File
+              = file_field_tag :home_page_button_image
+    .text-center.drag-box.mt-15.image-upload#home-page-button-image-upload-holder
+      %span.icon-upload
+        = image_tag "upload-image.png"
+        %p Drag &amp; Drop file to Upload
 :javascript
   setBorderOptions($("#community_design_attributes_home_page_buttons_border"),$('#community_design_attributes_home_page_button_shape').val());
 
