@@ -39,7 +39,7 @@ module ApplicationHelper
   end
   
   def home_page_position_of_logo
-    ["Right","Left","upper right","Upper right","Upper left","Upper centre","Centre"]
+    ["Right","Left","Upper right","Upper left","Upper centre","Centre"]
   end
   
   def home_page_logo_size
