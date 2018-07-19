@@ -37,6 +37,14 @@ module ApplicationHelper
   def horizontal_menu_position
     ["Top","Middle","Bottom"]
   end
+  
+  def home_page_position_of_logo
+    ["Right","Left","upper right","Upper right","Upper left","Upper centre","Centre"]
+  end
+  
+  def home_page_logo_size
+    ["487*160","450*200","450*200","550*250","600*300"]
+  end
 
   def button_style
     ["Solid","Bordered","Top","Bottom"]

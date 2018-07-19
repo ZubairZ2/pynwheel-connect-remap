@@ -9,6 +9,7 @@ class DesignController < ApplicationController
     @main_screen = @design.main_screen ||  @design.create_main_screen
     @home_screen = @design.home_screen ||  @design.create_home_screen 
     @gable = @design.gable ||  @design.create_gable 
+    @expressionist = @design.expressionist ||  @design.create_expressionist 
   end
 
   def logo

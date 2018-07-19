@@ -80,6 +80,14 @@ json.ui_settigs do
         json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
       end
       json.home_page do
+        json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Top"
+        json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
+        json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487*160"
+        json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
+        json.display_home_page_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_button_icon : true
+        json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
+        json.home_page_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_family.present?) ? @community.design.expressionist.home_page_button_font_family : "Arial"
+        json.home_page_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_size.present?) ? @community.design.expressionist.home_page_button_font_size : "8px"
         json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Rectangular"
         json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "All sides"
         json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "250px"
