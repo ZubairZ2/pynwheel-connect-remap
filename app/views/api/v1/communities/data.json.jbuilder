@@ -82,7 +82,7 @@ json.ui_settigs do
       json.home_page do
         json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Top"
         json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
-        json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487*160"
+        json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487x160"
         json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
         json.display_home_page_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_button_icon : true
         json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
