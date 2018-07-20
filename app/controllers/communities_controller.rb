@@ -215,8 +215,9 @@ class CommunitiesController < ApplicationController
           :building_button,:floorplan_button,:menu_position,:manage_background,:background_color],:gable_attributes=>[:id,:hide_tagline,
           :appartment_button_color,:gallery_button_color,:neighborhood_button_color,:favorite_button_color,:filter_panel_color,:webpages_button_color,
           :imagepages_button_color],:expressionist_attributes=>[:id,:home_page_menu_position,:home_page_position_of_logo,:home_page_logo_size,
-          :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:home_page_button_font_size,
-          :display_home_page_nav_background,:home_page_button_image,:display_global_navigation_button_border_color,:global_navigation_button_font_family,
+          :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:home_page_button_font_size,:display_home_page_image,
+          :display_home_page_nav_background,:home_page_button_image,:display_global_navigation_button_icon,:global_navigation_button_border_color,
+          :global_navigation_button_font_family,
         :global_navigation_button_font_size,:display_global_navigation_button_bg_color,:filter_panel_button_border_color,:filter_panel_text_font_size,
       :filter_panel_button_text_font_size]])
   end

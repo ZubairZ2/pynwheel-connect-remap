@@ -47,10 +47,11 @@ json.ui_settigs do
     
     json.expressionist do
       json.global_navigation do
-        json.display_global_navigation_button_border_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_border_color : true
+        json.display_global_navigation_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_icon : true
         json.display_global_navigation_button_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_bg_color : true
         json.global_navigation_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_family.present?) ? @community.design.expressionist.global_navigation_button_font_family : "Arial"
         json.global_navigation_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_size.present?) ? @community.design.expressionist.global_navigation_button_font_size : "8px"
+        json.global_navigation_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_border_color.present?) ? @community.design.expressionist.global_navigation_button_border_color : "#565455"
         json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
         json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#565455"
         json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#3B3B3B"
@@ -90,6 +91,7 @@ json.ui_settigs do
         json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
         json.display_home_page_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_button_icon : true
         json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
+        json.display_home_page_image @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_image : true
         json.home_page_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_family.present?) ? @community.design.expressionist.home_page_button_font_family : "Arial"
         json.home_page_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_size.present?) ? @community.design.expressionist.home_page_button_font_size : "8px"
         json.home_page_button_image (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_button_image.url : @community.design.expressionist.home_page_button_image.url) : "No Image"
