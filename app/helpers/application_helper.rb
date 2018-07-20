@@ -15,7 +15,7 @@ module ApplicationHelper
   end
 
   def font_sizes
-    ["8px","9px","10px","11px","12px","13px","14px","15px","16px","17px","18px","19px","20px"]
+    ["8px","10px","12px","14px","16px","18px","20px","22px","24px","28px","30px","32px","34px","36px","38px","40px","42px","44px","46px","48px","50px","52px","54px"]
   end
 
   def font_weight
