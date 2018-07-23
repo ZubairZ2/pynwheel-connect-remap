@@ -134,6 +134,20 @@ $(document).ready(function () {
         }
       }
     }
+    
+    var gallery_image_on_upload_holder = document.getElementById('gallery-image-on-upload-holder');
+    if (gallery_image_on_upload_holder) {
+
+      gallery_image_on_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+          galleryImageOnSrc(files[0]);
+        } else {
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
 
 
     if ($('#main-screen-radio').is(':checked')) {
@@ -154,6 +168,13 @@ $(document).ready(function () {
 
 
   }
+  
+  //////////////////////////////////////////////
+  //Adjusting font family on family dropdowns
+  $('#community_design_attributes_expressionist_attributes_home_page_button_font_family').change(function(){
+    $(this).css('font-family',$(this).val());
+  });
+  //////////////////////////////////////////////
 
   $('.theme-selection').click(function () {
     var theme_name = $(this).data("theme-name");
@@ -254,6 +275,10 @@ $(document).ready(function () {
 
   $("#home_page_button_image").change(function () {
     readHomePageButtonImageFromInput(this);
+  });
+  
+  $("#gallery_image_on").change(function () {
+    readGalleryImageOnFromInput(this);
   });
 
 
@@ -481,6 +506,17 @@ function homePageButtonImageSrc(file) {
   reader.readAsDataURL(file);
 }
 
+function galleryImageOnSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#gallery-image-on-preview').attr('src', e.target.result);
+    $('#gallery-image-on-preview').parent().attr('href', e.target.result);
+    galleryImageOn(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+
 function designPageLogo(src) {
   $(".divLoading").removeClass("hidden");
   var url = "/communities/" + community_id;
@@ -620,6 +656,22 @@ function homePageButtonImage(src) {
     dataType: "script",
     data: {
       community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, home_page_button_image: src}}}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+
+function galleryImageOn(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {design_attributes: {id: design_id, gallery_image_on: src}}
     }
   }).done(function () {
     $(".divLoading").addClass("hidden");
@@ -872,6 +924,26 @@ function readHomePageButtonImageFromInput(input) {
         $('#home-page-button-image-preview').attr('src', e.target.result);
         $('#home-page-button-image-preview').parent().attr('href', e.target.result);
         homePageButtonImage(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+      //console.log($(input).val());
+    }
+  }
+}
+
+function readGalleryImageOnFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        $('#gallery-image-on-preview').attr('src', e.target.result);
+        $('#gallery-image-on-preview').parent().attr('href', e.target.result);
+        galleryImageOn(e.target.result);
       }
 
       reader.readAsDataURL(input.files[0]);
