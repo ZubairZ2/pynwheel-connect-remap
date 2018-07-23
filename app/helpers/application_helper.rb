@@ -11,7 +11,12 @@ module ApplicationHelper
   end
 
   def font_families
-    ["Arial","Agency FB","Brush Script MT","Calibri","Franklin Gothic Book","Gungsuh","Global User Interface","Gloucester MT Extra Condensed","Goudy Old Style","Gulim","Helvetica Neue","Kristen ITC","Latha","Lucida Calligraphy","Lucida Handwriting","Pristina","PMingLiU-ExtB","Rockwell","Rod","Segoe Script","SketchFlow Print","Sitka Display","Times New Roman","Tunga","Trebuchet MS","Tempus Sans ITC","Vivaldi","Verdana","Yu Gothic Light"]
+    options_with_style = []
+    families = ["Arial","Agency FB","Brush Script MT","Calibri","Franklin Gothic Book","Gungsuh","Global User Interface","Gloucester MT Extra Condensed","Goudy Old Style","Gulim","Helvetica Neue","Kristen ITC","Latha","Lucida Calligraphy","Lucida Handwriting","Pristina","PMingLiU-ExtB","Rockwell","Rod","Segoe Script","SketchFlow Print","Sitka Display","Times New Roman","Tunga","Trebuchet MS","Tempus Sans ITC","Vivaldi","Verdana","Yu Gothic Light"]
+    families.each do |family|
+      options_with_style << [family,family,:style => "font-family:#{family}" ] 
+    end
+    return options_with_style
   end
 
   def font_sizes
