@@ -83,6 +83,7 @@ json.ui_settigs do
         json.filter_button @community.design.filter_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_button.url : @community.design.filter_button.url) : "No Image"
         json.gallery_button @community.design.gallery_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button.url : @community.design.gallery_button.url) : "No Image"
         json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
+        json.gallery_image_on @community.design.gallery_image_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_image_on.url : @community.design.gallery_image_on.url) : "No Image"
         json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
         json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "12px"
         json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "12px"
