@@ -168,13 +168,6 @@ $(document).ready(function () {
 
 
   }
-  
-  //////////////////////////////////////////////
-  //Adjusting font family on family dropdowns
-  $('#community_design_attributes_expressionist_attributes_home_page_button_font_family').change(function(){
-    $(this).css('font-family',$(this).val());
-  });
-  //////////////////////////////////////////////
 
   $('.theme-selection').click(function () {
     var theme_name = $(this).data("theme-name");
