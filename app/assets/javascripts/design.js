@@ -277,7 +277,7 @@ $(document).ready(function () {
     readHomePageButtonImageFromInput(this);
   });
   
-  $("#gallery_image_on").change(function () {
+  $("#gallery_button_on_image").change(function () {
     readGalleryImageOnFromInput(this);
   });
 
@@ -671,7 +671,7 @@ function galleryImageOn(src) {
     type: "PUT",
     dataType: "script",
     data: {
-      community: {design_attributes: {id: design_id, gallery_image_on: src}}
+      community: {design_attributes: {id: design_id, gallery_button_on_image: src}}
     }
   }).done(function () {
     $(".divLoading").addClass("hidden");
