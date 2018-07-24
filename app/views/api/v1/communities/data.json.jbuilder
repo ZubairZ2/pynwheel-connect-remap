@@ -61,7 +61,8 @@ json.ui_settigs do
         json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
         json.global_nav_buttons_width @community.design.global_nav_buttons_width.present? ? @community.design.global_nav_buttons_width : "110px"
         json.secondary_page_menu_border @community.design.secondary_page_menu_border.present? ? @community.design.secondary_page_menu_border : "All sides"
-        json.buttons_as_image @community.design.buttons_as_image 
+        json.global_nav_button_on_as_image @community.design.global_nav_button_on_as_image 
+        json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image 
         json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : "No Image"
         json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : "No Image"
       end

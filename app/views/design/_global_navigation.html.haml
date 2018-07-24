@@ -123,79 +123,100 @@
             Global navigation button border
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border.present? ? d.object.secondary_page_menu_border : 'All sides'),{},{class: "form-control global-navigation-field"}            
-    .form-group
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-        Upload Image Buttons
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        .TriSea-technologies-Switch
-          %span.pr-15 No
-          = d.check_box :buttons_as_image, {class: "global-navigation-field"}
-          %label.label-primary{:for => "community_design_attributes_buttons_as_image"}
-          %span.pl-15 Yes            
-    #buttons-upload-fields.hidden                    
-      .row
-        .col-md-12
-          %ul.nav.nav-tabs
-            %li.active
-              %a{"data-toggle" => "tab", :href => "#global-navigation-button-on"} Global navigation button on
-            %li
-              %a{"data-toggle" => "tab", :href => "#global-navigation-button-off"} Global navigation button off
-          .tab-content
-            #global-navigation-button-on.tab-pane.fade.in.active
-              .row
-                .col-lg-10
-                  .form-group.mt-30
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                      Global navigation button on
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      .select-logo.mb-20.mt-30
-                        .select-logo-logo
-                          %a.preview-image{:href=>current_community.design.global_nav_button_on.present? ? current_community.design.global_nav_button_on.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                            = image_tag current_community.design.global_nav_button_on.present? ? current_community.design.global_nav_button_on.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-button-on-preview-image"
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      %span.btn.btn-primary.btn-file.mt-30
-                        %i.fa.fa-upload
-                        Upload File
-                        = file_field_tag :global_nav_button_on
-              .text-center.drag-box.mt-15.image-upload#global-nav-button-on-image-upload-holder
-                %span.icon-upload
-                  = image_tag "upload-image.png"
-                  %p Drag &amp; Drop file to Upload
-            #global-navigation-button-off.tab-pane.fade
-              .row
-                .col-lg-10
-                  .form-group.mt-30
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                      Global navigation button off
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      .select-logo.mb-20.mt-30
-                        .select-logo-logo
-                          %a.preview-image{:href=>current_community.design.global_nav_button_off.present? ? current_community.design.global_nav_button_off.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                            = image_tag current_community.design.global_nav_button_off.present? ? current_community.design.global_nav_button_off.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-button-off-preview-image"
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      %span.btn.btn-primary.btn-file.mt-30
-                        %i.fa.fa-upload
-                        Upload File
-                        = file_field_tag :global_nav_button_off
-              .text-center.drag-box.mt-15.image-upload#global-nav-button-off-image-upload-holder
-                %span.icon-upload
-                  = image_tag "upload-image.png"
-                  %p Drag &amp; Drop file to Upload    
+    .row
+      .col-md-12
+        %ul.nav.nav-tabs
+          %li.active
+            %a{"data-toggle" => "tab", :href => "#global-navigation-button-on"} Global navigation button on
+          %li
+            %a{"data-toggle" => "tab", :href => "#global-navigation-button-off"} Global navigation button off
+        .tab-content
+          #global-navigation-button-on.tab-pane.fade.in.active
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                Upload global navigation button on image
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = d.check_box :global_nav_button_on_as_image, {class: "global-navigation-field"}
+                  %label.label-primary{:for => "community_design_attributes_global_nav_button_on_as_image"}
+                  %span.pl-15 Yes 
+            .row.global-nav-button-on-upload-fields.hidden
+              .col-lg-10
+                .form-group.mt-30
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Global navigation button on
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .select-logo.mb-20.mt-30
+                      .select-logo-logo
+                        %a.preview-image{:href=>current_community.design.global_nav_button_on.present? ? current_community.design.global_nav_button_on.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                          = image_tag current_community.design.global_nav_button_on.present? ? current_community.design.global_nav_button_on.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-button-on-preview-image"
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    %span.btn.btn-primary.btn-file.mt-30
+                      %i.fa.fa-upload
+                      Upload File
+                      = file_field_tag :global_nav_button_on
+            .text-center.drag-box.mt-15.image-upload#global-nav-button-on-image-upload-holder.global-nav-button-on-upload-fields.hidden
+              %span.icon-upload
+                = image_tag "upload-image.png"
+                %p Drag &amp; Drop file to Upload
+          #global-navigation-button-off.tab-pane.fade
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                Upload global navigation button off image
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = d.check_box :global_nav_button_off_as_image, {class: "global-navigation-field"}
+                  %label.label-primary{:for => "community_design_attributes_global_nav_button_off_as_image"}
+                  %span.pl-15 Yes
+            .row.global-nav-button-off-upload-fields.hidden
+              .col-lg-10
+                .form-group.mt-30
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Global navigation button off
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .select-logo.mb-20.mt-30
+                      .select-logo-logo
+                        %a.preview-image{:href=>current_community.design.global_nav_button_off.present? ? current_community.design.global_nav_button_off.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                          = image_tag current_community.design.global_nav_button_off.present? ? current_community.design.global_nav_button_off.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-button-off-preview-image"
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    %span.btn.btn-primary.btn-file.mt-30
+                      %i.fa.fa-upload
+                      Upload File
+                      = file_field_tag :global_nav_button_off
+            .text-center.drag-box.mt-15.image-upload#global-nav-button-off-image-upload-holder.global-nav-button-off-upload-fields.hidden
+              %span.icon-upload
+                = image_tag "upload-image.png"
+                %p Drag &amp; Drop file to Upload    
 :javascript 
-  var buttons_as_image = "#{current_community.design.buttons_as_image}"       
-  if(buttons_as_image == "true")
-    $('#buttons-upload-fields').removeClass('hidden');
+  var global_nav_button_on_as_image = "#{current_community.design.global_nav_button_on_as_image}" 
+  var global_nav_button_off_as_image = "#{current_community.design.global_nav_button_off_as_image}" 
+  if(global_nav_button_on_as_image == "true")
+    $('.global-nav-button-on-upload-fields').removeClass('hidden');
+  if(global_nav_button_off_as_image == "true")
+    $('.global-nav-button-off-upload-fields').removeClass('hidden');
 
-  $('#community_design_attributes_buttons_as_image').change(function(){
+  $('#community_design_attributes_global_nav_button_on_as_image').change(function(){
     if($(this).is(':checked')){
-        $('#buttons-upload-fields').removeClass('hidden');
+        $('.global-nav-button-on-upload-fields').removeClass('hidden');
       }
     else{
-        $('#buttons-upload-fields').addClass('hidden');
+        $('.global-nav-button-on-upload-fields').addClass('hidden');
      }
   });
+
+  $('#community_design_attributes_global_nav_button_off_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.global-nav-button-off-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.global-nav-button-off-upload-fields').addClass('hidden');
+     }
+  });
+  
   
   setBorderOptions($("#community_design_attributes_secondary_page_menu_border"),$('#community_design_attributes_button_shape').val());
 
