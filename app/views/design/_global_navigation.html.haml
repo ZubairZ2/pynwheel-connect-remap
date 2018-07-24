@@ -11,16 +11,7 @@
     = d.fields_for :expressionist do |e|
       .form-group
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display global navigation button icon
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = e.check_box :display_global_navigation_button_icon, {class: "global-navigation-field"}
-            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_icon"}
-            %span.pl-15 Yes
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display global navigation button background color
+          Display global navigation button color
         .col-sm-12.col-lg-9.col-md-9.col-xs-12
           .TriSea-technologies-Switch
             %span.pr-15 No
@@ -41,6 +32,15 @@
               Button font size
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :global_navigation_button_font_size , options_for_select(font_sizes,e.object.global_navigation_button_font_size),{},{class: "form-control global-navigation-field"}              
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display global navigation button icon
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_global_navigation_button_icon, {class: "global-navigation-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_icon"}
+            %span.pl-15 Yes        
       .row
         .col-lg-10
           .form-group.mt-30

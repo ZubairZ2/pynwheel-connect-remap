@@ -1077,9 +1077,6 @@ function setLogoSize(value) {
 function setFontSize(value){
   if (value == "Circular"){
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=8px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=10px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=12px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=14px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=16px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=18px]").show();
@@ -1089,46 +1086,19 @@ function setFontSize(value){
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=26px]").hide();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=28px]").hide();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=30px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=32px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=34px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=36px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=38px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=40px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=42px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=44px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=46px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=48px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=50px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=52px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=54px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').val('8px')
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').val('14px')
   }
   else{
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=8px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=10px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=12px]").hide();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=14px]").hide();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=16px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=18px]").hide();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=18px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=20px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=22px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=24px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=26px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=28px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=30px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=32px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=34px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=36px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=38px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=40px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=42px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=44px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=46px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=48px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=50px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=52px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=54px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').val('20px');
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').val('18px');
   }
 }
