@@ -27,6 +27,10 @@ module ApplicationHelper
     ["12px","13px","14px","15px","16px","17px","18px"]
   end
   
+  def global_navigation_button_font_sizes
+    ["10px","11px","12px","13px"]
+  end
+  
   def filter_panel_button_text_font_sizes
     ["18px","19px","20px","21px"]
   end
