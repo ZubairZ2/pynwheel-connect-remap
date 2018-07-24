@@ -32,7 +32,7 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Filter panel text font size
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = filter_panel.select :text_font_size , options_for_select(filter_panel_font_sizes,filter_panel.object.text_font_size),{},{class: "form-control filter-panel-field"}            
+              = filter_panel.select :text_font_size , options_for_select(filter_panel_text_font_sizes,filter_panel.object.text_font_size),{},{class: "form-control filter-panel-field"}            
       .row
         .col-lg-10
           .form-group.mt-30
@@ -93,7 +93,7 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Filter panel button text font size
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = filter_panel.select :button_text_font_size , options_for_select(filter_panel_font_sizes,filter_panel.object.button_text_font_size),{},{class: "form-control filter-panel-field"}                        
+              = filter_panel.select :button_text_font_size , options_for_select(filter_panel_button_text_font_sizes,filter_panel.object.button_text_font_size),{},{class: "form-control filter-panel-field"}                        
       .row
         .col-lg-10
           .form-group.mt-30

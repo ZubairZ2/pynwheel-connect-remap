@@ -23,8 +23,12 @@ module ApplicationHelper
     ["14px","16px","18px","20px","22px","24px","26px","28px","30px"]
   end
   
-  def filter_panel_font_sizes
-    ["18px","20px","22px","24px","26px"]
+  def filter_panel_text_font_sizes
+    ["12px","13px","14px","15px","16px","17px","18px"]
+  end
+  
+  def filter_panel_button_text_font_sizes
+    ["18px","19px","20px","21px"]
   end
 
   def font_weight
