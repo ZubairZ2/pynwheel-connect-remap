@@ -12,7 +12,7 @@ module ApplicationHelper
 
   def font_families
     options_with_style = []
-    families = ["Arial","Agency FB","Brush Script MT","Calibri","Franklin Gothic Book","Gungsuh","Global User Interface","Goudy Old Style","Gulim","Helvetica Neue","Kristen ITC","Latha","Lucida Calligraphy","Lucida Handwriting","Pristina","PMingLiU-ExtB","Rockwell","Rod","Segoe Script","SketchFlow Print","Sitka Display","Sylfaen","Segoe Marker","Times New Roman","Tunga","Trebuchet MS","Tempus Sans ITC","Vivaldi","Verdana"]
+    families = ["Arial","Agency FB","Brush Script MT","Calibri","Franklin Gothic Book","Gungsuh","Global User Interface","Goudy Old Style","Gulim","Helvetica Neue","Kristen ITC","Latha","Pristina","PMingLiU-ExtB","Rockwell","Rod","Segoe Script","Stencil","SketchFlow Print","Sitka Display","Sylfaen","Segoe Marker","Times New Roman","Tempus Sans ITC","Tunga","Trebuchet MS","Tempus Sans ITC","Vivaldi","Verdana"]
     families.each do |family|
       options_with_style << [family,family,:style => "font-family:#{family}" ] 
     end
@@ -60,7 +60,7 @@ module ApplicationHelper
   end
   
   def home_page_logo_size
-    ["487x160","450x200","450x200","550x250","600x300"]
+    ["487x160","450x200","550x250","600x300"]
   end
 
   def button_style
