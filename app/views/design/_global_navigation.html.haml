@@ -15,7 +15,7 @@
         .col-sm-12.col-lg-9.col-md-9.col-xs-12
           .TriSea-technologies-Switch
             %span.pr-15 No
-            = e.check_box :display_global_navigation_button_bg_color, {class: "global-navigation-field"}
+            = e.check_box :display_global_navigation_button_bg_color, {class: "global-navigation-field",:checked=>e.object.display_global_navigation_button_bg_color.present? ? e.object.display_global_navigation_button_bg_color : true }
             %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_bg_color"}
             %span.pl-15 Yes
       .row
@@ -50,7 +50,7 @@
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
-                  = e.text_field :global_navigation_button_border_color , class: "form-control global-navigation-field",autocomplete: true,:value=>e.object.global_navigation_button_border_color.present? ? e.object.global_navigation_button_border_color : "#565455"
+                  = e.text_field :global_navigation_button_border_color , class: "form-control global-navigation-field",autocomplete: true,:value=>e.object.global_navigation_button_border_color.present? ? e.object.global_navigation_button_border_color : "#ffff"
     .row
       .col-lg-10
         .form-group.mt-30

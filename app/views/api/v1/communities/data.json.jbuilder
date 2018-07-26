@@ -51,7 +51,7 @@ json.ui_settigs do
         json.display_global_navigation_button_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_bg_color : true
         json.global_navigation_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_family.present?) ? @community.design.expressionist.global_navigation_button_font_family : "Arial"
         json.global_navigation_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_size.present?) ? @community.design.expressionist.global_navigation_button_font_size : "10px"
-        json.global_navigation_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_border_color.present?) ? @community.design.expressionist.global_navigation_button_border_color : "#565455"
+        json.global_navigation_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_border_color.present?) ? @community.design.expressionist.global_navigation_button_border_color : "#ffff"
         json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
         json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#565455"
         json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#3B3B3B"
@@ -87,11 +87,11 @@ json.ui_settigs do
         json.gallery_button_on_as_image @community.design.gallery_button_on_as_image
         json.gallery_button_on_image @community.design.gallery_button_on_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button_on_image.url : @community.design.gallery_button_on_image.url) : "No Image"
         json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
-        json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "12px"
+        json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "18px"
         json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
       end
       json.home_page do
-        json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Top"
+        json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
         json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
         json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487x160"
         json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
@@ -107,7 +107,7 @@ json.ui_settigs do
         json.home_page_navigation_background_color @community.design.home_page_navigation_background_color.present? ? @community.design.home_page_navigation_background_color : "#565455"
         json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
         json.home_page_navigation_font_color @community.design.home_page_navigation_font_color.present? ? @community.design.home_page_navigation_font_color : "#ffff"
-        json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "110px"
+        json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "150px"
         json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "350px"
         json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
         json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"

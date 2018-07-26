@@ -16,7 +16,7 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Menu Position
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :home_page_menu_position , options_for_select(horizontal_menu_position,e.object.home_page_menu_position),{},{class: "form-control home-page-field"}
+              = e.select :home_page_menu_position , options_for_select(horizontal_menu_position,e.object.home_page_menu_position.present? ? e.object.home_page_menu_position : "Bottom"),{},{class: "form-control home-page-field"}
       .row
         .col-lg-10
           .form-group.mt-30
@@ -81,7 +81,7 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Home page buttons height 
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :home_page_buttons_height , options_for_select(button_height_options,d.object.home_page_buttons_height),{},{class: "form-control home-page-field"}
+              = d.select :home_page_buttons_height , options_for_select(button_height_options,d.object.home_page_buttons_height.present? ? d.object.home_page_buttons_height : "150px"),{},{class: "form-control home-page-field"}
       .row.button-width-field
         .col-lg-10
           .form-group.mt-30
