@@ -16,6 +16,16 @@ class Unit < ApplicationRecord
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   scope :available_units, -> { ploted_units.or(past_available_units) }
   after_commit :populate_image_urls, on: [:create,:update]
+  after_update_commit :set_manually_updated_column
+  
+  def set_manually_updated_column
+    self.update_attribute(:manually_updated, true)
+    if attributes["sold"]
+      self.update_attribute(:available, false)
+      self.update_attribute(:availability, "Occupied")
+      self.update_attribute(:available_date, nil)
+    end
+  end
 
   def floorplan
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
