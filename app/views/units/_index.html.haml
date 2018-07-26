@@ -37,7 +37,7 @@
                 - units = @community_info.units.sort_by { |u| u.id }
                 - units.each_with_index  do |u,index|
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
-                  %tr
+                  %tr{style: "background-color: #{u.manually_updated ? '#cecece' : ''}"}
                     %td= index+1
                     %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name }
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil }
@@ -110,7 +110,12 @@
             field = "Sold"
             break    
       } 
-      $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>'); 
+      $(this).parent().parent().css('background-color','#cecece');
+      if($(this).data('bipAttribute') == 'sold'){
+        
+      }
+      $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>');
+ 
     });
 
     
