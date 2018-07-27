@@ -68,7 +68,7 @@ class UnitsController < ApplicationController
       @unit.update_attributes(available_date: Date.today-1.day,availability: "Unoccupied",manual_override: true)
     end
     if params[:unit][:available] == 'false'
-      @unit.update_attributes(available_date: nil,availability: "Occupied")
+      @unit.update_attributes(availability: "Occupied")
     end
   end
 
