@@ -33,14 +33,42 @@ class UnitsController < ApplicationController
 
   def update
     respond_to do |format|
-      if @unit.update(unit_params)
-        format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
-        format.json { respond_with_bip(@unit) }
+      if @unit.manual_override
+        if @unit.update(unit_params)
+          set_manually_updated_column
+          format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          format.json { respond_with_bip(@unit) }
+        else
+          flash[:error] = @unit.errors.full_messages.join(',')
+          format.html { render :action => "edit" }
+          format.json { respond_with_bip(@unit) }
+        end
       else
-        flash[:error] = @unit.errors.full_messages.join(',')
-        format.html { render :action => "edit" }
-        format.json { respond_with_bip(@unit) }
+        if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true' 
+          @unit.update(unit_params)
+          set_manually_updated_column
+          format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          format.json { respond_with_bip(@unit) }
+        else
+          @unit.errors[:base] << "Please set manual override field first"
+          flash[:error] = @unit.errors.full_messages.join(',')
+          format.html { render :action => "edit" }
+          format.json { respond_with_bip(@unit) }
+        end
       end
+    end
+  end
+  
+  def set_manually_updated_column
+    @unit.update_attribute(:manually_updated, true)
+    if @unit.sold
+      @unit.update_attributes(available: false,availability: "Occupied",available_date: nil,manual_override: true)
+    end
+    if params[:unit][:available] == 'true'
+      @unit.update_attributes(available_date: Date.today-1.day,availability: "Unoccupied",manual_override: true)
+    end
+    if params[:unit][:available] == 'false'
+      @unit.update_attributes(availability: "Occupied")
     end
   end
 

@@ -27,7 +27,10 @@
                   %th Marketing Name
                   %th Floor Plan
                   %th Rent
-                  / %th Availability
+                  %th Manually Updated
+                  %th Available
+                  %th Manual Override
+                  %th Sold
                   - unless @community.is_sitemap
                     %th Floor
                   %th Available Date
@@ -37,12 +40,15 @@
                 - units = @community_info.units.sort_by { |u| u.id }
                 - units.each_with_index  do |u,index|
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
-                  %tr
+                  %tr{style: "background-color: #{u.manually_updated ? '#cecece' : ''}"}
                     %td= index+1
                     %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name }
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil }
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
-                    / %td= best_in_place u, :availability, :as => :select, :collection => [['Occupied', 'Occupied'], ['Unoccupied', 'Unoccupied']], :url => community_unit_path(@community,u), :data => {:availability => u.availability }
+                    %td{:id=>"best_in_place_unit_#{u.id}_manually_updated"}= u.manually_updated ? "Yes" : "No"
+                    %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available }
+                    %td= best_in_place u, :manual_override, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:manual_override => u.manual_override }
+                    %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold }
                     - unless @community.is_sitemap
                       %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor }
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
@@ -92,9 +98,11 @@
   / End Panel left Side
   :javascript
     $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' }); 
+    var url = "#{community_units_path(@community)}"
     $.datepicker.setDefaults({dateFormat: 'yy-mm-dd' }); 
     $('.best_in_place').bind("ajax:success", function () {
       var field = ""
+      console.log($(this));
       switch($(this).data('bipAttribute')) {
         case 'effective_rent':
             field = "Rent"
@@ -110,9 +118,28 @@
             break
         case 'available_date':
             field = "Available Date"
-            break        
+            break
+        case 'manual_override':
+            field = "Manual Override"
+            break    
+        case 'available':
+            field = "Available"
+            break    
+        case 'sold':
+            field = "Sold"
+            break    
       } 
-      $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>'); 
+      $(this).parent().parent().css('background-color','#cecece');
+      var id = $(this).attr("id");
+      id = id.split('_');
+      $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+      if($(this).data('bipAttribute') == 'sold' && $(this).html() == 'Yes'){
+        $('#best_in_place_unit_'+id[4]+'_manual_override').html('Yes');
+        $('#best_in_place_unit_'+id[4]+'_available').html('No');
+        $('#best_in_place_unit_'+id[4]+'_available_date').html('-');
+      }
+      $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>');
+ 
     });
 
     

@@ -18,9 +18,9 @@ class Yardi4Service < BaseService
       interface_entity = credentials.interface_entity
       license_key = YARDI_LICENSE_KEY
       response = HTTParty.post(
-          url,
-          :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
-          :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
+        url,
+        :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
+        :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
       #result = Hash.from_xml(response.body) # This method consumes a lot of memory on heroku
       result = Ox.load(response.body, mode: :hash)
       if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
@@ -38,7 +38,7 @@ class Yardi4Service < BaseService
         end
         save_yardi4_units(ils_units,property_id)
         save_yardi4_floorplans(floorplans)
-      #else
+        #else
         #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
         puts "Invalid credentials.Please enter correct one and try again."
         #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
@@ -54,7 +54,7 @@ class Yardi4Service < BaseService
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
       unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue]).first_or_initialize   
-      unless unit.updated_by_admin
+      unless unit.manual_override
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
         unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
@@ -97,46 +97,46 @@ class Yardi4Service < BaseService
   def save_yardi4_floorplans(floorplans)
     floorplans.lazy.each do |floorplan|
       fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:IDValue]).first_or_initialize  
-      unless fp.updated_by_admin
-        rooms = []
-        floorplan.each do |f|
+      #unless fp.manual_override
+      rooms = []
+      floorplan.each do |f|
           
-          if f.key?(:Room)
-            rooms << f
-          end
-
-          if f.key?(:Name)
-            fp.name = f[:Name]
-          end
-
-          if f.key?(:MarketRent)
-            if f[:MarketRent][0][:Min].to_f > 0
-              fp.market_rent = f[:MarketRent][0][:Min]
-            else
-              fp.market_rent = f[:MarketRent][0][:Max]
-            end
-          end
-
-          if f.key?(:SquareFeet)
-            if f[:SquareFeet][0][:Min].to_f > 0
-              fp.square_feet = f[:SquareFeet][0][:Min]
-            else
-              fp.square_feet = f[:SquareFeet][0][:Max]
-            end
-          end
-
+        if f.key?(:Room)
+          rooms << f
         end
-        
-        rooms.each do |room|
-          if room[:Room][0][:RoomType] == "Bedroom"
-            fp.bedrooms = room[:Room][1][:Count]
+
+        if f.key?(:Name)
+          fp.name = f[:Name]
+        end
+
+        if f.key?(:MarketRent)
+          if f[:MarketRent][0][:Min].to_f > 0
+            fp.market_rent = f[:MarketRent][0][:Min]
           else
-            fp.bathrooms = room[:Room][1][:Count]
+            fp.market_rent = f[:MarketRent][0][:Max]
           end
         end
-        
-        fp.save(validate: false)
+
+        if f.key?(:SquareFeet)
+          if f[:SquareFeet][0][:Min].to_f > 0
+            fp.square_feet = f[:SquareFeet][0][:Min]
+          else
+            fp.square_feet = f[:SquareFeet][0][:Max]
+          end
+        end
+
       end
+        
+      rooms.each do |room|
+        if room[:Room][0][:RoomType] == "Bedroom"
+          fp.bedrooms = room[:Room][1][:Count]
+        else
+          fp.bathrooms = room[:Room][1][:Count]
+        end
+      end
+        
+      fp.save(validate: false)
+      #end
     end
   end
 

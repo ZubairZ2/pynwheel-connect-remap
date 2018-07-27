@@ -19,7 +19,8 @@ class WebpagesController < ActionController::Base
       else
         @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
       end
-      if @community_info.units.available_units.size > 0
+      @available_units_and_sold_units = @community_info.units.available_units + @community_info.units.are_sold
+      if @available_units_and_sold_units.size > 0
         normalize_units
         if @units_with_floorplan_info.present?
           build_square_feet_range
@@ -32,7 +33,7 @@ class WebpagesController < ActionController::Base
 
   def normalize_units
     @floorplans = @community_info.floorplans
-    @community_info.units.available_units.each do |unit|
+    @available_units_and_sold_units.each do |unit|
       if unit.effective_rent.present? && unit.effective_rent >= 1 && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
         floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
         struct = {
@@ -45,7 +46,8 @@ class WebpagesController < ActionController::Base
            available_date: unit.available_date,
            x_plot: unit.x_plot,
            y_plot: unit.y_plot,
-           floor: unit.floor
+           floor: unit.floor,
+           sold: unit.sold
         }
          @units_with_floorplan_info << struct
       end
