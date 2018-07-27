@@ -16,9 +16,9 @@ class RealPageSvcService < BaseService
       license_key = REALPAGESVC_LICENSE_KEY
       community_id = credentials.community_id
       response = HTTParty.post(
-          url,
-          :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-          :body => '<soapenv:Envelope
+        url,
+        :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+        :body => '<soapenv:Envelope
                     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                     xmlns:tem="http://tempuri.org/"
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -48,24 +48,24 @@ class RealPageSvcService < BaseService
           if fp.key?(:FloorPlanObject)
             fp = fp[:FloorPlanObject]
             floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize  
-            unless floorplan.updated_by_admin
-              if fp[:FloorPlanNameMarketing].present?
-                floorplan.name = fp[:FloorPlanNameMarketing]
-              elsif fp[:FloorPlanCode].present?
-                if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
-                else
-                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
-                end
+            #unless floorplan.manual_override
+            if fp[:FloorPlanNameMarketing].present?
+              floorplan.name = fp[:FloorPlanNameMarketing]
+            elsif fp[:FloorPlanCode].present?
+              if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
               else
-                floorplan.name = fp[:FloorPlanName]
+                floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
               end
-              floorplan.bathrooms = fp[:Bathrooms]
-              floorplan.bedrooms = fp[:Bedrooms]
-              floorplan.market_rent = fp[:RentMin]
-              floorplan.square_feet = fp[:GrossSquareFootage]
-              floorplan.save(:validate => false)
+            else
+              floorplan.name = fp[:FloorPlanName]
             end
+            floorplan.bathrooms = fp[:Bathrooms]
+            floorplan.bedrooms = fp[:Bedrooms]
+            floorplan.market_rent = fp[:RentMin]
+            floorplan.square_feet = fp[:GrossSquareFootage]
+            floorplan.save(:validate => false)
+            #end
           end
         end
       end
@@ -89,9 +89,9 @@ class RealPageSvcService < BaseService
       license_key = REALPAGESVC_LICENSE_KEY
       community_id = credentials.community_id
       response = HTTParty.post(
-          url,
-          :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-          :body => '<soapenv:Envelope
+        url,
+        :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+        :body => '<soapenv:Envelope
                         xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                         xmlns:tem="http://tempuri.org/"
                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -112,7 +112,7 @@ class RealPageSvcService < BaseService
 
                         </soapenv:Body>
                       </soapenv:Envelope>
-                      ')
+        ')
       result = Ox.load(response.body, mode: :hash)
       if result[:"s:Envelope"][1][:"s:Body"][1].present?  
         units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
@@ -122,7 +122,7 @@ class RealPageSvcService < BaseService
             u = u[:UnitObject]
             hit = false
             unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
-            unless unit.updated_by_admin
+            unless unit.manual_override
               unit.property_id = u[:SiteID]
               unit.provider_unit_id = u[:UnitID]
               unit.unit_type = u[:UnitNumber]
@@ -155,7 +155,7 @@ class RealPageSvcService < BaseService
                 current_date = Date.today
               end
 
-               @array_of_dates.each do |hash|
+              @array_of_dates.each do |hash|
                 if hash[:ready_date] == current_date
                   hash[:units] << unit.provider_unit_id
                   hit = true
@@ -204,9 +204,9 @@ class RealPageSvcService < BaseService
       
       @array_of_dates.each do |hash|
         response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
+          url,
+          :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+          :body => '<soapenv:Envelope
                           xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                           xmlns:tem="http://tempuri.org/"
                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -316,9 +316,9 @@ class RealPageSvcService < BaseService
       password = REALPAGESVC_PASSWORD
       license_key = REALPAGESVC_LICENSE_KEY
       response = HTTParty.post(
-          url,
-          :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-          :body => '<soapenv:Envelope
+        url,
+        :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+        :body => '<soapenv:Envelope
                       xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                       xmlns:tem="http://tempuri.org/"
                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -340,14 +340,14 @@ class RealPageSvcService < BaseService
 
                       </soapenv:Body>
                     </soapenv:Envelope>
-                    ')
+        ')
       result = Hash.from_xml(response.body)
       unless result["Envelope"]["Body"]["Fault"].present?
         return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
       else
-         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]    
-         puts '-----------------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
-         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
+        #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]    
+        puts '-----------------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"] 
+        ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})  
       end  
     rescue => e
       #Thread.current[:errors] << e.message

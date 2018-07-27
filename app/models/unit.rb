@@ -9,10 +9,11 @@ class Unit < ApplicationRecord
   validates_uniqueness_of :marketing_name, scope: :community_id
   has_many :amenities, as: :amenityable
 
-  # scope :available_units, -> { where(availability: "Unoccupied") }
-  scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
-  scope :has_x_plot, -> { where("x_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+1.year) }
-  scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+1.year) }
+  #scope :available, -> { where(available: true) }
+  scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
+  scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ? and available = ?", "Unoccupied", Date.today, 0,true) }
+  scope :has_x_plot, -> { where("x_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+1.year,true) }
+  scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+1.year,true) }
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   scope :available_units, -> { ploted_units.or(past_available_units) }
   after_commit :populate_image_urls, on: [:create,:update]

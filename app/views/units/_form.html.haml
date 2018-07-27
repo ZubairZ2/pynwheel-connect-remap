@@ -40,14 +40,34 @@
           %small Floor
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Updated by Admin
+    Available
 
   .col-sm-12.col-lg-1.col-md-1.col-xs-12
-    = f.radio_button :updated_by_admin, true, class: "settings-field"
-    = f.label :updated_by_admin, "Yes", :value => "true"
+    = f.radio_button :available, true, class: "settings-field"
+    = f.label :manually_updated, "Yes", :value => "true"
   .col-sm-12.col-lg-2.col-md-2.col-xs-12
-    = f.radio_button :updated_by_admin, false, class: "settings-field"
-    = f.label :updated_by_admin, "No", :value => "false"          
+    = f.radio_button :available, false, class: "settings-field"
+    = f.label :available, "No", :value => "false"          
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Sold
+
+  .col-sm-12.col-lg-1.col-md-1.col-xs-12
+    = f.radio_button :sold, true, class: "settings-field"
+    = f.label :sold, "Yes", :value => "true"
+  .col-sm-12.col-lg-2.col-md-2.col-xs-12
+    = f.radio_button :sold, false, class: "settings-field"
+    = f.label :sold, "No", :value => "false"          
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Manual Override
+
+  .col-sm-12.col-lg-1.col-md-1.col-xs-12
+    = f.radio_button :manual_override, true, class: "settings-field"
+    = f.label :manual_override, "Yes", :value => "true"
+  .col-sm-12.col-lg-2.col-md-2.col-xs-12
+    = f.radio_button :manual_override, false, class: "settings-field"
+    = f.label :manual_override, "No", :value => "false"          
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Image
