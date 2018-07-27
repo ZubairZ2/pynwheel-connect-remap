@@ -34,6 +34,7 @@ class UnitsController < ApplicationController
   def update
     respond_to do |format|
       if @unit.update(unit_params)
+        set_manually_updated_column
         format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
         format.json { respond_with_bip(@unit) }
       else
@@ -41,6 +42,19 @@ class UnitsController < ApplicationController
         format.html { render :action => "edit" }
         format.json { respond_with_bip(@unit) }
       end
+    end
+  end
+  
+  def set_manually_updated_column
+    @unit.update_attribute(:manually_updated, true)
+    if @unit.sold
+      @unit.update_attributes(available: false,availability: "Occupied",available_date: nil,manual_override: true)
+    end
+    if @unit.available
+      @unit.update_attributes(available_date: Date.today-1.day,availability: "Unoccupied",manual_override: true)
+    end
+    if !@unit.available
+      @unit.update_attributes(available_date: nil,availability: "Occupied")
     end
   end
 
