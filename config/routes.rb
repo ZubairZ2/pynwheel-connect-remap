@@ -62,6 +62,9 @@ Rails.application.routes.draw do
       collection do
         post :set_floor
         post :set_available_date
+        post :set_available
+        post :set_manual_override
+        post :set_sold
       end
     end
     resources :sitemaps do

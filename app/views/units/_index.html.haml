@@ -16,6 +16,15 @@
           %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-available-date", "data-toggle" => "modal"}
             %i.fa.fa-adjust
             SET Available Date       
+          %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-available", "data-toggle" => "modal"}
+            %i.fa.fa-adjust
+            SET Available       
+          %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-manual-override", "data-toggle" => "modal"}
+            %i.fa.fa-adjust
+            SET Manual Override       
+          %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-sold", "data-toggle" => "modal"}
+            %i.fa.fa-adjust
+            SET Sold       
     .box.box-widget.panel-box
       .box-header     
         .row
@@ -85,6 +94,54 @@
       = form_tag set_available_date_community_units_path(@community) do  
         .modal-body.set-floor-modal-body
           = text_field_tag :available_date, nil,:class=>"form-control mb-20 datepicker",:placeholder=>"Enter Available Date",:readonly=>true
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id
+                = h unit.marketing_name  
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+#modal-to-set-available.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Set Available
+      = form_tag set_available_community_units_path(@community) do  
+        .modal-body.set-floor-modal-body
+          = select_tag :available,options_for_select([["Yes",true],["No",false]]),:class=>"form-control mb-20"
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id
+                = h unit.marketing_name  
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+#modal-to-set-manual-override.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Set Manual Override
+      = form_tag set_manual_override_community_units_path(@community) do  
+        .modal-body.set-floor-modal-body
+          = select_tag :manual_override,options_for_select([["Yes",true],["No",false]]),:class=>"form-control mb-20"
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id
+                = h unit.marketing_name  
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+#modal-to-set-sold.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Set Manual Override
+      = form_tag set_sold_community_units_path(@community) do  
+        .modal-body.set-floor-modal-body
+          = select_tag :sold,options_for_select([["Yes",true],["No",false]]),:class=>"form-control mb-20"
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
