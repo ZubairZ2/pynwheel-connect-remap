@@ -25,6 +25,7 @@ class Unit < ApplicationRecord
       self.update_attribute(:available, false)
       self.update_attribute(:availability, "Occupied")
       self.update_attribute(:available_date, nil)
+      self.update_attribute(:manual_override, true)
     end
   end
 
