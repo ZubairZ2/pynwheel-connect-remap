@@ -79,9 +79,13 @@
         .modal-body.set-floor-modal-body
           = text_field_tag :floor, nil,:class=>"form-control mb-20 validate[required]",:placeholder=>"Enter Floor"
           .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_floor'
+              %label Select all
+          .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'floor-checkbox'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -95,9 +99,13 @@
         .modal-body.set-floor-modal-body
           = text_field_tag :available_date, nil,:class=>"form-control mb-20 datepicker",:placeholder=>"Enter Available Date",:readonly=>true
           .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_available_date'
+              %label Select all
+          .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-date-checkbox'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -111,9 +119,13 @@
         .modal-body.set-floor-modal-body
           = select_tag :available,options_for_select([["Yes",true],["No",false]]),:class=>"form-control mb-20"
           .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_available'
+              %label Select all
+          .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id
+                = check_box_tag 'unit_ids[]', unit.id,unit.available,class: 'available-checkbox'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -127,9 +139,13 @@
         .modal-body.set-floor-modal-body
           = select_tag :manual_override,options_for_select([["Yes",true],["No",false]]),:class=>"form-control mb-20"
           .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_manual_override'
+              %label Select all
+          .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id
+                = check_box_tag 'unit_ids[]', unit.id,unit.manual_override,class: 'manual-override-checkbox'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -143,9 +159,13 @@
         .modal-body.set-floor-modal-body
           = select_tag :sold,options_for_select([["Yes",true],["No",false]]),:class=>"form-control mb-20"
           .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_sold'
+              %label Select all
+          .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id
+                = check_box_tag 'unit_ids[]', unit.id,unit.sold,class: 'sold-checkbox'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -154,6 +174,52 @@
         
   / End Panel left Side
   :javascript
+
+    $('#select_all_units_for_manual_override').change(function(){
+      if($(this).is(':checked')){
+        $('.manual-override-checkbox').prop('checked',true)
+      }
+      else{
+        $('.manual-override-checkbox').prop('checked',false)
+      }
+    });
+    
+    $('#select_all_units_for_sold').change(function(){
+      if($(this).is(':checked')){
+        $('.sold-checkbox').prop('checked',true)
+      }
+      else{
+        $('.sold-checkbox').prop('checked',false)
+      }
+    });
+
+    $('#select_all_units_for_available').change(function(){
+      if($(this).is(':checked')){
+        $('.available-checkbox').prop('checked',true)
+      }
+      else{
+        $('.available-checkbox').prop('checked',false)
+      }
+    });
+
+    $('#select_all_units_for_available_date').change(function(){
+      if($(this).is(':checked')){
+        $('.available-date-checkbox').prop('checked',true)
+      }
+      else{
+        $('.available-date-checkbox').prop('checked',false)
+      }
+    });
+
+    $('#select_all_units_for_floor').change(function(){
+      if($(this).is(':checked')){
+        $('.floor-checkbox').prop('checked',true)
+      }
+      else{
+        $('.floor-checkbox').prop('checked',false)
+      }
+    });
+
     $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' }); 
     var url = "#{community_units_path(@community)}"
     $.datepicker.setDefaults({dateFormat: 'yy-mm-dd' }); 
