@@ -125,7 +125,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,unit.available,class: 'available-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-checkbox'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -145,7 +145,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,unit.manual_override,class: 'manual-override-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'manual-override-checkbox'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -165,7 +165,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,unit.sold,class: 'sold-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'sold-checkbox'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
