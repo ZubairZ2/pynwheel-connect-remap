@@ -154,7 +154,7 @@
   .modal-dialog
     .modal-content
       .modal-header
-        Set Manual Override
+        Set Sold
       = form_tag set_sold_community_units_path(@community) do  
         .modal-body.set-floor-modal-body
           = select_tag :sold,options_for_select([["Yes",true],["No",false]]),:class=>"form-control mb-20"
