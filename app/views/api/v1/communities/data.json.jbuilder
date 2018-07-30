@@ -203,6 +203,8 @@ json.apartments do
       json.rent unit.effective_rent
       json.availability unit.availability
       json.available_date unit.available_date.strftime('%m/%d/%Y') if unit.available_date.present?
+      json.available unit.available
+      json.sold unit.sold
       json.x_plot unit.x_plot
       json.y_plot unit.y_plot
       json.building unit.building
