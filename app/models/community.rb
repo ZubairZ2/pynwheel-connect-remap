@@ -43,6 +43,10 @@ class Community < ApplicationRecord
   def is_gables_organic?
     theme_name == "gables_organic"
   end
+  
+  def is_panther?
+    theme_name == "panther"
+  end
 
   def is_gables_refined?
     theme_name == "gables_refined"
