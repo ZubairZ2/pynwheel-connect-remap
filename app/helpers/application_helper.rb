@@ -1,13 +1,19 @@
 module ApplicationHelper
+  
   def sidemenu_communities_actions 
     ["index","new","create","update"]
   end
+  
   def flash_class(level)
     case level
       when 'notice' then "alert alert-success"
       when 'error' then "alert alert-danger"
       when 'alert' then "alert alert-danger"  
     end
+  end
+  
+  def gables_theme_options
+    ["gables_organic","gables_refined","gables_energetic","gables_natural","gables_custom"]
   end
 
   def font_families

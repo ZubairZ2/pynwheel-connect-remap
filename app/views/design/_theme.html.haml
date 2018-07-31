@@ -55,15 +55,15 @@
               %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"expressionist"} Select
           %i.fa.fa-check
       .col-lg-3.col-md-6.col-sm-12
-        .select-theme#gables_organic-theme{:class=>"#{@community.is_gables_organic? ? 'active-theme' : 'active'}"}
+        .select-theme{:class=>"#{@community.any_gables_theme? ? 'active-theme' : 'active'}",:id=>"#{@community.any_gables_theme? ? @community.theme_name : 'gables_energetic'}-theme"}
           .theme-img{:style => "background:url(#{asset_path('gables-organic.jpg')});"}
           .themes-detail
             .pull-left
               %h4 Gables
             .pull-right
               /%a{:href => "#"} View Theme
-              = f.radio_button :theme_name,"gables_organic",style: "display: none;" 
-              %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"gables_organic"} Select
+              = f.radio_button :theme_name,"#{@community.any_gables_theme? ? @community.theme_name : 'gables_energetic'}",style: "display: none;" 
+              %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"#{@community.any_gables_theme? ? @community.theme_name : 'gables_energetic'}"} Select
           %i.fa.fa-check
       .col-lg-3.col-md-6.col-sm-12
         .select-theme#panther-theme{:class=>"#{@community.is_panther? ? 'active-theme' : 'active'}"}
@@ -76,39 +76,7 @@
               = f.radio_button :theme_name,"panther",style: "display: none;" 
               %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"panther"} Select
           %i.fa.fa-check
-      .col-lg-3.col-md-6.col-sm-12.hidden
-        .select-theme#gables_refined-theme{:class=>"#{@community.is_gables_refined? ? 'active-theme' : 'active'}"}
-          .theme-img{:style => "background:url(#{asset_path('gables-refined.jpg')});"}
-          .themes-detail
-            .pull-left
-              %h4 Gables Refined
-            .pull-right
-              /%a{:href => "#"} View Theme
-              = f.radio_button :theme_name,"gables_refined",style: "display: none;" 
-              %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"gables_refined"} Select
-          %i.fa.fa-check
-      .col-lg-3.col-md-6.col-sm-12.hidden
-        .select-theme#gables_energetic-theme{:class=>"#{@community.is_gables_energetic? ? 'active-theme' : 'active'}"}
-          .theme-img{:style => "background:url(#{asset_path('gables-energetic.jpg')});"}
-          .themes-detail
-            .pull-left
-              %h4 Gables Energetic
-            .pull-right
-              /%a{:href => "#"} View Theme
-              = f.radio_button :theme_name,"gables_energetic",style: "display: none;" 
-              %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"gables_energetic"} Select
-          %i.fa.fa-check
-      .col-lg-3.col-md-6.col-sm-12.hidden
-        .select-theme#gables_natural-theme{:class=>"#{@community.is_gables_natural? ? 'active-theme' : 'active'}"}
-          .theme-img{:style => "background:url(#{asset_path('gables-natural.jpg')});"}
-          .themes-detail
-            .pull-left
-              %h4 Gables Natural
-            .pull-right
-              /%a{:href => "#"} View Theme
-              = f.radio_button :theme_name,"gables_natural",style: "display: none;" 
-              %a.btn.btn-success.theme-selection{:href => "javascript:;","data-theme-name"=>"gables_natural"} Select
-          %i.fa.fa-check
+      
   .row
     .col-lg-12
       .box-footer.mt-30.pt-15

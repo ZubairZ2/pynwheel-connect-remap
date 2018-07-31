@@ -43,10 +43,6 @@ class Community < ApplicationRecord
   def is_gables_organic?
     theme_name == "gables_organic"
   end
-  
-  def is_panther?
-    theme_name == "panther"
-  end
 
   def is_gables_refined?
     theme_name == "gables_refined"
@@ -58,6 +54,18 @@ class Community < ApplicationRecord
 
   def is_gables_natural?
     theme_name == "gables_natural"
+  end
+  
+  def is_gables_custom?
+    theme_name == "gables_custom"
+  end
+  
+  def any_gables_theme?
+    theme_name == "gables_organic" || theme_name == "gables_refined" || theme_name == "gables_energetic" || theme_name == "gables_natural" || theme_name == "gables_custom"
+  end
+  
+  def is_panther?
+    theme_name == "panther"
   end
 
   def has_floorplates?

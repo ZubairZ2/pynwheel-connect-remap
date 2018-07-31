@@ -1102,3 +1102,87 @@ function setFontSize(value){
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').val('18px');
   }
 }
+
+function setGablesThemeDefaultValues(){
+  var gables_theme = $('#community_theme_name').val();
+  if(gables_theme == 'gables_organic'){
+    setGablesOrganicValues()
+  }
+  if(gables_theme == 'gables_refined'){
+    setGablesRefinedValues()
+  }
+  if(gables_theme == 'gables_energetic'){
+    setGablesEnergeticValues()
+  }
+  if(gables_theme == 'gables_natural'){
+    setGablesNaturalValues()
+  }
+  if(gables_theme == 'gables_custom'){
+    setGablesCustomValues()
+  }
+}
+
+function setGablesOrganicValues(){
+  $('#community_design_attributes_gable_attributes_appartment_button_color').val('#595277');
+  $('#community_design_attributes_gable_attributes_gallery_button_color').val('#7C6756');
+  $('#community_design_attributes_gable_attributes_neighborhood_button_color').val('#C44628');
+  $('#community_design_attributes_gable_attributes_favorite_button_color').val('#746634');
+  $('#community_design_attributes_gable_attributes_filter_panel_color').val('#7C6756');
+  $('#community_design_attributes_gable_attributes_webpages_button_color').val('#96348F');
+  $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#E09A58');
+  $('#gables-form').submit();
+}
+
+function setGablesOrganicValues(){
+  $('#community_design_attributes_gable_attributes_appartment_button_color').val('#595277');
+  $('#community_design_attributes_gable_attributes_gallery_button_color').val('#7C6756');
+  $('#community_design_attributes_gable_attributes_neighborhood_button_color').val('#C44628');
+  $('#community_design_attributes_gable_attributes_favorite_button_color').val('#746634');
+  $('#community_design_attributes_gable_attributes_filter_panel_color').val('#7C6756');
+  $('#community_design_attributes_gable_attributes_webpages_button_color').val('#96348F');
+  $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#E09A58');
+  $('#gables-form').submit();
+}
+
+function setGablesRefinedValues(){
+  $('#community_design_attributes_gable_attributes_appartment_button_color').val('#242628');
+  $('#community_design_attributes_gable_attributes_gallery_button_color').val('#67665C');
+  $('#community_design_attributes_gable_attributes_neighborhood_button_color').val('#5F6438');
+  $('#community_design_attributes_gable_attributes_favorite_button_color').val('#663330');
+  $('#community_design_attributes_gable_attributes_filter_panel_color').val('#67665C');
+  $('#community_design_attributes_gable_attributes_webpages_button_color').val('#AA3239');
+  $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#AA3239');
+  $('#gables-form').submit();
+}
+
+function setGablesEnergeticValues(){
+  $('#community_design_attributes_gable_attributes_appartment_button_color').val('#8A8A8D');
+  $('#community_design_attributes_gable_attributes_gallery_button_color').val('#44797B');
+  $('#community_design_attributes_gable_attributes_neighborhood_button_color').val('#0475A9');
+  $('#community_design_attributes_gable_attributes_favorite_button_color').val('#D5C228');
+  $('#community_design_attributes_gable_attributes_filter_panel_color').val('#467A7D');
+  $('#community_design_attributes_gable_attributes_webpages_button_color').val('#96348F');
+  $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#96348F');
+  $('#gables-form').submit();
+}
+
+function setGablesNaturalValues(){
+  $('#community_design_attributes_gable_attributes_appartment_button_color').val('#4C878F');
+  $('#community_design_attributes_gable_attributes_gallery_button_color').val('#B26F29');
+  $('#community_design_attributes_gable_attributes_neighborhood_button_color').val('#936A5E');
+  $('#community_design_attributes_gable_attributes_favorite_button_color').val('#67665C');
+  $('#community_design_attributes_gable_attributes_filter_panel_color').val('#B95333');
+  $('#community_design_attributes_gable_attributes_webpages_button_color').val('#8C813B');
+  $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#8C813B');
+  $('#gables-form').submit();
+}
+function setGablesCustomValues(){
+  $('#community_design_attributes_gable_attributes_appartment_button_color').val($('#community_design_attributes_gable_attributes_appartment_button_color').data('value'));
+  $('#community_design_attributes_gable_attributes_gallery_button_color').val($('#community_design_attributes_gable_attributes_gallery_button_color').data('value'));
+  $('#community_design_attributes_gable_attributes_neighborhood_button_color').val($('#community_design_attributes_gable_attributes_neighborhood_button_color').data('value'));
+  $('#community_design_attributes_gable_attributes_favorite_button_color').val($('#community_design_attributes_gable_attributes_favorite_button_color').data('value'));
+  $('#community_design_attributes_gable_attributes_filter_panel_color').val($('#community_design_attributes_gable_attributes_filter_panel_color').data('value'));
+  $('#community_design_attributes_gable_attributes_webpages_button_color').val($('#community_design_attributes_gable_attributes_webpages_button_color').data('value'));
+  $('#community_design_attributes_gable_attributes_imagepages_button_color').val($('#community_design_attributes_gable_attributes_imagepages_button_color').data('value'));
+  $('#gables-form').submit();
+}
