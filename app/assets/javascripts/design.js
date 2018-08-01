@@ -1119,7 +1119,7 @@ function setGablesOrganicValues(){
   $('#community_design_attributes_gable_attributes_filter_panel_color').val('#7C6756');
   $('#community_design_attributes_gable_attributes_webpages_button_color').val('#96348F');
   $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#E09A58');
-  $('#gables-form').submit();
+  //$('#gables-form').submit();
 }
 
 function setGablesOrganicValues(){
@@ -1130,7 +1130,7 @@ function setGablesOrganicValues(){
   $('#community_design_attributes_gable_attributes_filter_panel_color').val('#7C6756');
   $('#community_design_attributes_gable_attributes_webpages_button_color').val('#96348F');
   $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#E09A58');
-  $('#gables-form').submit();
+  //$('#gables-form').submit();
 }
 
 function setGablesRefinedValues(){
@@ -1141,7 +1141,7 @@ function setGablesRefinedValues(){
   $('#community_design_attributes_gable_attributes_filter_panel_color').val('#67665C');
   $('#community_design_attributes_gable_attributes_webpages_button_color').val('#AA3239');
   $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#AA3239');
-  $('#gables-form').submit();
+  //$('#gables-form').submit();
 }
 
 function setGablesEnergeticValues(){
@@ -1152,7 +1152,7 @@ function setGablesEnergeticValues(){
   $('#community_design_attributes_gable_attributes_filter_panel_color').val('#467A7D');
   $('#community_design_attributes_gable_attributes_webpages_button_color').val('#96348F');
   $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#96348F');
-  $('#gables-form').submit();
+  //$('#gables-form').submit();
 }
 
 function setGablesNaturalValues(){
@@ -1163,7 +1163,7 @@ function setGablesNaturalValues(){
   $('#community_design_attributes_gable_attributes_filter_panel_color').val('#B95333');
   $('#community_design_attributes_gable_attributes_webpages_button_color').val('#8C813B');
   $('#community_design_attributes_gable_attributes_imagepages_button_color').val('#8C813B');
-  $('#gables-form').submit();
+  //$('#gables-form').submit();
 }
 function setGablesCustomValues(){
   $('#community_design_attributes_gable_attributes_appartment_button_color').val($('#community_design_attributes_gable_attributes_appartment_button_color').data('value'));
@@ -1173,5 +1173,5 @@ function setGablesCustomValues(){
   $('#community_design_attributes_gable_attributes_filter_panel_color').val($('#community_design_attributes_gable_attributes_filter_panel_color').data('value'));
   $('#community_design_attributes_gable_attributes_webpages_button_color').val($('#community_design_attributes_gable_attributes_webpages_button_color').data('value'));
   $('#community_design_attributes_gable_attributes_imagepages_button_color').val($('#community_design_attributes_gable_attributes_imagepages_button_color').data('value'));
-  $('#gables-form').submit();
+  //('#gables-form').submit();
 }
