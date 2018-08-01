@@ -60,7 +60,11 @@ Rails.application.routes.draw do
         post :adjust_position
       end
       collection do
-        post :set_floor_of_units
+        post :set_floor
+        post :set_available_date
+        post :set_available
+        post :set_manual_override
+        post :set_sold
       end
     end
     resources :sitemaps do
@@ -112,7 +116,17 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :favorite_settings, only: [:index, :create, :update]
+    resources :favorite_settings, only: [:index, :create, :update] do
+      resources :favorite_images
+      resources :ebrochure_menu_buttons
+      member do
+        get :show_image_in_modal
+        post :save_favorite_image
+        put :update_favorite_image
+        delete :delete_favorite_image
+        get :show_images
+      end
+    end
     resources :neighborhoods, only: [:index, :create, :update] do
       resources :locations
     end

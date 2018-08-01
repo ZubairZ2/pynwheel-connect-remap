@@ -19,7 +19,7 @@ class WebpagesController < ActionController::Base
       else
         @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
       end
-      @available_units_and_sold_units = @community_info.units.available_units + @community_info.units.are_sold
+      @available_units_and_sold_units = @community_info.units.available_units + @community_info.units.are_sold + @community_info.units.are_available 
       if @available_units_and_sold_units.size > 0
         normalize_units
         if @units_with_floorplan_info.present?
@@ -34,7 +34,7 @@ class WebpagesController < ActionController::Base
   def normalize_units
     @floorplans = @community_info.floorplans
     @available_units_and_sold_units.each do |unit|
-      if unit.effective_rent.present? && unit.effective_rent >= 1 && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+      if unit.effective_rent.present? && unit.effective_rent >= 1  && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
         floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
         struct = {
            marketing_name: unit.marketing_name,
@@ -47,7 +47,8 @@ class WebpagesController < ActionController::Base
            x_plot: unit.x_plot,
            y_plot: unit.y_plot,
            floor: unit.floor,
-           sold: unit.sold
+           sold: unit.sold,
+           available: unit.available
         }
          @units_with_floorplan_info << struct
       end
@@ -104,13 +105,13 @@ class WebpagesController < ActionController::Base
 
   def favorites
     @favorite = Favorite.find_by_session_id(cookies[:session_id])
-    @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids])).where.not(available_date: nil)
+    @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
     @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
   end
 
   def favorites_share_link
     @favorite = Favorite.find_by_session_id(params[:session_id])
-    @units = Unit.where(id: @favorite.unit_ids).where.not(available_date: nil)
+    @units = Unit.where(id: @favorite.unit_ids,community_id: params[:community_id]).where.not(available_date: nil)
     @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
   end
 

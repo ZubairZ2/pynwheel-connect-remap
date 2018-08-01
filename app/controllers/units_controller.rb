@@ -62,13 +62,13 @@ class UnitsController < ApplicationController
   def set_manually_updated_column
     @unit.update_attribute(:manually_updated, true)
     if @unit.sold
-      @unit.update_attributes(available: false,availability: "Occupied",available_date: nil,manual_override: true)
+      @unit.update_attributes(availability: "Occupied",available_date: nil)
     end
     if params[:unit][:available] == 'true'
-      @unit.update_attributes(available_date: Date.today-1.day,availability: "Unoccupied",manual_override: true)
+      @unit.update_attributes(available: true,availability: "Unoccupied")
     end
     if params[:unit][:available] == 'false'
-      @unit.update_attributes(availability: "Occupied")
+      @unit.update_attributes(available: nil,availability: "Occupied")
     end
   end
 
@@ -145,9 +145,33 @@ class UnitsController < ApplicationController
   end
 
 
-  def set_floor_of_units
-    @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor],updated_by_admin: true)
+  def set_floor
+    @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor],manually_updated: true)
     flash[:notice] = "Floor is updated for units successfully."
+    redirect_to :back
+  end
+
+  def set_available_date
+    @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date],manually_updated: true)
+    flash[:notice] = "Available date is updated for units successfully."
+    redirect_to :back
+  end
+  
+  def set_available
+    @community.units.where(id: params[:unit_ids]).update_all(available: params[:available],manually_updated: true)
+    flash[:notice] = "Available is updated for units successfully."
+    redirect_to :back
+  end
+  
+  def set_manual_override
+    @community.units.where(id: params[:unit_ids]).update_all(manual_override: params[:manual_override],manually_updated: true)
+    flash[:notice] = "Manual Override is updated for units successfully."
+    redirect_to :back
+  end
+  
+  def set_sold
+    @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true)
+    flash[:notice] = "Sold is updated for units successfully."
     redirect_to :back
   end
 
