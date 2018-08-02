@@ -65,10 +65,10 @@ class UnitsController < ApplicationController
       @unit.update_attributes(availability: "Occupied",available_date: Date.today-1)
     end
     if params[:unit][:available] == 'true'
-      @unit.update_attributes(available: true,availability: "Unoccupied")
+      @unit.update_attributes(availability: "Unoccupied",available_date: Date.today-1,available: true)
     end
     if params[:unit][:available] == 'false'
-      @unit.update_attributes(available: nil,availability: "Occupied")
+      @unit.update_attributes(availability: "Occupied",available: false)
     end
   end
 
@@ -158,7 +158,11 @@ class UnitsController < ApplicationController
   end
   
   def set_available
-    @community.units.where(id: params[:unit_ids]).update_all(available: params[:available],manually_updated: true)
+    if params[:available] == 'true'
+      @community.units.where(id: params[:unit_ids]).update_all(availability: "Unoccupied",manually_updated: true,available_date: Date.today-1,available: true)
+    else
+      @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied",manually_updated: true,available: false)
+    end
     flash[:notice] = "Available is updated for units successfully."
     redirect_to :back
   end

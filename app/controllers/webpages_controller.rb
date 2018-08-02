@@ -19,7 +19,7 @@ class WebpagesController < ActionController::Base
       else
         @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
       end
-      @available_units_and_sold_units = @community_info.units.available_units + @community_info.units.are_sold + @community_info.units.are_available 
+      @available_units_and_sold_units = @community_info.units.available_units + @community_info.units.are_sold 
       if @available_units_and_sold_units.size > 0
         normalize_units
         if @units_with_floorplan_info.present?
