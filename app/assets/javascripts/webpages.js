@@ -767,11 +767,12 @@ function setModalAttributes(element) {
   } else {
     if ($(element).data('available')) {
       $('#unitModal').find('#availability').html("Available");
-      $('#unitModal').find('#available-text').html('Aailable');
+
+      $('#unitModal').find('#available-text').html('Available');
       $('#unitModal').find('#available-date').html('Now');
     } else {
       $('#unitModal').find('#availability').html($(element).data('availability') == "Unoccupied" ? "Available" : "Occupied");
-      $('#unitModal').find('#available-text').html('Aailable');
+      $('#unitModal').find('#available-text').html('Available');
       $('#unitModal').find('#available-date').html($(element).data('available-date'));
     }
   }

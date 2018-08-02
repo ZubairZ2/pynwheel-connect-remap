@@ -19,7 +19,7 @@ class WebpagesController < ActionController::Base
       else
         @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
       end
-      @available_units_and_sold_units = @community_info.units.available_units + @community_info.units.are_sold + @community_info.units.are_available 
+      @available_units_and_sold_units = @community_info.units.available_units + @community_info.units.are_sold 
       if @available_units_and_sold_units.size > 0
         normalize_units
         if @units_with_floorplan_info.present?
@@ -37,20 +37,20 @@ class WebpagesController < ActionController::Base
       if unit.effective_rent.present? && unit.effective_rent >= 1  && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
         floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
         struct = {
-           marketing_name: unit.marketing_name,
-           market_rent: unit.effective_rent,
-           bedrooms: floorplan.bedrooms,
-           bathrooms: floorplan.bathrooms,
-           square_feet: floorplan.square_feet,
-           availability: unit.availability,
-           available_date: unit.available_date,
-           x_plot: unit.x_plot,
-           y_plot: unit.y_plot,
-           floor: unit.floor,
-           sold: unit.sold,
-           available: unit.available
+          marketing_name: unit.marketing_name,
+          market_rent: unit.effective_rent,
+          bedrooms: floorplan.bedrooms,
+          bathrooms: floorplan.bathrooms,
+          square_feet: floorplan.square_feet,
+          availability: unit.availability,
+          available_date: unit.available_date,
+          x_plot: unit.x_plot,
+          y_plot: unit.y_plot,
+          floor: unit.floor,
+          sold: unit.sold,
+          available: unit.available
         }
-         @units_with_floorplan_info << struct
+        @units_with_floorplan_info << struct
       end
     end
   end

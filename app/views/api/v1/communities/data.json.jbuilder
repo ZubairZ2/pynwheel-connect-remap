@@ -193,9 +193,8 @@ json.apartments do
     json.sitemap nil
   end
   units_floorplans = []
-  #json.units @community.units.available_units do |unit|
   floorplans = @community.floorplans
-  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold + @community.units.are_available 
+  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold 
   json.units available_units_and_sold_units.each do |unit|
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
