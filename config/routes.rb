@@ -52,6 +52,16 @@ Rails.application.routes.draw do
       post :adjust_marker_positions
     end
     resources :units do
+      resources :amenities,controller: "unit_amenities" do
+        post :plot_amenity
+        collection do
+          get :plot_amenities
+          delete :remove_amenities_plot
+        end
+        member do
+          delete :remove_amenity
+        end
+      end
       member do
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
