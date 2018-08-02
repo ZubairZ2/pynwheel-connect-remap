@@ -101,7 +101,7 @@ json.apartments do
       json.marketing_name unit.marketing_name
       json.rent unit.effective_rent
       json.availability unit.availability
-      json.available_date unit.available_date.strftime('%m/%d/%Y') if unit.available_date.present?
+      json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day 
       json.available unit.available
       json.sold unit.sold
       json.x_plot unit.x_plot
