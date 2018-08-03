@@ -1,8 +1,8 @@
 class RealPageSvcConnectionService < BaseService
 	def perform
     begin
-      url = REALPAGE_URL
-      soap_action = REALPAGE_FLOORPLAN_ACTION
+	    url = REALPAGE_URL
+      soap_action = REALPAGE_UNIT_ACTION
       pmc_id = credentials.pmc_id
       site_id = credentials.site_id
       username = REALPAGESVC_USERNAME
@@ -13,26 +13,27 @@ class RealPageSvcConnectionService < BaseService
         url,
         :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
         :body => '<soapenv:Envelope
-                    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                    xmlns:tem="http://tempuri.org/"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                    <soapenv:Header/>
-                    <soapenv:Body>
+                        xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                        xmlns:tem="http://tempuri.org/"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                        <soapenv:Header/>
+                        <soapenv:Body>
 
-                      <tem:getfloorplanlist>
-                        <tem:auth>
-                          <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                          <tem:siteid>'+site_id+'</tem:siteid>
-                          <tem:username>'+username+'</tem:username>
-                          <tem:password>'+password+'</tem:password>
-                          <tem:licensekey>'+license_key+'</tem:licensekey>
-                          <tem:system>OneSite</tem:system>
-                        </tem:auth>
-                      </tem:getfloorplanlist>
+                          <tem:getunitsbyproperty>
+                            <tem:auth>
+                              <tem:pmcid>'+pmc_id+'</tem:pmcid>
+                              <tem:siteid>'+site_id+'</tem:siteid>
+                              <tem:username>'+username+'</tem:username>
+                              <tem:password>'+password+'</tem:password>
+                              <tem:licensekey>'+license_key+'</tem:licensekey>
+                              <tem:system>OneSite</tem:system>
+                            </tem:auth>
+                          </tem:getunitsbyproperty>
 
-                    </soapenv:Body>
-                  </soapenv:Envelope>')
+                        </soapenv:Body>
+                      </soapenv:Envelope>
+        ')
       return response.body
     rescue
       false
