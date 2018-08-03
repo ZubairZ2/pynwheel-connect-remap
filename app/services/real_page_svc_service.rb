@@ -64,7 +64,9 @@ class RealPageSvcService < BaseService
             floorplan.bedrooms = fp[:Bedrooms]
             floorplan.market_rent = fp[:RentMin]
             floorplan.square_feet = fp[:GrossSquareFootage]
+            puts '===========================================' , floorplan.square_feet
             floorplan.save(:validate => false)
+            puts '-----------***************-----------------' , floorplan.square_feet
             #end
           end
         end
