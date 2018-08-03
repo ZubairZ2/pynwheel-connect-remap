@@ -59,7 +59,7 @@ json.ui_settigs do
         json.global_nav_bg_opacity @community.design.global_nav_bg_opacity.present? ? @community.design.global_nav_bg_opacity : "100%"
         json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Rectangular"
         json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
-        json.global_nav_buttons_width @community.design.global_nav_buttons_width.present? ? @community.design.global_nav_buttons_width : "110px"
+        json.global_nav_buttons_width @community.design.global_nav_buttons_width.present? ? @community.design.global_nav_buttons_width : "175px"
         json.secondary_page_menu_border @community.design.secondary_page_menu_border.present? ? @community.design.secondary_page_menu_border : "All sides"
         json.global_nav_button_on_as_image @community.design.global_nav_button_on_as_image 
         json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image 

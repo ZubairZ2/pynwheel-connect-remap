@@ -1035,6 +1035,39 @@ function setBorderOptions(border_element, value) {
   setFontSize(value);
 }
 
+
+function setBorderOptionsOnGlobalNaviagtion(border_element, value) {
+  
+  if (value == "Circular") {
+    $(border_element).children("option[value^=Top-Bottom]").hide();
+    $(border_element).children("option[value^=Left-Right]").hide();
+    $(border_element).val("All sides");
+    
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=50px]").hide();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=75px]").hide();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=100px]").hide();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=110px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=120px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=125px]").show();
+    
+    $('.button-width-field-on-global-navigation').hide();
+  } else {
+    console.log(value);
+    $(border_element).children("option[value^=Top-Bottom]").show();
+    $(border_element).children("option[value^=Left-Right]").show();
+    
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=50px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=75px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=100px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=110px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=120px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=125px]").show();
+    
+    $('.button-width-field-on-global-navigation').show();
+  }
+  setFontSize(value);
+}
+
 function setLogoSize(value) {
   if (value == 'Right' || value == 'Left') {
     $('#community_design_attributes_expressionist_attributes_home_page_logo_size').children("option").hide();
