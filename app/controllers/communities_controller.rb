@@ -57,8 +57,8 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Home Page Logo updated successfully.</div>'  
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
-    # elsif params[:overlay_tab].present? 
-    #   '<div class="alert alert-success">Expressionist options selected successfully.</div>'
+      # elsif params[:overlay_tab].present? 
+      #   '<div class="alert alert-success">Expressionist options selected successfully.</div>'
     elsif params[:global_navigation_tab].present? 
       '<div class="alert alert-success">Global Navigation options selected successfully.</div>'
     elsif params[:filter_panel_tab].present? 
@@ -219,8 +219,10 @@ class CommunitiesController < ApplicationController
           :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:home_page_button_font_size,:display_home_page_image,
           :display_home_page_nav_background,:home_page_button_image,:display_global_navigation_button_icon,:global_navigation_button_border_color,
           :global_navigation_button_font_family,
-        :global_navigation_button_font_size,:display_global_navigation_button_bg_color,:filter_panel_button_border_color,:filter_panel_text_font_size,
-      :filter_panel_button_text_font_size],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size]])
+          :global_navigation_button_font_size,:display_global_navigation_button_bg_color,:filter_panel_button_border_color,
+          :filter_panel_text_font_size,
+          :filter_panel_button_text_font_size],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,
+          :gallery_button_on_font_color]])
   end
 
 end

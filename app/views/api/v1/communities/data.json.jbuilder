@@ -87,6 +87,7 @@ json.ui_settigs do
         json.gallery_button_on_as_image @community.design.gallery_button_on_as_image
         json.gallery_button_on_image @community.design.gallery_button_on_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button_on_image.url : @community.design.gallery_button_on_image.url) : "No Image"
         json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
+        json.gallery_button_on_font_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_font_color.present?) ? @community.design.filter_panel.gallery_button_on_font_color : "#565455"
         json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "18px"
         json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
       end
