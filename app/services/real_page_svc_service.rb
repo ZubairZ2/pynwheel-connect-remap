@@ -72,6 +72,7 @@ class RealPageSvcService < BaseService
         end
       end
     rescue => e
+      puts '---------------------eeeeeeeeeeeeee------------', e
       #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
