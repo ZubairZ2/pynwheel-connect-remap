@@ -131,7 +131,7 @@
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
-                  = filter_panel.text_field :gallery_button_on_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_font_color.present? ? filter_panel.gallery_button_on_font_color : "#565455"        
+                  = filter_panel.text_field :gallery_button_on_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_font_color.present? ? filter_panel.object.gallery_button_on_font_color : "#565455"        
       .row
         .col-md-12
           %ul.nav.nav-tabs
