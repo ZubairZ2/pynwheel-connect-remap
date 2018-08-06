@@ -141,7 +141,7 @@
             = filter_panel.check_box :display_gallery_button_on_background_color, {class: "filter-panel-field"}
             %label.label-primary{:for => "community_design_attributes_filter_panel_attributes_display_gallery_button_on_background_color"}
             %span.pl-15 Yes
-      .row
+      .row.gallery-button-on-background-color-field.hidden
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -305,6 +305,7 @@
   var gallery_button_as_image = "#{current_community.design.gallery_button_as_image}"       
   var filter_panel_background_as_image = "#{current_community.design.filter_panel_background_as_image}"       
   var gallery_button_on_as_image = "#{current_community.design.gallery_button_on_as_image}"       
+  var display_gallery_button_on_background_color = "#{current_community.design.filter_panel.display_gallery_button_on_background_color}"       
 
   if(filter_button_as_image == "true")
     $('.filter-button-upload-fields').removeClass('hidden');
@@ -314,6 +315,8 @@
     $('.filter-panel-background-as-image-upload-fields').removeClass('hidden');    
   if(gallery_button_on_as_image == "true")
     $('.gallery-button-on-as-image-upload-fields').removeClass('hidden');    
+  if(display_gallery_button_on_background_color == "true")
+    $('.gallery-button-on-background-color-field').removeClass('hidden');    
 
   $('#community_design_attributes_filter_button_as_image').change(function(){
     if($(this).is(':checked')){
@@ -350,5 +353,14 @@
       }
     else{
         $('.gallery-button-on-as-image-upload-fields').addClass('hidden');
+     }
+  });   
+                                                   
+  $('#community_design_attributes_filter_panel_attributes_display_gallery_button_on_background_color').change(function(){
+     if($(this).is(':checked')){
+        $('.gallery-button-on-background-color-field').removeClass('hidden');
+      }
+    else{
+        $('.gallery-button-on-background-color-field').addClass('hidden');
      }
   });                                                      

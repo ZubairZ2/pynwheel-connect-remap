@@ -426,11 +426,11 @@ module ApplicationHelper
 
 
   def navigation_button_height_options
-    ["50px","75px","100px","110px","120px","125px"]
+    ["50px","75px","100px","110px","136px","120px","125px"]
   end
 
   def navigation_button_width_options
-    ["175px","250px","475px","479px"]
+    ["175px","250px","377px","475px","502px"]
   end
   
   def spacing_options

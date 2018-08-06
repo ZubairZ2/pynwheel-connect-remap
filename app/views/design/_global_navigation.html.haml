@@ -125,14 +125,14 @@
               = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border.present? ? d.object.secondary_page_menu_border : 'All sides'),{},{class: "form-control global-navigation-field"}            
       .form-group
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display button on bg color
+          Display button on background color
         .col-sm-12.col-lg-9.col-md-9.col-xs-12
           .TriSea-technologies-Switch
             %span.pr-15 No
             = e.check_box :display_button_on_bg_color, {class: "global-navigation-field"}
             %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_button_on_bg_color"}
             %span.pl-15 Yes
-      .row
+      .row.button-on-background-color-field.hidden
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -220,10 +220,13 @@
 :javascript 
   var global_nav_button_on_as_image = "#{current_community.design.global_nav_button_on_as_image}" 
   var global_nav_button_off_as_image = "#{current_community.design.global_nav_button_off_as_image}" 
+  var display_button_on_bg_color = "#{current_community.design.expressionist.display_button_on_bg_color}" 
   if(global_nav_button_on_as_image == "true")
     $('.global-nav-button-on-upload-fields').removeClass('hidden');
   if(global_nav_button_off_as_image == "true")
     $('.global-nav-button-off-upload-fields').removeClass('hidden');
+  if(display_button_on_bg_color == "true")
+    $('.button-on-background-color-field').removeClass('hidden');
 
   $('#community_design_attributes_global_nav_button_on_as_image').change(function(){
     if($(this).is(':checked')){
@@ -240,6 +243,14 @@
       }
     else{
         $('.global-nav-button-off-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_button_on_bg_color').change(function(){
+    if($(this).is(':checked')){
+        $('.button-on-background-color-field').removeClass('hidden');
+      }
+    else{
+        $('.button-on-background-color-field').addClass('hidden');
      }
   });
   
