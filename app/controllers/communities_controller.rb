@@ -221,8 +221,9 @@ class CommunitiesController < ApplicationController
           :global_navigation_button_font_family,
           :global_navigation_button_font_size,:display_global_navigation_button_bg_color,:filter_panel_button_border_color,
           :filter_panel_text_font_size,
-          :filter_panel_button_text_font_size],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,
-          :gallery_button_on_font_color]])
+          :filter_panel_button_text_font_size, :spacing_between_buttons, :button_on_bg_color, :display_button_on_bg_color],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,
+          :gallery_button_on_font_color,:display_gallery_button_on_background_color,:gallery_button_on_background_color,
+          :display_filter_panel_icon]])
   end
 
 end

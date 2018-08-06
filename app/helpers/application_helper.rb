@@ -338,7 +338,7 @@ module ApplicationHelper
   end
   
   def global_navigation_button_font_sizes
-    ["10px","11px","12px","13px"]
+    ["13px","14px","15px","16px","17px","18px","19px","20px","21px","22px","23px","24px","25px","26px","27px","28px","29px","30px"]
   end
   
   def filter_panel_button_text_font_sizes
@@ -431,6 +431,10 @@ module ApplicationHelper
 
   def navigation_button_width_options
     ["175px","250px","475px","479px"]
+  end
+  
+  def spacing_options
+    ["0px","10px","20px","30px","40px","50px","60px","70px","80px","90px","100px"]
   end
 
   def convert_float_to_integer(x)
