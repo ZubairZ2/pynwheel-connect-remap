@@ -25,6 +25,9 @@
           %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-sold", "data-toggle" => "modal"}
             %i.fa.fa-adjust
             Set Sold       
+          %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-image", "data-toggle" => "modal"}
+            %i.fa.fa-adjust
+            Upload Image       
     .box.box-widget.panel-box
       .box-header     
         .row
@@ -170,6 +173,26 @@
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+#modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Upload Image
+      = form_tag set_image_community_units_path(@community), multipart: true do  
+        .modal-body.set-floor-modal-body
+          = file_field_tag 'image_file', :accept => 'image/jpeg',:required=>true
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_image'
+              %label Select all
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
+                = h unit.marketing_name  
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
 
         
   / End Panel left Side
@@ -208,6 +231,15 @@
       }
       else{
         $('.available-date-checkbox').prop('checked',false)
+      }
+    });
+
+    $('#select_all_units_for_image').change(function(){
+      if($(this).is(':checked')){
+        $('.image-checkbox').prop('checked',true)
+      }
+      else{
+        $('.image-checkbox').prop('checked',false)
       }
     });
 

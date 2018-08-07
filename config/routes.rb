@@ -75,6 +75,7 @@ Rails.application.routes.draw do
         post :set_available
         post :set_manual_override
         post :set_sold
+        post :set_image
       end
     end
     resources :sitemaps do

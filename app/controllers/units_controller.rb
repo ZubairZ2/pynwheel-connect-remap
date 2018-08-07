@@ -179,6 +179,15 @@ class UnitsController < ApplicationController
     flash[:notice] = "Sold is updated for units successfully."
     redirect_to :back
   end
+  
+  def set_image
+    units = @community.units.where(id: params[:unit_ids])
+    units.each do |unit|
+      units.update(image: params[:image_file],manually_updated: true)
+    end
+    flash[:notice] = "Image is uploaded for units successfully."
+    redirect_to :back
+  end
 
   private
   def set_community
