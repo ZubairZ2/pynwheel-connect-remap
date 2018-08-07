@@ -151,6 +151,16 @@
                 .input-group-addon
                   %i
                   = filter_panel.text_field :gallery_button_on_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_background_color.present? ? filter_panel.object.gallery_button_on_background_color : "#565455"              
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel icon color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :filter_panel_icon_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.filter_panel_icon_color.present? ? filter_panel.object.filter_panel_icon_color : "#565455"              
       .form-group
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
           Display filter panel icon
