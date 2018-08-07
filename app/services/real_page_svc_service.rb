@@ -132,7 +132,7 @@ class RealPageSvcService < BaseService
               unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1 
               unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
               if u[:RentSqFtCount].present?
-                Floorplan.where(provider_floorplan_id: u[:FloorplanID]).update_all(square_feet: u[:RentSqFtCount])
+                Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: u[:FloorplanID]).update_all(square_feet: u[:RentSqFtCount])
               end
               unit.floor = evaluate_floor(unit.marketing_name) rescue nil
               if u[:AvailableDate].present?

@@ -10,9 +10,9 @@ class RealPageSvcConnectionService < BaseService
       license_key = REALPAGESVC_LICENSE_KEY
       community_id = credentials.community_id
       response = HTTParty.post(
-          url,
-          :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-          :body => '<soapenv:Envelope
+        url,
+        :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+        :body => '<soapenv:Envelope
                         xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                         xmlns:tem="http://tempuri.org/"
                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -33,10 +33,10 @@ class RealPageSvcConnectionService < BaseService
 
                         </soapenv:Body>
                       </soapenv:Envelope>
-                      ')
+        ')
       return response.body
-     rescue
+    rescue
       false
-     end 
+    end 
 	end
 end
