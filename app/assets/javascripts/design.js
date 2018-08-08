@@ -74,6 +74,20 @@ $(document).ready(function () {
         }
       }
     }
+    
+    var application_background_image_upload_holder = document.getElementById('application-background-image-upload-holder');
+    if (application_background_image_upload_holder) {
+      application_background_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+          readApplicationBackgroundImageSrc(files[0]);
+        } else {
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
 
 
     var filter_button_image_upload_holder = document.getElementById('filter-button-image-upload-holder');
@@ -252,6 +266,10 @@ $(document).ready(function () {
 
   $("#global_nav_button_off").change(function () {
     readGlobalNavButtonOffFromInput(this);
+  });
+  
+  $("#application_background_image").change(function () {
+    readApplicationBackgroundImageFromInput(this);
   });
 
   $("#filter_button").change(function () {
@@ -454,6 +472,17 @@ function readGlobalNavButtonOffSrc(file) {
   reader.readAsDataURL(file);
 }
 
+function readApplicationBackgroundImageSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#application-background-preview-image').attr('src', e.target.result);
+    $('#application-background-preview-image').parent().attr('href', e.target.result);
+    applicationBackgroundImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+
 function filterButtonSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
@@ -583,6 +612,22 @@ function globalNavButtonOffImage(src) {
     dataType: "script",
     data: {
       community: {design_attributes: {id: design_id, global_nav_button_off: src}}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+
+function applicationBackgroundImage(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, application_background_image: src}}}
     }
   }).done(function () {
     $(".divLoading").addClass("hidden");
@@ -834,6 +879,26 @@ function readGlobalNavButtonOffFromInput(input) {
         $('#global-nav-button-off-preview-image').attr('src', e.target.result);
         $('#global-nav-button-off-preview-image').parent().attr('href', e.target.result);
         globalNavButtonOffImage(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+      //console.log($(input).val());
+    }
+  }
+}
+
+function readApplicationBackgroundImageFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        $('#application-background-preview-image').attr('src', e.target.result);
+        $('#application-background-preview-image').parent().attr('href', e.target.result);
+        applicationBackgroundImage(e.target.result);
       }
 
       reader.readAsDataURL(input.files[0]);
