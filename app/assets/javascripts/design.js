@@ -1168,16 +1168,9 @@ function setFontSize(value) {
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=16px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=18px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=20px]").show();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=22px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=24px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=26px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=28px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=30px]").hide();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').val('14px')
   } else {
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=14px]").hide();
-    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=16px]").hide();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=18px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=20px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=22px]").show();
@@ -1185,6 +1178,21 @@ function setFontSize(value) {
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=26px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=28px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=30px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=32px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=34px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=36px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=38px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=40px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=42px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=44px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=46px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=48px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=50px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=52px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=54px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=56px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=58px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=60px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').val('18px');
   }
 }
