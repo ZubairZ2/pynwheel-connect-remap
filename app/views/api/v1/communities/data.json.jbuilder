@@ -48,8 +48,10 @@ json.ui_settigs do
     json.expressionist do
       json.global_navigation do
         json.display_global_navigation_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_icon : true
+        json.display_application_background_image @community.design.expressionist.present? ? @community.design.expressionist.display_application_background_image : false
         json.spacing_between_buttons (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons.present?) ? @community.design.expressionist.spacing_between_buttons : "0px"
         json.button_on_bg_color (@community.design.expressionist.present? and @community.design.expressionist.button_on_bg_color.present?) ? @community.design.expressionist.button_on_bg_color : "#565455"
+        json.global_navigation_button_on_font_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_on_font_color.present?) ? @community.design.expressionist.global_navigation_button_on_font_color : "#565455"
         json.display_button_on_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_button_on_bg_color : false
         json.display_global_navigation_button_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_bg_color : true
         json.global_navigation_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_family.present?) ? @community.design.expressionist.global_navigation_button_font_family : "Arial"
@@ -68,6 +70,7 @@ json.ui_settigs do
         json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image 
         json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : "No Image"
         json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : "No Image"
+        json.global_nav_button_off (@community.design.expressionist.present? and @community.design.expressionist.application_background_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.application_background_image.url : @community.design.expressionist.application_background_image.url) : "No Image"
       end
       json.filter_panel do
         json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
@@ -92,6 +95,8 @@ json.ui_settigs do
         json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
         json.gallery_button_on_font_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_font_color.present?) ? @community.design.filter_panel.gallery_button_on_font_color : "#ffff"
         json.gallery_button_on_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_background_color.present?) ? @community.design.filter_panel.gallery_button_on_background_color : "#565455"
+        json.filter_panel_icon_color (@community.design.filter_panel.present? and @community.design.filter_panel.filter_panel_icon_color.present?) ? @community.design.filter_panel.filter_panel_icon_color : "#565455"
+        json.filter_panel_icon_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.icon_background_color.present?) ? @community.design.filter_panel.icon_background_color : "#565455"
         json.display_gallery_button_on_background_color @community.design.filter_panel.present? ? @community.design.filter_panel.display_gallery_button_on_background_color : false
         json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
         json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "18px"
