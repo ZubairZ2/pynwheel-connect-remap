@@ -70,7 +70,7 @@ json.ui_settigs do
         json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image 
         json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : "No Image"
         json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : "No Image"
-        json.global_nav_button_off (@community.design.expressionist.present? and @community.design.expressionist.application_background_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.application_background_image.url : @community.design.expressionist.application_background_image.url) : "No Image"
+        json.application_background_image (@community.design.expressionist.present? and @community.design.expressionist.application_background_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.application_background_image.url : @community.design.expressionist.application_background_image.url) : "No Image"
       end
       json.filter_panel do
         json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
@@ -95,7 +95,7 @@ json.ui_settigs do
         json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
         json.gallery_button_on_font_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_font_color.present?) ? @community.design.filter_panel.gallery_button_on_font_color : "#ffff"
         json.gallery_button_on_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_background_color.present?) ? @community.design.filter_panel.gallery_button_on_background_color : "#565455"
-        json.filter_panel_icon_color (@community.design.filter_panel.present? and @community.design.filter_panel.filter_panel_icon_color.present?) ? @community.design.filter_panel.filter_panel_icon_color : "#565455"
+        json.filter_panel_icon_color (@community.design.filter_panel.present? and @community.design.filter_panel.filter_panel_icon_color.present?) ? @community.design.filter_panel.filter_panel_icon_color : "#ffff"
         json.filter_panel_icon_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.icon_background_color.present?) ? @community.design.filter_panel.icon_background_color : "#565455"
         json.display_gallery_button_on_background_color @community.design.filter_panel.present? ? @community.design.filter_panel.display_gallery_button_on_background_color : false
         json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
