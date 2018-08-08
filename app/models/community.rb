@@ -71,6 +71,14 @@ class Community < ApplicationRecord
   def has_floorplates?
     !is_sitemap
   end
+  #Below method is temporary. Don't forget to remove it.
+  def temporary_theme_name
+    if theme_name == "gables_custom"
+      "gables_organic"
+    else
+      theme_name
+    end
+  end
 
   def has_temporary_images?
     temporary_images.size > 0

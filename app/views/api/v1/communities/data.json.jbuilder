@@ -1,7 +1,7 @@
 local_assets_base_url = "http://192.168.101.77:3000"
 json.version '1.0.0.7'
 json.ui_settigs do
-  json.theme @community.theme_name
+  json.theme @community.temporary_theme_name
   json.animation @community.design.animation
   if gables_theme(@community)
     json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
