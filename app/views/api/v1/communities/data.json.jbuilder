@@ -1,7 +1,7 @@
 local_assets_base_url = "http://192.168.101.77:3000"
 json.version '1.0.0.7'
 json.ui_settigs do
-  json.theme @community.theme_name
+  json.theme @community.temporary_theme_name
   json.animation @community.design.animation
   if gables_theme(@community)
     json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
@@ -92,8 +92,8 @@ json.ui_settigs do
         json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
         json.gallery_button_on_font_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_font_color.present?) ? @community.design.filter_panel.gallery_button_on_font_color : "#ffff"
         json.gallery_button_on_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_background_color.present?) ? @community.design.filter_panel.gallery_button_on_background_color : "#565455"
-        json.display_gallery_button_on_background_color @community.design.filter_panel.display_gallery_button_on_background_color
-        json.display_filter_panel_icon @community.design.filter_panel.display_filter_panel_icon
+        json.display_gallery_button_on_background_color @community.design.filter_panel.present? ? @community.design.filter_panel.display_gallery_button_on_background_color : false
+        json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
         json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "18px"
         json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
       end
