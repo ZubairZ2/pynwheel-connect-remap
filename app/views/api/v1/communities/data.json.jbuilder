@@ -92,8 +92,8 @@ json.ui_settigs do
         json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
         json.gallery_button_on_font_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_font_color.present?) ? @community.design.filter_panel.gallery_button_on_font_color : "#ffff"
         json.gallery_button_on_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_background_color.present?) ? @community.design.filter_panel.gallery_button_on_background_color : "#565455"
-        json.display_gallery_button_on_background_color @community.design.filter_panel.display_gallery_button_on_background_color
-        json.display_filter_panel_icon @community.design.filter_panel.display_filter_panel_icon
+        json.display_gallery_button_on_background_color @community.design.filter_panel.present? ? @community.design.filter_panel.display_gallery_button_on_background_color : false
+        json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon
         json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "18px"
         json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
       end
