@@ -37,12 +37,11 @@ $(document).ready(function(){
 
       $('.amenities-list').multiSelect();
       $('.ms-elem-selectable').click(function(){
-        console.log($(this).children('span').text());
-        selected.push([$(this).attr('id').split('-')[0],$(this).children('span').text()]);
-        // $("#selected-units").empty();
-        // for (i=0; i<selected.length; i++) {
-        //   $("#selected-units").append('<li class="s-unit" data-id='+i+' data-provider-unit-id='+selected[i][0]+'>' + selected[i][1] + '</li>');
-        // }
+        console.log("We are extracting -selectable from unit_provider_id");
+        var unit_provider_id = $(this).attr('id');
+        unit_provider_id = unit_provider_id.replace("-selectable", "")
+        console.log(unit_provider_id);
+        selected.push([unit_provider_id,$(this).children('span').text()]);
         plotMode();
       });
 
