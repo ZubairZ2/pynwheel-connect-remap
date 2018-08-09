@@ -146,6 +146,26 @@
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button on font color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = e.text_field :global_navigation_button_on_font_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.global_navigation_button_on_font_color.present? ? e.object.global_navigation_button_on_font_color : "#565455"      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Application background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = e.text_field :application_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.application_background_color.present? ? e.object.application_background_color : "#ffff"      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Spacing between buttons
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :spacing_between_buttons , options_for_select(spacing_options,e.object.spacing_between_buttons.present? ? e.object.spacing_between_buttons : '0px'),{},{class: "form-control global-navigation-field"}                        
@@ -156,6 +176,8 @@
               %a{"data-toggle" => "tab", :href => "#global-navigation-button-on"} Global navigation button on
             %li
               %a{"data-toggle" => "tab", :href => "#global-navigation-button-off"} Global navigation button off
+            %li
+              %a{"data-toggle" => "tab", :href => "#application-background-image"} Application background image
           .tab-content
             #global-navigation-button-on.tab-pane.fade.in.active
               .form-group
@@ -217,16 +239,50 @@
                 %span.icon-upload
                   = image_tag "upload-image.png"
                   %p Drag &amp; Drop file to Upload    
+            #application-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload application background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_application_background_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_application_background_image"}
+                    %span.pl-15 Yes
+              .row.application-background-image-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Application background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.expressionist.application_background_image.present? ? current_community.design.expressionist.application_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Application Background Image"}
+                            = image_tag current_community.design.expressionist.application_background_image.present? ? current_community.design.expressionist.application_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"application-background-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :application_background_image
+              .text-center.drag-box.mt-15.image-upload#application-background-image-upload-holder.application-background-image-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload    
 :javascript 
   var global_nav_button_on_as_image = "#{current_community.design.global_nav_button_on_as_image}" 
   var global_nav_button_off_as_image = "#{current_community.design.global_nav_button_off_as_image}" 
-  var display_button_on_bg_color = "#{current_community.design.expressionist.display_button_on_bg_color}" 
+  var display_button_on_bg_color = "#{current_community.design.expressionist.display_button_on_bg_color}"
+  var display_application_background_image = "#{current_community.design.expressionist.display_application_background_image}"
+
   if(global_nav_button_on_as_image == "true")
     $('.global-nav-button-on-upload-fields').removeClass('hidden');
   if(global_nav_button_off_as_image == "true")
     $('.global-nav-button-off-upload-fields').removeClass('hidden');
   if(display_button_on_bg_color == "true")
     $('.button-on-background-color-field').removeClass('hidden');
+  if(display_application_background_image == "true")
+    $('.application-background-image-fields').removeClass('hidden');
 
   $('#community_design_attributes_global_nav_button_on_as_image').change(function(){
     if($(this).is(':checked')){
@@ -245,12 +301,22 @@
         $('.global-nav-button-off-upload-fields').addClass('hidden');
      }
   });
+
   $('#community_design_attributes_expressionist_attributes_display_button_on_bg_color').change(function(){
     if($(this).is(':checked')){
         $('.button-on-background-color-field').removeClass('hidden');
       }
     else{
         $('.button-on-background-color-field').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_expressionist_attributes_display_application_background_image').change(function(){
+    if($(this).is(':checked')){
+        $('.application-background-image-fields').removeClass('hidden');
+      }
+    else{
+        $('.application-background-image-fields').addClass('hidden');
      }
   });
   
