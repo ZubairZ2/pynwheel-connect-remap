@@ -156,6 +156,16 @@
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Application background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = e.text_field :application_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.application_background_color.present? ? e.object.application_background_color : "#ffff"      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Spacing between buttons
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :spacing_between_buttons , options_for_select(spacing_options,e.object.spacing_between_buttons.present? ? e.object.spacing_between_buttons : '0px'),{},{class: "form-control global-navigation-field"}                        
