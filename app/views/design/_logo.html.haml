@@ -1,7 +1,7 @@
 .row
   .col-md-12
     .form-group
-      - if gables_theme(@community)
+      - if gables_theme(@community) || @community.is_panther?
         = link_to "Home Page Logo", secondary_logo_community_design_index_path(@community), class: "btn btn-primary btn-file pull-right mr-15"
 .row
   .col-lg-12

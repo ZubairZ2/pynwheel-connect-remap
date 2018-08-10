@@ -3,7 +3,7 @@ json.version '1.0.0.8'
 json.ui_settigs do
   json.theme @community.temporary_theme_name
   json.animation @community.design.animation
-  if gables_theme(@community)
+  if gables_theme(@community) || @community.is_panther?
     json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
     json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   else
