@@ -1,8 +1,9 @@
 (function($){
     var numerics_regex = new RegExp(/^[0-9]+$/);
+    var negative_numerics_regex = new RegExp(/^-[1-9]$/);
     var hash_separated_numbers = new RegExp(/^[0-9]+-[0-9]+$/);
     var comman_separated_numbers = new RegExp(/^[0-9]+(,[0-9]+)+$/);
-    var range_regex = new RegExp(numerics_regex.source + "|" + hash_separated_numbers.source + "|" + comman_separated_numbers.source);
+    var range_regex = new RegExp(numerics_regex.source + "|" + hash_separated_numbers.source + "|" + comman_separated_numbers.source + "|" + negative_numerics_regex.source);
     $.fn.validationEngineLanguage = function(){
     };
     $.validationEngineLanguage = {
