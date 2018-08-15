@@ -57,8 +57,12 @@ class PsiService < BaseService
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
 
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-        unit.market_rent = u["Units"]["Unit"]["MarketRent"]
-        unit.effective_rent = u["EffectiveRent"].present? ? u["EffectiveRent"] : 1.0
+        unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+        if u["Units"]["Unit"]["MarketRent"].present?
+          unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+        elsif u["EffectiveRent"].present?
+          unit.effective_rent = u["EffectiveRent"]
+        end
         unit.floor = evaluate_floor(unit.marketing_name) rescue nil
         unit.availability = u["Availability"]["VacancyClass"]
         if u["Availability"]["VacancyClass"] == "Unoccupied"
