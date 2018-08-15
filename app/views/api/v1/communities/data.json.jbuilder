@@ -296,6 +296,9 @@ json.neighborhood do
     json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 1000
     json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
     json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
+    if @community.neighborhood.listing.present?
+      json.listing @community.neighborhood.listing
+    end
     arr = @community.neighborhood.category.split(',')
     arr.insert(0,'All')
     json.categories arr.each do |val|
