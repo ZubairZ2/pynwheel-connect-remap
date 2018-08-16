@@ -94,47 +94,47 @@ class Yardi2Service < BaseService
     floorplans[0].lazy.each do |floorplan|
       begin
         fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id]).first_or_initialize  
-        #unless fp.manual_override
+        unless fp.manual_override
 
-        rooms = []
-        floorplan.each do |f|
+          rooms = []
+          floorplan.each do |f|
             
-          if f.key?(:Room)
-            rooms << f
-          end
+            if f.key?(:Room)
+              rooms << f
+            end
 
-          if f.key?(:Name)
-            fp.name = f[:Name]
-          end
+            if f.key?(:Name)
+              fp.name = f[:Name]
+            end
 
-          if f.key?(:MarketRent)
-            if f[:MarketRent][0][:Min].to_f > 0
-              fp.market_rent = f[:MarketRent][0][:Min]
+            if f.key?(:MarketRent)
+              if f[:MarketRent][0][:Min].to_f > 0
+                fp.market_rent = f[:MarketRent][0][:Min]
+              else
+                fp.market_rent = f[:MarketRent][0][:Max]
+              end
+            end
+
+            if f.key?(:SquareFeet)
+              if f[:SquareFeet][0][:Min].to_f > 0
+                fp.square_feet = f[:SquareFeet][0][:Min]
+              else
+                fp.square_feet = f[:SquareFeet][0][:Max]
+              end
+            end
+
+          end
+          
+          rooms.each do |room|
+            if room[:Room][0][:Type] == "Bedroom"
+              fp.bedrooms = room[:Room][1][:Count]
             else
-              fp.market_rent = f[:MarketRent][0][:Max]
+              fp.bathrooms = room[:Room][1][:Count]
             end
           end
-
-          if f.key?(:SquareFeet)
-            if f[:SquareFeet][0][:Min].to_f > 0
-              fp.square_feet = f[:SquareFeet][0][:Min]
-            else
-              fp.square_feet = f[:SquareFeet][0][:Max]
-            end
-          end
-
-        end
           
-        rooms.each do |room|
-          if room[:Room][0][:Type] == "Bedroom"
-            fp.bedrooms = room[:Room][1][:Count]
-          else
-            fp.bathrooms = room[:Room][1][:Count]
-          end
-        end
-          
-        fp.save(validate: false)
-        #end 
+          fp.save(validate: false)
+        end 
       rescue => e
         puts '----------------------------------', e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
