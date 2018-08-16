@@ -114,6 +114,11 @@
                     "regex": /^[\-\+]?((([0-9]{1,3})([,][0-9]{3})*)|([0-9]+))?([\.]([0-9]+))?$/,
                     "alertText": "* Invalid floating decimal number"
                 },
+                "floor": {
+                    // Number, including positive, negative, and floating decimal. credit: orefalo
+                    "regex": /^[\-\+]?([0-9]+)?$/,
+                    "alertText": "* Invalid floor number"
+                },
                 "date": {                    
                     //	Check if date is valid by leap year
 			"func": function (field) {
