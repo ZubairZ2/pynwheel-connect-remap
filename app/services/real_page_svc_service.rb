@@ -77,6 +77,7 @@ class RealPageSvcService < BaseService
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
     begin
+      floorplan_ids = []
       @array_of_dates = [{ready_date: Date.today,units: []}]
       current_date = Date.today
      
@@ -135,7 +136,8 @@ class RealPageSvcService < BaseService
               unit.market_rent = u[:BaseRentAmount]
               unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1 
               unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
-              if u[:RentSqFtCount].present?
+              if u[:RentSqFtCount].present? and !floorplan_ids.include?(u[:FloorplanID].to_s)
+                floorplan_ids << u[:FloorplanID].to_s
                 Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: u[:FloorplanID]).update_all(square_feet: u[:RentSqFtCount])
               end
               unit.floor = evaluate_floor(unit.marketing_name) rescue nil
