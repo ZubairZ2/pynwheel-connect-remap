@@ -1133,6 +1133,36 @@ function setBorderOptionsOnGlobalNaviagtion(border_element, value) {
   }
   setFontSize(value);
 }
+function adjustBorderOptionsOnGlobalNaviagtion(border_element, value) {
+
+  if (value == "Circular") {
+    $(border_element).children("option[value^=Top-Bottom]").hide();
+    $(border_element).children("option[value^=Left-Right]").hide();
+
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=50px]").hide();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=75px]").hide();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=100px]").hide();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=110px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=120px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=125px]").show();
+
+    $('.button-width-field-on-global-navigation').hide();
+  } else {
+    console.log(value);
+    $(border_element).children("option[value^=Top-Bottom]").show();
+    $(border_element).children("option[value^=Left-Right]").show();
+
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=50px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=75px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=100px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=110px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=120px]").show();
+    $('#community_design_attributes_global_nav_buttons_height').children("option[value^=125px]").show();
+
+    $('.button-width-field-on-global-navigation').show();
+  }
+  adjustFontSize(value);
+}
 
 function setLogoSize(value) {
   if (value == 'Right' || value == 'Left') {
@@ -1216,6 +1246,39 @@ function setFontSize(value) {
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=58px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=60px]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').val('18px');
+  }
+}
+function adjustFontSize(value) {
+  if (value == "Circular") {
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option").hide();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=14px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=16px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=18px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=20px]").show();
+  } else {
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option").hide();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=18px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=20px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=22px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=24px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=26px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=28px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=30px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=32px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=34px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=36px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=38px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=40px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=42px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=44px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=46px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=48px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=50px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=52px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=54px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=56px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=58px]").show();
+    $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option[value^=60px]").show();
   }
 }
 
