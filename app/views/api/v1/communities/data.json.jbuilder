@@ -269,7 +269,6 @@ json.apartments do
       json.id floor
       json.number floor
       json.name floorplate.name
-      json.floor_name_added floorplate.floor_name_added
       json.floor_name floorplate.floor_name.present? ? floorplate.floor_name : floor
       json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
       json.floorplate_amenities floorplate.amenities do |amenity|
