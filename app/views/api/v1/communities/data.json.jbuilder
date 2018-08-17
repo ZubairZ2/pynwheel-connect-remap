@@ -266,11 +266,11 @@ json.apartments do
     json.floorplates floors do |floor|
       floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
       image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
-      # json.id floorplate.id
       json.id floor
       json.number floor
       json.name floorplate.name
-      # json.range floorplate.range
+      json.floor_name_added floorplate.floor_name_added
+      json.floor_name floorplate.floor_name.present? ? floorplate.floor_name : floor
       json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
       json.floorplate_amenities floorplate.amenities do |amenity|
         if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
