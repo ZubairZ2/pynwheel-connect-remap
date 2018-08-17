@@ -229,7 +229,7 @@ json.apartments do
       json.floorplan_name floorplan.present? ? floorplan.name : nil
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
-      json.square_feet floorplan.present? ? floorplan.square_feet : 0
+      json.square_feet unit.square_feet.present? ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
       json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : (floorplan.present? && floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil)
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0

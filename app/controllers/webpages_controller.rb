@@ -41,7 +41,7 @@ class WebpagesController < ActionController::Base
           market_rent: unit.effective_rent,
           bedrooms: floorplan.bedrooms,
           bathrooms: floorplan.bathrooms,
-          square_feet: floorplan.square_feet,
+          square_feet: unit.square_feet.present? ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0),
           availability: unit.availability,
           available_date: unit.available_date,
           x_plot: unit.x_plot,
