@@ -24,6 +24,23 @@
 
     = f.text_field :range, :class=>"form-control validate[required,custom[onlyRange]]", :placeholder=>"Range",:maxlength=>"20"
     %small Valid formats: '3' one floor, '3-10' range, '3,5,7,[...]' for specific floors
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+    Add floor name 
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :floor_name_added
+      %label.label-primary{:for => "floorplate_floor_name_added"}
+      %span.pl-15 Yes
+.form-group#floor-name-field.hidden
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Floor name
+    %span Enter name of floor
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+
+    = f.text_field :floor_name, :class=>"form-control", :placeholder=>"Enter floor name",:maxlength=>"3"
+    %small Enter floor names B1,B2,B3 etc 
 .form-group.hidden
   %label.col-sm-12.col-lg-12.col-md-3.col-xs-12.control-label
     %p.text-warning
@@ -42,4 +59,17 @@
           = image_tag f.object.image? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
-      = f.file_field :image     
+      = f.file_field :image
+:javascript
+  var floorplate_floor_name_added = #{@floorplate.floor_name_added}
+  $('#floorplate_floor_name_added').change(function(){
+    if($(this).is(':checked')){
+      $('#floor-name-field').removeClass('hidden');
+    }
+    else{
+      $('#floor-name-field').addClass('hidden');
+    }
+  });
+
+  if(floorplate_floor_name_added)
+    $('#floor-name-field').removeClass('hidden');  

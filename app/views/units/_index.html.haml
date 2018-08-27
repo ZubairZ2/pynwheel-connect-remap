@@ -47,6 +47,7 @@
                     %th Floor
                   %th Available Date
                   %th Image
+                  %th Amenities
                   %th Actions
               %tbody
                 - units = @community_info.units.sort_by { |u| u.id }
@@ -67,6 +68,8 @@
                     %td
                       .drop-img
                         = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
+                    %td
+                      = link_to 'Amenities' , plot_amenities_community_unit_amenities_path(@community,u),:class=>"btn-info btn-xs.mr-5"
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit

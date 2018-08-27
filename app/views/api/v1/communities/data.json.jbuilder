@@ -1,9 +1,9 @@
 local_assets_base_url = "http://192.168.101.77:3000"
-json.version '1.0.0.9'
+json.version '1.0.0.10'
 json.ui_settigs do
   json.theme @community.temporary_theme_name
   json.animation @community.design.animation
-  if gables_theme(@community)
+  if gables_theme(@community) || @community.is_panther? || @community.is_expressionist?
     json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
     json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   else
@@ -234,6 +234,13 @@ json.apartments do
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
+      json.unit_amenities unit.amenities.plotted_amenities do |amenity|
+        json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+        json.name amenity.name
+        json.x_plot amenity.x_plot
+        json.y_plot amenity.y_plot
+        json.id amenity.id
+      end
     end
   end
   json.floorplans units_floorplans.uniq do |floorplan|
@@ -266,11 +273,10 @@ json.apartments do
     json.floorplates floors do |floor|
       floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
       image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
-      # json.id floorplate.id
       json.id floor
       json.number floor
       json.name floorplate.name
-      # json.range floorplate.range
+      json.floor_name floorplate.floor_name_added ? floorplate.floor_name : floor
       json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
       json.floorplate_amenities floorplate.amenities do |amenity|
         if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
@@ -297,6 +303,9 @@ json.neighborhood do
     json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 1000
     json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
     json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
+    if @community.neighborhood.listing.present?
+      json.listing @community.neighborhood.listing
+    end
     arr = @community.neighborhood.category.split(',')
     arr.insert(0,'All')
     json.categories arr.each do |val|

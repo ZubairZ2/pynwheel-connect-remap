@@ -152,7 +152,7 @@ $(window).bind('load', function () {
                 } else {
                   $('.fav-heart').addClass('hidden')
                 }
-                $('#popover-marketing-name').html("APARTMENT: <b>" + $(this).data('unit-marketing-name') + "</b>");
+                $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");
                 $('#popover-floorplan').html($(this).data('floorplan-name'))
                 if ($(this).data('floorplan-image') != '') {
                   $('#media-object').attr('src', $(this).data('floorplan-image'));
@@ -743,7 +743,7 @@ function disable_area_filter_options(max_area) {
 }
 
 function setModalAttributes(element) {
-  $('#unitModal').find('#unit-marketing-name').html("APARTMENT: " + $(element).data('unit-marketing-name'));
+  $('#unitModal').find('#unit-marketing-name').html($(element).data('unit-marketing-name'));
   $('#unitModal').find('#floorplan-name').html($(element).data('floorplan-name'));
   $('#unitModal').find('#square-feet').html($(element).data('square-feet'));
   $('#unitModal').find('#bathrooms').html($(element).data('bathrooms'));

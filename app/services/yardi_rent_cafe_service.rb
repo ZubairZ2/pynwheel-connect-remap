@@ -5,7 +5,7 @@ class YardiRentCafeService < BaseService
     import_yardirentcafe_units 
   end
 
-  def import_yardirentcafe_floorplans
+  def import_yardirentcafe_units
     begin
       request_type = "apartmentavailability"
       company_code = credentials.c_code
@@ -58,7 +58,7 @@ class YardiRentCafeService < BaseService
     end
   end
 
-  def import_yardirentcafe_units
+  def import_yardirentcafe_floorplans
     begin
       request_type = "floorplan"
       company_code = credentials.c_code
@@ -74,23 +74,23 @@ class YardiRentCafeService < BaseService
       if response[0]["Error"].nil?
         response.each do |r|
           fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
-          #unless fp.manual_override
-          fp.property_id = r["PropertyId"]
-          fp.provider_floorplan_id = r["FloorplanId"]
-          fp.name = r["FloorplanName"]
-          fp.unit_count = r[""]
-          fp.units_available = r[""]
-          fp.bedrooms = r["Beds"]
-          fp.bathrooms = r["Baths"]
-          if r["MinimumSQFT"].present?
-            fp.square_feet = r["MinimumSQFT"]
-          elsif r["SQFT"].present?
-            fp.square_feet = r["SQFT"]
+          unless fp.manual_override
+            fp.property_id = r["PropertyId"]
+            fp.provider_floorplan_id = r["FloorplanId"]
+            fp.name = r["FloorplanName"]
+            fp.unit_count = r[""]
+            fp.units_available = r[""]
+            fp.bedrooms = r["Beds"]
+            fp.bathrooms = r["Baths"]
+            if r["MinimumSQFT"].present?
+              fp.square_feet = r["MinimumSQFT"]
+            elsif r["SQFT"].present?
+              fp.square_feet = r["SQFT"]
+            end
+            fp.market_rent = r["MinimumRent"]
+            fp.deposit = r["MinimumDeposit"]
+            fp.save(validate: false)
           end
-          fp.market_rent = r["MinimumRent"]
-          fp.deposit = r["MinimumDeposit"]
-          fp.save(validate: false)
-          #end
         end
       else 
         puts '"Invalid credentials.Please enter correct one and try again."'
