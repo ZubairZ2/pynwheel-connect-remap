@@ -318,6 +318,10 @@ json.neighborhood do
         json.latitude location.latitude
         json.longitude location.longitude
         json.category location.category
+        json.image location.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+location.standard_image_url : location.standard_image_url) : nil
+        json.distance location.distance
+        json.time location.time
+        json.rating location.rating.present? ? location.rating : 0
       end
     end
   else
