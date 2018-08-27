@@ -30,6 +30,10 @@
                     %th{:width => "79"} Sr #
                     %th Title
                     %th Category
+                    %th Distance
+                    %th Time
+                    %th Rating
+                    %th Image
                     %th{:width => "100"} Actions
                 %tbody
                   - if @locations.present?
@@ -40,6 +44,15 @@
                           = location.title
                         %td
                           = location.category
+                        %td
+                          = location.distance
+                        %td
+                          = location.time
+                        %td
+                          = location.rating
+                        %td
+                          .drop-img
+                            = image_tag location.standard_image_url.present? ? location.standard_image_url : "/assets/default.jpeg"
                         %td
                           = link_to  edit_community_neighborhood_location_path(@community,@neighborhood,location), remote: true, class: "text-success ml-5" do
                             %i.fa.fa-edit

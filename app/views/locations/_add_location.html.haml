@@ -1,5 +1,5 @@
 #addLocation.modal.fade{:role => "dialog"}
-	= form_for [@community,@neighborhood,@location], remote: true do |f|
+	= form_for [@community,@neighborhood,@location] do |f|
 		.modal-dialog
 			/ Modal content
 			.modal-content
@@ -16,18 +16,34 @@
 							.mt-25.mb-40
 								%label Address
 								= f.text_area :address, class: "form-control validate[required]"
-						.col-md-12
+						.col-md-6
 							.mt-25.mb-40
 								%label Latitude
 								= f.text_field :latitude, class: "form-control validate[required,custom[onlyLatitude]]", id: "latitude"
-						.col-md-12
+						.col-md-6
 							.mt-25.mb-40
 								%label Longitude
 								= f.text_field :longitude, class: "form-control validate[required,custom[onlyLongitude]]", id: "longitude"
-						.col-md-12
+						.col-md-6
+							.mt-25.mb-40
+								%label Distance
+								= f.text_field :distance, class: "form-control validate[required]"
+						.col-md-6
+							.mt-25.mb-40
+								%label Time
+								= f.text_field :time, class: "form-control validate[required]"
+						.col-md-6
 							.mt-25.mb-40
 								%label Category
 								= f.select :category, ['Dining','Shopping','Entertainment','Schools','Banks','Parks','Errands'],{}, class: "form-control"
+						.col-md-6
+							.mt-25.mb-40
+								%label Rating
+								= f.select :rating, [0,1,2,3,4,5],{}, class: "form-control"
+						.col-md-12
+							.mt-25.mb-40
+								%label Image
+								= f.file_field :image
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
 					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel
