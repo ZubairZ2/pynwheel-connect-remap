@@ -1101,6 +1101,20 @@ function setBorderOptions(border_element, value) {
   setFontSize(value);
 }
 
+function adjustBorderOptions(border_element, value) {
+  if (value == "Circular") {
+    $(border_element).children("option[value^=Top-Bottom]").hide();
+    $(border_element).children("option[value^=Left-Right]").hide();
+    $(border_element).val("All sides");
+    $('.button-width-field').hide();
+  } else {
+    $(border_element).children("option[value^=Top-Bottom]").show();
+    $(border_element).children("option[value^=Left-Right]").show();
+    $('.button-width-field').show();
+  }
+  adjustFontSize(value);
+}
+
 
 function setBorderOptionsOnGlobalNaviagtion(border_element, value) {
 
@@ -1131,7 +1145,6 @@ function setBorderOptionsOnGlobalNaviagtion(border_element, value) {
 
     $('.button-width-field-on-global-navigation').show();
   }
-  setFontSize(value);
 }
 function adjustBorderOptionsOnGlobalNaviagtion(border_element, value) {
 
@@ -1161,7 +1174,6 @@ function adjustBorderOptionsOnGlobalNaviagtion(border_element, value) {
 
     $('.button-width-field-on-global-navigation').show();
   }
-  adjustFontSize(value);
 }
 
 function setLogoSize(value) {
