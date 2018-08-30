@@ -243,7 +243,7 @@ json.apartments do
           json.unit_id unit.id
           json.id amenity.id
         end
-      else
+      elsif !unit.standard_image_url.present?
         #If unit amenities are not present then send floorplan amenities
         json.unit_amenities floorplan.amenities.plotted_amenities do |amenity|
           json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
@@ -253,6 +253,8 @@ json.apartments do
           json.unit_id unit.id
           json.id SecureRandom.random_number(10000)
         end
+      else
+        json.unit_amenities []
       end
     end
   end
