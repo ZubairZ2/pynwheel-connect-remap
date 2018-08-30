@@ -34,7 +34,7 @@
                                 %td
                                   %p{:style => "color:#fff;"} Details
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{floorplan.square_feet.to_i} sq .Feet
+                                    %b #{number_with_delimiter(floorplan.square_feet.to_i, :delimiter => ',')} SF
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                     %b #{floorplan.bedrooms} #{"bed".pluralize(floorplan.bedrooms.to_i)}
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
