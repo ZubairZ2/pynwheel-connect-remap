@@ -251,7 +251,7 @@ json.apartments do
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
           json.unit_id unit.id
-          json.id amenity.id+unit.id+floorplan.id
+          json.id SecureRandom.hex(1)
         end
       end
     end
