@@ -251,7 +251,7 @@ json.apartments do
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
           json.unit_id unit.id
-          json.id SecureRandom.hex(1)
+          json.id SecureRandom.random_number(10000)
         end
       end
     end
