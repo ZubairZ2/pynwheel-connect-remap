@@ -242,6 +242,14 @@ json.apartments do
         json.unit_id unit.id
         json.id amenity.id
       end
+      json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
+        json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+        json.name amenity.name
+        json.x_plot amenity.x_plot
+        json.y_plot amenity.y_plot
+        json.floorplan_id floorplan.id
+        json.id amenity.id
+      end
     end
   end
   json.floorplans units_floorplans.uniq do |floorplan|
