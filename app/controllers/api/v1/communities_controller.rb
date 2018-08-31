@@ -55,6 +55,14 @@ class Api::V1::CommunitiesController < ActionController::Base
       render :json=> {:success=>false, :message => e.message}, :status=>500
     end
   end
+  
+  def update_version
+    app_version = AppVersion.first
+    if app_version.version != params[:version]
+      app_version.update_attribute(:version,params[:version])
+    end
+    render :json=> {:success=>true, :message => "success", :operation => "update version"}
+  end
 
   def list_communities
     @communities = Community.select(:id,:name,:company_id,:locked).includes(:company)
