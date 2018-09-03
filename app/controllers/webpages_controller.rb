@@ -40,7 +40,7 @@ class WebpagesController < ActionController::Base
         struct = {
           marketing_name: unit.marketing_name,
           market_rent: unit.effective_rent,
-          bedrooms: floorplan.bedrooms,
+          bedrooms: floorplan.bedrooms.to_i,
           bathrooms: floorplan.bathrooms,
           square_feet: unit.square_feet.present? ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0),
           availability: unit.availability,
