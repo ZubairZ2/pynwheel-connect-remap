@@ -1,4 +1,4 @@
 $('#show_modal').html("<%= escape_javascript render 'add_location' %>");
 $(".modal-title").html("Edit Location")
-$("#addLocation").modal()
-$("form").validationEngine({binded: false});
+$("#addLocation").modal('show')
+$(".edit_location").validationEngine({binded: false});

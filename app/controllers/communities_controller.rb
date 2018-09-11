@@ -142,6 +142,18 @@ class CommunitiesController < ApplicationController
     @community.delete_plots
     redirect_to plotexp_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
   end
+  
+  def add_plots
+    units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
+    units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
+    redirect_to plotexp_community_sitemaps_path(@community), notice: "Plots are added successfully."
+  end
+  
+  def add_plots_on_floorplate
+    units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
+    units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
+    redirect_to params[:redirect_path], notice: "Plots are added successfully."
+  end
 
   def remove_plots_from_floorplate
     @community.delete_plots_from_floorplate(params[:floorplate_id])

@@ -59,7 +59,7 @@
         .modal-header
           Share Webpages Link
         .modal-body
-          %input.form-control#url{:value => community_webpages_url(current_community)}/
+          %input.form-control#url{:value =>'<iframe src="'+community_webpages_url(current_community)+'" width="1200" height="800"></iframe>'}/
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} cancel
           %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard         

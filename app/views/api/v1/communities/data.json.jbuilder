@@ -234,12 +234,27 @@ json.apartments do
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
-      json.unit_amenities unit.amenities.plotted_amenities do |amenity|
-        json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-        json.name amenity.name
-        json.x_plot amenity.x_plot
-        json.y_plot amenity.y_plot
-        json.id amenity.id
+      if unit.amenities.plotted_amenities.size > 0
+        json.unit_amenities unit.amenities.plotted_amenities do |amenity|
+          json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+          json.name amenity.name
+          json.x_plot amenity.x_plot
+          json.y_plot amenity.y_plot
+          json.unit_id unit.id
+          json.id amenity.id
+        end
+      elsif !unit.standard_image_url.present?
+        #If unit amenities are not present then send floorplan amenities
+        json.unit_amenities floorplan.amenities.plotted_amenities do |amenity|
+          json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+          json.name amenity.name
+          json.x_plot amenity.x_plot
+          json.y_plot amenity.y_plot
+          json.unit_id unit.id
+          json.id SecureRandom.random_number(10000)
+        end
+      else
+        json.unit_amenities []
       end
     end
   end
@@ -318,6 +333,10 @@ json.neighborhood do
         json.latitude location.latitude
         json.longitude location.longitude
         json.category location.category
+        json.image location.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+location.standard_image_url : location.standard_image_url) : asset_url("no_img.png")
+        json.distance location.distance
+        json.time location.time
+        json.rating location.rating.present? ? location.rating : 0
       end
     end
   else
