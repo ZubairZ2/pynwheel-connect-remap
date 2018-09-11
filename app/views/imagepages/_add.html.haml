@@ -29,6 +29,13 @@
 									= f.check_box :hide_page
 									%label 
 										Hide this page
+						.col-md-4
+							.mt-25.mb-40
+								.checkbox
+									= f.check_box :display_on_homepage
+									%label 
+										Display on homepage
+
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
 					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel
