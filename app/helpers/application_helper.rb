@@ -533,7 +533,7 @@ module ApplicationHelper
                   ["MS LineDraw","MS LineDraw"],
                   ["MS Mincho","MS Mincho"],
                   ["MS Outlook","MS Outlook"],
-                  ["MS PGothic",["MS PGothic"],
+                  ["MS PGothic","MS PGothic"],
                   ["MS PMincho","MS PMincho"],
                   ["MS Reference","MS Reference"],
                   ["MS UI Gothic","MS UI Gothic"],
