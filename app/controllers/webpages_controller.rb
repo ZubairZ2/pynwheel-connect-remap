@@ -29,6 +29,7 @@ class WebpagesController < ActionController::Base
         end
       end
     end
+    response.headers.delete "X-Frame-Options"  
   end
 
   def normalize_units

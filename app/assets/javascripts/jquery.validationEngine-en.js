@@ -1,8 +1,9 @@
 (function($){
     var numerics_regex = new RegExp(/^[0-9]+$/);
+    var negative_numerics_regex = new RegExp(/^-[1-9]$/);
     var hash_separated_numbers = new RegExp(/^[0-9]+-[0-9]+$/);
     var comman_separated_numbers = new RegExp(/^[0-9]+(,[0-9]+)+$/);
-    var range_regex = new RegExp(numerics_regex.source + "|" + hash_separated_numbers.source + "|" + comman_separated_numbers.source);
+    var range_regex = new RegExp(numerics_regex.source + "|" + hash_separated_numbers.source + "|" + comman_separated_numbers.source + "|" + negative_numerics_regex.source);
     $.fn.validationEngineLanguage = function(){
     };
     $.validationEngineLanguage = {
@@ -112,6 +113,11 @@
                     // Number, including positive, negative, and floating decimal. credit: orefalo
                     "regex": /^[\-\+]?((([0-9]{1,3})([,][0-9]{3})*)|([0-9]+))?([\.]([0-9]+))?$/,
                     "alertText": "* Invalid floating decimal number"
+                },
+                "floor": {
+                    // Number, including positive, negative, and floating decimal. credit: orefalo
+                    "regex": /^[\-\+]?([0-9]+)?$/,
+                    "alertText": "* Invalid floor number"
                 },
                 "date": {                    
                     //	Check if date is valid by leap year

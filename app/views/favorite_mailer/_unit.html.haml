@@ -10,7 +10,7 @@
                   %tr
                     %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                       %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
-                        %b Apartment: #{unit.marketing_name}
+                        %b #{unit.marketing_name}
     %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
       %tr
         %td{:align => "center", :valign => "top"}
@@ -37,13 +37,14 @@
                                 %td
                                   %p{:style => "color:#fff;"} Details
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{unit.floorplan.square_feet.to_i} sq .Feet
+                                    %b #{number_with_delimiter(unit.floorplan.square_feet.to_i, :delimiter => ',')} SF
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                     %b #{unit.floorplan.bedrooms} #{"bed".pluralize(unit.floorplan.bedrooms.to_i)}
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                     %b #{unit.floorplan.bathrooms.ceil.to_i} #{"bath".pluralize(unit.floorplan.bathrooms.ceil.to_i)}
-                                  %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b $ #{unit.effective_rent} a month
+                                  - if unit.community.display_rent  
+                                    %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
+                                      %b $ #{unit.effective_rent} a month
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                     %b #{unit.available_date.strftime("%m/%d/%Y")}
                               %tr

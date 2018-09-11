@@ -55,12 +55,21 @@ class Api::V1::CommunitiesController < ActionController::Base
       render :json=> {:success=>false, :message => e.message}, :status=>500
     end
   end
+  
+  def update_version
+    app_version = AppVersion.first
+    if app_version.version != params[:version]
+      app_version.update_attribute(:version,params[:version])
+    end
+    render :json=> {:success=>true, :message => "success", :operation => "update version"}
+  end
 
   def list_communities
     @communities = Community.select(:id,:name,:company_id,:locked).includes(:company)
   end
 
   def include_application_data
+    @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])
   end
 

@@ -152,7 +152,7 @@ $(window).bind('load', function () {
                 } else {
                   $('.fav-heart').addClass('hidden')
                 }
-                $('#popover-marketing-name').html("APARTMENT: <b>" + $(this).data('unit-marketing-name') + "</b>");
+                $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");
                 $('#popover-floorplan').html($(this).data('floorplan-name'))
                 if ($(this).data('floorplan-image') != '') {
                   $('#media-object').attr('src', $(this).data('floorplan-image'));
@@ -541,8 +541,8 @@ function select_units_according_to_filters(floorplate_units) {
   var availability_base_units = [];
   var rent_base_units = [];
   var square_feet_base_units = [];
-  var sold_units = [];
-  var are_available_units = [];
+  //var sold_units = [];
+  //var are_available_units = [];
   var all_units = [];
   var market_rent = $('#market_rent').val();
   var square_feet = $('#square_feet').val();
@@ -657,13 +657,13 @@ function select_units_according_to_filters(floorplate_units) {
       square_feet_base_units.push(floorplate_units[i]);
     }
 
-    if (floorplate_units[i]['sold']) {
-      sold_units.push(floorplate_units[i]);
-    }
-
-    if (floorplate_units[i]['available'] && !floorplate_units[i]['sold']) {
-      are_available_units.push(floorplate_units[i]);
-    }
+//    if (floorplate_units[i]['sold']) {
+//      sold_units.push(floorplate_units[i]);
+//    }
+//
+//    if (floorplate_units[i]['available'] && !floorplate_units[i]['sold']) {
+//      are_available_units.push(floorplate_units[i]);
+//    }
 
 
   } //for loop block ending curl
@@ -692,7 +692,7 @@ function select_units_according_to_filters(floorplate_units) {
   }
   if (bedroom_filter_present || availability_filter_present || price_filter_present || area_filter_present) {
     var units_to_display = $.intersect(bedroom_base_units, availability_base_units, rent_base_units, square_feet_base_units);
-    units_to_display = $.union(units_to_display, sold_units, are_available_units);
+    //units_to_display = $.union(units_to_display, sold_units, are_available_units);
     return units_to_display;
   } else {
     return [];
@@ -743,7 +743,7 @@ function disable_area_filter_options(max_area) {
 }
 
 function setModalAttributes(element) {
-  $('#unitModal').find('#unit-marketing-name').html("APARTMENT: " + $(element).data('unit-marketing-name'));
+  $('#unitModal').find('#unit-marketing-name').html($(element).data('unit-marketing-name'));
   $('#unitModal').find('#floorplan-name').html($(element).data('floorplan-name'));
   $('#unitModal').find('#square-feet').html($(element).data('square-feet'));
   $('#unitModal').find('#bathrooms').html($(element).data('bathrooms'));

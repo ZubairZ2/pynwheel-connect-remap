@@ -48,24 +48,24 @@ class RealPageSvcService < BaseService
           if fp.key?(:FloorPlanObject)
             fp = fp[:FloorPlanObject]
             floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize  
-            #unless floorplan.manual_override
-            if fp[:FloorPlanNameMarketing].present?
-              floorplan.name = fp[:FloorPlanNameMarketing]
-            elsif fp[:FloorPlanCode].present?
-              if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+            unless floorplan.manual_override
+              if fp[:FloorPlanNameMarketing].present?
+                floorplan.name = fp[:FloorPlanNameMarketing]
+              elsif fp[:FloorPlanCode].present?
+                if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                else
+                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                end
               else
-                floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                floorplan.name = fp[:FloorPlanName]
               end
-            else
-              floorplan.name = fp[:FloorPlanName]
+              floorplan.bathrooms = fp[:Bathrooms]
+              floorplan.bedrooms = fp[:Bedrooms]
+              floorplan.market_rent = fp[:RentMin]
+              floorplan.square_feet = fp[:GrossSquareFootage]
+              floorplan.save(:validate => false)
             end
-            floorplan.bathrooms = fp[:Bathrooms]
-            floorplan.bedrooms = fp[:Bedrooms]
-            floorplan.market_rent = fp[:RentMin]
-            floorplan.square_feet = fp[:GrossSquareFootage]
-            floorplan.save(:validate => false)
-            #end
           end
         end
       end

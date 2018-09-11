@@ -20,6 +20,7 @@ class LocationsController < ApplicationController
     else
       flash[:error] = @location.errors.full_messages.join(',')
     end
+    redirect_to community_neighborhood_locations_path(@community,@neighborhood)
   end
 
   def edit
@@ -33,6 +34,7 @@ class LocationsController < ApplicationController
     else
       flash[:error] = @location.errors.full_messages.join(',')
     end
+    redirect_to community_neighborhood_locations_path(@community,@neighborhood)
   end
 
   def destroy
@@ -53,6 +55,6 @@ class LocationsController < ApplicationController
 	end
 
 	def location_params
-    params.require(:location).permit(:address, :latitude, :longitude, :category, :title)
+    params.require(:location).permit!
   end
 end

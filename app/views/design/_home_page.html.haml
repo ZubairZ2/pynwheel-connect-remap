@@ -197,7 +197,7 @@
   });
 
 
-  setBorderOptions($("#community_design_attributes_home_page_buttons_border"),$('#community_design_attributes_home_page_button_shape').val());
+  adjustBorderOptions($("#community_design_attributes_home_page_buttons_border"),$('#community_design_attributes_home_page_button_shape').val());
 
   $('#community_design_attributes_home_page_button_shape').change(function(){
     setBorderOptions($("#community_design_attributes_home_page_buttons_border"),$(this).val());
@@ -207,4 +207,4 @@
     setLogoSize($(this).val());
   });
 
-  setLogoSize($('#community_design_attributes_expressionist_attributes_home_page_position_of_logo').val());
+  adjustLogoSizeAndButtonWidthFields($('#community_design_attributes_expressionist_attributes_home_page_position_of_logo').val());

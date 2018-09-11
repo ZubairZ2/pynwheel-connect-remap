@@ -82,40 +82,40 @@ class PsiService < BaseService
   def save_psi_floorplans(floorplans,property_id)
     floorplans.each do |f|
       floorplan = Floorplan.where(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize  
-      #unless floorplan.manual_override
-      floorplan.property_id = property_id
-      floorplan.name = f["Name"]
-      floorplan.unit_count = f["UnitsAvailable"]
-      floorplan.units_available = f["DisplayedUnitsAvailable"]
-      floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
-      floorplan.availability_url = f["FloorplanAvailabilityURL"]
+      unless floorplan.manual_override
+        floorplan.property_id = property_id
+        floorplan.name = f["Name"]
+        floorplan.unit_count = f["UnitsAvailable"]
+        floorplan.units_available = f["DisplayedUnitsAvailable"]
+        floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
+        floorplan.availability_url = f["FloorplanAvailabilityURL"]
 
-      room_types = f["Room"]
-      room_types.each do |rt|
-        if rt["@attributes"]["RoomType"] == "Bedroom"
-          floorplan.bedrooms = rt["Count"]
-        else
-          floorplan.bathrooms = rt["Count"]
+        room_types = f["Room"]
+        room_types.each do |rt|
+          if rt["@attributes"]["RoomType"] == "Bedroom"
+            floorplan.bedrooms = rt["Count"]
+          else
+            floorplan.bathrooms = rt["Count"]
+          end
         end
+
+        if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+
+          floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+        else
+
+
+          floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+        end
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+
+          floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
+        else
+
+          floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
+        end
+        floorplan.save
       end
-
-      if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
-
-        floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
-      else
-
-
-        floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
-      end
-      if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-
-        floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
-      else
-
-        floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
-      end
-      floorplan.save
-      #end
     end
   end
 

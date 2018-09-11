@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   resources :communities do
     member do
       delete :remove_plots
+      post :add_plots
+      post :add_plots_on_floorplate
       delete :remove_plots_from_floorplate
     end
     post :save_gallery_settings
@@ -185,6 +187,7 @@ Rails.application.routes.draw do
         collection do
           post :login
           get :list_communities
+          post :update_version
         end
       end
     end

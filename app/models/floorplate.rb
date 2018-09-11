@@ -17,7 +17,9 @@ class Floorplate < ApplicationRecord
 
   def floors
     floors = []
-    if range.include? '-'
+    if range[0] == "-"
+      floors << range.to_i
+    elsif range.include? '-'
       arr = range.split('-')
       for n in arr[0].to_i..arr[1].to_i
         floors << n
