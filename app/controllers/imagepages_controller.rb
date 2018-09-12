@@ -80,7 +80,7 @@ class ImagepagesController < ApplicationController
 	end
 
 	def imagepage_params
-		params.require(:imagepage).permit(:name,:is_slideshow,:hide_page)
+		params.require(:imagepage).permit(:name,:is_slideshow,:hide_page,:display_on_homepage)
 	end
 
 	def additional_image_params
