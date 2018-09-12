@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 ruby '2.5.0'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.0.0'
+gem 'annotate'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server
@@ -55,7 +56,7 @@ gem 'devise'
 gem 'devise_invitable'
 gem 'cancancan', '~> 2.0'
 #gem 'themes_on_rails'
-gem 'rmagick', :require => 'RMagick'
+gem 'rmagick', require: false
 gem 'jquery-ui-rails'
 gem 'rails_sortable', '1.1.3'
 gem 'carrierwave-video-thumbnailer'
