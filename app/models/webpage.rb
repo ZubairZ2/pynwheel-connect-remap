@@ -4,5 +4,6 @@ class Webpage < ApplicationRecord
   validates_presence_of :url, :name
   validates_length_of :name, :maximum => 50
   validates_with NameValidator
+  validates_with WebAndImageValidator
   scope :active, -> { where(hide_page: false) }
 end

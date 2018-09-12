@@ -1,10 +1,17 @@
 #addImagepage.modal.fade{:role => "dialog"}
+            
 	- if @imagepage.new_record?
 		- url = community_imagepages_path(@community)
 	- else
 		- url = community_imagepage_path(@community,@imagepage)
+	- if @imagepage.errors.any?
+		#error_explanation
+			%ul
+				- @imagepage.errors.full_messages.each do |msg|
+					%li= msg
+
 	= form_for [@community,@imagepage], url: url, remote: true do |f|
-		.modal-dialog
+		.modal-dialog.modal-lg
 			/ Modal content
 			.modal-content
 				.modal-header
@@ -17,25 +24,30 @@
 								%label Enter Name
 								= f.text_field :name, class: "form-control"
 					.row
-						.col-md-4
+						.col-md-3
 							.mt-25.mb-40
 								.checkbox
 									= f.check_box :is_slideshow
 									%label
 										Slideshow
-						.col-md-4
+						.col-md-3
 							.mt-25.mb-40
 								.checkbox
 									= f.check_box :hide_page
 									%label 
 										Hide this page
-						.col-md-4
+						.col-md-3
 							.mt-25.mb-40
 								.checkbox
 									= f.check_box :display_on_homepage
 									%label 
 										Display on homepage
-
+						.col-md-3
+							.mt-25.mb-40
+								%label 
+									Position
+								= f.select :position , options_for_select(["0","1","2","3"],f.object.position.present? ? f.object.position : "0"),{},{class: "form-control"}
+								
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
 					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel

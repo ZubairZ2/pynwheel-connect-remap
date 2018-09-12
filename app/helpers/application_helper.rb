@@ -538,8 +538,8 @@ module ApplicationHelper
                   ["Monotype Corsiva","Monotype Corsiva"],
                   ["Monotype Sorts","Monotype Sorts"],
                   ["MoolBoran","MoolBoran"],
-                  ["Montserrat Medium","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Montserrat-Medium.otf#Montserrat Medium"],
-                  ["Montserrat Light","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Montserrat-Light.otf#Montserrat Light"],
+                  ["Montserrat Medium","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Montserrat-Medium.otf#Montserrat"],
+                  ["Montserrat Light","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Montserrat-Light.otf#Montserrat"],
                   ["MS Gothic","MS Gothic"],
                   ["MS LineDraw","MS LineDraw"],
                   ["MS Mincho","MS Mincho"],
@@ -588,8 +588,8 @@ module ApplicationHelper
                   ["Ransom","Ransom"],
                   ["Ravie","Ravie"],
                   ["RefSpecialty","RefSpecialty"],
-                  ["Roboto Medium","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Roboto-Medium.ttf#Roboto Medium"],
-                  ["Roboto Condensed","ms-appx:/DesignTemplates/Expressionist/CutomFonts/RobotoCondensed-Bold.ttf#Roboto Condensed"],
+                  ["Roboto Medium","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Roboto-Medium.ttf#Roboto"],
+                  ["Roboto Condensed","ms-appx:/DesignTemplates/Expressionist/CutomFonts/RobotoCondensed-Bold.ttf#Roboto"],
                   ["Rockwell","Rockwell"],
                   ["Rockwell Condensed","Rockwell Condensed"],
                   ["Rockwell Extra Bold","Rockwell Extra Bold"],
@@ -658,7 +658,7 @@ module ApplicationHelper
   def font_sizes
     ["14px","16px","18px","20px","22px","24px","26px","28px","30px","32px","34px","36px","38px","40px","42px","44px","46px","48px","50px","52px","54px","56px","58px","60px"]
   end
-  
+
   def filter_panel_text_font_sizes
     ["12px","13px","14px","15px","16px","17px","18px"]
   end

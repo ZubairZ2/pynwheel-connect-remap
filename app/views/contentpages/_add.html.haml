@@ -20,11 +20,22 @@
 							.mt-25.mb-40
 								%label Enter URL
 								= f.text_field :url, class: "form-control"
-						.col-md-12
+					.row
+						.col-md-4
 							.mt-25.mb-40
 								.checkbox
 									= f.check_box :hide_page
 									%label Hide this page
+						.col-md-4
+							.mt-25.mb-40
+								.checkbox
+									= f.check_box :display_on_homepage
+									%label Display on homepage
+						.col-md-4
+							.mt-25.mb-40
+								%label 
+									Position
+								= f.select :position , options_for_select(["0","1","2","3"],f.object.position.present? ? f.object.position : "0"),{},{class: "form-control"}
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
 					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel
