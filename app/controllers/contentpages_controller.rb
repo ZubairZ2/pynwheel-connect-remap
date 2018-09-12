@@ -45,6 +45,6 @@ class ContentpagesController < ApplicationController
 	end
 
 	def webpage_params
-		params.require(:webpage).permit(:name,:url,:hide_page)
+		params.require(:webpage).permit(:name,:url,:hide_page,:display_on_homepage,:position)
 	end
 end

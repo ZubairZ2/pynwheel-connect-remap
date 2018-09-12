@@ -6,4 +6,7 @@ class Imagepage < ApplicationRecord
   validates_length_of :name, :maximum => 50
   validates_with NameValidator
   scope :active, -> { where(hide_page: false) }
+  validates_with WebAndImageValidator
+
+ 
 end
