@@ -151,6 +151,13 @@
                 .input-group-addon
                   %i
                   = filter_panel.text_field :gallery_button_on_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_background_color.present? ? filter_panel.object.gallery_button_on_background_color : "#565455"              
+      .row.gallery-button-on-background-color-field.hidden
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery button on background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :gallery_button_on_background_color_opacity , options_for_select(opacity_options,filter_panel.object.gallery_button_on_background_color_opacity.present? ? filter_panel.object.gallery_button_on_background_color_opacity : '100%'),{},{class: "form-control filter-panel-field"}                            
       .row
         .col-lg-10
           .form-group.mt-30
@@ -171,6 +178,13 @@
                 .input-group-addon
                   %i
                   = filter_panel.text_field :icon_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.icon_background_color.present? ? filter_panel.object.icon_background_color : "#565455"              
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel icon background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :icon_background_color_opacity , options_for_select(opacity_options,filter_panel.object.icon_background_color_opacity.present? ? filter_panel.object.icon_background_color_opacity : '100%'),{},{class: "form-control filter-panel-field"}                
       .form-group
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
           Display filter panel icon

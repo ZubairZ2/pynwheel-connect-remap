@@ -238,7 +238,7 @@ class CommunitiesController < ApplicationController
           :application_background_image,:display_application_background_image,:application_background_color],
         :filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,
           :gallery_button_on_font_color,:display_gallery_button_on_background_color,:gallery_button_on_background_color,
-          :display_filter_panel_icon,:filter_panel_icon_color,:icon_background_color]])
+          :display_filter_panel_icon,:filter_panel_icon_color,:icon_background_color,:icon_background_color_opacity,:gallery_button_on_background_color_opacity]])
   end
 
 end
