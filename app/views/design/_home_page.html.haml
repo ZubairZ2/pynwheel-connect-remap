@@ -112,8 +112,7 @@
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
-                  = d.text_field :home_page_navigation_background_color
-                  kground_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_background_color.present? ? d.object.home_page_navigation_background_color : "#565455"
+                  = d.text_field :home_page_navigation_background_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_background_color.present? ? d.object.home_page_navigation_background_color : "#565455"
       .row
         .col-lg-10
           .form-group.mt-30
