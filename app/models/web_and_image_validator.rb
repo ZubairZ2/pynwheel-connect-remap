@@ -6,7 +6,7 @@ class WebAndImageValidator < ActiveModel::Validator
   	  end
     end
     positions = Imagepage.where(community_id: record.community_id).map(&:position) +  Webpage.where(community_id: record.community_id).map(&:position)
-    
+
   if positions.include?(record.attributes["position"].to_i)
   	record.errors[:base] << "Position #{record.attributes['position']} has already been taken."
   end

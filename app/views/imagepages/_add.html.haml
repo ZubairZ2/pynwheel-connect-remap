@@ -39,15 +39,29 @@
 						.col-md-3
 							.mt-25.mb-40
 								.checkbox
-									= f.check_box :display_on_homepage
+									= f.check_box :display_on_homepage,{:id => "display" }
 									%label 
 										Display on homepage
 						.col-md-3
 							.mt-25.mb-40
 								%label 
 									Position
-								= f.select :position , options_for_select(["0","1","2","3"],f.object.position.present? ? f.object.position : "0"),{},{class: "form-control"}
+								= f.select :position , options_for_select(["0","1","2","3"],f.object.position.present? ? f.object.position : "0"),{},{class: "form-control",:id => "position",:disabled => true}
 								
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
 					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel
+
+
+:javascript
+	var $checkBox = $('#display');
+	var $select = $('#position');
+	$checkBox.on('change',function(e){
+		if ($(this).is(':checked'))
+		{
+			$select.removeAttr('disabled');
+		}else{
+			$select.attr('disabled','disabled');
+			$select.val('0');
+		}
+	});
