@@ -395,16 +395,16 @@ json.additional_pages do
       json.id webpage.id
       json.title webpage.name
       json.url webpage.url
-      json.position webpage.position ? json.position : 0
-      json.display_on_homepage webpage.display_on_homepage ? json.display_on_homepage : false
+      json.position webpage.position.present? ? json.position : 0
+      json.display_on_homepage webpage.display_on_homepage.present? ? json.display_on_homepage : false
     end
   end
   if @community.imagepages.present?
     json.imagepages @community.imagepages.active.each do |imagepage|
       json.id imagepage.id
       json.title imagepage.name
-      json.position imagepage.position ? json.position : 0
-      json.display_on_homepage imagepage.display_on_homepage  ? json.display_on_homepage : false
+      json.position imagepage.position.present? ? json.position : 0
+      json.display_on_homepage imagepage.display_on_homepage.present?  ? json.display_on_homepage : false
       json.slideshow imagepage.is_slideshow
       if imagepage.additional_images.present?
         json.images imagepage.additional_images.each do |image|

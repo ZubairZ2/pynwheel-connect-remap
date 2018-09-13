@@ -56,6 +56,19 @@
 :javascript
 	var $checkBox = $('#display');
 	var $select = $('#position');
+	$(document).ready( function() 
+	{
+
+		if ($checkBox.is(':checked'))
+		{
+			$select.removeAttr('disabled');
+		}
+		else
+		{
+			$select.attr('disabled','disabled');
+			$select.val('0');
+		}
+	});
 	$checkBox.on('change',function(e){
 		if ($(this).is(':checked'))
 		{
