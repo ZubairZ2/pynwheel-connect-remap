@@ -124,6 +124,13 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Header background color opacity
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :header_bg_color_opacity , options_for_select(opacity_options,d.object.header_bg_color_opacity.present? ? d.object.header_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                                                                        
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Header font color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
@@ -140,6 +147,14 @@
               .input-group-addon
                 %i
                 = d.text_field :details_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.details_bg_color.present? ? d.object.details_bg_color : "#ada6a6"
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Details background color opacity
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :details_bg_color_opacity , options_for_select(opacity_options,d.object.details_bg_color_opacity.present? ? d.object.details_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                                                                        
+
     .row
       .col-lg-10
         .form-group.mt-30
@@ -174,9 +189,23 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Available appartments background color opacity
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :available_appartments_bg_color_opacity , options_for_select(opacity_options,d.object.available_appartments_bg_color_opacity.present? ? d.object.available_appartments_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                                                                        
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Floor plan background color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
                 = d.text_field :floor_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.floor_bg_color.present? ? d.object.floor_bg_color : "#565455"                                                                                                                                                                         
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Floor plan background color opacity
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :floor_bg_color_opacity , options_for_select(opacity_options,d.object.floor_bg_color_opacity.present? ? d.object.floor_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                                                                        

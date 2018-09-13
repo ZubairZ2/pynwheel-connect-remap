@@ -135,12 +135,16 @@ json.ui_settigs do
       end
       json.floorplan_unit_popup do
         json.header_bg_color @community.design.header_bg_color.present? ? @community.design.header_bg_color : "#ada6a6"
+        json.header_bg_color_opacity @community.design.header_bg_color_opacity.present? ? @community.design.header_bg_color_opacity : "100%"
         json.header_font_color @community.design.header_font_color.present? ? @community.design.header_font_color : "#ffffff"
         json.details_bg_color @community.design.details_bg_color.present? ? @community.design.details_bg_color : "#ada6a6"
+        json.details_bg_color_opacity @community.design.details_bg_color_opacity.present? ? @community.design.details_bg_color_opacity : "100%"
         json.details_font_color @community.design.details_font_color.present? ? @community.design.details_font_color : "#ffff"
         json.available_appartments_font_color @community.design.available_appartments_font_color.present? ? @community.design.available_appartments_font_color : "#ffff"
         json.available_appartments_bg_color @community.design.available_appartments_bg_color.present? ? @community.design.available_appartments_bg_color : "#ada6a6"
+        json.available_appartments_bg_color_opacity @community.design.available_appartments_bg_color_opacity.present? ? @community.design.available_appartments_bg_color_opacity : "100%"
         json.floor_bg_color @community.design.floor_bg_color.present? ? @community.design.floor_bg_color : "#565455"
+        json.floor_bg_color_opacity @community.design.floor_bg_color_opacity.present? ? @community.design.floor_bg_color_opacity : "100%"
         json.unit_header_bg_color @community.design.unit_header_bg_color.present? ? @community.design.unit_header_bg_color : "#ada6a6"
         json.unit_header_bg_color_opacity @community.design.unit_header_bg_color_opacity.present? ? @community.design.unit_header_bg_color_opacity : "100%"
         json.unit_header_font_color @community.design.unit_header_font_color.present? ? @community.design.unit_header_font_color : "#ffff"
