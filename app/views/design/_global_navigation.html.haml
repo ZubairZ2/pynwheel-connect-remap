@@ -142,6 +142,13 @@
                 .input-group-addon
                   %i
                   = e.text_field :button_on_bg_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.button_on_bg_color.present? ? e.object.button_on_bg_color : "#565455"      
+      .row.button-on-background-color-field.hidden
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button on background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :button_on_bg_color_opacity , options_for_select(opacity_options,e.object.button_on_bg_color_opacity.present? ? e.object.button_on_bg_color_opacity : "100%"),{},{class: "form-control global-navigation-field"}            
       .row
         .col-lg-10
           .form-group.mt-30
@@ -162,6 +169,13 @@
                 .input-group-addon
                   %i
                   = e.text_field :application_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.application_background_color.present? ? e.object.application_background_color : "#ffff"      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Application background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :application_background_color_opacity , options_for_select(opacity_options,e.object.application_background_color_opacity.present? ? e.object.application_background_color_opacity : "100%"),{},{class: "form-control global-navigation-field"}                        
       .row
         .col-lg-10
           .form-group.mt-30
