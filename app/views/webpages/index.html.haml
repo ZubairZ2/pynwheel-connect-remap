@@ -225,7 +225,7 @@
                        
                       .available-now
                         %p#availability
-                    - if @community_info.credential.apply_now 
+                    - if @community_info.credential.present? and @community_info.credential.apply_now 
                       - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc"   
                         .date-select 
                           %h5= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date" 
