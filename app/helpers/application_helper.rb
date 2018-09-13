@@ -451,6 +451,8 @@ module ApplicationHelper
                   ["Gloucester","Gloucester"],
                   ["Gotham Book","ms-appx:/Assets/Fonts/gotham_book.ttf#Gotham Book"],
                   ["Gotham Bold","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Gotham Bold.otf#Gotham Bold"],
+                  ["Gotham Light","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Gotham Light.otf#Gotham"],
+                  ["Gotham Condensed Book","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Gotham Condensed Book.otf#Gotham Condensed Book"],
                   ["Goudy Old Style","Goudy Old Style"],
                   ["Goudy Stout","Goudy Stout"],
                   ["Gradl","Gradl"],
@@ -461,8 +463,10 @@ module ApplicationHelper
                   ["Haettenschweiler","Haettenschweiler"],
                   ["Harlow Solid Italic","Harlow Solid Italic"],
                   ["Harrington","Harrington"],
+                  ["Helvetica Neue","ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"],
                   ["Helvetica Neue LT Std","ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeueLTStd-LtCn.ttf#Helvetica Neue LT Std"],
                   ["Helvetica-Normal","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Helvetica-Normal.ttf#Helvetica-Normal"],
+                  ["Helvetica Ragular","ms-appx:/DesignTemplates/Expressionist/CutomFonts/HELR45W.ttf#Helvetica"],
                   ["High Tower Text","High Tower Text"],
                   ["Holidays MT","Holidays MT"],
                   ["Impact","Impact"],
@@ -582,6 +586,7 @@ module ApplicationHelper
                   ["Poor Richard","Poor Richard"],
                   ["Pristina","Pristina"],
                   ["Proxima Nova Light","ms-appx:/DesignTemplates/Expressionist/CutomFonts/ProximaNova-Light.otf#Proxima Nova Light"],
+                  ["Proxima Nova Regular","ms-appx:/DesignTemplates/Expressionist/CutomFonts/proxima-nova-regular.ttf#Proxima"],
                   ["Proxima Nova Rg","ms-appx:/DesignTemplates/Expressionist/CutomFonts/proxima-nova-regular.ttf#Proxima Nova Rg"],
                   ["Raavi","Raavi"],
                   ["Rage Italic","Rage Italic"],
@@ -658,7 +663,9 @@ module ApplicationHelper
   def font_sizes
     ["14px","16px","18px","20px","22px","24px","26px","28px","30px","32px","34px","36px","38px","40px","42px","44px","46px","48px","50px","52px","54px","56px","58px","60px"]
   end
-
+  def display_position_on_homepage
+      [["Select",""],["1","1"],["2","2"],["3","3"]]
+  end
   def filter_panel_text_font_sizes
     ["12px","13px","14px","15px","16px","17px","18px"]
   end

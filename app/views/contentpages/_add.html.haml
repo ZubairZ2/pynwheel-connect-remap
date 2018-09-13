@@ -35,7 +35,7 @@
 							.mt-25.mb-40
 								%label 
 									Position
-								= f.select :position , options_for_select(["0","1","2","3"],f.object.position.present? ? f.object.position : "0"),{},{class: "form-control",:id => "position",:disabled => true}
+								= f.select :position , options_for_select(display_position_on_homepage,f.object.position.present? ? f.object.position : ""),{},{class: "form-control",:id => "position"}
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
 					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel
@@ -54,7 +54,6 @@
 		else
 		{
 			$select.attr('disabled','disabled');
-			$select.val('0');
 		}
 	});
 	$checkBox.on('change',function(e){
@@ -63,6 +62,6 @@
 			$select.removeAttr('disabled');
 		}else{
 			$select.attr('disabled','disabled');
-			$select.val('0');
+			$select.val('');
 		}
 	});
