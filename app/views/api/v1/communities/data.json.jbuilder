@@ -396,7 +396,7 @@ json.additional_pages do
       json.title webpage.name
       json.url webpage.url
       json.position webpage.position ? json.position : 0
-      json.display_on_homepage webpage.display_on_homepage ? json.display_on_homepage :false
+      json.display_on_homepage webpage.display_on_homepage ? json.display_on_homepage : false
     end
   end
   if @community.imagepages.present?
@@ -404,7 +404,7 @@ json.additional_pages do
       json.id imagepage.id
       json.title imagepage.name
       json.position imagepage.position ? json.position : 0
-      json.display_on_homepage imagepage.display_on_homepage  ? json.display_on_homepage :false
+      json.display_on_homepage imagepage.display_on_homepage  ? json.display_on_homepage : false
       json.slideshow imagepage.is_slideshow
       if imagepage.additional_images.present?
         json.images imagepage.additional_images.each do |image|
