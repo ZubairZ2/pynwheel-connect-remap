@@ -142,12 +142,16 @@ json.ui_settigs do
         json.available_appartments_bg_color @community.design.available_appartments_bg_color.present? ? @community.design.available_appartments_bg_color : "#ada6a6"
         json.floor_bg_color @community.design.floor_bg_color.present? ? @community.design.floor_bg_color : "#565455"
         json.unit_header_bg_color @community.design.unit_header_bg_color.present? ? @community.design.unit_header_bg_color : "#ada6a6"
+        json.unit_header_bg_color_opacity @community.design.unit_header_bg_color_opacity.present? ? @community.design.unit_header_bg_color_opacity : "100%"
         json.unit_header_font_color @community.design.unit_header_font_color.present? ? @community.design.unit_header_font_color : "#ffff"
         json.unit_details_font_color @community.design.unit_details_font_color.present? ? @community.design.unit_details_font_color : "#ffff"
         json.unit_details_bg_color @community.design.unit_details_bg_color.present? ? @community.design.unit_details_bg_color : "#ada6a6"
+        json.unit_details_bg_color_opacity @community.design.unit_details_bg_color_opacity.present? ? @community.design.unit_details_bg_color_opacity : "100%"
         json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
+        json.floorplan_name_bg_color_opacity @community.design.floorplan_name_bg_color_opacity.present? ? @community.design.floorplan_name_bg_color_opacity : "100%"
         json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
         json.unit_bg_color @community.design.unit_bg_color.present? ? @community.design.unit_bg_color : "#565455"
+        json.unit_bg_color_opacity @community.design.unit_bg_color_opacity.present? ? @community.design.unit_bg_color_opacity : "100%"
       end
     end
     

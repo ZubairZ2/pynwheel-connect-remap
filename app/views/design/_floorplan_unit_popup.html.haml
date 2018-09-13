@@ -22,6 +22,13 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Unit header background color opacity
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :unit_header_bg_color_opacity , options_for_select(opacity_options,d.object.unit_header_bg_color_opacity.present? ? d.object.unit_header_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                        
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Unit header font color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
@@ -52,12 +59,26 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Unit details background color opacity
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :unit_details_bg_color_opacity , options_for_select(opacity_options,d.object.unit_details_bg_color_opacity.present? ? d.object.unit_details_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                                    
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Unit floor plan name background color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
                 %i
                 = d.text_field :floorplan_name_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true,:value=>d.object.floorplan_name_bg_color.present? ? d.object.floorplan_name_bg_color : "#ada6a6" 
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Unit floor plan name background color opacity
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :floorplan_name_bg_color_opacity , options_for_select(opacity_options,d.object.floorplan_name_bg_color_opacity.present? ? d.object.floorplan_name_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                                                
     .row
       .col-lg-10
         .form-group.mt-30
@@ -78,6 +99,13 @@
               .input-group-addon
                 %i
                 = d.text_field :unit_bg_color , class: "form-control floorplan-unit-popup-field",autocomplete: true ,:value=>d.object.unit_bg_color.present? ? d.object.unit_bg_color : "#565455"
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Unit background color opacity
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :unit_bg_color_opacity , options_for_select(opacity_options,d.object.unit_bg_color_opacity.present? ? d.object.unit_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                                                            
     .row
       .col-lg-12
         %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
