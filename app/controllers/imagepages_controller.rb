@@ -22,6 +22,7 @@ class ImagepagesController < ApplicationController
 
 	def update
 		@imagepage = @community.imagepages.find(params[:id])
+		@imagepage.position = nil unless params[:imagepage][:position].present?
     if @imagepage.update_attributes(imagepage_params)
       flash[:notice] = "Imagepage updated successfully."
     else
