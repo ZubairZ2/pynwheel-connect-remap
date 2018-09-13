@@ -2,6 +2,10 @@ class WebAndImageValidator < ActiveModel::Validator
   def validate(record)
     image = Imagepage.find_by(name: record.attributes["name"])
     web = Webpage.find_by(name: record.attributes["name"])
+    if web == nil && image == nil
+      web = Webpage.new
+      image = Imagepage.new
+    end
     if web == nil 
       web = image
     elsif image ==nil
