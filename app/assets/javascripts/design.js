@@ -88,6 +88,67 @@ $(document).ready(function () {
         }
       }
     }
+    
+    //upload apartment nav bg image through drag and drop
+    
+    var apartment_navigation_bg_image_upload_holder = document.getElementById('apartment-navigation-bg-image-upload-holder');
+    if (apartment_navigation_bg_image_upload_holder) {
+      apartment_navigation_bg_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+          readApartmentNavigationBgImageSrc(files[0]);
+        } else {
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
+    //upload gallery nav bg image through drag and drop
+    
+    var gallery_navigation_bg_image_upload_holder = document.getElementById('gallery-navigation-bg-image-upload-holder');
+    if (gallery_navigation_bg_image_upload_holder) {
+      gallery_navigation_bg_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+          readGalleryNavigationBgImageSrc(files[0]);
+        } else {
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
+    //upload favouries nav bg image through drag and drop
+    
+    var favourities_navigation_bg_image_upload_holder = document.getElementById('favourities-navigation-bg-image-upload-holder');
+    if (favourities_navigation_bg_image_upload_holder) {
+      favourities_navigation_bg_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+          readFavouritiesNavigationBgImageSrc(files[0]);
+        } else {
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
+    //upload additional pages nav bg image through drag and drop
+    
+    var additional_pages_navigation_bg_image_upload_holder = document.getElementById('additional-pages-navigation-bg-image-upload-holder');
+    if (favourities_navigation_bg_image_upload_holder) {
+      additional_pages_navigation_bg_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+          readAdditionalPagesNavigationBgImageSrc(files[0]);
+        } else {
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
 
 
     var filter_button_image_upload_holder = document.getElementById('filter-button-image-upload-holder');
@@ -270,6 +331,22 @@ $(document).ready(function () {
 
   $("#application_background_image").change(function () {
     readApplicationBackgroundImageFromInput(this);
+  });
+  
+  $("#apartment_nav_bg_image").change(function () {
+    readApartmentNavBgImageFromInput(this);
+  });
+  
+  $("#gallery_nav_bg_image").change(function () {
+    readGalleryNavBgImageFromInput(this);
+  });
+  
+  $("#favourities_nav_bg_image").change(function () {
+    readFavouritiesNavBgImageFromInput(this);
+  });
+  
+  $("#additional_pages_nav_bg_image").change(function () {
+    readAdditionalPagesNavBgImageFromInput(this);
   });
 
   $("#filter_button").change(function () {
@@ -483,6 +560,47 @@ function readApplicationBackgroundImageSrc(file) {
   reader.readAsDataURL(file);
 }
 
+function readApartmentNavigationBgImageSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#apartment-navigation-bg-image-preview').attr('src', e.target.result);
+    $('#apartment-navigation-bg-image-preview').parent().attr('href', e.target.result);
+    apartmentNavigationBgImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+function readGalleryNavigationBgImageSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#gallery-navigation-bg-image-preview').attr('src', e.target.result);
+    $('#gallery-navigation-bg-image-preview').parent().attr('href', e.target.result);
+    apartmentGalleryBgImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+function readFavouritiesNavigationBgImageSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#favourities-navigation-bg-image-preview').attr('src', e.target.result);
+    $('#favourities-navigation-bg-image-preview').parent().attr('href', e.target.result);
+    apartmentFavouritiesBgImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+function readAdditionalPagesNavigationBgImageSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#additional-pages-navigation-bg-image-preview').attr('src', e.target.result);
+    $('#additional-pages-navigation-bg-image-preview').parent().attr('href', e.target.result);
+    apartmentAdditionalPagesBgImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+
 function filterButtonSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
@@ -628,6 +746,70 @@ function applicationBackgroundImage(src) {
     dataType: "script",
     data: {
       community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, application_background_image: src}}}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+
+function apartmentNavigationBgImage(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, apartment_nav_bg_image: src}}}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+
+function apartmentGalleryBgImage(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, gallery_nav_bg_image: src}}}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+
+function apartmentFavouritiesBgImage(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, favourities_nav_bg_image: src}}}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+
+function apartmentAdditionalPagesBgImage(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, additional_pages_nav_bg_image: src}}}
     }
   }).done(function () {
     $(".divLoading").addClass("hidden");
@@ -899,6 +1081,86 @@ function readApplicationBackgroundImageFromInput(input) {
         $('#application-background-preview-image').attr('src', e.target.result);
         $('#application-background-preview-image').parent().attr('href', e.target.result);
         applicationBackgroundImage(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+      //console.log($(input).val());
+    }
+  }
+}
+
+function readApartmentNavBgImageFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        $('#apartment-navigation-bg-image-preview').attr('src', e.target.result);
+        $('#apartment-navigation-bg-image-preview').parent().attr('href', e.target.result);
+        apartmentNavigationBgImage(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+      //console.log($(input).val());
+    }
+  }
+}
+
+function readGalleryNavBgImageFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        $('#gallery-navigation-bg-image-preview').attr('src', e.target.result);
+        $('#gallery-navigation-bg-image-preview').parent().attr('href', e.target.result);
+        apartmentGalleryBgImage(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+      //console.log($(input).val());
+    }
+  }
+}
+
+function readFavouritiesNavBgImageFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        $('#favourities-navigation-bg-image-preview').attr('src', e.target.result);
+        $('#favourities-navigation-bg-image-preview').parent().attr('href', e.target.result);
+        apartmentFavouritiesBgImage(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+      //console.log($(input).val());
+    }
+  }
+}
+
+function readAdditionalPagesNavBgImageFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        $('#additional-pages-navigation-bg-image-preview').attr('src', e.target.result);
+        $('#additional-pages-navigation-bg-image-preview').parent().attr('href', e.target.result);
+        apartmentAdditionalPagesBgImage(e.target.result);
       }
 
       reader.readAsDataURL(input.files[0]);

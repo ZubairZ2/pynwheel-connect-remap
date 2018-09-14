@@ -238,7 +238,9 @@ class CommunitiesController < ApplicationController
           :filter_panel_text_font_size,
           :filter_panel_button_text_font_size, :spacing_between_buttons, :button_on_bg_color, :display_button_on_bg_color,:global_navigation_button_on_font_color,
           :application_background_image,:display_application_background_image,:application_background_color,:button_on_bg_color_opacity,
-          :application_background_color_opacity],
+          :application_background_color_opacity,:display_apartment_nav_bg_image,:display_gallery_nav_bg_image, 
+          :display_favourities_nav_bg_image,:display_additional_pages_nav_bg_image,:apartment_nav_bg_image,:gallery_nav_bg_image,
+          :favourities_nav_bg_image,:additional_pages_nav_bg_image],
         :filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,
           :gallery_button_on_font_color,:display_gallery_button_on_background_color,:gallery_button_on_background_color,
           :display_filter_panel_icon,:filter_panel_icon_color,:icon_background_color,:icon_background_color_opacity,:gallery_button_on_background_color_opacity]])
