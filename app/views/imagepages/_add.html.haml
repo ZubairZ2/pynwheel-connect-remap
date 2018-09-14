@@ -46,7 +46,7 @@
 							.mt-25.mb-40
 								%label 
 									Position
-								= f.select :position , options_for_select(["","1","2","3"],f.object.position.present? ? f.object.position : "0"),{},{class: "form-control",:id => "position"}
+								= f.select :position , options_for_select(display_position_on_homepage,f.object.position.present? ? f.object.position : "0"),{},{class: "form-control",:id => "position"}
 								
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
