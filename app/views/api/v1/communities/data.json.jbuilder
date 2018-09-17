@@ -242,7 +242,7 @@ json.apartments do
           json.y_plot amenity.y_plot
           json.unit_id unit.id
           puts '------------------- unit amenities ------------------' ,  unit.marketing_name
-          json.id SecureRandom.random_number(10000)
+          json.id unit.id
         end
       elsif !unit.standard_image_url.present?
         #If unit amenities are not present then send floorplan amenities
