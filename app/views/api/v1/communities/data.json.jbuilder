@@ -241,6 +241,7 @@ json.apartments do
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
           json.unit_id unit.id
+          puts '------------------- unit amenities ------------------' ,  unit.marketing_name
           json.id SecureRandom.random_number(10000)
         end
       elsif !unit.standard_image_url.present?
@@ -251,6 +252,7 @@ json.apartments do
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
           json.unit_id unit.id
+          puts '------------------- floorplan amenities ------------------' ,  unit.marketing_name
           json.id SecureRandom.random_number(10000)
         end
       else
