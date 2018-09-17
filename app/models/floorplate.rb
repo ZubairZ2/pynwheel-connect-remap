@@ -1,3 +1,24 @@
+# == Schema Information
+#
+# Table name: floorplates
+#
+#  id                 :integer          not null, primary key
+#  name               :string
+#  number             :integer
+#  building           :string
+#  range              :string
+#  image              :string
+#  community_id       :integer
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  standard_image_url :string
+#  svg_image_url      :string
+#  height             :float
+#  width              :float
+#  floor_name         :string
+#  floor_name_added   :boolean          default(FALSE)
+#
+
 class Floorplate < ApplicationRecord
   include StandardUrl
   mount_uploader :image, SiteMapUploader

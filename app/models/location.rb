@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: locations
+#
+#  id                 :integer          not null, primary key
+#  address            :string
+#  latitude           :decimal(, )
+#  longitude          :decimal(, )
+#  category           :string
+#  title              :string
+#  neighborhood_id    :integer
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  image              :string
+#  standard_image_url :string
+#  distance           :float
+#  time               :string
+#  rating             :float
+#
+
 class Location < ApplicationRecord
   include StandardUrl
   mount_uploader :image, AvatarUploader

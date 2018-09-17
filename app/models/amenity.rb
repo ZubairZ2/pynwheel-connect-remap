@@ -1,3 +1,24 @@
+# == Schema Information
+#
+# Table name: amenities
+#
+#  id                  :integer          not null, primary key
+#  provider_amenity_id :string
+#  amenty_type         :string
+#  description         :text
+#  unit_id             :integer
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  name                :string
+#  image               :string
+#  x_plot              :integer
+#  y_plot              :integer
+#  amenityable_type    :string
+#  amenityable_id      :integer
+#  community_id        :integer
+#  standard_image_url  :string
+#
+
 class Amenity < ApplicationRecord
   include StandardUrl
   mount_base64_uploader :image, AvatarUploader

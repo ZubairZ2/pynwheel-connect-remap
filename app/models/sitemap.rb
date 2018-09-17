@@ -1,3 +1,14 @@
+# == Schema Information
+#
+# Table name: sitemaps
+#
+#  id           :integer          not null, primary key
+#  image        :string
+#  community_id :integer
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#
+
 class Sitemap < ApplicationRecord
   mount_uploader :image, SiteMapUploader
   belongs_to :community

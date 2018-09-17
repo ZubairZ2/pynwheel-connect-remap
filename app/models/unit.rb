@@ -1,3 +1,36 @@
+# == Schema Information
+#
+# Table name: units
+#
+#  id                 :integer          not null, primary key
+#  community_id       :integer
+#  provider           :string
+#  property_id        :string
+#  provider_unit_id   :string
+#  unit_type          :string
+#  marketing_name     :string
+#  floorplan_id       :string
+#  market_rent        :float
+#  effective_rent     :float
+#  availability       :string
+#  available_date     :date
+#  building           :string
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  x_plot             :integer          default(0)
+#  y_plot             :integer          default(0)
+#  floorplate_id      :integer
+#  image              :string
+#  floor              :integer
+#  standard_image_url :string
+#  updated_by_admin   :boolean          default(FALSE)
+#  available          :boolean
+#  sold               :boolean          default(FALSE)
+#  manually_updated   :boolean          default(FALSE)
+#  manual_override    :boolean          default(FALSE)
+#  square_feet        :float
+#
+
 class Unit < ApplicationRecord
   include StandardUrl
   mount_uploader :image, AvatarUploader

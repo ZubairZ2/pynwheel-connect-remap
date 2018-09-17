@@ -1,3 +1,32 @@
+# == Schema Information
+#
+# Table name: floorplans
+#
+#  id                    :integer          not null, primary key
+#  community_id          :integer
+#  provider              :string
+#  property_id           :string
+#  provider_floorplan_id :string
+#  name                  :string
+#  unit_count            :integer
+#  units_available       :integer
+#  bedrooms              :string
+#  bathrooms             :float
+#  market_rent           :float
+#  square_feet           :float
+#  deposit               :float
+#  comment               :text
+#  description           :text
+#  availability_url      :string
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  image                 :string
+#  virtual_tour_url      :string
+#  standard_image_url    :string
+#  updated_by_admin      :boolean          default(FALSE)
+#  manual_override       :boolean          default(FALSE)
+#
+
 class Floorplan < ApplicationRecord
   include StandardUrl
   mount_base64_uploader :image, AvatarUploader

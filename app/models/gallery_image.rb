@@ -1,3 +1,24 @@
+# == Schema Information
+#
+# Table name: gallery_images
+#
+#  id                 :integer          not null, primary key
+#  image              :string
+#  crop_x             :float
+#  crop_y             :float
+#  crop_w             :float
+#  crop_h             :float
+#  sort               :integer
+#  community_id       :integer
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  gallery_id         :integer
+#  name               :string
+#  standard_image_url :string
+#  ios_image_url      :string
+#  large_image_url    :string
+#
+
 class GalleryImage < ApplicationRecord
 	include RailsSortable::Model
   belongs_to :gallery

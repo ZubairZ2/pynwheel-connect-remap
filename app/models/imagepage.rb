@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: imagepages
+#
+#  id                  :integer          not null, primary key
+#  name                :string
+#  is_slideshow        :boolean
+#  community_id        :integer
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  hide_page           :boolean          default(FALSE)
+#  display_on_homepage :boolean          default(FALSE)
+#  position            :integer
+#
+
 class Imagepage < ApplicationRecord
   belongs_to :community
   has_many :additional_images, dependent: :destroy

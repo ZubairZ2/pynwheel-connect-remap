@@ -187,6 +187,8 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
     @community.display_rent = params[:display_rent].present? ? params[:display_rent] : false
+    @community.display_sitemap = params[:display_sitemap].present? ? params[:display_sitemap] : false
+    @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
     @community.apartment_page_name = params[:apartment_page_name] if params[:apartment_page_name].present?
     if @community.save
       flash[:notice] = "Apartment settings updated successfully."

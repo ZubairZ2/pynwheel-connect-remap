@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: home_page_images
+#
+#  id                 :integer          not null, primary key
+#  image              :string
+#  name               :string
+#  design_id          :integer
+#  crop_x             :float
+#  crop_y             :float
+#  crop_w             :float
+#  crop_h             :float
+#  sort               :integer
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  standard_image_url :string
+#  thumb_image_url    :string
+#  large_image_url    :string
+#
+
 class HomePageImage < ApplicationRecord
   include StandardUrl
   include RailsSortable::Model

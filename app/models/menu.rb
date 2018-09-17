@@ -1,3 +1,27 @@
+# == Schema Information
+#
+# Table name: menus
+#
+#  id                          :integer          not null, primary key
+#  position                    :string
+#  button_style                :string
+#  border_radius               :string
+#  border_width                :string
+#  border_color                :string
+#  button_background_color     :string
+#  button_hover_color          :string
+#  manage_background           :boolean          default(FALSE)
+#  background_color            :string
+#  design_id                   :integer
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  background_opacity          :float
+#  vertical_menu_position      :string
+#  horizontal_menu_position    :string
+#  navigation_text_color       :string
+#  navigation_background_color :string
+#
+
 class Menu < ApplicationRecord
 	belongs_to :design
 	#after_save :convert_rgba_to_hex

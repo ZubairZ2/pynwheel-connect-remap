@@ -1,3 +1,20 @@
+# == Schema Information
+#
+# Table name: homepage_icons
+#
+#  id         :integer          not null, primary key
+#  image      :string
+#  name       :string
+#  sort       :integer
+#  design_id  :integer
+#  crop_x     :float
+#  crop_y     :float
+#  crop_w     :float
+#  crop_h     :float
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
+
 class HomepageIcon < ApplicationRecord
   include RailsSortable::Model
   set_sortable :sort  

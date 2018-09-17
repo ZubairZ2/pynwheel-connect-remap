@@ -1,3 +1,40 @@
+# == Schema Information
+#
+# Table name: communities
+#
+#  id                             :integer          not null, primary key
+#  name                           :string
+#  logo                           :string
+#  address                        :string
+#  city                           :string
+#  state                          :string
+#  zip                            :string
+#  email                          :string
+#  phone                          :string
+#  description                    :string
+#  latitude                       :decimal(, )
+#  longitude                      :decimal(, )
+#  locked                         :boolean
+#  data_provider                  :string
+#  company_id                     :integer
+#  created_at                     :datetime         not null
+#  updated_at                     :datetime         not null
+#  theme_name                     :string
+#  website                        :string
+#  code                           :string
+#  is_sitemap                     :boolean          default(TRUE)
+#  secondary_logo                 :string
+#  show_gallery                   :boolean          default(TRUE)
+#  gallery_page_name              :string           default("Gallery")
+#  show_apartment                 :boolean          default(TRUE)
+#  apartment_page_name            :string           default("Apartments")
+#  equal_housing_opportunity_logo :boolean          default(TRUE)
+#  handicap_accessible_logo       :boolean          default(TRUE)
+#  display_rent                   :boolean          default(TRUE)
+#  display_sitemap                :boolean          default(FALSE)
+#  display_floorplan_gallery      :boolean          default(FALSE)
+#
+
 class Community < ApplicationRecord
   #mount_uploader :logo, AvatarUploader
   mount_base64_uploader :logo, AvatarUploader

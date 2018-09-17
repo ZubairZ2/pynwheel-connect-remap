@@ -1,3 +1,29 @@
+# == Schema Information
+#
+# Table name: credentials
+#
+#  id               :integer          not null, primary key
+#  community_id     :integer
+#  password         :string
+#  username         :string
+#  property_id      :string
+#  pmc_id           :string
+#  licence_key      :string
+#  server_name      :string
+#  database         :string
+#  platform         :string
+#  interface_entity :string
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  url              :string
+#  site_id          :string
+#  c_code           :string
+#  p_code           :string
+#  apply_now        :boolean          default(FALSE)
+#  file             :string
+#  api_token        :string
+#
+
 class Credential < ApplicationRecord
   belongs_to :community
   before_save :set_https_in_url

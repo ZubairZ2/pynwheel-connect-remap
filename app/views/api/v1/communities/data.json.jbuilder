@@ -217,6 +217,8 @@ json.apartments do
   json.show_apartment_page @community.show_apartment
   json.apartment_page_name @community.apartment_page_name
   json.display_rent @community.display_rent
+  json.display_sitemap @community.display_sitemap
+  json.display_floorplan_gallery @community.display_floorplan_gallery
   if @community.sitemap.present? and !@community.has_floorplates? 
     image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
     json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
