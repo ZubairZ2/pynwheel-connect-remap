@@ -82,6 +82,11 @@ json.ui_settigs do
         json.gallery_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.gallery_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.gallery_nav_bg_image.url : @community.design.expressionist.gallery_nav_bg_image.url) : "No Image"
         json.favourities_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.favourities_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.favourities_nav_bg_image.url : @community.design.expressionist.favourities_nav_bg_image.url) : "No Image"
         json.additional_pages_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.additional_pages_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.additional_pages_nav_bg_image.url : @community.design.expressionist.additional_pages_nav_bg_image.url) : "No Image"
+        json.apartment_nav_bg_color @community.design.expressionist.apartment_nav_bg_color.present? ? @community.design.expressionist.apartment_nav_bg_color : "#ffffff"
+        json.gallery_nav_bg_color @community.design.expressionist.gallery_nav_bg_color.present? ? @community.design.expressionist.gallery_nav_bg_color : "#ffffff"
+        json.favourities_nav_bg_color @community.design.expressionist.favourities_nav_bg_color.present? ? @community.expressionist.design.favourities_nav_bg_color : "#ffffff"
+        json.additional_pages_nav_bg_color @community.design.expressionist.additional_pages_nav_bg_color.present? ? @community.design.expressionist.additional_pages_nav_bg_color : "#ffffff"
+
       end
       json.filter_panel do
         json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
@@ -271,7 +276,7 @@ json.apartments do
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
           json.unit_id unit.id
-          json.id SecureRandom.random_number(10000)
+          json.id sprintf("%20.10f", Time.now.to_f).delete('.').to_i
         end
       else
         json.unit_amenities []
