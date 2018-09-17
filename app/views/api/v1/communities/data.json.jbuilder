@@ -257,7 +257,7 @@ json.apartments do
       json.square_feet unit.square_feet.present? ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
       json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : (floorplan.present? && floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil)
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-      # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
+      json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
       if unit.amenities.plotted_amenities.size > 0
         json.unit_amenities unit.amenities.plotted_amenities do |amenity|
@@ -266,7 +266,7 @@ json.apartments do
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
           json.unit_id unit.id
-          json.id amenity.id
+          json.id sprintf("%20.10f", Time.now.to_f).delete('.').to_i
         end
       elsif !unit.standard_image_url.present?
         #If unit amenities are not present then send floorplan amenities
