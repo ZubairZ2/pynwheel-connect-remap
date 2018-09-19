@@ -245,10 +245,13 @@ json.apartments do
           #json.id amenity.id
           random_number = SecureRandom.random_number(59999)
           unless random_numbers.include?(random_number)
+            random_numbers << random_number
             json.id random_number
           else
-            json.id SecureRandom.random_number(69999)
-          end  
+            random_number = SecureRandom.random_number(69999)  
+            random_numbers << random_number
+            json.id random_number
+          end 
         end
       elsif !unit.standard_image_url.present?
         #If unit amenities are not present then send floorplan amenities
@@ -260,9 +263,12 @@ json.apartments do
           json.unit_id unit.id
           random_number = SecureRandom.random_number(59999)
           unless random_numbers.include?(random_number)
+            random_numbers << random_number
             json.id random_number
           else
-            json.id SecureRandom.random_number(69999)  
+            random_number = SecureRandom.random_number(69999)  
+            random_numbers << random_number
+            json.id random_number
           end
         end
       else
