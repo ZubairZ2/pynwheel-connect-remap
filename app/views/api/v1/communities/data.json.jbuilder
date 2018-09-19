@@ -1,4 +1,5 @@
 local_assets_base_url = "http://192.168.101.77:3000"
+random_numbers = []
 json.version @version
 json.ui_settigs do
   json.theme @community.temporary_theme_name
@@ -242,7 +243,10 @@ json.apartments do
           json.y_plot amenity.y_plot
           json.unit_id unit.id
           #json.id amenity.id
-          json.id SecureRandom.random_number(59999)
+          random_number = SecureRandom.random_number(59999)
+          unless random_numbers.include?(random_number)
+            json.id random_number
+          end  
         end
       elsif !unit.standard_image_url.present?
         #If unit amenities are not present then send floorplan amenities
@@ -252,7 +256,10 @@ json.apartments do
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
           json.unit_id unit.id
-          json.id SecureRandom.random_number(59999)
+          random_number = SecureRandom.random_number(59999)
+          unless random_numbers.include?(random_number)
+            json.id random_number
+          end
         end
       else
         json.unit_amenities []
