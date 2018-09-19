@@ -246,6 +246,8 @@ json.apartments do
           random_number = SecureRandom.random_number(59999)
           unless random_numbers.include?(random_number)
             json.id random_number
+          else
+            json.id SecureRandom.random_number(69999)
           end  
         end
       elsif !unit.standard_image_url.present?
@@ -259,6 +261,8 @@ json.apartments do
           random_number = SecureRandom.random_number(59999)
           unless random_numbers.include?(random_number)
             json.id random_number
+          else
+            json.id SecureRandom.random_number(69999)  
           end
         end
       else
