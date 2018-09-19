@@ -30,13 +30,13 @@
               %i.fa.fa-gear
           %li.dropdown.user.user-menu
             %a.dropdown-toggle{"data-toggle" => "dropdown", :href => "#"}
-              %img.user-image{:alt => "User Image", :src => current_user.avatar.present? ? current_user.avatar.url : "/assets/user8-128x128.jpg"}/
+              %img.user-image{:alt => "User Image", :src => current_user.avatar.present? ? current_user.avatar.url : "/assets/default-user128x128.jpg"}/
               %span.hidden-xs= current_user.name 
               %i.fa.fa-angle-down
             %ul.dropdown-menu
               / User image
               %li.user-header
-                %img.img-circle{:alt => "User Image", :src => current_user.avatar.present? ? current_user.avatar.url : "/assets/user8-128x128.jpg"}/
+                %img.img-circle{:alt => "User Image", :src => current_user.avatar.present? ? current_user.avatar.url : "/assets/default-user128x128.jpg"}/
                 %p
                   = current_user.name 
                   %small Member since #{current_user.created_at.strftime("%b")}. #{current_user.created_at.strftime("%Y")}

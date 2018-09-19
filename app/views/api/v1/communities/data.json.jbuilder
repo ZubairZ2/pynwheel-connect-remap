@@ -333,7 +333,7 @@ json.neighborhood do
     json.neighborhood_page_name @community.neighborhood.neighborhood_name
     json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
     json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
-    json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 1000
+    json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
     json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
     json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
     if @community.neighborhood.listing.present?
@@ -413,12 +413,16 @@ json.additional_pages do
       json.id webpage.id
       json.title webpage.name
       json.url webpage.url
+      json.position webpage.position.present? ? webpage.position : 0
+      json.display_on_homepage webpage.display_on_homepage.present? ? webpage.display_on_homepage : false
     end
   end
   if @community.imagepages.present?
     json.imagepages @community.imagepages.active.each do |imagepage|
       json.id imagepage.id
       json.title imagepage.name
+      json.position imagepage.position.present? ? imagepage.position : 0
+      json.display_on_homepage imagepage.display_on_homepage.present?  ? imagepage.display_on_homepage : false
       json.slideshow imagepage.is_slideshow
       if imagepage.additional_images.present?
         json.images imagepage.additional_images.each do |image|

@@ -21,6 +21,8 @@
                     %th{:width => "79"} Sr #
                     %th Name
                     %th Type
+                    %th Position
+                    %th Display on homepage
                     %th{:width => "100"} Actions
                 %tbody
                   - @pages.each_with_index do |page,index|
@@ -29,6 +31,8 @@
                       %td
                         = link_to page.name, page.is_a?(Imagepage) ? community_imagepage_path(@community,page) : '#'
                       %td= page.class
+                      %td= page.position
+                      %td= page.display_on_homepage ? "Yes" : "No"
                       %td
                         - if page.is_a? Webpage
                           = link_to edit_community_contentpage_path(@community,page), remote: true, class: "text-success ml-5" do

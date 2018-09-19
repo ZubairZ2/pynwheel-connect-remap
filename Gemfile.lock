@@ -49,6 +49,9 @@ GEM
     akami (1.3.1)
       gyoku (>= 0.4.0)
       nokogiri
+    annotate (2.7.4)
+      activerecord (>= 3.2, < 6.0)
+      rake (>= 10.4, < 13.0)
     arel (7.1.4)
     bcrypt (3.1.12)
     benchmark-ips (2.7.2)
@@ -312,6 +315,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  annotate
   best_in_place (~> 3.0.1)
   breadcrumbs_on_rails
   bullet
@@ -366,4 +370,4 @@ RUBY VERSION
    ruby 2.5.0p0
 
 BUNDLED WITH
-   1.16.1
+   1.16.4

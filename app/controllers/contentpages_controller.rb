@@ -21,6 +21,7 @@ class ContentpagesController < ApplicationController
 
 	def update
 		@webpage = @community.webpages.find(params[:id])
+		@webpage.position = nil unless params[:webpage][:position].present?
     if @webpage.update_attributes(webpage_params)
       flash[:notice] = "Webpage updated successfully."
     else
@@ -45,6 +46,6 @@ class ContentpagesController < ApplicationController
 	end
 
 	def webpage_params
-		params.require(:webpage).permit(:name,:url,:hide_page)
+		params.require(:webpage).permit(:name,:url,:hide_page,:display_on_homepage,:position)
 	end
 end

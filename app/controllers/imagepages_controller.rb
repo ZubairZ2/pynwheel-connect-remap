@@ -22,6 +22,7 @@ class ImagepagesController < ApplicationController
 
 	def update
 		@imagepage = @community.imagepages.find(params[:id])
+		@imagepage.position = nil unless params[:imagepage][:position].present?
     if @imagepage.update_attributes(imagepage_params)
       flash[:notice] = "Imagepage updated successfully."
     else
@@ -80,7 +81,7 @@ class ImagepagesController < ApplicationController
 	end
 
 	def imagepage_params
-		params.require(:imagepage).permit(:name,:is_slideshow,:hide_page)
+		params.require(:imagepage).permit(:name,:is_slideshow,:hide_page,:display_on_homepage,:position)
 	end
 
 	def additional_image_params
