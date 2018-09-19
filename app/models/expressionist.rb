@@ -80,5 +80,20 @@ class Expressionist < ApplicationRecord
   mount_base64_uploader :gallery_nav_bg_image, AvatarUploader
   mount_base64_uploader :favourities_nav_bg_image, AvatarUploader
   mount_base64_uploader :additional_pages_nav_bg_image, AvatarUploader
+
+  mount_base64_uploader :apartment_btn_on_image, AvatarUploader
+  mount_base64_uploader :gallery_btn_on_image, AvatarUploader
+  mount_base64_uploader :neighborhood_btn_on_image, AvatarUploader
+  mount_base64_uploader :imagepage_btn_on_image, AvatarUploader
+  mount_base64_uploader :webpage_btn_on_image, AvatarUploader
+  mount_base64_uploader :favourite_btn_on_image, AvatarUploader
+
+  mount_base64_uploader :apartment_btn_off_image, AvatarUploader
+  mount_base64_uploader :gallery_btn_off_image, AvatarUploader
+  mount_base64_uploader :neighborhood_btn_off_image, AvatarUploader
+  mount_base64_uploader :imagepage_btn_off_image, AvatarUploader
+  mount_base64_uploader :webpage_btn_off_image, AvatarUploader
+  mount_base64_uploader :favourite_btn_off_image, AvatarUploader
+
   belongs_to :design
 end

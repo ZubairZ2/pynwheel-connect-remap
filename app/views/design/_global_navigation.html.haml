@@ -132,7 +132,7 @@
             = e.check_box :display_button_on_bg_color, {class: "global-navigation-field"}
             %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_button_on_bg_color"}
             %span.pl-15 Yes
-      .row.button-on-background-color-field.hidden
+      .row
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -142,7 +142,7 @@
                 .input-group-addon
                   %i
                   = e.text_field :button_on_bg_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.button_on_bg_color.present? ? e.object.button_on_bg_color : "#565455"      
-      .row.button-on-background-color-field.hidden
+      .row
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -204,8 +204,8 @@
           .tab-content
             #global-navigation-button-on.tab-pane.fade.in.active
               .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Upload global navigation button on image
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                  Upload global navigation button on for all image
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -237,7 +237,7 @@
                 .col-md-12
                   .col-md-2
                   %label.col-sm-3.col-lg-4.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
-                    Display all gobal navigation button
+                    Display each gobal navigation button 
                   .col-sm-12.col-lg-4.col-md-6.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -293,8 +293,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.gallery_btn_on_image.present? ? current_community.design.expressionist.gallery_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.gallery_btn_on_image.present? ? current_community.design.expressionist.gallery_btn_on_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-on-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.gallery_btn_on_image.present? ? current_community.design.expressionist.gallery_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.gallery_btn_on_image.present? ? current_community.design.expressionist.gallery_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-on-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -323,8 +323,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.neighborhood_btn_on_image.present? ? current_community.design.expressionist.neighborhood_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.neighborhood_btn_on_image.present? ? current_community.design.expressionist.neighborhood_btn_on_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"neighborhood-button-on-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.neighborhood_btn_on_image.url.present? ? current_community.design.expressionist.neighborhood_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.neighborhood_btn_on_image.present? ? current_community.design.expressionist.neighborhood_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"neighborhood-button-on-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -353,8 +353,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.imagepage_btn_on_image.present? ? current_community.design.expressionist.imagepage_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.imagepage_btn_on_image.present? ? current_community.design.expressionist.imagepage_btn_on_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"imagepage-button-on-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.imagepage_btn_on_image.present? ? current_community.design.expressionist.imagepage_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.imagepage_btn_on_image.present? ? current_community.design.expressionist.imagepage_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"imagepage-button-on-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -383,8 +383,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.webpage_btn_on_image.present? ? current_community.design.expressionist.webpage_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.webpage_btn_on_image.present? ? current_community.design.expressionist.webpage_btn_on_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"webpage-button-on-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.webpage_btn_on_image.present? ? current_community.design.expressionist.webpage_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.webpage_btn_on_image.present? ? current_community.design.expressionist.webpage_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"webpage-button-on-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -413,8 +413,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.favourite_btn_on_image.present? ? current_community.design.expressionist.favourite_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.favourite_btn_on_image.present? ? current_community.design.expressionist.favourite_btn_on_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-button-on-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.favourite_btn_on_image.present? ? current_community.design.expressionist.favourite_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.favourite_btn_on_image.present? ? current_community.design.expressionist.favourite_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-button-on-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -429,7 +429,7 @@
             #global-navigation-button-off.tab-pane.fade
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Upload global navigation button off image
+                  Upload global navigation button off image for all
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -460,7 +460,7 @@
                 .col-md-12
                   .col-md-2
                   %label.col-sm-3.col-lg-4.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
-                    Display all gobal navigation off button
+                    Display each gobal navigation off button
                   .col-sm-12.col-lg-4.col-md-6.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -486,8 +486,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.apartment_btn_off_image.present? ? current_community.design.expressionist.apartment_btn_off_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.apartment_btn_off_image.present? ? current_community.design.expressionist.apartment_btn_off_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-button-off-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.apartment_btn_off_image.present? ? current_community.design.expressionist.apartment_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.apartment_btn_off_image.present? ? current_community.design.expressionist.apartment_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-button-off-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -516,8 +516,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.gallery_btn_off_image.present? ? current_community.design.expressionist.gallery_btn_off_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.gallery_btn_off_image.present? ? current_community.design.expressionist.gallery_btn_off_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-off-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.gallery_btn_off_image.present? ? current_community.design.expressionist.gallery_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.gallery_btn_off_image.present? ? current_community.design.expressionist.gallery_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-off-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -546,8 +546,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.neighborhood_btn_off_image.present? ? current_community.design.expressionist.neighborhood_btn_off_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.neighborhood_btn_off_image.present? ? current_community.design.expressionist.neighborhood_btn_off_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"neighborhood-button-off-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.neighborhood_btn_off_image.present? ? current_community.design.expressionist.neighborhood_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.neighborhood_btn_off_image.present? ? current_community.design.expressionist.neighborhood_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"neighborhood-button-off-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -576,8 +576,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.imagepage_btn_off_image.present? ? current_community.design.expressionist.imagepage_btn_off_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.imagepage_btn_off_image.present? ? current_community.design.expressionist.imagepage_btn_off_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"imagepage-button-off-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.imagepage_btn_off_image.present? ? current_community.design.expressionist.imagepage_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.imagepage_btn_off_image.present? ? current_community.design.expressionist.imagepage_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"imagepage-button-off-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -606,8 +606,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.webpage_btn_off_image.present? ? current_community.design.expressionist.webpage_btn_off_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.webpage_btn_off_image.present? ? current_community.design.expressionist.webpage_btn_off_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"webpage-button-off-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.webpage_btn_off_image.present? ? current_community.design.expressionist.webpage_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.webpage_btn_off_image.present? ? current_community.design.expressionist.webpage_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"webpage-button-off-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
@@ -636,8 +636,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.favourite_btn_off_image.present? ? current_community.design.expressionist.favourite_btn_off_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.favourite_btn_off_image.present? ? current_community.design.expressionist.favourite_btn_off_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-button-off-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.favourite_btn_off_image.present? ? current_community.design.expressionist.favourite_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.favourite_btn_off_image.present? ? current_community.design.expressionist.favourite_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-button-off-preview-image"
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %span.btn.btn-primary.btn-file.mt-30
