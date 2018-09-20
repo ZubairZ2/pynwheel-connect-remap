@@ -18,6 +18,7 @@ Rails.application.routes.draw do
     end
     post :save_gallery_settings
     post :save_apartment_settings
+    post :save_floor_plan_button
     get :import_page
     get :import
     get :experimental_import
