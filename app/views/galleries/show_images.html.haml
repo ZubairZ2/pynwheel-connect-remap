@@ -16,7 +16,7 @@
         #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
           .row
             .col-md-6
-              %h4 #{@gallery.name.capitalize} Gallery - #{@gallery_images.count} #{@gallery_images.count > 1 ? "images" : "image"}
+              %h4#image_count #{@gallery.name.capitalize} Gallery - #{@gallery_images.count} #{@gallery_images.count > 1 ? "images" : "image"}
           .row
             .col-md-6
               .mt-35
@@ -40,3 +40,4 @@
 :javascript
   var community_id = #{params[:community_id]}
   var gallery_id = #{params[:id]}
+  

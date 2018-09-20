@@ -182,13 +182,23 @@ class CommunitiesController < ApplicationController
       redirect_back(fallback_location: root_path)
     end
   end
-
+  def save_floor_plan_button
+    @community = Community.find params[:community_id]
+    @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
+  
+    if @community.save
+      flash[:notice] = "Floor Plan settings updated successfully."
+      redirect_back(fallback_location: root_path)
+    else
+      flash[:error] = @community.errors.full_messages.join(',')
+      redirect_back(fallback_location: root_path)
+    end
+  end
   def save_apartment_settings
     @community = Community.find params[:community_id]
     @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
     @community.display_rent = params[:display_rent].present? ? params[:display_rent] : false
     @community.display_sitemap = params[:display_sitemap].present? ? params[:display_sitemap] : false
-    @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
     @community.apartment_page_name = params[:apartment_page_name] if params[:apartment_page_name].present?
     if @community.save
       flash[:notice] = "Apartment settings updated successfully."

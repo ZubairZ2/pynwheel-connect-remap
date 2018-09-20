@@ -1,7 +1,7 @@
 .text-center.image-upload.home-page-drag-box#gallery-image-upload-holder
   = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
   %p Drop files here or click to Upload
-.row.slide-imgage-boxs.sortable
+.row.slide-imgage-boxs.sortable.image_slide_view
   - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
     .col-lg-2{:id=> id_tag}
       .slide-image
@@ -42,3 +42,8 @@
             %span.glyphicon.glyphicon-chevron-left
           %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
             %span.glyphicon.glyphicon-chevron-right
+
+:javascript
+  $('.image_slide_view').bind("DOMSubtreeModified",function(){
+    $('#image_count').text('#{@gallery.name.capitalize} Gallery - #{@gallery_images.count} image');
+  });

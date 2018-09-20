@@ -104,7 +104,7 @@ json.ui_settigs do
         json.display_apartment_btn_off_image @community.design.expressionist.display_apartment_btn_off_image
         json.gallery_btn_off_image @community.design.expressionist.gallery_btn_off_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.gallery_btn_off_image.url : @community.design.expressionist.gallery_btn_off_image.url) : "No Image"
         json.display_gallery_btn_off_image @community.design.expressionist.display_gallery_btn_off_image
-        json.neighborhood_btn_off_image @community.design.expressionist.neighborhood_btn_off_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.neighborhood_btn_off_image.url : @community.design.expressionist.neighborhood_btn_off_image) : "No Image"
+        json.neighborhood_btn_off_image @community.design.expressionist.neighborhood_btn_off_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.neighborhood_btn_off_image.url : @community.design.expressionist.neighborhood_btn_off_image.url) : "No Image"
         json.display_neighborhood_btn_off_image @community.design.expressionist.display_neighborhood_btn_off_image
         json.imagepage_btn_off_image @community.design.expressionist.imagepage_btn_off_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.imagepage_btn_off_image.url : @community.design.expressionist.imagepage_btn_off_image.url) : "No Image"
         json.display_imagepage_btn_off_image @community.design.expressionist.display_imagepage_btn_off_image
