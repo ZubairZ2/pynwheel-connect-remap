@@ -27,9 +27,9 @@
                 ADD FLOOR PLAN
         .row
           .col-md-12#holder
-            .box.box-widget.panel-box.pl-20.pr-20.pb-10.some{ :style => "position: fixed;" }
+            .box.box-widget.panel-box.pl-20.pr-20.pb-10.floor_plan_upload_image.some{ :style => "position: fixed; max-width: 480px;" }
               .row
-                .col-md-9.col-lg-2.col-xs-9
+                .col-md-9.col-lg-9.col-xs-9
                   %h4 Upload File
                   %p.col-md-12.col-lg-12.col-xs-12.-pt-10.mb-20 Upload the File here, then drag  drop it to the image column in the table.Only jpeg,jpg and png files are allowed.
                 .col-md-3.col-lg-3.col-xs-1
@@ -51,7 +51,7 @@
                       %td
                         %a.btn.btn-danger.btn-sm{:href => "javascript::;", :onclick => "removeDivWithTemporaryImage(#{image.position});"} Remove
                         //.text-center.mt-10.drag-drop-section
-              .text-center.mt-10.drag-drop-section.col-md-3.col-lg-3.col-xs-3
+              .text-center.mt-10.drag-drop-section.col-md-12.col-lg-12.col-xs-12
                 %img{:alt => "", :src => "/assets/upload-image.png", :style => "max-width:100%;", :title => ""}
                 %p.mt-10
                   Drag & Drop file to Upload  
@@ -69,4 +69,7 @@
   });
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
-  });   
+  });
+  $(document).ready(function(){
+    $('.floor_plan_upload_image').affix({offset: {top: 205} }); 
+  });
