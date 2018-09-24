@@ -27,7 +27,7 @@
         .form-group        
           %label
             Animation
-          = select_tag :animation, options_for_select(["none","bouncing effects"],@community.design.animation),{:class=>"form-control"}    
+          = select_tag :animation, options_for_select(["bouncing effects","none "],@community.design.animation),{:class=>"form-control"}    
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
         / Start image-slide section

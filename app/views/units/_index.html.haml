@@ -12,7 +12,7 @@
           .dropdown.pull-right.mb-20.mr-5
             %button.dropbtn.btn.btn-primary.pull-right.mb-20.mr-5 Mass Overrides
             .dropdown-content
-              %a{:href => "##","data-target" =>"#modal-to-set-available", "data-toggle" => "modal"} Available
+              %a{:href => "##",'data-target' =>'#modal-to-set-available', 'data-toggle' => 'modal'} Available
               %a{:href => "##","data-target" =>"#modal-to-set-available-date", "data-toggle" => "modal"} Available Date
               %a{:href => "##","data-target" =>"#modal-to-set-manual-override", "data-toggle" => "modal"} Manual Override 
               %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
@@ -61,7 +61,7 @@
                   %th Amenities
                   %th Actions
               %tbody
-                - units = @community_info.units.sort_by { |u| u.id }
+                - units = @community_info.units.sort_by { |u| u.marketing_name }
                 - units.each_with_index  do |u,index|
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
                   %tr{style: "background-color: #{u.manually_updated ? '#cecece' : ''}"}
@@ -211,14 +211,6 @@
         
   / End Panel left Side
   :javascript
-    $('#setunitfloor').on('click', function(ev) {
-    alert("ok")
-    $('#modal-to-change-floor').modal('show');'
-    });
-
-    $(document).ready(function(){
-     $('[data-toggle="popover"]').popover({html:true});   
-    });
     $('#select_all_units_for_manual_override').change(function(){
       if($(this).is(':checked')){
         $('.manual-override-checkbox').prop('checked',true)
