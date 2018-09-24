@@ -4,7 +4,7 @@ class AmenitiesController < ApplicationController
 
   def index
     @amenities = current_community.amenities.order(id: :desc)
-    add_breadcrumb "Amenities", community_amenities_path(current_community)
+    add_breadcrumb "Amenity Images", community_amenities_path(current_community)
   end
 
   def create

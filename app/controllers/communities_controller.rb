@@ -195,6 +195,7 @@ class CommunitiesController < ApplicationController
     end
   end
   def save_apartment_settings
+    byebug
     @community = Community.find params[:community_id]
     @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
     @community.display_rent = params[:display_rent].present? ? params[:display_rent] : false
@@ -244,7 +245,7 @@ class CommunitiesController < ApplicationController
         :appartment_button_color,:gallery_button_color,:neighborhood_button_color,:favorite_button_color,:filter_panel_color,:webpages_button_color,
         :imagepages_button_color],:expressionist_attributes=>[:id,:home_page_menu_position,:home_page_position_of_logo,:home_page_logo_size,
         :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:home_page_button_font_size,:display_home_page_image,
-        :display_home_page_nav_background,:home_page_button_image,:display_global_navigation_button_icon,:global_navigation_button_border_color,
+        :display_home_page_nav_background,:display_global_nav_background_image,:home_page_button_image,:display_global_navigation_button_icon,:global_navigation_button_border_color,
         :global_navigation_button_font_family,:global_navigation_button_font_size,:display_global_navigation_button_bg_color,:filter_panel_button_border_color,
         :filter_panel_text_font_size,:filter_panel_button_text_font_size, :spacing_between_buttons, :button_on_bg_color, :display_button_on_bg_color,:global_navigation_button_on_font_color,
         :application_background_image,:display_application_background_image,:application_background_color,:button_on_bg_color_opacity,
@@ -255,7 +256,8 @@ class CommunitiesController < ApplicationController
         :display_webpage_btn_on_image,:webpage_btn_on_image,:display_favourite_btn_on_image,:favourite_btn_on_image,:display_apartment_btn_off_image,
         :apartment_btn_off_image,:display_gallery_btn_off_image,:gallery_btn_off_image,:display_neighborhood_btn_off_image,:neighborhood_btn_off_image,
         :display_imagepage_btn_off_image,:imagepage_btn_off_image, :display_webpage_btn_off_image,:webpage_btn_off_image,:display_favourite_btn_off_image,
-        :favourite_btn_off_image, :global_navigation_btn_on_for_all,:global_navigation_btn_off_for_all],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,:gallery_button_on_font_color,:display_gallery_button_on_background_color,:gallery_button_on_background_color,:display_filter_panel_icon,:filter_panel_icon_color,:icon_background_color,:icon_background_color_opacity,:gallery_button_on_background_color_opacity]])
+        :favourite_btn_off_image, :global_navigation_btn_on_for_all,:global_navigation_btn_off_for_all,:home_page_background_image,
+        :global_nav_background_image],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,:gallery_button_on_font_color,:display_gallery_button_on_background_color,:gallery_button_on_background_color,:display_filter_panel_icon,:filter_panel_icon_color,:icon_background_color,:icon_background_color_opacity,:gallery_button_on_background_color_opacity]])
   end
 
 end

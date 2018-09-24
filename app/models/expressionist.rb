@@ -95,5 +95,7 @@ class Expressionist < ApplicationRecord
   mount_base64_uploader :webpage_btn_off_image, AvatarUploader
   mount_base64_uploader :favourite_btn_off_image, AvatarUploader
 
+  mount_base64_uploader :home_page_background_image, AvatarUploader
+  mount_base64_uploader :global_nav_background_image, AvatarUploader
   belongs_to :design
 end

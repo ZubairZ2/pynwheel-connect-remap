@@ -183,7 +183,36 @@
               Spacing between buttons
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :spacing_between_buttons , options_for_select(spacing_options,e.object.spacing_between_buttons.present? ? e.object.spacing_between_buttons : '0px'),{},{class: "form-control global-navigation-field"} 
-
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display global navigation background image
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_global_nav_background_image, {class: "global-navigation-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_nav_background_image"}
+            %span.pl-15 Yes
+      .global-nav-background-image-fields.hidden            
+        .row
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Global navigation background image
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .select-logo.mb-20.mt-30
+                  .select-logo-logo
+                    %a.preview-image{:href=>current_community.design.expressionist.global_nav_background_image.present? ? current_community.design.expressionist.global_nav_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
+                      = image_tag current_community.design.expressionist.global_nav_background_image.present? ? current_community.design.expressionist.global_nav_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-background-image-preview"
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %span.btn.btn-primary.btn-file.mt-30
+                  %i.fa.fa-upload
+                  Upload File
+                  = file_field_tag :global_nav_background_image
+        .text-center.drag-box.mt-15.image-upload#global-nav-background-image-upload-holder
+          %span.icon-upload
+            = image_tag "upload-image.png"
+            %p Drag &amp; Drop file to Upload
       .row
         .col-md-12
           %ul.nav.nav-tabs
@@ -813,6 +842,7 @@
   var display_gallery_nav_bg_image = "#{current_community.design.expressionist.display_gallery_nav_bg_image}"
   var display_favourities_nav_bg_image = "#{current_community.design.expressionist.display_favourities_nav_bg_image}"
   var display_additional_pages_nav_bg_image = "#{current_community.design.expressionist.display_additional_pages_nav_bg_image}"
+  var display_global_nav_background_image = "#{current_community.design.expressionist.display_global_nav_background_image}"
 
   var global_navigation_btn_off_for_all = "#{current_community.design.expressionist.global_navigation_btn_off_for_all}"
 
@@ -832,6 +862,8 @@
   var display_favourite_btn_off_image = "#{current_community.design.expressionist.display_favourite_btn_off_image}"
 
  
+  if(display_global_nav_background_image == "true")
+    $('.global-nav-background-image-fields').removeClass('hidden');
   if(global_nav_button_on_as_image == "true")
     $('.global-nav-button-on-upload-fields').removeClass('hidden');
   if(global_nav_button_off_as_image == "true")
@@ -881,6 +913,14 @@
     $('.favourite-btn-off-upload-fields').removeClass('hidden');
     
 
+  $('#community_design_attributes_expressionist_attributes_display_global_nav_background_image').change(function(){
+    if($(this).is(':checked')){
+        $('.global-nav-background-image-fields').removeClass('hidden');
+      }
+    else{
+        $('.global-nav-background-image-fields').addClass('hidden');
+     }
+  });
   $('#community_design_attributes_global_nav_button_on_as_image').change(function(){
     if($(this).is(':checked')){
         $('.global-nav-button-on-upload-fields').removeClass('hidden');

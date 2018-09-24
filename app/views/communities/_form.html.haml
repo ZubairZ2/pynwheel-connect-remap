@@ -72,14 +72,14 @@
     = f.select :company_id, Company.all.collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Property Map / Floor Plates
+    Property Map / Floorplates
 
   .col-sm-12.col-lg-3.col-md-3.col-xs-12
     = f.radio_button :is_sitemap, true
     = f.label :is_sitemap, "Property Map", :value => "true"
   .col-sm-12.col-lg-3.col-md-3.col-xs-12
     = f.radio_button :is_sitemap, false
-    = f.label :is_sitemap, "Floor Plates", :value => "false"
+    = f.label :is_sitemap, "Floorplates", :value => "false"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Inactivate

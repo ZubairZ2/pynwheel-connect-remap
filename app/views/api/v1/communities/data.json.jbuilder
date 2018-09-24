@@ -86,7 +86,8 @@ json.ui_settigs do
         json.gallery_nav_bg_color @community.design.expressionist.gallery_nav_bg_color.present? ? @community.design.expressionist.gallery_nav_bg_color : "#ffffff"
         json.favourities_nav_bg_color @community.design.expressionist.favourities_nav_bg_color.present? ? @community.expressionist.design.favourities_nav_bg_color : "#ffffff"
         json.additional_pages_nav_bg_color @community.design.expressionist.additional_pages_nav_bg_color.present? ? @community.design.expressionist.additional_pages_nav_bg_color : "#ffffff"
-        
+        json.display_global_navigation_backfround_image @community.design.expressionist.display_global_nav_background_image
+        json.apartment_btn_on_image @community.design.expressionist.global_nav_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.global_nav_background_image.url : @community.design.expressionist.global_nav_background_image.url) : "No Image"
 
         json.global_navigation_btn_on_for_all @community.design.expressionist.global_navigation_btn_on_for_all
         if @community.design.expressionist.global_navigation_btn_on_for_all
@@ -190,7 +191,6 @@ json.ui_settigs do
         json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487x160"
         json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
         json.display_home_page_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_button_icon : true
-        json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
         json.display_home_page_image @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_image : true
         json.home_page_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_family.present?) ? @community.design.expressionist.home_page_button_font_family : "Arial"
         json.home_page_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_size.present?) ? @community.design.expressionist.home_page_button_font_size : "18px"
@@ -205,6 +205,9 @@ json.ui_settigs do
         json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "350px"
         json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
         json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"
+        json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
+        json.gallery_button @community.design.expressionist.home_page_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_background_image.url : @community.design.expressionist.home_page_background_image.url) : "No Image"
+
       end
       json.map_marker do
         json.marker_background_color @community.design.marker_background_color.present? ? @community.design.marker_background_color : "#565455"

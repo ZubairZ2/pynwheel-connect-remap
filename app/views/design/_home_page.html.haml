@@ -31,15 +31,6 @@
               Logo size
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :home_page_logo_size , options_for_select(home_page_logo_size,e.object.home_page_logo_size),{},{class: "form-control home-page-field"}
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display home page navigation background
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = e.check_box :display_home_page_nav_background, {class: "home-page-field"}
-            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_nav_background"}
-            %span.pl-15 Yes
       .row
         .col-lg-10
           .form-group.mt-30
@@ -182,10 +173,45 @@
           %span.icon-upload
             = image_tag "upload-image.png"
             %p Drag &amp; Drop file to Upload
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display home page navigation background
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_home_page_nav_background, {class: "home-page-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_nav_background"}
+            %span.pl-15 Yes
+      #home-page-background-image-fields.hidden            
+        .row
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Home page background image
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .select-logo.mb-20.mt-30
+                  .select-logo-logo
+                    %a.preview-image{:href=>current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
+                      = image_tag current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-background-image-preview"
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %span.btn.btn-primary.btn-file.mt-30
+                  %i.fa.fa-upload
+                  Upload File
+                  = file_field_tag :home_page_background_image
+        .text-center.drag-box.mt-15.image-upload#home-page-background-image-upload-holder
+          %span.icon-upload
+            = image_tag "upload-image.png"
+            %p Drag &amp; Drop file to Upload
 :javascript
   var display_home_page_image = "#{current_community.design.expressionist.display_home_page_image}"       
+  var display_home_page_nav_background = "#{current_community.design.expressionist.display_home_page_nav_background}"       
+
   if(display_home_page_image == "true")
     $('#home-page-image-fields').removeClass('hidden');
+
+  if(display_home_page_nav_background == "true")
+    $('#home-page-background-image-fields').removeClass('hidden');
 
   $('#community_design_attributes_expressionist_attributes_display_home_page_image').change(function(){
     if($(this).is(':checked')){
@@ -193,6 +219,14 @@
       }
     else{
         $('#home-page-image-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_home_page_nav_background').change(function(){
+    if($(this).is(':checked')){
+        $('#home-page-background-image-fields').removeClass('hidden');
+      }
+    else{
+        $('#home-page-background-image-fields').addClass('hidden');
      }
   });
 

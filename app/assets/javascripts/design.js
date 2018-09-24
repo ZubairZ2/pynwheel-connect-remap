@@ -370,6 +370,35 @@ $(document).ready(function () {
       }
     }
 
+    var home_page_background_image_upload_holder = document.getElementById('home-page-background-image-upload-holder');
+    if (home_page_background_image_upload_holder) {
+
+      home_page_background_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+          homePageBackgroundImageSrc(files[0]);
+        } else {
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
+    var global_nav_background_image_upload_holder = document.getElementById('global-nav-background-image-upload-holder');
+    if (global_nav_background_image_upload_holder) {
+
+      global_nav_background_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+          globalNavBackgroundImageSrc(files[0]);
+        } else {
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
+
     var gallery_image_on_upload_holder = document.getElementById('gallery-image-on-upload-holder');
     if (gallery_image_on_upload_holder) {
 
@@ -561,7 +590,12 @@ $(document).ready(function () {
   $("#home_page_button_image").change(function () {
     readHomePageButtonImageFromInput(this);
   });
-
+  $("#home_page_background_image").change(function () {
+    readHomePageBackgroundImageFromInput(this);
+  });
+  $("#global_nav_background_image").change(function () {
+    readGlobalNavBackgroundImageFromInput(this);
+  });
   $("#gallery_button_on_image").change(function () {
     readGalleryImageOnFromInput(this);
   });
@@ -963,6 +997,26 @@ function homePageButtonImageSrc(file) {
   reader.readAsDataURL(file);
 }
 
+function homePageBackgroundImageSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#home-page-background-image-preview').attr('src', e.target.result);
+    $('#home-page-background-image-preview').parent().attr('href', e.target.result);
+    homePageBackgroundImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+function globalNavBackgroundImageSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#global-nav-background-image-preview').attr('src', e.target.result);
+    $('#global-nav-background-image-preview').parent().attr('href', e.target.result);
+    globalNavBackgroundImage(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
 function galleryImageOnSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
@@ -1382,6 +1436,36 @@ function homePageButtonImage(src) {
   });
 }
 
+function homePageBackgroundImage(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, home_page_background_image: src}}}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+function globalNavBackgroundImage(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, global_nav_background_image: src}}}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
 function galleryImageOn(src) {
   $(".divLoading").removeClass("hidden");
   var url = "/communities/" + community_id;
@@ -1982,7 +2066,44 @@ function readHomePageButtonImageFromInput(input) {
     }
   }
 }
+function readHomePageBackgroundImageFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
 
+      reader.onload = function (e) {
+        $('#home-page-background-image-preview').attr('src', e.target.result);
+        $('#home-page-background-image-preview').parent().attr('href', e.target.result);
+        homePageBackgroundImage(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+      //console.log($(input).val());
+    }
+  }
+}
+function readGlobalNavBackgroundImageFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        $('#global-nav-background-image-preview').attr('src', e.target.result);
+        $('#global-nav-background-image-preview').parent().attr('href', e.target.result);
+        globalNavBackgroundImage(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+      //console.log($(input).val());
+    }
+  }
+}
 function readGalleryImageOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
