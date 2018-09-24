@@ -1,6 +1,8 @@
 class YardiRentCafeConnectionService < BaseService
 
   def perform
+    property_codes = credentials.p_code.split(',') rescue []
+    property_code = property_codes[0]
     begin
       request_type = "apartmentavailability"
       company_code = credentials.c_code
