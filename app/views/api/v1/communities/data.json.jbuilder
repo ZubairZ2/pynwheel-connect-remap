@@ -86,7 +86,7 @@ json.ui_settigs do
         json.gallery_nav_bg_color @community.design.expressionist.gallery_nav_bg_color.present? ? @community.design.expressionist.gallery_nav_bg_color : "#ffffff"
         json.favourities_nav_bg_color @community.design.expressionist.favourities_nav_bg_color.present? ? @community.expressionist.design.favourities_nav_bg_color : "#ffffff"
         json.additional_pages_nav_bg_color @community.design.expressionist.additional_pages_nav_bg_color.present? ? @community.design.expressionist.additional_pages_nav_bg_color : "#ffffff"
-        json.display_global_navigation_backfround_image @community.design.expressionist.display_global_nav_background_image
+        json.display_global_nav_background_image @community.design.expressionist.display_global_nav_background_image
         json.apartment_btn_on_image @community.design.expressionist.global_nav_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.global_nav_background_image.url : @community.design.expressionist.global_nav_background_image.url) : "No Image"
 
         json.global_navigation_btn_on_for_all @community.design.expressionist.global_navigation_btn_on_for_all
