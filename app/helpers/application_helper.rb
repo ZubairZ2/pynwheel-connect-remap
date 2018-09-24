@@ -755,7 +755,7 @@ module ApplicationHelper
   end
   
   def home_page_button_width
-    ["350px","400px","450px","500px","550px","600px"]
+    ["300px","350px","400px","450px","500px","550px","600px"]
   end
 
 
