@@ -71,6 +71,10 @@
 #  favourite_btn_off_image                   :string
 #  global_navigation_btn_on_for_all          :boolean          default(FALSE)
 #  global_navigation_btn_off_for_all         :boolean          default(FALSE)
+#  display_global_nav_background_image       :boolean          default(FALSE)
+#  global_nav_background_image               :string
+#  home_page_background_image                :string
+#  display_home_page_nav_background_image    :boolean          default(FALSE)
 #
 
 class Expressionist < ApplicationRecord
