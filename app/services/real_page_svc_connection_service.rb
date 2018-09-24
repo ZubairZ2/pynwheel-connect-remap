@@ -1,10 +1,12 @@
 class RealPageSvcConnectionService < BaseService
 	def perform
+    site_ids = credentials.site_id.split(',') rescue []
+    site_id = site_ids[0]
     begin
 	    url = REALPAGE_URL
       soap_action = REALPAGE_UNIT_ACTION
       pmc_id = credentials.pmc_id
-      site_id = credentials.site_id
+      #site_id = credentials.site_id
       username = REALPAGESVC_USERNAME
       password = REALPAGESVC_PASSWORD
       license_key = REALPAGESVC_LICENSE_KEY
