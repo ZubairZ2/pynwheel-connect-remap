@@ -87,7 +87,7 @@ json.ui_settigs do
         json.favourities_nav_bg_color @community.design.expressionist.favourities_nav_bg_color.present? ? @community.expressionist.design.favourities_nav_bg_color : "#ffffff"
         json.additional_pages_nav_bg_color @community.design.expressionist.additional_pages_nav_bg_color.present? ? @community.design.expressionist.additional_pages_nav_bg_color : "#ffffff"
         json.display_global_nav_background_image @community.design.expressionist.display_global_nav_background_image
-        json.apartment_btn_on_image @community.design.expressionist.global_nav_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.global_nav_background_image.url : @community.design.expressionist.global_nav_background_image.url) : "No Image"
+        json.global_nav_background_image @community.design.expressionist.global_nav_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.global_nav_background_image.url : @community.design.expressionist.global_nav_background_image.url) : "No Image"
 
         json.global_navigation_btn_on_for_all @community.design.expressionist.global_navigation_btn_on_for_all
         if @community.design.expressionist.global_navigation_btn_on_for_all
@@ -206,7 +206,10 @@ json.ui_settigs do
         json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
         json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"
         json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
-        json.gallery_button @community.design.expressionist.home_page_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_background_image.url : @community.design.expressionist.home_page_background_image.url) : "No Image"
+        
+        json.display_home_page_nav_background_image @community.design.expressionist.display_home_page_nav_background_image
+        json.home_page_background_image @community.design.expressionist.home_page_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_background_image.url : @community.design.expressionist.home_page_background_image.url) : "No Image"
+
 
       end
       json.map_marker do
