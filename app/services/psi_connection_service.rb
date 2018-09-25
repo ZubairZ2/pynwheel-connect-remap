@@ -25,7 +25,7 @@ class PsiConnectionService < BaseService
       response =  response.body.gsub('@','')
       hash = JSON.parse(response)
       hash.to_xml
-    rescue=>e
+    rescue => e
       false
     end    
   end	

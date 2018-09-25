@@ -143,7 +143,8 @@ class RealPageSvcService < BaseService
                 if u[:RentSqFtCount].present?
                   unit.square_feet = u[:RentSqFtCount]              
                 end
-                unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                unit.floor = u[:FloorNumber] rescue nil
                 if u[:AvailableDate].present?
                   unit.available_date = u[:AvailableDate]
                 end

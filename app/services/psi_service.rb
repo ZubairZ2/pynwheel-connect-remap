@@ -66,7 +66,7 @@ class PsiService < BaseService
         elsif u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
         end
-        unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+        unit.floor = u["FloorLevel"]
         unit.availability = u["Availability"]["VacancyClass"]
         if u["Availability"]["VacancyClass"] == "Unoccupied"
           year = u["Availability"]["VacateDate"]["@attributes"]["Year"]

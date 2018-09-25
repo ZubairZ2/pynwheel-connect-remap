@@ -24,7 +24,7 @@ class YardiRentCafeService < BaseService
         if response[0]["Error"].nil?
           response.each do |r|
             begin
-              
+
               unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
               unless unit.manual_override
                 unit.property_id = r["PropertyId"]
