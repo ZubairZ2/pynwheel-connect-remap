@@ -336,6 +336,7 @@ json.apartments do
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
+      json.display_unit_on_homepage @community.display_neighborhood_on_homepage
       if unit.amenities.plotted_amenities.size > 0
         json.unit_amenities unit.amenities.plotted_amenities do |amenity|
           json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
@@ -437,6 +438,7 @@ json.neighborhood do
     json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
     json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
     json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
+    json.display_neighborhood_on_homepage @community.neighborhood.display_neighborhood_on_homepage
     if @community.neighborhood.listing.present?
       json.listing @community.neighborhood.listing
     end
@@ -479,6 +481,7 @@ end
 json.gallery do
   json.show_gallery_page @community.show_gallery
   json.gallery_page_name @community.gallery_page_name
+  json.display_gallery_on_homepage @community.display_gallery_on_homepage
   if @community.gallery_images.present?
     json.categories @community.galleries.pluck(:name).each do |name|
       json.title name

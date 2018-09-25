@@ -42,6 +42,6 @@ class NeighborhoodsController < ApplicationController
 	end
 
 	def neighborhood_params
-    params.require(:neighborhood).permit(:address, :latitude, :longitude, :radius, :zoom, :show_neighborhood, :neighborhood_name,:listing, category:[])
+    params.require(:neighborhood).permit(:address, :latitude, :longitude, :radius, :zoom, :show_neighborhood, :display_neighborhood_on_homepage, :neighborhood_name,:listing,category:[])
   end
 end

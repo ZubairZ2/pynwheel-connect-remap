@@ -19,7 +19,7 @@ class FloorplatesController < ApplicationController
   def create
     @floorplate = current_community.floorplates.new(floorplate_params)
     if @floorplate.save
-      flash[:notice] = "Floor Plate created successfully."
+      flash[:notice] = "Floorplate created successfully."
       redirect_to community_floorplates_path(current_community)
     else
       add_breadcrumb "Floor plates", community_floorplates_path(current_community)
@@ -30,17 +30,17 @@ class FloorplatesController < ApplicationController
   end
 
   def edit
-    add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+    add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Edit Floor plate", edit_community_floorplate_path(current_community,@floorplate)
   end
 
   def update
     if @floorplate.update(floorplate_params)
-      flash[:notice] = "Floor Plate updated successfully."
+      flash[:notice] = "Floorplate updated successfully."
       redirect_to community_floorplates_path(current_community)
     else
-      add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-        add_breadcrumb "Edit Floor plate", edit_community_floorplate_path(current_community,@floorplate)
+      add_breadcrumb "Floorplates", community_floorplates_path(current_community)
+        add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
       flash[:error] = @floorplate.errors.full_messages.join(',')
       render :edit
     end
@@ -48,14 +48,14 @@ class FloorplatesController < ApplicationController
 
   def destroy
     @floorplate.destroy
-    flash[:notice] = "Floor plate deleted successfully."
+    flash[:notice] = "Floorplate deleted successfully."
     redirect_to community_floorplates_path(current_community)
   end
 
   def grid_overlay
     @floorplate = Floorplate.find params[:floorplate_id]
     @units = @floorplate.units.order(:building, :unit_type)
-    add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+    add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Grid Overlay", community_floorplate_grid_overlay_path(current_community,@floorplate)
   end
 

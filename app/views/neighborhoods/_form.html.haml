@@ -82,10 +82,19 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Show Page
-
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .TriSea-technologies-Switch
       %span.pr-15 No
       = f.check_box :show_neighborhood, class: "neighborhood-form-field"
       %label.label-primary{:for => "neighborhood_show_neighborhood"}
       %span.pl-15 Yes
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Display on homepage
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :display_neighborhood_on_homepage, class: "neighborhood-form-field"
+      %label.label-primary{:for => "neighborhood_display_neighborhood_on_homepage"}
+      %span.pl-15 Yes
+    

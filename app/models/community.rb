@@ -33,6 +33,8 @@
 #  display_rent                   :boolean          default(TRUE)
 #  display_sitemap                :boolean          default(FALSE)
 #  display_floorplan_gallery      :boolean          default(FALSE)
+#  display_unit_on_homepage       :boolean
+#  display_gallery_on_homepage    :boolean          default(FALSE)
 #
 
 class Community < ApplicationRecord

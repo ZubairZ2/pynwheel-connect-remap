@@ -7,4 +7,9 @@
         
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
-        %a.btn.btn-danger.btn-ok{"data-method"=>"delete"} Delete
+        %a.btn.btn-danger.btn-ok#delete_button{"data-method"=>"delete"} Delete
+
+:javascript
+  $('#delete_button').on('click',function(){
+    $('#delete_button').attr("disabled", true);
+  });

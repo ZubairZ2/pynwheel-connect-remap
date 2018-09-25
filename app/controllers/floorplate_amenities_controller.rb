@@ -33,7 +33,7 @@ class FloorplateAmenitiesController < ApplicationController
   #   if @amenity.update_attributes(amenity_params)
   #     redirect_to community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity updated successfully"
   #   else
-  #     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+  #     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
   #     add_breadcrumb "Amenities", community_floorplate_amenities_path(current_community,@floorplate)
   #     add_breadcrumb "Edit Amenity",edit_community_floorplate_amenity_path(current_community,@floorplate,@amenity)
   #     flash[:error] = @amenity.errors.full_messages.join(',')
@@ -64,7 +64,7 @@ class FloorplateAmenitiesController < ApplicationController
   end
 
   def plot_amenities
-    add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+    add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community,@floorplate)
     @sitemap = @floorplate
     @amenities = @community.amenities

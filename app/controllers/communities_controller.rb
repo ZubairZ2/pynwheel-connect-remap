@@ -173,6 +173,7 @@ class CommunitiesController < ApplicationController
   def save_gallery_settings
     @community = Community.find params[:community_id]
     @community.show_gallery = params[:show_gallery].present? ? params[:show_gallery] : false
+    @community.display_gallery_on_homepage = params[:display_gallery_on_homepage].present? ? params[:display_gallery_on_homepage] : false
     @community.gallery_page_name = params[:gallery_page_name] if params[:gallery_page_name].present?
     if @community.save
       flash[:notice] = "Gallery settings updated successfully."
@@ -195,11 +196,11 @@ class CommunitiesController < ApplicationController
     end
   end
   def save_apartment_settings
-    byebug
     @community = Community.find params[:community_id]
     @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
     @community.display_rent = params[:display_rent].present? ? params[:display_rent] : false
     @community.display_sitemap = params[:display_sitemap].present? ? params[:display_sitemap] : false
+    @community.display_unit_on_homepage = params[:display_unit_on_homepage].present? ? params[:display_unit_on_homepage] : false
     @community.apartment_page_name = params[:apartment_page_name] if params[:apartment_page_name].present?
     if @community.save
       flash[:notice] = "Apartment settings updated successfully."

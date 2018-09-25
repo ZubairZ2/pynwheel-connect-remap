@@ -59,12 +59,13 @@
                   %th Available Date
                   %th Image
                   %th Amenities
+                  %th Floor number
                   %th Actions
               %tbody
                 - units = @community_info.units.sort_by { |u| u.marketing_name }
                 - units.each_with_index  do |u,index|
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
-                  %tr{style: "background-color: #{u.manually_updated ? '#cecece' : ''}"}
+                  %tr{style: "background-color: #{u.manual_override ? '#cecece' : ''}"}
                     %td= index+1
                     %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name }
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil }
@@ -81,6 +82,7 @@
                         = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
                     %td
                       = link_to 'Amenities' , plot_amenities_community_unit_amenities_path(@community,u),:class=>"btn-info btn-xs.mr-5"
+                    %td= best_in_place u, :floor,:url => community_unit_path(@community,u)
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit
@@ -305,10 +307,16 @@
         $('#best_in_place_unit_'+id[4]+'_manual_override').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_available_date').html('-');
       }
+      if($('#best_in_place_unit_'+id[4]+'_manual_override').html() == 'No'){
+        $(this).parent().parent().css('background-color','');
+      }
       $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>');
  
     });
-
+    
+    $('#best_in_place_unit_317_manual_override').change(function(){
+      alert('okk');
+    });
     
     $('.best_in_place').on('best_in_place:error', function (event, request, error) {
       $.each($.parseJSON(request.responseText), function (index, value) {
