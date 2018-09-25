@@ -311,6 +311,7 @@ json.apartments do
   units_floorplans = []
   floorplans = @community.floorplans
   available_units_and_sold_units = @community.units.available_units + @community.units.are_sold 
+  json.display_unit_on_homepage @community.units.display_unit_on_homepage
   json.units available_units_and_sold_units.each do |unit|
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
@@ -336,7 +337,6 @@ json.apartments do
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
-      json.display_unit_on_homepage @community.units.display_unit_on_homepage
       if unit.amenities.plotted_amenities.size > 0
         json.unit_amenities unit.amenities.plotted_amenities do |amenity|
           json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
