@@ -311,7 +311,7 @@ json.apartments do
   units_floorplans = []
   floorplans = @community.floorplans
   available_units_and_sold_units = @community.units.available_units + @community.units.are_sold 
-  json.display_unit_on_homepage @community.units.display_unit_on_homepage
+  json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units available_units_and_sold_units.each do |unit|
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
