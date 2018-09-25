@@ -336,7 +336,7 @@ json.apartments do
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
-      json.display_unit_on_homepage @community.display_neighborhood_on_homepage
+      json.display_unit_on_homepage @community.units.display_unit_on_homepage
       if unit.amenities.plotted_amenities.size > 0
         json.unit_amenities unit.amenities.plotted_amenities do |amenity|
           json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
