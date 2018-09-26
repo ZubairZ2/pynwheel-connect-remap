@@ -5,6 +5,12 @@
       %span Select role here	
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control"}
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Communities
+      %span Select communities  
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.select :community_ids, options_for_select(current_company.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control validate[required]",:multiple=>true}   
 - else 
   = hidden_field_tag "action_name","profile"       
 .form-group
@@ -37,4 +43,6 @@
       .select-img-img= image_tag f.object.avatar.present? ? f.object.avatar.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
-      = f.file_field :avatar 
+      = f.file_field :avatar
+:javascript
+  $('#user_community_ids').multiSelect();       

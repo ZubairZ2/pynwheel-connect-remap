@@ -37,8 +37,10 @@ class User < ApplicationRecord
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
   #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
-  ROLES = ["Super admin" , "Company admin"]  
-  belongs_to :company     
+  ROLES = ["Community admin", "Community manager"]  
+  belongs_to :company
+  has_many :community_users
+  has_many :communities ,through: :community_users
 
   def name
   	if first_name.nil? and last_name.nil?
@@ -52,20 +54,12 @@ class User < ApplicationRecord
     role == "Super admin"
   end
 
-  def is_company_admin?
-    role == "Company admin"
+  def is_community_admin?
+    role == "Community admin"
   end
 
   def is_community_manager?
-    role == "community manager"
-  end
-
-  def is_region_admin?
-    role == "region admin"
-  end
-
-  def is_member?
-    role == "member"
+    role == "Community manager"
   end
 
 end

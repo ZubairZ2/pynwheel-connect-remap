@@ -3,6 +3,9 @@ class DesignController < ApplicationController
   add_breadcrumb "Home", :root_path
 
   def index
+    unless current_user.role == 'Super admin'
+      redirect_to community_home_page_index_path
+    end
     add_breadcrumb "Design", community_design_index_path(@community)
     @design = current_community.design || current_community.create_design
     @menu = @design.menu ||  @design.create_menu

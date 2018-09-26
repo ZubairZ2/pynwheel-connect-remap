@@ -4,7 +4,7 @@ class Ability
   def initialize(user)
     if user.is_super_admin?
         can :manage, :all
-    elsif user.is_company_admin?
+    elsif user.is_community_admin?
         can :manage, Community, company_id: user.company_id	
         can :manage, Floorplan
         can :manage, Unit

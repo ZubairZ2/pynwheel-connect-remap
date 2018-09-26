@@ -2,7 +2,10 @@ class UsersController < ApplicationController
 	load_and_authorize_resource
 	before_action :set_user, only: [:edit,:update]
 	def index
-		@users = current_company.users
+		#@users = current_company..users
+		#@users = User.find current_company.communities.collect{|c| c.users.map(&:id)}.flatten
+		community_users = CommunityUser.where(:community_id=>current_company.communities.map(&:id))
+		@users = User.find community_users.map(&:user_id)	
 	end
 
 	def new
