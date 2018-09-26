@@ -1,18 +1,18 @@
 class WebAndImageValidator < ActiveModel::Validator
   def validate(record)
-    #    image = Imagepage.find_by(name: record.attributes["name"])
-    #    web = Webpage.find_by(name: record.attributes["name"])
-    #    if web == nil && image == nil
-    #      web = Webpage.new
-    #      image = Imagepage.new
-    #    end
-    #    if web == nil 
-    #      web = image
-    #    elsif image ==nil
-    #      image = web
-    #    end      
-    #if image.position == record.attributes["position"] || web.position == record.attributes["position"]
-    #else
+    temp = Community.find(record.community_id)
+    temp.display_unit_on_homepage
+    temp.display_gallery_on_homepage
+    temp.neighborhood.display_neighborhood_on_homepage
+    if(temp.display_unit_on_homepage && record.attributes["position"].to_i == 1)
+      record.errors[:base] << "Home Page is already selected for position 1."
+    end
+    if(temp.display_gallery_on_homepage && record.attributes["position"].to_i == 2)
+      record.errors[:base] << "Gallery page is already selected for position 2."
+    end
+    if(temp.neighborhood.display_neighborhood_on_homepage && record.attributes["position"].to_i == 3)
+      record.errors[:base] << "Neighborhood Page is already selected for position 3."
+    end
     positions = Imagepage.where(community_id: record.community_id).map(&:position) +  Webpage.where(community_id: record.community_id).map(&:position)
     if record.new_record? and positions.include?(record.attributes["position"].to_i)
       record.errors[:base] << "Position #{record.attributes['position']} has already been taken."

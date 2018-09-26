@@ -1,9 +1,7 @@
 = form_for @community,:method=>"PUT",:html=>{:id=>"global-navigation-form"},:remote=>true  do |f|
   = hidden_field_tag "global_navigation_tab", true
   = f.fields_for :design do |d|
-    .row
-      .col-md-12
-        %p.title-box Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum dolor sem, quis pharetra dui ultricies vel. Cras non pulvinar tellus, vel bibendum magna. Morbi tellus nulla, cursus non nisi sed, porttitor dignissim erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc facilisis commodo lectus. Vivamus vel tincidunt enim, non vulputate ipsum. Ut pellentesque consectetur arcu sit amet scelerisque. Fusce commodo leo eros, ut eleifend massa congue at.
+    
     .row
       .col-lg-12
         %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
@@ -183,36 +181,7 @@
               Spacing between buttons
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :spacing_between_buttons , options_for_select(spacing_options,e.object.spacing_between_buttons.present? ? e.object.spacing_between_buttons : '0px'),{},{class: "form-control global-navigation-field"} 
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display global navigation background image
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = e.check_box :display_global_nav_background_image, {class: "global-navigation-field"}
-            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_nav_background_image"}
-            %span.pl-15 Yes
-      .global-nav-background-image-fields.hidden            
-        .row
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Global navigation background image
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .select-logo.mb-20.mt-30
-                  .select-logo-logo
-                    %a.preview-image{:href=>current_community.design.expressionist.global_nav_background_image.present? ? current_community.design.expressionist.global_nav_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
-                      = image_tag current_community.design.expressionist.global_nav_background_image.present? ? current_community.design.expressionist.global_nav_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-background-image-preview"
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %span.btn.btn-primary.btn-file.mt-30
-                  %i.fa.fa-upload
-                  Upload File
-                  = file_field_tag :global_nav_background_image
-        .text-center.drag-box.mt-15.image-upload#global-nav-background-image-upload-holder
-          %span.icon-upload
-            = image_tag "upload-image.png"
-            %p Drag &amp; Drop file to Upload
+      
       .row
         .col-md-12
           %ul.nav.nav-tabs
@@ -221,15 +190,17 @@
             %li
               %a{"data-toggle" => "tab", :href => "#global-navigation-button-off"} Global navigation button off
             %li
+              %a{"data-toggle" => "tab", :href => "#global-navigation-background-image"} Global navigation background image
+            %li
               %a{"data-toggle" => "tab", :href => "#application-background-image"} Application background image
             %li
-              %a{"data-toggle" => "tab", :href => "#apartment-navigation-background-image"} Apartment navigation background image
+              %a{"data-toggle" => "tab", :href => "#apartment-navigation-background-image"} Apartment background image
             %li
-              %a{"data-toggle" => "tab", :href => "#Gallery-navigation-background-image"} Gallery navigation background image
+              %a{"data-toggle" => "tab", :href => "#Gallery-navigation-background-image"} Gallery background image
             %li
-              %a{"data-toggle" => "tab", :href => "#favourites-navigation-background-image"} Favourites navigation background image
+              %a{"data-toggle" => "tab", :href => "#favourites-navigation-background-image"} Favourites background image
             %li
-              %a{"data-toggle" => "tab", :href => "#additional-pages-navigation-background-image"} Additional pages navigation background image
+              %a{"data-toggle" => "tab", :href => "#additional-pages-navigation-background-image"} Additional pages background image
           .tab-content
             #global-navigation-button-on.tab-pane.fade.in.active
               .form-group
@@ -277,7 +248,7 @@
               .global_navigation_button_for_all.hidden
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display apartment button on image
+                    Upload apartment button on image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -308,7 +279,7 @@
                   /------------------------------ Gallery On button---------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display gallery button on image
+                    Upload gallery button on image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -338,7 +309,7 @@
                 /------------------------------ Neighborhood On button---------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display neighborhood button on image
+                    Upload neighborhood button on image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -368,7 +339,7 @@
                 /------------------------------ Imagepage On button---------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display Imagepage button on image
+                    Upload Imagepage button on image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -398,7 +369,7 @@
                 /------------------------------ Webpage On button---------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display Webpage button on image
+                    Upload Webpage button on image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -428,7 +399,7 @@
                 /------------------------------ Favourite On button---------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display favourite button on image
+                    Upload favourite button on image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -501,7 +472,7 @@
               .global_navigation_off_button_for_all.hidden
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display apartment button off image
+                    Upload apartment button off image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -531,7 +502,7 @@
                 /-----------------------------gallery off image------------------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display gallery button off image
+                    Upload gallery button off image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -561,7 +532,7 @@
                 /--------------------------neighborhood off image ---------------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display neighborhood button off image
+                    Upload neighborhood button off image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -591,7 +562,7 @@
                 /------------------------------imagepage off image --------------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display imagepage button off image
+                    Upload imagepage button off image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -621,7 +592,7 @@
                 /----------------------------- webpage off button ---------------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display webpage button off image
+                    Upload webpage button off image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -651,7 +622,7 @@
                 /---------------------------- favourite off button ------------------------------------
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display favourite button off image
+                    Upload favourite button off image
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -679,6 +650,38 @@
                     = image_tag "upload-image.png"
                     %p Drag &amp; Drop file to Upload 
               /------------------------ Navigation off button end----------------------------   
+            #global-navigation-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload global navigation background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_global_nav_background_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_nav_background_image"}
+                    %span.pl-15 Yes
+              .global-nav-background-image-fields.hidden            
+                .row
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Global navigation background image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.global_nav_background_image.present? ? current_community.design.expressionist.global_nav_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
+                              = image_tag current_community.design.expressionist.global_nav_background_image.present? ? current_community.design.expressionist.global_nav_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-background-image-preview"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :global_nav_background_image
+                .text-center.drag-box.mt-15.image-upload#global-nav-background-image-upload-holder
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+
             #application-background-image.tab-pane.fade
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -713,7 +716,7 @@
             #apartment-navigation-background-image.tab-pane.fade
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Upload Apartment Navigation Background Image
+                  Upload Apartment Background Image
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -724,7 +727,7 @@
                 .col-lg-10
                   .form-group.mt-30
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                      Appartment navigation background image
+                      Appartment background image
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .select-logo.mb-20.mt-30
                         .select-logo-logo
@@ -744,7 +747,7 @@
             #Gallery-navigation-background-image.tab-pane.fade
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Upload Gallery navigation background image
+                  Upload Gallery background image
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -755,7 +758,7 @@
                 .col-lg-10
                   .form-group.mt-30
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                      Gallery navigation background
+                      Gallery background Image
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .select-logo.mb-20.mt-30
                         .select-logo-logo
@@ -775,7 +778,7 @@
             #favourites-navigation-background-image.tab-pane.fade
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Upload favourites navigation background image
+                  Upload favourites background image
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -786,7 +789,7 @@
                 .col-lg-10
                   .form-group.mt-30
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                      Favourites navigation background image
+                      Favourites background image
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .select-logo.mb-20.mt-30
                         .select-logo-logo
@@ -806,7 +809,7 @@
             #additional-pages-navigation-background-image.tab-pane.fade
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Upload additional pages navigation background image
+                  Upload additional pages background image
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -817,7 +820,7 @@
                 .col-lg-10
                   .form-group.mt-30
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                      Additional pages navigation background image
+                      Additional pages background image
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .select-logo.mb-20.mt-30
                         .select-logo-logo

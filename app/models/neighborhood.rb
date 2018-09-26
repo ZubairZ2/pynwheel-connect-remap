@@ -24,4 +24,13 @@ class Neighborhood < ApplicationRecord
   before_save do
 	  self.category.gsub!(/[\[\]\"]/, "") if attribute_present?("category")
 	end
+  validate :validate_page_position
+
+
+  def validate_page_position
+	positions = Imagepage.where(community_id: self.community_id).map(&:position) +  Webpage.where(community_id: self.community_id).map(&:position)
+	if positions.include?(3) && attributes['display_neighborhood_on_homepage']
+	  errors[:base] << "Position 3 has already been taken."
+	end
+  end
 end

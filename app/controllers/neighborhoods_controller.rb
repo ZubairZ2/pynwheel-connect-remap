@@ -29,7 +29,7 @@ class NeighborhoodsController < ApplicationController
       else
         #flash[:error] = @neighborhood.errors.full_messages.join(',')
         #render :index
-        message = '<div class="alert alert-warning">'+@neighborhood.errors.full_messages.join(',')+'</div>'
+        message = '<div class="alert alert-danger">'+@neighborhood.errors.full_messages.join(',')+'</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       end
     end

@@ -62,6 +62,7 @@ class Community < ApplicationRecord
   validates_uniqueness_of :code
   after_create :set_default_theme
   after_create :create_default_gallery
+  validate :validate_page_position
 
   def is_futurist?
     theme_name == "futurist"
@@ -297,5 +298,13 @@ class Community < ApplicationRecord
     end
     return favorites
   end
-
+  def validate_page_position
+    positions = Imagepage.where(community_id: self.id).map(&:position) +  Webpage.where(community_id: self.id).map(&:position)
+    if positions.include?(1) && attributes['display_unit_on_homepage']
+      errors[:base] << "Position 1 has already been taken."
+    end
+    if positions.include?(2) && attributes['display_gallery_on_homepage']  
+      errors[:base] << "Position 1 has already been taken."
+    end
+  end
 end
