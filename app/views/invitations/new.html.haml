@@ -13,7 +13,9 @@
         .text-center
           %h3 Send Invitation
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
-          = f.hidden_field :company_id, :value=>current_company.id
+          
+          .form-group
+            = f.select :community_ids, options_for_select(current_company.communities.collect{|c| [c.name,c.id]}),{},{class: "form-control validate[required]",:multiple=>true}
           .form-group
             = f.select :role, options_for_select(User::ROLES,f.object.role),{:include_blank => 'Select Admin'},{class: "form-control validate[required]"} 
           .form-group
@@ -22,4 +24,6 @@
           = f.submit "Send Ivitation", :class=>"btn btn-primary btn-block" 
           = link_to "Cancel", company_employees_path(current_company), :class=>"btn btn-default btn-block"
         .text-center
-          %p.copy-right © 2017 Pynwheel                         
+          %p.copy-right © 2018 Pynwheel
+:javascript
+  $('#user_community_ids').multiSelect();                                   
