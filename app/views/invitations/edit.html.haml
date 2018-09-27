@@ -21,7 +21,7 @@
             = f.text_field :last_name, :class=>"form-control validate[required,custom[onlyLetterSp]", :placeholder=>"Last Name",:maxlength=>"20"  
             %i.fa.fa-user 
           .form-group
-            = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true
+            = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true ,:readonly => true
             %i.fa.fa-envelope   
           .form-group
             = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password",:maxlength=>"50", autocomplete: "off" 
