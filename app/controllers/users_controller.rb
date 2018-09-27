@@ -2,10 +2,7 @@ class UsersController < ApplicationController
 	#load_and_authorize_resource
 	before_action :set_user, only: [:edit,:update]
 	def index
-		#@users = current_company..users
-		#@users = User.find current_company.communities.collect{|c| c.users.map(&:id)}.flatten
-		community_users = CommunityUser.where(:community_id=>current_company.communities.map(&:id))
-		@users = User.find community_users.map(&:user_id)	
+		@users = User.where(role: ["Community admin","Community manager"])
 	end
 
 	def new
@@ -48,7 +45,7 @@ class UsersController < ApplicationController
 
 	def render_action
 		params[:action_name].present? && params[:action_name] == "profile" ? :profile : :edit
-    end
+  end
 
 	def profile
 		@user = User.find params[:employee_id]
