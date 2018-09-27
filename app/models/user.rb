@@ -40,7 +40,7 @@ class User < ApplicationRecord
   ROLES = ["Community admin", "Community manager"] 
   ROLES_ADMIN = [ "Community manager"]   
   belongs_to :company
-  has_many :community_users
+  has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
 
   def name
