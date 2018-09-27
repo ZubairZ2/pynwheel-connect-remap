@@ -1,5 +1,5 @@
 class CommunitiesController < ApplicationController
-  load_and_authorize_resource
+  #load_and_authorize_resource
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page]
@@ -7,7 +7,11 @@ class CommunitiesController < ApplicationController
 
   def index
     #@communities = Community.page(params[:page]).per(10)
-    @communities = current_company.communities
+    if current_user.is_super_admin?
+      @communities = current_company.communities
+    else
+      @communities = current_user.communities
+    end
   end
 
   def new

@@ -1,7 +1,7 @@
 class InvitationsController < Devise::InvitationsController
    
    def new
-     authorize! :invite,current_user		
+     #authorize! :invite,current_user		
      super
    end
 

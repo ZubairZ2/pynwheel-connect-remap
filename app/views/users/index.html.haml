@@ -15,9 +15,10 @@
             %h4.title USERS 
           .col-md-6
             .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/users/invitation/new"}
-                %i.fa.fa-plus-circle
-                INVITE USER
+              - unless current_user.is_community_manager?
+                %a.btn.btn-success.pull-right.mb-20{:href => "/users/invitation/new"}
+                  %i.fa.fa-plus-circle
+                  INVITE USER
             .divLoading.hidden
         .box.box-widget.panel-box
           .box-header

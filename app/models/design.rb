@@ -25,7 +25,7 @@
 #  secondary_logo_position                 :string
 #  secondary_page_background_image         :string
 #  global_navigation_position              :string
-#  animation                               :string           default("none")
+#  animation                               :string           default("bouncing effects")
 #  global_navigation_font_color            :string
 #  global_navigation_background_color      :string
 #  global_navigation_button_color          :string
