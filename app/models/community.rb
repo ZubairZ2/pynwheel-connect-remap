@@ -31,8 +31,8 @@
 #  equal_housing_opportunity_logo :boolean          default(TRUE)
 #  handicap_accessible_logo       :boolean          default(TRUE)
 #  display_rent                   :boolean          default(TRUE)
-#  display_sitemap                :boolean          default(FALSE)
-#  display_floorplan_gallery      :boolean          default(FALSE)
+#  display_sitemap                :boolean          default(TRUE)
+#  display_floorplan_gallery      :boolean          default(TRUE)
 #  display_unit_on_homepage       :boolean
 #  display_gallery_on_homepage    :boolean          default(FALSE)
 #
