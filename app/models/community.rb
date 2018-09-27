@@ -306,7 +306,7 @@ class Community < ApplicationRecord
       errors[:base] << "Position 1 has already been taken."
     end
     if positions.include?(2) && attributes['display_gallery_on_homepage']  
-      errors[:base] << "Position 1 has already been taken."
+      errors[:base] << "Position 2 has already been taken."
     end
   end
 end
