@@ -9,20 +9,27 @@ class ContentpagesController < ApplicationController
 	def create
 		@webpage = @community.webpages.new(webpage_params)
 
-		if @webpage.url.include? '</iframe>'
-			@iframe_url = @webpage.url.split('height')
-			if @iframe_url[1][5] == '"'
-				@iframe_url[1][2] = '1'
-				@iframe_url[1][3] = '0'
-				@iframe_url[1][4] = '0' + '%'
-			else
-				@iframe_url[1][2] = '1'
-				@iframe_url[1][3] = '0'
-				@iframe_url[1][4] = '0'
-				@iframe_url[1][5] = '%'
-			end
-			@webpage.url = @iframe_url[0] + 'height' + @iframe_url[1]
-		end
+		
+     	#  	if @webpage.url.include? '</iframe>'
+		   #  @iframe_url = @webpage.url.split('height')
+		   #  if @iframe_url[1][3] == '"'
+		   #    @iframe_url[1][2] = '1' + '0' + '0' + '%'
+		   #  elsif @iframe_url[1][4] == '"'
+		   #    @iframe_url[1][2] = '1'
+		   #    @iframe_url[1][3] = '0' + '0' + '%'
+		   #  elsif @iframe_url[1][5] == '"'
+		   #    @iframe_url[1][2] = '1'
+		   #    @iframe_url[1][3] = '0'
+		   #    @iframe_url[1][4] = '0' + '%'
+		   #  else
+		   #    @iframe_url[1][2] = '1'
+		   #    @iframe_url[1][3] = '0'
+		   #    @iframe_url[1][4] = '0'
+		   #    @iframe_url[1][5] = '%'
+		   #  end
+		   #  @webpage.url = @iframe_url[0] + 'height' + @iframe_url[1]
+		   #  puts '******************************* ' , @webpage.url
+    	# end
 
     if @webpage.save
       flash[:notice] = "Webpage created successfully."

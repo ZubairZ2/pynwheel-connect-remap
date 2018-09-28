@@ -516,7 +516,28 @@ json.additional_pages do
     json.webpages @community.webpages.active.each do |webpage|
       json.id webpage.id
       json.title webpage.name
-      json.url webpage.url
+      if webpage.url.include? '</iframe>'
+        @iframe_url = webpage.url.split('height')
+        if @iframe_url[1][3] == '"'
+          @iframe_url[1][2] = '1' + '0' + '0' + '%'
+        elsif @iframe_url[1][4] == '"'
+          @iframe_url[1][2] = '1'
+          @iframe_url[1][3] = '0' + '0' + '%'
+        elsif @iframe_url[1][5] == '"'
+          @iframe_url[1][2] = '1'
+          @iframe_url[1][3] = '0'
+          @iframe_url[1][4] = '0' + '%'
+        else
+          @iframe_url[1][2] = '1'
+          @iframe_url[1][3] = '0'
+          @iframe_url[1][4] = '0'
+          @iframe_url[1][5] = '%'
+        end
+        webpage.url = @iframe_url[0] + 'height' + @iframe_url[1]
+        json.url webpage.url
+      else
+        json.url webpage.url
+      end
       json.position webpage.position.present? ? webpage.position : 0
       json.display_on_homepage webpage.display_on_homepage.present? ? webpage.display_on_homepage : false
     end
