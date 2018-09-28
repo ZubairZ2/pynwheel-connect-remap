@@ -136,7 +136,11 @@ class CommunitiesController < ApplicationController
       @community.build_credential
     end
   end
-
+  def delete_imported_data
+    current_community.units.destroy_all
+    current_community.floorplans.destroy_all
+    redirect_to community_settings_path(current_community), notice: "All Units and flootplans data have been deleted successfully."
+  end
   def import_page
     add_breadcrumb "Settings", "##"
     add_breadcrumb "Import Unit Data", community_import_page_path(current_community)

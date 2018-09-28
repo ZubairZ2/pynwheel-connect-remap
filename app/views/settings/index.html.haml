@@ -45,7 +45,7 @@
                 %i.fa.fa-warning
                 This action will either create new, or update existing, Unit and Floor plan records, based on the vendor's record IDs.
             = link_to "Import Unit Data" , community_import_path(current_community) , :class=>"btn btn-primary import_data"
-
+            = link_to "Delete Data" , community_delete_imported_data_path(current_community) , :class=>"btn btn-danger delete_data", :method => :delete,  data: {confirm: "All data from units and floor plan will be lost"}
 
 :javascript
   var community_id = #{params[:community_id]}
