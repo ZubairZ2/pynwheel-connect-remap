@@ -1932,7 +1932,7 @@ function readGalleryNavBgImageFromInput(input) {
       reader.onload = function (e) {
         $('#gallery-navigation-bg-image-preview').attr('src', e.target.result);
         $('#gallery-navigation-bg-image-preview').parent().attr('href', e.target.result);
-        apartmentGalleryBgImage(e.target.result);
+        galleryNavigationBgImage(e.target.result);
       }
 
       reader.readAsDataURL(input.files[0]);

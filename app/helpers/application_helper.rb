@@ -743,7 +743,7 @@ module ApplicationHelper
   end
 
   def button_height_options
-    ["110px","150px","200px"]
+    ["110px","150px","200px","400px","450px","500px"]
   end
 
   def navigation_background_height_options

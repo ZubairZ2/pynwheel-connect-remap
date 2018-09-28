@@ -15,7 +15,7 @@
 #  show_neighborhood                :boolean          default(TRUE)
 #  neighborhood_name                :string           default("Neighborhood")
 #  listing                          :text
-#  display_neighborhood_on_homepage :boolean          default(FALSE)
+#  display_neighborhood_on_homepage :boolean          default(TRUE)
 #
 
 class Neighborhood < ApplicationRecord
