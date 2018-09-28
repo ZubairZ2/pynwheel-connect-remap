@@ -1,9 +1,6 @@
 class WebAndImageValidator < ActiveModel::Validator
   def validate(record)
     temp = Community.find(record.community_id)
-    temp.display_unit_on_homepage
-    temp.display_gallery_on_homepage
-    temp.neighborhood.display_neighborhood_on_homepage
     if(temp.display_unit_on_homepage && record.attributes["position"].to_i == 1)
       record.errors[:base] << "Home Page is already selected for position 1."
     end
