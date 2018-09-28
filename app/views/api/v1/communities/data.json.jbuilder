@@ -390,7 +390,29 @@ json.apartments do
     json.square_feet floorplan.square_feet
     json.description floorplan.description
     json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
-    json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
+    # json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
+    if floorplan.virtual_tour_url.include? '</iframe>'
+        @iframe_url = floorplan.virtual_tour_url.split('height')
+        if @iframe_url[1][3] == '"'
+          @iframe_url[1][2] = '1' + '0' + '0' + '%'
+        elsif @iframe_url[1][4] == '"'
+          @iframe_url[1][2] = '1'
+          @iframe_url[1][3] = '0' + '0' + '%'
+        elsif @iframe_url[1][5] == '"'
+          @iframe_url[1][2] = '1'
+          @iframe_url[1][3] = '0'
+          @iframe_url[1][4] = '0' + '%'
+        else
+          @iframe_url[1][2] = '1'
+          @iframe_url[1][3] = '0'
+          @iframe_url[1][4] = '0'
+          @iframe_url[1][5] = '%'
+        end
+        floorplan.virtual_tour_url = @iframe_url[0] + 'height' + @iframe_url[1]
+        json.virtual_tour floorplan.virtual_tour_url
+      else
+        json.virtual_tour floorplan.virtual_tour_url
+      end
     json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
       json.name amenity.name
