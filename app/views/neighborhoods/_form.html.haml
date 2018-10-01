@@ -85,7 +85,7 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .TriSea-technologies-Switch
       %span.pr-15 No
-      = f.check_box :show_neighborhood, class: "neighborhood-form-field"
+      = f.check_box :show_neighborhood, class: "neighborhood-form"
       %label.label-primary{:for => "neighborhood_show_neighborhood"}
       %span.pl-15 Yes
 .form-group
@@ -94,7 +94,27 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .TriSea-technologies-Switch
       %span.pr-15 No
-      = f.check_box :display_neighborhood_on_homepage, class: "neighborhood-form-field"
+      = f.check_box :display_neighborhood_on_homepage, class: "neighborhood-form"
       %label.label-primary{:for => "neighborhood_display_neighborhood_on_homepage"}
       %span.pl-15 Yes
     
+:javascript
+
+  $('#neighborhood_show_neighborhood').change(function(){
+    if (!($(this).is(':checked')))
+    {
+      $('#neighborhood_display_neighborhood_on_homepage').prop('checked',false); 
+    }
+    $('.neighborhood-form-field').submit();
+  });
+  $('#neighborhood_display_neighborhood_on_homepage').change(function(){
+    if (!($('#neighborhood_show_neighborhood').is(':checked')))
+    {
+      $('#neighborhood_display_neighborhood_on_homepage').prop('checked',false);
+      
+    }
+    else
+    {
+      $('.neighborhood-form-field').submit();
+    }
+  });

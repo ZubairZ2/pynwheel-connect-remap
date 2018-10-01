@@ -26,7 +26,7 @@
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
-                    = check_box_tag :show_apartment, true, @community.show_apartment, class: "apartment-setting-field"
+                    = check_box_tag :show_apartment, true, @community.show_apartment, class: "apartment-setting"
                     %label.label-primary{:for => "show_apartment"}
                     %span.pl-15 Yes
               .form-group
@@ -53,7 +53,7 @@
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
-                    = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting-field"
+                    = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting"
                     %label.label-primary{:for => "display_unit_on_homepage"}
                     %span.pl-15 Yes 
               
@@ -73,3 +73,22 @@
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
   });   
+
+  $('#show_apartment').change(function(){
+    if (!($(this).is(':checked')))
+    {
+      $('#display_unit_on_homepage').prop('checked',false); 
+    }
+    $('.apartment-settings-form').submit();
+  });
+  $('#display_unit_on_homepage').change(function(){
+    if (!($('#show_apartment').is(':checked')))
+    {
+      $('#display_unit_on_homepage').prop('checked',false);
+      
+    }
+    else
+    {
+      $('.apartment-settings-form').submit();
+    }
+  });
