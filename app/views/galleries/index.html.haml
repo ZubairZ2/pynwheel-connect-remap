@@ -29,7 +29,7 @@
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
-                      = check_box_tag :show_gallery, true, @community.show_gallery, class: "gallery-setting-field"
+                      = check_box_tag :show_gallery, true, @community.show_gallery, class: "gallery-setting-"
                       %label.label-primary{:for => "show_gallery"}
                       %span.pl-15 Yes
                 .form-group
@@ -38,7 +38,7 @@
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
-                      = check_box_tag :display_gallery_on_homepage, true, @community.display_gallery_on_homepage, class: "gallery-setting-field"
+                      = check_box_tag :display_gallery_on_homepage, true, @community.display_gallery_on_homepage, class: "gallery-setting"
                       %label.label-primary{:for => "display_gallery_on_homepage"}
                       %span.pl-15 Yes      
                 = submit_tag 'Save', class: "hidden"
@@ -77,4 +77,19 @@
   $('.gallery-setting-field').change(function(){
     $('.gallery-settings-form').submit();
   });
+   
 
+  $('#show_gallery').change(function(){
+    if (!($(this).is(':checked')))
+    {
+      $('#display_gallery_on_homepage').prop('checked',false); 
+    }
+    $('.gallery-settings-form').submit();
+  });
+  $('#display_gallery_on_homepage').change(function(){
+    if (!($('#show_gallery').is(':checked')))
+    {
+      $('#display_gallery_on_homepage').prop('checked',false);
+      $('.gallery-settings-form').submit();
+    }
+  });

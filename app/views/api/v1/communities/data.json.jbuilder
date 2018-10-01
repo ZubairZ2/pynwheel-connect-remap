@@ -311,7 +311,7 @@ json.apartments do
   units_floorplans = []
   floorplans = @community.floorplans
   available_units_and_sold_units = @community.units.available_units + @community.units.are_sold 
-  json.display_unit_on_homepage @community.display_unit_on_homepage.present? ? @community.display_unit_on_homepage : true
+  json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units available_units_and_sold_units.each do |unit|
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
@@ -464,7 +464,7 @@ json.neighborhood do
     json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
     json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
     json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
-    json.display_neighborhood_on_homepage @community.neighborhood.display_neighborhood_on_homepage.present? ? @community.neighborhood.display_neighborhood_on_homepage : true
+    json.display_neighborhood_on_homepage @community.neighborhood.display_neighborhood_on_homepage
     if @community.neighborhood.listing.present?
       json.listing @community.neighborhood.listing
     end
@@ -507,7 +507,7 @@ end
 json.gallery do
   json.show_gallery_page @community.show_gallery
   json.gallery_page_name @community.gallery_page_name
-  json.display_gallery_on_homepage @community.display_gallery_on_homepage.present? ? @community.display_gallery_on_homepage : true
+  json.display_gallery_on_homepage @community.display_gallery_on_homepage
   if @community.gallery_images.present?
     json.categories @community.galleries.pluck(:name).each do |name|
       json.title name
