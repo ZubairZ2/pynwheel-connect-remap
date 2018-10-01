@@ -25,11 +25,11 @@ class YardiRentCafeSwapService < BaseService
           response.each do |r|
             begin
 
-              unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first
+              unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,marketing_name: r["ApartmentName"]).first
               if unit.present?
+                unit.provider_unit_id = r["ApartmentId"]
                 unit.property_id = r["PropertyId"]
                 unit.unit_type = r["ApartmentName"]
-                unit.marketing_name = r["ApartmentName"]
                 unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                 unit.floorplan_id = r["FloorplanId"]
                 unit.market_rent = r["MinimumRent"]
@@ -78,11 +78,11 @@ class YardiRentCafeSwapService < BaseService
         response = JSON.parse(response.body)
         if response[0]["Error"].nil?
           response.each do |r|
-            fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first
+            fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,name: r["FloorplanName"]).first
             if fp.present?
+              fp.provider_floorplan_id = r["FloorplanId"]
               fp.property_id = r["PropertyId"]
               fp.provider_floorplan_id = r["FloorplanId"]
-              fp.name = r["FloorplanName"]
               fp.unit_count = r[""]
               fp.units_available = r[""]
               fp.bedrooms = r["Beds"]

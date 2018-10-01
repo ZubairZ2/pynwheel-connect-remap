@@ -100,17 +100,13 @@ class Yardi4SwapService < BaseService
 
   def update_yardi4_floorplans(floorplans)
     floorplans.lazy.each do |floorplan|
-      fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:IDValue]).first
+      fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,name: floorplan[0][:Name]).first
       if fp.present?
         rooms = []
         floorplan.each do |f|
-
+          fp.provider_floorplan_id = f[:IDValue]
           if f.key?(:Room)
             rooms << f
-          end
-
-          if f.key?(:Name)
-            fp.name = f[:Name]
           end
 
           if f.key?(:MarketRent)
