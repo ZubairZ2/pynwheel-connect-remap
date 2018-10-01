@@ -390,6 +390,7 @@ json.apartments do
     json.square_feet floorplan.square_feet
     json.description floorplan.description
     json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
+
     #json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
     if floorplan.virtual_tour_url.include? '</iframe>'
         @iframe_url = floorplan.virtual_tour_url.split('height')
@@ -413,6 +414,7 @@ json.apartments do
       else
         json.virtual_tour floorplan.virtual_tour_url
       end
+
     json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
       json.name amenity.name
