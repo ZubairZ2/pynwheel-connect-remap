@@ -21,6 +21,7 @@ Rails.application.routes.draw do
     post :save_floor_plan_button
     get :import_page
     delete :delete_imported_data
+    get :update_imported_data
     get :import
     get :experimental_import
     get :credentials

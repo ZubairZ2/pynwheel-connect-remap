@@ -139,8 +139,24 @@ class Community < ApplicationRecord
     end
   end
 
+  def data_is_swaped
+    case data_provider
+    when "psi"
+      swap_psi_data
+    when "yardirentcafe"
+      swap_yardirentcafe_data
+    when "realpagesvc"
+      swap_realpage_svc_data
+    when "yardi"
+      select_swap_yardi_provider
+    end
+  end
+
   def select_yardi_provider
     credential.url.include?("20") ? import_yardi2_data : import_yardi4_data
+  end
+  def select_swap_yardi_provider
+    credential.url.include?("20") ? swap_yardi2_data : swap_yardi4_data
   end
 
   def import_psi_data
@@ -148,17 +164,29 @@ class Community < ApplicationRecord
     #psi_service.perform  
     ImportPsiDataJob.perform_async credential.attributes.to_json
   end
+  def swap_psi_data
+    psi_swap_service = PsiSwapService.new(JSON.parse(credentials.attributes))
+    psi_swap_service.perform
 
+  end
   def import_yardirentcafe_data
       #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
       #yardi_rent_cafe_service.perform
       ImportYardirentcafeDataJob.perform_async credential.attributes.to_json
   end
-
+  def swap_yardirentcafe_data
+    yardi_rent_cafe_swap_service = YardiRentCafeSwapService.new(credential.attributes)
+    yardi_rent_cafe_swap_service.perform
+  end
   def import_yardi2_data
     #yardi2_service = Yardi2Service.new(credential.attributes)
     #yardi2_service.perform
     ImportYardi2DataJob.perform_async credential.attributes.to_json
+  end
+
+  def swap_yardi2_data
+    yardi2_swap_service = Yardi2SwapService.new(credential.attributes)
+    yardi2_swap_service.perform
   end
 
   def import_yardi4_data
@@ -167,10 +195,19 @@ class Community < ApplicationRecord
     ImportYardi4DataJob.perform_async credential.attributes.to_json
   end
 
+  def swap_yardi4_data
+    yardi4_swap_service = Yardi4SwapService.new(credential.attributes)
+    yardi4_swap_service.perform
+  end
   def import_realpage_svc_data
     #real_page_svc_service = RealPageSvcService.new(credential.attributes)
     #real_page_svc_service.perform
     ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
+  end
+
+  def swap_realpage_svc_data
+    real_page_svc_swap_service = RealPageSvcSwapService.new(credential.attributes)
+    real_page_svc_swap_service.perform
   end
 
   def experimental_data

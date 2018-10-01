@@ -136,6 +136,23 @@ class CommunitiesController < ApplicationController
       @community.build_credential
     end
   end
+  def update_imported_data
+    Thread.current[:errors] = []
+    @community = Community.find params[:community_id]
+    if @community.credentials_are_present?
+      if @community.data_is_swaped and Thread.current[:errors].empty?
+        flash[:notice] = "Your data will be swapped shortly.Refresh your page after few minutes."
+        redirect_to community_floorplans_path(:community_id=>@community.id)
+      else
+        flash[:error] = Thread.current[:errors].join(',')
+        redirect_to community_import_page_path(current_community)
+      end
+    else
+      flash[:error] = "Please enter credentials in settings before importing data."
+      redirect_to community_import_page_path(current_community)
+    end
+
+  end
   def delete_imported_data
     current_community.units.destroy_all
     current_community.floorplans.destroy_all
