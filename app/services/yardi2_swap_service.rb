@@ -85,37 +85,36 @@ class Yardi2SwapService < BaseService
           unit.save
         else
           unit = Unit.where(community_id: credentials.community_id).first
-          unless unit.manual_override
-            unit.provider = "yardi"
-            unit.property_id = property_id
-            unit.unit_type = unit_entries[0][:Id]
-            unit.marketing_name = unit_entries[0][:Id]
-            unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
-            is_available = false
-            vacate_date = ""
-            unit_entries.each do |u|
-              if u.key?(:Unit)
-                unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
+          unit.provider = "yardi"
+          unit.property_id = property_id
+          unit.unit_type = unit_entries[0][:Id]
+          unit.marketing_name = unit_entries[0][:Id]
+          unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
+          is_available = false
+          vacate_date = ""
+          unit_entries.each do |u|
+            if u.key?(:Unit)
+              unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
+            end
+            if u.key?(:EffectiveRent)
+              unit.market_rent = u[:EffectiveRent][0][:Min]
+              unit.effective_rent = u[:EffectiveRent][0][:Min]
+            end
+            if u.key?(:Availability)
+              if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
+                vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
+                is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
-              if u.key?(:EffectiveRent)
-                unit.market_rent = u[:EffectiveRent][0][:Min]
-                unit.effective_rent = u[:EffectiveRent][0][:Min]
-              end
-              if u.key?(:Availability)
-                if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
-                  vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
-                  is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
-                end
-                if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
-                  vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
-                  is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
-                end
+              if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
+                vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
+                is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
             end
-            unit.availability = is_available ? "Unoccupied" : "Occupied"
-            unit.available_date = vacate_date
-            unit.save
           end
+          unit.availability = is_available ? "Unoccupied" : "Occupied"
+          unit.available_date = vacate_date
+          unit.save
+
         end
         unit = Unit.where(community_id: credentials.community_id)
         unit.each do |d|
@@ -172,47 +171,44 @@ class Yardi2SwapService < BaseService
           fp.save(validate: false)
         else
           fp = Floorplan.where(community_id: credentials.community_id).first
-          unless fp.manual_override
-
-            rooms = []
-            floorplan.each do |f|
-              f.provider = "yardi"
-              if f.key?(:Room)
-                rooms << f
-              end
-
-              if f.key?(:Name)
-                fp.name = f[:Name]
-              end
-
-              if f.key?(:MarketRent)
-                if f[:MarketRent][0][:Min].to_f > 0
-                  fp.market_rent = f[:MarketRent][0][:Min]
-                else
-                  fp.market_rent = f[:MarketRent][0][:Max]
-                end
-              end
-
-              if f.key?(:SquareFeet)
-                if f[:SquareFeet][0][:Min].to_f > 0
-                  fp.square_feet = f[:SquareFeet][0][:Min]
-                else
-                  fp.square_feet = f[:SquareFeet][0][:Max]
-                end
-              end
-
+          rooms = []
+          floorplan.each do |f|
+            f.provider = "yardi"
+            if f.key?(:Room)
+              rooms << f
             end
 
-            rooms.each do |room|
-              if room[:Room][0][:Type] == "Bedroom"
-                fp.bedrooms = room[:Room][1][:Count]
+            if f.key?(:Name)
+              fp.name = f[:Name]
+            end
+
+            if f.key?(:MarketRent)
+              if f[:MarketRent][0][:Min].to_f > 0
+                fp.market_rent = f[:MarketRent][0][:Min]
               else
-                fp.bathrooms = room[:Room][1][:Count]
+                fp.market_rent = f[:MarketRent][0][:Max]
               end
             end
 
-            fp.save(validate: false)
+            if f.key?(:SquareFeet)
+              if f[:SquareFeet][0][:Min].to_f > 0
+                fp.square_feet = f[:SquareFeet][0][:Min]
+              else
+                fp.square_feet = f[:SquareFeet][0][:Max]
+              end
+            end
+
           end
+
+          rooms.each do |room|
+            if room[:Room][0][:Type] == "Bedroom"
+              fp.bedrooms = room[:Room][1][:Count]
+            else
+              fp.bathrooms = room[:Room][1][:Count]
+            end
+          end
+
+          fp.save(validate: false)
         end
         fp = Floorplan.where(community_id: credentials.community_id)
         fp.each do |d|
