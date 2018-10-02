@@ -84,8 +84,11 @@ class Yardi2SwapService < BaseService
           unit.available_date = vacate_date
           unit.save
         else
-          unit = Unit.where(community_id: credentials.community_id).first
+          # unit = Unit.where(community_id: credentials.community_id).first
+          unit = Unit.new
+          unit.community_id = credentials.community_id
           unit.provider = "yardi"
+          unit.provider_unit_id = unit_entries[0][:Id]
           unit.property_id = property_id
           unit.unit_type = unit_entries[0][:Id]
           unit.marketing_name = unit_entries[0][:Id]
@@ -113,18 +116,20 @@ class Yardi2SwapService < BaseService
           end
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           unit.available_date = vacate_date
-          unit.save
+          unit.save!
+          puts '+++++++++++++++++++++=', unit.errors.messages.join(',')
 
         end
-        unit = Unit.where(community_id: credentials.community_id)
-        unit.each do |d|
-          unless d.provider == "yardi"
-            d.destroy
-          end
-        end
+
       rescue => e
         puts '----------------------------------', e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      end
+    end
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "yardi"
+        d.destroy
       end
     end
   end
@@ -136,7 +141,7 @@ class Yardi2SwapService < BaseService
         if fp.present?
           rooms = []
           floorplan.each do |f|
-            f.provider = "yardi"
+            fp.provider = "yardi"
             if f.key?(:Room)
               rooms << f
             end
@@ -170,10 +175,12 @@ class Yardi2SwapService < BaseService
 
           fp.save(validate: false)
         else
-          fp = Floorplan.where(community_id: credentials.community_id).first
+          # fp = Floorplan.where(community_id: credentials.community_id).first
+          fp = Floorplan.new
+          fp.community_id = credentials.community_id
           rooms = []
           floorplan.each do |f|
-            f.provider = "yardi"
+            fp.provider = "yardi"
             if f.key?(:Room)
               rooms << f
             end
@@ -210,15 +217,16 @@ class Yardi2SwapService < BaseService
 
           fp.save(validate: false)
         end
-        fp = Floorplan.where(community_id: credentials.community_id)
-        fp.each do |d|
-          unless d.provider == "yardi"
-            d.destroy
-          end
-        end
+
       rescue => e
         puts '----------------------------------', e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      end
+    end
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      unless d.provider == "yardi"
+        d.destroy
       end
     end
   end

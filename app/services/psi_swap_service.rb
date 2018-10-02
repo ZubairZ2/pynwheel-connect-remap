@@ -81,7 +81,9 @@ class PsiSwapService < BaseService
         unit.save(validate: false)
       else
 
-        unit = Unit.where(community_id: credentials.community_id).first
+        # unit = Unit.where(community_id: credentials.community_id).first
+        unit = Unit.new
+        unit.community_id = credentials.community_id
         unit.provider = "psi"
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
@@ -108,20 +110,22 @@ class PsiSwapService < BaseService
         unit.save(validate: false)
 
       end
-      unit = Unit.where(community_id: credentials.community_id)
-      unit.each do |d|
-        unless d.provider == "psi"
-          d.destroy
-        end
+    end
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "psi"
+        d.destroy
       end
     end
   end
 
   def save_psi_floorplans(floorplans,property_id)
+    puts '+++++++++++++++++++++++++ add new floor plans  outerrrrr +++++++++++++++++++++++++++++'
     floorplans.each do |f|
+      puts '+++++++++++++++++++++++++ add new floor plans innerrrrr +++++++++++++++++++++++++++++'
       floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
       if floorplan.present?
-        floorplan.provider = "psi",
+        floorplan.provider = "psi"
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.property_id = property_id
         floorplan.name = f["Name"]
@@ -156,8 +160,12 @@ class PsiSwapService < BaseService
         end
         floorplan.save
       else
+
         # floorplan = Floorplan.where(community_id: credentials.community_id).first
-        loorplan = credentials.community_id.
+        # c = Community.find(credentials.community_id)
+        floorplan = Floorplan.new
+        floorplan.community_id = credentials.community_id
+        floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.provider = "psi"
         floorplan.property_id = property_id
         floorplan.name = f["Name"]
@@ -191,12 +199,14 @@ class PsiSwapService < BaseService
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
         floorplan.save
+        puts '++++++++++++++++++', floorplan.errors.full_messages.join(',')
+
       end
-      fp = Floorplan.where(community_id: credentials.community_id)
-      fp.each do |d|
-        unless d.provider == "psi"
-          d.destroy
-        end
+    end
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      unless d.provider == "psi"
+        d.destroy
       end
     end
   end

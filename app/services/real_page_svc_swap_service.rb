@@ -51,7 +51,7 @@ class RealPageSvcSwapService < BaseService
               fp = fp[:FloorPlanObject]
               floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanNameMarketing]).first
               if floorplan.present?
-                floorplan.provider = "realpagesvc",
+                floorplan.provider = "realpagesvc"
                 floorplan.provider_floorplan_id = fp[:FloorPlanID]
                 floorplan.name = fp[:FloorPlanNameMarketing]
                 if fp[:FloorPlanCode].present?
@@ -69,7 +69,9 @@ class RealPageSvcSwapService < BaseService
                 floorplan.square_feet = fp[:GrossSquareFootage]
                 floorplan.save(:validate => false)
               else
-                floorplan = Floorplan.where(community_id: community_id).first_or_initialize
+                # floorplan = Floorplan.where(community_id: community_id).first
+                floorplan = Floorplan.new
+                floorplan.community_id = community_id
                 floorplan.provider = "realpagesvc"
                 if fp[:FloorPlanNameMarketing].present?
                   floorplan.name = fp[:FloorPlanNameMarketing]
@@ -88,12 +90,13 @@ class RealPageSvcSwapService < BaseService
                 floorplan.square_feet = fp[:GrossSquareFootage]
                 floorplan.save(:validate => false)
               end
-              fp = Floorplan.where(community_id: credentials.community_id)
-              fp.each do |d|
-                unless d.provider == "realpagesvc"
-                  d.destroy
-                end
-              end
+
+            end
+          end
+          fp = Floorplan.where(community_id: credentials.community_id)
+          fp.each do |d|
+            unless d.provider == "realpagesvc"
+              d.destroy
             end
           end
         end
@@ -101,6 +104,7 @@ class RealPageSvcSwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
+
   end
 
   def import_realpage_svc_units
@@ -218,7 +222,9 @@ class RealPageSvcSwapService < BaseService
                 # end
                 unit.save
               else
-                unit = Unit.where(community_id: community_id).first
+                # unit = Unit.where(community_id: community_id).first
+                unit = Unit.new
+                unit.community_id = community_id
                 unit.provider = "realpagesvc"
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = u[:UnitID]
@@ -285,12 +291,13 @@ class RealPageSvcSwapService < BaseService
                 unit.save
 
               end
-              unit = Unit.where(community_id: credentials.community_id)
-              unit.each do |d|
-                unless d.provider == "realpagesvc"
-                  d.destroy
-                end
-              end
+
+            end
+          end
+          unit = Unit.where(community_id: credentials.community_id)
+          unit.each do |d|
+            unless d.provider == "realpagesvc"
+              d.destroy
             end
           end
         end

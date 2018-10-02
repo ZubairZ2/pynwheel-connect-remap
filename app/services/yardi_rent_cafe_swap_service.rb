@@ -50,9 +50,12 @@ class YardiRentCafeSwapService < BaseService
                 end
                 unit.save
               else
-                unit = Unit.where(community_id: credentials.community_id).first
+                # unit = Unit.where(community_id: credentials.community_id).first
+                unit = Unit.new
+                unit.community_id = credentials.community_id
                 unit.provider = "yardirentcafe"
                 unit.property_id = r["PropertyId"]
+                unit.provider_unit_id = r["ApartmentId"]
                 unit.unit_type = r["ApartmentName"]
                 unit.marketing_name = r["ApartmentName"]
                 unit.floor = evaluate_floor(unit.marketing_name) rescue nil
@@ -72,15 +75,16 @@ class YardiRentCafeSwapService < BaseService
                 end
                 unit.save
               end
-              unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id)
-              unit.each do |d|
-                unless d.provider == "yardirentcafe"
-                  d.destroy
-                end
-              end
+
 
             rescue => e
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+            end
+          end
+          unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id)
+          unit.each do |d|
+            unless d.provider == "yardirentcafe"
+              d.destroy
             end
           end
         else
@@ -111,7 +115,7 @@ class YardiRentCafeSwapService < BaseService
           response.each do |r|
             fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"]).first
             if fp.present?
-              fp.provider = "yardirentcafe",
+              fp.provider = "yardirentcafe"
               fp.provider_floorplan_id = r["FloorplanId"]
               fp.property_id = r["PropertyId"]
               fp.provider_floorplan_id = r["FloorplanId"]
@@ -128,7 +132,9 @@ class YardiRentCafeSwapService < BaseService
               fp.deposit = r["MinimumDeposit"]
               fp.save(validate: false)
             else
-              fp = Floorplan.where(community_id: credentials.community_id).first
+              # fp = Floorplan.where(community_id: credentials.community_id).first
+              fp = Floorplan.new
+              fp.community_id = credentials.community_id
               fp.provider = "yardirentcafe"
               fp.property_id = r["PropertyId"]
               fp.provider_floorplan_id = r["FloorplanId"]
@@ -146,11 +152,12 @@ class YardiRentCafeSwapService < BaseService
               fp.deposit = r["MinimumDeposit"]
               fp.save(validate: false)
             end
-            fp = Floorplan.where(community_id: credentials.community_id)
-            fp.each do |d|
-              unless d.provider == "yardirentcafe"
-                d.destroy
-              end
+
+          end
+          fp = Floorplan.where(community_id: credentials.community_id)
+          fp.each do |d|
+            unless d.provider == "yardirentcafe"
+              d.destroy
             end
           end
         else

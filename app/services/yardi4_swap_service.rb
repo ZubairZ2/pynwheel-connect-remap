@@ -56,7 +56,7 @@ class Yardi4SwapService < BaseService
   def update_yardi4_units(ils_units,property_id)
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:MarketingName]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][:IDValue]).first
       if unit.present?
         unit.provider = "yardi"
         unit.provider_unit_id = u[:Units][:Unit][:Identification][0][:IDValue]
@@ -93,12 +93,15 @@ class Yardi4SwapService < BaseService
         end
         unit.availability = is_available ? "Unoccupied" : "Occupied"
         unit.available_date = vacate_date
-        unit.save
+        unit.save!
+        puts '++++++++++++++++++1', unit.errors.full_messages.join(',')
       else
-        unit = Unit.where(community_id: credentials.community_id).first
+        # unit = Unit.where(community_id: credentials.community_id).first
+        unit = Unit.new
+        unit.community_id = credentials.community_id
         unit.provider = "yardi"
         unit.property_id = property_id
-        #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
+        unit.provider_unit_id = u[:Units][:Unit][:Identification][0][:IDValue]
         unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
         unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
         unit.floorplan_id = u[:Units][:Unit][:UnitType]
@@ -132,24 +135,26 @@ class Yardi4SwapService < BaseService
         unit.availability = is_available ? "Unoccupied" : "Occupied"
         unit.available_date = vacate_date
         unit.save
+        puts '++++++++++++++++++2', unit.errors.full_messages.join(',')
 
       end
-      unit = Unit.where(community_id: credentials.community_id)
-      unit.each do |d|
-        unless d.provider == "yardi"
-          d.destroy
-        end
+    end
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "yardi"
+        d.destroy
       end
-
     end
   end
 
   def update_yardi4_floorplans(floorplans)
     floorplans.lazy.each do |floorplan|
-      fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[0][:Name]).first
-      if fp.present?
-        rooms = []
-        floorplan.each do |f|
+      floorplan.each do |f|
+        fp = Floorplan.where(community_id: credentials.community_id,name: f[:Name]).first
+        puts ')))))))(((((((((()))))))))))(((((()()()()()()()()() ', f[:Name]
+        if fp.present?
+          rooms = []
+
           fp.provider = "yardi"
           fp.provider_floorplan_id = f[:IDValue]
           if f.key?(:Room)
@@ -172,64 +177,68 @@ class Yardi4SwapService < BaseService
             end
           end
 
-        end
 
-        rooms.each do |room|
-          if room[:Room][0][:RoomType] == "Bedroom"
-            fp.bedrooms = room[:Room][1][:Count]
-          else
-            fp.bathrooms = room[:Room][1][:Count]
-          end
-        end
 
-        fp.save(validate: false)
-      else
-        fp = Floorplan.where(community_id: credentials.community_id).first
-        rooms = []
-        floorplan.each do |f|
-          provider = "yardi"
-          if f.key?(:Room)
-            rooms << f
-          end
-
-          if f.key?(:Name)
-            fp.name = f[:Name]
-          end
-
-          if f.key?(:MarketRent)
-            if f[:MarketRent][0][:Min].to_f > 0
-              fp.market_rent = f[:MarketRent][0][:Min]
+          rooms.each do |room|
+            if room[:Room][0][:RoomType] == "Bedroom"
+              fp.bedrooms = room[:Room][1][:Count]
             else
-              fp.market_rent = f[:MarketRent][0][:Max]
+              fp.bathrooms = room[:Room][1][:Count]
             end
           end
 
-          if f.key?(:SquareFeet)
-            if f[:SquareFeet][0][:Min].to_f > 0
-              fp.square_feet = f[:SquareFeet][0][:Min]
+          fp.save(validate: false)
+        else
+          # fp = Floorplan.where(community_id: credentials.community_id).first
+          fp = Floorplan.new
+          fp.community_id = credentials.community_id
+          rooms = []
+          floorplan.each do |f|
+            provider = "yardi"
+            fp.provider_floorplan_id = f[:IDValue]
+            if f.key?(:Room)
+              rooms << f
+            end
+
+            if f.key?(:Name)
+              fp.name = f[:Name]
+            end
+
+            if f.key?(:MarketRent)
+              if f[:MarketRent][0][:Min].to_f > 0
+                fp.market_rent = f[:MarketRent][0][:Min]
+              else
+                fp.market_rent = f[:MarketRent][0][:Max]
+              end
+            end
+
+            if f.key?(:SquareFeet)
+              if f[:SquareFeet][0][:Min].to_f > 0
+                fp.square_feet = f[:SquareFeet][0][:Min]
+              else
+                fp.square_feet = f[:SquareFeet][0][:Max]
+              end
+            end
+
+          end
+
+          rooms.each do |room|
+            if room[:Room][0][:RoomType] == "Bedroom"
+              fp.bedrooms = room[:Room][1][:Count]
             else
-              fp.square_feet = f[:SquareFeet][0][:Max]
+              fp.bathrooms = room[:Room][1][:Count]
             end
           end
 
+          fp.save(validate: false)
+
         end
-
-        rooms.each do |room|
-          if room[:Room][0][:RoomType] == "Bedroom"
-            fp.bedrooms = room[:Room][1][:Count]
-          else
-            fp.bathrooms = room[:Room][1][:Count]
-          end
-        end
-
-        fp.save(validate: false)
-
       end
-      fp = Floorplan.where(community_id: credentials.community_id)
-      fp.each do |d|
-        unless d.provider == "yardi"
-          d.destroy
-        end
+    end
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      unless d.provider == "yardi"
+        d.destroy
       end
     end
   end

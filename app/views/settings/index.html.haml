@@ -47,7 +47,7 @@
             = link_to "Import Unit Data" , community_import_path(current_community) , :class=>"btn btn-primary import_data"
             .btn.btn-warning{"data-name"=>"previous data","data-href" => "/communities/#{current_community.id}/delete_imported_data", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} Replace Data
 
-            = link_to "Swap Data" , community_update_imported_data_path(current_community) , :class=>"btn btn-warning hidden"
+            = link_to "Swap Data" , community_update_imported_data_path(current_community) , :class=>"btn btn-warning"
 
 :javascript
   var community_id = #{params[:community_id]}
