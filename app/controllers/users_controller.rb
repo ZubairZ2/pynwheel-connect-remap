@@ -43,7 +43,7 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     @user.destroy
     flash[:notice] = "User deleted successfully."
-    redirect_to users_path
+    redirect_to company_employees_path(current_company)
   end
   def alert_message
     params[:action_name].present? && params[:action_name] == "profile" ? "Profile is updated successfully" : "User is updated successfully"

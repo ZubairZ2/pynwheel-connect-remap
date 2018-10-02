@@ -165,7 +165,7 @@ class Community < ApplicationRecord
     ImportPsiDataJob.perform_async credential.attributes.to_json
   end
   def swap_psi_data
-    psi_swap_service = PsiSwapService.new(JSON.parse(credentials.attributes))
+    psi_swap_service = PsiSwapService.new(credential.attributes)
     psi_swap_service.perform
 
   end

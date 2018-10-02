@@ -56,8 +56,9 @@ class Yardi4SwapService < BaseService
   def update_yardi4_units(ils_units,property_id)
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
-      unit = Unit.where(provider: "yardi",community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:MarketingName]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:MarketingName]).first
       if unit.present?
+        unit.provider = "yardi"
         unit.provider_unit_id = u[:Units][:Unit][:Identification][0][:IDValue]
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
@@ -93,6 +94,52 @@ class Yardi4SwapService < BaseService
         unit.availability = is_available ? "Unoccupied" : "Occupied"
         unit.available_date = vacate_date
         unit.save
+      else
+        unit = Unit.where(community_id: credentials.community_id).first
+        unless unit.manual_override
+          unit.provider = "yardi"
+          unit.property_id = property_id
+          #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
+          unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
+          unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
+          unit.floorplan_id = u[:Units][:Unit][:UnitType]
+          unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
+          unit.effective_rent = u[:Units][:Unit][:MarketRent]
+          unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+          is_available = false
+          vacate_date = ""
+          api_unit.each do |unit_with_key|
+            if unit_with_key.key?(:Availability)
+
+              if unit_with_key[:Availability][:VacateDate][0][:Year].present? && unit_with_key[:Availability][:VacateDate][0][:Year].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Month].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Day].to_i > 0
+                vacate_date = Date.parse("#{unit_with_key[:Availability][:VacateDate][0][:Year]}-#{unit_with_key[:Availability][:VacateDate][0][:Month]}-#{unit_with_key[:Availability][:VacateDate][0][:Day]}")
+                is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+              end
+              if unit_with_key[:Availability][:MadeReadyDate][0][:Year].present?
+                vacate_date = Date.parse("#{unit_with_key[:Availability][:MadeReadyDate][0][:Year]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Month]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Day]}")
+                is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+              end
+              # if vacate_date <= Date.today && unit_with_key[:Availability][:VacancyClass] == "Unoccupied"
+              #   is_available = true
+              # elsif vacate_date >= Date.today
+              #   is_available = true
+              # end
+            end
+            if unit_with_key.key?(:EffectiveRent)
+              unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
+            end
+
+          end
+          unit.availability = is_available ? "Unoccupied" : "Occupied"
+          unit.available_date = vacate_date
+          unit.save
+        end
+      end
+      unit = Unit.where(community_id: credentials.community_id)
+      unit.each do |d|
+        unless d.provider == "yardi"
+          d.destroy
+        end
       end
 
     end
@@ -100,10 +147,11 @@ class Yardi4SwapService < BaseService
 
   def update_yardi4_floorplans(floorplans)
     floorplans.lazy.each do |floorplan|
-      fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,name: floorplan[0][:Name]).first
+      fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[0][:Name]).first
       if fp.present?
         rooms = []
         floorplan.each do |f|
+          fp.provider = "yardi"
           fp.provider_floorplan_id = f[:IDValue]
           if f.key?(:Room)
             rooms << f
@@ -136,6 +184,54 @@ class Yardi4SwapService < BaseService
         end
 
         fp.save(validate: false)
+      else
+        fp = Floorplan.where(community_id: credentials.community_id).first
+        unless fp.manual_override
+          rooms = []
+          floorplan.each do |f|
+            provider = "yardi"
+            if f.key?(:Room)
+              rooms << f
+            end
+
+            if f.key?(:Name)
+              fp.name = f[:Name]
+            end
+
+            if f.key?(:MarketRent)
+              if f[:MarketRent][0][:Min].to_f > 0
+                fp.market_rent = f[:MarketRent][0][:Min]
+              else
+                fp.market_rent = f[:MarketRent][0][:Max]
+              end
+            end
+
+            if f.key?(:SquareFeet)
+              if f[:SquareFeet][0][:Min].to_f > 0
+                fp.square_feet = f[:SquareFeet][0][:Min]
+              else
+                fp.square_feet = f[:SquareFeet][0][:Max]
+              end
+            end
+
+          end
+
+          rooms.each do |room|
+            if room[:Room][0][:RoomType] == "Bedroom"
+              fp.bedrooms = room[:Room][1][:Count]
+            else
+              fp.bathrooms = room[:Room][1][:Count]
+            end
+          end
+
+          fp.save(validate: false)
+        end
+      end
+      fp = Floorplan.where(community_id: credentials.community_id)
+      fp.each do |d|
+        unless d.provider == "yardi"
+          d.destroy
+        end
       end
     end
   end

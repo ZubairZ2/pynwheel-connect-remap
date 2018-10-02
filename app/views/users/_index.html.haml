@@ -20,5 +20,5 @@
             %td
               %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
                 %i.fa.fa-edit
-              %a.text-danger.hidden{"data-name"=>"User","data-href" => "/companies/#{current_company.id}/employees/#{u.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+              %a.text-danger{"data-name"=>"User","data-href" => "/companies/#{current_company.id}/employees/#{u.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                 %i.fa.fa-trash

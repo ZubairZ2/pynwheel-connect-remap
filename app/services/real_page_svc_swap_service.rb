@@ -49,8 +49,9 @@ class RealPageSvcSwapService < BaseService
           floorplans.each do |fp|
             if fp.key?(:FloorPlanObject)
               fp = fp[:FloorPlanObject]
-              floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,name: fp[:FloorPlanNameMarketing]).first
+              floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanNameMarketing]).first
               if floorplan.present?
+                floorplan.provider = "realpagesvc",
                 floorplan.provider_floorplan_id = fp[:FloorPlanID]
                 floorplan.name = fp[:FloorPlanNameMarketing]
                 if fp[:FloorPlanCode].present?
@@ -67,6 +68,33 @@ class RealPageSvcSwapService < BaseService
                 floorplan.market_rent = fp[:RentMin]
                 floorplan.square_feet = fp[:GrossSquareFootage]
                 floorplan.save(:validate => false)
+              else
+                floorplan = Floorplan.where(community_id: community_id).first_or_initialize
+                unless floorplan.manual_override
+                  floorplan.provider = "realpagesvc"
+                  if fp[:FloorPlanNameMarketing].present?
+                    floorplan.name = fp[:FloorPlanNameMarketing]
+                  elsif fp[:FloorPlanCode].present?
+                    if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                      floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                    else
+                      floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                    end
+                  else
+                    floorplan.name = fp[:FloorPlanName]
+                  end
+                  floorplan.bathrooms = fp[:Bathrooms]
+                  floorplan.bedrooms = fp[:Bedrooms]
+                  floorplan.market_rent = fp[:RentMin]
+                  floorplan.square_feet = fp[:GrossSquareFootage]
+                  floorplan.save(:validate => false)
+                end
+              end
+              fp = Floorplan.where(community_id: credentials.community_id)
+              fp.each do |d|
+                unless d.provider == "realpagesvc"
+                  d.destroy
+                end
               end
             end
           end
@@ -126,17 +154,16 @@ class RealPageSvcSwapService < BaseService
             if u.key?(:UnitObject)
               u = u[:UnitObject]
               hit = false
-              unit = Unit.where(provider: "realpagesvc",community_id: community_id,marketing_name: u[:UnitNumber]).first
+              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber]).first
+              unless unit.present?
+                unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber]).first
+              end
               if unit.present?
+                unit.provider = "realpagesvc"
                 unit.provider_unit_id = u[:UnitID]
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = u[:UnitID]
                 unit.unit_type = u[:UnitNumber]
-                if u[:BuildingID].present?
-                  unit.marketing_name = u[:BuildingID] + "-" + u[:UnitNumber]
-                else
-                  unit.marketing_name = u[:UnitNumber]
-                end
                 unit.floorplan_id = u[:FloorplanID]
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
@@ -192,6 +219,80 @@ class RealPageSvcSwapService < BaseService
                 #   end
                 # end
                 unit.save
+              else
+                unit = Unit.where(community_id: community_id).first
+                unless unit.manual_override
+                  unit.provider = "realpagesvc"
+                  unit.property_id = u[:SiteID]
+                  unit.provider_unit_id = u[:UnitID]
+                  unit.unit_type = u[:UnitNumber]
+                  if u[:BuildingID].present?
+                    unit.marketing_name = u[:BuildingID] + "-" + u[:UnitNumber]
+                  else
+                    unit.marketing_name = u[:UnitNumber]
+                  end
+                  unit.floorplan_id = u[:FloorplanID]
+                  unit.market_rent = u[:BaseRentAmount]
+                  unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
+                  unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                  if u[:RentSqFtCount].present?
+                    unit.square_feet = u[:RentSqFtCount]
+                  end
+                  #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                  unit.floor = u[:FloorNumber] rescue nil
+                  if u[:AvailableDate].present?
+                    unit.available_date = u[:AvailableDate]
+                  end
+
+                  if u[:MadeReadyDate].present?
+                    unit.available_date = u[:MadeReadyDate]
+                  end
+                  if unit.available_date.year == 1900
+                    unit.available_date = ""
+                  end
+                  if unit.availability == "Occupied" #&& unit.available_date < Date.today
+                    unit.available_date = ""
+                  end
+
+                  if unit.available_date.present?
+                    current_date = unit.available_date
+                  elsif unit.available_date.present? && unit.available_date < Date.today
+                    current_date = Date.today
+                  end
+
+                  @array_of_dates.each do |hash|
+                    if hash[:ready_date] == current_date
+                      hash[:units] << unit.provider_unit_id
+                      hit = true
+                    end
+                  end
+
+                  if !hit
+                    struct = {
+                        ready_date: current_date,
+                        units: [unit.provider_unit_id]
+                    }
+                    @array_of_dates << struct
+                  end
+
+
+                  # unit.building = ""
+                  # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
+                  # if bldgResult.present?
+                  #   if bldgResult == "N/A"
+                  #     unit.building = ""
+                  #   else
+                  #     unit.building = bldgResult
+                  #   end
+                  # end
+                  unit.save
+                end
+              end
+              unit = Unit.where(community_id: credentials.community_id)
+              unit.each do |d|
+                unless d.provider == "realpagesvc"
+                  d.destroy
+                end
               end
             end
           end

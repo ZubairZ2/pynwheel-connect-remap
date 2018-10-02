@@ -50,8 +50,9 @@ class PsiSwapService < BaseService
   def save_psi_units(units,property_id)
     units.each do |u|
       vacateDate = ""
-      unit = Unit.where(provider: "psi",community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"]).first
       if unit.present?
+        unit.provider = "psi"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
@@ -76,6 +77,40 @@ class PsiSwapService < BaseService
         building = u["Units"]["Unit"]["BuildingName"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
+      else
+        unit = Unit.where(community_id: credentials.community_id).first
+        unless unit.manual_override
+          unit.provider = "psi"
+          unit.property_id = property_id
+          unit.unit_type = u["Units"]["Unit"]["UnitType"]
+          unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
+
+          unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
+          unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+          if u["Units"]["Unit"]["MarketRent"].present?
+            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+          elsif u["EffectiveRent"].present?
+            unit.effective_rent = u["EffectiveRent"]
+          end
+          unit.floor = u["FloorLevel"]
+          unit.availability = u["Availability"]["VacancyClass"]
+          if u["Availability"]["VacancyClass"] == "Unoccupied"
+            year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
+            month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
+            day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
+            vacateDate = Date.parse("#{year}-#{month}-#{day}")
+          end
+          unit.available_date = vacateDate
+          building = u["Units"]["Unit"]["BuildingName"]
+          unit.building = building.present? ? building.gsub("Building ", "") : ""
+          unit.save(validate: false)
+        end
+      end
+      unit = Unit.where(community_id: credentials.community_id)
+      unit.each do |d|
+        unless d.provider == "psi"
+          d.destroy
+        end
       end
     end
   end
@@ -117,6 +152,49 @@ class PsiSwapService < BaseService
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
         floorplan.save
+      else
+        floorplan = Floorplan.where(community_id: credentials.community_id).first
+        unless floorplan.manual_override
+          floorplan.provider = "psi"
+          floorplan.property_id = property_id
+          floorplan.name = f["Name"]
+          floorplan.unit_count = f["UnitsAvailable"]
+          floorplan.units_available = f["DisplayedUnitsAvailable"]
+          floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
+          floorplan.availability_url = f["FloorplanAvailabilityURL"]
+
+          room_types = f["Room"]
+          room_types.each do |rt|
+            if rt["@attributes"]["RoomType"] == "Bedroom"
+              floorplan.bedrooms = rt["Count"]
+            else
+              floorplan.bathrooms = rt["Count"]
+            end
+          end
+
+          if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+          else
+
+
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+          end
+          if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+
+            floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
+          else
+
+            floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
+          end
+          floorplan.save
+        end
+      end
+      fp = Floorplan.where(community_id: credentials.community_id)
+      fp.each do |d|
+        unless d.provider == "psi"
+          d.destroy
+        end
       end
     end
   end
