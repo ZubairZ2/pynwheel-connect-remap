@@ -117,6 +117,12 @@ class Yardi2SwapService < BaseService
             unit.save
           end
         end
+        unit = Unit.where(community_id: credentials.community_id)
+        unit.each do |d|
+          unless d.provider == "yardi"
+            d.destroy
+          end
+        end
       rescue => e
         puts '----------------------------------', e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
@@ -206,6 +212,12 @@ class Yardi2SwapService < BaseService
             end
 
             fp.save(validate: false)
+          end
+        end
+        fp = Floorplan.where(community_id: credentials.community_id)
+        fp.each do |d|
+          unless d.provider == "yardi"
+            d.destroy
           end
         end
       rescue => e

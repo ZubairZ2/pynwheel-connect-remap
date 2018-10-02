@@ -1,7 +1,7 @@
 class YardiRentCafeSwapService < BaseService
 
   def perform
-    puts "========1ssssssssssssssssssss======="
+
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
   end
@@ -28,7 +28,7 @@ class YardiRentCafeSwapService < BaseService
 
               unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"]).first
               if unit.present?
-                puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider
+                # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider
                 unit.provider = "yardirentcafe"
                 unit.provider_unit_id = r["ApartmentId"]
                 unit.property_id = r["PropertyId"]

@@ -52,11 +52,12 @@ class PsiSwapService < BaseService
       vacateDate = ""
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"]).first
       if unit.present?
+
         unit.provider = "psi"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
-        unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
+        # unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
 
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
@@ -78,6 +79,7 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
       else
+
         unit = Unit.where(community_id: credentials.community_id).first
         unless unit.manual_override
           unit.provider = "psi"
