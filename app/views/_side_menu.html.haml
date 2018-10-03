@@ -16,10 +16,11 @@
               %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             = link_to "Communities", root_path
-      %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
-        = link_to edit_company_community_path(current_company,current_community) do
-          %i.fa.fa-info
-          %span Community Info
+      - if (current_user.is_super_admin?)
+        %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
+          = link_to edit_company_community_path(current_company,current_community) do
+            %i.fa.fa-info
+            %span Community Info
       - if (current_user.is_super_admin?)
         %li{:class=>"#{controller_name =='design' && params[:action] != 'logo' && params[:action] != 'secondary_logo' ? 'active' : ''}"}
           = link_to community_design_index_path(current_community) do
