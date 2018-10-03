@@ -75,6 +75,7 @@
 #  global_nav_background_image               :string
 #  home_page_background_image                :string
 #  display_home_page_nav_background_image    :boolean          default(FALSE)
+#  spacing_between_buttons_for_homepage      :string
 #
 
 class Expressionist < ApplicationRecord

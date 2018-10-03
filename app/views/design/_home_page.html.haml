@@ -152,6 +152,14 @@
                 .input-group-addon
                   %i
                   = d.text_field :home_page_navigation_font_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_font_color.present? ? d.object.home_page_navigation_font_color : "#c5c4c7"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Spacing between buttons
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :spacing_between_buttons_for_homepage , options_for_select(spacing_options,e.object.spacing_between_buttons_for_homepage.present? ? e.object.spacing_between_buttons_for_homepage : '0px'),{},{class: "form-control home-page-field"}
+
       .form-group
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
           Display home page image
