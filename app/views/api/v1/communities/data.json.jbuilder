@@ -489,6 +489,7 @@ json.neighborhood do
   else
     json.show_neighborhood_page true
     json.neighborhood_page_name "Neighborhood"
+    json.display_neighborhood_on_homepage true
   end
 end
 
