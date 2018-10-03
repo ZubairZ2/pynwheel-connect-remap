@@ -34,10 +34,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Image
-    %span
-      Upload image of this
-      %br
-        floor plan
+
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .select-img.mb-20
       .select-img-img= image_tag f.object.avatar.present? ? f.object.avatar.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
