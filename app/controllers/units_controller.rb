@@ -169,7 +169,7 @@ class UnitsController < ApplicationController
   end
   
   def set_manual_override
-    @community.units.where(id: params[:unit_ids]).update_all(manual_override: params[:manual_override],manually_updated: true)
+    @community.units.where(id: params[:unit_ids]).update_all(manual_override: params[:manual_override])
     flash[:notice] = "Manual Override is updated for units successfully."
     redirect_to :back
   end
