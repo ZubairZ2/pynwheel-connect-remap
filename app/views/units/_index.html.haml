@@ -192,7 +192,7 @@
     .modal-content
       .modal-header
         Upload Image
-      = form_tag set_image_community_units_path(@community), multipart: true do  
+      = form_tag set_image_community_units_path(@community), multipart: true do
         .modal-body.set-floor-modal-body
           = file_field_tag 'image_file', :accept => 'image/jpeg',:required=>true
           .row
@@ -203,12 +203,12 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
-                = h unit.marketing_name  
+                = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
-          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 
-        
+
   / End Panel left Side
   :javascript
     $('#select_all_units_for_manual_override').change(function(){
@@ -219,7 +219,7 @@
         $('.manual-override-checkbox').prop('checked',false)
       }
     });
-    
+
     $('#select_all_units_for_sold').change(function(){
       if($(this).is(':checked')){
         $('.sold-checkbox').prop('checked',true)
@@ -300,7 +300,6 @@
       $(this).parent().parent().css('background-color','#cecece');
       var id = $(this).attr("id");
       id = id.split('_');
-      $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
       if($(this).data('bipAttribute') == 'sold' && $(this).html() == 'Yes'){
         $('#best_in_place_unit_'+id[4]+'_manual_override').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_available_date').html('-');
@@ -309,19 +308,44 @@
         $(this).parent().parent().css('background-color','');
       }
       $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>');
- 
+
+      $('#best_in_place_unit_'+id[4]+'_floorplan_id').change(function(){
+        $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+      });
+      $('#best_in_place_unit_'+id[4]+'_marketing_name').change(function(){
+        $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+      });
+      $('#best_in_place_unit_'+id[4]+'_effective_rent').change(function(){
+        $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+      });
+      $('#best_in_place_unit_'+id[4]+'_available').change(function(){
+        $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+      });
+      $('#best_in_place_unit_'+id[4]+'_sold').change(function(){
+        $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+      });
+      $('#best_in_place_unit_'+id[4]+'_floor').change(function(){
+        $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+      });
+      $('#best_in_place_unit_'+id[4]+'_available_date').change(function(){
+        $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+      });
+
     });
-    
+
+
+
+
     $('#best_in_place_unit_317_manual_override').change(function(){
       alert('okk');
     });
-    
+
     $('.best_in_place').on('best_in_place:error', function (event, request, error) {
       $.each($.parseJSON(request.responseText), function (index, value) {
-            if (typeof value === "object") 
-            {
-              value = index + " " + value.toString(); 
-            }
-            $('#flash-message').html('<div class="alert alert-danger">'+value+'</div>');
-       });            
+        if (typeof value === "object")
+        {
+          value = index + " " + value.toString();
+        }
+        $('#flash-message').html('<div class="alert alert-danger">'+value+'</div>');
+      });
     });

@@ -24,14 +24,13 @@ class YardiRentCafeService < BaseService
         if response[0]["Error"].nil?
           response.each do |r|
             begin
-
-              unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
+              unit = Unit.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])#.first_or_initialize
               unless unit.manual_override
-                unit.property_id = r["PropertyId"]
-                unit.unit_type = r["ApartmentName"]
-                unit.marketing_name = r["ApartmentName"]
-                unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                unit.floorplan_id = r["FloorplanId"]
+                # unit.property_id = r["PropertyId"]
+                # unit.unit_type = r["ApartmentName"]
+                # unit.marketing_name = r["ApartmentName"]
+                # unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                # unit.floorplan_id = r["FloorplanId"]
                 unit.market_rent = r["MinimumRent"]
                 unit.effective_rent = r["MinimumRent"]
                 unit.availability = "Unoccupied"
@@ -47,8 +46,8 @@ class YardiRentCafeService < BaseService
                 end
                 unit.save
               end
-                
-            rescue => e 
+
+            rescue => e
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
             end
           end
@@ -78,22 +77,22 @@ class YardiRentCafeService < BaseService
         response = JSON.parse(response.body)
         if response[0]["Error"].nil?
           response.each do |r|
-            fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
+            fp = Floorplan.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])#.first_or_initialize
             unless fp.manual_override
-              fp.property_id = r["PropertyId"]
-              fp.provider_floorplan_id = r["FloorplanId"]
-              fp.name = r["FloorplanName"]
-              fp.unit_count = r[""]
-              fp.units_available = r[""]
-              fp.bedrooms = r["Beds"]
-              fp.bathrooms = r["Baths"]
-              if r["MinimumSQFT"].present?
-                fp.square_feet = r["MinimumSQFT"]
-              elsif r["SQFT"].present?
-                fp.square_feet = r["SQFT"]
-              end
+              # fp.property_id = r["PropertyId"]
+              # fp.provider_floorplan_id = r["FloorplanId"]
+              # fp.name = r["FloorplanName"]
+              # fp.unit_count = r[""]
+              # fp.units_available = r[""]
+              # fp.bedrooms = r["Beds"]
+              # fp.bathrooms = r["Baths"]
+              # if r["MinimumSQFT"].present?
+              #   fp.square_feet = r["MinimumSQFT"]
+              # elsif r["SQFT"].present?
+              #   fp.square_feet = r["SQFT"]
+              # end
               fp.market_rent = r["MinimumRent"]
-              fp.deposit = r["MinimumDeposit"]
+              # fp.deposit = r["MinimumDeposit"]
               fp.save(validate: false)
             end
           end
