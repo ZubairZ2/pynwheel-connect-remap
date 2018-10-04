@@ -1,4 +1,4 @@
-class PsiService < BaseService
+class PsiStaticService < BaseService
   def perform
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
@@ -60,20 +60,20 @@ class PsiService < BaseService
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
 
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-        unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-        if u["Units"]["Unit"]["MarketRent"].present?
-          unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-        elsif u["EffectiveRent"].present?
-          unit.effective_rent = u["EffectiveRent"]
-        end
+        # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+        # if u["Units"]["Unit"]["MarketRent"].present?
+        #   unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+        # elsif u["EffectiveRent"].present?
+        #   unit.effective_rent = u["EffectiveRent"]
+        # end
         unit.floor = u["FloorLevel"]
-        unit.availability = u["Availability"]["VacancyClass"]
-        if u["Availability"]["VacancyClass"] == "Unoccupied"
-          year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
-          month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
-          day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
-          vacateDate = Date.parse("#{year}-#{month}-#{day}")
-        end
+        # unit.availability = u["Availability"]["VacancyClass"]
+        # if u["Availability"]["VacancyClass"] == "Unoccupied"
+        #   year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
+        #   month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
+        #   day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
+        #   vacateDate = Date.parse("#{year}-#{month}-#{day}")
+        # end
         unit.available_date = vacateDate
         building = u["Units"]["Unit"]["BuildingName"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
@@ -110,13 +110,13 @@ class PsiService < BaseService
 
           floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
         end
-        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-
-          floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
-        else
-
-          floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
-        end
+        # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+        #
+        #   floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
+        # else
+        #
+        #   floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
+        # end
         floorplan.save
       end
     end
@@ -157,7 +157,7 @@ class PsiService < BaseService
                   unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
                   if unit.present?
                     lease_term = a["@attributes"]["LeaseTerm"].split(" ")
-                    unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
+                    # unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
                     unit.lease_term = lease_term[0]
                     unit.save(validate: false)
                   end
