@@ -60,7 +60,7 @@ class UnitsController < ApplicationController
   end
   
   def set_manually_updated_column
-    @unit.update_attribute(:manually_updated, true)
+    # @unit.update_attribute(:manually_updated, true)
     if @unit.sold
       @unit.update_attributes(availability: "Occupied",available_date: Date.today-1)
     end
