@@ -11,6 +11,8 @@ class WebAndImageValidator < ActiveModel::Validator
       if(temp.neighborhood.display_neighborhood_on_homepage && record.attributes["position"].to_i == 3)
         record.errors[:base] << "Neighborhood Page is already selected for position 3."
       end
+    else
+      record.errors[:base] << "Neighborhood Page is already selected for position 3."
     end
     positions = Imagepage.where(community_id: record.community_id).map(&:position) +  Webpage.where(community_id: record.community_id).map(&:position)
     if record.new_record? and positions.include?(record.attributes["position"].to_i)
