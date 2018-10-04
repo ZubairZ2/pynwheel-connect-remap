@@ -2,17 +2,19 @@ class WebAndImageValidator < ActiveModel::Validator
   def validate(record)
     temp = Community.find(record.community_id)
     if(temp.display_unit_on_homepage && record.attributes["position"].to_i == 1)
-      record.errors[:base] << "Home Page is already selected for position 1."
+      record.errors[:base] << "Home Page is already selected for position 1"
     end
     if(temp.display_gallery_on_homepage && record.attributes["position"].to_i == 2)
-      record.errors[:base] << "Gallery page is already selected for position 2."
+      record.errors[:base] << "Gallery page is already selected for position 2"
     end
     if temp.neighborhood.present?
       if(temp.neighborhood.display_neighborhood_on_homepage && record.attributes["position"].to_i == 3)
-        record.errors[:base] << "Neighborhood Page is already selected for position 3."
+        record.errors[:base] << "Neighborhood Page is already selected for position 3"
       end
     else
-      record.errors[:base] << "Neighborhood Page is already selected for position 3."
+      if(record.attributes["position"].to_i == 3)
+        record.errors[:base] << "Neighborhood Page is already selected for position 3"
+      end
     end
     positions = Imagepage.where(community_id: record.community_id).map(&:position) +  Webpage.where(community_id: record.community_id).map(&:position)
     if record.new_record? and positions.include?(record.attributes["position"].to_i)
