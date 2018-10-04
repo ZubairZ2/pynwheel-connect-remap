@@ -74,7 +74,7 @@ class PsiStaticService < BaseService
         #   day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
         #   vacateDate = Date.parse("#{year}-#{month}-#{day}")
         # end
-        unit.available_date = vacateDate
+        # unit.available_date = vacateDate
         building = u["Units"]["Unit"]["BuildingName"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
