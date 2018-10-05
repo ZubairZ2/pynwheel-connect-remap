@@ -1,6 +1,7 @@
 class FloorplanAmenitiesController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :authenticate_user!
+  before_action :check_community
   before_action :set_community_and_floorplan
 
   def index
@@ -38,6 +39,25 @@ class FloorplanAmenitiesController < ApplicationController
       add_breadcrumb "Edit Amenity",edit_community_floorplan_amenity_path(current_community,@floorplan,@amenity)
       flash[:error] = @amenity.errors.full_messages.join(',')
       render :edit
+    end
+  end
+
+  def check_community
+    unless current_user.is_super_admin?
+      if params[:community_id].present?
+        all_ids = []
+        current_user.communities.each do |c|
+          # all_ids.insert(c.id)
+          all_ids << c.id
+        end
+        # byebug
+        # puts '+++++++++++++++', all_ids[0]
+        if all_ids.include? params[:community_id].to_i
+
+        else
+          redirect_to root_path
+        end
+      end
     end
   end
 

@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   layout :layout_by_resource
+  before_action :check_community
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
   helper_method :current_company
@@ -41,17 +42,19 @@ class ApplicationController < ActionController::Base
   end
   def check_community
     unless current_user.is_super_admin?
-      all_ids = []
-      current_user.communities.each do |c|
-        # all_ids.insert(c.id)
-        all_ids << c.id
-      end
-      # byebug
-      # puts '+++++++++++++++', all_ids[0]
-      if all_ids.include? params[:community_id].to_i
+      if params[:community_id].present?
+        all_ids = []
+        current_user.communities.each do |c|
+          # all_ids.insert(c.id)
+          all_ids << c.id
+        end
+        # byebug
+        # puts '+++++++++++++++', all_ids[0]
+        if all_ids.include? params[:community_id].to_i
 
-      else
-        raise ActionController::RoutingError.new('Not Found')
+        else
+          redirect_to root_path
+        end
       end
     end
   end
