@@ -16,7 +16,7 @@
             %tr
               %td= index+1
               %td= u.first_name
-              %td= u.invited_by_id
+              %td= u.last_name
               %th= u.email
               %th= u.communities.map(&:name).to_sentence
               %td= u.role
@@ -31,7 +31,7 @@
             %tr
               %td= index+1
               %td= u.first_name
-              %td= u.invited_by_id
+              %td= u.last_name
               %th= u.email
               %th= u.communities.map(&:name).to_sentence
               %td= u.role

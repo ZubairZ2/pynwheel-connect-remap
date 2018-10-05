@@ -318,10 +318,10 @@
     
     $('.best_in_place').on('best_in_place:error', function (event, request, error) {
       $.each($.parseJSON(request.responseText), function (index, value) {
-            if (typeof value === "object") 
-            {
-              value = index + " " + value.toString(); 
-            }
-            $('#flash-message').html('<div class="alert alert-danger">'+value+'</div>');
-       });            
+        if (typeof value === "object")
+        {
+          value = index + " " + value.toString();
+        }
+        $('#flash-message').html('<div class="alert alert-danger">'+value+'</div>');
+      });
     });
