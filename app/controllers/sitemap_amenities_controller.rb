@@ -1,6 +1,7 @@
 class SitemapAmenitiesController < ApplicationController
 	add_breadcrumb "Home", :root_path
 	before_action :authenticate_user!
+	before_action :check_community
 	before_action :set_community_and_sitemap
 
 	# def index
@@ -66,6 +67,24 @@ class SitemapAmenitiesController < ApplicationController
 	      render json: {}, status: 404
 	    end
 	end
+  def check_community
+    unless current_user.is_super_admin?
+      if params[:community_id].present?
+        all_ids = []
+        current_user.communities.each do |c|
+          # all_ids.insert(c.id)
+          all_ids << c.id
+        end
+        # byebug
+        # puts '+++++++++++++++', all_ids[0]
+        if all_ids.include? params[:community_id].to_i
+
+        else
+          redirect_to root_path
+        end
+      end
+    end
+  end
 
 	def remove_amenities_plot
 		@community.sitemap.amenities.each do |amenity|

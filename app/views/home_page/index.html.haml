@@ -7,8 +7,9 @@
         %i.fa.fa-home
         = @community.name.capitalize  
         %br
-          %small.text-primary
-            = @community.code
+          -if current_user.is_super_admin?
+            %small.text-primary
+              = @community.code
     .row
       .col-lg-12
         .form-group 

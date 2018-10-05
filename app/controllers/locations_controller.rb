@@ -1,5 +1,6 @@
 class LocationsController < ApplicationController
   before_action :set_community
+  before_action :check_community
 
 	add_breadcrumb "Home", :root_path
 	add_breadcrumb "Neighborhood", :community_neighborhoods_path
@@ -25,6 +26,24 @@ class LocationsController < ApplicationController
 
   def edit
     @location = @community.neighborhood.locations.find(params[:id])
+  end
+  def check_community
+    unless current_user.is_super_admin?
+      if params[:community_id].present?
+        all_ids = []
+        current_user.communities.each do |c|
+          # all_ids.insert(c.id)
+          all_ids << c.id
+        end
+        # byebug
+        # puts '+++++++++++++++', all_ids[0]
+        if all_ids.include? params[:community_id].to_i
+
+        else
+          redirect_to root_path
+        end
+      end
+    end
   end
 
   def update

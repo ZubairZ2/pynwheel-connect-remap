@@ -3,6 +3,7 @@ class CompaniesController < ApplicationController
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :root_path
   before_action :set_company , only: [:edit,:update,:destroy]
+  before_action :check_community
   #before_action :check_current_company , except: [:new,:create]
   def index
     if current_user.is_super_admin?
@@ -52,6 +53,24 @@ class CompaniesController < ApplicationController
     redirect_to new_company_path if current_company.nil?
   end
 
+  def check_community
+    unless current_user.is_super_admin?
+      if params[:community_id].present?
+        all_ids = []
+        current_user.communities.each do |c|
+          # all_ids.insert(c.id)
+          all_ids << c.id
+        end
+        # byebug
+        # puts '+++++++++++++++', all_ids[0]
+        if all_ids.include? params[:community_id].to_i
+
+        else
+          redirect_to root_path
+        end
+      end
+    end
+  end
   private
   def set_company
     @company = Company.find params[:id]

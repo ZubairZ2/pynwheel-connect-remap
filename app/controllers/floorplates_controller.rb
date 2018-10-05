@@ -1,5 +1,6 @@
 class FloorplatesController < ApplicationController
   add_breadcrumb "Home", :root_path
+  before_action :check_community
   before_action :authenticate_user!
   before_action :set_floorplate, only: [:edit,:update,:destroy]
   def index
@@ -26,6 +27,25 @@ class FloorplatesController < ApplicationController
         add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
       flash[:error] = @floorplate.errors.full_messages.join(',')
       render :new
+    end
+  end
+
+  def check_community
+    unless current_user.is_super_admin?
+      if params[:community_id].present?
+        all_ids = []
+        current_user.communities.each do |c|
+          # all_ids.insert(c.id)
+          all_ids << c.id
+        end
+        # byebug
+        # puts '+++++++++++++++', all_ids[0]
+        if all_ids.include? params[:community_id].to_i
+
+        else
+          redirect_to root_path
+        end
+      end
     end
   end
 

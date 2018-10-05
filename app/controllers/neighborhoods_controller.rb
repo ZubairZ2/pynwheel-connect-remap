@@ -1,6 +1,7 @@
 class NeighborhoodsController < ApplicationController
 	add_breadcrumb "Home", :root_path
 	add_breadcrumb "Neighborhood"
+  before_action :check_community
   before_action :set_community
 
 	def index
@@ -33,7 +34,25 @@ class NeighborhoodsController < ApplicationController
         format.js {render js: "$('#flash-message').html('#{message}')"}
       end
     end
-	end
+  end
+  def check_community
+    unless current_user.is_super_admin?
+      if params[:community_id].present?
+        all_ids = []
+        current_user.communities.each do |c|
+          # all_ids.insert(c.id)
+          all_ids << c.id
+        end
+        # byebug
+        # puts '+++++++++++++++', all_ids[0]
+        if all_ids.include? params[:community_id].to_i
+
+        else
+          redirect_to root_path
+        end
+      end
+    end
+  end
 
 	private
 
