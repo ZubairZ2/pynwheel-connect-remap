@@ -1,5 +1,5 @@
 class InvitationsController < Devise::InvitationsController
-  before_action :check_community
+  # before_action :check_community
    def new
      #authorize! :invite,current_user		
      super
