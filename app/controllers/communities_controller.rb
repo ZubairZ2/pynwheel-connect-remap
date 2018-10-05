@@ -49,7 +49,22 @@ class CommunitiesController < ApplicationController
       end
     end
   end
+  def check_community
+    unless current_user.is_super_admin?
+      all_ids = []
+      current_user.communities.each do |c|
+        # all_ids.insert(c.id)
+        all_ids << c.id
+      end
+      # byebug
+      # puts '+++++++++++++++', all_ids[0]
+      if all_ids.include? params[:community_id].to_i
 
+      else
+        raise ActionController::RoutingError.new('Not Found')
+      end
+    end
+  end
   def alert_message
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'

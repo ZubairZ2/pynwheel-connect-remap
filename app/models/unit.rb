@@ -29,6 +29,7 @@
 #  manually_updated   :boolean          default(FALSE)
 #  manual_override    :boolean          default(FALSE)
 #  square_feet        :float
+#  description        :text
 #
 
 class Unit < ApplicationRecord

@@ -33,7 +33,22 @@ class AmenitiesController < ApplicationController
       redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
     end
   end
+  def check_community
+    unless current_user.is_super_admin?
+      all_ids = []
+      current_user.communities.each do |c|
+        # all_ids.insert(c.id)
+        all_ids << c.id
+      end
+      # byebug
+      # puts '+++++++++++++++', all_ids[0]
+      if all_ids.include? params[:community_id].to_i
 
+      else
+        raise ActionController::RoutingError.new('Not Found')
+      end
+    end
+  end
   private
 
   def amenity_params

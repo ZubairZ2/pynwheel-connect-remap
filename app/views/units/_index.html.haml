@@ -18,6 +18,7 @@
               %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
               - unless @community.is_sitemap
                 %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} UNITS FLOOR
+              -#%a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Description
               %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
 
           / - unless @community.is_sitemap  
@@ -57,6 +58,7 @@
                   - unless @community.is_sitemap
                     %th Floor
                   %th Available Date
+                  %th Description
                   %th Image
                   %th Amenities
                   %th Actions
@@ -76,6 +78,7 @@
                     - unless @community.is_sitemap
                       %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor }
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
+                    %td= best_in_place u, :description,:url => community_unit_path(@community,u), :data => {:description => u.description }
                     %td
                       .drop-img
                         = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
@@ -186,7 +189,29 @@
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
-          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+
+#modal-to-add-description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Add Description
+      = form_tag set_sold_community_units_path(@community) do
+        .modal-body.set-description-modal-body
+          = text_area :description, nil,:class=>"form-control mb-20 validate[required]",:placeholder=>"Enter Description"
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_description'
+              %label Select all
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'description-checkbox'
+                = h unit.marketing_name
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+
 #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
@@ -195,10 +220,10 @@
       = form_tag set_image_community_units_path(@community), multipart: true do
         .modal-body.set-floor-modal-body
           = file_field_tag 'image_file', :accept => 'image/jpeg',:required=>true
-          .row
-            .col-md-4
-              = check_box_tag 'select_all_units_for_image'
-              %label Select all
+          -#.row
+          -#  .col-md-4
+          -#    = check_box_tag 'select_all_units_for_image'
+          -#    %label Select all
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
@@ -211,6 +236,12 @@
 
   / End Panel left Side
   :javascript
+    $("input.image-checkbox").click(function(){
+      if ($("input.image-checkbox:checked").length > 5){
+        $('#image-limit-upload-alert').modal('show');
+        return false;
+      }
+    });
     $('#select_all_units_for_manual_override').change(function(){
       if($(this).is(':checked')){
         $('.manual-override-checkbox').prop('checked',true)
@@ -318,10 +349,10 @@
       $('#best_in_place_unit_'+id[4]+'_effective_rent').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
       });
-      $('#best_in_place_unit_'+id[4]+'_available').change(function(){
+      $('#best_in_place_unit_'+id[4]+'_available').click(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
       });
-      $('#best_in_place_unit_'+id[4]+'_sold').change(function(){
+      $('#best_in_place_unit_'+id[4]+'_sold').click(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
       });
       $('#best_in_place_unit_'+id[4]+'_floor').change(function(){

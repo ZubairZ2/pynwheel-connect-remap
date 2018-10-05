@@ -16,6 +16,7 @@
                 %th Sq.Ft
                 %th Bedrooms
                 %th Bathrooms
+                %th Description
                 %th Images
                 %th Image
                 %th Actions
@@ -27,6 +28,7 @@
                   %td= f.square_feet
                   %td= f.bedrooms
                   %td= f.bathrooms
+                  %td= f.description
                   %td
                     = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
                   %td

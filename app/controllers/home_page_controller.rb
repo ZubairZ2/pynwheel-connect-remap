@@ -1,4 +1,5 @@
 class HomePageController < ApplicationController
+  # before_action :check_community
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Home Page", :community_home_page_index_path
   def index
@@ -33,7 +34,22 @@ class HomePageController < ApplicationController
   def show_home_page_video
        
   end
+  def check_community
+    unless current_user.is_super_admin?
+      all_ids = []
+      current_user.communities.each do |c|
+        # all_ids.insert(c.id)
+        all_ids << c.id
+      end
+      # byebug
+      # puts '+++++++++++++++', all_ids[0]
+      if all_ids.include? params[:community_id].to_i
 
+      else
+        raise ActionController::RoutingError.new('Not Found')
+      end
+    end
+  end
   def save_home_page_video
     if current_community.design.home_page_video.present?
       current_community.design.home_page_video.update_attribute(:video,params[:file])
