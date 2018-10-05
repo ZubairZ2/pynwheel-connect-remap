@@ -196,7 +196,7 @@
     .modal-content
       .modal-header
         Add Description
-      = form_tag set_sold_community_units_path(@community) do
+      = form_tag add_description_community_units_path(@community) do
         .modal-body.set-description-modal-body
           = text_area :description, nil,:class=>"form-control mb-20 validate[required]",:placeholder=>"Enter Description"
           .row

@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   layout :layout_by_resource
-  before_action :check_community
+  # before_action :check_community
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
   helper_method :current_company
