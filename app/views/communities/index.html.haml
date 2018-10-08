@@ -52,7 +52,7 @@
                             %a.btn-success.btn-xs
                               Live
                     - else
-                      - current_user.communities.each_with_index  do |f,index|
+                      - current_user.communities.where(company_id: current_company).each_with_index  do |f,index|
                         %tr
                           %td
                             = index+1
