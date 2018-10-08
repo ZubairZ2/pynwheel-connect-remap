@@ -2328,7 +2328,7 @@ function adjustLogoSizeAndButtonWidthFields(value) {
   } else {
     $('#community_design_attributes_expressionist_attributes_home_page_logo_size').children("option").show();
     $('#community_design_attributes_expressionist_attributes_home_page_logo_size').children("option[value^=487x160]").hide();
-    $('#community_design_attributes_home_page_buttons_width').children("option[value^=350px]").hide();
+    $('#community_design_attributes_home_page_buttons_width').children("option[value^=350px]").show();
     $('#community_design_attributes_home_page_buttons_width').children("option[value^=400px]").hide();
     $('#community_design_attributes_home_page_buttons_width').children("option[value^=450px]").show();
     $('#community_design_attributes_home_page_buttons_width').children("option[value^=500px]").show();
