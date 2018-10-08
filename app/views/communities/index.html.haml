@@ -35,21 +35,38 @@
                       %th Community Name
                       %th{:width => "250"} Actions
                   %tbody
-                    - current_user.communities.each_with_index  do |f,index|
-                      %tr
-                        %td
-                          = index+1
-                        %td
-                          = link_to f.name, community_design_index_path(f)
-                        %td
-                          = link_to edit_company_community_path(current_company,f),:class=>"text-success" do
-                            %i.fa.fa-edit
-                          %a.text-danger{"data-name"=>"Community","data-href" => "/companies/#{current_company.id}/communities/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-                            %i.fa.fa-trash
-                          %a.btn-info.btn-xs.mr-5
-                            Update now
-                          %a.btn-success.btn-xs
-                            Live
+                    - if current_user.is_super_admin?
+                      - @communities.each_with_index  do |f,index|
+                        %tr
+                          %td
+                            = index+1
+                          %td
+                            = link_to f.name, community_design_index_path(f)
+                          %td
+                            = link_to edit_company_community_path(current_company,f),:class=>"text-success" do
+                              %i.fa.fa-edit
+                            %a.text-danger{"data-name"=>"Community","data-href" => "/companies/#{current_company.id}/communities/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                              %i.fa.fa-trash
+                            %a.btn-info.btn-xs.mr-5
+                              Update now
+                            %a.btn-success.btn-xs
+                              Live
+                    - else
+                      - current_user.communities.each_with_index  do |f,index|
+                        %tr
+                          %td
+                            = index+1
+                          %td
+                            = link_to f.name, community_design_index_path(f)
+                          %td
+                            = link_to edit_company_community_path(current_company,f),:class=>"text-success" do
+                              %i.fa.fa-edit
+                            %a.text-danger{"data-name"=>"Community","data-href" => "/companies/#{current_company.id}/communities/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                              %i.fa.fa-trash
+                            %a.btn-info.btn-xs.mr-5
+                              Update now
+                            %a.btn-success.btn-xs
+                              Live
 
             
                   

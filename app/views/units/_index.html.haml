@@ -11,13 +11,13 @@
             ADD UNIT
           .dropdown.pull-right.mb-20.mr-5
             %button.dropbtn.btn.btn-primary.pull-right.mb-20.mr-5 Mass Overrides
-            .dropdown-content
+            .dropdown-content.mass_override_dropdown
               %a{:href => "##",'data-target' =>'#modal-to-set-available', 'data-toggle' => 'modal'} Available
               %a{:href => "##","data-target" =>"#modal-to-set-available-date", "data-toggle" => "modal"} Available Date
               %a{:href => "##","data-target" =>"#modal-to-set-manual-override", "data-toggle" => "modal"} Manual Override 
               %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
               - unless @community.is_sitemap
-                %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} UNITS FLOOR
+                %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
               %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Description
               %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
 
