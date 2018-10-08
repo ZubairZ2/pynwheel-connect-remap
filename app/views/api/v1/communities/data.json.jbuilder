@@ -323,6 +323,7 @@ json.apartments do
       json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day 
       json.available unit.available
       json.sold unit.sold
+      json.unit_description unit.description.present? ? raw(unit.description) : nil
       json.x_plot unit.x_plot
       json.y_plot unit.y_plot
       json.building unit.building
@@ -333,6 +334,7 @@ json.apartments do
       json.floorplan_name floorplan.present? ? floorplan.name : nil
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
+      json.floorplan_description floorplan.description.present? ? floorplan.description : nil
       json.square_feet unit.square_feet.present? ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
       json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : (floorplan.present? && floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil)
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
