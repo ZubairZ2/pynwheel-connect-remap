@@ -73,6 +73,14 @@ class FloorplansController < ApplicationController
     redirect_to community_floorplans_path(:community_id=>@community.id)
   end
 
+  def add_description
+    description = params[:description].to_s
+    description = description.split('"')
+
+    @community.floorplans.where(id: params[:floorplan_ids]).update_all(description:  description[1])
+    flash[:notice] = "Description is updated for units successfully."
+    redirect_to :back
+  end
   private
 
   def set_floorplan

@@ -39,6 +39,9 @@ Rails.application.routes.draw do
           delete :remove_amenity
         end
       end
+      collection do
+        post :add_description
+      end
     end
     resources :amenities
     resources :floorplates do

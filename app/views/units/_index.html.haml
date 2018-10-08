@@ -18,7 +18,7 @@
               %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
               - unless @community.is_sitemap
                 %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} UNITS FLOOR
-              / %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Description
+              %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Description
               %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
 
           / - unless @community.is_sitemap  
@@ -78,7 +78,7 @@
                     - unless @community.is_sitemap
                       %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor }
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
-                    %td= best_in_place u, :description,:url => community_unit_path(@community,u), :data => {:description => u.description }
+                    %td= raw(u.description)
                     %td
                       .drop-img
                         = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
@@ -255,7 +255,14 @@
         $('.manual-override-checkbox').prop('checked',false)
       }
     });
-
+    $('#select_all_units_for_description').change(function(){
+      if($(this).is(':checked')){
+        $('.description-checkbox').prop('checked',true)
+      }
+      else{
+        $('.description-checkbox').prop('checked',false)
+      }
+    });
     $('#select_all_units_for_sold').change(function(){
       if($(this).is(':checked')){
         $('.sold-checkbox').prop('checked',true)

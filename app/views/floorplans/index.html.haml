@@ -25,6 +25,10 @@
               %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
                 %i.fa.fa-plus-circle
                 ADD FLOOR PLAN
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
+                ADD DESCRIPTION
+
         .row
           .col-md-12#holder
             .box.box-widget.panel-box.pl-20.pr-20.pb-10
@@ -56,8 +60,42 @@
                 %p.mt-10
                 Drag & Drop file to Upload   
 
-              / End Panel Right Side
+#modal-to-add-floorplan-description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Add Description
+      = form_tag add_description_community_floorplans_path(@community) do
+        .modal-body.set-description-modal-body
+          = text_area :description, nil,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_floorplan_for_description'
+              %label Select all
+          .row
+            - @floorplans.each do |floorplan|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'floorplan_ids[]', floorplan.id,false,class: 'description-floorplan-checkbox'
+                = h floorplan.name
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+
+  /End Panel Right Side
 :javascript
+  $(document).ready(function(){
+      $('.wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5();
+      });
+  })
+  $('#select_all_floorplan_for_description').change(function(){
+      if($(this).is(':checked')){
+        $('.description-floorplan-checkbox').prop('checked',true)
+      }
+      else{
+        $('.description-floorplan-checkbox').prop('checked',false)
+      }
+    });
   $("#communities_at_floorplans").change(function(){
     var community_id = $('#communities_at_floorplans').val();
 

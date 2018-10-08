@@ -181,9 +181,10 @@ class UnitsController < ApplicationController
     redirect_to :back
   end
   def add_description
-    description = '<ul><li>eeeeee<br></li><li>uyyy</li><li>llll</li></ul>'
+    description = params[:description].to_s
+    description = description.split('"')
 
-    @community.units.where(id: params[:unit_ids]).update_all(description: description,manually_updated: true)
+    @community.units.where(id: params[:unit_ids]).update_all(description:  description[1],manually_updated: true)
     flash[:notice] = "description is updated for units successfully."
     redirect_to :back
   end
