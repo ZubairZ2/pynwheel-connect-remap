@@ -37,7 +37,7 @@ class UsersController < ApplicationController
     else
       flash[:error] = @user.errors.full_messages.join(',')
       render render_action
-    end 
+    end
   end
   def check_community
     unless current_user.is_super_admin?
