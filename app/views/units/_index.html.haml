@@ -18,7 +18,7 @@
               %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
               - unless @community.is_sitemap
                 %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} UNITS FLOOR
-              -#%a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Description
+              / %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Description
               %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
 
           / - unless @community.is_sitemap  
@@ -198,7 +198,7 @@
         Add Description
       = form_tag add_description_community_units_path(@community) do
         .modal-body.set-description-modal-body
-          = text_area :description, nil,:class=>"form-control mb-20 validate[required]",:placeholder=>"Enter Description"
+          = text_area :description, nil,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
           .row
             .col-md-4
               = check_box_tag 'select_all_units_for_description'
@@ -236,6 +236,11 @@
 
   / End Panel left Side
   :javascript
+     $(document).ready(function(){
+      $('.wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5();
+      });
+    })
     $("input.image-checkbox").click(function(){
       if ($("input.image-checkbox:checked").length > 5){
         $('#image-limit-upload-alert').modal('show');
