@@ -1,14 +1,24 @@
 
 %header.main-header
   / Logo
-  %a.logo{:href => company_communities_path(current_company)}
-    / mini logo for sidebar mini 50x50 pixels
-    %span.logo-mini
-      %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
-    / logo for regular state and mobile devices
-    %span.logo-lg
-      %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}
-      %span= current_company.name rescue ''
+  - if current_user.is_community_manager?
+    %a.logo{:href => '#'}
+      / mini logo for sidebar mini 50x50 pixels
+      %span.logo-mini
+        %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
+      / logo for regular state and mobile devices
+      %span.logo-lg
+        %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}
+        %span= current_company.name rescue ''
+  - else
+    %a.logo{:href => company_communities_path(current_company)}
+      / mini logo for sidebar mini 50x50 pixels
+      %span.logo-mini
+        %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
+      / logo for regular state and mobile devices
+      %span.logo-lg
+        %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}
+        %span= current_company.name rescue ''
   %nav.navbar.navbar-static-top
     / Sidebar toggle button
     %a.sidebar-toggle{"data-toggle" => "push-menu", :href => "#", :role => "button"}

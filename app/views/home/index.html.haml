@@ -7,10 +7,12 @@
         %h2 Communities
         %h5
           All communities are listed here.
-        %p.mb-30
-          This Admin feature allows you to directly access any community in the system
+        - if current_user.is_super_admin?
+          %p.mb-30
+            This Admin feature allows you to directly access any community in the system
       - if can? :read, Company     
         .col-md-6
+        - if current_user.is_super_admin?
           .mt-35
             %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
               List all companies

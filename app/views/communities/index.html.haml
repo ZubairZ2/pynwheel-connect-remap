@@ -35,7 +35,7 @@
                       %th Community Name
                       %th{:width => "250"} Actions
                   %tbody
-                    - @communities.each_with_index  do |f,index|
+                    - current_user.communities.each_with_index  do |f,index|
                       %tr
                         %td
                           = index+1
