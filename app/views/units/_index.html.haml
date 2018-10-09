@@ -220,13 +220,13 @@
       = form_tag set_image_community_units_path(@community), multipart: true do
         .modal-body.set-floor-modal-body
           = file_field_tag 'image_file', :accept => 'image/jpeg',:required=>true
-          -#.row
-          -#  .col-md-4
-          -#    = check_box_tag 'select_all_units_for_image'
-          -#    %label Select all
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_image'
+              %label Select all
           .row
             - units.each do |unit|
-              .col-md-2.pt-5.pb-5
+              .col-md-3.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
                 = h unit.marketing_name
         .modal-footer
@@ -242,12 +242,7 @@
       });
 
     })
-    $("input.image-checkbox").click(function(){
-      if ($("input.image-checkbox:checked").length > 5){
-        $('#image-limit-upload-alert').modal('show');
-        return false;
-      }
-    });
+   
     $('#select_all_units_for_manual_override').change(function(){
       if($(this).is(':checked')){
         $('.manual-override-checkbox').prop('checked',true)

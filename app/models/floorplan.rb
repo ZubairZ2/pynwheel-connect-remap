@@ -25,11 +25,13 @@
 #  standard_image_url    :string
 #  updated_by_admin      :boolean          default(FALSE)
 #  manual_override       :boolean          default(FALSE)
+#  secondary_image       :string
 #
 
 class Floorplan < ApplicationRecord
   include StandardUrl
   mount_base64_uploader :image, AvatarUploader
+  mount_base64_uploader :secondary_image, AvatarUploader
   belongs_to :community
   has_many :amenities, as: :amenityable
   validates_uniqueness_of :name, scope: :community, on: :create

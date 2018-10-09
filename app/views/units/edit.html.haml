@@ -17,3 +17,9 @@
         .box-footer
           = f.submit "Save Changes", :class=>"btn btn-success pull-right"
 
+:javascript
+
+
+  $("#unit_secondary_image").change(function(){
+      readSecondaryURL(this);
+  });

@@ -30,11 +30,13 @@
 #  manual_override    :boolean          default(FALSE)
 #  square_feet        :float
 #  description        :text
+#  secondary_image    :string
 #
 
 class Unit < ApplicationRecord
   include StandardUrl
   mount_uploader :image, AvatarUploader
+  mount_uploader :secondary_image, AvatarUploader
   belongs_to :community
   belongs_to :floorplan
   belongs_to :floorplate

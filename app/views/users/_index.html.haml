@@ -17,8 +17,12 @@
               %td= index+1
               %td= u.first_name
               %td= u.last_name
-              %th= u.email
-              %th= u.communities.map(&:name).to_sentence
+              %td
+                %b 
+                  =u.email
+              %td
+                %b 
+                  =u.communities.map(&:name).to_sentence
               %td= u.role
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
@@ -32,8 +36,12 @@
               %td= index+1
               %td= u.first_name
               %td= u.last_name
-              %th= u.email
-              %th= u.communities.map(&:name).to_sentence
+              %td
+                %b 
+                  =u.email
+              %td
+                %b 
+                  =u.communities.map(&:name).to_sentence
               %td= u.role
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
