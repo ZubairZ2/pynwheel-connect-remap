@@ -52,7 +52,6 @@ class FloorplansController < ApplicationController
   end
 
   def update
-    byebug
     respond_to do |format|
       if @floorplan.update(floorplan_params)
         format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
