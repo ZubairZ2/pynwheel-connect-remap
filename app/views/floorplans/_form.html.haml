@@ -4,12 +4,12 @@
     %span Specify name here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Floor Plan Name",:maxlength=>"30"
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Provider Floor Plan ID
-    %span Provider Floor Plan ID
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :provider_floorplan_id, :class=>"form-control validate[required]", :placeholder=>"From 3rd Party Vendor",:maxlength=>"30"
+-#.form-group
+-#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+-#    Provider Floor Plan ID
+-#    %span Provider Floor Plan ID
+-#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+-#    = f.text_field :provider_floorplan_id, :class=>"form-control validate[required]", :placeholder=>"From 3rd Party Vendor",:maxlength=>"30"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floor Plan Info
@@ -54,8 +54,8 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .select-img.mb-20
       .select-img-img
-        %a.preview-image{:href=>f.object.image.present? ? f.object.standard_image_url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floor Plan Image"}
-          = image_tag f.object.image.present? ? f.object.standard_image_url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+        %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floor Plan Image"}
+          = image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :image
