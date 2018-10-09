@@ -52,6 +52,7 @@ class FloorplansController < ApplicationController
   end
 
   def update
+    byebug
     respond_to do |format|
       if @floorplan.update(floorplan_params)
         format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
@@ -88,7 +89,7 @@ class FloorplansController < ApplicationController
   end
 
   def floorplan_params
-    params.require(:flooplan).permit(:community_id,:provider ,:property_id,:name,:unit_count,:units_available,:bedrooms,:bathrooms,:market_rent,:square_feet,:deposit ,:comment,:description,:availability_url,:image,:virtual_tour_url,:standard_image_url,:updated_by_admin ,:manual_override,:secondary_image )
+    params.require(:floorplan).permit!
   end
 
   def set_community
