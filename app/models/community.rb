@@ -43,7 +43,7 @@ class Community < ApplicationRecord
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
   has_many :community_users
-  has_many :users ,through: :community_users
+  has_many :users ,through: :community_users, dependent: :destroy
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
   has_many :floorplates, -> { order("number DESC") }, dependent: :destroy
