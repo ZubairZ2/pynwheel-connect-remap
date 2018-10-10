@@ -190,12 +190,13 @@ class UnitsController < ApplicationController
   end
   
   def set_image
-    units = @community.units.where(id: params[:unit_ids])
-    units.each do |unit|
-      units.update(image: params[:image_file],manually_updated: true)
-    end
+    UploadImageForUnit.perform_async @community, params[:unit_ids], params[:image_file]
+    # units = @community.units.where(id: params[:unit_ids])
+    # units.each do |unit|
+    #   units.update(image: params[:image_file],manually_updated: true)
+    # end
     flash[:notice] = "Image is uploaded for units successfully."
-    redirect_to :back
+    # redirect_to :back
   end
   def check_community
     unless current_user.is_super_admin?
