@@ -2,26 +2,30 @@
 #
 # Table name: credentials
 #
-#  id               :integer          not null, primary key
-#  community_id     :integer
-#  password         :string
-#  username         :string
-#  property_id      :string
-#  pmc_id           :string
-#  licence_key      :string
-#  server_name      :string
-#  database         :string
-#  platform         :string
-#  interface_entity :string
-#  created_at       :datetime         not null
-#  updated_at       :datetime         not null
-#  url              :string
-#  site_id          :string
-#  c_code           :string
-#  p_code           :string
-#  apply_now        :boolean          default(FALSE)
-#  file             :string
-#  api_token        :string
+#  id                 :integer          not null, primary key
+#  community_id       :integer
+#  password           :string
+#  username           :string
+#  property_id        :string
+#  pmc_id             :string
+#  licence_key        :string
+#  server_name        :string
+#  database           :string
+#  platform           :string
+#  interface_entity   :string
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  url                :string
+#  site_id            :string
+#  c_code             :string
+#  p_code             :string
+#  apply_now          :boolean          default(FALSE)
+#  file               :string
+#  api_token          :string
+#  resman_apikey      :string
+#  resman_partner_id  :string
+#  resman_account_id  :string
+#  resman_property_id :string
 #
 
 class Credential < ApplicationRecord

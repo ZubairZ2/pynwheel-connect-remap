@@ -195,8 +195,8 @@ class UnitsController < ApplicationController
     # units.each do |unit|
     #   units.update(image: params[:image_file],manually_updated: true)
     # end
-    flash[:notice] = "Image is uploaded for units successfully."
-    # redirect_to :back
+    # flash[:notice] = "Image is uploaded for units successfully."
+    redirect_to :back, notice: "Image is uploaded for units successfully."
   end
   def check_community
     unless current_user.is_super_admin?

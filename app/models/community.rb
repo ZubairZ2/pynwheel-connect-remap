@@ -136,6 +136,8 @@ class Community < ApplicationRecord
         import_realpage_svc_data
       when "yardi"
         select_yardi_provider
+    when "resman"
+      select_resman_provider
     end
   end
 
@@ -209,7 +211,11 @@ class Community < ApplicationRecord
     ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
     ImportRealpageSvcStaticDataJob.perform_async credential.attributes.to_json
   end
+  def select_resman_provider
 
+    # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
+    ImportResmanStaticDataJob.perform_async credential.attributes.to_json
+  end
   def swap_realpage_svc_data
     real_page_svc_swap_service = RealPageSvcSwapService.new(credential.attributes)
     real_page_svc_swap_service.perform

@@ -309,6 +309,9 @@ function selectDataProvider(data_provider){
         case "spreadsheet":
             showFileFields();
             break;
+        case "resman":
+            showResmanFields();
+            break;
     }
 }
 
@@ -325,7 +328,19 @@ function showPsiFields(){
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
 }
-
+function showResmanFields(){
+    $('.credential_fields').hide();
+    //removeValidationsClass();
+    $('#resman_apikey').show();
+    //$('#community_credential_attributes_url').addClass("validate[required]");
+    $('#resman_partner_id').show();
+    //$('#community_credential_attributes_password').addClass("validate[required]");
+    $('#resman_account_id').show();
+    //$('#community_credential_attributes_username').addClass("validate[required]");
+    $('#resman_property_id').show();
+    //$('#community_credential_attributes_property_id').addClass("validate[required]");
+    $('#data-connection-buttons').show();
+}
 function showYardiFields(){
     $('.credential_fields').hide();
     //removeValidationsClass();
