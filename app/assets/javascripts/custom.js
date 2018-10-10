@@ -142,6 +142,16 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
     $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
 });
 
+$('#confirm-delete-replace-data').on('show.bs.modal', function(e) {
+    $(this).find('.replace-btn-ok').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find('#replace-record-name').html('Delete '+$(e.relatedTarget).data('name'));
+    $(this).find('#replace-record-message').html('Are you sure you want to delete the previous data? This will wipe out any data connected to the community map and floor plan gallery.');
+});
+$('#confirm-delete-update-data').on('show.bs.modal', function(e) {
+    $(this).find('.update-btn-ok').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find('#update-record-name').html($(e.relatedTarget).data('name'));
+    $(this).find('#update-record-message').html('Are you sure you want to replace the previously uploaded data with the data you are uploading now?');
+});
 $('#markers-modal').on('show.bs.modal', function(e) {
     console.log("Displaying plotted unit information in markers modal");
     $('.unit-buttons').empty();

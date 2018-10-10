@@ -4,12 +4,12 @@
     %span Specify name here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Floor Plan Name",:maxlength=>"30"
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Provider Floor Plan ID
--#    %span Provider Floor Plan ID
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    = f.text_field :provider_floorplan_id, :class=>"form-control validate[required]", :placeholder=>"From 3rd Party Vendor",:maxlength=>"30"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Provider Floor Plan ID
+    %span Provider Floor Plan ID
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :provider_floorplan_id, :class=>"form-control validate[required]", :placeholder=>"From 3rd Party Vendor",:maxlength=>"30"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floor Plan Info
