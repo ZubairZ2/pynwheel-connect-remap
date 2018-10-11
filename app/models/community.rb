@@ -166,9 +166,7 @@ class Community < ApplicationRecord
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
   end
   def swap_psi_data
-    psi_swap_service = PsiSwapService.new(credential.attributes)
-    psi_swap_service.perform
-
+    ImportPsiSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardirentcafe_data
       #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
@@ -177,8 +175,7 @@ class Community < ApplicationRecord
     ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
   end
   def swap_yardirentcafe_data
-    yardi_rent_cafe_swap_service = YardiRentCafeSwapService.new(credential.attributes)
-    yardi_rent_cafe_swap_service.perform
+    ImportYardirentcafeSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardi2_data
     #yardi2_service = Yardi2Service.new(credential.attributes)
@@ -188,8 +185,7 @@ class Community < ApplicationRecord
   end
 
   def swap_yardi2_data
-    yardi2_swap_service = Yardi2SwapService.new(credential.attributes)
-    yardi2_swap_service.perform
+    ImportYardi2SwapDataJob.perform_async credential.attributes.to_json
   end
 
   def import_yardi4_data
@@ -200,8 +196,7 @@ class Community < ApplicationRecord
   end
 
   def swap_yardi4_data
-    yardi4_swap_service = Yardi4SwapService.new(credential.attributes)
-    yardi4_swap_service.perform
+    ImportYardi4SwapDataJob.perform_async credential.attributes.to_json
   end
   def import_realpage_svc_data
     #real_page_svc_service = RealPageSvcService.new(credential.attributes)
@@ -211,8 +206,7 @@ class Community < ApplicationRecord
   end
 
   def swap_realpage_svc_data
-    real_page_svc_swap_service = RealPageSvcSwapService.new(credential.attributes)
-    real_page_svc_swap_service.perform
+    ImportRealpageSvcSwapDataJob.perform_async credential.attributes.to_json
   end
 
   def experimental_data
