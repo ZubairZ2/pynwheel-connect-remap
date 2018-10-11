@@ -6,7 +6,7 @@ class ImportResmanStaticDataJob < ApplicationJob
     resman_static_service = ResmanStaticService.new(JSON.parse(credentials))
     resman_static_service.perform
 
-    # yardi2_service = Yardi2Service.new(JSON.parse(credentials))
-    # yardi2_service.perform
+    # resman_service = ResmanService.new(JSON.parse(credentials))
+    # resman_service.perform
   end
 end

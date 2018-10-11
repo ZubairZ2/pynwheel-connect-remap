@@ -151,7 +151,10 @@ class Community < ApplicationRecord
       swap_realpage_svc_data
     when "yardi"
       select_swap_yardi_provider
+    when "resman"
+      swap_resman_data
     end
+
   end
 
   def select_yardi_provider
@@ -171,7 +174,10 @@ class Community < ApplicationRecord
     psi_swap_service = PsiSwapService.new(credential.attributes)
     psi_swap_service.perform
 
-  end
+    end
+    def swap_resman_data
+      ImportResmanSwapDataJob.perform_async credential.attributes.to_json
+    end
   def import_yardirentcafe_data
       #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
       #yardi_rent_cafe_service.perform
@@ -213,8 +219,8 @@ class Community < ApplicationRecord
   end
   def select_resman_provider
 
-    # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
     ImportResmanStaticDataJob.perform_async credential.attributes.to_json
+    ImportResmanDataJob.perform_async credential.attributes.to_json
   end
   def swap_realpage_svc_data
     real_page_svc_swap_service = RealPageSvcSwapService.new(credential.attributes)
