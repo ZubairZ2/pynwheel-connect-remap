@@ -47,6 +47,10 @@ class RealPageSvcSwapService < BaseService
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplanlistResponse][1][:getfloorplanlistResult][:GetFloorPlanList]
           floorplans.each do |fp|
+            dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: fp[:FloorPlanID])
+            if dup.present?
+              dup.destroy
+            end
             if fp.key?(:FloorPlanObject)
               fp = fp[:FloorPlanObject]
               floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanNameMarketing]).first
@@ -163,6 +167,10 @@ class RealPageSvcSwapService < BaseService
             if u.key?(:UnitObject)
               u = u[:UnitObject]
               hit = false
+              dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:UnitID])
+              if dup.present?
+                dup.destroy
+              end
               unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber]).first
               unless unit.present?
                 unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber]).first

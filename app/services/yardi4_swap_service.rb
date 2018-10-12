@@ -56,6 +56,12 @@ class Yardi4SwapService < BaseService
   def update_yardi4_units(ils_units,property_id)
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
+
+      dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue])
+      if dup.present?
+        dup.destroy
+      end
+
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][:IDValue]).first
       if unit.present?
         unit.provider = "yardi_new"
@@ -158,13 +164,17 @@ class Yardi4SwapService < BaseService
   def update_yardi4_floorplans(floorplans)
     floorplans.lazy.each do |floorplan|
       floorplan.each do |f|
+        dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:IDValue])
+        if dup.present?
+          dup.destroy
+        end
         fp = Floorplan.where(community_id: credentials.community_id,name: f[:Name]).first
         puts ')))))))(((((((((()))))))))))(((((()()()()()()()()() ', f[:Name]
         if fp.present?
           rooms = []
 
           fp.provider = "yardi_new"
-          fp.provider_floorplan_id = f[:IDValue]
+          fp.provider_floorplan_id = floorplan[0][:IDValue]
           if f.key?(:Room)
             rooms << f
           end
