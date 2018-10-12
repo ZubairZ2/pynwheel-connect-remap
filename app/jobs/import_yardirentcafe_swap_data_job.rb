@@ -4,7 +4,7 @@ class ImportYardirentcafeSwapDataJob < ApplicationJob
 
   def perform(credentials)
 
-    yardi_rent_cafe_swap_service = YardiRentCafeSwapService.new(credential.attributes)
+    yardi_rent_cafe_swap_service = YardiRentCafeSwapService.new(JSON.parse(credentials))
     yardi_rent_cafe_swap_service.perform
   end
 end

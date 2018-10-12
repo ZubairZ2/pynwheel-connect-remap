@@ -4,7 +4,7 @@ class ImportYardi4SwapDataJob < ApplicationJob
 
   def perform(credentials)
 
-    yardi4_swap_service = Yardi4SwapService.new(credential.attributes)
+    yardi4_swap_service = Yardi4SwapService.new(JSON.parse(credentials))
     yardi4_swap_service.perform
   end
 end
