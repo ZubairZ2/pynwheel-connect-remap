@@ -322,6 +322,8 @@ function showResmanFields(){
     $('#resman_property_id').show();
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
+
+    $('#data-replace-update-buttons').hide();
 }
 function showYardiFields(){
     $('.credential_fields').hide();
