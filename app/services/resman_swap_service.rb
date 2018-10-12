@@ -43,6 +43,10 @@ class ResmanSwapService < BaseService
   def save_resman_units(units,property_id)
     units.each do |u|
       vacateDate = ""
+      dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Id"])
+      if dup.present?
+        dup.destroy
+      end
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MITS:MarketingName"]).first
       if unit.present?
         unit.provider = "resman_new"
@@ -121,7 +125,10 @@ class ResmanSwapService < BaseService
 
   def save_resman_floorplans(floorplans,property_id)
     floorplans.each do |f|
-
+      dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Id"])
+      if dup.present?
+        dup.destroy
+      end
       floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
       if floorplan.present?
         floorplan.property_id = property_id
