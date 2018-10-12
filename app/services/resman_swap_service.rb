@@ -45,7 +45,7 @@ class ResmanSwapService < BaseService
       vacateDate = ""
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MITS:MarketingName"]).first
       if unit.present?
-        unit.provider = "resman"
+        unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
@@ -75,7 +75,7 @@ class ResmanSwapService < BaseService
       else
         unit = Unit.new
         unit.community_id = credentials.community_id
-        unit.provider = "resman"
+        unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
@@ -106,8 +106,15 @@ class ResmanSwapService < BaseService
     end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
-      unless d.provider == "resman"
+      unless d.provider == "resman_new"
         d.destroy
+      end
+    end
+
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "resman_new"
+        d.provider = "resman"
       end
     end
   end
@@ -120,7 +127,7 @@ class ResmanSwapService < BaseService
         floorplan.property_id = property_id
         # floorplan.name = f["Name"]
         floorplan.provider_floorplan_id = f["Id"]
-        floorplan.provider = "resman"
+        floorplan.provider = "resman_new"
         floorplan.unit_count = f["UnitCount"]
         floorplan.units_available = f["UnitsAvailable"]
         floorplan.deposit = f["Deposit"]["Amount"]["Value"]
@@ -155,7 +162,7 @@ class ResmanSwapService < BaseService
         floorplan.name = f["Name"]
 
         floorplan.provider_floorplan_id = f["Id"]
-        floorplan.provider = "resman"
+        floorplan.provider = "resman_new"
         floorplan.unit_count = f["UnitCount"]
         floorplan.units_available = f["UnitsAvailable"]
         floorplan.deposit = f["Deposit"]["Amount"]["Value"]
@@ -188,8 +195,15 @@ class ResmanSwapService < BaseService
     end
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
-      unless d.provider == "resman"
+      unless d.provider == "resman_new"
         d.destroy
+      end
+    end
+
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      if d.provider == "resman_new"
+        d.provider = "resman"
       end
     end
   end
