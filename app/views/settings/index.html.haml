@@ -49,6 +49,26 @@
             .btn.btn-warning{"data-name"=>"Update data","data-href" => "/communities/#{current_community.id}/update_imported_data", "data-target" => "#confirm-delete-update-data", "data-toggle" => "modal", :href => "javascrip::;"} Update Data
             -#= link_to "Update Data" , community_update_imported_data_path(current_community) , :class=>"btn btn-warning"
 
+    .row#data-replace-update-buttons
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-6
+            %h4.title Import Vendor Data
+        .box.box-widget.panel-box.pl-20.pr-20.pb-20
+          .box-header
+            %p
+              This option allows you to import vendor data based on the settings in the data section.
+            .callout.callout-danger
+              %p
+                %i.fa.fa-warning
+                This action will update existing, Unit and Floor plan records.
+            .btn.btn-warning{"data-name"=>"Previous data","data-href" => "/communities/#{current_community.id}/delete_imported_data", "data-target" => "#confirm-delete-replace-data", "data-toggle" => "modal", :href => "javascrip::;"} Replace Data
+            .btn.btn-warning{"data-name"=>"Update data","data-href" => "/communities/#{current_community.id}/update_imported_data", "data-target" => "#confirm-delete-update-data", "data-toggle" => "modal", :href => "javascrip::;"} Update Data
+            -#= link_to "Update Data" , community_update_imported_data_path(current_community) , :class=>"btn btn-warning"
+
+
+
 :javascript
   var community_id = #{params[:community_id]}
   //showCredentialsForm(); 

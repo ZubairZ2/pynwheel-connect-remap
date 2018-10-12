@@ -54,7 +54,7 @@ class Yardi2SwapService < BaseService
       begin
         unit = Unit.where(community_id: credentials.community_id,marketing_name: unit_entries[0][:Id]).first
         if unit.present?
-          unit.provider = "yardi"
+          unit.provider = "yardi_new"
           unit.provider_unit_id = unit_entries[0][:Id]
           unit.property_id = property_id
           unit.unit_type = unit_entries[0][:Id]
@@ -87,7 +87,7 @@ class Yardi2SwapService < BaseService
           # unit = Unit.where(community_id: credentials.community_id).first
           unit = Unit.new
           unit.community_id = credentials.community_id
-          unit.provider = "yardi"
+          unit.provider = "yardi_new"
           unit.provider_unit_id = unit_entries[0][:Id]
           unit.property_id = property_id
           unit.unit_type = unit_entries[0][:Id]
@@ -128,8 +128,15 @@ class Yardi2SwapService < BaseService
     end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
-      unless d.provider == "yardi"
+      unless d.provider == "yardi_new"
         d.destroy
+      end
+    end
+
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "yardi_new"
+        d.provider = "yardi"
       end
     end
   end
@@ -141,7 +148,7 @@ class Yardi2SwapService < BaseService
         if fp.present?
           rooms = []
           floorplan.each do |f|
-            fp.provider = "yardi"
+            fp.provider = "yardi_new"
             if f.key?(:Room)
               rooms << f
             end
@@ -180,7 +187,7 @@ class Yardi2SwapService < BaseService
           fp.community_id = credentials.community_id
           rooms = []
           floorplan.each do |f|
-            fp.provider = "yardi"
+            fp.provider = "yardi_new"
             if f.key?(:Room)
               rooms << f
             end
@@ -225,8 +232,15 @@ class Yardi2SwapService < BaseService
     end
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
-      unless d.provider == "yardi"
+      unless d.provider == "yardi_new"
         d.destroy
+      end
+    end
+
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      if d.provider == "yardi_new"
+        d.provider = "yardi"
       end
     end
   end
