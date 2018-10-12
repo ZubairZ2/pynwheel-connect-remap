@@ -51,7 +51,7 @@ class RealPageSvcSwapService < BaseService
               fp = fp[:FloorPlanObject]
               floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanNameMarketing]).first
               if floorplan.present?
-                floorplan.provider = "realpagesvc"
+                floorplan.provider = "realpagesvc_new"
                 floorplan.provider_floorplan_id = fp[:FloorPlanID]
                 floorplan.name = fp[:FloorPlanNameMarketing]
                 if fp[:FloorPlanCode].present?
@@ -72,7 +72,7 @@ class RealPageSvcSwapService < BaseService
                 # floorplan = Floorplan.where(community_id: community_id).first
                 floorplan = Floorplan.new
                 floorplan.community_id = community_id
-                floorplan.provider = "realpagesvc"
+                floorplan.provider = "realpagesvc_new"
                 if fp[:FloorPlanNameMarketing].present?
                   floorplan.name = fp[:FloorPlanNameMarketing]
                 elsif fp[:FloorPlanCode].present?
@@ -95,8 +95,15 @@ class RealPageSvcSwapService < BaseService
           end
           fp = Floorplan.where(community_id: credentials.community_id)
           fp.each do |d|
-            unless d.provider == "realpagesvc"
+            unless d.provider == "realpagesvc_new"
               d.destroy
+            end
+          end
+
+          fp = Floorplan.where(community_id: credentials.community_id)
+          fp.each do |d|
+            if d.provider == "realpagesvc_new"
+              d.provider = "realpagesvc"
             end
           end
         end
@@ -161,7 +168,7 @@ class RealPageSvcSwapService < BaseService
                 unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber]).first
               end
               if unit.present?
-                unit.provider = "realpagesvc"
+                unit.provider = "realpagesvc_new"
                 unit.provider_unit_id = u[:UnitID]
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = u[:UnitID]
@@ -225,7 +232,7 @@ class RealPageSvcSwapService < BaseService
                 # unit = Unit.where(community_id: community_id).first
                 unit = Unit.new
                 unit.community_id = community_id
-                unit.provider = "realpagesvc"
+                unit.provider = "realpagesvc_new"
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = u[:UnitID]
                 unit.unit_type = u[:UnitNumber]
@@ -296,8 +303,15 @@ class RealPageSvcSwapService < BaseService
           end
           unit = Unit.where(community_id: credentials.community_id)
           unit.each do |d|
-            unless d.provider == "realpagesvc"
+            unless d.provider == "realpagesvc_new"
               d.destroy
+            end
+          end
+
+          unit = Unit.where(community_id: credentials.community_id)
+          unit.each do |d|
+            if d.provider == "realpagesvc_new"
+              d.provider = "realpagesvc"
             end
           end
         end

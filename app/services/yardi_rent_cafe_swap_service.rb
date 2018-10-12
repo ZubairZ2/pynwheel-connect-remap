@@ -29,7 +29,7 @@ class YardiRentCafeSwapService < BaseService
               unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"]).first
               if unit.present?
                 # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider
-                unit.provider = "yardirentcafe"
+                unit.provider = "yardirentcafe_new"
                 unit.provider_unit_id = r["ApartmentId"]
                 unit.property_id = r["PropertyId"]
                 unit.unit_type = r["ApartmentName"]
@@ -53,7 +53,7 @@ class YardiRentCafeSwapService < BaseService
                 # unit = Unit.where(community_id: credentials.community_id).first
                 unit = Unit.new
                 unit.community_id = credentials.community_id
-                unit.provider = "yardirentcafe"
+                unit.provider = "yardirentcafe_new"
                 unit.property_id = r["PropertyId"]
                 unit.provider_unit_id = r["ApartmentId"]
                 unit.unit_type = r["ApartmentName"]
@@ -81,10 +81,17 @@ class YardiRentCafeSwapService < BaseService
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
             end
           end
-          unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id)
+          unit = Unit.where(community_id: credentials.community_id)
           unit.each do |d|
-            unless d.provider == "yardirentcafe"
+            unless d.provider == "yardirentcafe_new"
               d.destroy
+            end
+          end
+
+          unit = Unit.where(community_id: credentials.community_id)
+          unit.each do |d|
+            if d.provider == "yardirentcafe_new"
+              d.provider = "yardirentcafe"
             end
           end
         else
@@ -115,7 +122,7 @@ class YardiRentCafeSwapService < BaseService
           response.each do |r|
             fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"]).first
             if fp.present?
-              fp.provider = "yardirentcafe"
+              fp.provider = "yardirentcafe_new"
               fp.provider_floorplan_id = r["FloorplanId"]
               fp.property_id = r["PropertyId"]
               fp.provider_floorplan_id = r["FloorplanId"]
@@ -135,7 +142,7 @@ class YardiRentCafeSwapService < BaseService
               # fp = Floorplan.where(community_id: credentials.community_id).first
               fp = Floorplan.new
               fp.community_id = credentials.community_id
-              fp.provider = "yardirentcafe"
+              fp.provider = "yardirentcafe_new"
               fp.property_id = r["PropertyId"]
               fp.provider_floorplan_id = r["FloorplanId"]
               fp.name = r["FloorplanName"]
@@ -156,8 +163,16 @@ class YardiRentCafeSwapService < BaseService
           end
           fp = Floorplan.where(community_id: credentials.community_id)
           fp.each do |d|
-            unless d.provider == "yardirentcafe"
+            unless d.provider == "yardirentcafe_new"
               d.destroy
+            end
+          end
+
+
+          fp = Floorplan.where(community_id: credentials.community_id)
+          fp.each do |d|
+            if d.provider == "yardirentcafe_new"
+              d.provider = "yardirentcafe"
             end
           end
         else
