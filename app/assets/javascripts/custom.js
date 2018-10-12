@@ -324,6 +324,7 @@ function showPsiFields(){
     $('#property_id').show();
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
+    $('#data-replace-update-buttons').hide();
 }
 
 function showYardiFields(){
@@ -344,6 +345,7 @@ function showYardiFields(){
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#interface_entity').show();
     $('#data-connection-buttons').show();
+    $('#data-replace-update-buttons').hide();
 }
 
 function showYardiRentCafeFields(){
@@ -356,6 +358,7 @@ function showYardiRentCafeFields(){
     //$('#community_credential_attributes_p_code').addClass("validate[required]");
     $('#data-connection-buttons').show();
     $('#yardirentcafe_option').show();
+    $('#data-replace-update-buttons').hide();
 }
 
 function showRealPageSVCFields(){
@@ -365,7 +368,8 @@ function showRealPageSVCFields(){
     //$('#community_credential_attributes_pmc_id').addClass("validate[required]");
     $('#site_id').show();
     //$('#community_credential_attributes_site_id').addClass("validate[required]"); 
-    $('#data-connection-buttons').show();   
+    $('#data-connection-buttons').show();
+    $('#data-replace-update-buttons').hide();
 }
 
 function showFileFields(){
@@ -373,6 +377,7 @@ function showFileFields(){
     //removeValidationsClass();
     $('#spreadsheet').show();
     $('#data-connection-buttons').hide();
+    $('#data-replace-update-buttons').show();
     //$('#community_credential_attributes_file').addClass("validate[required]"); 
 }
 

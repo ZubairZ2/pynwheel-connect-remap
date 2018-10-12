@@ -174,8 +174,20 @@ class CommunitiesController < ApplicationController
   def delete_imported_data
     current_community.units.destroy_all
     current_community.floorplans.destroy_all
-    current_community.data_is_imported
-    redirect_to community_settings_path(current_community), notice: "All Units and flootplans data have been replaced successfully."
+    Thread.current[:errors] = []
+    @community = Community.find params[:community_id]
+    if @community.credentials_are_present?
+      if current_community.data_is_imported and Thread.current[:errors].empty?
+        flash[:notice] = "Your data will be imported shortly.Refresh your page after few minutes."
+        redirect_to community_floorplans_path(:community_id=>@community.id)
+      else
+        flash[:error] = Thread.current[:errors].join(',')
+        redirect_to community_import_page_path(current_community)
+      end
+    else
+      flash[:error] = "Please enter credentials in settings before importing data."
+      redirect_to community_import_page_path(current_community)
+    end
   end
   def import_page
     add_breadcrumb "Settings", "##"
