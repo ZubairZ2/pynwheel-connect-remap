@@ -25,28 +25,29 @@ class YardiRentCafeService < BaseService
           response.each do |r|
             begin
               unit = Unit.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])#.first_or_initialize
-              unless unit.manual_override
-                # unit.property_id = r["PropertyId"]
-                # unit.unit_type = r["ApartmentName"]
-                # unit.marketing_name = r["ApartmentName"]
-                # unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                # unit.floorplan_id = r["FloorplanId"]
-                unit.market_rent = r["MinimumRent"]
-                unit.effective_rent = r["MinimumRent"]
-                unit.availability = "Unoccupied"
-                if r["AvailableDate"] != ""
+              if unit.present?
+                unless unit.manual_override
+                  # unit.property_id = r["PropertyId"]
+                  # unit.unit_type = r["ApartmentName"]
+                  # unit.marketing_name = r["ApartmentName"]
+                  # unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                  # unit.floorplan_id = r["FloorplanId"]
+                  unit.market_rent = r["MinimumRent"]
+                  unit.effective_rent = r["MinimumRent"]
                   unit.availability = "Unoccupied"
-                  unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
-                else
-                  unit.availability = "Occupied"
-                  unit.available_date = ""
+                  if r["AvailableDate"] != ""
+                    unit.availability = "Unoccupied"
+                    unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
+                  else
+                    unit.availability = "Occupied"
+                    unit.available_date = ""
+                  end
+                  if unit.effective_rent <= 0
+                    unit.effective_rent = 1.0
+                  end
+                  unit.save
                 end
-                if unit.effective_rent <= 0
-                  unit.effective_rent = 1.0
-                end
-                unit.save
               end
-
             rescue => e
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
             end
@@ -78,22 +79,24 @@ class YardiRentCafeService < BaseService
         if response[0]["Error"].nil?
           response.each do |r|
             fp = Floorplan.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])#.first_or_initialize
-            unless fp.manual_override
-              # fp.property_id = r["PropertyId"]
-              # fp.provider_floorplan_id = r["FloorplanId"]
-              # fp.name = r["FloorplanName"]
-              # fp.unit_count = r[""]
-              # fp.units_available = r[""]
-              # fp.bedrooms = r["Beds"]
-              # fp.bathrooms = r["Baths"]
-              # if r["MinimumSQFT"].present?
-              #   fp.square_feet = r["MinimumSQFT"]
-              # elsif r["SQFT"].present?
-              #   fp.square_feet = r["SQFT"]
-              # end
-              fp.market_rent = r["MinimumRent"]
-              # fp.deposit = r["MinimumDeposit"]
-              fp.save(validate: false)
+            if fp.present?
+              unless fp.manual_override
+                # fp.property_id = r["PropertyId"]
+                # fp.provider_floorplan_id = r["FloorplanId"]
+                # fp.name = r["FloorplanName"]
+                # fp.unit_count = r[""]
+                # fp.units_available = r[""]
+                # fp.bedrooms = r["Beds"]
+                # fp.bathrooms = r["Baths"]
+                # if r["MinimumSQFT"].present?
+                #   fp.square_feet = r["MinimumSQFT"]
+                # elsif r["SQFT"].present?
+                #   fp.square_feet = r["SQFT"]
+                # end
+                fp.market_rent = r["MinimumRent"]
+                # fp.deposit = r["MinimumDeposit"]
+                fp.save(validate: false)
+              end
             end
           end
         else 
