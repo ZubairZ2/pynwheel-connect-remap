@@ -53,6 +53,10 @@ class YardiRentCafeSwapService < BaseService
                 end
                 unit.save
               else
+                dup = Unit.find_by(community_id: credentials.community_id,provider_floorplan_id: r["ApartmentId"])
+                if dup.present?
+                  dup.destroy
+                end
                 # unit = Unit.where(community_id: credentials.community_id).first
                 unit = Unit.new
                 unit.community_id = credentials.community_id
@@ -146,6 +150,11 @@ class YardiRentCafeSwapService < BaseService
               fp.deposit = r["MinimumDeposit"]
               fp.save(validate: false)
             else
+              dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])
+              if dup.present?
+                dup.destroy
+              end
+
               # fp = Floorplan.where(community_id: credentials.community_id).first
               fp = Floorplan.new
               fp.community_id = credentials.community_id

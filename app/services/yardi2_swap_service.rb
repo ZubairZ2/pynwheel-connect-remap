@@ -52,10 +52,6 @@ class Yardi2SwapService < BaseService
   def save_yardi2_units(ils_units,property_id)
     ils_units[0].lazy.each do |unit_entries|
       begin
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])
-        if dup.present?
-          dup.destroy
-        end
 
         unit = Unit.where(community_id: credentials.community_id,marketing_name: unit_entries[0][:Id]).first
         if unit.present?
@@ -89,6 +85,11 @@ class Yardi2SwapService < BaseService
           unit.available_date = vacate_date
           unit.save
         else
+          dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])
+          if dup.present?
+            dup.destroy
+          end
+
           # unit = Unit.where(community_id: credentials.community_id).first
           unit = Unit.new
           unit.community_id = credentials.community_id
@@ -155,10 +156,6 @@ class Yardi2SwapService < BaseService
         if fp.present?
           rooms = []
           floorplan.each do |f|
-            dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f[:Id])
-            if dup.present?
-              dup.destroy
-            end
             fp.provider = "yardi_new"
             if f.key?(:Room)
               rooms << f
@@ -206,7 +203,7 @@ class Yardi2SwapService < BaseService
             if f.key?(:Room)
               rooms << f
             end
-
+            fp.provider_floorplan_id= f[:Id]
             if f.key?(:Name)
               fp.name = f[:Name]
             end

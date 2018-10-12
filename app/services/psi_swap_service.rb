@@ -51,10 +51,7 @@ class PsiSwapService < BaseService
     units.each do |u|
       vacateDate = ""
       puts '+++++++++++++++++++++++++++ update outer  +++++++++++++++++++++++++++++'
-      dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])
-      if dup.present?
-        dup.destroy
-      end
+
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"]).first
       if unit.present?
         puts '+++++++++++++++++++++++++++ update inner  +++++++++++++++++++++++++++++'
@@ -84,7 +81,10 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
       else
-
+        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])
+        if dup.present?
+          dup.destroy
+        end
         # unit = Unit.where(community_id: credentials.community_id).first
         unit = Unit.new
         unit.community_id = credentials.community_id
@@ -132,10 +132,7 @@ class PsiSwapService < BaseService
   def save_psi_floorplans(floorplans,property_id)
     puts '+++++++++++++++++++++++++ add new floor plans  outerrrrr +++++++++++++++++++++++++++++'
     floorplans.each do |f|
-      dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])
-      if dup.present?
-        dup.destroy
-      end
+
       puts '+++++++++++++++++++++++++ add new floor plans innerrrrr +++++++++++++++++++++++++++++'
       floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
       if floorplan.present?
@@ -174,7 +171,10 @@ class PsiSwapService < BaseService
         end
         floorplan.save
       else
-
+        dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])
+        if dup.present?
+          dup.destroy
+        end
         # floorplan = Floorplan.where(community_id: credentials.community_id).first
         # c = Community.find(credentials.community_id)
         floorplan = Floorplan.new
