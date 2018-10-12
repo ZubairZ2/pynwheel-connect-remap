@@ -240,12 +240,18 @@ class Community < ApplicationRecord
         connect_to_realpagesvc
       when "yardi"
         connect_to_yardi
+      when "resman"
+        connect_to_resman
     end
   end
 
   def connect_to_psi
     psi_connection_service = PsiConnectionService.new(credential.attributes)
     psi_connection_service.perform
+  end
+  def connect_to_resman
+    resman_connection_service = ResmanConnectionService.new(credential.attributes)
+    resman_connection_service.perform
   end
 
   def connect_to_yardirentcafe

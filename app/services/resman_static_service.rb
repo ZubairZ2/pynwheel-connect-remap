@@ -10,10 +10,10 @@ class ResmanStaticService < BaseService
         url = "https://api.myresman.com/MITS/GetMarketing2_0"
         response = HTTParty.post(url,
                                  :body => {
-                                     "ApiKey":"9412bd2716b648c1b00b62643e63850b",
-                                     "IntegrationPartnerID":"1214",
-                                     "AccountID":"800",
-                                     "PropertyID":"c575691a-ede4-4347-af2e-cdb610557108",
+                                     "ApiKey": apikey,
+                                     "IntegrationPartnerID": partner_id,
+                                     "AccountID": account_id,
+                                     "PropertyID": property_id,
                                  },
                                  :headers => { 'Content-Type' => 'application/x-www-form-urlencoded' } )
         # response =  JSON.parse(response.body)
