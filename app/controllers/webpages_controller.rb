@@ -1,6 +1,5 @@
 class WebpagesController < ActionController::Base
   before_action :set_community
-  before_action :check_community
 
   def index
     @floorplans = []
