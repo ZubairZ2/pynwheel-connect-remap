@@ -26,6 +26,9 @@
 #  resman_partner_id  :string
 #  resman_account_id  :string
 #  resman_property_id :string
+#  zaremba_username   :string
+#  zaremba_password   :string
+#  zaremba_filename   :string
 #
 
 class Credential < ApplicationRecord

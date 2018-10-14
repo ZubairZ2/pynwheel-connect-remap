@@ -136,8 +136,10 @@ class Community < ApplicationRecord
         import_realpage_svc_data
       when "yardi"
         select_yardi_provider
-    when "resman"
-      select_resman_provider
+      when "resman"
+        select_resman_provider
+      when "zaremba"
+        import_zaremba_provider
     end
   end
 
@@ -170,6 +172,12 @@ class Community < ApplicationRecord
     ImportPsiDataJob.perform_async credential.attributes.to_json
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
   end
+
+  def import_zaremba_provider 
+    # ImportZarembaDataJob.perform_async credential.attributes.to_json
+    ImportZarembaStaticDataJob.perform_async credential.attributes.to_json
+  end
+
   def swap_psi_data
     ImportPsiSwapDataJob.perform_async credential.attributes.to_json
 
@@ -242,6 +250,8 @@ class Community < ApplicationRecord
         connect_to_yardi
       when "resman"
         connect_to_resman
+      when "zaremba"
+        connect_to_zaremba
     end
   end
 
@@ -252,6 +262,11 @@ class Community < ApplicationRecord
   def connect_to_resman
     resman_connection_service = ResmanConnectionService.new(credential.attributes)
     resman_connection_service.perform
+  end
+
+  def connect_to_zaremba
+    zaremba_connection_service = ZarembaConnectionService.new(credential.attributes)
+    zaremba_connection_service.perform
   end
 
   def connect_to_yardirentcafe
