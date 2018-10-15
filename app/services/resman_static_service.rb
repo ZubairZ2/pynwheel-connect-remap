@@ -75,7 +75,7 @@ class ResmanStaticService < BaseService
 
   def save_resman_floorplans(floorplans,property_id)
     floorplans.each do |f|
-      floorplan = Floorplan.where(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize
+      floorplan = Floorplan.where(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize
       floorplan.property_id = property_id
       floorplan.name = f["Name"]
       floorplan.unit_count = f["UnitCount"]
