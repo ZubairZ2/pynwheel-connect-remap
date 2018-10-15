@@ -1,34 +1,34 @@
 class ZarembaStaticService < BaseService
   def perform
-    
-  begin
-    url = "http://pynwheel.com/swoop/scripts/proxy_redatasysSFTP.php?filename=ZAREMBA.xml"
-    apikey = credentials.resman_apikey
-    property_id = "ZAREMBA"
-    partner_id = credentials.resman_partner_id
-    account_id = credentials.resman_account_id
-    property_ids = credentials.property_id.split(',') rescue []
-    property_id = property_ids[0]
-    response = HTTParty.get(url)
-    if response.present?
-      units = []
-      floorplans = []
-      response['PhysicalProperty']['Property'].present? && response['PhysicalProperty']['Property'].class == Array && response['PhysicalProperty']['Property'][0]['ILS_Unit'].each do |pro|
-        units << pro
+    property_ids = credentials.zaremba_filename.split(',') rescue []
+    property_ids.each do |property_id|
+      begin
+        url = "http://pynwheel.com/swoop/scripts/proxy_redatasysSFTP.php"
+        url = url + '?' + 'filename=' + property_id + '.xml'
+        username = credentials.zaremba_username
+        password = credentials.zaremba_password
 
+        response = HTTParty.get(url)
+        if response.present?
+          units = []
+          floorplans = []
+          response['PhysicalProperty']['Property'].present? && response['PhysicalProperty']['Property'].class == Array && response['PhysicalProperty']['Property'][0]['ILS_Unit'].each do |pro|
+            units << pro
+
+          end
+          response['PhysicalProperty']['Property'].present? && response['PhysicalProperty']['Property'].class == Array && response["PhysicalProperty"]["Property"][0]["Floorplan"].each do |pro|
+            floorplans << pro
+          end
+          save_zaremba_units(units,property_id)
+          save_zaremba_floorplans(floorplans,property_id)
+          # save_website_column_of_community(response)
+        else
+          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+        end
+      rescue => e
+        puts '----------------------------' , e.message
       end
-      response['PhysicalProperty']['Property'].present? && response['PhysicalProperty']['Property'].class == Array && response["PhysicalProperty"]["Property"][0]["Floorplan"].each do |pro|
-        floorplans << pro
-      end
-      save_zaremba_units(units,property_id)
-      save_zaremba_floorplans(floorplans,property_id)
-      # save_website_column_of_community(response)
-      else
-      ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
     end
-  rescue => e
-  puts '----------------------------' , e.message
-  end
 
 
   end
