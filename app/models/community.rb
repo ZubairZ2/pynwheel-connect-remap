@@ -155,6 +155,8 @@ class Community < ApplicationRecord
       select_swap_yardi_provider
     when "resman"
       swap_resman_data
+    when "zaremba"
+      swap_zaremba_data
     end
 
   end
@@ -173,17 +175,19 @@ class Community < ApplicationRecord
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
   end
 
-  def import_zaremba_provider 
-    # ImportZarembaDataJob.perform_async credential.attributes.to_json
+  def import_zaremba_provider
     ImportZarembaStaticDataJob.perform_async credential.attributes.to_json
+    ImportZarembaDataJob.perform_async credential.attributes.to_json
   end
 
   def swap_psi_data
     ImportPsiSwapDataJob.perform_async credential.attributes.to_json
-
   end
   def swap_resman_data
     ImportResmanSwapDataJob.perform_async credential.attributes.to_json
+  end
+  def swap_zaremba_data
+    ImportZarembaSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardirentcafe_data
       #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
