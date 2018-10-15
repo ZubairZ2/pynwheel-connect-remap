@@ -160,7 +160,7 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present?
       if @community.data_is_swaped and Thread.current[:errors].empty?
         flash[:notice] = "Your data will be swapped shortly.Refresh your page after few minutes."
-        redirect_to community_floorplans_path(:community_id=>@community.id)
+        redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
         redirect_to community_import_page_path(current_community)
