@@ -47,6 +47,7 @@ class RealPageSvcSwapService < BaseService
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplanlistResponse][1][:getfloorplanlistResult][:GetFloorPlanList]
           floorplans.each do |fp|
+
             if fp.key?(:FloorPlanObject)
               fp = fp[:FloorPlanObject]
               floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanNameMarketing]).first
@@ -69,6 +70,10 @@ class RealPageSvcSwapService < BaseService
                 floorplan.square_feet = fp[:GrossSquareFootage]
                 floorplan.save(:validate => false)
               else
+                dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: fp[:FloorPlanID])
+                if dup.present?
+                  dup.destroy
+                end
                 # floorplan = Floorplan.where(community_id: community_id).first
                 floorplan = Floorplan.new
                 floorplan.community_id = community_id
@@ -163,6 +168,7 @@ class RealPageSvcSwapService < BaseService
             if u.key?(:UnitObject)
               u = u[:UnitObject]
               hit = false
+
               unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber]).first
               unless unit.present?
                 unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber]).first
@@ -229,6 +235,11 @@ class RealPageSvcSwapService < BaseService
                 # end
                 unit.save
               else
+                dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:UnitID])
+                if dup.present?
+                  dup.destroy
+                end
+
                 # unit = Unit.where(community_id: community_id).first
                 unit = Unit.new
                 unit.community_id = community_id
