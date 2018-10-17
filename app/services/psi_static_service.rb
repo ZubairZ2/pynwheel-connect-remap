@@ -59,6 +59,13 @@ class PsiStaticService < BaseService
       unit.unit_type = u["Units"]["Unit"]["UnitType"]
       unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
 
+      if u["Units"]["Unit"]["MinSquareFeet"].present?
+        if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
+          unit.square_feet = u["Units"]["Unit"]["MinSquareFeet"].to_f
+        else
+          unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
+        end
+      end
       unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
       unit.effective_rent = 1.0 #Setting rent to avoid validation issues
       if u["Units"]["Unit"]["MarketRent"].present?
