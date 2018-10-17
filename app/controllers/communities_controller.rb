@@ -160,7 +160,7 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present?
       if @community.data_is_swaped and Thread.current[:errors].empty?
         flash[:notice] = "Your data will be swapped shortly.Refresh your page after few minutes."
-        redirect_to community_floorplans_path(:community_id=>@community.id)
+        redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
         redirect_to community_import_page_path(current_community)
@@ -291,7 +291,7 @@ class CommunitiesController < ApplicationController
     params.require(:community).permit(:name,:address,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
       :data_provider,:theme_name,:code,:is_sitemap,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,
       :credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
-        :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :resman_property_id],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
+        :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :resman_property_id,:zaremba_filename],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :secondary_page_background_image,:loop_type,:primary_color,:secondary_color,:primary_font_family,:primary_font_size,:primary_font_weight,
         :primary_text_align,:primary_font_color,:secondary_font_family,:secondary_font_size,:secondary_font_weight,:secondary_text_align,
         :secondary_font_color,:global_navigation_font_color,:global_navigation_background_color,:global_navigation_button_color,

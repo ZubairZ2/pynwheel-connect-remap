@@ -29,8 +29,6 @@ class ZarembaSwapService < BaseService
     rescue => e
       puts '----------------------------' , e.message
     end
-
-
   end
   def save_zaremba_units(units,property_id)
     units.each do |u|
