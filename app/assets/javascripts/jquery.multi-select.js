@@ -346,6 +346,12 @@
       this.$element.multiSelect(this.options);
     },
 
+    'removeAllOptions' : function(){
+      this.destroy();
+      this.$element.find('option').remove();
+      this.$element.multiSelect({});
+    },
+
     'destroy' : function(){
       $("#ms-"+this.$element.attr("id")).remove();
       this.$element.off('focus');
@@ -408,6 +414,68 @@
         }
       }
     },
+
+      'select_disable' : function(value, method){
+          if (typeof value === 'string'){ value = [value]; }
+
+
+          var that = this,
+              ms = this.$element,
+              msIds = $.map(value, function(val){ return(that.sanitize(val)); }),
+              selectables = this.$selectableUl.find('#' + msIds.join('-selectable, #')+'-selectable').filter(':not(.'+that.options.disabledClass+')'),
+              selections = this.$selectionUl.find('#' + msIds.join('-selection, #') + '-selection').filter(':not(.'+that.options.disabledClass+')'),
+              options = ms.find('option:not(:disabled)').filter(function(){ return($.inArray(this.value, value) > -1); });
+
+
+
+              selectables = this.$selectableUl.find('#' + msIds.join('-selectable, #')+'-selectable'),
+              selections = this.$selectionUl.find('#' + msIds.join('-selection, #') + '-selection');
+
+
+          if (selectables.length > 0){
+              selectables.addClass('ms-selected').hide();
+              selections.addClass('ms-selected').show();
+
+
+              options.prop('selected', true);
+
+
+              that.$container.find(that.elemsSelector).removeClass('ms-hover');
+
+              var selectableOptgroups = that.$selectableUl.children('.ms-optgroup-container');
+              if (selectableOptgroups.length > 0){
+                  selectableOptgroups.each(function(){
+                      var selectablesLi = $(this).find('.ms-elem-selectable');
+                      if (selectablesLi.length === selectablesLi.filter('.ms-selected').length){
+                          $(this).find('.ms-optgroup-label').hide();
+                      }
+                  });
+
+                  var selectionOptgroups = that.$selectionUl.children('.ms-optgroup-container');
+                  selectionOptgroups.each(function(){
+                      var selectionsLi = $(this).find('.ms-elem-selection');
+                      if (selectionsLi.filter('.ms-selected').length > 0){
+                          $(this).find('.ms-optgroup-label').show();
+                      }
+                  });
+              } else {
+                  if (that.options.keepOrder && method !== 'init'){
+                      var selectionLiLast = that.$selectionUl.find('.ms-selected');
+                      if((selectionLiLast.length > 1) && (selectionLiLast.last().get(0) != selections.get(0))) {
+                          selections.insertAfter(selectionLiLast.last());
+                      }
+                  }
+              }
+              if (method !== 'init'){
+                  ms.trigger('change');
+                  if (typeof that.options.afterSelect === 'function') {
+                      that.options.afterSelect.call(this, value);
+                  }
+              }
+          }
+
+      },
+
 
     'deselect' : function(value){
       if (typeof value === 'string'){ value = [value]; }

@@ -16,6 +16,11 @@ Rails.application.routes.draw do
       post :add_plots_on_floorplate
       delete :remove_plots_from_floorplate
     end
+    collection do
+      post :invitation_communities
+      post :selected_communities
+    end
+
     post :save_gallery_settings
     post :save_apartment_settings
     post :save_floor_plan_button

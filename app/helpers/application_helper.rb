@@ -856,5 +856,9 @@ module ApplicationHelper
       return false
     end
   end
+  def invitation_communities(company)
+    c = Company.find_by(name: company)
+    c.communities.pluck(:name,:id)
+  end
     
 end

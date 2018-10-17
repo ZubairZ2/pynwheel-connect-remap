@@ -27,11 +27,18 @@ class UsersController < ApplicationController
   end
 
   def edit
-
   end
 
   def update
+    u = User.find(params[:id])
+    data = u.communities.pluck(:id)
+
     if @user.update(user_params)
+      data.each do |d|
+        unless params[:user][:community_ids].map(&:to_i).include? d
+          CommunityUser.create(user_id: params[:id],community_id: d )
+        end
+      end
       flash[:notice] = alert_message
       redirect_to redirect_path
     else

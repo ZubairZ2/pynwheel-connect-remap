@@ -16,7 +16,7 @@
               %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
             = link_to "Communities",root_path
-      - if (current_user.is_super_admin? || current_user.is_community_admin? )    
+      - if (current_user.is_super_admin? )
         %li{:class=>"#{controller_name =='users' ? 'active' : ''}"}
           = link_to company_employees_path(current_company) do 
             %i.fa.fa-user

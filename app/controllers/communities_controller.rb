@@ -169,8 +169,22 @@ class CommunitiesController < ApplicationController
       flash[:error] = "Please enter credentials in settings before importing data."
       redirect_to community_import_page_path(current_community)
     end
+  end
+
+  def invitation_communities
+    company =  params['company']
+    comp = Company.find_by(name: company )
+    result = comp.communities.pluck(:name,:id).to_json
+    render :json => { data: result }, :status => 200
 
   end
+  def selected_communities
+    user = User.find params['user'].to_i
+    result = user.communities.pluck(:name,:id).to_json
+    render :json => { data: result }, :status => 200
+
+  end
+
   def delete_imported_data
     current_community.units.destroy_all
     current_community.floorplans.destroy_all

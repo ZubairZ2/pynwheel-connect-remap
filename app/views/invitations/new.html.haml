@@ -13,9 +13,14 @@
         .text-center
           %h3 Send Invitation
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
-          
           .form-group
-            = f.select :community_ids, options_for_select(current_user.is_super_admin? ? Community.pluck(:name,:id) : current_user.communities.pluck(:name,:id)),{},{class: "form-control validate[required]",:multiple=>true}
+            = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
+
+          .form-group
+            %p.pull-left Listed Communities
+            %p.pull-right.mr-10 Selected Communities
+            -#= f.select :community_ids, options_for_select(current_user.is_super_admin? ? Community.pluck(:name,:id) : current_user.communities.pluck(:name,:id)),{},{class: "form-control validate[required]",:multiple=>true}
+            = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
           .form-group
             - if current_user.is_super_admin?
               = f.select :role, options_for_select(User::ROLES,f.object.role),{:include_blank => 'Select Admin'},{class: "form-control validate[required]"}
@@ -24,9 +29,31 @@
           .form-group
             = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true
             %i.fa.fa-envelope    
-          = f.submit "Send Ivitation", :class=>"btn btn-primary btn-block" 
+          = f.submit "Send Invitation", :class=>"btn btn-primary btn-block"
           = link_to "Cancel", company_employees_path(current_company), :class=>"btn btn-default btn-block"
         .text-center
           %p.copy-right © 2018 Pynwheel
 :javascript
   $('#user_community_ids').multiSelect();
+
+
+  $(".company_list").change(function(){
+    var selected_company =  $(".company_list").val()
+
+  $.ajax({
+    url: "/communities/invitation_communities",
+    type: "POST",
+    data: {company: selected_company },
+
+    success: function(resp){
+    $('#user_community_ids').multiSelect('removeAllOptions');
+    parsed_arr = $.parseJSON(resp.data);
+    for (var i=0; i<parsed_arr.length  ; i++) {
+
+      $('#user_community_ids').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
+
+    }
+    }
+
+  });
+  });
