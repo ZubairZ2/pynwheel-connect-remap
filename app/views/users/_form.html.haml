@@ -10,7 +10,7 @@
       Company
       %span Select Company
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.select :company_name, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list", "data-user-id" =>  f.object.id}
+      = f.select :company_name, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control company_list", "data-user-id" =>  f.object.id}
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Communities
@@ -27,9 +27,14 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email
-    %span Specify email here	
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true 
+    %span Specify email here
+  - if current_user.is_super_admin?
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true
+  - else
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50",:readonly => true, autofocus: true
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     First Name

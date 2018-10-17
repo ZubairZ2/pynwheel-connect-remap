@@ -4,7 +4,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: [:edit,:update]
   def index
     if current_user.is_super_admin?
-      @users = User.where(role: ["Community admin","Community manager"])
+      @users = User.where(role: ["Community admin","Community manager","Super admin"])
     else
       @users = User.find current_user.communities.collect{|c| c.users.map(&:id)}.flatten
     end
@@ -35,8 +35,10 @@ class UsersController < ApplicationController
 
     if @user.update(user_params)
       data.each do |d|
-        unless params[:user][:community_ids].map(&:to_i).include? d
-          CommunityUser.create(user_id: params[:id],community_id: d )
+        if params[:user][:community_ids].present?
+          unless params[:user][:community_ids].map(&:to_i).include? d
+            CommunityUser.create(user_id: params[:id],community_id: d )
+          end
         end
       end
       flash[:notice] = alert_message
