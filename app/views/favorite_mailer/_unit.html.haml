@@ -31,13 +31,16 @@
                                       - if @ios.present?
                                         %img{:alt => "", :src => "#{unit.floorplan.image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
                                       - else
-                                        %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : unit.floorplan.image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
+                                        -if unit.secondary_image.present? || unit.floorplan.secondary_image.present?
+                                          %img{:alt => "", :src => "#{unit.secondary_image.present? ? unit.secondary_image.url : unit.floorplan.secondary_image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
                                   %td{:style => "width:50%;"}
                                     %div{:style => "width:100%; height:150px; overflow:hidden;"}
                                       - if @ios.present?
                                         %img{:alt => "", :src => "#{unit.floorplan.image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
                                       - else
-                                        %img{:alt => "", :src => "#{unit.secondary_image.present? ? unit.secondary_image.url : unit.floorplan.secondary_image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
+                                        - if unit.image.present? || unit.floorplan.image.present?
+                                          %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : unit.floorplan.image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
+
                                 - else
                                   %td
                                     %div{:style => "width:100%; height:320px; overflow:hidden;"}

@@ -344,12 +344,22 @@ class Community < ApplicationRecord
   def email_favorites(params)
     email_to = params[:favorites][:email_to]
     favorites = populate_favorites(params[:favorites][:items])
+    units = []
+    params[:favorites][:items].each do |item|
+      u = Unit.find item[:unit_id]
+      if u.present?
+        units << u
+      else
+        u = nil
+        units << u
+      end
+    end
     email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil 
     email_from = self.favorite_setting.present? ? self.favorite_setting.email_from : nil
     email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     ios = params[:favorites][:device_type].present? && params[:favorites][:device_type] == "iOS" ? true : false
     if favorites.present?
-      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,ios,self).deliver
+      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
       return true
     else
       return false
