@@ -45,7 +45,7 @@ class YardiRentCafeService < BaseService
                   if unit.effective_rent <= 0
                     unit.effective_rent = 1.0
                   end
-                  unit.save(validate: false)
+                  unit.save
                 end
               end
             rescue => e
