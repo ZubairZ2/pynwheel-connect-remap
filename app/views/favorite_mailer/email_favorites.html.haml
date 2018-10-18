@@ -333,18 +333,18 @@
                             %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                                 %tr
-                                  %td.textContent{:align => "center", :style => "padding: 8px 20px; background-image: url('https://s3.amazonaws.com/comencia-assets/csv_files/bg-top-email.png'); background-repeat: repeat;", :valign => "top"}
-                                    %h1{:style => "margin-bottom:0px;text-align:left;"}
+                                  %td.textContent{:align => "center", :style => "padding: 8px 20px; background-color:#FFFFFF;", :valign => "top"}
+                                    %h1{:style => "margin-bottom:0px;text-align:center;"}
                                       %div{:style => "width: 350px;display: inline-block;overflow: hidden;"}
                                         %img{:src => "#{@community.logo.url}", width: '350', :style => "max-width: 100%;height:auto;object-fit: contain;"}/
               - if @community.favorite_setting.present? and @community.favorite_setting.ebrochure_menu_buttons.size > 0                          
                 %tr
                   %td{:style=>"padding: 13px 15px 0 15px;"}
-                    %table
+                    %table{:style=>"width:100%;"}
                       %tr
-                        - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
-                          %td{:style => "padding-top:7px; padding-bottom: 7px; padding-left: 15px; padding-right: 15px; background-color:#253339; font-size:14px; color:#fff; margin-top:6px; margin-bottom:6px;  margin-right:10px; border-right:4px solid #ffffff;"}
-                            %a{:href => "#{button.url}",:style=>"color: #ffffff;"}
+                        %td{:style => "text-align:center;"}
+                          - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
+                            %a{:href => "#{button.url}",:style=>"color: #ffffff;padding-top:7px; padding-bottom: 7px; padding-left: 15px; padding-right: 15px; background-color:#253339; font-size:14px; color:#fff; margin-top:6px; margin-bottom:6px;  margin-right:10px; display:inline-block;text-decoration: none;"}
                               = button.name
               %tr
                 %td{:align => "center", :valign => "top"}
