@@ -95,7 +95,7 @@ class ZarembaStaticService < BaseService
       else
         floorplan.market_rent = f["MarketRent"]["Max"]
       end
-      floorplan.save
+      floorplan.save(validate: false)
 
     end
   end

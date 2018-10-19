@@ -85,7 +85,7 @@ class Yardi2StaticService < BaseService
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           unit.available_date = vacate_date
           unit.manually_updated = false
-          unit.save
+          unit.save(validate: false)
         end
       rescue => e
         puts '----------------------------------', e.message

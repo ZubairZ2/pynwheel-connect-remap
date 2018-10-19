@@ -118,7 +118,7 @@ class PsiStaticService < BaseService
 
         floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
       end
-      floorplan.save
+      floorplan.save(validate: false)
 
     end
   end

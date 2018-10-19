@@ -3,8 +3,8 @@ class ResmanStaticService < BaseService
     property_ids = credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
-        apikey = credentials.resman_apikey
-        partner_id = credentials.resman_partner_id
+        apikey = "9412bd2716b648c1b00b62643e63850b"
+        partner_id = "1214"
         account_id = credentials.resman_account_id
         #property_id = credentials.property_id
         url = "https://api.myresman.com/MITS/GetMarketing2_0"
@@ -103,7 +103,7 @@ class ResmanStaticService < BaseService
       else
         floorplan.market_rent = f["MarketRent"]["Max"]
       end
-      floorplan.save
+      floorplan.save(validate: false)
 
     end
   end

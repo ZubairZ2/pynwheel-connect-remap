@@ -191,7 +191,7 @@ class RealPageSvcStaticService < BaseService
                 #   end
                 # end
                 unit.manually_updated = false
-                unit.save!
+                unit.save(validate: false)
                 #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
               end
             end
