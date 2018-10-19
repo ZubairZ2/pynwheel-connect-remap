@@ -94,7 +94,7 @@ class Yardi4StaticService < BaseService
         unit.availability = is_available ? "Unoccupied" : "Occupied"
         unit.available_date = vacate_date
         unit.manually_updated = false
-        unit.save
+        unit.save(validate: false)
       end
     end
   end

@@ -45,7 +45,7 @@ class YardiRentCafeStaticService < BaseService
                   unit.effective_rent = 1.0
                 end
                 unit.manually_updated = false
-                unit.save
+                unit.save(validate: false)
               end
 
             rescue => e
