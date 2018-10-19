@@ -371,14 +371,14 @@
                 - @community.favorite_setting.favorite_images.each do |img|
                   = render :partial => 'favorite_image', :locals => {:img => img}                           
               - (0..@favorites.count).each_with_index do |f,index |
-                - if f[index].is_a?(Unit)
-                  = render :partial => 'unit', :locals => {:unit => f[index]}
-                - elsif f[index].is_a?(Floorplan)
-                  = render :partial => 'floorplan', :locals => {:floorplan => f[index], :unit => @units[index]}
-                - elsif f[index].is_a?(GalleryImage)
-                  = render :partial => 'gallery_image', :locals => {:img => f[index]}
-                - elsif f[index].is_a?(Amenity)
-                  = render :partial => 'amenity_image', :locals => {:img => f[index]}
+                - if f.is_a?(Unit)
+                  = render :partial => 'unit', :locals => {:unit => f}
+                - elsif f.is_a?(Floorplan)
+                  = render :partial => 'floorplan', :locals => {:floorplan => f, :unit => @units[index]}
+                - elsif f.is_a?(GalleryImage)
+                  = render :partial => 'gallery_image', :locals => {:img => f}
+                - elsif f.is_a?(Amenity)
+                  = render :partial => 'amenity_image', :locals => {:img => f}
                   
             %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "640"}
               %tr
