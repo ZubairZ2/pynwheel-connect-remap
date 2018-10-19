@@ -7,11 +7,14 @@ class ZarembaConnectionService < BaseService
       url = "http://pynwheel.com/swoop/scripts/proxy_redatasysSFTP.php"
       url = url + "?" + "filename=" + property_id + ".xml"
 
-      apikey = credentials.resman_apikey
-      partner_id = credentials.resman_partner_id
-      account_id = credentials.resman_account_id
+      username = credentials.zaremba_username
+      password = credentials.zaremba_password
       
-      response = HTTParty.get(url)
+      response = HTTParty.post(url,:body => {
+          "user_name": username,
+          "user_pass": password,
+      },
+          :headers => { 'Content-Type' => 'text/xml' } )
 
       response
     rescue => e
