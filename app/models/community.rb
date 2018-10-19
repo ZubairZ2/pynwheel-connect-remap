@@ -362,9 +362,11 @@ class Community < ApplicationRecord
         if u.present?
           units << u
         else
-          u = nil
+          u = Unit.new
           units << u
         end
+        u = Unit.new
+        units << u
       end
 
     end

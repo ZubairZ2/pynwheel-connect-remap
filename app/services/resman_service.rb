@@ -111,6 +111,7 @@ class ResmanService < BaseService
           end
           floorplan.save
         end
+
       end
     end
   end
