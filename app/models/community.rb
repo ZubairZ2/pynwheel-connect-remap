@@ -346,17 +346,17 @@ class Community < ApplicationRecord
     favorites = populate_favorites(params[:favorites][:items])
     units = []
     params[:favorites][:items].each do |item|
-      unless item['unit_id'] == 'null'
-        if item['unit_id'].present?
-          u = Unit.find item[:unit_id]
-          if u.present?
-            units << u
-          else
-            u = nil
-            units << u
-          end
+
+      if item['unit_id'].present?
+        u = Unit.find item['unit_id']
+        if u.present?
+          units << u
+        else
+          u = nil
+          units << u
         end
       end
+
     end
     email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil 
     email_from = self.favorite_setting.present? ? self.favorite_setting.email_from : nil
