@@ -343,8 +343,9 @@ class Community < ApplicationRecord
 
   def email_favorites(params)
     email_to = params[:favorites][:email_to]
-    favorites = populate_favorites(params[:favorites][:items])
-    units = []
+    result = populate_favorites(params[:favorites][:items])
+    favorites = result[0]
+    units = result[1] 
     puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
     puts params
     puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS FAVOURITES%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
@@ -357,17 +358,17 @@ class Community < ApplicationRecord
 
     params[:favorites][:items].each do |item|
       puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", item['unit_id']
-      if item['unit_id'].present?
-        u = Unit.find item['unit_id']
-        if u.present?
-          units << u
-        else
-          u = Unit.new
-          units << u
-        end
-        u = Unit.new
-        units << u
-      end
+      # if item['unit_id'].present?
+      #   u = Unit.find item['unit_id']
+      #   if u.present?
+      #     units << u
+      #   else
+      #     u = Unit.new
+      #     units << u
+      #   end
+      #   u = Unit.new
+      #   units << u
+      # end
 
     end
     email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil 
@@ -394,6 +395,7 @@ class Community < ApplicationRecord
 
   def populate_favorites(items_objs)
     favorites = []
+    units = []
     items_objs.each do |item|
       puts "populate_favorites 11"*50
       puts item[:type]
@@ -401,8 +403,20 @@ class Community < ApplicationRecord
       puts item['type']
       favorite = item['type'].classify.constantize.where(id: item["id"])
       favorites << favorite.first if favorite.present?
+      if item['type'] == 'floorplan'
+        u = Unit.find item['unit_id']
+        if u.present?
+          units << u
+        else
+          u = Unit.new
+          units << u
+        end
+      else
+        u = Unit.new
+        units << u
+      end
     end
-    return favorites
+    return favorites , units
   end
   def validate_page_position
     positions = Imagepage.where(community_id: self.id).map(&:position) +  Webpage.where(community_id: self.id).map(&:position)
