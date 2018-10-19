@@ -370,7 +370,7 @@
               - if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
                 - @community.favorite_setting.favorite_images.each do |img|
                   = render :partial => 'favorite_image', :locals => {:img => img}                           
-              - (0..(@favorites.count-1)).each_with_index do |f,index |
+              - (0..@favorites.count).each_with_index do |f,index |
                 - puts "@favorites cout loop"*50
                 - puts @favorites[index].class
                 - puts "unit", @favorites[index].is_a?(Unit)
