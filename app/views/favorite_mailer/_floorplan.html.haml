@@ -28,17 +28,17 @@
                                 - if floorplan.secondary_image.present?
                                   %td{:style => "width:50%;"}
                                     %div{:style => "width:100%; height:150px; overflow:hidden;"}
-                                      - if floorplan.secondary_image.present? || unit.secondary_image.present?
-                                        %img{:alt => "", :src => "#{floorplan.secondary_image.present? ? floorplan.secondary_image.url : unit.secondary_image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
+                                      - if floorplan.secondary_image.present? || unit.present?
+                                        %img{:alt => "", :src => "#{floorplan.secondary_image.present? ? floorplan.secondary_image.url : (unit.secondary_image.present? ? unit.secondary_image.url : nil)}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
                                   %td{:style => "width:50%;"}
                                     %div{:style => "width:100%; height:150px; overflow:hidden;"}
-                                      - if floorplan.image.present? || unit.image.present?
-                                        %img{:alt => "", :src => "#{floorplan.image.present? ? floorplan.image.url : unit.image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
+                                      - if floorplan.image.present? || unit.present?
+                                        %img{:alt => "", :src => "#{floorplan.image.present? ? floorplan.image.url : (unit.image.present? ? unit.image.url : nil)}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
                                 - else
                                   %td
                                     %div{:style => "width:100%; height:320px; overflow:hidden;"}
-                                      - if unit.image.present? || floorplan.image.present?
-                                        %img{:alt => "", :src => "#{floorplan.image.present? ? floorplan.image.url : unit.image.url}", :width => "320", :height => "250", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+                                      - if unit.present? || floorplan.image.present?
+                                        %img{:alt => "", :src => "#{floorplan.image.present? ? floorplan.image.url : (unit.image.present? ? unit.image.url : nil)}", :width => "320", :height => "250", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
                           %td{:valign => "top", :width => "250"}
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#878789;", :width => "100%"}
                               %tr
