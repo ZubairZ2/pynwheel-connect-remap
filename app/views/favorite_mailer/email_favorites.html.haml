@@ -371,7 +371,6 @@
                 - @community.favorite_setting.favorite_images.each do |img|
                   = render :partial => 'favorite_image', :locals => {:img => img}                           
               - (0..@favorites.count).each_with_index do |f,index |
-                - byebug
                 - if @favorites[index].is_a?(Unit)
                   = render :partial => 'unit', :locals => {:unit => @favorites[index]}
                 - elsif @favorites[index].is_a?(Floorplan)
