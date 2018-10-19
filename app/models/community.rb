@@ -345,7 +345,8 @@ class Community < ApplicationRecord
     email_to = params[:favorites][:email_to]
     favorites = populate_favorites(params[:favorites][:items])
     units = []
-    params[:favorites][:items].each do |item|
+    puts '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',params[:favorites][:items]
+    params['favorite']['items'].each do |item|
       puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", item['unit_id']
       if item['unit_id'].present?
         u = Unit.find item['unit_id']
