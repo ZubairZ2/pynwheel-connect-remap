@@ -3,10 +3,12 @@ class ZarembaService < BaseService
     property_ids = credentials.zaremba_filename.split(',') rescue []
     property_ids.each do |property_id|
       begin
-        url = "http://pynwheel.com/swoop/scripts/proxy_redatasysSFTP.php"
-        url = url + '?' + 'filename=' + property_id + '.xml'
         username = credentials.zaremba_username
         password = credentials.zaremba_password
+
+        url = "http://pynwheel.com/swoop/scripts/proxy_redatasysSFTP.php"
+        url = url + "?" + "filename=" + property_id + ".xml" + "&" + "username=" + username + "&" + "password=" + password
+
 
         response = HTTParty.get(url)
         if response.present?
