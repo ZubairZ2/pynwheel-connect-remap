@@ -54,11 +54,11 @@
                                 %td
                                   %p{:style => "color:#fff;"} Details
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{number_with_delimiter(unit.floorplan.square_feet.to_i, :delimiter => ',')} SF
+                                    %b #{number_with_delimiter(unit.square_feet.present? ? unit.square_feet.to_i : unit.floorplan.square_feet.to_i, :delimiter => ',')} SF
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{unit.floorplan.bedrooms} #{"bed".pluralize(unit.floorplan.bedrooms.to_i)}
+                                    %b #{unit.bedrooms.present? ? unit.bedrooms : unit.floorplan.bedrooms} #{"bed".pluralize(unit.bedrooms.present? ? unit.bedrooms : unit.floorplan.bedrooms.to_i)}
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{unit.floorplan.bathrooms.ceil.to_i} #{"bath".pluralize(unit.floorplan.bathrooms.ceil.to_i)}
+                                    %b #{unit.bathrooms.present? ? unit.bathrooms : unit.floorplan.bathrooms.ceil.to_i} #{"bath".pluralize(unit.bathrooms.present? ? unit.bathrooms : unit.floorplan.bathrooms.ceil.to_i)}
                                   - if unit.community.display_rent  
                                     %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                       %b $ #{unit.effective_rent.to_i} 
