@@ -63,7 +63,7 @@ class ZarembaSwapService < BaseService
         building = u["BuildingID"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.manually_updated = false
-        unit.save(validate: false)
+        unit.save
       else
         dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["IDValue"])
         if dup.present?
@@ -95,7 +95,7 @@ class ZarembaSwapService < BaseService
         building = u["BuildingID"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.manually_updated = false
-        unit.save(validate: false)
+        unit.save
       end
     end
     unit = Unit.where(community_id: credentials.community_id)
