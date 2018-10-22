@@ -395,25 +395,27 @@ class Community < ApplicationRecord
 
   def populate_favorites(items_objs)
     favorites = []
-    units = []
+    units = Hash.new
     items_objs.each do |item|
       puts "populate_favorites 11"*50
       puts item[:type]
       puts "populate_favorites 22"*50
       puts item['type']
-      favorite = item['type'].classify.constantize.where(id: item["id"])
+      favorite = item[:type].classify.constantize.where(id: item[:id])
       favorites << favorite.first if favorite.present?
-      if item['type'] == 'floorplan'
-        u = Unit.find item['unit_id']
-        if u.present?
-          units << u
-        else
-          u = Unit.new
-          units << u
-        end
-      else
-        u = Unit.new
-        units << u
+
+      if item[:type] == 'floorplan'
+        units[item[:id].to_s] = item[:unit_id]
+      #   u = Unit.find item['unit_id']
+      #   if u.present?
+      #     units << u
+      #   else
+      #     u = Unit.new
+      #     units << u
+      #   end
+      # else
+      #   u = Unit.new
+      #   units << u
       end
     end
     return favorites , units
