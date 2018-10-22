@@ -29,14 +29,14 @@
                                 - unit = Unit.find units[floorplan.id.to_s]
                                 - puts "ppppp"*40, floorplan.id, '====', unit.id
                                 - if unit.present?
-                                  - if unit.secondary_image.present?
+                                  - if unit.secondary_image.present? && floorplan.secondary_image.present?
                                     %td{:style => "width:50%;"}
                                       %div{:style => "width:100%; overflow:hidden;"}
                                         - if floorplan.secondary_image.present? || unit.secondary_image.present?
                                           %img{:alt => "", :src => "#{unit.secondary_image.present? ? unit.secondary_image.url : floorplan.secondary_image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
                                     %td{:style => "width:50%;"}
                                       %div{:style => "width:100%; overflow:hidden;"}
-                                        - if floorplan.image.present? || unit.present?
+                                        - if floorplan.image.present? || unit.image.present?
                                           %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : floorplan.image.url}", :width => "100%", :height => "100%", :style => "margin:auto;", :title => ""}/
                                   - else
                                     %td
