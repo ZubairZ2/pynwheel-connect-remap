@@ -349,9 +349,9 @@ function showZarembaFields(){
 function showResmanFields(){
     $('.credential_fields').hide();
     //removeValidationsClass();
-    $('#resman_apikey').show();
-    //$('#community_credential_attributes_url').addClass("validate[required]");
-    $('#resman_partner_id').show();
+    // $('#resman_apikey').show();
+    // //$('#community_credential_attributes_url').addClass("validate[required]");
+    // $('#resman_partner_id').show();
     //$('#community_credential_attributes_password').addClass("validate[required]");
     $('#resman_account_id').show();
     //$('#community_credential_attributes_username').addClass("validate[required]");

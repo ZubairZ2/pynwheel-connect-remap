@@ -3,6 +3,7 @@ class ResmanService < BaseService
     property_ids = credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
+
         account_id = credentials.resman_account_id
         #property_id = credentials.property_id
         url = "https://api.myresman.com/MITS/GetMarketing2_0"

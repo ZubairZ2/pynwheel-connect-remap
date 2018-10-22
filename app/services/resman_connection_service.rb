@@ -5,6 +5,7 @@ class ResmanConnectionService < BaseService
       begin
         property_ids = credentials.resman_property_id.split(',') rescue []
         property_id = property_ids[0]
+
         account_id = credentials.resman_account_id
         #property_id = credentials.property_id
         url = "https://api.myresman.com/MITS/GetMarketing2_0"
