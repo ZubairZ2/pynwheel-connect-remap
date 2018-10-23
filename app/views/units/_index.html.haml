@@ -79,7 +79,7 @@
                     %td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
                     - unless @community.is_sitemap
                       %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor }
-                    %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
+                    %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date }
                     %td= raw(u.description)
                     %td
                       .drop-img
@@ -343,7 +343,7 @@
       id = id.split('_');
       if($(this).data('bipAttribute') == 'sold' && $(this).html() == 'Yes'){
         $('#best_in_place_unit_'+id[4]+'_manual_override').html('Yes');
-        $('#best_in_place_unit_'+id[4]+'_available_date').html('-');
+        $('#best_in_place_unit_'+id[4]+'_available_date').html('Never Available');
       }
       if($('#best_in_place_unit_'+id[4]+'_manual_override').html() == 'No'){
         $(this).parent().parent().css('background-color','');
