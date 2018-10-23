@@ -40,10 +40,10 @@ class Credential < ApplicationRecord
     units = xlsx.sheet(0)
     units.each_with_index do |u,index|
       unless index == 0 
-        unit = Unit.where(provider: "spreadsheet",community_id: community_id,provider_unit_id: u[0].split("#")[1]).first_or_initialize
-        unit.provider_unit_id = u[0].split("#")[1]
-        unit.marketing_name = u[0].split("#")[1]
-        unit.unit_type = u[0].split("#")[1]
+        unit = Unit.where(provider: "spreadsheet",community_id: community_id,provider_unit_id: u[0]).first_or_initialize
+        unit.provider_unit_id = u[0]
+        unit.marketing_name = u[0]
+        unit.unit_type = u[0]
         unit.floorplan_id = u[1]
         unit.floor = u[3]
         unit.availability = u[4] == true ? "Unoccupied" : "Occupied"

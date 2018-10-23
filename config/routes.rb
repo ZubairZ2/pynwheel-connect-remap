@@ -25,6 +25,7 @@ Rails.application.routes.draw do
     post :save_apartment_settings
     post :save_floor_plan_button
     get :import_page
+    post :delete_spreadsheet_data
     delete :delete_imported_data
     get :update_imported_data
     get :import
