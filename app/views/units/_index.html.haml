@@ -344,7 +344,12 @@
       if($(this).data('bipAttribute') == 'sold' && $(this).html() == 'Yes'){
         $('#best_in_place_unit_'+id[4]+'_manual_override').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_available_date').html('Never Available');
+        $('#best_in_place_unit_'+id[4]+'_available_date').css("pointer-events","none");
 
+      }
+      if($(this).data('bipAttribute') == 'sold' && $(this).html() == 'No'){
+        $('#best_in_place_unit_'+id[4]+'_available_date').html("-");
+        $('#best_in_place_unit_'+id[4]+'_available_date').css("pointer-events","");
       }
       if($('#best_in_place_unit_'+id[4]+'_manual_override').html() == 'No'){
         $(this).parent().parent().css('background-color','');
