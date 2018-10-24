@@ -28,6 +28,7 @@
 #  invited_by_id          :integer
 #  invitations_count      :integer          default(0)
 #  company_id             :integer
+#  company_name           :string
 #
 
 class User < ApplicationRecord
