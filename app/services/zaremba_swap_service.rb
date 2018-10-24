@@ -290,7 +290,7 @@ class ZarembaSwapService < BaseService
       floorplan.save!
       floorplan.errors.full_messages.join(',')
     end
-    
+
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       unless d.provider == "zaremba_new"
