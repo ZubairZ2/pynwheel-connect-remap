@@ -341,6 +341,7 @@ function showZarembaFields(){
     $('#zaremba_password').show();
     //$('#community_credential_attributes_password').addClass("validate[required]");
     $('#zaremba_filename').show();
+    $('#zaremba_property_id').show();
     //$('#community_credential_attributes_username').addClass("validate[required]");
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
