@@ -388,7 +388,7 @@
                   - @unit = @units[@favorites[index].id.to_s]
                   - @unit.each_with_index do |uni,index|
                     - puts "email area @unit[index]===========", @unit[index],'=>',@unit[index].class
-                    = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units_id => @unit[index]}
+                    = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units => @unit[index]}
 
                 - elsif @favorites[index].is_a?(GalleryImage)
                   - puts 'Its GI' *50

@@ -25,9 +25,9 @@
                           %td{:width => "400"}
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :width => "100%"}
                               %tr
-                                - puts '+++++++++++++++++++++++++++++', units_id,'=>',units_id.class
+                                - puts '+++++++++++++++++++++++++++++', units.class
                                 - puts '+++++++++++++++++++++++++++++', units.to_i
-                                - unit = Unit.find units_id.to_i
+                                - unit = Unit.find units.to_i
                                 - puts "ppppp"*40, floorplan.id, '====', unit.id
                                 - if unit.present?
                                   - if unit.secondary_image.present? || floorplan.secondary_image.present?
