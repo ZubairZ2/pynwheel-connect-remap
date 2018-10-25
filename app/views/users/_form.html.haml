@@ -17,7 +17,7 @@
       %span Select communities  
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
 
-      -  u = User.find_by(email: 'umer@gmail.com')
+
       -if current_user.is_super_admin?
         = f.select :community_ids, options_for_select('',f.object.communities.map(&:id)),{},{class: "form-control validate[required]",:multiple=>true}
       -else

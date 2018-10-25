@@ -55,7 +55,7 @@
                   %th Available
                   %th Manual Override
                   %th Sold
-                  -#%th Unit Space
+                  %th Unit Space
                   - unless @community.is_sitemap
                     %th Floor
                   %th Available Date
@@ -76,7 +76,7 @@
                     %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available }
                     %td= best_in_place u, :manual_override, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:manual_override => u.manual_override }
                     %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold }
-                    -#%td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
+                    %td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
                     - unless @community.is_sitemap
                       %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor }
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :data => {:available_date => u.available_date }
@@ -336,7 +336,11 @@
             break    
         case 'sold':
             field = "Sold"
-            break    
+            break
+        case 'square_feet':
+            field = "Unit Space"
+            break
+
       } 
       $(this).parent().parent().css('background-color','#cecece');
       var id = $(this).attr("id");
