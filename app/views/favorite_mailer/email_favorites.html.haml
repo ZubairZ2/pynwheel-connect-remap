@@ -383,7 +383,12 @@
                   = render :partial => 'unit', :locals => {:unit => @favorites[index]}
                 - elsif @favorites[index].is_a?(Floorplan)
                   - puts 'Its FLORR PLAN' *50
-                  = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units => @units}
+                  - puts '==============', @units[@favorites[index].id.to_s]
+                  - puts '====classsss==', @units[@favorites[index].id.to_s].class
+                  - @unit = @units[@favorites[index].id.to_s].split(',')
+                  - @unit.each do |uni|
+                    = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units => uni}
+
                 - elsif @favorites[index].is_a?(GalleryImage)
                   - puts 'Its GI' *50
                   = render :partial => 'gallery_image', :locals => {:img => @favorites[index]}
