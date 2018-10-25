@@ -403,7 +403,6 @@ class Community < ApplicationRecord
       puts item['type']
       favorite = item[:type].classify.constantize.where(id: item[:id])
       favorites << favorite.first if favorite.present?
-
       if item[:type] == 'floorplan'
         units[item[:id].to_s] = item[:unit_id]
       #   u = Unit.find item['unit_id']
