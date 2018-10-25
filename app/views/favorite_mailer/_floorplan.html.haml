@@ -50,7 +50,7 @@
                                 %td
                                   %p{:style => "color:#fff;"} Details
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    - unit = Unit.find units[floorplan.id.to_s]
+                                    - unit = Unit.find units.to_i
                                     - if unit.present? && unit.square_feet.present?
                                       %b #{number_with_delimiter(unit.square_feet.to_i, :delimiter => ',')} SF
                                     - else
