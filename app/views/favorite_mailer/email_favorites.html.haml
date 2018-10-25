@@ -387,7 +387,8 @@
                   - puts '====classsss==', @units[@favorites[index].id.to_s].class
                   - @unit = @units[@favorites[index].id.to_s].split(',')
                   - @unit.each do |uni|
-                    = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units => uni}
+                    - puts "email area ]]]]]]]]]]]]]]]]", uni,'=>',uni.class
+                    = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units_id => uni}
 
                 - elsif @favorites[index].is_a?(GalleryImage)
                   - puts 'Its GI' *50
