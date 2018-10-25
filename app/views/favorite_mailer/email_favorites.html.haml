@@ -385,11 +385,10 @@
                   - puts 'Its FLORR PLAN' *50
                   - puts '==============', @units[@favorites[index].id.to_s]
                   - puts '====classsss==', @units[@favorites[index].id.to_s].class
-                  - @unit = @units[@favorites[index].id.to_s].split(',')
-
-                  - @unit[0].each_with_index do |uni,index|
-                    - puts "email area @unit[index]===========", @unit[0][index],'=>',@unit[0][index].class
-                    = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units_id => @unit[0][index]}
+                  - @unit = @units[@favorites[index].id.to_s]
+                  - @unit.each_with_index do |uni,index|
+                    - puts "email area @unit[index]===========", @unit[index],'=>',@unit[index].class
+                    = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units_id => @unit[index]}
 
                 - elsif @favorites[index].is_a?(GalleryImage)
                   - puts 'Its GI' *50
