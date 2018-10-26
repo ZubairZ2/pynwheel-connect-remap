@@ -344,7 +344,8 @@
                       %tr
                         %td{:style => "text-align:center;"}
                           - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
-                            %a{:href => "#{button.url}",:style=>"color: #ffffff;padding-top:7px; padding-bottom: 7px; padding-left: 15px; padding-right: 15px; background-color:#253339; font-size:14px; color:#fff; margin-top:6px; margin-bottom:6px;  margin-right:10px; display:inline-block;text-decoration: none;"}
+                          %div{:style=>"color: #ffffff;padding-top:7px; padding-bottom: 7px; padding-left: 15px; padding-right: 15px; background-color:#253339; font-size:14px; color:#fff; margin-top:6px; margin-bottom:6px;  margin-right:10px; display:inline-block;text-decoration: none;"}
+                            %a{:href => "#{button.url}",:style=>"color: #ffffff;text-decoration: none;"}
                               = button.name
               %tr
                 %td{:align => "center", :valign => "top"}

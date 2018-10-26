@@ -236,7 +236,7 @@
                },
                "onlyDecimal": {
     				"regex":  /^[+]?([0-9]+(?:[\.][0-9]*)?|\.[0-9]+)$/,
-    				"alertText": "* Poitive Decimals only"
+    				"alertText": "* Positive Decimals only"
                },
                "onlyNumber&Decimal": {
                     "regex":  /^[1-9]\d*(\.\d+)?$/,
