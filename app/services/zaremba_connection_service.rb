@@ -15,7 +15,7 @@ class ZarembaConnectionService < BaseService
 
       response['PhysicalProperty']['Property'].each do |p|
 
-        if p['IDValue'] == '030'
+        if p['IDValue'] == property_id
           result = p
         end
       end
