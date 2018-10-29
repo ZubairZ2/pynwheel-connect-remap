@@ -7,23 +7,22 @@
 	  <select id="unitlist" name="unit_list[]" style="height:350px" multiple>
 	    <% @community.units.sort { |a,b| [a['building'].to_s,a['number'].to_s] <=> [b['building'].to_s,b['number'].to_s] }
 	       @community.units.each do |u|
-		hit = false
-		if @unit != nil              
-		  session[:before].each do |sid| 
-		    if u.id == sid && u.x_plot == @unit.x_plot && u.y_plot == @unit.y_plot
-		      hit = true
-		    end
-		    break if hit
-		  end
-		end
-		if u.x_plot.to_i + u.y_plot.to_i == 0 %>
-		<option value="<%= u.id %>" <%= (hit ? "selected" : "")%>>
-		  <%= h (u.building.to_s != "" ? "#{u.building}-#{u.unit_type}" : "#{u.unit_type}") %>
-		</option>
-	      <% end %>
-	    <% end %>
+          hit = false
+          if @unit != nil
+            session[:before].each do |sid|
+              if u.id == sid && u.x_plot == @unit.x_plot && u.y_plot == @unit.y_plot
+                hit = true
+              end
+              break if hit
+            end
+          end
+         end if u.x_plot.to_i + u.y_plot.to_i == 0 %>
+        <option value="<%= u.id %>" <%= (hit ? "selected" : "")%> >
+          <%= h (u.building.to_s != "" ? "#{u.building}-#{u.unit_type}" : "#{u.unit_type}") %>
+		    </option>
+
 	  </select>
-	  
+
 	  <br/>
 	  <p>Selected Units</p>
 	    <a id="reset" class="btn btn-small" style="margin-right:10px">Reset</a>
