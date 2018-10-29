@@ -84,7 +84,6 @@ class Credential < ApplicationRecord
           unit.available_date = u[5]
           unit.market_rent = u[6]
           unit.effective_rent = u[6]
-          unit.manual_override = false
           unit.save(validate: false)
         else
           dup = Unit.find_by(community_id: community_id, provider_unit_id: u[0])
