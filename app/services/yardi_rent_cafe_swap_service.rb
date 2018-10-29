@@ -25,7 +25,10 @@ class YardiRentCafeSwapService < BaseService
         if response[0]["Error"].nil?
           response.each do |r|
             begin
-
+              dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])
+              if dup.present?
+                dup.destroy
+              end
               unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"]).first
               if unit.present?
                 # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider
@@ -50,6 +53,10 @@ class YardiRentCafeSwapService < BaseService
                 end
                 unit.save
               else
+                dup = Unit.find_by(community_id: credentials.community_id,provider_floorplan_id: r["ApartmentId"])
+                if dup.present?
+                  dup.destroy
+                end
                 # unit = Unit.where(community_id: credentials.community_id).first
                 unit = Unit.new
                 unit.community_id = credentials.community_id
@@ -120,6 +127,10 @@ class YardiRentCafeSwapService < BaseService
         response = JSON.parse(response.body)
         if response[0]["Error"].nil?
           response.each do |r|
+            dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])
+            if dup.present?
+              dup.destroy
+            end
             fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"]).first
             if fp.present?
               fp.provider = "yardirentcafe_new"
@@ -139,6 +150,11 @@ class YardiRentCafeSwapService < BaseService
               fp.deposit = r["MinimumDeposit"]
               fp.save(validate: false)
             else
+              dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])
+              if dup.present?
+                dup.destroy
+              end
+
               # fp = Floorplan.where(community_id: credentials.community_id).first
               fp = Floorplan.new
               fp.community_id = credentials.community_id

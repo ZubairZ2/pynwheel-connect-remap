@@ -226,26 +226,27 @@ function readURL(input) {
       }
     }
 }
-// function readSecondaryURL(input) {
-//
-//     if (input.files && input.files[0]) {
-//         if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
-//           var reader = new FileReader();
-//
-//           reader.onload = function (e) {
-//               $('#preview-secondary-image').attr('src', e.target.result);
-//               $('#preview-secondary-image').parent().attr('href', e.target.result);
-//           }
-//
-//           reader.readAsDataURL(input.files[0]);
-//       }
-//       else{
-//         $(input).val('');
-//         $('#image-upload-warning').modal('show');
-//         //console.log($(input).val());
-//       }
-//     }
-// }
+function readSecondaryURL(input) {
+
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#preview-secondary-image').attr('src', e.target.result);
+              $('#preview-secondary-image').parent().attr('href', e.target.result);
+          }
+
+          reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $(input).val('');
+        $('#image-upload-warning').modal('show');
+        //console.log($(input).val());
+      }
+    }
+}
+
 // preview image function including svg
 function readImageIncludingSVG(input) {  
     if (input.files && input.files[0]) {
@@ -309,6 +310,12 @@ function selectDataProvider(data_provider){
         case "spreadsheet":
             showFileFields();
             break;
+        case "resman":
+            showResmanFields();
+            break;
+        case "zaremba":
+            showZarembaFields();
+            break;
     }
 }
 
@@ -326,7 +333,35 @@ function showPsiFields(){
     $('#data-connection-buttons').show();
     $('#data-replace-update-buttons').hide();
 }
+function showZarembaFields(){
+    $('.credential_fields').hide();
+    //removeValidationsClass();
+    $('#zaremba_username').show();
+    //$('#community_credential_attributes_url').addClass("validate[required]");
+    $('#zaremba_password').show();
+    //$('#community_credential_attributes_password').addClass("validate[required]");
+    $('#zaremba_filename').show();
+    $('#zaremba_property_id').show();
+    //$('#community_credential_attributes_username').addClass("validate[required]");
+    //$('#community_credential_attributes_property_id').addClass("validate[required]");
+    $('#data-connection-buttons').show();
+    $('#data-replace-update-buttons').hide();
+}
+function showResmanFields(){
+    $('.credential_fields').hide();
+    //removeValidationsClass();
+    // $('#resman_apikey').show();
+    // //$('#community_credential_attributes_url').addClass("validate[required]");
+    // $('#resman_partner_id').show();
+    //$('#community_credential_attributes_password').addClass("validate[required]");
+    $('#resman_account_id').show();
+    //$('#community_credential_attributes_username').addClass("validate[required]");
+    $('#resman_property_id').show();
+    //$('#community_credential_attributes_property_id').addClass("validate[required]");
+    $('#data-connection-buttons').show();
 
+    $('#data-replace-update-buttons').hide();
+}
 function showYardiFields(){
     $('.credential_fields').hide();
     //removeValidationsClass();

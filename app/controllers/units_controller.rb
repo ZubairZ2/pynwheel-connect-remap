@@ -63,7 +63,7 @@ class UnitsController < ApplicationController
   def set_manually_updated_column
     # @unit.update_attribute(:manually_updated, true)
     if @unit.sold
-      @unit.update_attributes(availability: "Occupied",available_date: Date.today-1)
+      @unit.update_attributes(availability: "Occupied",available_date: '')
     end
     if params[:unit][:available] == 'true'
 
@@ -190,12 +190,13 @@ class UnitsController < ApplicationController
   end
   
   def set_image
-    units = @community.units.where(id: params[:unit_ids])
-    units.each do |unit|
-      units.update(image: params[:image_file],manually_updated: true)
-    end
-    flash[:notice] = "Image is uploaded for units successfully."
-    redirect_to :back
+    UploadImageForUnit.perform_async @community, params[:unit_ids], params[:image_file]
+    # units = @community.units.where(id: params[:unit_ids])
+    # units.each do |unit|
+    #   units.update(image: params[:image_file],manually_updated: true)
+    # end
+    # flash[:notice] = "Image is uploaded for units successfully."
+    redirect_to :back, notice: "Image is uploaded for units successfully."
   end
   def check_community
     unless current_user.is_super_admin?

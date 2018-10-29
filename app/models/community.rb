@@ -136,6 +136,10 @@ class Community < ApplicationRecord
         import_realpage_svc_data
       when "yardi"
         select_yardi_provider
+      when "resman"
+        select_resman_provider
+      when "zaremba"
+        import_zaremba_provider
     end
   end
 
@@ -149,7 +153,12 @@ class Community < ApplicationRecord
       swap_realpage_svc_data
     when "yardi"
       select_swap_yardi_provider
+    when "resman"
+      swap_resman_data
+    when "zaremba"
+      swap_zaremba_data
     end
+
   end
 
   def select_yardi_provider
@@ -165,8 +174,20 @@ class Community < ApplicationRecord
     ImportPsiDataJob.perform_async credential.attributes.to_json
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
   end
+
+  def import_zaremba_provider
+    ImportZarembaStaticDataJob.perform_async credential.attributes.to_json
+    ImportZarembaDataJob.perform_async credential.attributes.to_json
+  end
+
   def swap_psi_data
     ImportPsiSwapDataJob.perform_async credential.attributes.to_json
+  end
+  def swap_resman_data
+    ImportResmanSwapDataJob.perform_async credential.attributes.to_json
+  end
+  def swap_zaremba_data
+    ImportZarembaSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardirentcafe_data
       #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
@@ -204,7 +225,11 @@ class Community < ApplicationRecord
     ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
     ImportRealpageSvcStaticDataJob.perform_async credential.attributes.to_json
   end
+  def select_resman_provider
 
+    ImportResmanStaticDataJob.perform_async credential.attributes.to_json
+    ImportResmanDataJob.perform_async credential.attributes.to_json
+  end
   def swap_realpage_svc_data
     ImportRealpageSvcSwapDataJob.perform_async credential.attributes.to_json
   end
@@ -227,12 +252,25 @@ class Community < ApplicationRecord
         connect_to_realpagesvc
       when "yardi"
         connect_to_yardi
+      when "resman"
+        connect_to_resman
+      when "zaremba"
+        connect_to_zaremba
     end
   end
 
   def connect_to_psi
     psi_connection_service = PsiConnectionService.new(credential.attributes)
     psi_connection_service.perform
+  end
+  def connect_to_resman
+    resman_connection_service = ResmanConnectionService.new(credential.attributes)
+    resman_connection_service.perform
+  end
+
+  def connect_to_zaremba
+    zaremba_connection_service = ZarembaConnectionService.new(credential.attributes)
+    zaremba_connection_service.perform
   end
 
   def connect_to_yardirentcafe
@@ -305,13 +343,40 @@ class Community < ApplicationRecord
 
   def email_favorites(params)
     email_to = params[:favorites][:email_to]
-    favorites = populate_favorites(params[:favorites][:items])
+    result = populate_favorites(params[:favorites][:items])
+    favorites = result[0]
+    units = result[1] 
+    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    puts params
+    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS FAVOURITES%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    puts params[:favorites]
+    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS ITEMS 1%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    params[:favorites][:items]
+    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS ITEMS 2%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    puts params[:favorites]['items']
+    puts "--"*50
+
+    params[:favorites][:items].each do |item|
+      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", item['unit_id']
+      # if item['unit_id'].present?
+      #   u = Unit.find item['unit_id']
+      #   if u.present?
+      #     units << u
+      #   else
+      #     u = Unit.new
+      #     units << u
+      #   end
+      #   u = Unit.new
+      #   units << u
+      # end
+
+    end
     email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil 
     email_from = self.favorite_setting.present? ? self.favorite_setting.email_from : nil
     email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     ios = params[:favorites][:device_type].present? && params[:favorites][:device_type] == "iOS" ? true : false
     if favorites.present?
-      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,ios,self).deliver
+      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
       return true
     else
       return false
@@ -330,11 +395,29 @@ class Community < ApplicationRecord
 
   def populate_favorites(items_objs)
     favorites = []
+    units = Hash.new
     items_objs.each do |item|
-      favorite = item['type'].classify.constantize.where(id: item["id"])
+      puts "populate_favorites 11"*50
+      puts item[:type]
+      puts "populate_favorites 22"*50
+      puts item['type']
+      favorite = item[:type].classify.constantize.where(id: item[:id])
       favorites << favorite.first if favorite.present?
+      if item[:type] == 'floorplan'
+        units[item[:id].to_s] = item[:unit_id]
+      #   u = Unit.find item['unit_id']
+      #   if u.present?
+      #     units << u
+      #   else
+      #     u = Unit.new
+      #     units << u
+      #   end
+      # else
+      #   u = Unit.new
+      #   units << u
+      end
     end
-    return favorites
+    return favorites , units
   end
   def validate_page_position
     positions = Imagepage.where(community_id: self.id).map(&:position) +  Webpage.where(community_id: self.id).map(&:position)

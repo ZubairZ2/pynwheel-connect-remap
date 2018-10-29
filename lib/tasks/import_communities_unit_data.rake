@@ -22,6 +22,8 @@ namespace :import do
           when "yardi"
             #community.credential.url.include?("20") ? (Yardi2Service.new(community.credential.attributes).perform) : (Yardi4Service.new(community.credential.attributes).perform)
             community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
+          when "resman"
+            ImportResmanDataJob.perform_async community.credential.attributes.to_json
         end    
       end
       puts 'Now waiting for 2 min for 3 background jobs to complete.'

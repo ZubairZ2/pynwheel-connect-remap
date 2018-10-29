@@ -23,18 +23,38 @@
                       %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                         %tr
                           %td{:width => "400"}
-                            %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                            %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :width => "100%"}
                               %tr
-                                %td
-                                  %div{:style => "width:100%; height:320px; overflow:hidden;"}
-                                    %img{:alt => "", :src => "#{floorplan.image.url}", :width => "300", :height => "250", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+                                - puts '+++++++++++++++++++++++++++++', units.class
+                                - puts '+++++++++++++++++++++++++++++', units.to_i
+                                - unit = Unit.find units.to_i
+                                - puts "ppppp"*40, floorplan.id, '====', unit.id
+                                - if unit.present?
+                                  - if unit.secondary_image.present? || floorplan.secondary_image.present?
+                                    %td{:style => "width:50%;"}
+                                      %div{:style => "width:100%; overflow:hidden;"}
+                                        - if floorplan.secondary_image.present? || unit.secondary_image.present?
+                                          %img{:alt => "", :src => "#{unit.secondary_image.present? ? unit.secondary_image.url : floorplan.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                    %td{:style => "width:50%;"}
+                                      %div{:style => "width:100%; overflow:hidden;"}
+                                        - if floorplan.image.present? || unit.image.present?
+                                          %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : floorplan.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                  - else
+                                    %td
+                                      %div{:style => "width:100%; overflow:hidden;"}
+                                        - if unit.image.present? || floorplan.image.present?
+                                          %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : floorplan.image.url}", :width => "320", :height => "250", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
                           %td{:valign => "top", :width => "250"}
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#878789;", :width => "100%"}
                               %tr
                                 %td
                                   %p{:style => "color:#fff;"} Details
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{number_with_delimiter(floorplan.square_feet.to_i, :delimiter => ',')} SF
+                                    - unit = Unit.find units.to_i
+                                    - if unit.present? && unit.square_feet.present?
+                                      %b #{number_with_delimiter(unit.square_feet.to_i, :delimiter => ',')} SF
+                                    - else
+                                      %b #{number_with_delimiter(floorplan.square_feet.to_i, :delimiter => ',')} SF
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                     %b #{floorplan.bedrooms} #{"bed".pluralize(floorplan.bedrooms.to_i)}
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
