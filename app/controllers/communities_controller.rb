@@ -34,19 +34,37 @@ class CommunitiesController < ApplicationController
   def edit
     add_breadcrumb "Edit Community", edit_company_community_path(current_company,@community)  
   end
-
   def update
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
     respond_to do |format|
-      if @community.update(community_params)
-        @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
-        format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
-        format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
-      else
-        flash[:error] = @community.errors.full_messages.join(',')
-        format.html { render :edit }
-        message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
-        format.js {render js: "$('#flash-message').html('#{message}')"}
+
+      if params[:spreadsheet_method] == '2'
+        if @community.update(community_params)
+          @community.credential.swap_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
+          format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
+          format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
+        else
+          flash[:error] = @community.errors.full_messages.join(',')
+          format.html { render :edit }
+          message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
+          format.js {render js: "$('#flash-message').html('#{message}')"}
+        end
+
+      elsif params[:spreadsheet_method] == '0' || params[:spreadsheet_method] == '1'
+        if params[:spreadsheet_method] == '1'
+          current_community.units.destroy_all
+          current_community.floorplans.destroy_all
+        end
+        if @community.update(community_params)
+          @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
+          format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
+          format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
+        else
+          flash[:error] = @community.errors.full_messages.join(',')
+          format.html { render :edit }
+          message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
+          format.js {render js: "$('#flash-message').html('#{message}')"}
+        end
       end
     end
   end
@@ -191,6 +209,9 @@ class CommunitiesController < ApplicationController
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
+      if @community.credential.data_provider == 'spreadsheet'
+
+      end
       if current_community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Your data will be imported shortly.Refresh your page after few minutes."
         redirect_to community_floorplans_path(:community_id=>@community.id)
