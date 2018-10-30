@@ -30,20 +30,33 @@
                                 - unit = Unit.find units.to_i
                                 - puts "ppppp"*40, floorplan.id, '====', unit.id
                                 - if unit.present?
-                                  - if unit.secondary_image.present? || floorplan.secondary_image.present?
+                                  - if unit.secondary_image.present?
                                     %td{:style => "width:50%;"}
                                       %div{:style => "width:100%; overflow:hidden;"}
-                                        - if floorplan.secondary_image.present? || unit.secondary_image.present?
-                                          %img{:alt => "", :src => "#{unit.secondary_image.present? ? unit.secondary_image.url : floorplan.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                        - if unit.secondary_image.present?
+                                          %img{:alt => "", :src => "#{unit.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
                                     %td{:style => "width:50%;"}
                                       %div{:style => "width:100%; overflow:hidden;"}
-                                        - if floorplan.image.present? || unit.image.present?
-                                          %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : floorplan.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
-                                  - else
+                                        - if unit.image.present?
+                                          %img{:alt => "", :src => "#{unit.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                  - elsif unit.image.present?
                                     %td
                                       %div{:style => "width:100%; overflow:hidden;"}
-                                        - if unit.image.present? || floorplan.image.present?
-                                          %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : floorplan.image.url}", :width => "320", :height => "250", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+                                        %img{:alt => "", :src => "#{ unit.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+                                  - elsif unit.floorplan.secondary_image.present?
+                                    %td{:style => "width:50%;"}
+                                      %div{:style => "width:100%; overflow:hidden;"}
+                                        -if unit.floorplan.secondary_image.present?
+                                          %img{:alt => "", :src => "#{unit.floorplan.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                    %td{:style => "width:50%;"}
+                                      %div{:style => "width:100%; overflow:hidden;"}
+                                        - if unit.floorplan.image.present?
+                                          %img{:alt => "", :src => "#{unit.floorplan.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                  - elsif unit.floorplan.image.present?
+                                    %td
+                                      %div{:style => "width:100%; overflow:hidden;"}
+                                        %img{:alt => "", :src => "#{ unit.floorplan.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+
                           %td{:valign => "top", :width => "250"}
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#878789;", :width => "100%"}
                               %tr

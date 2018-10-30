@@ -239,10 +239,10 @@
   / End Panel left Side
   :javascript
      $(document).ready(function(){
-      $('.wysihtml5').each(function(i, elem) {
-        $(elem).wysihtml5();
-      });
 
+      $('.wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
+      });
     })
    
     $('#select_all_units_for_manual_override').change(function(){

@@ -25,29 +25,54 @@
                           %td{:width => "400"}
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :width => "100%"}
                               %tr
-                                - if unit.secondary_image.present? || unit.floorplan.secondary_image.present?
+                                - if unit.secondary_image.present?
                                   %td{:style => "width:50%;"}
                                     %div{:style => "width:100%; overflow:hidden;"}
                                       - if @ios.present?
-                                        %img{:alt => "", :src => "#{unit.floorplan.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;" , :title => ""}/
+                                        %img{:alt => "", :src => "#{unit.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;" , :title => ""}/
                                       - else
-                                        -if unit.secondary_image.present? || unit.floorplan.secondary_image.present?
-                                          %img{:alt => "", :src => "#{unit.secondary_image.present? ? unit.secondary_image.url : unit.floorplan.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                        -if unit.secondary_image.present?
+                                          %img{:alt => "", :src => "#{unit.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                  %td{:style => "width:50%;"}
+                                    %div{:style => "width:100%; overflow:hidden;"}
+                                      - if @ios.present?
+                                        %img{:alt => "", :src => "#{unit.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                      - else
+                                        - if unit.image.present?
+                                          %img{:alt => "", :src => "#{unit.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+
+                                - elsif unit.image.present?
+                                  %td
+                                    %div{:style => "width:100%; overflow:hidden;"}
+                                      - if @ios.present?
+                                        %img{:alt => "", :src => "#{unit.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+                                      - else
+                                        %img{:alt => "", :src => "#{ unit.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+
+                                - elsif unit.floorplan.secondary_image.present?
+                                  %td{:style => "width:50%;"}
+                                    %div{:style => "width:100%; overflow:hidden;"}
+                                      - if @ios.present?
+                                        %img{:alt => "", :src => "#{unit.floorplan.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;" , :title => ""}/
+                                      - else
+                                        -if unit.floorplan.secondary_image.present?
+                                          %img{:alt => "", :src => "#{unit.floorplan.secondary_image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
                                   %td{:style => "width:50%;"}
                                     %div{:style => "width:100%; overflow:hidden;"}
                                       - if @ios.present?
                                         %img{:alt => "", :src => "#{unit.floorplan.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
                                       - else
-                                        - if unit.image.present? || unit.floorplan.image.present?
-                                          %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : unit.floorplan.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
-
-                                - else
+                                        - if unit.floorplan.image.present?
+                                          %img{:alt => "", :src => "#{unit.floorplan.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
+                                - elsif unit.floorplan.image.present?
                                   %td
                                     %div{:style => "width:100%; overflow:hidden;"}
                                       - if @ios.present?
                                         %img{:alt => "", :src => "#{unit.floorplan.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
                                       - else
-                                        %img{:alt => "", :src => "#{unit.image.present? ? unit.image.url : unit.floorplan.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+                                        %img{:alt => "", :src => "#{ unit.floorplan.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+
+
                           %td{:valign => "top", :width => "250"}
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#878789;", :width => "100%"}
                               %tr

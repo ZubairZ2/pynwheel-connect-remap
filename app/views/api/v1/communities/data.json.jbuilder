@@ -336,9 +336,14 @@ json.apartments do
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.floorplan_description floorplan.description.present? ? floorplan.description : nil
       json.square_feet unit.square_feet.present? ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
-      json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : (floorplan.present? && floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil)
+      if unit.standard_image_url.present? || unit.secondary_image.present?
+        json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : nil
+        json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : nil
+      else
+        json.image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
+        json.secondary_image floorplan.present? ? (floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil) : nil
+      end
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-      json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : (floorplan.present? && floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil)
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
       if unit.amenities.plotted_amenities.size > 0
