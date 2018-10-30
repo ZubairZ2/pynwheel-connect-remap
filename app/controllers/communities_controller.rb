@@ -65,6 +65,17 @@ class CommunitiesController < ApplicationController
           message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
+      else
+        if @community.update(community_params)
+          @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
+          format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
+          format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
+        else
+          flash[:error] = @community.errors.full_messages.join(',')
+          format.html { render :edit }
+          message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
+          format.js {render js: "$('#flash-message').html('#{message}')"}
+        end
       end
     end
   end
