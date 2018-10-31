@@ -340,22 +340,22 @@
               - if @community.favorite_setting.present? and @community.favorite_setting.ebrochure_menu_buttons.size > 0                          
                 %tr
                   %td{:style=>"padding: 13px 15px 0 15px;"}
-                    %table{:style=>"width:100%;"}
+                    %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :width => "100%"}
                       %tr
-                        %td{:style => " background-color:#253339; margin-right:10px;"}
+                        -#%td{:style => " background-color:#253339; margin-right:10px;"}
                           -# @community.favorite_setting.ebrochure_menu_buttons.each do |button|
-                          %span{:style => " background-color:#253339; margin-right:10px; display:inline-block; height:40px; line-height:40px; "}
-                            %a{:href => "#{'#'}",:style=>" padding: 9px 12px; mso-padding-alt: 9px 12px; display: block;text-decoration: none;text-align: center; color: #ffffff; background: #253339; mso-line-height-rule: exactly; line-height:40px; height:40px "}
-                              = "Button 1"
-                          %span{:style => " background-color:#253339; margin-right:10px; display:inline-block; height:40px; line-height:40px; "}
-                            %a{:href => "#{'#'}",:style=>" padding: 9px 12px; mso-padding-alt: 9px 12px; display: block;text-decoration: none;text-align: center; color: #ffffff; background: #253339; mso-line-height-rule: exactly; line-height:40px; height:40px "}
-                              = "Button 2"
-                          %span{:style => " background-color:#253339; margin-right:10px; display:inline-block; height:40px; line-height:40px; "}
-                            %a{:href => "#{'#'}",:style=>" padding: 9px 12px; mso-padding-alt: 9px 12px; display: block;text-decoration: none;text-align: center; color: #ffffff; background: #253339; mso-line-height-rule: exactly; line-height:40px; height:40px "}
-                              = "Button 3"
-                          %span{:style => " background-color:#253339; margin-right:10px; display:inline-block; height:40px; line-height:40px; "}
-                            %a{:href => "#{'#'}",:style=>" padding: 9px 12px; mso-padding-alt: 9px 12px; display: block;text-decoration: none;text-align: center; color: #ffffff; background: #253339; mso-line-height-rule: exactly; line-height:40px; height:40px "}
-                              = "Button4"
+                        %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
+                          %a{:href => "#{'#'}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
+                            = "Button 1"
+                        %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
+                          %a{:href => "#{'#'}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
+                            = "Button 2"
+                        %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
+                          %a{:href => "#{'#'}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
+                            = "Button 3"
+                        %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
+                          %a{:href => "#{'#'}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
+                            = "Button4"
               %tr
                 %td{:align => "center", :valign => "top"}
                   %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#000000;", :width => "100%"}
