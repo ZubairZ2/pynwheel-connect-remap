@@ -342,20 +342,11 @@
                   %td{:style=>"padding: 13px 15px 0 15px;"}
                     %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :width => "100%"}
                       %tr
-                        -#%td{:style => " background-color:#253339; margin-right:10px;"}
-                          -# @community.favorite_setting.ebrochure_menu_buttons.each do |button|
-                        %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
-                          %a{:href => "#{'#'}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
-                            = "Button 1"
-                        %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
-                          %a{:href => "#{'#'}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
-                            = "Button 2"
-                        %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
-                          %a{:href => "#{'#'}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
-                            = "Button 3"
-                        %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
-                          %a{:href => "#{'#'}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
-                            = "Button4"
+                        -#-%td{:style => " background-color:#253339; margin-right:10px;"}
+                        - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
+                          %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
+                            %a{:href => "#{button.url}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
+                              = button.name
               %tr
                 %td{:align => "center", :valign => "top"}
                   %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#000000;", :width => "100%"}
