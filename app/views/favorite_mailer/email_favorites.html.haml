@@ -342,10 +342,11 @@
                   %td{:style=>"padding: 13px 15px 0 15px;"}
                     %table{:style=>"width:100%;"}
                       %tr
-                      - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
                         %td{:style => " background-color:#253339; margin-right:10px;"}
-                          %a{:href => "#{button.url}",:style=>" padding: 9px 12px; mso-padding-alt: 9px 12px; display: block;text-decoration: none;text-align: center; color: #ffffff; background: #253339; mso-line-height-rule: exactly; line-height:22px; "}
-                            = button.name
+                          - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
+                            %div{:style => " background-color:#253339; margin-right:10px;"}
+                              %a{:href => "#{button.url}",:style=>" padding: 9px 12px; mso-padding-alt: 9px 12px; display: block;text-decoration: none;text-align: center; color: #ffffff; background: #253339; mso-line-height-rule: exactly; line-height:40px; height:40px "}
+                                = button.name
               %tr
                 %td{:align => "center", :valign => "top"}
                   %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#000000;", :width => "100%"}
