@@ -25,10 +25,6 @@ class YardiRentCafeSwapService < BaseService
         if response[0]["Error"].nil?
           response.each do |r|
             begin
-              dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])
-              if dup.present?
-                dup.destroy
-              end
               unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"]).first
               if unit.present?
                 # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider

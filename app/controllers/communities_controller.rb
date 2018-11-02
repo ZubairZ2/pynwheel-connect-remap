@@ -220,9 +220,6 @@ class CommunitiesController < ApplicationController
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
-      if @community.credential.data_provider == 'spreadsheet'
-
-      end
       if current_community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Your data will be imported shortly.Refresh your page after few minutes."
         redirect_to community_floorplans_path(:community_id=>@community.id)
