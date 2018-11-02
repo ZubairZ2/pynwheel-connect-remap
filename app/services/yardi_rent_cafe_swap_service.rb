@@ -49,7 +49,7 @@ class YardiRentCafeSwapService < BaseService
                 end
                 unit.save
               else
-                dup = Unit.find_by(community_id: credentials.community_id,provider_floorplan_id: r["ApartmentId"])
+                dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])
                 if dup.present?
                   dup.destroy
                 end

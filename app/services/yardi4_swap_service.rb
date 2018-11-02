@@ -103,6 +103,10 @@ class Yardi4SwapService < BaseService
         puts '++++++++++++++++++1', unit.errors.full_messages.join(',')
       else
         # unit = Unit.where(community_id: credentials.community_id).first
+        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue])
+        if dup.present?
+          dup.destroy
+        end
         unit = Unit.new
         unit.community_id = credentials.community_id
         unit.provider = "yardi_new"
