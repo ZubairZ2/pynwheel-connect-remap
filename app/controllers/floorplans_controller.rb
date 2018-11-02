@@ -18,6 +18,7 @@ class FloorplansController < ApplicationController
 
   def create
     @floorplan = @community.floorplans.new(floorplan_params)
+    @floorplan.provider = "manually"
     if @floorplan.save
       flash[:notice] = "Floor plan created successfully."
       redirect_to community_floorplans_path(:community_id=>@community.id)

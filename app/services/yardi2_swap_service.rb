@@ -134,7 +134,7 @@ class Yardi2SwapService < BaseService
     end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
-      unless d.provider == "yardi_new"
+      unless d.provider == "yardi_new" || d.provider == "manually"
         d.destroy
       end
     end
@@ -244,7 +244,7 @@ class Yardi2SwapService < BaseService
     end
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
-      unless d.provider == "yardi_new"
+      unless d.provider == "yardi_new" || d.provider == "manually"
         d.destroy
       end
     end

@@ -18,6 +18,7 @@ class UnitsController < ApplicationController
 
   def create
     @unit = @community.units.new(unit_params)
+    @unit.provider = "manually"
     if @unit.save
       flash[:notice] = "Unit created successfully."
       redirect_to community_units_path(:community_id=>@community.id)

@@ -117,7 +117,7 @@ class PsiSwapService < BaseService
     end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
-      unless d.provider == "psi_new"
+      unless d.provider == "psi_new" || d.provider == "manually"
         d.destroy
       end
     end
@@ -219,7 +219,7 @@ class PsiSwapService < BaseService
     end
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
-      unless d.provider == "psi_new"
+      unless d.provider == "psi_new" || d.provider == "manually"
         d.destroy
       end
     end

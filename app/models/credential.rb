@@ -108,7 +108,7 @@ class Credential < ApplicationRecord
     end
     unit = Unit.where(community_id: community_id)
     unit.each do |d|
-      unless d.provider == "spreadsheet_new"
+      unless d.provider == "spreadsheet_new" || d.provider == "manually"
         d.destroy
       end
     end
@@ -151,7 +151,7 @@ class Credential < ApplicationRecord
     end
     fp = Floorplan.where(community_id: community_id)
     fp.each do |d|
-      unless d.provider == "spreadsheet_new"
+      unless d.provider == "spreadsheet_new" || d.provider == "manually"
         d.destroy
       end
     end

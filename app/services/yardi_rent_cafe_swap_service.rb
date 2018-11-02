@@ -90,7 +90,7 @@ class YardiRentCafeSwapService < BaseService
           end
           unit = Unit.where(community_id: credentials.community_id)
           unit.each do |d|
-            unless d.provider == "yardirentcafe_new"
+            unless d.provider == "yardirentcafe_new" || d.provider == "manually"
               d.destroy
             end
           end
@@ -179,7 +179,7 @@ class YardiRentCafeSwapService < BaseService
           end
           fp = Floorplan.where(community_id: credentials.community_id)
           fp.each do |d|
-            unless d.provider == "yardirentcafe_new"
+            unless d.provider == "yardirentcafe_new" || d.provider == "manually"
               d.destroy
             end
           end

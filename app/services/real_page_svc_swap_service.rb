@@ -100,7 +100,7 @@ class RealPageSvcSwapService < BaseService
           end
           fp = Floorplan.where(community_id: credentials.community_id)
           fp.each do |d|
-            unless d.provider == "realpagesvc_new"
+            unless d.provider == "realpagesvc_new" || d.provider == "manually"
               d.destroy
             end
           end
@@ -314,7 +314,7 @@ class RealPageSvcSwapService < BaseService
           end
           unit = Unit.where(community_id: credentials.community_id)
           unit.each do |d|
-            unless d.provider == "realpagesvc_new"
+            unless d.provider == "realpagesvc_new" || d.provider == "manually"
               d.destroy
             end
           end

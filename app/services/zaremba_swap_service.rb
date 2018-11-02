@@ -111,7 +111,7 @@ class ZarembaSwapService < BaseService
     end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
-      unless d.provider == "zaremba_new"
+      unless d.provider == "zaremba_new" || d.provider == "manually"
         d.destroy
       end
     end
@@ -203,7 +203,7 @@ class ZarembaSwapService < BaseService
 
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
-      unless d.provider == "zaremba_new"
+      unless d.provider == "zaremba_new" || d.provider == "manually"
         d.destroy
       end
     end
@@ -293,7 +293,7 @@ class ZarembaSwapService < BaseService
 
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
-      unless d.provider == "zaremba_new"
+      unless d.provider == "zaremba_new" || d.provider == "manually"
         d.destroy
       end
     end
