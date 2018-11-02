@@ -13,4 +13,10 @@ module PynwheelCms
     # -- all .rb files in that directory are automatically loaded.
     config.active_job.queue_adapter = :sucker_punch
   end
+  config.middleware.insert_before 0, Rack::Cors do
+    allow do
+      origins '*'
+      resource '*', headers: :any, methods: [:get, :post, :options]
+    end
+  end
 end
