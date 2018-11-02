@@ -151,7 +151,7 @@ class Credential < ApplicationRecord
     end
     fp = Floorplan.where(community_id: community_id)
     fp.each do |d|
-      unless d.provider == "spreadsheet_new" || d.provider == "manually"
+      unless d.provider == "spreadsheet_new"
         d.destroy
       end
     end

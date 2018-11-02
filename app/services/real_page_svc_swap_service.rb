@@ -100,7 +100,7 @@ class RealPageSvcSwapService < BaseService
           end
           fp = Floorplan.where(community_id: credentials.community_id)
           fp.each do |d|
-            unless d.provider == "realpagesvc_new" || d.provider == "manually"
+            unless d.provider == "realpagesvc_new"
               d.destroy
             end
           end
