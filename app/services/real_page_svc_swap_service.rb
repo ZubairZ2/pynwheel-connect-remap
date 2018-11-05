@@ -177,7 +177,6 @@ class RealPageSvcSwapService < BaseService
                 unit.provider = "realpagesvc_new"
                 unit.provider_unit_id = u[:UnitID]
                 unit.property_id = u[:SiteID]
-                unit.provider_unit_id = u[:UnitID]
                 unit.unit_type = u[:UnitNumber]
                 unit.floorplan_id = u[:FloorplanID]
                 unit.market_rent = u[:BaseRentAmount]
