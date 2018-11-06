@@ -76,9 +76,9 @@ class FloorplansController < ApplicationController
 
   def add_description
     description = params[:description].to_s
-    description = description.split('"')
+    desc = description[2..description.length-3]
 
-    @community.floorplans.where(id: params[:floorplan_ids]).update_all(description:  description[1])
+    @community.floorplans.where(id: params[:floorplan_ids]).update_all(description:  desc)
     flash[:notice] = "Description is updated for units successfully."
     redirect_to :back
   end

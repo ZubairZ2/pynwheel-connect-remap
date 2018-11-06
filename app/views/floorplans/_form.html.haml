@@ -46,6 +46,12 @@
     = f.label :manual_override, "No"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Description
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Primary Image
     %span
       Upload primary image of this
@@ -74,3 +80,10 @@
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :secondary_image
+
+:javascript
+  $(document).ready(function(){
+      $('.wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
+      });
+  })
