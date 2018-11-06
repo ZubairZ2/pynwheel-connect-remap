@@ -85,7 +85,7 @@
 :javascript
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {
-        $(elem).wysihtml5();
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
   })
   $('#select_all_floorplan_for_description').change(function(){
