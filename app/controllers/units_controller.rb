@@ -34,9 +34,14 @@ class UnitsController < ApplicationController
   end
 
   def update
+
     respond_to do |format|
       if @unit.manual_override
+        if params[:unit][:description].present?
+          params[:unit][:description] = add_padding_description params[:unit][:description]
+        end
         if @unit.update(unit_params)
+
           set_manually_updated_column
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           format.json { respond_with_bip(@unit) }
@@ -111,7 +116,7 @@ class UnitsController < ApplicationController
   end
 
   def remove_plot
-    @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id) 
+    @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id)
     @unit.x_plot = 0
     @unit.y_plot = 0
     if @unit.save(validate: false)
@@ -182,29 +187,52 @@ class UnitsController < ApplicationController
     redirect_to :back
   end
   def add_description
-    str = ""
+
     description = params[:description].to_s
     desc = description[2..description.length-3]
-    ds = desc.split('<ul>') # Adding padding for <ul>
-    ds.each do |d|
-      unless d == ""
-        d = "<ul style='padding-left: 15px;'>" + d
-        str = str + d
-      end
-    end
-    str2 = ""
-    ds2 = str.split('<ol>') # Adding padding for <ol>
-    ds2.each do |d2|
-      unless d2 == ""
-        d2 = "<ol style='padding-left: 15px;'>" + d2
-        str2 = str2 + d2
-      end
-    end
+    str2 = add_padding_description desc
+
     @community.units.where(id: params[:unit_ids]).update_all(description:  str2,manually_updated: true)
     flash[:notice] = "description is updated for units successfully."
     redirect_to :back
   end
-  
+
+  def add_padding_description(desc)
+    str = ""
+    ds = desc.split('<ul>') # Adding padding for <ul>
+    if ds.count > 1
+      ds.each do |d|
+        unless d == ""
+          if d.include?('</ul>')
+            d = "<ul style='padding-left: 18px;'>" + d
+            str = str + d
+          else
+            str = str + d
+          end
+        end
+      end
+    else
+      str = desc
+    end
+    str2 = ""
+    ds2 = str.split('<ol>') # Adding padding for <ol>
+    if ds2.count > 1
+      ds2.each do |d2|
+        unless d2 == ""
+          if d2.include?('</ol>')
+            d2 = "<ol style='padding-left: 18px;'>" + d2
+            str2 = str2 + d2
+          else
+            str = str + d2
+          end
+        end
+      end
+    else
+      str2 = str
+    end
+    str2
+  end
+
   def set_image
     UploadImageForUnit.perform_async @community, params[:unit_ids], params[:image_file]
     # units = @community.units.where(id: params[:unit_ids])

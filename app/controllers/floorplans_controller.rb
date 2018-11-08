@@ -54,6 +54,9 @@ class FloorplansController < ApplicationController
 
   def update
     respond_to do |format|
+      if params[:floorplan][:description].present?
+        params[:floorplan][:description] = add_padding_description params[:floorplan][:description]
+      end
       if @floorplan.update(floorplan_params)
         format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
         message = '<div class="alert alert-success">'+@floorplan.name+' image uploaded successfully.</div>'
@@ -77,11 +80,48 @@ class FloorplansController < ApplicationController
   def add_description
     description = params[:description].to_s
     desc = description[2..description.length-3]
-
-    @community.floorplans.where(id: params[:floorplan_ids]).update_all(description:  desc)
+    str2 = add_padding_description desc
+    @community.floorplans.where(id: params[:floorplan_ids]).update_all(description:  str2)
     flash[:notice] = "Description is updated for units successfully."
     redirect_to :back
   end
+
+  def add_padding_description(desc)
+    str = ""
+    ds = desc.split('<ul>') # Adding padding for <ul>
+    if ds.count > 1
+      ds.each do |d|
+        unless d == ""
+          if d.include?('</ul>')
+            d = "<ul style='padding-left: 18px;'>" + d
+            str = str + d
+          else
+            str = str + d
+          end
+        end
+      end
+    else
+      str = desc
+    end
+    str2 = ""
+    ds2 = str.split('<ol>') # Adding padding for <ol>
+    if ds2.count > 1
+      ds2.each do |d2|
+        unless d2 == ""
+          if d2.include?('</ol>')
+            d2 = "<ol style='padding-left: 18px;'>" + d2
+            str2 = str2 + d2
+          else
+            str = str + d2
+          end
+        end
+      end
+    else
+      str2 = str
+    end
+    str2
+  end
+
   private
 
   def set_floorplan
