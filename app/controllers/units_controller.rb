@@ -182,10 +182,25 @@ class UnitsController < ApplicationController
     redirect_to :back
   end
   def add_description
+    str = ""
     description = params[:description].to_s
     desc = description[2..description.length-3]
-
-    @community.units.where(id: params[:unit_ids]).update_all(description:  desc,manually_updated: true)
+    ds = desc.split('<ul>') # Adding padding for <ul>
+    ds.each do |d|
+      unless d == ""
+        d = "<ul style='padding-left: 15px;'>" + d
+        str = str + d
+      end
+    end
+    str2 = ""
+    ds2 = str.split('<ol>') # Adding padding for <ol>
+    ds2.each do |d2|
+      unless d2 == ""
+        d2 = "<ol style='padding-left: 15px;'>" + d2
+        str2 = str2 + d2
+      end
+    end
+    @community.units.where(id: params[:unit_ids]).update_all(description:  str2,manually_updated: true)
     flash[:notice] = "description is updated for units successfully."
     redirect_to :back
   end
