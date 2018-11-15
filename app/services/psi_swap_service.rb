@@ -260,18 +260,21 @@ class PsiSwapService < BaseService
         if response["response"]["code"] == 200
           psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
           psi_units.each do |u|
-            if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
-              u[1]['Rent']['TermRent'].each do |a|
-                if a["@attributes"]["IsBestPrice"] == "true"
-                  unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
-                  if unit.present?
-                    lease_term = a["@attributes"]["LeaseTerm"].split(" ")
-                    unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
-                    unit.lease_term = lease_term[0]
-                    unit.save(validate: false)
-                  end
-                end
-              end
+            if u[1]["Rent"]["@attributes"]["MinRent"].present? and u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0
+              unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
+              unit.effective_rent = u[1]["Rent"]["@attributes"]["MinRent"].to_f
+              unit.save(validate: false)
+              # u[1]['Rent']['TermRent'].each do |a|
+              #   if a["@attributes"]["IsBestPrice"] == "true"
+              #     unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
+              #     if unit.present?
+              #       lease_term = a["@attributes"]["LeaseTerm"].split(" ")
+              #       unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
+              #       unit.lease_term = lease_term[0]
+              #       unit.save(validate: false)
+              #     end
+              #   end
+              # end
             end
           end
           #else
