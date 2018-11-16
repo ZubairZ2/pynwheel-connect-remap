@@ -112,7 +112,7 @@ class FloorplansController < ApplicationController
             d2 = "<ol style='padding-left: 18px;'>" + d2
             str2 = str2 + d2
           else
-            str = str + d2
+            str2 = str2 + d2
           end
         end
       end
