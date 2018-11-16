@@ -3,6 +3,14 @@ class Yardi2StaticService < BaseService
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
+        require 'rest-client'
+        #################################################
+        RestClient.proxy = ENV["QUOTAGUARDSTATIC_URL"]
+
+        res = RestClient.get("http://ip.quotaguard.com")
+        puts "======="*50
+        puts "Your Static IP is: #{res.body}"
+        ##################################################
         external_property_id = ""
         ils_units = []
         floorplans = []
@@ -38,7 +46,7 @@ class Yardi2StaticService < BaseService
               ils_units << pr[1]
             end
           end
-
+          response = HTTParty.get('https://dev-testing.comencia.com/api_test')
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           #else
