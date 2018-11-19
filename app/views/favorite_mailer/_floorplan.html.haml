@@ -69,9 +69,17 @@
                                     - else
                                       %b #{number_with_delimiter(floorplan.square_feet.to_i, :delimiter => ',')} SF
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{floorplan.bedrooms.to_i} #{"bed".pluralize(floorplan.bedrooms.to_i)}
+                                    - temp = floorplan.bedrooms.to_s.split('.')
+                                    - if temp[1] > 0
+                                      %b #{floorplan.bedrooms} #{"bed".pluralize(floorplan.bedrooms)}
+                                    - else
+                                      %b #{floorplan.bedrooms.to_i} #{"bed".pluralize(floorplan.bedrooms.to_i)}
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{floorplan.bathrooms.ceil.to_i} #{"bath".pluralize(floorplan.bathrooms.ceil.to_i)}
+                                    - temp2 = floorplan.bathrooms.to_s.split('.')
+                                    - if temp2[1] > 0
+                                      %b #{floorplan.bathrooms} #{"bath".pluralize(floorplan.bathrooms)}
+                                    - else
+                                      %b #{floorplan.bathrooms.ceil.to_i} #{"bath".pluralize(floorplan.bathrooms.ceil.to_i)}
                               %tr
                                 %td
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#4c4d4e;", :width => "100%"}
