@@ -1,0 +1,39 @@
+#confirm-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#record-name
+        
+      .modal-body#record-message
+        
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        %a.btn.btn-danger.btn-ok#delete_button{"data-method"=>"delete"} Delete
+#confirm-delete-replace-data.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#replace-record-name
+
+      .modal-body#replace-record-message
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        %a.btn.btn-danger.replace-btn-ok#replace-delete_button{"data-method"=>"delete"} Delete
+
+#confirm-delete-update-data.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#update-record-name
+
+      .modal-body#update-record-message
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        %a.btn.btn-danger.update-btn-ok#update-delete_button Update
+:javascript
+  $('#delete_button').on('click',function(){
+    $('#delete_button').hide();
+  });
+  $('#replace-delete_button').on('click',function(){
+    $('#replace-delete_button').hide();
+  });
+  $('#update-delete_button').on('click',function(){
+    $('#update-delete_button').hide();
+  });

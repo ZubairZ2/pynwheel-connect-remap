@@ -1,0 +1,53 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"overlay-form"},:remote=>true  do |f|
+  = hidden_field_tag "overlay_tab", true
+  = f.fields_for :design do |d|
+    
+    .row
+      .col-lg-12
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+          Set Logo Position
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Logo Position
+            %span Select position of logo
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :logo_position , options_for_select(logo_position,d.object.logo_position),{},{class: "form-control overlay-field"}
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Secondary Logo Position
+            %span Select secondary position of logo
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :secondary_logo_position , options_for_select(secondary_logo_position,d.object.secondary_logo_position),{},{class: "form-control overlay-field"}
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Set global Navigation Position
+            %span Select navigation position of logo
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.select :global_navigation_position , options_for_select(global_navigation_position,d.object.global_navigation_position),{},{class: "form-control overlay-field"}    
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Secondary Page Background Image
+            %span Set secondary page background image
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .select-logo.mb-20.mt-30
+              .select-logo-logo
+                %a.preview-image{:href=>current_community.design.secondary_page_background_image.present? ? current_community.design.secondary_page_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                  = image_tag current_community.design.secondary_page_background_image.present? ? current_community.design.secondary_page_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"secondary-image-preview-image"
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            %span.btn.btn-primary.btn-file.mt-30
+              %i.fa.fa-upload
+              Upload File
+              = file_field_tag :secondary_page_background_image
+    .text-center.drag-box.mt-15.image-upload#secondary-page-background-image-upload-holder
+      %span.icon-upload
+        = image_tag "upload-image.png"
+        %p Drag &amp; Drop file to Upload

@@ -1,0 +1,400 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"filter-panel-form"},:remote=>true  do |f|
+  = hidden_field_tag "filter_panel_tab", true
+  = f.fields_for :design do |d|
+    = d.fields_for :filter_panel do |filter_panel|
+      .row
+        .col-md-12
+          %p.title-box Customize Filter Panel
+      .row
+        .col-lg-12
+          %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+            Filter Panel Options
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :filter_panel_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_panel_color.present? ? d.object.filter_panel_color : "#3B3B3B"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel text font style 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_panel_font_style , options_for_select(font_families,d.object.filter_panel_font_style),{},{class: "form-control filter-panel-field"}            
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel text font size
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :text_font_size , options_for_select(filter_panel_text_font_sizes,filter_panel.object.text_font_size.present? ? filter_panel.object.text_font_size : "18px"),{},{class: "form-control filter-panel-field"}            
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel font color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :filter_panel_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_panel_font_color.present? ? d.object.filter_panel_font_color : "#ffff"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel opacity 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_panel_opacity , options_for_select(opacity_options,d.object.filter_panel_opacity.present? ? d.object.filter_panel_opacity : "100%"),{},{class: "form-control filter-panel-field"}            
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel button color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :filter_button_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_button_color.present? ? d.object.filter_button_color : "#565455"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter button font style 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_button_font_style , options_for_select(font_families,d.object.filter_button_font_style),{},{class: "form-control filter-panel-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter button font color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :filter_button_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_button_font_color.present? ? d.object.filter_button_font_color : "#ffff"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel button border color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :button_border_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.button_border_color.present? ? filter_panel.object.button_border_color : "#565455"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel button text font size
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :button_text_font_size , options_for_select(filter_panel_button_text_font_sizes,filter_panel.object.button_text_font_size),{},{class: "form-control filter-panel-field"}                        
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter buttons opacity 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_buttons_opacity , options_for_select(opacity_options,d.object.filter_buttons_opacity.present? ? d.object.filter_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery buttons opacity 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :gallery_buttons_opacity , options_for_select(opacity_options,d.object.gallery_buttons_opacity.present? ? d.object.gallery_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter menu buttons border 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_menu_buttons_border , options_for_select(border_options,d.object.filter_menu_buttons_border.present? ? d.object.filter_menu_buttons_border : 'All sides'),{},{class: "form-control filter-panel-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery buttons border 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :gallery_buttons_border , options_for_select(border_options,d.object.gallery_buttons_border.present? ? d.object.gallery_buttons_border : 'All sides'),{},{class: "form-control filter-panel-field"}    
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery button on font color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :gallery_button_on_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_font_color.present? ? filter_panel.object.gallery_button_on_font_color : "#ffff"        
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display gallery button on background color
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = filter_panel.check_box :display_gallery_button_on_background_color, {class: "filter-panel-field"}
+            %label.label-primary{:for => "community_design_attributes_filter_panel_attributes_display_gallery_button_on_background_color"}
+            %span.pl-15 Yes
+      .row.gallery-button-on-background-color-field.hidden
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery button on background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :gallery_button_on_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_background_color.present? ? filter_panel.object.gallery_button_on_background_color : "#565455"              
+      .row.gallery-button-on-background-color-field.hidden
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery button on background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :gallery_button_on_background_color_opacity , options_for_select(opacity_options,filter_panel.object.gallery_button_on_background_color_opacity.present? ? filter_panel.object.gallery_button_on_background_color_opacity : '100%'),{},{class: "form-control filter-panel-field"}                            
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel icon color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :filter_panel_icon_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.filter_panel_icon_color.present? ? filter_panel.object.filter_panel_icon_color : "#ffff"              
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel icon background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :icon_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.icon_background_color.present? ? filter_panel.object.icon_background_color : "#565455"              
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel icon background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :icon_background_color_opacity , options_for_select(opacity_options,filter_panel.object.icon_background_color_opacity.present? ? filter_panel.object.icon_background_color_opacity : '100%'),{},{class: "form-control filter-panel-field"}                
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display filter panel icon
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = filter_panel.check_box :display_filter_panel_icon, {class: "filter-panel-field"}
+            %label.label-primary{:for => "community_design_attributes_filter_panel_attributes_display_filter_panel_icon"}
+            %span.pl-15 Yes            
+      .row
+        .col-md-12
+          %ul.nav.nav-tabs
+            %li.active
+              %a{"data-toggle" => "tab", :href => "#s-filter-button"} Filter button
+            %li
+              %a{"data-toggle" => "tab", :href => "#s-gallery-button"} Gallery button
+            %li
+              %a{"data-toggle" => "tab", :href => "#s-gallery-image-on"} Gallery image on  
+            %li
+              %a{"data-toggle" => "tab", :href => "#s-filter-panel-background-image"} Filter panel background image  
+          .tab-content
+            #s-filter-button.tab-pane.fade.in.active
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      Upload Filter Button
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = d.check_box :filter_button_as_image, {class: "filter-panel-field"}
+                        %label.label-primary{:for => "community_design_attributes_filter_button_as_image"}
+                        %span.pl-15 Yes
+              .row.filter-button-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Filter button
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.filter_button.present? ? current_community.design.filter_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter button Image"}
+                            = image_tag current_community.design.filter_button.present? ? current_community.design.filter_button.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-button-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :filter_button
+              .text-center.drag-box.mt-15.image-upload#filter-button-image-upload-holder.filter-button-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            #s-gallery-button.tab-pane.fade
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      Upload Gallery Button
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = d.check_box :gallery_button_as_image, {class: "filter-panel-field"}
+                        %label.label-primary{:for => "community_design_attributes_gallery_button_as_image"}
+                        %span.pl-15 Yes
+              .row.gallery-button-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Gallery button
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.gallery_button.present? ? current_community.design.gallery_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery button Image"}
+                            = image_tag current_community.design.gallery_button.present? ? current_community.design.gallery_button.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :gallery_button
+              .text-center.drag-box.mt-15.image-upload#gallery-button-image-upload-holder.gallery-button-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            #s-filter-panel-background-image.tab-pane.fade
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      Upload Filter Background Image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = d.check_box :filter_panel_background_as_image, {class: "filter-panel-field"}
+                        %label.label-primary{:for => "community_design_attributes_filter_panel_background_as_image"}
+                        %span.pl-15 Yes
+              .row.filter-panel-background-as-image-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Filter panel background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.filter_panel_background_image.present? ? current_community.design.filter_panel_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter panel background button Image"}
+                            = image_tag current_community.design.filter_panel_background_image.present? ? current_community.design.filter_panel_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-panel-background-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :filter_panel_background_image
+              .text-center.drag-box.mt-15.image-upload#filter-panel-background-button-image-upload-holder.filter-panel-background-as-image-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload 
+            #s-gallery-image-on.tab-pane.fade
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      Upload Gallery Button Image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = d.check_box :gallery_button_on_as_image, {class: "filter-panel-field"}
+                        %label.label-primary{:for => "community_design_attributes_gallery_button_on_as_image"}
+                        %span.pl-15 Yes
+              .row.gallery-button-on-as-image-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Gallery image on
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.gallery_button_on_image.present? ? current_community.design.gallery_button_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery Image on"}
+                            = image_tag current_community.design.gallery_button_on_image.present? ? current_community.design.gallery_button_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-image-on-preview"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :gallery_button_on_image
+              .text-center.drag-box.mt-15.image-upload#gallery-image-on-upload-holder.gallery-button-on-as-image-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload 
+:javascript 
+  var filter_button_as_image = "#{current_community.design.filter_button_as_image}" 
+  var gallery_button_as_image = "#{current_community.design.gallery_button_as_image}"       
+  var filter_panel_background_as_image = "#{current_community.design.filter_panel_background_as_image}"       
+  var gallery_button_on_as_image = "#{current_community.design.gallery_button_on_as_image}"       
+  var display_gallery_button_on_background_color = "#{current_community.design.filter_panel.display_gallery_button_on_background_color}"       
+
+  if(filter_button_as_image == "true")
+    $('.filter-button-upload-fields').removeClass('hidden');
+  if(gallery_button_as_image == "true")
+    $('.gallery-button-upload-fields').removeClass('hidden');
+  if(filter_panel_background_as_image == "true")
+    $('.filter-panel-background-as-image-upload-fields').removeClass('hidden');    
+  if(gallery_button_on_as_image == "true")
+    $('.gallery-button-on-as-image-upload-fields').removeClass('hidden');    
+  if(display_gallery_button_on_background_color == "true")
+    $('.gallery-button-on-background-color-field').removeClass('hidden');    
+
+  $('#community_design_attributes_filter_button_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.filter-button-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.filter-button-upload-fields').addClass('hidden');
+     }
+  }); 
+
+
+  $('#community_design_attributes_gallery_button_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.gallery-button-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.gallery-button-upload-fields').addClass('hidden');
+     }
+  });   
+
+
+  $('#community_design_attributes_filter_panel_background_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.filter-panel-background-as-image-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.filter-panel-background-as-image-upload-fields').addClass('hidden');
+     }
+  }); 
+
+  $('#community_design_attributes_gallery_button_on_as_image').change(function(){
+     if($(this).is(':checked')){
+        $('.gallery-button-on-as-image-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.gallery-button-on-as-image-upload-fields').addClass('hidden');
+     }
+  });   
+                                                   
+  $('#community_design_attributes_filter_panel_attributes_display_gallery_button_on_background_color').change(function(){
+     if($(this).is(':checked')){
+        $('.gallery-button-on-background-color-field').removeClass('hidden');
+      }
+    else{
+        $('.gallery-button-on-background-color-field').addClass('hidden');
+     }
+  });                                                      

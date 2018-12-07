@@ -1,0 +1,53 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"custom-style-form"},:remote=>true do |f|
+  = hidden_field_tag "custom_style_tab", true
+  = f.fields_for :design do |d|
+    = d.fields_for :menu do |m|                
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Menu Button Style
+              %span Select menu style e.g ( Solid,Bordered, Top  Bottom Border,etc)
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = m.select :button_style , options_for_select(button_style,m.object.button_style),{},{class: "form-control custom-style-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Border Style
+              %span Select border width, radius , color
+            .col-sm-12.col-lg-3.col-md-3.col-xs-12.margin-bottom-30
+              = m.select :border_radius , options_for_select(border_radius,m.object.border_radius),{},{class: "form-control custom-style-field"}
+              %small Radius: 1px to 10px
+            .col-sm-12.col-lg-3.col-md-3.col-xs-12.margin-bottom-30
+              = m.select :border_width , options_for_select(border_width,m.object.border_width),{},{class: "form-control custom-style-field"}
+              %small Width: 1px to 10px
+            .col-sm-12.col-lg-3.col-md-3.col-xs-12.margin-bottom-30
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = m.text_field :border_color,class: "form-control custom-style-field",readonly: true,autocomplete: true
+              %small Border Color
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Menu Button Backround
+              %span Select Background color & Mouseover color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .row
+                .col-lg-6.col-md-6.col-xs-12.margin-bottom-30
+                  .input-group.colorpicker-style.hex-format-colorpicker
+                    .input-group-addon
+                      %i
+                      = m.text_field :button_background_color,class: "form-control custom-style-field",readonly: true,autocomplete: true
+                  %small Select Background Button Color
+                .col-lg-6.col-md-6.col-xs-12
+                  .input-group.colorpicker-style.hex-format-colorpicker
+                    .input-group-addon
+                      %i
+                      = m.text_field :button_hover_color,class: "form-control custom-style-field",readonly: true,autocomplete: true
+                  %small Select hover backgound     
+      .row
+        .col-md-12
+          .box-footer.mt-30.pt-15

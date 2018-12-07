@@ -1,0 +1,17 @@
+#addGallery.modal.fade{:role => "dialog"}
+	= form_for [@community,@gallery], remote: true do |f|
+		.modal-dialog
+			/ Modal content
+			.modal-content
+				.modal-header
+					%button.close{"data-dismiss" => "modal", :type => "button"} ×
+					%h4.modal-title Add Gallery Name
+				.modal-body
+					.row
+						.col-md-12
+							.mt-25.mb-40
+								%label Enter Name
+								= f.text_field :name, class: "form-control" ,:maxlength => "30"
+				.modal-footer
+					= f.submit "Save", :class=>"btn btn-primary"
+					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel

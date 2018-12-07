@@ -1,0 +1,99 @@
+- content_for :title, "Galleries - Pynwheel"
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-cubes
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12
+            .box.box-widget.panel-box.add-plan.pt-30
+              = form_tag community_save_gallery_settings_path(@community) ,{:class => 'gallery-settings-form'} do
+                = hidden_field_tag "community_id", @community.id
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Page Name
+                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                    = text_field_tag :gallery_page_name, @community.gallery_page_name, :class=>"form-control gallery-setting-field" ,:maxlength=>"13"
+                
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Show this page
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = check_box_tag :show_gallery, true, @community.show_gallery, class: "gallery-setting-"
+                      %label.label-primary{:for => "show_gallery"}
+                      %span.pl-15 Yes
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Display on homepage
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = check_box_tag :display_gallery_on_homepage, true, @community.display_gallery_on_homepage, class: "gallery-setting"
+                      %label.label-primary{:for => "display_gallery_on_homepage"}
+                      %span.pl-15 Yes      
+                = submit_tag 'Save', class: "hidden"
+        .box.box-widget.panel-box
+          .row
+            .col-md-12
+              %table.table.table-bordered.table-striped.table-hover.table-responsive
+                %thead
+                  %tr
+                    %th{:width => "79"} Sr #
+                    %th Gallery Name
+                    %th{:width => "100"} Actions
+                %tbody
+                  - @galleries.each_with_index do |gallery,index|
+                    %tr
+                      %td= index+1
+                      %td
+                        = link_to gallery.name, show_images_community_gallery_path(@community,gallery.id)
+                      %td
+                        %a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
+                          %i.fa.fa-eye
+                        = link_to edit_community_gallery_path(@community,gallery), remote: true, class: "text-success ml-5" do
+                          %i.fa.fa-edit
+                        %a.text-danger{"data-name"=>"Gallery","data-href" => "/communities/#{@community.id}/galleries/#{gallery.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                          %i.fa.fa-trash
+        .row
+          .col-md-12
+            = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success pull-right mb-20" do
+              %i.fa.fa-plus-circle
+              ADD GALLERY
+
+      / End Panel left Side
+/ /.content
+#show_modal
+:javascript
+  $('.gallery-setting-field').change(function(){
+    $('.gallery-settings-form').submit();
+  });
+   
+
+  $('#show_gallery').change(function(){
+    if (!($(this).is(':checked')))
+    {
+      $('#display_gallery_on_homepage').prop('checked',false); 
+    }
+    $('.gallery-settings-form').submit();
+  });
+  $('#display_gallery_on_homepage').change(function(){
+    if (!($('#show_gallery').is(':checked')))
+    {
+      $('#display_gallery_on_homepage').prop('checked',false);
+      $('.gallery-settings-form').submit();
+    }
+    else
+    {
+      $('.gallery-settings-form').submit();
+    }
+  });

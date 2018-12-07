@@ -1,0 +1,31 @@
+- content_for :title, "Edit Floor plate - Pynwheel"
+%section
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-database
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Edit 
+          %span Floor Plate
+      / /.box-header
+      / form start
+      = form_for @floorplate,:url=>community_floorplate_path(:id=>@floorplate.id,:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render :partial=>'form',:locals=>{:f=>f}
+        / /.box-body
+        .box-footer
+          = link_to "CANCEL" , community_floorplates_path(current_community), :class=>"btn btn-default pull-right"
+          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"
+
+:javascript
+  $("#floorplate_image").change(function(){
+    readImageIncludingSVG(this);
+  });

@@ -1,0 +1,120 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Address
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :address, :class=>"form-control validate[required]", :placeholder=>"Address", :maxlength=>"150", :value=> @neighborhood.address.present? ? @neighborhood.address : @community.make_address
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Latitude
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :latitude, :class=>"form-control validate[required,custom[onlyLatitude]] neighborhood-form-field", :placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude", :value=> @neighborhood.latitude.present? ? @neighborhood.latitude : @community.latitude
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Longitude
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :longitude, :class=>"form-control validate[required,custom[onlyLongitude]] neighborhood-form-field", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude", :value=> @neighborhood.longitude.present? ? @neighborhood.longitude : @community.longitude
+- if current_user.is_super_admin?    
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Radius
+
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :radius, :class=>"form-control validate[required,custom[onlyNumber&Decimal]] neighborhood-form-field", :placeholder=>"Radius", :value=> @neighborhood.radius.present? ? @neighborhood.radius : 5000,:maxlength=>"10"
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Zoom
+
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :zoom, :class=>"form-control validate[required,custom[onlyNumber],custom[zoomRange]] neighborhood-form-field", :placeholder=>"Zoom", :value=> @neighborhood.zoom.present? ? @neighborhood.zoom : 14, :maxlength=>"2"
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Remove Listing
+
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :listing, :class=>"form-control neighborhood-form-field","data-role"=>"tagsinput"     
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Categories
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .multiselect
+      .show-categories
+        = @neighborhood.category
+      %ul#multiselect{style: "display:none;"}
+        %li{:class=> set_active_class('Dining',@neighborhood.category), 'data-title' => 'Dining'}
+          %a
+            %i.fa.fa-check
+            Dining
+        %li{:class=> set_active_class('Shopping',@neighborhood.category), 'data-title' => 'Shopping'}
+          %a
+            %i.fa.fa-check 
+            Shopping
+        %li{:class=> set_active_class('Entertainment',@neighborhood.category), 'data-title' => 'Entertainment'}
+          %a
+            %i.fa.fa-check 
+            Entertainment
+        %li{:class=> set_active_class('Schools',@neighborhood.category), 'data-title' => 'Schools'}
+          %a
+            %i.fa.fa-check
+            Schools
+        %li{:class=> set_active_class('Banks',@neighborhood.category), 'data-title' => 'Banks'}
+          %a
+            %i.fa.fa-check 
+            Banks
+        %li{:class=> set_active_class('Parks',@neighborhood.category), 'data-title' => 'Parks'}
+          %a
+            %i.fa.fa-check 
+            Parks
+        %li{:class=> set_active_class('Errands',@neighborhood.category), 'data-title' => 'Errands'}
+          %a
+            %i.fa.fa-check 
+            Errands
+= f.hidden_field :category, :multiple => true, id: "categories_field",:class=>"neighborhood-form-field"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Page Name
+
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :neighborhood_name, :class=>"form-control neighborhood-form-field" ,:maxlength=>"13"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Show Page
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :show_neighborhood, class: "neighborhood-form"
+      %label.label-primary{:for => "neighborhood_show_neighborhood"}
+      %span.pl-15 Yes
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Display on homepage
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :display_neighborhood_on_homepage, class: "neighborhood-form"
+      %label.label-primary{:for => "neighborhood_display_neighborhood_on_homepage"}
+      %span.pl-15 Yes
+    
+:javascript
+
+  $('#neighborhood_show_neighborhood').change(function(){
+    if (!($(this).is(':checked')))
+    {
+      $('#neighborhood_display_neighborhood_on_homepage').prop('checked',false); 
+    }
+    $('.neighborhood-form-field').submit();
+  });
+  $('#neighborhood_display_neighborhood_on_homepage').change(function(){
+    if (!($('#neighborhood_show_neighborhood').is(':checked')))
+    {
+      $('#neighborhood_display_neighborhood_on_homepage').prop('checked',false);
+      
+    }
+    else
+    {
+      $('.neighborhood-form-field').submit();
+    }
+  });

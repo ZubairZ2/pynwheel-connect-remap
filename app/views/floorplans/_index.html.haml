@@ -1,0 +1,53 @@
+/ Start Panel left Side
+.col-lg-8.col-md-12
+  .row
+    .col-md-12
+      %h4.title Floor Plans
+  .box.box-widget.panel-box
+    .box-header
+      
+      .row
+        .col-md-12
+          %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+            %thead
+              %tr
+                %th Sr #
+                %th Plan Name
+                %th Sq.Ft
+                %th Bedrooms
+                %th Bathrooms
+                %th Description
+                %th Images
+                %th Image
+                %th Actions
+            %tbody
+              - @floorplans.each_with_index  do |f,index|
+                %tr
+                  %td= index+1
+                  %td= f.name
+                  %td= f.square_feet
+                  %td= f.bedrooms
+                  %td= f.bathrooms
+                  %td= raw(f.description)
+                  %td
+                    = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
+                  %td
+                    - if f.standard_image_url.present?
+                      .drop-img.drop-img-left
+                        = image_tag f.standard_image_url
+                    - else  
+                      .drop-img.drop-img-left.image-holder{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id}
+                  %td
+                    %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
+                      %i.fa.fa-edit
+                    %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+                      %i.fa.fa-trash
+
+      
+/ End Panel left Side
+/ Start Panel Right Side
+:javascript
+  // below variable is important it is using in pre save images on right panel.
+  var index = #{current_community.has_temporary_images? ? current_community.temporary_images.size : 0}
+  var draging_image;
+  var community_id = #{params[:community_id]}

@@ -1,0 +1,22 @@
+- content_for :title, "Home Page Logo - Pynwheel"
+.divLoading.hidden
+%section.is-home-page
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-image
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12.mt-30
+        .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
+          #myTabContent.tab-content.add-plan
+            / Start L>ogo Upload section
+            #home.tab-pane.fade.active.in{:role => "tabpanel"}
+              = render 'secondary_logo'
+:javascript 
+  var community_id = #{params[:community_id]};
+  var selected_theme = '#{@community.theme_name}';

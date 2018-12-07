@@ -1,0 +1,84 @@
+#newmsg {
+    display:none;
+    margin-bottom: 0;
+}
+
+.toggle-map-thumb {
+    padding: 0 10px;
+}
+
+.map-thumb-wrap {
+    position:absolute;
+    z-index:100;
+    right:80px;
+}
+
+#map-thumb {
+    position:relative;
+    overflow:hidden;
+    width:200px;
+    border:1px solid #ccc;
+    background:#fff;
+}
+
+#plate-thumb {
+    position:absolute;
+    width:200px;
+    height:100%;
+}
+
+#map-nav {
+    position:absolute;
+    width:20px;
+    height:20px;
+    background:red;
+    cursor: pointer;
+}
+
+#map {
+    position:absolute;
+    cursor:crosshair;
+    opacity:0.5;
+    max-width:none;
+    z-index: 1;
+    background: white;
+}
+
+#map-fla{
+    position:absolute;
+    z-index: 0;
+}
+
+
+.marker {
+    position:absolute;
+    height: 14px;
+    z-index: 2;
+}
+
+.marker .icon-star{
+    cursor: pointer;
+    padding: 0;
+    margin: 0 auto;
+    vertical-align: top;
+}
+
+#map-marker {
+    display:none;
+    position:absolute;
+}
+
+.aj-popup{
+    width:340px;
+}
+
+#map-container {
+    position:relative;
+    overflow:scroll;
+    width:100%;
+    height:510px;
+    max-width:none;
+    border: 1px solid #ccc;
+}
+
+

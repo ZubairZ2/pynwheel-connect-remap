@@ -1,0 +1,38 @@
+- content_for :title, "Favorite Images - Pynwheel"
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-star
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+      #myTabContent.tab-content
+        / Start image-slide section
+        #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+          .row
+            .col-md-6
+              %h4 Favorite Images
+          .row
+            .col-md-6
+              .mt-35
+                %span.btn.btn-success.btn-file.text-UP.pull-left{:onclick=>"$('#favorite-image-upload-holder').click();"}
+                  %i.fa.fa-plus-circle
+                  Add Files
+              .mt-35
+                 
+    .row
+      
+      .col-lg-12.col-md-12
+        .text-center.image-upload.home-page-drag-box#favorite-image-upload-holder
+          = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
+          %p Drop files here or click to Upload
+        #images-index
+          = render 'index'
+:javascript
+  var community_id = "#{params[:community_id]}"
+  var favorite_setting_id = "#{params[:favorite_setting_id]}"
+

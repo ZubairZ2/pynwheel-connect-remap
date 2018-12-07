@@ -1,0 +1,71 @@
+- content_for :title, "Home Page - Pynwheel"
+.divLoading.hidden
+%section.is-home_page
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-home
+        = @community.name.capitalize  
+        %br
+          -if current_user.is_super_admin?
+            %small.text-primary
+              = @community.code
+    .row
+      .col-lg-12
+        .form-group 
+          .radio.radio-primary.pull-left
+            %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>current_community.design.has_images_loop_type? ? true : false}
+              %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
+                Images
+          .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
+            %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
+              %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
+                Video           
+          - if gables_theme(@community)
+            = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
+    .row
+      .col-lg-4        
+        .form-group        
+          %label
+            Animation
+          = select_tag :animation, options_for_select(["bouncing effects","none"],@community.design.animation),{:class=>"form-control"}    
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+      #myTabContent.tab-content
+        / Start image-slide section
+        #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+          .row
+            .col-lg-12
+              .title-home
+                %h4 Slide Show Images
+                
+                
+                %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-image-upload-holder').click();"}
+                  %i.fa.fa-plus-circle
+                  Add Files
+                /   %input#home-page-images{:type => "file",:multiple=>"multiple"}
+          .row
+            .col-lg-12
+              .pull-right
+                /%a.view-slide#slideshow-button{"data-target" => ".bs-example-modal-lg", "data-toggle" => "modal", :href => "javascript::;"} View SlideShow
+          #images-index
+            = render 'index'
+        #video-slide.tab-pane.fade{:role => "tabpanel"}
+          .row
+            .col-lg-12
+              .title-home
+                %h4 Video Show
+                
+                / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
+                %span.btn.btn-success.btn-file.pull-right.text-UP{:onclick=>"$('#home-page-video-upload-holder').click();"}
+                  %i.fa.fa-plus-circle
+                  Add Video
+                /     = f.file_field :video
+                    
+          .slide-imgage-boxs
+            #videos-index
+            = render 'videos_index'
+#edit-image.modal.fade.edit-image   
+:javascript
+  var community_id = #{params[:community_id]}
+  var design_id = #{current_community.design.id}
+  

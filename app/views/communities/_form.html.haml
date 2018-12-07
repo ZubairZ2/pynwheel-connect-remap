@@ -1,0 +1,109 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Name
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name",:maxlength=>"30"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Code
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :code, :class=>"form-control validate[required]", :placeholder=>"Code",:maxlength=>"30"    
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Address
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_area :address, :class=>"form-control",rows:5, :placeholder=>"Address"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-3.col-md-4.col-xs-12
+        = f.text_field :city, :class=>"form-control address_fields validate[required,custom[onlyLetterSp]]", :placeholder=>"City",:maxlength=>"20"
+        %small City
+      .col-sm-6.col-lg-3.col-md-4.col-xs-12
+        = f.text_field :state, :class=>"form-control address_fields validate[required,custom[onlyLetterSp]]", :placeholder=>"State",:maxlength=>"20"
+        %small State
+      .col-sm-6.col-lg-3.col-md-4.col-xs-12
+        = f.text_field :zip, :class=>"form-control address_fields validate[required,custom[onlyNumberSp]]", :placeholder=>"Zip",:maxlength=>"10"
+        %small Zip
+      .col-sm-6.col-lg-3.col-md-4.col-xs-12
+        = f.text_field :phone, :class=>"form-control address_fields validate[required,custom[phone]]", :placeholder=>"Phone",:maxlength=>"15"
+        %small Phone  
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Email
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Website
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :website, :class=>"form-control", :placeholder=>"Website URL",:maxlength=>"50"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Description
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_area :description, :class=>"form-control", rows:5, :placeholder=>"Description"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-6.col-xs-12
+        = f.text_field :latitude, :class=>"form-control validate[required,custom[onlyLatitude]]", :placeholder=>"Latitude",:maxlength=>"15", :id=>"latitude"
+        %small Latitude
+      .col-sm-6.col-lg-6.col-md-6.col-xs-12
+        = f.text_field :longitude, :class=>"form-control validate[required,custom[onlyLongitude]]", :placeholder=>"Longitude",:maxlength=>"15", :id=>"longitude"
+        %small Longitude
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Company
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.select :company_id, Company.all.collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Property Map / Floorplates
+
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :is_sitemap, true
+    = f.label :is_sitemap, "Property Map", :value => "true"
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :is_sitemap, false
+    = f.label :is_sitemap, "Floorplates", :value => "false"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Inactivate
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :locked
+          %label Inactivate
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Equal housing opportunity logo
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :equal_housing_opportunity_logo
+          %label Equal housing opportunity logo
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Handicap accessible logo
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :handicap_accessible_logo
+          %label Handicap accessible logo                   

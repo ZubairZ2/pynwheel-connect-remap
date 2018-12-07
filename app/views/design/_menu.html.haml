@@ -1,0 +1,107 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"menu-form"},:remote=>true do |f|
+  = hidden_field_tag "menu_tab", true
+  = f.fields_for :design do |d|
+    = d.fields_for :menu do |m|
+     
+      .row
+        .col-lg-12
+          %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+            Menu Options
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Menu Position
+              %span Select position of menu
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control menu-field"}
+      .row#vertical-menu-position
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Vertical Menu Position
+              %span Select vertical position of menu
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = m.select :vertical_menu_position , options_for_select(vertical_menu_position,m.object.vertical_menu_position),{},{class: "form-control menu-field"}
+      .row#horizontal-menu-position
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Horizontal Menu Position
+              %span Select horizontal position of menu
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = m.select :horizontal_menu_position , options_for_select(horizontal_menu_position,m.object.horizontal_menu_position),{},{class: "form-control menu-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+              Manage Background
+              %span Manage navigation background
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .TriSea-technologies-Switch
+                %span.pr-15 No
+                /%input#TriSeaPrimary{:name => "TriSea1", :type => "checkbox"}/
+                = m.check_box :manage_background,:class=>"menu-field"
+                %label.label-primary{:for => "community_design_attributes_menu_attributes_manage_background"}
+                %span.pl-15 Yes
+      #c-style-background-color          
+        .row
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Background color
+                %span Select menu background color
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                / .input-group.colorpicker-style#rgba-format-colorpicker (it returned 5 digit color code as well)
+                .input-group.colorpicker-style.hex-format-colorpicker
+                  .input-group-addon
+                    %i
+                    = m.text_field :background_color,id: "c-style-background-color-text-field",class: "form-control menu-field",autocomplete: false
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Navigation text color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = m.text_field :navigation_text_color,class: "form-control menu-field",autocomplete: false
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Navigation button color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = m.text_field :navigation_background_color,class: "form-control menu-field",autocomplete: false                          
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Primary color
+            %span Select primary color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :primary_color,class: "form-control menu-field",autocomplete: false
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Secondary color
+            %span Select secondary color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :secondary_color,class: "form-control menu-field",autocomplete: false                                   
+      .row
+        .col-md-12
+          .box-footer.mt-30.pt-15 
+:javascript
+  var background_color = "#{@community.design.menu.background_color}" 
+  console.log(background_color);                

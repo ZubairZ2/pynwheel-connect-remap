@@ -1,0 +1,121 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"gables-form"},:remote=>true  do |f|
+  = hidden_field_tag "gables_tab", true
+  = f.fields_for :design do |d|
+    = d.fields_for :gable do |g|
+      .row
+        .col-md-12
+          %p.title-box Customize Gables Theme
+      .row
+        .col-lg-12
+          %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+            Gables Options
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+              Tagline
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .TriSea-technologies-Switch
+                %span.pr-15 No
+                = g.check_box :hide_tagline, {class: "gables-field"}
+                %label.label-primary{:for => "community_design_attributes_gable_attributes_hide_tagline"}
+                %span.pl-15 Yes 
+      / = g.check_box :hide_tagline, {class: "gables-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gables Theme
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.select :theme_name , options_for_select(gables_theme_options,f.object.any_gables_theme? ? f.object.theme_name : 'gables_energetic'),{},{class: "form-control"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Appartment buton color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :appartment_button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.appartment_button_color.present? ? g.object.appartment_button_color : "#8A8A8D" 
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery buton color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :gallery_button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.gallery_button_color.present? ? g.object.gallery_button_color : "#44797B" 
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Neighborhood buton color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :neighborhood_button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.neighborhood_button_color.present? ? g.object.neighborhood_button_color : "#0475A9" 
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Favorite buton color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :favorite_button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.favorite_button_color.present? ? g.object.favorite_button_color : "#D5C228" 
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :filter_panel_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.filter_panel_color.present? ? g.object.filter_panel_color : "#467A7D"                                                        
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Webpages button color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :webpages_button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.webpages_button_color.present? ? g.object.webpages_button_color : "#96348F"                                                        
+
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Image pages button color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :imagepages_button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.imagepages_button_color.present? ? g.object.imagepages_button_color : "#96348F"                                                        
+:javascript
+  setGablesThemeDefaultValues();
+  $('#community_theme_name').change(function(){
+    var gables_theme = $(this).val();
+    if(gables_theme == 'gables_organic'){
+      setGablesOrganicValues()
+    }
+    if(gables_theme == 'gables_refined'){
+      setGablesRefinedValues()
+    }
+    if(gables_theme == 'gables_energetic'){
+      setGablesEnergeticValues()
+    }
+    if(gables_theme == 'gables_natural'){
+      setGablesNaturalValues()
+    }
+    if(gables_theme == 'gables_custom'){
+      setGablesCustomValues()
+    }
+  });

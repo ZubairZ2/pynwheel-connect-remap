@@ -1,0 +1,17 @@
+- content_for :title, "Add User - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Add  
+          %span User
+      = form_for @user,:url=>employees_path,:html=>{:class=>"form-horizontal"} do |f|    
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render 'form' , :f=>f            	      
+              
+        .box-footer
+          = link_to "CANCEL", employees_path, :class=>"btn btn-default pull-right"
+          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right"                   

@@ -1,0 +1,25 @@
+- content_for :title, "Edit Image - Pynwheel"
+%section
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-columns
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Edit
+          %span Image
+
+      = form_for @amenity,:url=>community_floorplan_amenity_path(@community,@floorplan),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render :partial=>'shared/amenity_form',:locals=>{:f=>f}
+        / /.box-body
+        .box-footer
+          = link_to "CANCEL" , community_floorplan_amenities_path(@community,@floorplan), :class=>"btn btn-default pull-right"
+          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"

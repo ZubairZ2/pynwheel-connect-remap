@@ -1,0 +1,73 @@
+
+- content_for :title, "Home - Pynwheel"
+.container
+  %section
+    .row
+      .col-md-6
+        %h2 Communities
+        %h5
+          All communities are listed here.
+        - if current_user.is_super_admin?
+          %p.mb-30
+            This Admin feature allows you to directly access any community in the system
+      - if can? :read, Company     
+        .col-md-6
+        - if current_user.is_super_admin?
+          .mt-35
+            %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
+              List all companies
+
+    .box.box-widget.panel-box
+      #new-search-area
+      %table#communities.table.table-hover.table-responsive
+        %thead
+          %tr
+            %th Community
+            %th{:width => "250"} Company
+        %tbody
+          - @communities.each do |community|
+            %tr
+              %td
+                %h4.h4
+                  = link_to community.name, community_design_index_path(community),:title=>community.data_provider
+                %h6.h6 Updated: #{community.updated_at.to_date}  
+              %td
+                %h5.h5
+                  = community.company.name rescue ""
+
+
+      -#.row
+      -#  .col-md-12
+      -#    %form.mt-30.mb-30{:action => "#", :method => "post"}
+      -#      .input-group
+      -#        %input.form-control{:name => "message", :placeholder => "Search by community or company name", :type => "text"}
+      -#        %span.input-group-btn
+      -#          %button.btn.btn-success.btn-flat{:type => "submit"} Search
+      -#.row
+      -#  .col-md-12
+      -#    .box.box-solid
+      -#      .box-header.with-border
+      -#        .row
+      -#          .col-md-8
+      -#            %h3.box-title.pt-15.pb-15
+      -#              %b
+      -#                Communities
+      -#          .col-md-4
+      -#            %h3.box-title.pt-15.pb-15
+      -#              %b
+      -#                Company
+      -#      / /.box-header
+      -#      .box-body
+      -#        - @communities.each do |community|
+      -#          .row
+      -#            .col-md-8
+      -#              %h4.h4
+      -#                %a= community.name
+      -#                %h5.h5 Updated: #{community.updated_at.to_date}
+      -#            .col-md-4
+      -#              %h5.h5
+      -#                = community.company.name
+      -#          .row
+      -#            .col-md-12
+      -#              %hr
+

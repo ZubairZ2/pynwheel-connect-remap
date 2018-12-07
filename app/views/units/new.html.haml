@@ -1,0 +1,32 @@
+- content_for :title, "Add Unit - Pynwheel"
+%section
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-laptop
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Add 
+          %span Unit
+      / /.box-header
+      / form start
+      / <form class="form-horizontal">
+      = form_for @unit,:url=>community_units_path(:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render :partial=>'form',:locals=>{:f=>f}
+        / /.box-body
+        .box-footer
+          = f.submit "ADD UNIT", :class=>"btn btn-success pull-right"
+:javascript
+
+
+  $("#unit_secondary_image").change(function(){
+      readSecondaryURL(this);
+  });

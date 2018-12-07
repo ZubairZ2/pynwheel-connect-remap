@@ -1,0 +1,1125 @@
+= form_for @community,:method=>"PUT",:html=>{:id=>"global-navigation-form"},:remote=>true  do |f|
+  = hidden_field_tag "global_navigation_tab", true
+  = f.fields_for :design do |d|
+    
+    .row
+      .col-lg-12
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+          Global Navigation Options
+    = d.fields_for :expressionist do |e|
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display global navigation button color
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_global_navigation_button_bg_color, {class: "global-navigation-field",:checked=>e.object.display_global_navigation_button_bg_color.present? ? e.object.display_global_navigation_button_bg_color : true }
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_bg_color"}
+            %span.pl-15 Yes
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button font family
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :global_navigation_button_font_family , options_for_select(font_families,e.object.global_navigation_button_font_family),{},{class: "form-control global-navigation-field"}             
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button font size
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :global_navigation_button_font_size , options_for_select(global_navigation_button_font_sizes,e.object.global_navigation_button_font_size),{},{class: "form-control global-navigation-field"}              
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display global navigation button icon
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_global_navigation_button_icon, {class: "global-navigation-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_icon"}
+            %span.pl-15 Yes        
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button border color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = e.text_field :global_navigation_button_border_color , class: "form-control global-navigation-field",autocomplete: true,:value=>e.object.global_navigation_button_border_color.present? ? e.object.global_navigation_button_border_color : "#c5c4c7"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button font color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :global_navigation_font_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_font_color.present? ? d.object.global_navigation_font_color : "#c5c4c7"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :global_navigation_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>d.object.global_navigation_background_color.present? ? d.object.global_navigation_background_color : "#565455"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation buttons opacity 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :global_navigation_buttons_opacity , options_for_select(opacity_options,d.object.global_navigation_buttons_opacity.present? ? d.object.global_navigation_buttons_opacity : "100%"),{},{class: "form-control global-navigation-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation background opacity 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :global_nav_bg_opacity , options_for_select(opacity_options,d.object.global_nav_bg_opacity.present? ? d.object.global_nav_bg_opacity : "100%"),{},{class: "form-control global-navigation-field"}                      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button height 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :global_nav_buttons_height , options_for_select(navigation_button_height_options,d.object.global_nav_buttons_height),{},{class: "form-control global-navigation-field"}
+      .row.button-width-field-on-global-navigation
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button width 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :global_nav_buttons_width , options_for_select(navigation_button_width_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}        
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :global_navigation_button_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_button_color.present? ? d.object.global_navigation_button_color : "#3B3B3B"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button shape 
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field"}  
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button border
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border.present? ? d.object.secondary_page_menu_border : 'All sides'),{},{class: "form-control global-navigation-field"}            
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display button on background color
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_button_on_bg_color, {class: "global-navigation-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_button_on_bg_color"}
+            %span.pl-15 Yes
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button on background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = e.text_field :button_on_bg_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.button_on_bg_color.present? ? e.object.button_on_bg_color : "#565455"      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button on background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :button_on_bg_color_opacity , options_for_select(opacity_options,e.object.button_on_bg_color_opacity.present? ? e.object.button_on_bg_color_opacity : "100%"),{},{class: "form-control global-navigation-field"}            
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button on font color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = e.text_field :global_navigation_button_on_font_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.global_navigation_button_on_font_color.present? ? e.object.global_navigation_button_on_font_color : "#565455"      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Application background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = e.text_field :application_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.application_background_color.present? ? e.object.application_background_color : "#c5c4c7"      
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Application background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :application_background_color_opacity , options_for_select(opacity_options,e.object.application_background_color_opacity.present? ? e.object.application_background_color_opacity : "100%"),{},{class: "form-control global-navigation-field"}                        
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Spacing between buttons
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :spacing_between_buttons , options_for_select(spacing_options,e.object.spacing_between_buttons.present? ? e.object.spacing_between_buttons : '0px'),{},{class: "form-control global-navigation-field"} 
+      
+      .row
+        .col-md-12
+          %ul.nav.nav-tabs
+            %li.active
+              %a{"data-toggle" => "tab", :href => "#global-navigation-button-on"} Global navigation button on
+            %li
+              %a{"data-toggle" => "tab", :href => "#global-navigation-button-off"} Global navigation button off
+            %li
+              %a{"data-toggle" => "tab", :href => "#global-navigation-background-image"} Global navigation background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#application-background-image"} Application background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#apartment-navigation-background-image"} Apartment background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#Gallery-navigation-background-image"} Gallery background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#favourites-navigation-background-image"} Favourites background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#additional-pages-navigation-background-image"} Additional pages background image
+          .tab-content
+            #global-navigation-button-on.tab-pane.fade.in.active
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                  Upload global navigation button on for all image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = d.check_box :global_nav_button_on_as_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_global_nav_button_on_as_image"}
+                    %span.pl-15 Yes 
+              .row.global-nav-button-on-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Global navigation button on
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.global_nav_button_on.present? ? current_community.design.global_nav_button_on.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                            = image_tag current_community.design.global_nav_button_on.present? ? current_community.design.global_nav_button_on.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-button-on-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :global_nav_button_on
+                  
+              .text-center.drag-box.mt-15.image-upload#global-nav-button-on-image-upload-holder.global-nav-button-on-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+              .form-group
+                .col-md-12
+                  .col-md-2
+                  %label.col-sm-3.col-lg-4.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                    Display each gobal navigation button 
+                  .col-sm-12.col-lg-4.col-md-6.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :global_navigation_btn_on_for_all, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_global_navigation_btn_on_for_all"}
+                      %span.pl-15 Yes
+              /-------------------------- navigation button for button image -----------------------------
+              .global_navigation_button_for_all.hidden
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload apartment button on image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_apartment_btn_on_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_apartment_btn_on_image"}
+                      %span.pl-15 Yes
+                .row.apartment-btn-on-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Apartment button on image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.apartment_btn_on_image.present? ? current_community.design.expressionist.apartment_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.apartment_btn_on_image.present? ? current_community.design.expressionist.apartment_btn_on_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-button-on-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :apartment_btn_on_image
+                .text-center.drag-box.mt-15.image-upload#apartment-button-on-image-upload-holder.apartment-btn-on-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                
+                  /------------------------------ Gallery On button---------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload gallery button on image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_gallery_btn_on_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_gallery_btn_on_image"}
+                      %span.pl-15 Yes
+                .row.gallery-btn-on-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Gallery button on image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.gallery_btn_on_image.present? ? current_community.design.expressionist.gallery_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.gallery_btn_on_image.present? ? current_community.design.expressionist.gallery_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-on-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :gallery_btn_on_image
+                .text-center.drag-box.mt-15.image-upload#gallery-button-on-image-upload-holder.gallery-btn-on-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                /------------------------------ Neighborhood On button---------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload neighborhood button on image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_neighborhood_btn_on_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_neighborhood_btn_on_image"}
+                      %span.pl-15 Yes
+                .row.neighborhood-btn-on-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Neighborhood button on image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.neighborhood_btn_on_image.url.present? ? current_community.design.expressionist.neighborhood_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.neighborhood_btn_on_image.present? ? current_community.design.expressionist.neighborhood_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"neighborhood-button-on-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :neighborhood_btn_on_image
+                .text-center.drag-box.mt-15.image-upload#neighborhood-button-on-image-upload-holder.neighborhood-btn-on-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                /------------------------------ Imagepage On button---------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload Imagepage button on image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_imagepage_btn_on_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_imagepage_btn_on_image"}
+                      %span.pl-15 Yes
+                .row.imagepage-btn-on-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Imagepage button on image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.imagepage_btn_on_image.present? ? current_community.design.expressionist.imagepage_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.imagepage_btn_on_image.present? ? current_community.design.expressionist.imagepage_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"imagepage-button-on-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :imagepage_btn_on_image
+                .text-center.drag-box.mt-15.image-upload#imagepage-button-on-image-upload-holder.imagepage-btn-on-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                /------------------------------ Webpage On button---------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload Webpage button on image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_webpage_btn_on_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_webpage_btn_on_image"}
+                      %span.pl-15 Yes
+                .row.webpage-btn-on-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Webpage button on image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.webpage_btn_on_image.present? ? current_community.design.expressionist.webpage_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.webpage_btn_on_image.present? ? current_community.design.expressionist.webpage_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"webpage-button-on-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :webpage_btn_on_image
+                .text-center.drag-box.mt-15.image-upload#webpage-button-on-image-upload-holder.webpage-btn-on-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                /------------------------------ Favourite On button---------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload favourite button on image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_favourite_btn_on_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_favourite_btn_on_image"}
+                      %span.pl-15 Yes
+                .row.favourite-btn-on-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Favourite button on image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.favourite_btn_on_image.present? ? current_community.design.expressionist.favourite_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.favourite_btn_on_image.present? ? current_community.design.expressionist.favourite_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-button-on-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :favourite_btn_on_image
+                .text-center.drag-box.mt-15.image-upload#favourite-button-on-image-upload-holder.favourite-btn-on-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+              /---------------------------- end of navigation button image -----------------------
+            #global-navigation-button-off.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload global navigation button off image for all
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = d.check_box :global_nav_button_off_as_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_global_nav_button_off_as_image"}
+                    %span.pl-15 Yes
+              .row.global-nav-button-off-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Global navigation button off
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.global_nav_button_off.present? ? current_community.design.global_nav_button_off.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                            = image_tag current_community.design.global_nav_button_off.present? ? current_community.design.global_nav_button_off.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-button-off-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :global_nav_button_off
+              .text-center.drag-box.mt-15.image-upload#global-nav-button-off-image-upload-holder.global-nav-button-off-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+              .form-group
+                .col-md-12
+                  .col-md-2
+                  %label.col-sm-3.col-lg-4.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                    Display each gobal navigation off button
+                  .col-sm-12.col-lg-4.col-md-6.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :global_navigation_btn_off_for_all, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_global_navigation_btn_off_for_all"}
+                      %span.pl-15 Yes
+              /------------------------ Navigation off button start--------------------------
+              .global_navigation_off_button_for_all.hidden
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload apartment button off image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_apartment_btn_off_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_apartment_btn_off_image"}
+                      %span.pl-15 Yes
+                .row.apartment-btn-off-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Apartment button off image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.apartment_btn_off_image.present? ? current_community.design.expressionist.apartment_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.apartment_btn_off_image.present? ? current_community.design.expressionist.apartment_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-button-off-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :apartment_btn_off_image
+                .text-center.drag-box.mt-15.image-upload#apartment-button-off-image-upload-holder.apartment-btn-off-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                /-----------------------------gallery off image------------------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload gallery button off image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_gallery_btn_off_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_gallery_btn_off_image"}
+                      %span.pl-15 Yes
+                .row.gallery-btn-off-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Gallery button off image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.gallery_btn_off_image.present? ? current_community.design.expressionist.gallery_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.gallery_btn_off_image.present? ? current_community.design.expressionist.gallery_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-off-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :gallery_btn_off_image
+                .text-center.drag-box.mt-15.image-upload#gallery-button-off-image-upload-holder.gallery-btn-off-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                /--------------------------neighborhood off image ---------------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload neighborhood button off image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_neighborhood_btn_off_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_neighborhood_btn_off_image"}
+                      %span.pl-15 Yes
+                .row.neighborhood-btn-off-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Neighborhood button off image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.neighborhood_btn_off_image.present? ? current_community.design.expressionist.neighborhood_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.neighborhood_btn_off_image.present? ? current_community.design.expressionist.neighborhood_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"neighborhood-button-off-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :neighborhood_btn_off_image
+                .text-center.drag-box.mt-15.image-upload#neighborhood-button-off-image-upload-holder.neighborhood-btn-off-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                /------------------------------imagepage off image --------------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload imagepage button off image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_imagepage_btn_off_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_imagepage_btn_off_image"}
+                      %span.pl-15 Yes
+                .row.imagepage-btn-off-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Imagepage button off image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.imagepage_btn_off_image.present? ? current_community.design.expressionist.imagepage_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.imagepage_btn_off_image.present? ? current_community.design.expressionist.imagepage_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"imagepage-button-off-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :imagepage_btn_off_image
+                .text-center.drag-box.mt-15.image-upload#imagepage-button-off-image-upload-holder.imagepage-btn-off-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+                /----------------------------- webpage off button ---------------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload webpage button off image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_webpage_btn_off_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_webpage_btn_off_image"}
+                      %span.pl-15 Yes
+                .row.webpage-btn-off-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Webpage button off image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.webpage_btn_off_image.present? ? current_community.design.expressionist.webpage_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.webpage_btn_off_image.present? ? current_community.design.expressionist.webpage_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"webpage-button-off-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :webpage_btn_off_image
+                .text-center.drag-box.mt-15.image-upload#webpage-button-off-image-upload-holder.webpage-btn-off-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload 
+                /---------------------------- favourite off button ------------------------------------
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                    Upload favourite button off image
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = e.check_box :display_favourite_btn_off_image, {class: "global-navigation-field"}
+                      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_favourite_btn_off_image"}
+                      %span.pl-15 Yes
+                .row.favourite-btn-off-upload-fields.hidden
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Favourite button off image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.favourite_btn_off_image.present? ? current_community.design.expressionist.favourite_btn_off_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.favourite_btn_off_image.present? ? current_community.design.expressionist.favourite_btn_off_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-button-off-preview-image"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15     
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :favourite_btn_off_image
+                .text-center.drag-box.mt-15.image-upload#favourite-button-off-image-upload-holder.favourite-btn-off-upload-fields.hidden
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload 
+              /------------------------ Navigation off button end----------------------------   
+            #global-navigation-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload global navigation background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_global_nav_background_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_nav_background_image"}
+                    %span.pl-15 Yes
+              .global-nav-background-image-fields.hidden            
+                .row
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Global navigation background image
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .select-logo.mb-20.mt-30
+                          .select-logo-logo
+                            %a.preview-image{:href=>current_community.design.expressionist.global_nav_background_image.present? ? current_community.design.expressionist.global_nav_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
+                              = image_tag current_community.design.expressionist.global_nav_background_image.present? ? current_community.design.expressionist.global_nav_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"global-nav-background-image-preview"
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %span.btn.btn-primary.btn-file.mt-30
+                          %i.fa.fa-upload
+                          Upload File
+                          = file_field_tag :global_nav_background_image
+                .text-center.drag-box.mt-15.image-upload#global-nav-background-image-upload-holder
+                  %span.icon-upload
+                    = image_tag "upload-image.png"
+                    %p Drag &amp; Drop file to Upload
+
+            #application-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload application background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_application_background_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_application_background_image"}
+                    %span.pl-15 Yes
+              .row.application-background-image-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Application background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.expressionist.application_background_image.present? ? current_community.design.expressionist.application_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Application Background Image"}
+                            = image_tag current_community.design.expressionist.application_background_image.present? ? current_community.design.expressionist.application_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"application-background-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :application_background_image
+              .text-center.drag-box.mt-15.image-upload#application-background-image-upload-holder.application-background-image-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            /-------------------1--------------------
+            #apartment-navigation-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload Apartment Background Image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_apartment_nav_bg_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_apartment_nav_bg_image"}
+                    %span.pl-15 Yes
+              .row.apartment-navigation-bg-image-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Appartment background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.expressionist.apartment_nav_bg_image.present? ? current_community.design.expressionist.apartment_nav_bg_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Appartment Navigation Background Image"}
+                            = image_tag current_community.design.expressionist.apartment_nav_bg_image.present? ? current_community.design.expressionist.apartment_nav_bg_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-navigation-bg-image-preview"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :apartment_nav_bg_image
+              .text-center.drag-box.mt-15.image-upload#apartment-navigation-bg-image-upload-holder.apartment-navigation-bg-image-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            /-------------2-----------------------
+            #Gallery-navigation-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload Gallery background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_gallery_nav_bg_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_gallery_nav_bg_image"}
+                    %span.pl-15 Yes
+              .row.gallery-navigation-bg-image-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Gallery background Image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.expressionist.gallery_nav_bg_image.present? ? current_community.design.expressionist.gallery_nav_bg_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery Navigation Background Image"}
+                            = image_tag current_community.design.expressionist.gallery_nav_bg_image.present? ? current_community.design.expressionist.gallery_nav_bg_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-navigation-bg-image-preview"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :gallery_nav_bg_image
+              .text-center.drag-box.mt-15.image-upload#gallery-navigation-bg-image-upload-holder.gallery-navigation-bg-image-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            /--------------------3-------------------------
+            #favourites-navigation-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload favourites background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_favourities_nav_bg_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_favourities_nav_bg_image"}
+                    %span.pl-15 Yes
+              .row.favourites-navigation-bg-image-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Favourites background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.expressionist.favourities_nav_bg_image.present? ? current_community.design.expressionist.favourities_nav_bg_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Favourites Navigation Background Image"}
+                            = image_tag current_community.design.expressionist.favourities_nav_bg_image.present? ? current_community.design.expressionist.favourities_nav_bg_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourities-navigation-bg-image-preview"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :favourities_nav_bg_image
+              .text-center.drag-box.mt-15.image-upload#favourities-navigation-bg-image-upload-holder.favourites-navigation-bg-image-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            /-----------------------------4----------------
+            #additional-pages-navigation-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload additional pages background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_additional_pages_nav_bg_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_additional_pages_nav_bg_image"}
+                    %span.pl-15 Yes
+              .row.additional-pages-navigation-bg-image-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Additional pages background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.expressionist.additional_pages_nav_bg_image.present? ? current_community.design.expressionist.additional_pages_nav_bg_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Application Background Image"}
+                            = image_tag current_community.design.expressionist.additional_pages_nav_bg_image.present? ? current_community.design.expressionist.additional_pages_nav_bg_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"additional-pages-navigation-bg-image-preview"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :additional_pages_nav_bg_image
+              .text-center.drag-box.mt-15.image-upload#additional-pages-navigation-bg-image-upload-holder.additional-pages-navigation-bg-image-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+:javascript 
+  var global_nav_button_on_as_image = "#{current_community.design.global_nav_button_on_as_image}" 
+  var global_nav_button_off_as_image = "#{current_community.design.global_nav_button_off_as_image}" 
+  var display_button_on_bg_color = "#{current_community.design.expressionist.display_button_on_bg_color}"
+  var display_application_background_image = "#{current_community.design.expressionist.display_application_background_image}"
+  var display_apartment_nav_bg_image = "#{current_community.design.expressionist.display_apartment_nav_bg_image}"
+  var display_gallery_nav_bg_image = "#{current_community.design.expressionist.display_gallery_nav_bg_image}"
+  var display_favourities_nav_bg_image = "#{current_community.design.expressionist.display_favourities_nav_bg_image}"
+  var display_additional_pages_nav_bg_image = "#{current_community.design.expressionist.display_additional_pages_nav_bg_image}"
+  var display_global_nav_background_image = "#{current_community.design.expressionist.display_global_nav_background_image}"
+
+  var global_navigation_btn_off_for_all = "#{current_community.design.expressionist.global_navigation_btn_off_for_all}"
+
+  var global_navigation_btn_on_for_all = "#{current_community.design.expressionist.global_navigation_btn_on_for_all}"
+  var display_apartment_btn_on_image = "#{current_community.design.expressionist.display_apartment_btn_on_image}"
+  var display_gallery_btn_on_image = "#{current_community.design.expressionist.display_gallery_btn_on_image}"
+  var display_neighborhood_btn_on_image = "#{current_community.design.expressionist.display_neighborhood_btn_on_image}"
+  var display_imagepage_btn_on_image = "#{current_community.design.expressionist.display_imagepage_btn_on_image}"
+  var display_webpage_btn_on_image = "#{current_community.design.expressionist.display_webpage_btn_on_image}"
+  var display_favourite_btn_on_image = "#{current_community.design.expressionist.display_favourite_btn_on_image}"
+
+  var display_apartment_btn_off_image = "#{current_community.design.expressionist.display_apartment_btn_off_image}"
+  var display_gallery_btn_off_image = "#{current_community.design.expressionist.display_gallery_btn_off_image}"
+  var display_neighborhood_btn_off_image = "#{current_community.design.expressionist.display_neighborhood_btn_off_image}"
+  var display_imagepage_btn_off_image = "#{current_community.design.expressionist.display_imagepage_btn_off_image}"
+  var display_webpage_btn_off_image = "#{current_community.design.expressionist.display_webpage_btn_off_image}"
+  var display_favourite_btn_off_image = "#{current_community.design.expressionist.display_favourite_btn_off_image}"
+
+ 
+  if(display_global_nav_background_image == "true")
+    $('.global-nav-background-image-fields').removeClass('hidden');
+  if(global_nav_button_on_as_image == "true")
+    $('.global-nav-button-on-upload-fields').removeClass('hidden');
+  if(global_nav_button_off_as_image == "true")
+    $('.global-nav-button-off-upload-fields').removeClass('hidden');
+  if(display_button_on_bg_color == "true")
+    $('.button-on-background-color-field').removeClass('hidden');
+  if(display_application_background_image == "true")
+    $('.application-background-image-fields').removeClass('hidden');
+  if(display_apartment_nav_bg_image == "true")
+    $('.apartment-navigation-bg-image-fields').removeClass('hidden');
+  if(display_gallery_nav_bg_image == "true")
+    $('.gallery-navigation-bg-image-fields').removeClass('hidden');
+  if(display_favourities_nav_bg_image == "true")
+    $('.favourites-navigation-bg-image-fields').removeClass('hidden');
+  if(display_additional_pages_nav_bg_image == "true")
+    $('.additional-pages-navigation-bg-image-fields').removeClass('hidden');
+
+  if(global_navigation_btn_off_for_all == "true")
+    $('.global_navigation_off_button_for_all').removeClass('hidden');
+
+  if(global_navigation_btn_on_for_all == "true")
+    $('.global_navigation_button_for_all').removeClass('hidden');
+  if(display_apartment_btn_on_image == "true")
+    $('.apartment-btn-on-upload-fields').removeClass('hidden');
+  if(display_gallery_btn_on_image == "true")
+    $('.gallery-btn-on-upload-fields').removeClass('hidden');
+  if(display_neighborhood_btn_on_image == "true")
+    $('.neighborhood-btn-on-upload-fields').removeClass('hidden');
+  if(display_imagepage_btn_on_image == "true")
+    $('.imagepage-btn-on-upload-fields').removeClass('hidden');
+  if(display_webpage_btn_on_image == "true")
+    $('.webpage-btn-on-upload-fields').removeClass('hidden');
+  if(display_favourite_btn_on_image == "true")
+    $('.favourite-btn-on-upload-fields').removeClass('hidden');
+
+  if(display_apartment_btn_off_image == "true")
+    $('.apartment-btn-off-upload-fields').removeClass('hidden');
+  if(display_gallery_btn_off_image == "true")
+    $('.gallery-btn-off-upload-fields').removeClass('hidden');
+  if(display_neighborhood_btn_off_image == "true")
+    $('.neighborhood-btn-off-upload-fields').removeClass('hidden');
+  if(display_imagepage_btn_off_image == "true")
+    $('.imagepage-btn-off-upload-fields').removeClass('hidden');
+  if(display_webpage_btn_off_image == "true")
+    $('.webpage-btn-off-upload-fields').removeClass('hidden');
+  if(display_favourite_btn_off_image == "true")
+    $('.favourite-btn-off-upload-fields').removeClass('hidden');
+    
+
+  $('#community_design_attributes_expressionist_attributes_display_global_nav_background_image').change(function(){
+    if($(this).is(':checked')){
+        $('.global-nav-background-image-fields').removeClass('hidden');
+      }
+    else{
+        $('.global-nav-background-image-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_global_nav_button_on_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.global-nav-button-on-upload-fields').removeClass('hidden');
+        $('#community_design_attributes_expressionist_attributes_global_navigation_btn_on_for_all').prop("checked", false);
+        $('.global_navigation_button_for_all').addClass('hidden');
+      }
+    else{
+        $('.global-nav-button-on-upload-fields').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_global_nav_button_off_as_image').change(function(){
+    if($(this).is(':checked')){
+        $('.global-nav-button-off-upload-fields').removeClass('hidden');
+        $('#community_design_attributes_expressionist_attributes_global_navigation_btn_off_for_all').prop("checked", false);
+        $('.global_navigation_off_button_for_all').addClass('hidden');
+      }
+    else{
+        $('.global-nav-button-off-upload-fields').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_expressionist_attributes_display_button_on_bg_color').change(function(){
+    if($(this).is(':checked')){
+        $('.button-on-background-color-field').removeClass('hidden');
+      }
+    else{
+        $('.button-on-background-color-field').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_expressionist_attributes_display_application_background_image').change(function(){
+    if($(this).is(':checked')){
+        $('.application-background-image-fields').removeClass('hidden');
+      }
+    else{
+        $('.application-background-image-fields').addClass('hidden');
+     }
+  });
+  //////----------------------------------------------------
+  $('#community_design_attributes_expressionist_attributes_global_navigation_btn_on_for_all').change(function(){
+    if($(this).is(':checked')){
+        $('.global_navigation_button_for_all').removeClass('hidden');
+        $('#community_design_attributes_global_nav_button_on_as_image').prop("checked", false);
+        $('.global-nav-button-on-upload-fields').addClass('hidden');
+      }
+    else{
+        $('.global_navigation_button_for_all').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_global_navigation_btn_off_for_all').change(function(){
+    if($(this).is(':checked')){
+        $('.global_navigation_off_button_for_all').removeClass('hidden');
+        $('#community_design_attributes_global_nav_button_off_as_image').prop("checked", false);
+        $('.global-nav-button-off-upload-fields').addClass('hidden');
+      }
+    else{
+        $('.global_navigation_off_button_for_all').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_apartment_btn_on_image').change(function(){
+    if($(this).is(':checked')){
+        $('.apartment-btn-on-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.apartment-btn-on-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_gallery_btn_on_image').change(function(){
+    if($(this).is(':checked')){
+        $('.gallery-btn-on-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.gallery-btn-on-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_neighborhood_btn_on_image').change(function(){
+    if($(this).is(':checked')){
+        $('.neighborhood-btn-on-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.neighborhood-btn-on-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_imagepage_btn_on_image').change(function(){
+    if($(this).is(':checked')){
+        $('.imagepage-btn-on-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.imagepage-btn-on-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_webpage_btn_on_image').change(function(){
+    if($(this).is(':checked')){
+        $('.webpage-btn-on-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.webpage-btn-on-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_favourite_btn_on_image').change(function(){
+    if($(this).is(':checked')){
+        $('.favourite-btn-on-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.favourite-btn-on-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_apartment_btn_off_image').change(function(){
+    if($(this).is(':checked')){
+        $('.apartment-btn-off-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.apartment-btn-off-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_gallery_btn_off_image').change(function(){
+    if($(this).is(':checked')){
+        $('.gallery-btn-off-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.gallery-btn-off-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_neighborhood_btn_off_image').change(function(){
+    if($(this).is(':checked')){
+        $('.neighborhood-btn-off-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.neighborhood-btn-off-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_imagepage_btn_off_image').change(function(){
+    if($(this).is(':checked')){
+        $('.imagepage-btn-off-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.imagepage-btn-off-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_expressionist_attributes_display_webpage_btn_off_image').change(function(){
+    if($(this).is(':checked')){
+        $('.webpage-btn-off-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.webpage-btn-off-upload-fields').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_expressionist_attributes_display_favourite_btn_off_image').change(function(){
+    if($(this).is(':checked')){
+        $('.favourite-btn-off-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.favourite-btn-off-upload-fields').addClass('hidden');
+     }
+  });
+  ///////---------------------starting validations-----------
+  $('#community_design_attributes_expressionist_attributes_display_apartment_nav_bg_image').change(function(){
+    if($(this).is(':checked')){
+        $('.apartment-navigation-bg-image-fields').removeClass('hidden');
+      }
+    else{
+        $('.apartment-navigation-bg-image-fields').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_expressionist_attributes_display_gallery_nav_bg_image').change(function(){
+    if($(this).is(':checked')){
+        $('.gallery-navigation-bg-image-fields').removeClass('hidden');
+      }
+    else{
+        $('.gallery-navigation-bg-image-fields').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_expressionist_attributes_display_favourities_nav_bg_image').change(function(){
+    if($(this).is(':checked')){
+        $('.favourites-navigation-bg-image-fields').removeClass('hidden');
+      }
+    else{
+        $('.favourites-navigation-bg-image-fields').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_expressionist_attributes_display_additional_pages_nav_bg_image').change(function(){
+    if($(this).is(':checked')){
+        $('.additional-pages-navigation-bg-image-fields').removeClass('hidden');
+      }
+    else{
+        $('.additional-pages-navigation-bg-image-fields').addClass('hidden');
+     }
+  });
+  
+  adjustBorderOptionsOnGlobalNaviagtion($("#community_design_attributes_secondary_page_menu_border"),$('#community_design_attributes_button_shape').val());
+
+  $('#community_design_attributes_button_shape').change(function(){
+    setBorderOptionsOnGlobalNaviagtion($("#community_design_attributes_secondary_page_menu_border"),$(this).val());
+  });

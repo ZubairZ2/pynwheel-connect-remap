@@ -1,0 +1,54 @@
+- content_for :title, "Companies - Pynwheel"
+
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-columns
+        Companies
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-6
+            .mt-35
+              %a.btn.btn-success.mb-20{:href => "/"}
+                List all communities
+          .col-md-6
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/new"}
+                %i.fa.fa-plus-circle
+                ADD COMPANY
+        .box.box-widget.panel-box
+          .box-header
+            
+            .row
+              .col-md-12
+                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+                  %thead
+                    %tr
+                      %th{:width => "79"} Sr #
+                      %th Company Name
+                      %th{:width => "250"} Actions
+                  %tbody
+                    - @companies.each_with_index do |company,index|
+                      %tr
+                        %td
+                          =index+1
+                        %td
+                          =company.name
+                        %td
+                          %a.text-success{:href => "/companies/#{company.id}/edit"}
+                            %i.fa.fa-edit
+                          %a.text-danger{:href => "/companies/#{company.id}","data-method"=>:delete}
+                            %i.fa.fa-trash
+
+            
+                  
+      / End Panel left Side
+      / Start Panel Right Side
+      .col-lg-4.col-md-12
+        .row
+          .col-md-12
+
+        

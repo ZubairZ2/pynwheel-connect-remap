@@ -1,0 +1,17 @@
+.text-center.image-upload.home-page-drag-box#additional-image-upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
+  %p Drop files here or click to Upload
+.row.slide-imgage-boxs.sortable
+  - sortable_fetch(@page_images) do |additional_image, id_tag|
+    .col-lg-3{:id=> id_tag}
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            %a.preview-image{:href=>additional_image.image? ? additional_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>additional_image.name}
+              = image_tag additional_image.image.url
+        .icons
+          = link_to show_image_in_modal_community_imagepage_path(@community,@imagepage,additional_image_id: additional_image.id), remote: true do 
+            %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+          %a.text-danger{"data-name"=>"Image","data-href" => "#{ delete_additional_image_community_imagepage_path(@community,@imagepage,:additional_image_id => additional_image.id)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+            %i.fa.fa-close
+        %h4= additional_image.name

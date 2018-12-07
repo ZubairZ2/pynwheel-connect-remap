@@ -1,0 +1,31 @@
+!!!
+%html
+  %head
+    %meta{:charset => "utf-8"}/
+    %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
+    %title= yield(:title)
+    %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
+    = csrf_meta_tags
+    = stylesheet_link_tag    'application', media: 'all'
+    = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+    %script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
+    %link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
+    = favicon_link_tag 'logo-small.png'
+  %body.hold-transition.skin-blue.sidebar-mini{:id => "#{controller_name == "home" || controller_name == "companies" ? "no-sidemenu" : ""}"}
+    .wrapper
+      = render partial: "/header"
+      - unless controller_name == "home" || controller_name == "companies"
+        - if (controller_name == "communities" && sidemenu_communities_actions.include?(params[:action])) &&  user_signed_in?
+          = render partial: "/sidemenu_communities"
+        - elsif controller_name == "users"  &&  user_signed_in?
+          = render partial: "/sidemenu_communities"  
+        - elsif user_signed_in? 
+          = render partial: "/side_menu"
+      .content-wrapper
+        = render partial: "/messages"
+        = render partial: "/breadcrumbs"
+        = yield
+      = render partial: "/footer"
+      = render partial: "/delete_confirmation_modal"
+      = render partial: "/alert_modals"
+

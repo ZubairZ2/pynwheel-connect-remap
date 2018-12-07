@@ -1,0 +1,51 @@
+- content_for :title, "Add Site Map - Pynwheel"
+%section
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-map-marker
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Site
+          %span Map
+      / /.box-header
+      / form start
+      = form_for [@community,@sitemap],:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.theme-setting.col-lg-offset-1
+              .form-group.hidden
+                %label.col-sm-12.col-lg-12.col-md-3.col-xs-12.control-label
+                  %p.text-warning
+                    Please upload image or svg of dimensions 1412x932 for best results. 
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Upload Image
+                  %span 
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .select-img.mb-20
+                    .select-img-img
+                      %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Site Map Image"}
+                        = image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+                  / .drag-box
+                  /   %span.icon-upload
+                  /     = image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+                  %span.btn.btn-primary.btn-file.mt-30
+                    %i.fa.fa-upload
+                    Upload File
+                    = f.file_field :image
+                    = f.hidden_field :image_cache
+        / /.box-body
+        .box-footer
+          = f.submit "ADD SITEMAP", class: "btn btn-success pull-right"
+        / /.box-footer
+:javascript
+
+  $("#sitemap_image").change(function(){
+      readImageIncludingSVG(this);
+  });        

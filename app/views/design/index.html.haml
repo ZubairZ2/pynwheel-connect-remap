@@ -1,0 +1,81 @@
+- content_for :title, "Design - Pynwheel"
+.divLoading.hidden
+%section.is-home-page
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-tv
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12.mt-30
+        .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
+          %ul#myTabs.nav.nav-tabs{:role => "tablist"}
+            / %li.active{:role => "presentation"}
+            /   %a#home-tab{"aria-expanded" => "true", "data-toggle" => "tab", :href => "#home", :role => "tab"} Logo Options
+            - if can? :select_theme, current_user  
+              %li.active{:role => "presentation"}
+                %a#theme-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-theme", :role => "tab"} Select Theme     
+            %li.hidden{:role => "presentation"}
+              %a#font-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-font", :role => "tab"} Font
+            %li.hidden{:role => "presentation"}
+              %a#menu-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-menu", :role => "tab"} Menu  
+            %li.hidden{:role => "presentation"}
+              %a#overlay-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-overlay", :role => "tab"} Expressionist Options
+            %li.hidden{:role => "presentation"}
+              %a#home-page-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-home-page", :role => "tab"} Home Page  
+            %li.hidden{:role => "presentation"}
+              %a#global-navigation-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-global-navigation", :role => "tab"} Global Navigation
+            %li.hidden{:role => "presentation"}
+              %a#filter-panel-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-filter-panel", :role => "tab"} Filter Panel
+            %li.hidden{:role => "presentation"}
+              %a#floorplan-unit-popup-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-floorplan-unit-popup", :role => "tab"} Floorplan/Unit Popup
+            %li.hidden{:role => "presentation"}
+              %a#map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-map-marker", :role => "tab"} Map Marker
+            %li.hidden{:role => "presentation"}
+              %a#gables-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-gables", :role => "tab"} Gables Settings                
+            %li.hidden.dropdown{:role => "presentation"}
+              %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
+                Style
+                %span.caret
+              %ul.dropdown-menu{"aria-labelledby" => "myTabDrop1"}
+                %li
+                  %a#custom-style-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#c-style", :role => "tab"} Custom Menu Buttons 
+                %li
+                  %a#button-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#u-button", :role => "tab"} Upload Menu Buttons
+          #myTabContent.tab-content.add-plan
+            / Start L>ogo Upload section
+            / #home.tab-pane.fade.active.in{:role => "tabpanel"}
+            /   = render 'logo'
+            #s-theme.tab-pane.fade.active.in{:role => "tabpanel"}
+              = render 'theme'
+            #s-overlay.tab-pane.fade{:role => "tabpanel"}
+              = render 'overlay'
+            #s-global-navigation.tab-pane.fade{:role => "tabpanel"}
+              = render 'global_navigation'
+            #s-filter-panel.tab-pane.fade{:role => "tabpanel"}
+              = render 'filter_panel'
+            #s-home-page.tab-pane.fade{:role => "tabpanel"}
+              = render 'home_page' 
+            #s-map-marker.tab-pane.fade{:role => "tabpanel"}
+              = render 'map_marker'
+            #s-floorplan-unit-popup.tab-pane.fade{:role => "tabpanel"}
+              = render 'floorplan_unit_popup'
+            #s-gables.tab-pane.fade{:role => "tabpanel"}
+              = render 'gables_setting'               
+            #s-font.tab-pane.fade{:role => "tabpanel"}
+              = render 'font'
+            #s-menu.tab-pane.fade{:role => "tabpanel"}
+              = render 'menu'  
+            #c-style.tab-pane.fade{:role => "tabpanel"}
+              = render 'custom_style'
+            #u-button.tab-pane.fade{:role => "tabpanel"}
+              = render 'button'
+:javascript 
+  var community_id = #{params[:community_id]};
+  var selected_theme = '#{@community.theme_name}';
+  var expressionist_id = '#{@community.design.expressionist.id}';
+  window.current_theme = '#{@community.theme_name}';

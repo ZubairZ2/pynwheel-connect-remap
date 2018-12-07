@@ -1,0 +1,50 @@
+.row
+  .col-md-12
+    %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+      %thead
+        %tr
+          %th{:width => "79"} Sr #
+          %th First Name
+          %th Last Name
+          %th Email
+          %th Community
+          %th Role
+          %th Actions
+      %tbody
+        -if current_user.is_super_admin?
+          - @users.each_with_index  do |u,index|
+            %tr
+              %td= index+1
+              %td= u.first_name
+              %td= u.last_name
+              %td
+                %b 
+                  =u.email
+              %td
+                %b 
+                  =u.communities.map(&:name).to_sentence
+              %td= u.role
+              %td
+                %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
+                  %i.fa.fa-edit
+                %a.text-danger{"data-name"=>"User","data-href" => "/companies/#{current_company.id}/employees/#{u.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                  %i.fa.fa-trash
+        -else
+          - s = User.where(invited_by_id: current_user.id)
+          - s.each_with_index  do |u,index|
+            %tr
+              %td= index+1
+              %td= u.first_name
+              %td= u.last_name
+              %td
+                %b 
+                  =u.email
+              %td
+                %b 
+                  =u.communities.map(&:name).to_sentence
+              %td= u.role
+              %td
+                %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
+                  %i.fa.fa-edit
+                %a.text-danger{"data-name"=>"User","data-href" => "/companies/#{current_company.id}/employees/#{u.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                  %i.fa.fa-trash

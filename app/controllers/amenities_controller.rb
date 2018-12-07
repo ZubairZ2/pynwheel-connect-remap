@@ -1,0 +1,61 @@
+class AmenitiesController < ApplicationController
+  before_action :authenticate_user!
+  before_action :check_community
+  add_breadcrumb "Home", :root_path
+
+  def index
+    @amenities = current_community.amenities.order(id: :desc)
+    add_breadcrumb "Amenity Images", community_amenities_path(current_community)
+  end
+
+  def create
+    current_community.amenities.create(image: params[:src],name: params[:name])
+    @amenities = current_community.amenities.order(id: :desc)
+  end
+
+  def edit
+    @amenity = current_community.amenities.find (params[:id])
+  end
+
+  def update
+    @amenity = current_community.amenities.find(params[:id])
+    if @amenity.update_attributes(amenity_params)
+      redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+    else
+      redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
+    end
+  end
+
+  def destroy
+    @amenity = current_community.amenities.find (params[:id])
+    if @amenity.destroy
+      redirect_to community_amenities_path(current_community), notice: "Amenity deleted successfully"
+    else
+      redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
+    end
+  end
+  def check_community
+    unless current_user.is_super_admin?
+      if params[:community_id].present?
+        all_ids = []
+        current_user.communities.each do |c|
+          # all_ids.insert(c.id)
+          all_ids << c.id
+        end
+        # byebug
+        # puts '+++++++++++++++', all_ids[0]
+        if all_ids.include? params[:community_id].to_i
+
+        else
+          redirect_to root_path
+        end
+      end
+    end
+  end
+  private
+
+  def amenity_params
+    params.require(:amenity).permit!
+  end
+
+end

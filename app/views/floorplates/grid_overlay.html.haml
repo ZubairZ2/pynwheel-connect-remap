@@ -1,0 +1,59 @@
+- content_for :title, "Grid Overlay - Pynwheel"
+%section.is-sitemap
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-map-marker
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Adjust
+          %span Markers
+          %span.hidden#active_x_plot 0
+          
+          %span.hidden#active_y_plot 0
+        .pull-right.btn-btn-danger
+          = link_to "Map View" , community_floorplate_plotexp_path(current_community,@floorplate), :class=>"btn btn-primary"
+          %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
+      / /.box-header
+      / form start
+      .box-body.map-body-top.panel-box 
+        = form_tag community_floorplate_adjust_marker_positions_path(current_community,@floorplate),:class=>"mt-40" do 
+          .col-md-1
+            %label.mt-10 X Position
+          .col-md-4
+            .form-group.pb-5  
+              = text_field_tag "horizontal_position", nil,:class=>"form-control" ,:placeholder=>"Enter X Position"
+          .col-md-1    
+            %label.mt-10 Y Position
+          .col-md-4
+            .form-group.pb-5  
+              = text_field_tag "vertical_position", nil,:class=>"form-control",:placeholder=>"Enter Y Position"
+          .col-md-2    
+            = submit_tag "Submit",:class=>"btn btn-primary"
+        %hr
+        %table.table.table-bordered.table-striped.table-hover.table-responsive
+          %thead
+            %tr
+              %th Marketing Name
+              %th X Position
+              %th Y Position
+              %th Actions
+          %tbody
+            - @units.each do |unit|
+              %tr
+                %td= unit.marketing_name
+                = form_tag adjust_position_community_unit_path(current_community,unit) do
+                  = hidden_field_tag 'redirect_path' , community_floorplate_grid_overlay_path(current_community,@floorplate)
+                  %td
+                    = text_field_tag "horizontal_position", unit.x_plot,:class=>"form-control"
+                  %td
+                    = text_field_tag "vertical_position", unit.y_plot  ,:class=>"form-control"
+                  %td 
+                    = submit_tag "Submit",:class=>"btn btn-primary"  
+
+            

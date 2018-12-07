@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  provider_amenity_id: MyString
+  amenty_type: MyString
+  description: MyText
+  unit_id: 1
+
+two:
+  provider_amenity_id: MyString
+  amenty_type: MyString
+  description: MyText
+  unit_id: 1

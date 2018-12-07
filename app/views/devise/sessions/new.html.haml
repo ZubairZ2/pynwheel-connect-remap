@@ -1,0 +1,30 @@
+- content_for :title, "Login - Pynwheel"
+.login-bg
+  .container.text-center.login-top
+    %a{:href => "/"}
+      = image_tag "pynwheel-logo.png"
+.login-from
+  .container
+    %i.fa.fa-caret-down
+    .row
+      .col-md-3.col-lg-4
+      .col-md-6.col-lg-4
+        .text-center
+          %h3 Log In to your account
+        = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
+          .form-group
+            = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true 
+            %i.fa.fa-user
+          .form-group
+            = f.password_field :password, :class=>"form-control validate[required]", :placeholder=>"Password",:maxlength=>"50", autocomplete: "off"
+            %i.fa.fa-key
+          .mb-30
+            - if devise_mapping.rememberable?   
+              %span
+                = f.check_box :remember_me 
+                Remember
+            = link_to "Forgot Password ?", new_user_password_path,class: "pull-right mt-5"
+          = f.submit "Log In", :class => "btn btn-primary btn-block" 
+        .text-center
+          %p.copy-right
+            = "© "+"#{Date.today.year}"+" Pynwheel"                  

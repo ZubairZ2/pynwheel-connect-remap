@@ -1,0 +1,65 @@
+#image-upload-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Warning
+      .modal-body
+        Only JPEG,PNG,JPG files are allowed
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok
+#image-and-video-upload-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Warning
+      .modal-body
+        Only JPEG,PNG,JPG,MP4 files are allowed
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok        
+#image-and-svg-upload-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Warning
+      .modal-body
+        Only JPEG,PNG,JPG,SVG files are allowed
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok        
+#video-upload-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Warning
+      .modal-body
+        Only mp4 files are allowed
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok
+#spreadsheet-file-upload-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Warning
+      .modal-body
+        Only xlsx files are allowed
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok        
+#marker-plotting-error.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Error
+      .modal-body
+        Place marker for selected unit on Map
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok    
+- unless current_community.nil?       
+  #share-webpages.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+    .modal-dialog
+      .modal-content
+        .modal-header
+          Share Webpages Link
+        .modal-body
+          %input.form-control#url{:value =>'<iframe src="'+community_webpages_url(current_community)+'" width="1200" height="800"></iframe>'}/
+        .modal-footer
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} cancel
+          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard

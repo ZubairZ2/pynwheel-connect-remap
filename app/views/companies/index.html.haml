@@ -1,0 +1,42 @@
+- content_for :title, "Companies - Pynwheel"
+/ Main content
+.container
+  %section
+    .row
+      .col-md-12
+        %h2 Companies
+        %h5
+          All companies are listed here.
+        %p.mb-30
+          This Admin feature allows you to directly access any company in the system
+    .row
+      .col-md-12
+        .col-md-6
+          .mt-35
+            %a.btn.btn-success.mb-20{:href => "/"}
+              List all communities
+        - if can? :manage, current_user.company      
+          .col-md-6
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/new"}
+                %i.fa.fa-plus-circle
+                ADD COMPANY
+
+    .box.box-widget.panel-box
+      #new-search-area
+      %table#companies.table.table-hover.table-responsive
+        %thead
+          %tr
+            %th Company
+            %th{:width => "250"} Actions
+        %tbody
+          - @companies.each do |company|
+            %tr
+              %td
+                %h4.h4
+                  = link_to company.name, company_communities_path(company)
+              %td
+                %a.text-success{:href => "/companies/#{company.id}/edit"}
+                  %i.fa.fa-edit
+                %a.text-danger{"data-name"=>"Company","data-href" => "/companies/#{company.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                  %i.fa.fa-trash

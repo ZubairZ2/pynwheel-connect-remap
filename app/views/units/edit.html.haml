@@ -1,0 +1,24 @@
+- content_for :title, "Edit Unit - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Edit
+          %span Unit
+      / /.box-header
+      / form start
+      = form_for @unit,:url=>community_unit_path(:id=>@unit.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render :partial=>'form',:locals=>{:f=>f}
+        / /.box-body
+        .box-footer
+          = f.submit "Save Changes", :class=>"btn btn-success pull-right"
+:javascript
+
+
+  $("#unit_secondary_image").change(function(){
+      readSecondaryURL(this);
+  });

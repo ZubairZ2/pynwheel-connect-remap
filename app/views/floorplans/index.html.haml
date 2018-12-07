@@ -1,0 +1,113 @@
+- content_for :title, "Floor plans - Pynwheel"
+%section
+  .content
+    / .row.mt-25.mb-20
+    /   .form-group
+    /     %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+    /       Select Community
+    /     .col-sm-12.col-lg-12.col-md-12.col-xs-12
+    /       = select_tag :communities_at_floorplans, options_for_select(@communities.collect{|c| [c.name,c.id]},params[:community_id]), :class=>"form-control"
+    .title-heading
+      %h4
+        %i.fa.fa-columns
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    = render 'units/floor_plan_button'   
+    .row
+      #floorplans-index
+        = render 'index'
+      .col-lg-4.col-md-12
+        .row
+          .col-md-12
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
+                %i.fa.fa-plus-circle
+                ADD FLOOR PLAN
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
+                ADD DESCRIPTION
+
+        .row
+          .col-md-12#holder
+            .box.box-widget.panel-box.pl-20.pr-20.pb-10
+              .row
+                .col-md-12.col-lg-9.col-xs-9
+                  %h4 Upload File
+                  %p.pt-10.mb-20 Upload the File here, then drag  drop it to the image column in the table.Only jpeg,jpg and png files are allowed.
+                .col-md-12.col-lg-3.col-xs-3
+                  %img{:alt => "", :src => "/assets/upload-image.jpg", :style => "max-width:100%;", :title => ""}
+              %span.btn.btn-success.btn-file
+                %i.fa.fa-plus
+                Add Files
+                %input#mutiple-files{:type => "file",:multiple=>true}
+              %table.table-striped.table.upload-image#pre-save-floorplan-images-table
+                %tr{:valign => "middle"}
+                - if current_community.has_temporary_images?
+                  - current_community.temporary_images.each do |image|
+                    %tr{:valign => "middle",:id=>"row#{image.position}"}
+                      %td{:align => "left"}
+                        .drop-img.generated-class{:ondragover => "allowDrop(event)", :ondrop => "dropBack(event)",:id=>"parent-#{image.position}"}
+                          %img{:alt => "", :draggable => "true", :ondragstart => "drag(event)", :src => "#{image.image}", :title => "",:id=>"drag-#{image.position}"}/
+                      %td{:id=>"img-name-#{image.position}"}
+                        = image.name
+                      %td
+                        %a.btn.btn-danger.btn-sm{:href => "javascript::;", :onclick => "removeDivWithTemporaryImage(#{image.position});"} Remove
+                        //.text-center.mt-10.drag-drop-section
+              .text-center.mt-10.drag-drop-section
+                %img{:alt => "", :src => "/assets/upload-image.png", :style => "max-width:100%;", :title => ""}
+                %p.mt-10
+                Drag & Drop file to Upload   
+
+#modal-to-add-floorplan-description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Add Description
+      = form_tag add_description_community_floorplans_path(@community) do
+        .modal-body.set-description-modal-body
+          = text_area :description, nil,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_floorplan_for_description'
+              %label Select all
+          .row
+            - @floorplans.each do |floorplan|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'floorplan_ids[]', floorplan.id,false,class: 'description-floorplan-checkbox'
+                = h floorplan.name
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+
+  /End Panel Right Side
+:javascript
+  $(document).ready(function(){
+      $('.wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
+      });
+  })
+  $('#select_all_floorplan_for_description').change(function(){
+      if($(this).is(':checked')){
+        $('.description-floorplan-checkbox').prop('checked',true)
+      }
+      else{
+        $('.description-floorplan-checkbox').prop('checked',false)
+      }
+    });
+  $("#communities_at_floorplans").change(function(){
+    var community_id = $('#communities_at_floorplans').val();
+
+    $.ajax({
+      url: "/communities/"+community_id+"/floorplans",
+      type: "GET",
+      dataType: "script"
+    });
+  });
+  $('.apartment-setting-field').change(function(){
+    $('.apartment-settings-form').submit();
+  });
+  $(document).ready(function(){
+    $('.floor_plan_upload_image').affix({offset: {top: 205} }); 
+  });

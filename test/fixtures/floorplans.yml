@@ -1,0 +1,31 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  property_id: MyString
+  provider_floorplan_id: MyString
+  name: MyString
+  unit_count: 1
+  units_available: 1
+  bedrooms: 1
+  bathrooms: 1
+  market_rent: 1.5
+  square_feet: 1.5
+  deposit: 1.5
+  comment: MyText
+  description: MyText
+  file_url: MyString
+
+two:
+  property_id: MyString
+  provider_floorplan_id: MyString
+  name: MyString
+  unit_count: 1
+  units_available: 1
+  bedrooms: 1
+  bathrooms: 1
+  market_rent: 1.5
+  square_feet: 1.5
+  deposit: 1.5
+  comment: MyText
+  description: MyText
+  file_url: MyString

@@ -1,0 +1,154 @@
+- unless controller.action_name == "profile"
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Role
+      %span Select role here	
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control"}
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Company
+      %span Select Company
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.select :company_name, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control company_list", "data-user-id" =>  f.object.id}
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Communities
+      %span Select communities  
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+
+
+      -if current_user.is_super_admin?
+        = f.select :community_ids, options_for_select('',f.object.communities.map(&:id)),{},{class: "form-control validate[required]",:multiple=>true}
+      -else
+        = f.select :community_ids, options_for_select(current_user.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control validate[required]",:multiple=>true}
+- else 
+  = hidden_field_tag "action_name","profile"       
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Email
+    %span Specify email here
+  - if current_user.is_super_admin?
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true
+  - else
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50",:readonly => true, autofocus: true
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    First Name
+    %span Specify first_name here	
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :first_name, :class=>"form-control validate[required]", :placeholder=>"First Name",:maxlength=>"20" 
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Last Name
+    %span Specify last_name here	
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name" ,:maxlength=>"50" 
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Upload Image
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .select-img.mb-20
+      .select-img-img= image_tag f.object.avatar.present? ? f.object.avatar.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+    %span.btn.btn-default.black-button.btn-sm.btn-file
+      Select Image
+      = f.file_field :avatar
+:javascript
+  $('#user_community_ids').multiSelect();
+
+
+  $(".company_list").change(function(e){
+    var selected_company =  $(".company_list").val()
+    var userid = $(this).attr('data-user-id');
+    
+  $.ajax({
+    url: "/communities/invitation_communities",
+    type: "POST",
+    data: {company: selected_company },
+
+    success: function(resp){
+    $('#user_community_ids').multiSelect('removeAllOptions');
+    parsed_arr = $.parseJSON(resp.data);
+    for (var i=0; i<parsed_arr.length  ; i++) {
+
+      $('#user_community_ids').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
+
+    }
+
+
+    $.ajax({
+      url: "/communities/selected_communities",
+      type: "POST",
+      data: {user:  $('#user_company_name').attr('data-user-id') },
+
+      success: function(resp2){
+      parsed_arr2 = $.parseJSON(resp2.data);
+      for (var j=0; j < parsed_arr2.length ; j++) {
+        for (var k=0; k < parsed_arr.length;k++)
+        {
+          if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
+          {
+            $('#user_community_ids').multiSelect('select',parsed_arr2[j][1].toString());
+          }
+          else
+          {
+
+
+            $('#user_community_ids').multiSelect('addOption', { value: parsed_arr2[j][1], text: parsed_arr2[j][0],disabled: true});
+            $('#user_community_ids').multiSelect('select_disable',parsed_arr2[j][1].toString());
+
+
+
+          }
+        }
+
+      }
+
+      }
+
+
+    });
+
+
+
+
+    }
+
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  });
+
+
+
+
+
+
+
+
+

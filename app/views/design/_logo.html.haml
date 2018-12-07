@@ -1,0 +1,28 @@
+.row
+  .col-md-12
+    .form-group
+      - if gables_theme(@community) || @community.is_panther? || @community.is_expressionist?
+        = link_to "Home Page Logo", secondary_logo_community_design_index_path(@community), class: "btn btn-primary btn-file pull-right mr-15"
+.row
+  .col-lg-12
+    .form-group
+      %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
+        Upload Logo
+        %span Upload site logo to display in page
+    %span.btn.btn-primary.btn-file.ml-15
+      %i.fa.fa-upload
+      Upload File
+      = file_field_tag :logo  
+
+.text-center.drag-box.mt-15.image-upload#design-page-logo-upload-holder
+  %span.icon-upload
+    = image_tag "upload-image.png"
+    %p Drag &amp; Drop file to Upload  
+      
+.row
+  .col-lg-12
+    .form-group
+      .select-logo.center-img.mb-20.mt-30
+        .select-logo-logo
+          %a.preview-image{:href=>current_community.logo.present? ? current_community.logo.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Logo"}
+            = image_tag current_community.logo.present? ? current_community.logo.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"preview-image"                  

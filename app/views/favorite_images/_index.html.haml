@@ -1,0 +1,17 @@
+.row.slide-imgage-boxs.sortable
+  - sortable_fetch(@favorite_images) do |favorite_image, id_tag|
+    .col-lg-2{:id=> id_tag}
+      .slide-image
+        .image-box.video-box
+          .images.height-200 
+            %a.preview-image{:href=>favorite_image.image? ? favorite_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>favorite_image.name}
+              = image_tag favorite_image.image.url
+        .icons
+          / = link_to show_image_in_modal_community_favorite_setting_path(@community,@favorite_setting,favorite_image_id: favorite_image.id), remote: true do 
+          /   %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+          %a.text-danger{"data-name"=>"#{favorite_image.is_video? ? 'Video' : 'Image'}","data-href" => "/communities/#{@community.id}/favorite_settings/#{@community.favorite_setting.id}/delete_favorite_image?favorite_image_id=#{favorite_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+            %i.fa.fa-close
+        %h4= favorite_image.name        
+
+
+#show_modal

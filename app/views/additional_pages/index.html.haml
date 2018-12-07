@@ -1,0 +1,60 @@
+- content_for :title, "Additional Pages - Pynwheel"
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-pagelines
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .box.box-widget.panel-box
+          .row
+            .col-md-12
+              %table.table.table-bordered.table-striped.table-hover.table-responsive
+                %thead
+                  %tr
+                    %th{:width => "79"} Sr #
+                    %th Name
+                    %th Type
+                    %th Position
+                    %th Display on homepage
+                    %th{:width => "100"} Actions
+                %tbody
+                  - @pages.each_with_index do |page,index|
+                    %tr
+                      %td= index+1
+                      %td
+                        = link_to page.name, page.is_a?(Imagepage) ? community_imagepage_path(@community,page) : '#'
+                      %td= page.class
+                      %td= page.position
+                      %td= page.display_on_homepage ? "Yes" : "No"
+                      %td
+                        - if page.is_a? Webpage
+                          = link_to edit_community_contentpage_path(@community,page), remote: true, class: "text-success ml-5" do
+                            %i.fa.fa-edit
+                          %a.text-danger{"data-name"=>"Page","data-href" => "/communities/#{@community.id}/contentpages/#{page.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                            %i.fa.fa-trash
+                        - else
+                          = link_to edit_community_imagepage_path(@community,page), remote: true, class: "text-success ml-5" do
+                            %i.fa.fa-edit
+                          %a.text-danger{"data-name"=>"Page","data-href" => "/communities/#{@community.id}/imagepages/#{page.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                            %i.fa.fa-trash
+                          %a.text-blue.ml-5{:href => "#{community_imagepage_path(@community,page)}"}
+                            %i.fa.fa-eye
+        .row
+          .col-md-12
+            = link_to new_community_contentpage_path(@community), remote: true, class: "btn btn-success pull-right mb-20" do
+              %i.fa.fa-plus-circle
+              Add Webpage
+            = link_to new_community_imagepage_path(@community), remote: true, class: "btn btn-primary pull-right mr-5" do
+              %i.fa.fa-plus-circle
+              Add Imagepage
+      / End Panel left Side
+/ /.content
+#show_modal
+
