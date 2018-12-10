@@ -51,9 +51,12 @@ class UnitsController < ApplicationController
           @unit.description = params[:unit][:description]
           @unit.sold = params[:unit][:sold]
           @unit.manual_override = params[:unit][:manual_override]
-          @unit.image = params[:unit][:image]
-          @unit.secondary_image = params[:unit][:secondary_image]
-
+          if params[:unit][:image].present?
+            @unit.image = params[:unit][:image]
+          end
+          if params[:unit][:secondary_image].present?
+            @unit.secondary_image = params[:unit][:secondary_image]
+          end
           @unit.save(validate: false)
 
           set_manually_updated_column
@@ -82,8 +85,12 @@ class UnitsController < ApplicationController
           @unit.description = params[:unit][:description]
           @unit.sold = params[:unit][:sold]
           @unit.manual_override = params[:unit][:manual_override]
-          @unit.image = params[:unit][:image]
-          @unit.secondary_image = params[:unit][:secondary_image]
+          if params[:unit][:image].present?
+            @unit.image = params[:unit][:image]
+          end
+          if params[:unit][:secondary_image].present?
+            @unit.secondary_image = params[:unit][:secondary_image]
+          end
 
           @unit.save(validate: false)
           set_manually_updated_column
