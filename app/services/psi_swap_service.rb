@@ -138,6 +138,7 @@ class PsiSwapService < BaseService
     unit.each do |d|
       if d.provider == "psi_new"
         d.provider = "psi"
+        d.save
       end
     end
   end
@@ -240,6 +241,7 @@ class PsiSwapService < BaseService
     fp.each do |d|
       if d.provider == "psi_new"
         d.provider = "psi"
+        d.save
       end
     end
   end

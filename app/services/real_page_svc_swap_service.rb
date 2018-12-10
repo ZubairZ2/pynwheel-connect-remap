@@ -109,6 +109,7 @@ class RealPageSvcSwapService < BaseService
           fp.each do |d|
             if d.provider == "realpagesvc_new"
               d.provider = "realpagesvc"
+              d.save
             end
           end
         end
@@ -322,6 +323,7 @@ class RealPageSvcSwapService < BaseService
           unit.each do |d|
             if d.provider == "realpagesvc_new"
               d.provider = "realpagesvc"
+              d.save
             end
           end
         end

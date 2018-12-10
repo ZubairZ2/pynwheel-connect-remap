@@ -143,6 +143,7 @@ class Yardi2SwapService < BaseService
     unit.each do |d|
       if d.provider == "yardi_new"
         d.provider = "yardi"
+        d.save
       end
     end
   end
@@ -253,6 +254,7 @@ class Yardi2SwapService < BaseService
     fp.each do |d|
       if d.provider == "yardi_new"
         d.provider = "yardi"
+        d.save
       end
     end
   end

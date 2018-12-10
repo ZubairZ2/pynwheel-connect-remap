@@ -167,6 +167,7 @@ class ZarembaSwapService < BaseService
     unit.each do |d|
       if d.provider == "zaremba_new"
         d.provider = "zaremba"
+        d.save(validate: false)
       end
     end
   end
@@ -259,6 +260,7 @@ class ZarembaSwapService < BaseService
     fp.each do |d|
       if d.provider == "zaremba_new"
         d.provider = "zaremba"
+        d.save
       end
     end
   end
