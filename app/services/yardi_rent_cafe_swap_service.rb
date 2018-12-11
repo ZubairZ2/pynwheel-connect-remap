@@ -95,6 +95,7 @@ class YardiRentCafeSwapService < BaseService
           unit.each do |d|
             if d.provider == "yardirentcafe_new"
               d.provider = "yardirentcafe"
+              d.save
             end
           end
         else
@@ -185,6 +186,7 @@ class YardiRentCafeSwapService < BaseService
           fp.each do |d|
             if d.provider == "yardirentcafe_new"
               d.provider = "yardirentcafe"
+              d.save
             end
           end
         else

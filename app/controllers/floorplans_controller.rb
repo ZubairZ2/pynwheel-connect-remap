@@ -93,7 +93,7 @@ class FloorplansController < ApplicationController
       ds.each do |d|
         unless d == ""
           if d.include?('</ul>')
-            d = "<ul style='padding-left: 14px;'>" + d
+            d = "<ul style='padding-left: 18px;'>" + d
             str = str + d
           else
             str = str + d

@@ -140,12 +140,7 @@ Rails.application.routes.draw do
         delete :delete_homepage_icon
       end
     end
-    resources :load_old_communities do
-      collection do
-        get :index
-        get :load_data_method
-      end
-    end
+
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images
       resources :ebrochure_menu_buttons

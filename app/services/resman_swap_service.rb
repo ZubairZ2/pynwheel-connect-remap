@@ -120,6 +120,7 @@ class ResmanSwapService < BaseService
     unit.each do |d|
       if d.provider == "resman_new"
         d.provider = "resman"
+        d.save
       end
     end
   end
@@ -213,6 +214,7 @@ class ResmanSwapService < BaseService
     fp.each do |d|
       if d.provider == "resman_new"
         d.provider = "resman"
+        d.save
       end
     end
   end

@@ -81,10 +81,19 @@
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                     %b #{number_with_delimiter(unit.square_feet.present? ? unit.square_feet.to_i : unit.floorplan.square_feet.to_i, :delimiter => ',')} SF
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{unit.floorplan.bedrooms.to_i} #{"bed".pluralize(unit.floorplan.bedrooms.to_i)}
+
+                                    - temp = unit.floorplan.bedrooms.to_s.split('.')
+                                    - if temp[1].to_i > 0
+                                      %b #{unit.floorplan.bedrooms} #{"bedroom".pluralize(unit.floorplan.bedrooms)}
+                                    - else
+                                      %b #{unit.floorplan.bedrooms.to_i} #{"bedroom".pluralize(unit.floorplan.bedrooms.to_i)}
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                    %b #{unit.floorplan.bathrooms.ceil.to_i} #{"bath".pluralize(unit.floorplan.bathrooms.ceil.to_i)}
-                                  - if unit.community.display_rent  
+                                    - temp2 = unit.floorplan.bathrooms.to_s.split('.')
+                                    - if temp2[1].to_i > 0
+                                      %b #{unit.floorplan.bathrooms} #{"bathroom".pluralize(unit.floorplan.bathrooms)}
+                                    - else
+                                      %b #{unit.floorplan.bathrooms.ceil.to_i} #{"bathroom".pluralize(unit.floorplan.bathrooms.ceil.to_i)}
+                                  - if unit.community.display_rent
                                     %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                       %b $ #{unit.effective_rent.to_i} 
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
