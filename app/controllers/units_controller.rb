@@ -41,7 +41,8 @@ class UnitsController < ApplicationController
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
 
-        if @unit.provider == "zaremba"
+        if params[:unit][:provider].present? && @unit.provider == "zaremba"
+
           @unit.floorplan_id = params[:unit][:floorplan_id]
           @unit.availability = params[:unit][:availability]
           @unit.provider_unit_id = params[:unit][:provider_unit_id]
@@ -77,6 +78,7 @@ class UnitsController < ApplicationController
       else
 
         if params[:unit][:provider] == "zaremba" and params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
+
           @unit.floorplan_id = params[:unit][:floorplan_id]
           @unit.availability = params[:unit][:availability]
           @unit.provider_unit_id = params[:unit][:provider_unit_id]
@@ -94,7 +96,7 @@ class UnitsController < ApplicationController
           if params[:unit][:secondary_image].present?
             @unit.secondary_image = params[:unit][:secondary_image]
           end
-
+          
           @unit.save(validate: false)
           set_manually_updated_column
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
