@@ -48,6 +48,7 @@ class ZarembaService < BaseService
     units.each do |u|
       puts u
       vacateDate = ""
+
       unit = Unit.find_by(provider: "zaremba",community_id: credentials.community_id,provider_unit_id: u["IDValue"],building: u["BuildingID"])#.first_or_initialize
       if unit.present?
         unless unit.manual_override

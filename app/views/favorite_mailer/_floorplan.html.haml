@@ -69,6 +69,7 @@
                                     - else
                                       %b #{number_with_delimiter(floorplan.square_feet.to_i, :delimiter => ',')} SF
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
+
                                     - temp = floorplan.bedrooms.to_s.split('.')
                                     - if temp[1].to_i > 0
                                       %b #{floorplan.bedrooms} #{"bedroom".pluralize(floorplan.bedrooms)}

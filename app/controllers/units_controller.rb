@@ -34,12 +34,15 @@ class UnitsController < ApplicationController
   end
 
   def update
+
     respond_to do |format|
       if @unit.manual_override
         if params[:unit][:description].present?
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
-        if @unit.provider == "zaremba"
+
+        if params[:unit][:provider].present? && @unit.provider == "zaremba"
+
           @unit.floorplan_id = params[:unit][:floorplan_id]
           @unit.availability = params[:unit][:availability]
           @unit.provider_unit_id = params[:unit][:provider_unit_id]
@@ -73,7 +76,9 @@ class UnitsController < ApplicationController
           format.json { respond_with_bip(@unit) }
         end
       else
+
         if params[:unit][:provider] == "zaremba" and params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
+
           @unit.floorplan_id = params[:unit][:floorplan_id]
           @unit.availability = params[:unit][:availability]
           @unit.provider_unit_id = params[:unit][:provider_unit_id]
@@ -91,7 +96,7 @@ class UnitsController < ApplicationController
           if params[:unit][:secondary_image].present?
             @unit.secondary_image = params[:unit][:secondary_image]
           end
-
+          
           @unit.save(validate: false)
           set_manually_updated_column
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
@@ -249,6 +254,7 @@ class UnitsController < ApplicationController
       ds.each do |d|
         unless d == ""
           if d.include?('</ul>')
+
             d = "<ul style='padding-left: 18px;'>" + d
             str = str + d
           else

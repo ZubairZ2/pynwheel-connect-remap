@@ -53,6 +53,7 @@ class ZarembaStaticService < BaseService
   end
   def save_zaremba_units(units,property_id)
     units.each do |u|
+
       flag = 0
       puts u
       vacateDate = ""
