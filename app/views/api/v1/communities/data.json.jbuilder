@@ -46,11 +46,11 @@ json.ui_settigs do
       json.imagepages_button_color (@community.design.gable.present? and @community.design.gable.imagepages_button_color.present?) ? @community.design.gable.imagepages_button_color : "#96348F"
 
       json.home_page_navigation_bg_image @community.design.gable.present? ? (@community.design.gable.home_page_nav_bg_image.present? ? @community.design.gable.home_page_nav_bg_image.url : "No Image") : "No Image"
-      json.display_home_page_navigation_bg_image @community.design.gable.present? ? (@community.design.gable.display_home_page_nav_bg_image_button.present? ? @community.design.gable.display_home_page_nav_bg_image_button.url : false) : false
+      json.display_home_page_navigation_bg_image @community.design.gable.present? ? (@community.design.gable.display_home_page_nav_bg_image_button.present? ? @community.design.gable.display_home_page_nav_bg_image_button : false) : false
       json.global_navigation_bg_image @community.design.gable.present? ? (@community.design.gable.global_nav_bg_image.present? ? @community.design.gable.global_nav_bg_image.url : "No Image") : "No Image"
-      json.display_global_navigation_bg_image @community.design.gable.present? ? (@community.design.gable.display_global_nav_bg_image_button.present? ? @community.design.gable.display_global_nav_bg_image_button.url : false) : false
+      json.display_global_navigation_bg_image @community.design.gable.present? ? (@community.design.gable.display_global_nav_bg_image_button.present? ? @community.design.gable.display_global_nav_bg_image_button : false) : false
       json.filter_panel_bg_image @community.design.gable.present? ? (@community.design.gable.filter_panel_bg_image.present? ? @community.design.gable.filter_panel_bg_image.url : "No Image") : "No Image"
-      json.display_filter_panel_bg_image @community.design.gable.present? ? (@community.design.gable.display_filter_panel_bg_image_button.present? ? @community.design.gable.display_filter_panel_bg_image_button.url : false) : false
+      json.display_filter_panel_bg_image @community.design.gable.present? ? (@community.design.gable.display_filter_panel_bg_image_button.present? ? @community.design.gable.display_filter_panel_bg_image_button : false) : false
     end
     
     json.expressionist do
@@ -304,7 +304,11 @@ json.apartments do
   json.display_floorplan_gallery @community.display_floorplan_gallery
   if @community.sitemap.present? and !@community.has_floorplates? 
     image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
-    json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
+    begin
+      json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
+    rescue
+
+    end
     json.sitemap_amenities @community.sitemap.amenities do |amenity|
       json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
       json.name amenity.name
