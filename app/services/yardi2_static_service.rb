@@ -18,6 +18,7 @@ class Yardi2StaticService < BaseService
         arr = url.split('/')
         post = "#{arr[3]}/Webservices/itfilsguestcard20.asmx HTTP/1.1"
         host = arr[2]
+        puts "1 "*200
         soap_action = 'http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20/UnitAvailability_Login'
         user_name = credentials.username
         password = credentials.password
@@ -33,6 +34,7 @@ class Yardi2StaticService < BaseService
             :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
         #result = Hash.from_xml(response.body) This method consumes a lot of memory on heroku
         result = Ox.load(response.body, mode: :hash)
+        puts "2 "*200
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
@@ -46,8 +48,10 @@ class Yardi2StaticService < BaseService
               ils_units << pr[1]
             end
           end
+          puts "3 "*200
           response = HTTParty.get('https://dev-testing.comencia.com/api_test')
           save_yardi2_units(ils_units,external_property_id)
+          puts "4 "*200
           save_yardi2_floorplans(floorplans)
           #else
           #puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"]
@@ -63,6 +67,7 @@ class Yardi2StaticService < BaseService
   def save_yardi2_units(ils_units,property_id)
     ils_units[0].lazy.each do |unit_entries|
       begin
+        puts "units area "*200
         unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id]).first_or_initialize
         unless unit.manual_override
           unit.property_id = property_id
