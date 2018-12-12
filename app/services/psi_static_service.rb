@@ -35,9 +35,9 @@ class PsiStaticService < BaseService
               floorplans << f
             end
           end
-          save_psi_units(units,property_id)
-          save_psi_floorplans(floorplans,property_id)
-          save_website_column_of_community(response)
+          # save_psi_units(units,property_id)
+          # save_psi_floorplans(floorplans,property_id)
+          # save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
@@ -131,6 +131,7 @@ class PsiStaticService < BaseService
   end
 
   def fill_psi_pricing_details
+    floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -158,9 +159,13 @@ class PsiStaticService < BaseService
 
         if response["response"]["code"] == 200
           psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
+          psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+          psi_floorplan.each_with_index do |f,index|
+            floorplanHash[psi_floorplan[index]["Name"]] = psi_floorplan[index]["MarketRent"]["@attributes"]["Min"]
+          end
           psi_units.each do |u|
+            unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
             if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
-              unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
               unit.effective_rent = u[1]["Rent"]["@attributes"]["MinRent"].to_f
               unit.save(validate: false)
               # u[1]['Rent']['TermRent'].each do |a|
@@ -174,6 +179,9 @@ class PsiStaticService < BaseService
               #     end
               #   end
               # end
+            else
+              unit.effective_rent = floorplanHash[u[1]["@attributes"]["FloorPlanName"]]
+              unit.save(validate: false)
             end
           end
           #else
