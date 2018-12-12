@@ -48,8 +48,7 @@ class Yardi2StaticService < BaseService
               ils_units << pr[1]
             end
           end
-          puts "3 "*200
-          response = HTTParty.get('https://dev-testing.comencia.com/api_test')
+          puts "3333333333333333333333333 "*200
           save_yardi2_units(ils_units,external_property_id)
           puts "4 "*200
           save_yardi2_floorplans(floorplans)
@@ -67,7 +66,8 @@ class Yardi2StaticService < BaseService
   def save_yardi2_units(ils_units,property_id)
     ils_units[0].lazy.each do |unit_entries|
       begin
-        puts "units area "*200
+        puts "-----",unit_entries
+        puts "units-----area "*200
         unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id]).first_or_initialize
         unless unit.manual_override
           unit.property_id = property_id
