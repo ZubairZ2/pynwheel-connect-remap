@@ -59,7 +59,7 @@ class ZarembaSwapService < BaseService
       if unit.present?
 
 
-        u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
+        u1 = Unit.where("provider_unit_id LIKE ?", "%#{u["IDValue"]}").where(community_id: credentials.community_id)
         u1.each do |u2|
           unless u2.building == u["BuildingID"]
             flag = 1
@@ -72,7 +72,7 @@ class ZarembaSwapService < BaseService
 
         unit.property_id = property_id
         unit.provider = "zaremba_new"
-        unit.provider_unit_id = u["IDValue"]
+        unit.provider_unit_id = u["BuildingID"]+"-"+u["IDValue"]
         unit.unit_type = u["UnitType"]
 
 
@@ -102,7 +102,7 @@ class ZarembaSwapService < BaseService
 
         unit.save(validate: false)
       else
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["IDValue"],building: u["BuildingID"])
+        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"])
         if dup.present?
           dup.destroy
         end
@@ -110,7 +110,7 @@ class ZarembaSwapService < BaseService
 
         flag = 0
 
-        u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
+        u1 = Unit.where("provider_unit_id LIKE ?", "%#{u["IDValue"]}").where(community_id: credentials.community_id)
         u1.each do |u2|
           unless u2.building == u["BuildingID"]
             flag = 1
@@ -124,7 +124,7 @@ class ZarembaSwapService < BaseService
         unit.community_id = credentials.community_id
         unit.property_id = property_id
         unit.provider = "zaremba_new"
-        unit.provider_unit_id = u["IDValue"]
+        unit.provider_unit_id = u["BuildingID"]+"-"+u["IDValue"]
         unit.unit_type = u["UnitType"]
 
 

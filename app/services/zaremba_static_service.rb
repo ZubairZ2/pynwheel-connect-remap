@@ -57,7 +57,7 @@ class ZarembaStaticService < BaseService
       flag = 0
       puts u
       vacateDate = ""
-      u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
+      u1 = Unit.where("provider_unit_id LIKE ?", "%#{u["IDValue"]}").where(community_id: credentials.community_id)#: u["IDValue"])
       u1.each do |u2|
         unless u2.building == u["BuildingID"]
           flag = 1
@@ -67,7 +67,7 @@ class ZarembaStaticService < BaseService
           u2.save(validate: false)
         end
       end
-      unit = Unit.where(provider: "zaremba",community_id: credentials.community_id,provider_unit_id: u["IDValue"],building: u["BuildingID"]).first_or_initialize
+      unit = Unit.where(provider: "zaremba",community_id: credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"]).first_or_initialize
 
       unit.property_id = property_id
       unit.unit_type = u["UnitType"]
