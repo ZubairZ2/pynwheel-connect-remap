@@ -163,10 +163,10 @@ class Community < ApplicationRecord
   end
 
   def select_yardi_provider
-    credential.url.include?("20") ? import_yardi2_data : import_yardi4_data
+    credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? import_yardi2_data : import_yardi4_data
   end
   def select_swap_yardi_provider
-    credential.url.include?("20") ? swap_yardi2_data : swap_yardi4_data
+    credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? swap_yardi2_data : swap_yardi4_data
   end
 
   def import_psi_data
@@ -285,7 +285,7 @@ class Community < ApplicationRecord
   end
 
   def connect_to_yardi
-    credential.url.include?("20") ? yardi2_service : yardi4_service
+    credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? yardi2_service : yardi4_service
   end
 
   def yardi2_service
