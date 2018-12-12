@@ -64,6 +64,7 @@ class Yardi2StaticService < BaseService
   end
 
   def save_yardi2_units(ils_units,property_id)
+    puts "8888888888888888 "*200
     ils_units[0].lazy.each do |unit_entries|
       begin
         puts "-----",unit_entries
