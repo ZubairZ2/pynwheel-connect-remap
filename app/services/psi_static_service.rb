@@ -35,9 +35,9 @@ class PsiStaticService < BaseService
               floorplans << f
             end
           end
-          # save_psi_units(units,property_id)
-          # save_psi_floorplans(floorplans,property_id)
-          # save_website_column_of_community(response)
+          save_psi_units(units,property_id)
+          save_psi_floorplans(floorplans,property_id)
+          save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
