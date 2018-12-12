@@ -202,8 +202,8 @@ class Community < ApplicationRecord
   def import_yardi2_data
     #yardi2_service = Yardi2Service.new(credential.attributes)
     #yardi2_service.perform
-    ImportYardi2DataJob.perform_async credential.attributes.to_json
     ImportYardi2StaticDataJob.perform_async credential.attributes.to_json
+    ImportYardi2DataJob.perform_async credential.attributes.to_json
   end
 
   def swap_yardi2_data
