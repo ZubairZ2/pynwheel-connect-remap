@@ -50,35 +50,36 @@ class ZarembaSwapService < BaseService
       flag = 0
       vacateDate = ""
 
-
+      # unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["MarketingName"])
+      # unless unit.present?
       unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["BuildingID"]+"-"+u["MarketingName"])
-      unless unit.present?
-        unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["MarketingName"])
-      end
+      # end
 
       if unit.present?
 
 
-        u1 = Unit.where("provider_unit_id LIKE ?", "%#{u["IDValue"]}").where(community_id: credentials.community_id)
-        u1.each do |u2|
-          unless u2.building == u["BuildingID"]
-            flag = 1
-          end
-          # if flag == 1 && !(u2.marketing_name.split('-')[0] == u2.building)
-          #   u2.marketing_name = u2.building+"-"+u2.marketing_name
-          #   u2.save(validate: false)
-          # end
-        end
+
+        # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
+        # u1.each do |u2|
+        #   unless u2.building == u["BuildingID"]
+        #     flag = 1
+        #   end
+        #   # if flag == 1 && !(u2.marketing_name.split('-')[0] == u2.building)
+        #   #   u2.marketing_name = u2.building+"-"+u2.marketing_name
+        #   #   u2.save(validate: false)
+        #   # end
+        # end
 
         unit.property_id = property_id
         unit.provider = "zaremba_new"
-        unit.provider_unit_id = u["BuildingID"]+"-"+u["IDValue"]
+        unit.provider_unit_id =  u["BuildingID"]+"-"+u["IDValue"]
         unit.unit_type = u["UnitType"]
 
-
-        if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building
-          unit.marketing_name = u["BuildingID"]+"-"+u["MarketingName"]
-        end
+        # if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building
+        unit.marketing_name = u["BuildingID"]+"-"+u["MarketingName"]
+        # else
+        #   unit.marketing_name = u["MarketingName"]
+        # end
 
         unit.floorplan_id = u["Units"]["Unit"]["Identification"][1]["IDValue"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
@@ -108,31 +109,29 @@ class ZarembaSwapService < BaseService
         end
         unit = Unit.new
 
-        flag = 0
-
-        u1 = Unit.where("provider_unit_id LIKE ?", "%#{u["IDValue"]}").where(community_id: credentials.community_id)
-        u1.each do |u2|
-          unless u2.building == u["BuildingID"]
-            flag = 1
-          end
-          # if flag == 1 && !(u2.marketing_name.split('-')[0] == u2.building)
-          #   u2.marketing_name = u2.building+"-"+u2.marketing_name
-          #   u2.save(validate: false)
-          # end
-        end
+        # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
+        # u1.each do |u2|
+        #   unless u2.building == u["BuildingID"]
+        #     flag = 1
+        #   end
+        #   # if flag == 1 && !(u2.marketing_name.split('-')[0] == u2.building)
+        #   #   u2.marketing_name = u2.building+"-"+u2.marketing_name
+        #   #   u2.save(validate: false)
+        #   # end
+        # end
 
         unit.community_id = credentials.community_id
         unit.property_id = property_id
         unit.provider = "zaremba_new"
-        unit.provider_unit_id = u["BuildingID"]+"-"+u["IDValue"]
+
+        unit.provider_unit_id =  u["BuildingID"]+"-"+u["IDValue"]
         unit.unit_type = u["UnitType"]
 
-
-        if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building
-          unit.marketing_name = u["BuildingID"]+"-"+u["MarketingName"]
-        else
-          unit.marketing_name = u["MarketingName"]
-        end
+        # if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building
+        unit.marketing_name = u["BuildingID"]+"-"+u["MarketingName"]
+        # else
+        #   unit.marketing_name = u["MarketingName"]
+        # end
 
         unit.floorplan_id = u["Units"]["Unit"]["Identification"][1]["IDValue"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
