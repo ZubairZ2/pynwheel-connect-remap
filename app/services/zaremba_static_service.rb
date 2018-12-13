@@ -57,7 +57,6 @@ class ZarembaStaticService < BaseService
       flag = 0
       puts u
       vacateDate = ""
-
       # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
       # u1.each do |u2|
       #   unless u2.building == u["BuildingID"]
