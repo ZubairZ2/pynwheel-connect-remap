@@ -47,19 +47,12 @@ class ZarembaSwapService < BaseService
   def save_zaremba_units(units,property_id)
     units.each do |u|
       puts u
+      flag = 0
       vacateDate = ""
       # unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["MarketingName"])
       # unless unit.present?
       unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["BuildingID"]+"-"+u["MarketingName"])
-      # end
-      # if u["MarketingName"] == "0620" && u["BuildingID"] == "002"
-      #   byebug
-      # end
-
       if unit.present?
-
-        flag = 0
-
         # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
         # u1.each do |u2|
         #   unless u2.building == u["BuildingID"]
@@ -101,6 +94,7 @@ class ZarembaSwapService < BaseService
         building = u["BuildingID"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.manually_updated = false
+
         unit.save(validate: false)
       else
         dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"])
@@ -110,7 +104,6 @@ class ZarembaSwapService < BaseService
         unit = Unit.new
 
         flag = 0
-
         # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
         # u1.each do |u2|
         #   unless u2.building == u["BuildingID"]
@@ -121,6 +114,7 @@ class ZarembaSwapService < BaseService
         #   #   u2.save(validate: false)
         #   # end
         # end
+
 
         unit.community_id = credentials.community_id
         unit.property_id = property_id
@@ -134,6 +128,7 @@ class ZarembaSwapService < BaseService
         #   unit.marketing_name = u["MarketingName"]
         # end
 
+
         unit.floorplan_id = u["Units"]["Unit"]["Identification"][1]["IDValue"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["MarketRent"].present?
@@ -153,6 +148,7 @@ class ZarembaSwapService < BaseService
         building = u["BuildingID"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.manually_updated = false
+
         unit.save(validate: false)
       end
     end
@@ -167,6 +163,7 @@ class ZarembaSwapService < BaseService
     unit.each do |d|
       if d.provider == "zaremba_new"
         d.provider = "zaremba"
+
         d.save(validate: false)
       end
     end
@@ -351,6 +348,7 @@ class ZarembaSwapService < BaseService
     fp.each do |d|
       if d.provider == "zaremba_new"
         d.provider = "zaremba"
+        d.save
       end
     end
   end

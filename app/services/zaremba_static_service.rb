@@ -53,6 +53,7 @@ class ZarembaStaticService < BaseService
   end
   def save_zaremba_units(units,property_id)
     units.each do |u|
+
       flag = 0
       puts u
       vacateDate = ""
@@ -66,6 +67,7 @@ class ZarembaStaticService < BaseService
       #     u2.save(validate: false)
       #   end
       # end
+
       unit = Unit.where(provider: "zaremba",community_id: credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"]).first_or_initialize
 
       unit.property_id = property_id

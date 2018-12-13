@@ -34,12 +34,14 @@ class UnitsController < ApplicationController
   end
 
   def update
+
     respond_to do |format|
       if @unit.manual_override
         if params[:unit][:description].present?
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
         if @unit.update(unit_params)
+
           set_manually_updated_column
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           format.json { respond_with_bip(@unit) }
@@ -49,6 +51,7 @@ class UnitsController < ApplicationController
           format.json { respond_with_bip(@unit) }
         end
       else
+
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
           set_manually_updated_column
@@ -202,6 +205,7 @@ class UnitsController < ApplicationController
       ds.each do |d|
         unless d == ""
           if d.include?('</ul>')
+
             d = "<ul style='padding-left: 18px;'>" + d
             str = str + d
           else

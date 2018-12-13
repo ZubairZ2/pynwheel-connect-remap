@@ -42,7 +42,7 @@ class Community < ApplicationRecord
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
-  has_many :community_users
+  has_many :community_users, dependent: :destroy
   has_many :users ,through: :community_users, dependent: :destroy
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
@@ -61,6 +61,7 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
+
   validates_uniqueness_of :code
   after_create :set_default_theme
   after_create :create_default_gallery
@@ -162,10 +163,10 @@ class Community < ApplicationRecord
   end
 
   def select_yardi_provider
-    credential.url.include?("20") ? import_yardi2_data : import_yardi4_data
+    credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? import_yardi2_data : import_yardi4_data
   end
   def select_swap_yardi_provider
-    credential.url.include?("20") ? swap_yardi2_data : swap_yardi4_data
+    credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? swap_yardi2_data : swap_yardi4_data
   end
 
   def import_psi_data
@@ -201,8 +202,8 @@ class Community < ApplicationRecord
   def import_yardi2_data
     #yardi2_service = Yardi2Service.new(credential.attributes)
     #yardi2_service.perform
-    ImportYardi2DataJob.perform_async credential.attributes.to_json
     ImportYardi2StaticDataJob.perform_async credential.attributes.to_json
+    ImportYardi2DataJob.perform_async credential.attributes.to_json
   end
 
   def swap_yardi2_data
@@ -284,7 +285,7 @@ class Community < ApplicationRecord
   end
 
   def connect_to_yardi
-    credential.url.include?("20") ? yardi2_service : yardi4_service
+    credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? yardi2_service : yardi4_service
   end
 
   def yardi2_service

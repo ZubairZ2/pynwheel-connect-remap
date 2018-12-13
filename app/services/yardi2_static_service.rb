@@ -46,7 +46,6 @@ class Yardi2StaticService < BaseService
               ils_units << pr[1]
             end
           end
-          response = HTTParty.get('https://dev-testing.comencia.com/api_test')
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           #else

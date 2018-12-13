@@ -7,6 +7,9 @@ gem 'rack-cors', require: 'rack/cors'
 gem 'rails', '~> 5.0.0'
 gem 'annotate'
 gem 'bootstrap-wysihtml5-rails'
+
+gem 'write_xlsx'
+
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server
