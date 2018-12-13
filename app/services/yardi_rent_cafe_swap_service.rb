@@ -4,6 +4,7 @@ class YardiRentCafeSwapService < BaseService
 
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
+    rename_provider
   end
 
   def import_yardirentcafe_units
@@ -91,13 +92,7 @@ class YardiRentCafeSwapService < BaseService
             end
           end
 
-          unit = Unit.where(community_id: credentials.community_id)
-          unit.each do |d|
-            if d.provider == "yardirentcafe_new"
-              d.provider = "yardirentcafe"
-              d.save
-            end
-          end
+
         else
           puts  "Invalid credentials.Please enter correct one and try again."
         end
@@ -182,13 +177,7 @@ class YardiRentCafeSwapService < BaseService
           end
 
 
-          fp = Floorplan.where(community_id: credentials.community_id)
-          fp.each do |d|
-            if d.provider == "yardirentcafe_new"
-              d.provider = "yardirentcafe"
-              d.save
-            end
-          end
+
         else
           puts '"Invalid credentials.Please enter correct one and try again."'
         end
@@ -201,6 +190,24 @@ class YardiRentCafeSwapService < BaseService
   def set_availabilty_date(available_date)
     available_date = available_date.split("/")
     "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
+  end
+  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "yardirentcafe_new"
+        d.provider = "yardirentcafe"
+        d.save(validate: false)
+      end
+    end
+
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+
+      if d.provider == "yardirentcafe_new"
+        d.provider = "yardirentcafe"
+        d.save(validate: false)
+      end
+    end
   end
 
 end
