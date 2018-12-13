@@ -39,31 +39,7 @@ class UnitsController < ApplicationController
         if params[:unit][:description].present?
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
-        if @unit.provider == "zaremba"
-          @unit.floorplan_id = params[:unit][:floorplan_id]
-          @unit.availability = params[:unit][:availability]
-          @unit.provider_unit_id = params[:unit][:provider_unit_id]
-          @unit.effective_rent = params[:unit][:effective_rent]
-          @unit.marketing_name = params[:unit][:marketing_name]
-          @unit.available_date = params[:unit][:available_date]
-          @unit.building = params[:unit][:building]
-          @unit.square_feet = params[:unit][:square_feet]
-          @unit.description = params[:unit][:description]
-          @unit.sold = params[:unit][:sold]
-          @unit.manual_override = params[:unit][:manual_override]
-          if params[:unit][:image].present?
-            @unit.image = params[:unit][:image]
-          end
-          if params[:unit][:secondary_image].present?
-            @unit.secondary_image = params[:unit][:secondary_image]
-          end
-          @unit.save(validate: false)
-
-          set_manually_updated_column
-          format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
-          format.json { respond_with_bip(@unit) }
-
-        elsif @unit.update(unit_params)
+        if @unit.update(unit_params)
           set_manually_updated_column
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           format.json { respond_with_bip(@unit) }
@@ -73,30 +49,7 @@ class UnitsController < ApplicationController
           format.json { respond_with_bip(@unit) }
         end
       else
-        if params[:unit][:provider] == "zaremba" and params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
-          @unit.floorplan_id = params[:unit][:floorplan_id]
-          @unit.availability = params[:unit][:availability]
-          @unit.provider_unit_id = params[:unit][:provider_unit_id]
-          @unit.effective_rent = params[:unit][:effective_rent]
-          @unit.marketing_name = params[:unit][:marketing_name]
-          @unit.available_date = params[:unit][:available_date]
-          @unit.building = params[:unit][:building]
-          @unit.square_feet = params[:unit][:square_feet]
-          @unit.description = params[:unit][:description]
-          @unit.sold = params[:unit][:sold]
-          @unit.manual_override = params[:unit][:manual_override]
-          if params[:unit][:image].present?
-            @unit.image = params[:unit][:image]
-          end
-          if params[:unit][:secondary_image].present?
-            @unit.secondary_image = params[:unit][:secondary_image]
-          end
-
-          @unit.save(validate: false)
-          set_manually_updated_column
-          format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
-          format.json { respond_with_bip(@unit) }
-        elsif params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
+        if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
           set_manually_updated_column
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
