@@ -171,7 +171,6 @@ class Community < ApplicationRecord
   end
   def unique_community_code_on_create
     unless attributes["code"] == ""
-      byebug
       com = Community.where(code: attributes["code"])
       if com.count < 1
         true
@@ -183,8 +182,12 @@ class Community < ApplicationRecord
   def unique_community_code_on_update
     unless attributes["code"] == ""
       com = Community.where(code: attributes["code"])
-      if com.count < 2
+      if com.count == 0
         true
+      elsif com.count < 2
+        unless com.first.name == attributes["name"]
+          errors[:base] << "Community code has already been taken."
+        end
       else
         errors[:base] << "Community code has already been taken."
       end
