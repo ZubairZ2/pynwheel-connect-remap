@@ -62,7 +62,8 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
 
-  validates_uniqueness_of :code
+  validate :unique_community_code_on_create, on: [:create]
+  validate :unique_community_code_on_update, on: [:update]
   after_create :set_default_theme
   after_create :create_default_gallery
   validate :validate_page_position
@@ -168,7 +169,27 @@ class Community < ApplicationRecord
   def select_swap_yardi_provider
     credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? swap_yardi2_data : swap_yardi4_data
   end
-
+  def unique_community_code_on_create
+    unless attributes["code"] == ""
+      byebug
+      com = Community.where(code: attributes["code"])
+      if com.count < 1
+        true
+      else
+        errors[:base] << "Community code has already been taken."
+      end
+    end
+  end
+  def unique_community_code_on_update
+    unless attributes["code"] == ""
+      com = Community.where(code: attributes["code"])
+      if com.count < 2
+        true
+      else
+        errors[:base] << "Community code has already been taken."
+      end
+    end
+  end
   def import_psi_data
     #psi_service = PsiService.new(credential.attributes)
     #psi_service.perform  
