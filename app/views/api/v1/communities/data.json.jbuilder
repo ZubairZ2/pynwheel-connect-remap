@@ -599,6 +599,7 @@ json.additional_pages do
       json.slideshow imagepage.is_slideshow
       if imagepage.additional_images.present?
         json.images imagepage.additional_images.each do |image|
+          json.id image.id
           json.title image.name
           json.image Rails.env.development? ? local_assets_base_url+image.image.url : image.image.url
         end
