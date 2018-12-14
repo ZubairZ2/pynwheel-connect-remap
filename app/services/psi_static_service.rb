@@ -67,11 +67,14 @@ class PsiStaticService < BaseService
         end
       end
       unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-      unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+      # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
       if u["Units"]["Unit"]["MarketRent"].present?
-        unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-      elsif u["EffectiveRent"].present?
+        unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+      end
+      if u["EffectiveRent"].present?
         unit.effective_rent = u["EffectiveRent"]
+      else
+        unit.effective_rent = 0
       end
       unit.floor = u["FloorLevel"]
       unit.availability = u["Availability"]["VacancyClass"]
@@ -165,7 +168,7 @@ class PsiStaticService < BaseService
           end
           psi_units.each do |u|
             unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
-            if u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0 and u[1]["Rent"]["@attributes"]["MaxRent"].to_f > 0
+            if unit.effective_rent < 1 and u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0
               unit.effective_rent = u[1]["Rent"]["@attributes"]["MinRent"].to_f
               unit.save(validate: false)
               # u[1]['Rent']['TermRent'].each do |a|
@@ -179,7 +182,7 @@ class PsiStaticService < BaseService
               #     end
               #   end
               # end
-            else
+            elsif unit.effective_rent < 1
               unit.effective_rent = floorplanHash[u[1]["@attributes"]["FloorPlanName"]]
               unit.save(validate: false)
             end

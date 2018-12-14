@@ -68,11 +68,14 @@ class PsiSwapService < BaseService
           end
         end
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-        unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+        # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Units"]["Unit"]["MarketRent"].present?
-          unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-        elsif u["EffectiveRent"].present?
+          unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+        end
+        if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
+        else
+          unit.effective_rent = 0
         end
         unit.floor = u["FloorLevel"]
         unit.availability = u["Availability"]["VacancyClass"]
@@ -100,11 +103,15 @@ class PsiSwapService < BaseService
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
         unit.provider_unit_id =  u["Units"]["Unit"]["Identification"]["IDValue"]
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-        unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+        # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Units"]["Unit"]["MarketRent"].present?
-          unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-        elsif u["EffectiveRent"].present?
+          unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+        end
+
+        if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
+        else
+          unit.effective_rent = 0
         end
         if u["Units"]["Unit"]["MinSquareFeet"].present?
           if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
@@ -138,7 +145,6 @@ class PsiSwapService < BaseService
     unit.each do |d|
       if d.provider == "psi_new"
         d.provider = "psi"
-        d.save
       end
     end
   end
@@ -241,12 +247,13 @@ class PsiSwapService < BaseService
     fp.each do |d|
       if d.provider == "psi_new"
         d.provider = "psi"
-        d.save
+
       end
     end
   end
 
   def fill_psi_pricing_details
+    floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -274,9 +281,13 @@ class PsiSwapService < BaseService
 
         if response["response"]["code"] == 200
           psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
+          psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+          psi_floorplan.each_with_index do |f,index|
+            floorplanHash[psi_floorplan[index]["Name"]] = psi_floorplan[index]["MarketRent"]["@attributes"]["Min"]
+          end
           psi_units.each do |u|
-            if u[1]["Rent"]["@attributes"]["MinRent"].present? and u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0
-              unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
+            unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
+            if unit.effective_rent < 1 and u[1]["Rent"]["@attributes"]["MinRent"].to_f > 0
               unit.effective_rent = u[1]["Rent"]["@attributes"]["MinRent"].to_f
               unit.save(validate: false)
               # u[1]['Rent']['TermRent'].each do |a|
@@ -284,12 +295,15 @@ class PsiSwapService < BaseService
               #     unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
               #     if unit.present?
               #       lease_term = a["@attributes"]["LeaseTerm"].split(" ")
-              #       unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
+              #       # unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
               #       unit.lease_term = lease_term[0]
               #       unit.save(validate: false)
               #     end
               #   end
               # end
+            elsif unit.effective_rent < 1
+              unit.effective_rent = floorplanHash[u[1]["@attributes"]["FloorPlanName"]]
+              unit.save(validate: false)
             end
           end
           #else
