@@ -185,7 +185,7 @@ class Community < ApplicationRecord
       if com.count == 0
         true
       elsif com.count < 2
-        unless com.first.name == attributes["name"]
+        unless com.first.id == attributes["id"]
           errors[:base] << "Community code has already been taken."
         end
       else
