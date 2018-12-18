@@ -50,6 +50,12 @@
           /       %i.fa.fa-location-arrow
           .bg-bottom
             .need-to
+              %h3 Want to add favorites?
+              %p Explore available floor plans on the interactive site map.
+              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary btn-block btn-lg"
+              -#%button.btn.btn-primary.btn-block.btn-lg{:href=>community_favorite_settings_path} Take me there
+          .bg-bottom
+            .need-to
               %h3 Want to share your list?
               %p Click the share button and share your favorites link
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
@@ -59,6 +65,8 @@
               %p Tap the heart to remove an item from the page, or click the clear button below to remove all items.
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
       .right-side
+        - if @units.count == 0
+          %b{:style => "color: #FFFFFF; position: relative; top: 45%; left: 45%;"} You have no favorites
         - @units.each do |unit|
           - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
           .row{:id=>"row-#{unit.id}"}
