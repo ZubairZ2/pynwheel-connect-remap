@@ -61,7 +61,8 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
-
+  validate :apartment_page_name_length_validate
+  validate :gallery_page_name_length_validate
   validate :unique_community_code_on_create, on: [:create]
   validate :unique_community_code_on_update, on: [:update]
   after_create :set_default_theme
@@ -168,6 +169,34 @@ class Community < ApplicationRecord
   end
   def select_swap_yardi_provider
     credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? swap_yardi2_data : swap_yardi4_data
+  end
+  def apartment_page_name_length_validate
+    if attributes['apartment_page_name'].present?
+      words = attributes['apartment_page_name'].split(" ")
+      if words.size > 3
+        errors[:base] << "You can add upto three words and each word must be 15 characters long."
+      end
+
+      words.each do |w|
+        if w.size > 15
+          errors[:base] << "You can add upto three words and each word must be 15 characters long."
+        end
+      end
+    end
+  end
+  def gallery_page_name_length_validate
+    if attributes['gallery_page_name'].present?
+      words = attributes['gallery_page_name'].split(" ")
+      if words.size > 3
+        errors[:base] << "You can add upto three words and each word must be 15 characters long."
+      end
+
+      words.each do |w|
+        if w.size > 15
+          errors[:base] << "You can add upto three words and each word must be 15 characters long."
+        end
+      end
+    end
   end
   def unique_community_code_on_create
     unless attributes["code"] == ""
