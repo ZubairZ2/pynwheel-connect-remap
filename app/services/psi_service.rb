@@ -179,7 +179,9 @@ class PsiService < BaseService
               #   end
               # end
             elsif unit.effective_rent <= 1
-              unit.effective_rent = floorplanHash[u[1]["@attributes"]["FloorPlanName"]]
+              pricing = floorplanHash[u[1]["@attributes"]["FloorPlanName"]].gsub(/[\s,]/ ,"")
+              unit.effective_rent = pricing.to_f
+
               unit.save(validate: false)
             end
           end
