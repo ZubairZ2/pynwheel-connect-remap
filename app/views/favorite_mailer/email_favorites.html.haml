@@ -397,6 +397,9 @@
                 - elsif @favorites[index].is_a?(Amenity)
                   - puts 'Its AMENITY' *50
                   = render :partial => 'amenity_image', :locals => {:img => @favorites[index]}
+                - elsif @favorites[index].is_a?(AdditionalImage)
+                  - puts 'Its Imagepage' *50
+                  = render :partial => 'additional_image', :locals => {:img => @favorites[index]}
                   
             %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "640"}
               %tr
