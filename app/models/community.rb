@@ -195,9 +195,9 @@ class Community < ApplicationRecord
   end
   def import_psi_data
     #psi_service = PsiService.new(credential.attributes)
-    #psi_service.perform  
-    ImportPsiDataJob.perform_async credential.attributes.to_json
+    #psi_service.perform
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
+    ImportPsiDataJob.perform_async credential.attributes.to_json
   end
 
   def import_zaremba_provider
@@ -284,6 +284,10 @@ class Community < ApplicationRecord
     end
   end
 
+  def connect_to_psi_pricing
+    psi_pricing_connection_service = PsiPricingConnectionService.new(credential.attributes)
+    psi_pricing_connection_service.perform
+  end
   def connect_to_psi
     psi_connection_service = PsiConnectionService.new(credential.attributes)
     psi_connection_service.perform
