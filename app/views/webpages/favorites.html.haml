@@ -51,18 +51,18 @@
           .bg-bottom
             .need-to
               %h3 Want to add favorites?
-              %p Explore available floor plans on the interactive site map.
+              %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
               = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary btn-block btn-lg"
               -#%button.btn.btn-primary.btn-block.btn-lg{:href=>community_favorite_settings_path} Take me there
           .bg-bottom
             .need-to
               %h3 Want to share your list?
-              %p Click the share button and share your favorites link
+              %p{:style => "margin-bottom: 20px"} Click the share button and share your favorites link
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
           .bg-bottom
             .need-to
               %h3 Need to pare down your list?
-              %p Tap the heart to remove an item from the page, or click the clear button below to remove all items.
+              %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
       .right-side
         - if @units.count == 0
