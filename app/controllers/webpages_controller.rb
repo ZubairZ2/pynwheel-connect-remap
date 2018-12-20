@@ -86,7 +86,8 @@ class WebpagesController < ActionController::Base
   end
 
   def save_favorite
-    array = JSON.parse(cookies[:favorite_unit_ids])
+
+    array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
     @unit = Unit.find params[:unit_id]
     array << params[:unit_id]
     cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
@@ -98,10 +99,15 @@ class WebpagesController < ActionController::Base
   def delete_favorite
     array = JSON.parse(cookies[:favorite_unit_ids])
     @unit = Unit.find params[:unit_id]
+
     cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
     favorite = Favorite.find_by_session_id(cookies[:session_id]) 
     favorite.unit_ids.delete params[:unit_id]
     favorite.save
+    updated_unit_ids = []
+    updated_unit_ids << favorite.unit_ids
+    cookies[:favorite_unit_ids] = updated_unit_ids
+    cookies.permanent[:favorite_unit_ids] = updated_unit_ids
   end
 
   def favorites

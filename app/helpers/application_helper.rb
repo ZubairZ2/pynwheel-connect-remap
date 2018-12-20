@@ -789,8 +789,10 @@ module ApplicationHelper
   end
 
   def unit_id_is_in_cookies?(cookies,fav_unit_id)
-    array = JSON.parse(cookies)
-    array.include? fav_unit_id.to_s
+    if cookies.present?
+      array = JSON.parse(cookies)
+      array.include? fav_unit_id.to_s
+    end
   end
 
   def determine_available_date(date)

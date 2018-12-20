@@ -111,7 +111,7 @@
                           - if @community.data_provider == "realpagesvc"
                             = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank"
                           - elsif @community.data_provider == "psi" and floorplan.present?
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-lease-term"=>unit.lease_term
+                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id
                     .col-md-6
                       .plan-image
                         = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
