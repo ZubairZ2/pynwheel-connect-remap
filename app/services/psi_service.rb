@@ -1,8 +1,10 @@
 class PsiService < BaseService
+  @@floorplanHash = Hash.new
   def perform
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
+        @@floorplanHash = {}
         url = credentials.url
         password = credentials.password
         username = credentials.username
@@ -35,8 +37,8 @@ class PsiService < BaseService
               floorplans << f
             end
           end
-          save_psi_units(units,property_id)
           save_psi_floorplans(floorplans,property_id)
+          save_psi_units(units,property_id)
           save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
@@ -47,7 +49,7 @@ class PsiService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    fill_psi_pricing_details
+    # fill_psi_pricing_details
   end
 
   def save_psi_units(units,property_id)
@@ -64,11 +66,12 @@ class PsiService < BaseService
           if u["Units"]["Unit"]["MarketRent"].present?
             unit.market_rent = u["Units"]["Unit"]["MarketRent"]
           end
-          if u["EffectiveRent"].present?
-            unit.effective_rent = u["EffectiveRent"]
-          else
-            unit.effective_rent = 0
-          end
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+          # if u["EffectiveRent"].present?
+          #   unit.effective_rent = u["EffectiveRent"]
+          # else
+          #   unit.effective_rent = 0
+          # end
           # unit.floor = u["FloorLevel"]
           unit.availability = u["Availability"]["VacancyClass"]
           if u["Availability"]["VacancyClass"] == "Unoccupied"
@@ -115,6 +118,11 @@ class PsiService < BaseService
           #
           #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
           # end
+          if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+            @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+          else
+            @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+          end
           if f["MarketRent"]["@attributes"]["Min"].to_f > 0
 
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
