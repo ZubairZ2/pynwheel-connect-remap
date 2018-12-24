@@ -46,7 +46,7 @@ class PsiSwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    # fill_psi_pricing_details
+    fill_psi_pricing_details
   end
 
   def save_psi_units(units,property_id)
@@ -76,10 +76,12 @@ class PsiSwapService < BaseService
         end
         if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
+        elsif u["Units"]["Unit"]["UnitRent"].present?
+          unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
         else
           unit.effective_rent = 0
         end
-        unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+        # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         unit.floor = u["FloorLevel"]
         unit.availability = u["Availability"]["VacancyClass"]
         if u["Availability"]["VacancyClass"] == "Unoccupied"
@@ -113,6 +115,8 @@ class PsiSwapService < BaseService
 
         if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
+        elsif u["Units"]["Unit"]["UnitRent"].present?
+          unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
         else
           unit.effective_rent = 0
         end
@@ -123,7 +127,7 @@ class PsiSwapService < BaseService
             unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
           end
         end
-        unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+        # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         unit.floor = u["FloorLevel"]
         unit.availability = u["Availability"]["VacancyClass"]
         if u["Availability"]["VacancyClass"] == "Unoccupied"
@@ -302,7 +306,7 @@ class PsiSwapService < BaseService
           psi_units.each do |u|
             unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
             pricing = u[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")
-            if unit.effective_rent <= 1 and pricing.to_f > 0
+            if pricing.to_f > 0
               unit.effective_rent = pricing.to_f
               unit.save(validate: false)
               # u[1]['Rent']['TermRent'].each do |a|
