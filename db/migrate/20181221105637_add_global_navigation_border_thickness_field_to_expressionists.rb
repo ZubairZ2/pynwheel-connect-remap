@@ -7,9 +7,7 @@ class AddGlobalNavigationBorderThicknessFieldToExpressionists < ActiveRecord::Mi
     add_column :expressionists, :use_gables_buttons, :boolean, default: false
     add_column :expressionists, :home_page_icons_position, :string
     add_column :expressionists, :global_navigation_icons_position, :string
-    add_column :expressionists, :filter_buttons_icons_position, :string
     add_column :expressionists, :global_navigation_show_background_color, :boolean, default: false
-    add_column :expressionists, :filter_panel_buttons_show_backround_color, :boolean, default: false
 
   end
 end

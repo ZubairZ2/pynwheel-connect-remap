@@ -362,7 +362,7 @@ class CommunitiesController < ApplicationController
         :display_home_page_nav_background,:display_global_nav_background_image,:home_page_button_image,:display_global_navigation_button_icon,:global_navigation_button_border_color,
         :global_navigation_button_font_family,:global_navigation_button_font_size,:display_global_navigation_button_bg_color,:filter_panel_button_border_color,
         :filter_panel_text_font_size,:filter_panel_button_text_font_size, :spacing_between_buttons,:use_gables_buttons,:home_page_icons_position,:global_navigation_icons_position,
-        :filter_buttons_icons_position,:global_navigation_show_background_color,:filter_panel_buttons_show_backround_color,:global_navigation_text_outside_the_button_border,:gables_home_page_images,:home_page_logo_visible,:global_navigation_border_thickness,:spacing_between_buttons_for_homepage, :button_on_bg_color, :display_button_on_bg_color,:global_navigation_button_on_font_color,
+        :filter_buttons_icons_position,:global_navigation_show_background_color,:global_navigation_text_outside_the_button_border,:gables_home_page_images,:home_page_logo_visible,:global_navigation_border_thickness,:spacing_between_buttons_for_homepage, :button_on_bg_color, :display_button_on_bg_color,:global_navigation_button_on_font_color,
         :application_background_image,:display_home_page_nav_background_image,:display_application_background_image,:application_background_color,:button_on_bg_color_opacity,
         :application_background_color_opacity,:display_apartment_nav_bg_image,:display_gallery_nav_bg_image, 
         :display_favourities_nav_bg_image,:display_additional_pages_nav_bg_image,:apartment_nav_bg_image,:gallery_nav_bg_image,
@@ -372,7 +372,8 @@ class CommunitiesController < ApplicationController
         :apartment_btn_off_image,:display_gallery_btn_off_image,:gallery_btn_off_image,:display_neighborhood_btn_off_image,:neighborhood_btn_off_image,
         :display_imagepage_btn_off_image,:imagepage_btn_off_image, :display_webpage_btn_off_image,:webpage_btn_off_image,:display_favourite_btn_off_image,
         :favourite_btn_off_image, :global_navigation_btn_on_for_all,:global_navigation_btn_off_for_all,:home_page_background_image,
-        :global_nav_background_image],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,:gallery_button_on_font_color,:display_gallery_button_on_background_color,:gallery_button_on_background_color,:display_filter_panel_icon,:filter_panel_icon_color,:icon_background_color,:icon_background_color_opacity,:gallery_button_on_background_color_opacity]])
+        :global_nav_background_image],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,:gallery_button_on_font_color,:display_gallery_button_on_background_color,:gallery_button_on_background_color,:display_filter_panel_icon,:filter_panel_icon_color,:icon_background_color,
+        :filter_panel_buttons_show_backround_color,:filter_buttons_icons_position,:icon_background_color_opacity,:gallery_button_on_background_color_opacity]])
   end
 
 end

@@ -17,6 +17,8 @@
 #  icon_background_color                      :string
 #  icon_background_color_opacity              :string
 #  gallery_button_on_background_color_opacity :string
+#  filter_panel_buttons_show_backround_color  :boolean          default(FALSE)
+#  filter_buttons_icons_position              :string
 #
 
 class FilterPanel < ApplicationRecord

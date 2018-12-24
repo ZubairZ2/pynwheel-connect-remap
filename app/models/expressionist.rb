@@ -2,80 +2,90 @@
 #
 # Table name: expressionists
 #
-#  id                                        :integer          not null, primary key
-#  home_page_menu_position                   :string
-#  home_page_position_of_logo                :string
-#  home_page_logo_size                       :string
-#  home_page_button_border_color             :string
-#  display_home_page_button_icon             :boolean          default(TRUE)
-#  home_page_button_font_family              :string
-#  home_page_button_font_size                :string
-#  display_home_page_nav_background          :boolean          default(TRUE)
-#  home_page_button_image                    :string
-#  global_navigation_button_font_family      :string
-#  global_navigation_button_font_size        :string
-#  display_global_navigation_button_bg_color :boolean          default(TRUE)
-#  filter_panel_button_border_color          :string
-#  filter_panel_text_font_size               :string
-#  filter_panel_button_text_font_size        :string
-#  design_id                                 :integer
-#  created_at                                :datetime         not null
-#  updated_at                                :datetime         not null
-#  display_global_navigation_button_icon     :boolean          default(TRUE)
-#  display_home_page_image                   :boolean          default(FALSE)
-#  global_navigation_button_border_color     :string
-#  spacing_between_buttons                   :string
-#  button_on_bg_color                        :string
-#  display_button_on_bg_color                :boolean          default(FALSE)
-#  global_navigation_button_on_font_color    :string
-#  application_background_image              :string
-#  display_application_background_image      :boolean          default(FALSE)
-#  application_background_color              :string
-#  display_apartment_nav_bg_image            :boolean          default(FALSE)
-#  apartment_nav_bg_image                    :string
-#  display_gallery_nav_bg_image              :boolean          default(FALSE)
-#  gallery_nav_bg_image                      :string
-#  display_favourities_nav_bg_image          :boolean          default(FALSE)
-#  favourities_nav_bg_image                  :string
-#  display_additional_pages_nav_bg_image     :boolean          default(FALSE)
-#  additional_pages_nav_bg_image             :string
-#  button_on_bg_color_opacity                :string
-#  application_background_color_opacity      :string
-#  apartment_nav_bg_color                    :string
-#  gallery_nav_bg_color                      :string
-#  favourities_nav_bg_color                  :string
-#  additional_pages_nav_bg_color             :string
-#  display_apartment_btn_on_image            :boolean          default(FALSE)
-#  apartment_btn_on_image                    :string
-#  display_gallery_btn_on_image              :boolean          default(FALSE)
-#  gallery_btn_on_image                      :string
-#  display_neighborhood_btn_on_image         :boolean          default(FALSE)
-#  neighborhood_btn_on_image                 :string
-#  display_imagepage_btn_on_image            :boolean          default(FALSE)
-#  imagepage_btn_on_image                    :string
-#  display_webpage_btn_on_image              :boolean          default(FALSE)
-#  webpage_btn_on_image                      :string
-#  display_favourite_btn_on_image            :boolean          default(FALSE)
-#  favourite_btn_on_image                    :string
-#  display_apartment_btn_off_image           :boolean          default(FALSE)
-#  apartment_btn_off_image                   :string
-#  display_gallery_btn_off_image             :boolean          default(FALSE)
-#  gallery_btn_off_image                     :string
-#  display_neighborhood_btn_off_image        :boolean          default(FALSE)
-#  neighborhood_btn_off_image                :string
-#  display_imagepage_btn_off_image           :boolean          default(FALSE)
-#  imagepage_btn_off_image                   :string
-#  display_webpage_btn_off_image             :boolean          default(FALSE)
-#  webpage_btn_off_image                     :string
-#  display_favourite_btn_off_image           :boolean          default(FALSE)
-#  favourite_btn_off_image                   :string
-#  global_navigation_btn_on_for_all          :boolean          default(FALSE)
-#  global_navigation_btn_off_for_all         :boolean          default(FALSE)
-#  display_global_nav_background_image       :boolean          default(FALSE)
-#  global_nav_background_image               :string
-#  home_page_background_image                :string
-#  display_home_page_nav_background_image    :boolean          default(FALSE)
-#  spacing_between_buttons_for_homepage      :string
+#  id                                               :integer          not null, primary key
+#  home_page_menu_position                          :string
+#  home_page_position_of_logo                       :string
+#  home_page_logo_size                              :string
+#  home_page_button_border_color                    :string
+#  display_home_page_button_icon                    :boolean          default(TRUE)
+#  home_page_button_font_family                     :string
+#  home_page_button_font_size                       :string
+#  display_home_page_nav_background                 :boolean          default(TRUE)
+#  home_page_button_image                           :string
+#  global_navigation_button_font_family             :string
+#  global_navigation_button_font_size               :string
+#  display_global_navigation_button_bg_color        :boolean          default(TRUE)
+#  filter_panel_button_border_color                 :string
+#  filter_panel_text_font_size                      :string
+#  filter_panel_button_text_font_size               :string
+#  design_id                                        :integer
+#  created_at                                       :datetime         not null
+#  updated_at                                       :datetime         not null
+#  display_global_navigation_button_icon            :boolean          default(TRUE)
+#  display_home_page_image                          :boolean          default(FALSE)
+#  global_navigation_button_border_color            :string
+#  spacing_between_buttons                          :string
+#  button_on_bg_color                               :string
+#  display_button_on_bg_color                       :boolean          default(FALSE)
+#  global_navigation_button_on_font_color           :string
+#  application_background_image                     :string
+#  display_application_background_image             :boolean          default(FALSE)
+#  application_background_color                     :string
+#  display_apartment_nav_bg_image                   :boolean          default(FALSE)
+#  apartment_nav_bg_image                           :string
+#  display_gallery_nav_bg_image                     :boolean          default(FALSE)
+#  gallery_nav_bg_image                             :string
+#  display_favourities_nav_bg_image                 :boolean          default(FALSE)
+#  favourities_nav_bg_image                         :string
+#  display_additional_pages_nav_bg_image            :boolean          default(FALSE)
+#  additional_pages_nav_bg_image                    :string
+#  button_on_bg_color_opacity                       :string
+#  application_background_color_opacity             :string
+#  apartment_nav_bg_color                           :string
+#  gallery_nav_bg_color                             :string
+#  favourities_nav_bg_color                         :string
+#  additional_pages_nav_bg_color                    :string
+#  display_apartment_btn_on_image                   :boolean          default(FALSE)
+#  apartment_btn_on_image                           :string
+#  display_gallery_btn_on_image                     :boolean          default(FALSE)
+#  gallery_btn_on_image                             :string
+#  display_neighborhood_btn_on_image                :boolean          default(FALSE)
+#  neighborhood_btn_on_image                        :string
+#  display_imagepage_btn_on_image                   :boolean          default(FALSE)
+#  imagepage_btn_on_image                           :string
+#  display_webpage_btn_on_image                     :boolean          default(FALSE)
+#  webpage_btn_on_image                             :string
+#  display_favourite_btn_on_image                   :boolean          default(FALSE)
+#  favourite_btn_on_image                           :string
+#  display_apartment_btn_off_image                  :boolean          default(FALSE)
+#  apartment_btn_off_image                          :string
+#  display_gallery_btn_off_image                    :boolean          default(FALSE)
+#  gallery_btn_off_image                            :string
+#  display_neighborhood_btn_off_image               :boolean          default(FALSE)
+#  neighborhood_btn_off_image                       :string
+#  display_imagepage_btn_off_image                  :boolean          default(FALSE)
+#  imagepage_btn_off_image                          :string
+#  display_webpage_btn_off_image                    :boolean          default(FALSE)
+#  webpage_btn_off_image                            :string
+#  display_favourite_btn_off_image                  :boolean          default(FALSE)
+#  favourite_btn_off_image                          :string
+#  global_navigation_btn_on_for_all                 :boolean          default(FALSE)
+#  global_navigation_btn_off_for_all                :boolean          default(FALSE)
+#  display_global_nav_background_image              :boolean          default(FALSE)
+#  global_nav_background_image                      :string
+#  home_page_background_image                       :string
+#  display_home_page_nav_background_image           :boolean          default(FALSE)
+#  spacing_between_buttons_for_homepage             :string
+#  global_navigation_border_thickness               :string
+#  home_page_logo_visible                           :boolean          default(FALSE)
+#  gables_home_page_images                          :boolean          default(FALSE)
+#  global_navigation_text_outside_the_button_border :boolean          default(FALSE)
+#  use_gables_buttons                               :boolean          default(FALSE)
+#  home_page_icons_position                         :string
+#  global_navigation_icons_position                 :string
+#  filter_buttons_icons_position                    :string
+#  global_navigation_show_background_color          :boolean          default(FALSE)
+#  filter_panel_buttons_show_backround_color        :boolean          default(FALSE)
 #
 
 class Expressionist < ApplicationRecord
