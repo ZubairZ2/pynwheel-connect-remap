@@ -181,6 +181,7 @@ class PsiStaticService < BaseService
           psi_units.each do |u|
             unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
             pricing = u[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")
+
             if pricing.to_f > 0
               unit.effective_rent = pricing.to_f
               unit.save(validate: false)
@@ -196,7 +197,7 @@ class PsiStaticService < BaseService
               #   end
               # end
             elsif unit.effective_rent <= 1
-              pricing = floorplanHash[u[1]["@attributes"]["FloorPlanName"]].gsub(/[\s,]/ ,"")
+              pricing = floorplanHash[u[1]["@attributes"]["FloorPlanName"]].to_s.gsub(/[\s,]/ ,"")
               unit.effective_rent = pricing.to_f
 
               unit.save(validate: false)
