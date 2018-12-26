@@ -159,9 +159,9 @@ json.ui_settigs do
           json.favourite_btn_off_image @community.design.expressionist.favourite_btn_off_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.favourite_btn_off_image.url : @community.design.expressionist.favourite_btn_off_image.url) : "No Image"
           json.display_favourite_btn_off_image false
         end
-        json.global_navigation_border_thickness @community.design.expressionist.global_navigation_border_thickness.present? ? @community.design.expressionist.global_navigation_border_thickness : "0px"
+        json.global_navigation_border_thickness @community.design.expressionist.global_navigation_border_thickness.present? ? (@community.design.expressionist.global_navigation_border_thickness.present? ? @community.design.expressionist.global_navigation_border_thickness : "0px") : "0px"
         json.global_navigation_text_outside_the_button_border @community.design.expressionist.global_navigation_text_outside_the_button_border.present? ? @community.design.expressionist.global_navigation_text_outside_the_button_border : false
-        json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Left of text"
+        json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Left of text") : "Left of text"
         json.global_navigation_show_background_color @community.design.expressionist.global_navigation_show_background_color.present? ? @community.design.expressionist.global_navigation_show_background_color : false
         json.use_gables_buttons @community.design.expressionist.use_gables_buttons.present? ? @community.design.expressionist.use_gables_buttons : false
 
@@ -197,6 +197,10 @@ json.ui_settigs do
         json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
         json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "18px"
         json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
+
+        json.filter_panel_buttons_show_backround_color @community.design.filter_panel.present? ? @community.design.filter_panel.filter_panel_buttons_show_backround_color : false
+        json.filter_buttons_icons_position @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_buttons_icons_position.present? ? @community.design.filter_panel.filter_buttons_icons_position : "Left of text") : "Left of text"
+
       end
       json.home_page do
         json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
@@ -224,6 +228,9 @@ json.ui_settigs do
         json.display_home_page_nav_background_image @community.design.expressionist.display_home_page_nav_background_image
         json.home_page_background_image @community.design.expressionist.home_page_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_background_image.url : @community.design.expressionist.home_page_background_image.url) : "No Image"
 
+        json.home_page_logo_visible @community.design.expressionist.present? ? @community.design.expressionist.home_page_logo_visible : false
+        json.home_page_icons_position @community.design.expressionist.present? ? (@community.design.expressionist.home_page_icons_position.present? ? @community.design.expressionist.home_page_icons_position : "Left of text") : "Left of text"
+        json.gables_home_page_images @community.design.expressionist.present? ? @community.design.expressionist.gables_home_page_images : false
 
       end
       json.map_marker do
