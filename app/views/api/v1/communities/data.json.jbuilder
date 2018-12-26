@@ -57,34 +57,90 @@ json.ui_settigs do
       json.global_navigation do
         json.display_global_navigation_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_icon : true
         json.display_application_background_image @community.design.expressionist.present? ? @community.design.expressionist.display_application_background_image : false
-        json.spacing_between_buttons (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons.present?) ? @community.design.expressionist.spacing_between_buttons : "0px"
-        json.button_on_bg_color (@community.design.expressionist.present? and @community.design.expressionist.button_on_bg_color.present?) ? @community.design.expressionist.button_on_bg_color : "#565455"
+        if @community.theme_name == "futurist"
+          json.spacing_between_buttons "10px"
+        else
+          json.spacing_between_buttons (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons.present?) ? @community.design.expressionist.spacing_between_buttons : "0px"
+        end
+        if @community.theme_name == "futurist"
+          json.button_on_bg_color "No color"
+        else
+          json.button_on_bg_color (@community.design.expressionist.present? and @community.design.expressionist.button_on_bg_color.present?) ? @community.design.expressionist.button_on_bg_color : "#565455"
+        end
         json.button_on_bg_color_opacity (@community.design.expressionist.present? and @community.design.expressionist.button_on_bg_color_opacity.present?) ? @community.design.expressionist.button_on_bg_color_opacity : "100%"
         json.application_background_color (@community.design.expressionist.present? and @community.design.expressionist.application_background_color.present?) ? @community.design.expressionist.application_background_color : "#ffff"
         json.application_background_color_opacity (@community.design.expressionist.present? and @community.design.expressionist.application_background_color_opacity.present?) ? @community.design.expressionist.application_background_color_opacity : "100%"
-        json.global_navigation_button_on_font_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_on_font_color.present?) ? @community.design.expressionist.global_navigation_button_on_font_color : "#565455"
+        if @community.theme_name == "futurist"
+          json.global_navigation_button_on_font_color "#ffffff"
+        else
+          json.global_navigation_button_on_font_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_on_font_color.present?) ? @community.design.expressionist.global_navigation_button_on_font_color : "#565455"
+        end
         json.display_button_on_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_button_on_bg_color : false
         json.display_apartment_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_apartment_nav_bg_image : false
         json.display_gallery_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_gallery_nav_bg_image : false
         json.display_favourities_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_favourities_nav_bg_image : false
         json.display_additional_pages_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_additional_pages_nav_bg_image : false
         json.display_global_navigation_button_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_bg_color : true
-        json.global_navigation_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_family.present?) ? @community.design.expressionist.global_navigation_button_font_family : "Arial"
-        json.global_navigation_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_size.present?) ? @community.design.expressionist.global_navigation_button_font_size : "13px"
+        if @community.theme_name == "futurist"
+          json.global_navigation_button_font_family "Futura"
+        else
+          json.global_navigation_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_family.present?) ? @community.design.expressionist.global_navigation_button_font_family : "Arial"
+        end
+        if @community.theme_name == "futurist"
+          json.global_navigation_button_font_size "16px"
+        else
+          json.global_navigation_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_size.present?) ? @community.design.expressionist.global_navigation_button_font_size : "13px"
+        end
         json.global_navigation_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_border_color.present?) ? @community.design.expressionist.global_navigation_button_border_color : "#ffff"
-        json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
-        json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#565455"
+        if @community.theme_name == "futurist"
+          json.global_navigation_font_color "#C5C4C7"
+        else
+          json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
+        end
+        if @community.theme_name == "futurist"
+          json.global_navigation_background_color "#C5C4C7"
+        else
+          json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#565455"
+        end
         json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#3B3B3B"
-        json.global_navigation_buttons_opacity @community.design.global_navigation_buttons_opacity.present? ? @community.design.global_navigation_buttons_opacity : "100%" 
-        json.global_nav_bg_opacity @community.design.global_nav_bg_opacity.present? ? @community.design.global_nav_bg_opacity : "100%"
+        if @community.theme_name == "futurist"
+          json.global_navigation_buttons_opacity "0%"
+        else
+          json.global_navigation_buttons_opacity @community.design.global_navigation_buttons_opacity.present? ? @community.design.global_navigation_buttons_opacity : "100%"
+        end
+        if @community.theme_name == "futurist"
+          json.global_nav_bg_opacity "0%"
+        else
+          json.global_nav_bg_opacity @community.design.global_nav_bg_opacity.present? ? @community.design.global_nav_bg_opacity : "100%"
+        end
         json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Rectangular"
-        json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
-        json.global_nav_buttons_width @community.design.global_nav_buttons_width.present? ? @community.design.global_nav_buttons_width : "175px"
-        json.secondary_page_menu_border @community.design.secondary_page_menu_border.present? ? @community.design.secondary_page_menu_border : "All sides"
-        json.global_nav_button_on_as_image @community.design.global_nav_button_on_as_image 
-        json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image 
-        json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : "No Image"
-        json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : "No Image"
+        if @community.theme_name == "futurist"
+          json.global_nav_buttons_height "136px"
+        else
+          json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
+        end
+        if @community.theme_name == "futurist"
+          json.global_nav_buttons_width "250px"
+        else
+          json.global_nav_buttons_width @community.design.global_nav_buttons_width.present? ? @community.design.global_nav_buttons_width : "175px"
+        end
+        if @community.theme_name == "futurist"
+          json.secondary_page_menu_border "No border"
+        else
+          json.secondary_page_menu_border @community.design.secondary_page_menu_border.present? ? @community.design.secondary_page_menu_border : "All sides"
+        end
+        json.global_nav_button_on_as_image @community.design.global_nav_button_on_as_image
+        json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image
+        if @community.theme_name == "futurist"
+          json.global_nav_button_on "Will be provided"
+        else
+          json.global_nav_button_on @community.design.global_nav_button_on.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_on.url : @community.design.global_nav_button_on.url) : "No Image"
+        end
+        if @community.theme_name == "futurist"
+          json.global_nav_button_off "Will be provided"
+        else
+          json.global_nav_button_off @community.design.global_nav_button_off.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.global_nav_button_off.url : @community.design.global_nav_button_off.url) : "No Image"
+        end
         json.application_background_image (@community.design.expressionist.present? and @community.design.expressionist.application_background_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.application_background_image.url : @community.design.expressionist.application_background_image.url) : "No Image"
         json.apartment_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.apartment_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.apartment_nav_bg_image.url : @community.design.expressionist.apartment_nav_bg_image.url) : "No Image"
         json.gallery_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.gallery_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.gallery_nav_bg_image.url : @community.design.expressionist.gallery_nav_bg_image.url) : "No Image"
@@ -203,25 +259,61 @@ json.ui_settigs do
 
       end
       json.home_page do
-        json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
-        json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
+        if @community.theme_name == "futurist"
+          json.home_page_menu_position "Bottom"
+        else
+          json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
+        end
+        if @community.theme_name == "futurist"
+          json.home_page_position_of_logo "Right"
+        else
+          json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
+        end
         json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487x160"
         json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
         json.display_home_page_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_button_icon : true
         json.display_home_page_image @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_image : true
-        json.home_page_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_family.present?) ? @community.design.expressionist.home_page_button_font_family : "Arial"
-        json.home_page_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_size.present?) ? @community.design.expressionist.home_page_button_font_size : "18px"
-        json.home_page_button_image (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_button_image.url : @community.design.expressionist.home_page_button_image.url) : "No Image"
+        if @community.theme_name == "futurist"
+          json.home_page_button_font_family "Futura"
+        else
+          json.home_page_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_family.present?) ? @community.design.expressionist.home_page_button_font_family : "Arial"
+        end
+        if @community.theme_name == "futurist"
+          json.home_page_button_font_size "22px"
+        else
+          json.home_page_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_size.present?) ? @community.design.expressionist.home_page_button_font_size : "18px"
+        end
+        if @community.theme_name == "futurist"
+          json.home_page_button_image "Will be provided"
+        else
+          json.home_page_button_image (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_button_image.url : @community.design.expressionist.home_page_button_image.url) : "No Image"
+        end
         json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Rectangular"
         json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "All sides"
         json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "250px"
         json.home_page_navigation_background_color @community.design.home_page_navigation_background_color.present? ? @community.design.home_page_navigation_background_color : "#565455"
         json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
         json.home_page_navigation_font_color @community.design.home_page_navigation_font_color.present? ? @community.design.home_page_navigation_font_color : "#ffff"
-        json.spacing_between_buttons_for_homepage (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons_for_homepage.present?) ? @community.design.expressionist.spacing_between_buttons_for_homepage : "0px"
-        json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "150px"
-        json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "350px"
-        json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
+        if @community.theme_name == "futurist"
+          json.spacing_between_buttons_for_homepage "0px"
+        else
+          json.spacing_between_buttons_for_homepage (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons_for_homepage.present?) ? @community.design.expressionist.spacing_between_buttons_for_homepage : "0px"
+        end
+        if @community.theme_name == "futurist"
+          json.home_page_buttons_height "200px"
+        else
+          json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "150px"
+        end
+        if @community.theme_name == "futurist"
+          json.home_page_buttons_width "450px"
+        else
+          json.home_page_buttons_width @community.design.home_page_buttons_width.present? ? @community.design.home_page_buttons_width : "350px"
+        end
+        if @community.theme_name == "futurist"
+          json.home_page_buttons_opacity "0%"
+        else
+          json.home_page_buttons_opacity @community.design.home_page_buttons_opacity.present? ? @community.design.home_page_buttons_opacity : "100%"
+        end
         json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"
         json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
         
