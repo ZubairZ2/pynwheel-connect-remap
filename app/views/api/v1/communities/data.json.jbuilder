@@ -159,6 +159,11 @@ json.ui_settigs do
           json.favourite_btn_off_image @community.design.expressionist.favourite_btn_off_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.favourite_btn_off_image.url : @community.design.expressionist.favourite_btn_off_image.url) : "No Image"
           json.display_favourite_btn_off_image false
         end
+        json.global_navigation_border_thickness @community.design.expressionist.global_navigation_border_thickness.present? ? @community.design.expressionist.global_navigation_border_thickness : "0px"
+        json.global_navigation_text_outside_the_button_border @community.design.expressionist.global_navigation_text_outside_the_button_border.present? ? @community.design.expressionist.global_navigation_text_outside_the_button_border : false
+        json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Left of text"
+        json.global_navigation_show_background_color @community.design.expressionist.global_navigation_show_background_color.present? ? @community.design.expressionist.global_navigation_show_background_color : false
+        json.use_gables_buttons @community.design.expressionist.use_gables_buttons.present? ? @community.design.expressionist.use_gables_buttons : false
 
       end
       json.filter_panel do
