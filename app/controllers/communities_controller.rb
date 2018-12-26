@@ -23,8 +23,9 @@ class CommunitiesController < ApplicationController
   def create
     @community = current_company.communities.new(community_params)
     if @community.save
+      @community.create_neighborhood
       flash[:notice] = "Community created successfully."
-      redirect_to company_communities_path(current_company)
+      redirect_to community_design_index_path(@community)
     else
       flash[:error] = @community.errors.full_messages.join(',')
       render :new
