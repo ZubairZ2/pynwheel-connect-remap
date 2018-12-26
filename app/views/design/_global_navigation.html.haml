@@ -97,6 +97,15 @@
               Global navigation button width 
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :global_nav_buttons_width , options_for_select(navigation_button_width_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}        
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display global navigation button color
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_global_navigation_button_color, {class: "global-navigation-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_color"}
+            %span.pl-15 Yes
       .row
         .col-lg-10
           .form-group.mt-30
