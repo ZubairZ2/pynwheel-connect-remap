@@ -122,7 +122,7 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Button shape 
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field"}  
+              = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field button_shape"}
       .row
         .col-lg-10
           .form-group.mt-30
@@ -225,13 +225,22 @@
             = e.check_box :global_navigation_show_background_color, {class: "global-navigation-field"}
             %label.label-primary{:for => "community_design_attributes_expressionist_attributes_global_navigation_show_background_color"}
             %span.pl-15 Yes
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Global navigation home icon
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :global_navigation_home_icon, {class: "global-navigation-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_global_navigation_home_icon"}
+            %span.pl-15 Yes
       .row
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Global navigation icons position
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :global_navigation_icons_position , options_for_select(home_page_icons_position_option,e.object.global_navigation_icons_position.present? ? e.object.global_navigation_icons_position : 'Left of text'),{},{class: "form-control global-navigation-field"}
+              = e.select :global_navigation_icons_position , options_for_select(home_page_icons_position_option,e.object.global_navigation_icons_position.present? ? e.object.global_navigation_icons_position : 'Left of text'),{},{class: "form-control global-navigation-field global_navigation_icons_position"}
 
       .row
         .col-md-12
@@ -1168,7 +1177,11 @@
         $('.additional-pages-navigation-bg-image-fields').addClass('hidden');
      }
   });
-  
+
+  $('.button_shape').change(function(){
+    setGlobalNavigationIconsPosition($(this).val());
+  });
+
   adjustBorderOptionsOnGlobalNaviagtion($("#community_design_attributes_secondary_page_menu_border"),$('#community_design_attributes_button_shape').val());
 
   $('#community_design_attributes_button_shape').change(function(){

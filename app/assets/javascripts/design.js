@@ -2480,7 +2480,7 @@ function adjustBorderOptionsOnGlobalNaviagtion(border_element, value) {
 }
 
 function setLogoSize(value) {
-  if (value == 'Right' || value == 'Left') {
+  if (value == 'Right' || value == 'Left' || value == 'Bottom center') {
     $('#community_design_attributes_expressionist_attributes_home_page_logo_size').children("option").hide();
     $('#community_design_attributes_expressionist_attributes_home_page_logo_size').children("option[value^=487x160]").show();
     $('#community_design_attributes_expressionist_attributes_home_page_logo_size').val('487x160');
@@ -2507,6 +2507,23 @@ function setLogoSize(value) {
   }
 }
 
+function setHomePageIconsPosition(value) {
+    if (value == 'Circular') {
+        $('.homepage_icons_position').children("option").hide();
+        $('.homepage_icons_position').val("Left of text")
+    } else {
+        $('.homepage_icons_position').children("option").show();
+    }
+}
+
+function setGlobalNavigationIconsPosition(value) {
+    if (value == 'Circular') {
+        $('.global_navigation_icons_position').children("option").hide();
+        $('.global_navigation_icons_position').val("Left of text")
+    } else {
+        $('.global_navigation_icons_position').children("option").show();
+    }
+}
 function adjustLogoSizeAndButtonWidthFields(value) {
   if (value == 'Right' || value == 'Left') {
     $('#community_design_attributes_expressionist_attributes_home_page_logo_size').children("option").hide();
