@@ -40,9 +40,13 @@ json.ui_settigs do
       json.appartment_button_color (@community.design.gable.present? and @community.design.gable.appartment_button_color.present?) ? @community.design.gable.appartment_button_color : "#8A8A8D" 
       json.gallery_button_color (@community.design.gable.present? and @community.design.gable.gallery_button_color.present?) ? @community.design.gable.gallery_button_color : "#44797B" 
       json.neighborhood_button_color (@community.design.gable.present? and @community.design.gable.neighborhood_button_color.present?) ? @community.design.gable.neighborhood_button_color : "#0475A9" 
-      json.favorite_button_color (@community.design.gable.present? and @community.design.gable.favorite_button_color.present?) ? @community.design.gable.favorite_button_color : "#D5C228" 
-      json.filter_panel_color (@community.design.gable.present? and @community.design.gable.filter_panel_color.present?) ? @community.design.gable.filter_panel_color : "#467A7D" 
-      json.webpages_button_color (@community.design.gable.present? and @community.design.gable.webpages_button_color.present?) ? @community.design.gable.webpages_button_color : "#96348F" 
+      json.favorite_button_color (@community.design.gable.present? and @community.design.gable.favorite_button_color.present?) ? @community.design.gable.favorite_button_color : "#D5C228"
+      if @community.theme_name == "panther"
+        json.filter_panel_color "#534841"
+      else
+        json.filter_panel_color (@community.design.gable.present? and @community.design.gable.filter_panel_color.present?) ? @community.design.gable.filter_panel_color : "#467A7D"
+      end
+      json.webpages_button_color (@community.design.gable.present? and @community.design.gable.webpages_button_color.present?) ? @community.design.gable.webpages_button_color : "#96348F"
       json.imagepages_button_color (@community.design.gable.present? and @community.design.gable.imagepages_button_color.present?) ? @community.design.gable.imagepages_button_color : "#96348F"
 
       json.home_page_navigation_bg_image @community.design.gable.present? ? (@community.design.gable.home_page_nav_bg_image.present? ? @community.design.gable.home_page_nav_bg_image.url : "No Image") : "No Image"
@@ -273,27 +277,47 @@ json.ui_settigs do
         json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
         if @community.theme_name == "futurist"
           json.filter_panel_font_style "Futura"
+        elsif @community.theme_name == "panther"
+          json.filter_panel_font_style "Futura"
         else
           json.filter_panel_font_style @community.design.filter_panel_font_style.present? ? @community.design.filter_panel_font_style : "Arial"
 
         end
-        json.filter_panel_font_color @community.design.filter_panel_font_color.present? ? @community.design.filter_panel_font_color : "#ffff"
-        json.filter_button_color @community.design.filter_button_color.present? ? @community.design.filter_button_color : "#565455"
+        if @community.theme_name == "panther"
+          json.filter_panel_font_color "#cae0da"
+        else
+          json.filter_panel_font_color @community.design.filter_panel_font_color.present? ? @community.design.filter_panel_font_color : "#ffff"
+        end
+        if @community.theme_name == "panther"
+          json.filter_button_color "#cae0da"
+        else
+          json.filter_button_color @community.design.filter_button_color.present? ? @community.design.filter_button_color : "#565455"
+        end
         if @community.theme_name == "futurist"
+          json.filter_button_font_style "Futura"
+        elsif @community.theme_name == "panther"
           json.filter_button_font_style "Futura"
         else
           json.filter_button_font_style @community.design.filter_button_font_style.present? ? @community.design.filter_button_font_style : "Arial"
         end
-        json.filter_button_font_color @community.design.filter_button_font_color.present? ? @community.design.filter_button_font_color : "#ffff"
+        if @community.theme_name == "panther"
+          json.filter_button_font_color "#534841"
+        else
+          json.filter_button_font_color @community.design.filter_button_font_color.present? ? @community.design.filter_button_font_color : "#ffff"
+        end
         json.filter_panel_opacity @community.design.filter_panel_opacity.present? ? @community.design.filter_panel_opacity : "100%"
         json.filter_buttons_opacity @community.design.filter_buttons_opacity.present? ? @community.design.filter_buttons_opacity : "100%"
         json.gallery_buttons_opacity @community.design.gallery_buttons_opacity.present? ? @community.design.gallery_buttons_opacity : "100%"
         if @community.theme_name == "futurist"
           json.filter_menu_buttons_border "No border"
+        elsif @community.theme_name == "panther"
+          json.filter_menu_buttons_border "No border"
         else
           json.filter_menu_buttons_border @community.design.filter_menu_buttons_border.present? ? @community.design.filter_menu_buttons_border : "All sides"
         end
         if @community.theme_name == "futurist"
+          json.gallery_buttons_border "No border"
+        elsif @community.theme_name == "panther"
           json.gallery_buttons_border "No border"
         else
           json.gallery_buttons_border @community.design.gallery_buttons_border.present? ? @community.design.gallery_buttons_border : "All sides"
@@ -314,7 +338,11 @@ json.ui_settigs do
         end
         json.gallery_button_on_as_image @community.design.gallery_button_on_as_image
         json.gallery_button_on_image @community.design.gallery_button_on_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.gallery_button_on_image.url : @community.design.gallery_button_on_image.url) : "No Image"
-        json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
+        if @community.theme_name == "panther"
+          json.filter_panel_button_border_color "#565455"
+        else
+          json.filter_panel_button_border_color (@community.design.filter_panel.present? and @community.design.filter_panel.button_border_color.present?) ? @community.design.filter_panel.button_border_color : "#565455"
+        end
         json.gallery_button_on_font_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_font_color.present?) ? @community.design.filter_panel.gallery_button_on_font_color : "#ffff"
         json.gallery_button_on_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_background_color.present?) ? @community.design.filter_panel.gallery_button_on_background_color : "#565455"
         json.gallery_button_on_background_color_opacity (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_background_color_opacity.present?) ? @community.design.filter_panel.gallery_button_on_background_color_opacity : "100%"
@@ -325,10 +353,16 @@ json.ui_settigs do
         json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
         if @community.theme_name == "futurist"
           json.filter_panel_text_font_size "20px"
+        elsif @community.theme_name == "panther"
+          json.filter_panel_text_font_size "18px"
         else
           json.filter_panel_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.text_font_size.present?) ? @community.design.filter_panel.text_font_size : "18px"
         end
-        json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
+        if @community.theme_name == "panther"
+          json.filter_panel_button_text_font_size "21px"
+        else
+          json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
+        end
 
         json.filter_panel_buttons_show_backround_color @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_panel_buttons_show_backround_color.present? ? @community.design.filter_panel.filter_panel_buttons_show_backround_color : false) : false
         json.filter_buttons_icons_position @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_buttons_icons_position.present? ? @community.design.filter_panel.filter_buttons_icons_position : "Left of text") : "Left of text"
