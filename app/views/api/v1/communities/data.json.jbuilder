@@ -270,7 +270,7 @@ json.ui_settigs do
         json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Left of text") : "Left of text"
         json.global_navigation_show_background_color @community.design.expressionist.global_navigation_show_background_color.present? ? (@community.design.expressionist.global_navigation_show_background_color.present? ? @community.design.expressionist.global_navigation_show_background_color : false ): false
         json.use_gables_buttons @community.design.expressionist.present? ? (@community.design.expressionist.use_gables_buttons.present? ? @community.design.expressionist.use_gables_buttons : false ): false
-        json.display_global_navigation_button_color @community.design.expressionist.present? ? (@community.design.expressionist.display_global_navigation_button_color.present? ? @community.design.expressionist.display_global_navigation_button_color : false ): false
+        # json.display_global_navigation_button_color @community.design.expressionist.present? ? (@community.design.expressionist.display_global_navigation_button_color.present? ? @community.design.expressionist.display_global_navigation_button_color : false ): false
         json.global_navigation_home_icon @community.design.expressionist.present? ? (@community.design.expressionist.global_navigation_home_icon.present? ? @community.design.expressionist.global_navigation_home_icon : false ): false
       end
       json.filter_panel do
@@ -455,7 +455,7 @@ json.ui_settigs do
           json.home_page_icons_position @community.design.expressionist.present? ? (@community.design.expressionist.home_page_icons_position.present? ? @community.design.expressionist.home_page_icons_position : "Left of text") : "Left of text"
         end
         json.gables_home_page_images @community.design.expressionist.present? ? (@community.design.expressionist.gables_home_page_images.present? ? @community.design.expressionist.gables_home_page_images : false) : false
-        json.button_text_position @community.design.expressionist.present? ? (@community.design.expressionist.button_text_position.present? ? @community.design.expressionist.button_text_position : "Left of text") : "Left of text"
+        # json.button_text_position @community.design.expressionist.present? ? (@community.design.expressionist.button_text_position.present? ? @community.design.expressionist.button_text_position : "Left of text") : "Left of text"
         if @community.theme_name == "panther"
           json.homepage_button_border_thickness "2px"
         else
@@ -491,7 +491,7 @@ json.ui_settigs do
         json.unit_bg_color_opacity @community.design.unit_bg_color_opacity.present? ? @community.design.unit_bg_color_opacity : "100%"
       end
     end
-    
+
   #end
 end
 
