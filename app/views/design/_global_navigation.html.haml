@@ -1178,6 +1178,12 @@
      }
   });
 
+  if ($('.button_shape').val() == 'Circular')
+  {
+    $('.global_navigation_icons_position').children("option").hide();
+    $('.global_navigation_icons_position').val("Above the text");
+  }
+
   $('.button_shape').change(function(){
     setGlobalNavigationIconsPosition($(this).val());
   });

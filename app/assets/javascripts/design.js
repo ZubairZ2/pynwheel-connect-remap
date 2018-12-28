@@ -2510,7 +2510,7 @@ function setLogoSize(value) {
 function setHomePageIconsPosition(value) {
     if (value == 'Circular') {
         $('.homepage_icons_position').children("option").hide();
-        $('.homepage_icons_position').val("Left of text")
+        $('.homepage_icons_position').val("Above the text");
     } else {
         $('.homepage_icons_position').children("option").show();
     }
@@ -2519,7 +2519,7 @@ function setHomePageIconsPosition(value) {
 function setGlobalNavigationIconsPosition(value) {
     if (value == 'Circular') {
         $('.global_navigation_icons_position').children("option").hide();
-        $('.global_navigation_icons_position').val("Left of text")
+        $('.global_navigation_icons_position').val("Above the text");
     } else {
         $('.global_navigation_icons_position').children("option").show();
     }

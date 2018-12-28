@@ -301,5 +301,10 @@
   $('.home_page_button_shape').change(function(){
     setHomePageIconsPosition($(this).val());
   });
+  if ($('.home_page_button_shape').val() == 'Circular')
+  {
+    $('.homepage_icons_position').children("option").hide();
+    $('.homepage_icons_position').val("Above the text");
+  }
 
   adjustLogoSizeAndButtonWidthFields($('#community_design_attributes_expressionist_attributes_home_page_position_of_logo').val());
