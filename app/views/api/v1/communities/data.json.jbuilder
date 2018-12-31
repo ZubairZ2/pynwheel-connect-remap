@@ -248,8 +248,13 @@ json.ui_settigs do
         else
           json.secondary_page_menu_border "All sides"
         end
-        json.global_nav_button_on_as_image @community.design.global_nav_button_on_as_image
-        json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image
+        if @community.theme_name == "futurist"
+        json.global_nav_button_on_as_image true
+        json.global_nav_button_off_as_image true
+        else
+          json.global_nav_button_on_as_image @community.design.global_nav_button_on_as_image
+          json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image
+        end
         if @community.theme_name == "futurist"
           json.global_nav_button_on image_url("global_nav_button_on.png")
         elsif @community.theme_name == "expressionist"
@@ -501,9 +506,14 @@ json.ui_settigs do
         else
           json.gallery_buttons_border "All sides"
         end
-        json.filter_button_as_image @community.design.filter_button_as_image
+        if @community.theme_name == "futurist"
+          json.filter_button_as_image true
+        else
+          json.filter_button_as_image @community.design.filter_button_as_image
+        end
         json.gallery_button_as_image @community.design.gallery_button_as_image
         json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
+
         if @community.theme_name == "futurist"
           json.filter_button image_url("filetr_panel_button_bg.png")
         elsif @community.theme_name == "expressionist"
