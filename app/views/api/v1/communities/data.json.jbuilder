@@ -9,12 +9,10 @@ json.ui_settigs do
     json.theme "expressionist"
   end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
-  unless @community.theme_name.include?('gables')
-    json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
-    json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
-  else
-    json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
-  end  
+
+  json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
+  json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+
   #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
@@ -465,6 +463,8 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.filter_panel_font_color "#cae0da"
+        elsif @community.theme_name == "futurist"
+          json.filter_panel_font_color "#ffffff"
         elsif @community.theme_name == "modernist"
           json.filter_panel_font_color "#ffffff"
         else
@@ -535,6 +535,8 @@ json.ui_settigs do
         end
         json.gallery_button_as_image @community.design.gallery_button_as_image
         if @community.theme_name == "modernist"
+          json.filter_panel_background_as_image false
+        elsif @community.theme_name == "panther"
           json.filter_panel_background_as_image false
         else
           json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
@@ -635,6 +637,8 @@ json.ui_settigs do
           json.filter_panel_buttons_show_backround_color false
         end
         if @community.theme_name == "modernist"
+          json.filter_buttons_icons_position "Right of text"
+        elsif @community.theme_name == "futurist"
           json.filter_buttons_icons_position "Right of text"
         elsif @community.theme_name == "expressionist"
           json.filter_buttons_icons_position @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_buttons_icons_position.present? ? @community.design.filter_panel.filter_buttons_icons_position : "Left of text") : "Left of text"
@@ -812,6 +816,8 @@ json.ui_settigs do
           json.home_page_navigation_background_opacity "100%"
           if @community.theme_name == "futurist"
             json.display_home_page_nav_background false
+          elsif @community.theme_name == "panther"
+            json.display_home_page_nav_background false
           else
             json.display_home_page_nav_background true
           end
@@ -824,7 +830,7 @@ json.ui_settigs do
         if @community.theme_name == "futurist"
           json.home_page_icons_position "Right of text"
         elsif @community.theme_name == "panther"
-          json.home_page_icons_position "Right of text"
+          json.home_page_icons_position "Above of text"
         elsif @community.theme_name == "panther"
           json.home_page_icons_position "Above of text"
         elsif @community.theme_name == "modernist"
