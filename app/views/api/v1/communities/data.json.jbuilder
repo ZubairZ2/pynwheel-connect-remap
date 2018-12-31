@@ -195,6 +195,8 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.global_navigation_button_color "#382f2a"
+        elsif @community.theme_name == "modernist"
+          json.global_navigation_button_color "#fdfdfd"
         elsif @community.theme_name == "expressionist"
           json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#3B3B3B"
         else
