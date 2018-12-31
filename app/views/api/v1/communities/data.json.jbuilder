@@ -66,6 +66,8 @@ json.ui_settigs do
       json.global_navigation do
         if @community.theme_name == "panther"
           json.display_global_navigation_button_icon true
+        elsif @community.theme_name == "modernist"
+          json.display_global_navigation_button_icon true
         elsif @community.theme_name == "expressionist"
           json.display_global_navigation_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_icon : true
         else
@@ -410,8 +412,11 @@ json.ui_settigs do
         else
           json.global_navigation_text_outside_the_button_border false
         end
-        if @community.theme_name == "modernist"
+
+        if @community.theme_name == "futurist"
           json.global_navigation_icons_position "Right of text"
+        elsif @community.theme_name == "modernist"
+          json.global_navigation_icons_position "Above of text"
         elsif @community.theme_name == "modernist"
           json.global_navigation_icons_position "Above the text"
         elsif @community.theme_name == "expressionist"
@@ -623,7 +628,7 @@ json.ui_settigs do
         if @community.theme_name == "modernist"
           json.filter_panel_buttons_show_backround_color true
         elsif @community.theme_name == "panther"
-          json.filter_panel_buttons_show_backround_color false
+          json.filter_panel_buttons_show_backround_color true
         elsif @community.theme_name == "expressionist"
           json.filter_panel_buttons_show_backround_color @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_panel_buttons_show_backround_color.present? ? @community.design.filter_panel.filter_panel_buttons_show_backround_color : false) : false
         else
@@ -644,7 +649,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist"
           json.home_page_menu_position "Vertical Right"
         elsif @community.theme_name == "panther"
-          json.home_page_menu_position "Centre"
+          json.home_page_menu_position "Middle"
         elsif @community.theme_name == "expressionist"
           json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
         else
@@ -669,7 +674,7 @@ json.ui_settigs do
         if @community.theme_name == "panther"
           json.home_page_button_border_color "#cae0da"
         elsif @community.theme_name == "modernist"
-          json.home_page_position_of_logo "#fdfdfd"
+          json.home_page_button_border_color "#fdfdfd"
         elsif @community.theme_name == "expressionist"
           json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
         else
@@ -795,7 +800,11 @@ json.ui_settigs do
           else
             json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
           end
-          json.display_home_page_nav_background_image @community.design.expressionist.display_home_page_nav_background_image
+          if @community.theme_name == "panther"
+            json.display_home_page_nav_background_image false
+          else
+            json.display_home_page_nav_background_image @community.design.expressionist.display_home_page_nav_background_image
+          end
           json.home_page_background_image @community.design.expressionist.home_page_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_background_image.url : @community.design.expressionist.home_page_background_image.url) : "No Image"
 
           json.home_page_logo_visible @community.design.expressionist.present? ? (@community.design.expressionist.home_page_logo_visible.present? ? @community.design.expressionist.home_page_logo_visible : false) : false
@@ -811,7 +820,10 @@ json.ui_settigs do
 
           json.home_page_logo_visible false
         end
-        if @community.theme_name == "panther"
+
+        if @community.theme_name == "futurist"
+          json.home_page_icons_position "Right of text"
+        elsif @community.theme_name == "panther"
           json.home_page_icons_position "Right of text"
         elsif @community.theme_name == "panther"
           json.home_page_icons_position "Above of text"
