@@ -69,6 +69,8 @@ json.ui_settigs do
           json.spacing_between_buttons "10px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons "0px"
+        elsif @community.theme_name == "modernist"
+          json.spacing_between_buttons "60px"
         else
           json.spacing_between_buttons (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons.present?) ? @community.design.expressionist.spacing_between_buttons : "0px"
         end
@@ -83,6 +85,8 @@ json.ui_settigs do
           json.button_on_bg_color_opacity (@community.design.expressionist.present? and @community.design.expressionist.button_on_bg_color_opacity.present?) ? @community.design.expressionist.button_on_bg_color_opacity : "100%"
         end
         if @community.theme_name == "panther"
+          json.application_background_color "#ffffff"
+        elsif @community.theme_name == "modernist"
           json.application_background_color "#ffffff"
         else
           json.application_background_color (@community.design.expressionist.present? and @community.design.expressionist.application_background_color.present?) ? @community.design.expressionist.application_background_color : "#ffff"
@@ -121,6 +125,8 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.global_navigation_button_border_color "#b6c5bf"
+        elsif @community.theme_name == "modernist"
+          json.global_navigation_button_border_color "#777777"
         else
           json.global_navigation_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_border_color.present?) ? @community.design.expressionist.global_navigation_button_border_color : "#ffff"
         end
@@ -128,6 +134,8 @@ json.ui_settigs do
           json.global_navigation_font_color "#C5C4C7"
         elsif @community.theme_name == "panther"
           json.global_navigation_font_color "#b6c5bf"
+        elsif @community.theme_name == "modernist"
+          json.global_navigation_font_color "#777777"
         else
           json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
         end
@@ -135,6 +143,8 @@ json.ui_settigs do
           json.global_navigation_background_color "#C5C4C7"
         elsif @community.theme_name == "panther"
           json.global_navigation_background_color "#382f2a"
+        elsif @community.theme_name == "modernist"
+          json.global_navigation_background_color "#f9ad90"
         else
           json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#565455"
         end
@@ -153,7 +163,11 @@ json.ui_settigs do
         else
           json.global_nav_bg_opacity @community.design.global_nav_bg_opacity.present? ? @community.design.global_nav_bg_opacity : "100%"
         end
-        json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Rectangular"
+        if @community.theme_name == "modernist"
+          json.button_shape "Circular"
+        else
+          json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Rectangular"
+        end
         if @community.theme_name == "futurist"
           json.global_nav_buttons_height "136px"
         elsif @community.theme_name == "panther"
@@ -267,14 +281,26 @@ json.ui_settigs do
           json.global_navigation_border_thickness @community.design.expressionist.global_navigation_border_thickness.present? ? (@community.design.expressionist.global_navigation_border_thickness.present? ? @community.design.expressionist.global_navigation_border_thickness : "0px") : "0px"
         end
         json.global_navigation_text_outside_the_button_border @community.design.expressionist.global_navigation_text_outside_the_button_border.present? ? (@community.design.expressionist.global_navigation_text_outside_the_button_border.present? ? @community.design.expressionist.global_navigation_text_outside_the_button_border : false ): false
-        json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Left of text") : "Left of text"
-        json.global_navigation_show_background_color @community.design.expressionist.global_navigation_show_background_color.present? ? (@community.design.expressionist.global_navigation_show_background_color.present? ? @community.design.expressionist.global_navigation_show_background_color : false ): false
+        if @community.theme_name == "modernist"
+          json.global_navigation_icons_position "Above the text"
+        else
+          json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Left of text") : "Left of text"
+        end
+        if @community.theme_name == "modernist"
+          json.global_navigation_show_background_color true
+        else
+          json.global_navigation_show_background_color @community.design.expressionist.global_navigation_show_background_color.present? ? (@community.design.expressionist.global_navigation_show_background_color.present? ? @community.design.expressionist.global_navigation_show_background_color : false ): false
+        end
         json.use_gables_buttons @community.design.expressionist.present? ? (@community.design.expressionist.use_gables_buttons.present? ? @community.design.expressionist.use_gables_buttons : false ): false
         # json.display_global_navigation_button_color @community.design.expressionist.present? ? (@community.design.expressionist.display_global_navigation_button_color.present? ? @community.design.expressionist.display_global_navigation_button_color : false ): false
         json.global_navigation_home_icon @community.design.expressionist.present? ? (@community.design.expressionist.global_navigation_home_icon.present? ? @community.design.expressionist.global_navigation_home_icon : false ): false
       end
       json.filter_panel do
-        json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
+        if @community.theme_name == "modernist"
+          json.filter_panel_color "#cf492f"
+        else
+          json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
+        end
         if @community.theme_name == "futurist"
           json.filter_panel_font_style "Futura"
         elsif @community.theme_name == "panther"
@@ -285,11 +311,15 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.filter_panel_font_color "#cae0da"
+        elsif @community.theme_name == "modernist"
+          json.filter_panel_font_color "#ffffff"
         else
           json.filter_panel_font_color @community.design.filter_panel_font_color.present? ? @community.design.filter_panel_font_color : "#ffff"
         end
         if @community.theme_name == "panther"
           json.filter_button_color "#cae0da"
+        elsif @community.theme_name == "modernist"
+          json.filter_button_color "#cf492f"
         else
           json.filter_button_color @community.design.filter_button_color.present? ? @community.design.filter_button_color : "#565455"
         end
@@ -302,6 +332,8 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.filter_button_font_color "#534841"
+        elsif @community.theme_name == "modernist"
+          json.filter_button_font_color "#ffffff"
         else
           json.filter_button_font_color @community.design.filter_button_font_color.present? ? @community.design.filter_button_font_color : "#ffff"
         end
@@ -312,12 +344,16 @@ json.ui_settigs do
           json.filter_menu_buttons_border "No border"
         elsif @community.theme_name == "panther"
           json.filter_menu_buttons_border "No border"
+        elsif @community.theme_name == "modernist"
+          json.filter_menu_buttons_border "No border"
         else
           json.filter_menu_buttons_border @community.design.filter_menu_buttons_border.present? ? @community.design.filter_menu_buttons_border : "All sides"
         end
         if @community.theme_name == "futurist"
           json.gallery_buttons_border "No border"
         elsif @community.theme_name == "panther"
+          json.gallery_buttons_border "No border"
+        elsif @community.theme_name == "modernist"
           json.gallery_buttons_border "No border"
         else
           json.gallery_buttons_border @community.design.gallery_buttons_border.present? ? @community.design.gallery_buttons_border : "All sides"
@@ -346,11 +382,23 @@ json.ui_settigs do
         json.gallery_button_on_font_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_font_color.present?) ? @community.design.filter_panel.gallery_button_on_font_color : "#ffff"
         json.gallery_button_on_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_background_color.present?) ? @community.design.filter_panel.gallery_button_on_background_color : "#565455"
         json.gallery_button_on_background_color_opacity (@community.design.filter_panel.present? and @community.design.filter_panel.gallery_button_on_background_color_opacity.present?) ? @community.design.filter_panel.gallery_button_on_background_color_opacity : "100%"
-        json.filter_panel_icon_color (@community.design.filter_panel.present? and @community.design.filter_panel.filter_panel_icon_color.present?) ? @community.design.filter_panel.filter_panel_icon_color : "#ffff"
-        json.filter_panel_icon_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.icon_background_color.present?) ? @community.design.filter_panel.icon_background_color : "#565455"
+        if @community.theme_name == "modernist"
+          json.filter_panel_icon_color "#ecb6ac"
+        else
+          json.filter_panel_icon_color (@community.design.filter_panel.present? and @community.design.filter_panel.filter_panel_icon_color.present?) ? @community.design.filter_panel.filter_panel_icon_color : "#ffff"
+        end
+        if @community.theme_name == "modernist"
+          json.filter_panel_icon_background_color "#ffffff"
+        else
+          json.filter_panel_icon_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.icon_background_color.present?) ? @community.design.filter_panel.icon_background_color : "#565455"
+        end
         json.filter_panel_icon_background_color_opacity (@community.design.filter_panel.present? and @community.design.filter_panel.icon_background_color_opacity.present?) ? @community.design.filter_panel.icon_background_color_opacity : "100%"
         json.display_gallery_button_on_background_color @community.design.filter_panel.present? ? @community.design.filter_panel.display_gallery_button_on_background_color : false
-        json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
+        if @community.theme_name == "modernist"
+          json.display_filter_panel_icon true
+        else
+          json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
+        end
         if @community.theme_name == "futurist"
           json.filter_panel_text_font_size "20px"
         elsif @community.theme_name == "panther"
@@ -360,28 +408,43 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.filter_panel_button_text_font_size "21px"
+        elsif @community.theme_name == "modernist"
+          json.filter_panel_button_text_font_size "18px"
         else
           json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
         end
-
-        json.filter_panel_buttons_show_backround_color @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_panel_buttons_show_backround_color.present? ? @community.design.filter_panel.filter_panel_buttons_show_backround_color : false) : false
-        json.filter_buttons_icons_position @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_buttons_icons_position.present? ? @community.design.filter_panel.filter_buttons_icons_position : "Left of text") : "Left of text"
+        if @community.theme_name == "modernist"
+          json.filter_panel_buttons_show_backround_color true
+        else
+          json.filter_panel_buttons_show_backround_color @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_panel_buttons_show_backround_color.present? ? @community.design.filter_panel.filter_panel_buttons_show_backround_color : false) : false
+        end
+        if @community.theme_name == "modernist"
+          json.filter_buttons_icons_position "Right of text"
+        else
+          json.filter_buttons_icons_position @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_buttons_icons_position.present? ? @community.design.filter_panel.filter_buttons_icons_position : "Left of text") : "Left of text"
+        end
 
       end
       json.home_page do
         if @community.theme_name == "futurist"
           json.home_page_menu_position "Bottom"
+        elsif @community.theme_name == "modernist"
+          json.home_page_menu_position "Vertical Right"
         else
           json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
         end
         if @community.theme_name == "futurist"
           json.home_page_position_of_logo "Right"
+        elsif @community.theme_name == "modernist"
+          json.home_page_position_of_logo "Bottom"
         else
           json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
         end
         json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487x160"
         if @community.theme_name == "panther"
           json.home_page_button_border_color "#cae0da"
+        elsif @community.theme_name == "modernist"
+          json.home_page_position_of_logo "#fdfdfd"
         else
           json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
         end
@@ -398,6 +461,8 @@ json.ui_settigs do
           json.home_page_button_font_size "22px"
         elsif @community.theme_name == "panther"
           json.home_page_button_font_size "24px"
+        elsif @community.theme_name == "modernist"
+          json.home_page_button_font_size "16px"
         else
           json.home_page_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_size.present?) ? @community.design.expressionist.home_page_button_font_size : "18px"
         end
@@ -406,13 +471,27 @@ json.ui_settigs do
         else
           json.home_page_button_image (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_button_image.url : @community.design.expressionist.home_page_button_image.url) : "No Image"
         end
-        json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Rectangular"
+        if @community.theme_name == "modernist"
+          json.home_page_button_shape "Circular"
+        else
+          json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Rectangular"
+        end
         json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "All sides"
         json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "250px"
-        json.home_page_navigation_background_color @community.design.home_page_navigation_background_color.present? ? @community.design.home_page_navigation_background_color : "#565455"
-        json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
+        if @community.theme_name == "modernist"
+          json.home_page_navigation_background_color "#a33e2a"
+        else
+          json.home_page_navigation_background_color @community.design.home_page_navigation_background_color.present? ? @community.design.home_page_navigation_background_color : "#565455"
+        end
+        if @community.theme_name == "modernist"
+          json.home_page_navigation_button_color "#fdfdfd"
+        else
+          json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
+        end
         if @community.theme_name == "panther"
           json.home_page_navigation_font_color "#cae0da"
+        elsif @community.theme_name == "modernist"
+          json.home_page_navigation_font_color "#777777"
         else
           json.home_page_navigation_font_color @community.design.home_page_navigation_font_color.present? ? @community.design.home_page_navigation_font_color : "#ffff"
         end
@@ -420,6 +499,8 @@ json.ui_settigs do
           json.spacing_between_buttons_for_homepage "0px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons_for_homepage "20px"
+        elsif @community.theme_name == "modernist"
+          json.spacing_between_buttons_for_homepage "10px"
         else
           json.spacing_between_buttons_for_homepage (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons_for_homepage.present?) ? @community.design.expressionist.spacing_between_buttons_for_homepage : "0px"
         end
@@ -427,6 +508,8 @@ json.ui_settigs do
           json.home_page_buttons_height "200px"
         elsif @community.theme_name == "panther"
           json.home_page_buttons_height "150px"
+        elsif @community.theme_name == "modernist"
+          json.home_page_buttons_height "200px"
         else
           json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "150px"
         end
@@ -451,8 +534,10 @@ json.ui_settigs do
         json.home_page_logo_visible @community.design.expressionist.present? ? (@community.design.expressionist.home_page_logo_visible.present? ? @community.design.expressionist.home_page_logo_visible : false) : false
         if @community.theme_name == "panther"
           json.home_page_icons_position "Above of text"
+        elsif @community.theme_name == "modernist"
+          json.home_page_icons_position "Above of text"
         else
-          json.home_page_icons_position @community.design.expressionist.present? ? (@community.design.expressionist.home_page_icons_position.present? ? @community.design.expressionist.home_page_icons_position : "Left of text") : "Left of text"
+          json.home_page_icons_position @community.design.expressionist.present? ? (@community.design.expressionist.home_page_icons_position.present? ? @community.design.expressionist.home_page_icons_position : "Above of text") : "Above of text"
         end
         json.gables_home_page_images @community.design.expressionist.present? ? (@community.design.expressionist.gables_home_page_images.present? ? @community.design.expressionist.gables_home_page_images : false) : false
         # json.button_text_position @community.design.expressionist.present? ? (@community.design.expressionist.button_text_position.present? ? @community.design.expressionist.button_text_position : "Left of text") : "Left of text"
