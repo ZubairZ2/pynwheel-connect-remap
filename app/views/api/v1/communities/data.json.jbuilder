@@ -2,7 +2,8 @@ local_assets_base_url = "http://192.168.101.77:3000"
 random_numbers = []
 json.version @version
 json.ui_settigs do
-  json.theme @community.temporary_theme_name
+  json.selected_theme @community.temporary_theme_name
+  json.theme "expressionist"
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
   if gables_theme(@community) || @community.is_panther? || @community.is_expressionist?
     json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
@@ -552,27 +553,140 @@ json.ui_settigs do
         json.marker_style @community.design.marker_style.present? ? @community.design.marker_style : "Tear Drop"
       end
       json.floorplan_unit_popup do
-        json.header_bg_color @community.design.header_bg_color.present? ? @community.design.header_bg_color : "#ada6a6"
+        if @community.theme_name == "futurist"
+          json.header_bg_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.header_bg_color "#4f4f4f"
+        elsif @community.theme_name == "panther"
+          json.header_bg_color "#534841"
+        else
+          json.header_bg_color @community.design.header_bg_color.present? ? @community.design.header_bg_color : "#ada6a6"
+        end
         json.header_bg_color_opacity @community.design.header_bg_color_opacity.present? ? @community.design.header_bg_color_opacity : "100%"
+        if @community.theme_name == "futurist"
+          json.header_font_color "#565656"
+        elsif @community.theme_name == "modernist"
+          json.header_font_color "#ffffff"
+        elsif @community.theme_name == "panther"
+          json.header_font_color "#ffffff"
+        else
+          json.header_font_color @community.design.header_font_color.present? ? @community.design.header_font_color : "#ffffff"
+        end
         json.header_font_color @community.design.header_font_color.present? ? @community.design.header_font_color : "#ffffff"
-        json.details_bg_color @community.design.details_bg_color.present? ? @community.design.details_bg_color : "#ada6a6"
+        if @community.theme_name == "futurist"
+          json.details_bg_color "#7b7b7b"
+        elsif @community.theme_name == "modernist"
+          json.details_bg_color "#4f4f4f"
+        elsif @community.theme_name == "panther"
+          json.details_bg_color "#b6c5bf"
+        else
+          json.details_bg_color @community.design.details_bg_color.present? ? @community.design.details_bg_color : "#ada6a6"
+        end
         json.details_bg_color_opacity @community.design.details_bg_color_opacity.present? ? @community.design.details_bg_color_opacity : "100%"
-        json.details_font_color @community.design.details_font_color.present? ? @community.design.details_font_color : "#ffff"
-        json.available_appartments_font_color @community.design.available_appartments_font_color.present? ? @community.design.available_appartments_font_color : "#ffff"
-        json.available_appartments_bg_color @community.design.available_appartments_bg_color.present? ? @community.design.available_appartments_bg_color : "#ada6a6"
+        if @community.theme_name == "futurist"
+          json.details_font_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.details_font_color "#ffffff"
+        elsif @community.theme_name == "panther"
+          json.details_font_color "#ffffff"
+        else
+          json.details_font_color @community.design.details_font_color.present? ? @community.design.details_font_color : "#ffff"
+        end
+        if @community.theme_name == "futurist"
+          json.available_appartments_font_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.available_appartments_font_color "#ffffff"
+        elsif @community.theme_name == "panther"
+          json.available_appartments_font_color "#ffffff"
+        else
+          json.available_appartments_font_color @community.design.available_appartments_font_color.present? ? @community.design.available_appartments_font_color : "#ffff"
+        end
+        if @community.theme_name == "futurist"
+          json.available_appartments_bg_color "#3c3c3c"
+        elsif @community.theme_name == "modernist"
+          json.available_appartments_bg_color "#cf492f"
+        elsif @community.theme_name == "panther"
+          json.available_appartments_bg_color "#424344"
+        else
+          json.available_appartments_bg_color @community.design.available_appartments_bg_color.present? ? @community.design.available_appartments_bg_color : "#ada6a6"
+        end
         json.available_appartments_bg_color_opacity @community.design.available_appartments_bg_color_opacity.present? ? @community.design.available_appartments_bg_color_opacity : "100%"
-        json.floor_bg_color @community.design.floor_bg_color.present? ? @community.design.floor_bg_color : "#565455"
+        if @community.theme_name == "futurist"
+          json.floor_bg_color "#d2d2d2"
+        elsif @community.theme_name == "modernist"
+          json.floor_bg_color "#dedee0"
+        elsif @community.theme_name == "panther"
+          json.floor_bg_color "#ffffff"
+        else
+          json.floor_bg_color @community.design.floor_bg_color.present? ? @community.design.floor_bg_color : "#565455"
+        end
         json.floor_bg_color_opacity @community.design.floor_bg_color_opacity.present? ? @community.design.floor_bg_color_opacity : "100%"
-        json.unit_header_bg_color @community.design.unit_header_bg_color.present? ? @community.design.unit_header_bg_color : "#ada6a6"
+        if @community.theme_name == "futurist"
+          json.unit_header_bg_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.unit_header_bg_color "#4f4f4f"
+        elsif @community.theme_name == "panther"
+          json.unit_header_bg_color "#534841"
+        else
+          json.unit_header_bg_color @community.design.unit_header_bg_color.present? ? @community.design.unit_header_bg_color : "#ada6a6"
+        end
         json.unit_header_bg_color_opacity @community.design.unit_header_bg_color_opacity.present? ? @community.design.unit_header_bg_color_opacity : "100%"
-        json.unit_header_font_color @community.design.unit_header_font_color.present? ? @community.design.unit_header_font_color : "#ffff"
-        json.unit_details_font_color @community.design.unit_details_font_color.present? ? @community.design.unit_details_font_color : "#ffff"
-        json.unit_details_bg_color @community.design.unit_details_bg_color.present? ? @community.design.unit_details_bg_color : "#ada6a6"
+        if @community.theme_name == "futurist"
+          json.unit_header_font_color "#565656"
+        elsif @community.theme_name == "modernist"
+          json.unit_header_font_color "#ffffff"
+        elsif @community.theme_name == "panther"
+          json.unit_header_font_color "#ffffff"
+        else
+          json.unit_header_font_color @community.design.unit_header_font_color.present? ? @community.design.unit_header_font_color : "#ffff"
+        end
+        if @community.theme_name == "futurist"
+          json.unit_details_font_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.unit_details_font_color "#ffffff"
+        elsif @community.theme_name == "panther"
+          json.unit_details_font_color "#ffffff"
+        else
+          json.unit_details_font_color @community.design.unit_details_font_color.present? ? @community.design.unit_details_font_color : "#ffff"
+        end
+        if @community.theme_name == "futurist"
+          json.unit_details_bg_color "#7b7b7b"
+        elsif @community.theme_name == "modernist"
+          json.unit_details_bg_color "#4f4f4f"
+        elsif @community.theme_name == "panther"
+          json.unit_details_bg_color "#4f4f4f"
+        else
+          json.unit_details_bg_color @community.design.unit_details_bg_color.present? ? @community.design.unit_details_bg_color : "#ada6a6"
+        end
         json.unit_details_bg_color_opacity @community.design.unit_details_bg_color_opacity.present? ? @community.design.unit_details_bg_color_opacity : "100%"
-        json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
+        if @community.theme_name == "futurist"
+          json.floorplan_name_bg_color "#3d3e3e"
+        elsif @community.theme_name == "modernist"
+          json.floorplan_name_bg_color "#cf492f"
+        elsif @community.theme_name == "panther"
+          json.floorplan_name_bg_color "#424344"
+        else
+          json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
+        end
         json.floorplan_name_bg_color_opacity @community.design.floorplan_name_bg_color_opacity.present? ? @community.design.floorplan_name_bg_color_opacity : "100%"
-        json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
-        json.unit_bg_color @community.design.unit_bg_color.present? ? @community.design.unit_bg_color : "#565455"
+        if @community.theme_name == "futurist"
+          json.floorplan_name_font_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.floorplan_name_font_color "#ffffff"
+        elsif @community.theme_name == "panther"
+          json.floorplan_name_font_color "#ffffff"
+        else
+          json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
+        end
+        if @community.theme_name == "futurist"
+          json.unit_bg_color "#d2d2d2"
+        elsif @community.theme_name == "modernist"
+          json.unit_bg_color "#dedee0"
+        elsif @community.theme_name == "panther"
+          json.unit_bg_color "#ffffff"
+        else
+          json.unit_bg_color @community.design.unit_bg_color.present? ? @community.design.unit_bg_color : "#565455"
+        end
         json.unit_bg_color_opacity @community.design.unit_bg_color_opacity.present? ? @community.design.unit_bg_color_opacity : "100%"
       end
     end
