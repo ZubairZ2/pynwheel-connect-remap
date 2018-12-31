@@ -3,7 +3,11 @@ random_numbers = []
 json.version @version
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
-  json.theme "expressionist"
+  if @community.temporary_theme_name.include?('gables')
+    json.theme @community.temporary_theme_name
+  else
+    json.theme "expressionist"
+  end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
   if gables_theme(@community) || @community.is_panther? || @community.is_expressionist?
     json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
