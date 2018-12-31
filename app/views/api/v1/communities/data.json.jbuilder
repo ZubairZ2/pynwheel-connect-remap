@@ -9,7 +9,7 @@ json.ui_settigs do
     json.theme "expressionist"
   end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
-  if gables_theme(@community) || @community.is_panther? || @community.is_expressionist?
+  unless @community.theme_name.include?('gables')
     json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
     json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   else
@@ -47,7 +47,7 @@ json.ui_settigs do
       json.neighborhood_button_color (@community.design.gable.present? and @community.design.gable.neighborhood_button_color.present?) ? @community.design.gable.neighborhood_button_color : "#0475A9" 
       json.favorite_button_color (@community.design.gable.present? and @community.design.gable.favorite_button_color.present?) ? @community.design.gable.favorite_button_color : "#D5C228"
       if @community.theme_name == "panther"
-        json.filter_panel_color "#534841"
+        json.filter_panel_color "#cae0da"
       else
         json.filter_panel_color (@community.design.gable.present? and @community.design.gable.filter_panel_color.present?) ? @community.design.gable.filter_panel_color : "#467A7D"
       end
@@ -73,6 +73,8 @@ json.ui_settigs do
         end
         if @community.theme_name == "expressionist"
           json.display_application_background_image @community.design.expressionist.present? ? @community.design.expressionist.display_application_background_image : false
+        elsif @community.theme_name == "panther"
+          json.display_application_background_image true
         else
           json.display_application_background_image false
         end
@@ -147,11 +149,11 @@ json.ui_settigs do
         if @community.theme_name == "futurist"
           json.global_navigation_button_font_family "Futura"
         elsif @community.theme_name == "panther"
-          json.global_navigation_button_font_family "Trajan Pro"
+          json.global_navigation_button_font_family "ms-appx:/Assets/Fonts/Trajan Pro Regular.ttf#Trajan Pro"
         elsif @community.theme_name == "expressionist"
-          json.global_navigation_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_family.present?) ? @community.design.expressionist.global_navigation_button_font_family : "Arial"
+          json.global_navigation_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_font_family.present?) ? @community.design.expressionist.global_navigation_button_font_family : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"
         else
-          json.global_navigation_button_font_family "Arial"
+          json.global_navigation_button_font_family "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"
         end
         if @community.theme_name == "futurist"
           json.global_navigation_button_font_size "16px"
@@ -227,6 +229,8 @@ json.ui_settigs do
           json.global_nav_buttons_height "136px"
         elsif @community.theme_name == "panther"
           json.global_nav_buttons_height "125px"
+        elsif @community.theme_name == "modernist"
+          json.global_nav_buttons_height "136px"
         elsif @community.theme_name == "expressionist"
           json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
         else
@@ -284,7 +288,11 @@ json.ui_settigs do
           json.display_global_nav_background_image @community.design.expressionist.display_global_nav_background_image
           json.global_nav_background_image @community.design.expressionist.global_nav_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.global_nav_background_image.url : @community.design.expressionist.global_nav_background_image.url) : "No Image"
         else
-          json.application_background_image "No Image"
+          if @community.theme_name == "panther"
+            json.application_background_image image_url("application_background_img.png")
+          else
+            json.application_background_image "No Image"
+          end
           json.apartment_nav_bg_image   "No Image"
           json.gallery_nav_bg_image "No Image"
           json.favourities_nav_bg_image  "No Image"
@@ -390,7 +398,7 @@ json.ui_settigs do
           json.display_favourite_btn_off_image false
 
         end
-        if @community.theme_name == "futurist"
+        if @community.theme_name == "panther"
           json.global_navigation_border_thickness "2px"
         elsif @community.theme_name == "expressionist"
           json.global_navigation_border_thickness @community.design.expressionist.global_navigation_border_thickness.present? ? (@community.design.expressionist.global_navigation_border_thickness.present? ? @community.design.expressionist.global_navigation_border_thickness : "0px") : "0px"
@@ -403,6 +411,8 @@ json.ui_settigs do
           json.global_navigation_text_outside_the_button_border false
         end
         if @community.theme_name == "modernist"
+          json.global_navigation_icons_position "Right of text"
+        elsif @community.theme_name == "modernist"
           json.global_navigation_icons_position "Above the text"
         elsif @community.theme_name == "expressionist"
           json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Above the text") : "Above the text"
@@ -419,16 +429,21 @@ json.ui_settigs do
         if @community.theme_name == "expressionist"
           json.use_gables_buttons @community.design.expressionist.present? ? (@community.design.expressionist.use_gables_buttons.present? ? @community.design.expressionist.use_gables_buttons : false ): false
           # json.display_global_navigation_button_color @community.design.expressionist.present? ? (@community.design.expressionist.display_global_navigation_button_color.present? ? @community.design.expressionist.display_global_navigation_button_color : false ): false
-          json.global_navigation_home_icon @community.design.expressionist.present? ? (@community.design.expressionist.global_navigation_home_icon.present? ? @community.design.expressionist.global_navigation_home_icon : false ): false
         else
           json.use_gables_buttons false
           # json.display_global_navigation_button_color @community.design.expressionist.present? ? (@community.design.expressionist.display_global_navigation_button_color.present? ? @community.design.expressionist.display_global_navigation_button_color : false ): false
-          json.global_navigation_home_icon false
+        end
+        if @community.theme_name == "panther"
+          json.global_navigation_home_icon true
+        else
+          json.global_navigation_home_icon @community.design.expressionist.present? ? (@community.design.expressionist.global_navigation_home_icon.present? ? @community.design.expressionist.global_navigation_home_icon : false ): false
         end
       end
       json.filter_panel do
         if @community.theme_name == "modernist"
           json.filter_panel_color "#cf492f"
+        elsif @community.theme_name == "panther"
+          json.filter_panel_color "#534841"
         elsif @community.theme_name == "expressionist"
           json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
         else
@@ -439,9 +454,9 @@ json.ui_settigs do
         elsif @community.theme_name == "panther"
           json.filter_panel_font_style "Futura"
         elsif @community.theme_name == "expressionist"
-          json.filter_panel_font_style @community.design.filter_panel_font_style.present? ? @community.design.filter_panel_font_style : "Arial"
+          json.filter_panel_font_style @community.design.filter_panel_font_style.present? ? @community.design.filter_panel_font_style : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"
         else
-          json.filter_panel_font_style "Arial"
+          json.filter_panel_font_style "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"
         end
         if @community.theme_name == "panther"
           json.filter_panel_font_color "#cae0da"
@@ -464,9 +479,9 @@ json.ui_settigs do
         elsif @community.theme_name == "panther"
           json.filter_button_font_style "Futura"
         elsif @community.theme_name == "expressionist"
-          json.filter_button_font_style @community.design.filter_button_font_style.present? ? @community.design.filter_button_font_style : "Arial"
+          json.filter_button_font_style @community.design.filter_button_font_style.present? ? @community.design.filter_button_font_style : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"
         else
-          json.filter_button_font_style "Arial"
+          json.filter_button_font_style "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"
         end
         if @community.theme_name == "panther"
           json.filter_button_font_color "#534841"
@@ -514,8 +529,11 @@ json.ui_settigs do
           json.filter_button_as_image @community.design.filter_button_as_image
         end
         json.gallery_button_as_image @community.design.gallery_button_as_image
-        json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
-
+        if @community.theme_name == "modernist"
+          json.filter_panel_background_as_image false
+        else
+          json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
+        end
         if @community.theme_name == "futurist"
           json.filter_button image_url("filetr_panel_button_bg.png")
         elsif @community.theme_name == "expressionist"
@@ -575,7 +593,9 @@ json.ui_settigs do
           json.filter_panel_icon_background_color_opacity "100%"
           json.display_gallery_button_on_background_color false
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "futurist"
+          json.display_filter_panel_icon true
+        elsif @community.theme_name == "modernist"
           json.display_filter_panel_icon true
         elsif @community.theme_name == "expressionist"
           json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
@@ -602,6 +622,8 @@ json.ui_settigs do
         end
         if @community.theme_name == "modernist"
           json.filter_panel_buttons_show_backround_color true
+        elsif @community.theme_name == "panther"
+          json.filter_panel_buttons_show_backround_color false
         elsif @community.theme_name == "expressionist"
           json.filter_panel_buttons_show_backround_color @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_panel_buttons_show_backround_color.present? ? @community.design.filter_panel.filter_panel_buttons_show_backround_color : false) : false
         else
@@ -621,6 +643,8 @@ json.ui_settigs do
           json.home_page_menu_position "Bottom"
         elsif @community.theme_name == "modernist"
           json.home_page_menu_position "Vertical Right"
+        elsif @community.theme_name == "panther"
+          json.home_page_menu_position "Centre"
         elsif @community.theme_name == "expressionist"
           json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
         else
@@ -629,7 +653,9 @@ json.ui_settigs do
         if @community.theme_name == "futurist"
           json.home_page_position_of_logo "Right"
         elsif @community.theme_name == "modernist"
-          json.home_page_position_of_logo "Bottom"
+          json.home_page_position_of_logo "Right"
+        elsif @community.theme_name == "panther"
+          json.home_page_position_of_logo "Bottom center"
         elsif @community.theme_name == "expressionist"
           json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
         else
@@ -654,21 +680,25 @@ json.ui_settigs do
           json.display_home_page_image @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_image : true
         else
           json.display_home_page_button_icon true
-          json.display_home_page_image true
+          if @community.theme_name == "modernist"
+            json.display_home_page_image false
+          else
+            json.display_home_page_image true
+          end
         end
         if @community.theme_name == "futurist"
           json.home_page_button_font_family "Futura"
         elsif @community.theme_name == "panther"
-          json.home_page_button_font_family "Trajan Pro"
+          json.home_page_button_font_family "ms-appx:/Assets/Fonts/Trajan Pro Regular.ttf#Trajan Pro"
         elsif @community.theme_name == "expressionist"
-          json.home_page_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_family.present?) ? @community.design.expressionist.home_page_button_font_family : "Arial"
+          json.home_page_button_font_family (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_family.present?) ? @community.design.expressionist.home_page_button_font_family : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"
         else
-          json.home_page_button_font_family "Arial"
+          json.home_page_button_font_family "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"
         end
         if @community.theme_name == "futurist"
           json.home_page_button_font_size "22px"
         elsif @community.theme_name == "panther"
-          json.home_page_button_font_size "24px"
+          json.home_page_button_font_size "28px"
         elsif @community.theme_name == "modernist"
           json.home_page_button_font_size "16px"
         elsif @community.theme_name == "expressionist"
@@ -760,22 +790,30 @@ json.ui_settigs do
         end
         if @community.theme_name == "expressionist"
           json.home_page_navigation_background_opacity @community.design.home_page_navigation_background_opacity.present? ? @community.design.home_page_navigation_background_opacity : "100%"
-          json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
-
+          if @community.theme_name == "panther"
+            json.display_home_page_nav_background false
+          else
+            json.display_home_page_nav_background @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background : true
+          end
           json.display_home_page_nav_background_image @community.design.expressionist.display_home_page_nav_background_image
           json.home_page_background_image @community.design.expressionist.home_page_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.home_page_background_image.url : @community.design.expressionist.home_page_background_image.url) : "No Image"
 
           json.home_page_logo_visible @community.design.expressionist.present? ? (@community.design.expressionist.home_page_logo_visible.present? ? @community.design.expressionist.home_page_logo_visible : false) : false
         else
           json.home_page_navigation_background_opacity "100%"
-          json.display_home_page_nav_background true
-
+          if @community.theme_name == "futurist"
+            json.display_home_page_nav_background false
+          else
+            json.display_home_page_nav_background true
+          end
           json.display_home_page_nav_background_image @community.design.expressionist.display_home_page_nav_background_image
           json.home_page_background_image "No Image"
 
           json.home_page_logo_visible false
         end
         if @community.theme_name == "panther"
+          json.home_page_icons_position "Right of text"
+        elsif @community.theme_name == "panther"
           json.home_page_icons_position "Above of text"
         elsif @community.theme_name == "modernist"
           json.home_page_icons_position "Above of text"
@@ -783,7 +821,7 @@ json.ui_settigs do
           json.home_page_icons_position @community.design.expressionist.present? ? (@community.design.expressionist.home_page_icons_position.present? ? @community.design.expressionist.home_page_icons_position : "Above of text") : "Above of text"
 
         else
-          json.home_page_icons_position "Above of text"
+          json.home_page_icons_position "Above the text"
         end
         if @community.theme_name == "expressionist"
           json.gables_home_page_images @community.design.expressionist.present? ? (@community.design.expressionist.gables_home_page_images.present? ? @community.design.expressionist.gables_home_page_images : false) : false
@@ -831,11 +869,11 @@ json.ui_settigs do
         else
           json.header_font_color "#ffffff"
         end
-        if @community.theme_name == "expressionist"
-          json.header_font_color @community.design.header_font_color.present? ? @community.design.header_font_color : "#ffffff"
-        else
-          json.header_font_color  "#ffffff"
-        end
+        # if @community.theme_name == "expressionist"
+        #   json.header_font_color @community.design.header_font_color.present? ? @community.design.header_font_color : "#ffffff"
+        # else
+        #   json.header_font_color  "#ffffff"
+        # end
         if @community.theme_name == "futurist"
           json.details_bg_color "#7b7b7b"
         elsif @community.theme_name == "modernist"
