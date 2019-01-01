@@ -2327,48 +2327,48 @@ function hideShowBackgroundColorDiv(radio_button, element, text_field) {
 
 function showTabsAccordingToTheme(theme) {
   window.current_theme = theme;
-  if (theme == 'cubist' || theme == 'modernist') {
-    $('#font-tab').parent().removeClass('hidden');
-    $('#menu-tab').parent().removeClass('hidden');
-    //$('#custom-style-tab').parent().parent().parent().addClass('hidden'); 
-    //$('#overlay-tab').parent().addClass('hidden');
-    $('#global-navigation-tab').parent().addClass('hidden');
-    $('#filter-panel-tab').parent().addClass('hidden');
-    $('#home-page-tab').parent().addClass('hidden');
-    $('#map-marker-tab').parent().addClass('hidden');
-    $('#floorplan-unit-popup-tab').parent().addClass('hidden');
-    $('#gables-tab').parent().addClass('hidden');
-  }
-  if (theme == 'expressionist') {
-    $('#font-tab').parent().addClass('hidden');
-    $('#menu-tab').parent().addClass('hidden');
-    //$('#custom-style-tab').parent().parent().parent().removeClass('hidden'); 
-    //$('#overlay-tab').parent().removeClass('hidden'); 
-    $('#global-navigation-tab').parent().removeClass('hidden');
-    $('#filter-panel-tab').parent().removeClass('hidden');
-    $('#home-page-tab').parent().removeClass('hidden');
-    $('#map-marker-tab').parent().removeClass('hidden');
-    $('#floorplan-unit-popup-tab').parent().removeClass('hidden');
-    $('#gables-tab').parent().addClass('hidden');
-  }
-
-  if (theme == 'futurist' || theme == 'panther') {
-    $('#font-tab').parent().addClass('hidden');
-    $('#menu-tab').parent().addClass('hidden');
-    //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
-    //$('#overlay-tab').parent().addClass('hidden'); 
-    $('#global-navigation-tab').parent().addClass('hidden');
-    $('#filter-panel-tab').parent().addClass('hidden');
-    $('#home-page-tab').parent().addClass('hidden');
-    $('#map-marker-tab').parent().addClass('hidden');
-    $('#floorplan-unit-popup-tab').parent().addClass('hidden');
-    $('#gables-tab').parent().addClass('hidden');
-  }
+  // if (theme == 'cubist' || theme == 'modernist') {
+  //   $('#font-tab').parent().removeClass('hidden');
+  //   $('#menu-tab').parent().removeClass('hidden');
+  //   //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
+  //   //$('#overlay-tab').parent().addClass('hidden');
+  //   $('#global-navigation-tab').parent().addClass('hidden');
+  //   $('#filter-panel-tab').parent().addClass('hidden');
+  //   $('#home-page-tab').parent().addClass('hidden');
+  //   $('#map-marker-tab').parent().addClass('hidden');
+  //   $('#floorplan-unit-popup-tab').parent().addClass('hidden');
+  //   $('#gables-tab').parent().addClass('hidden');
+  // }
+  // if (theme == 'expressionist') {
+  //   $('#font-tab').parent().addClass('hidden');
+  //   $('#menu-tab').parent().addClass('hidden');
+  //   //$('#custom-style-tab').parent().parent().parent().removeClass('hidden');
+  //   //$('#overlay-tab').parent().removeClass('hidden');
+  //   $('#global-navigation-tab').parent().removeClass('hidden');
+  //   $('#filter-panel-tab').parent().removeClass('hidden');
+  //   $('#home-page-tab').parent().removeClass('hidden');
+  //   $('#map-marker-tab').parent().removeClass('hidden');
+  //   $('#floorplan-unit-popup-tab').parent().removeClass('hidden');
+  //   $('#gables-tab').parent().addClass('hidden');
+  // }
+  //
+  // if (theme == 'futurist' || theme == 'panther') {
+  //   $('#font-tab').parent().addClass('hidden');
+  //   $('#menu-tab').parent().addClass('hidden');
+  //   //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
+  //   //$('#overlay-tab').parent().addClass('hidden');
+  //   $('#global-navigation-tab').parent().addClass('hidden');
+  //   $('#filter-panel-tab').parent().addClass('hidden');
+  //   $('#home-page-tab').parent().addClass('hidden');
+  //   $('#map-marker-tab').parent().addClass('hidden');
+  //   $('#floorplan-unit-popup-tab').parent().addClass('hidden');
+  //   $('#gables-tab').parent().addClass('hidden');
+  // }
   if (theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural' || theme == 'gables_custom') {
     $('#font-tab').parent().addClass('hidden');
     $('#menu-tab').parent().addClass('hidden');
     //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
-    //$('#overlay-tab').parent().addClass('hidden'); 
+    //$('#overlay-tab').parent().addClass('hidden');
     $('#global-navigation-tab').parent().addClass('hidden');
     $('#filter-panel-tab').parent().addClass('hidden');
     $('#home-page-tab').parent().addClass('hidden');
@@ -2376,6 +2376,21 @@ function showTabsAccordingToTheme(theme) {
     $('#floorplan-unit-popup-tab').parent().addClass('hidden');
     $('#gables-tab').parent().removeClass('hidden');
   }
+  else
+  {
+      // $('#font-tab').parent().removeClass('hidden');
+      // $('#menu-tab').parent().removeClass('hidden');
+      //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
+      //$('#overlay-tab').parent().addClass('hidden');
+      $('#global-navigation-tab').parent().removeClass('hidden');
+      $('#filter-panel-tab').parent().removeClass('hidden');
+      $('#home-page-tab').parent().removeClass('hidden');
+      $('#map-marker-tab').parent().removeClass('hidden');
+      $('#floorplan-unit-popup-tab').parent().removeClass('hidden');
+      $('#gables-tab').parent().addClass('hidden');
+  }
+    ///////////////////////// Database changes////////////////////////
+
 }
 
 function hexToRgbA(hex) {

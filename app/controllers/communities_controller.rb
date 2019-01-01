@@ -133,7 +133,14 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Landing page button uploaded successfully.</div>'         
     end
   end
-
+  def change_expressionist_default
+    # d = Community.find(params[:community_id]).design
+    # com = Community.find(params[:community_id]).design.expressionist
+    # com.display_button_on_bg_color = true
+    # d.filter_panel.filter_panel_buttons_show_backround_color = true
+    # d.save
+    # com.save
+  end
   def destroy
     @community.destroy
     flash[:notice] = "Community deleted successfully."
