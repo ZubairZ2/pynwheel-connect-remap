@@ -3,7 +3,7 @@ random_numbers = []
 json.version @version
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
-  if @community.temporary_theme_name.include?('gables')
+  if @community.temporary_theme_name.include?('gables') || @community.temporary_theme_name == 'modernist'
     json.theme @community.temporary_theme_name
   else
     json.theme "expressionist"
@@ -64,9 +64,9 @@ json.ui_settigs do
       json.global_navigation do
         if @community.theme_name == "panther"
           json.display_global_navigation_button_icon true
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.display_global_navigation_button_icon true
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.display_global_navigation_button_icon @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_icon : true
         else
           json.display_global_navigation_button_icon true
@@ -82,9 +82,9 @@ json.ui_settigs do
           json.spacing_between_buttons "10px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons "0px"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.spacing_between_buttons "60px"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.spacing_between_buttons (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons.present?) ? @community.design.expressionist.spacing_between_buttons : "0px"
         else
           json.spacing_between_buttons "0px"
@@ -105,9 +105,11 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.application_background_color "#ffffff"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "futurist"
+          json.application_background_color "#c5c4c7"
+        elsif @community.theme_name == "modernist1"
           json.application_background_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.application_background_color (@community.design.expressionist.present? and @community.design.expressionist.application_background_color.present?) ? @community.design.expressionist.application_background_color : "#ffff"
         else
           json.application_background_color "#ffff"
@@ -166,9 +168,9 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.global_navigation_button_border_color "#b6c5bf"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.global_navigation_button_border_color "#777777"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.global_navigation_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.global_navigation_button_border_color.present?) ? @community.design.expressionist.global_navigation_button_border_color : "#ffff"
         else
           json.global_navigation_button_border_color "#ffff"
@@ -177,9 +179,9 @@ json.ui_settigs do
           json.global_navigation_font_color "#C5C4C7"
         elsif @community.theme_name == "panther"
           json.global_navigation_font_color "#b6c5bf"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.global_navigation_font_color "#777777"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.global_navigation_font_color @community.design.global_navigation_font_color.present? ? @community.design.global_navigation_font_color : "#ffff"
         else
           json.global_navigation_font_color "#ffff"
@@ -188,18 +190,18 @@ json.ui_settigs do
           json.global_navigation_background_color "#C5C4C7"
         elsif @community.theme_name == "panther"
           json.global_navigation_background_color "#382f2a"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.global_navigation_background_color "#f9ad90"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.global_navigation_background_color @community.design.global_navigation_background_color.present? ? @community.design.global_navigation_background_color : "#565455"
         else
           json.global_navigation_background_color "#565455"
         end
         if @community.theme_name == "panther"
           json.global_navigation_button_color "#382f2a"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.global_navigation_button_color "#fdfdfd"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.global_navigation_button_color @community.design.global_navigation_button_color.present? ? @community.design.global_navigation_button_color : "#3B3B3B"
         else
           json.global_navigation_button_color "#3B3B3B"
@@ -218,9 +220,9 @@ json.ui_settigs do
         else
           json.global_nav_bg_opacity "100%"
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.button_shape "Circular"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.button_shape @community.design.button_shape.present? ? @community.design.button_shape : "Rectangular"
         else
           json.button_shape "Rectangular"
@@ -229,9 +231,9 @@ json.ui_settigs do
           json.global_nav_buttons_height "136px"
         elsif @community.theme_name == "panther"
           json.global_nav_buttons_height "125px"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.global_nav_buttons_height "136px"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.global_nav_buttons_height @community.design.global_nav_buttons_height.present? ? @community.design.global_nav_buttons_height : "110px"
         else
           json.global_nav_buttons_height "110px"
@@ -413,23 +415,23 @@ json.ui_settigs do
 
         if @community.theme_name == "futurist"
           json.global_navigation_icons_position "Right of text"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.global_navigation_icons_position "Above of text"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.global_navigation_icons_position "Above the text"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Above the text") : "Above the text"
         else
           json.global_navigation_icons_position "Above the text"
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.global_navigation_show_background_color true
         elsif @community.theme_name == "expressionist"
           json.global_navigation_show_background_color @community.design.expressionist.global_navigation_show_background_color.present? ? (@community.design.expressionist.global_navigation_show_background_color.present? ? @community.design.expressionist.global_navigation_show_background_color : false ): false
         else
           json.global_navigation_show_background_color false
         end
-        if @community.theme_name == "expressionist"
+        if @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.use_gables_buttons @community.design.expressionist.present? ? (@community.design.expressionist.use_gables_buttons.present? ? @community.design.expressionist.use_gables_buttons : false ): false
           # json.display_global_navigation_button_color @community.design.expressionist.present? ? (@community.design.expressionist.display_global_navigation_button_color.present? ? @community.design.expressionist.display_global_navigation_button_color : false ): false
         else
@@ -443,11 +445,11 @@ json.ui_settigs do
         end
       end
       json.filter_panel do
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.filter_panel_color "#cf492f"
         elsif @community.theme_name == "panther"
           json.filter_panel_color "#534841"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_panel_color @community.design.filter_panel_color.present? ? @community.design.filter_panel_color : "#3B3B3B"
         else
           json.filter_panel_color "#3B3B3B"
@@ -465,16 +467,16 @@ json.ui_settigs do
           json.filter_panel_font_color "#cae0da"
         elsif @community.theme_name == "futurist"
           json.filter_panel_font_color "#ffffff"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.filter_panel_font_color "#ffffff"
         else
           json.filter_panel_font_color @community.design.filter_panel_font_color.present? ? @community.design.filter_panel_font_color : "#ffff"
         end
         if @community.theme_name == "panther"
           json.filter_button_color "#cae0da"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.filter_button_color "#cf492f"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_button_color @community.design.filter_button_color.present? ? @community.design.filter_button_color : "#565455"
         else
           json.filter_button_color "#565455"
@@ -490,9 +492,9 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.filter_button_font_color "#534841"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.filter_button_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_button_font_color @community.design.filter_button_font_color.present? ? @community.design.filter_button_font_color : "#ffff"
         else
           json.filter_button_font_color "#ffff"
@@ -510,9 +512,9 @@ json.ui_settigs do
           json.filter_menu_buttons_border "No border"
         elsif @community.theme_name == "panther"
           json.filter_menu_buttons_border "No border"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.filter_menu_buttons_border "No border"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_menu_buttons_border @community.design.filter_menu_buttons_border.present? ? @community.design.filter_menu_buttons_border : "All sides"
         else
           json.filter_menu_buttons_border "All sides"
@@ -521,9 +523,9 @@ json.ui_settigs do
           json.gallery_buttons_border "No border"
         elsif @community.theme_name == "panther"
           json.gallery_buttons_border "No border"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.gallery_buttons_border "No border"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.gallery_buttons_border @community.design.gallery_buttons_border.present? ? @community.design.gallery_buttons_border : "All sides"
         else
           json.gallery_buttons_border "All sides"
@@ -534,7 +536,7 @@ json.ui_settigs do
           json.filter_button_as_image @community.design.filter_button_as_image
         end
         json.gallery_button_as_image @community.design.gallery_button_as_image
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.filter_panel_background_as_image false
         elsif @community.theme_name == "panther"
           json.filter_panel_background_as_image false
@@ -543,7 +545,7 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.filter_button image_url("filetr_panel_button_bg.png")
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_button @community.design.filter_button.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_button.url : @community.design.filter_button.url) : "No Image"
         else
           json.filter_button "No Image"
@@ -579,16 +581,16 @@ json.ui_settigs do
           json.gallery_button_on_background_color "#565455"
           json.gallery_button_on_background_color_opacity "100%"
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.filter_panel_icon_color "#ecb6ac"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_panel_icon_color (@community.design.filter_panel.present? and @community.design.filter_panel.filter_panel_icon_color.present?) ? @community.design.filter_panel.filter_panel_icon_color : "#ffff"
         else
           json.filter_panel_icon_color "#ffff"
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.filter_panel_icon_background_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_panel_icon_background_color (@community.design.filter_panel.present? and @community.design.filter_panel.icon_background_color.present?) ? @community.design.filter_panel.icon_background_color : "#565455"
         else
           json.filter_panel_icon_background_color "#565455"
@@ -602,9 +604,9 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.display_filter_panel_icon true
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.display_filter_panel_icon true
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.display_filter_panel_icon @community.design.filter_panel.present? ? @community.design.filter_panel.display_filter_panel_icon : false
         else
           json.display_filter_panel_icon false
@@ -620,27 +622,27 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.filter_panel_button_text_font_size "21px"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.filter_panel_button_text_font_size "18px"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_panel_button_text_font_size (@community.design.filter_panel.present? and @community.design.filter_panel.button_text_font_size.present?) ? @community.design.filter_panel.button_text_font_size : "18px"
         else
           json.filter_panel_button_text_font_size "18px"
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.filter_panel_buttons_show_backround_color true
         elsif @community.theme_name == "panther"
           json.filter_panel_buttons_show_backround_color true
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_panel_buttons_show_backround_color @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_panel_buttons_show_backround_color.present? ? @community.design.filter_panel.filter_panel_buttons_show_backround_color : false) : false
         else
           json.filter_panel_buttons_show_backround_color false
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.filter_buttons_icons_position "Right of text"
         elsif @community.theme_name == "futurist"
           json.filter_buttons_icons_position "Right of text"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.filter_buttons_icons_position @community.design.filter_panel.present? ? (@community.design.filter_panel.filter_buttons_icons_position.present? ? @community.design.filter_panel.filter_buttons_icons_position : "Left of text") : "Left of text"
         else
           json.filter_buttons_icons_position "Left of text"
@@ -650,22 +652,22 @@ json.ui_settigs do
       json.home_page do
         if @community.theme_name == "futurist"
           json.home_page_menu_position "Bottom"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.home_page_menu_position "Vertical Right"
         elsif @community.theme_name == "panther"
           json.home_page_menu_position "Middle"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
         else
           json.home_page_menu_position "Bottom"
         end
         if @community.theme_name == "futurist"
           json.home_page_position_of_logo "Right"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.home_page_position_of_logo "Right"
         elsif @community.theme_name == "panther"
           json.home_page_position_of_logo "Bottom center"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
         else
           json.home_page_position_of_logo "Right"
@@ -677,9 +679,9 @@ json.ui_settigs do
         end
         if @community.theme_name == "panther"
           json.home_page_button_border_color "#cae0da"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.home_page_button_border_color "#fdfdfd"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_button_border_color (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_border_color.present?) ? @community.design.expressionist.home_page_button_border_color : "#565455"
         else
           json.home_page_button_border_color "#565455"
@@ -689,7 +691,7 @@ json.ui_settigs do
           json.display_home_page_image @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_image : true
         else
           json.display_home_page_button_icon true
-          if @community.theme_name == "modernist"
+          if @community.theme_name == "modernist1"
             json.display_home_page_image false
           else
             json.display_home_page_image true
@@ -708,9 +710,9 @@ json.ui_settigs do
           json.home_page_button_font_size "22px"
         elsif @community.theme_name == "panther"
           json.home_page_button_font_size "28px"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.home_page_button_font_size "16px"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_button_font_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_button_font_size.present?) ? @community.design.expressionist.home_page_button_font_size : "18px"
         else
           json.home_page_button_font_size "18px"
@@ -722,9 +724,9 @@ json.ui_settigs do
         else
           json.home_page_button_image "No Image"
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.home_page_button_shape "Circular"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_button_shape @community.design.home_page_button_shape.present? ? @community.design.home_page_button_shape : "Rectangular"
         else
           json.home_page_button_shape "Rectangular"
@@ -736,25 +738,25 @@ json.ui_settigs do
           json.home_page_buttons_border "All sides"
           json.home_page_navigation_background_height "250px"
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.home_page_navigation_background_color "#a33e2a"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_navigation_background_color @community.design.home_page_navigation_background_color.present? ? @community.design.home_page_navigation_background_color : "#565455"
         else
           json.home_page_navigation_background_color "#565455"
         end
-        if @community.theme_name == "modernist"
+        if @community.theme_name == "modernist1"
           json.home_page_navigation_button_color "#fdfdfd"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_navigation_button_color @community.design.home_page_navigation_button_color.present? ? @community.design.home_page_navigation_button_color : "#3B3B3B"
         else
           json.home_page_navigation_button_color "#3B3B3B"
         end
         if @community.theme_name == "panther"
           json.home_page_navigation_font_color "#cae0da"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.home_page_navigation_font_color "#777777"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_navigation_font_color @community.design.home_page_navigation_font_color.present? ? @community.design.home_page_navigation_font_color : "#ffff"
         else
           json.home_page_navigation_font_color "#ffff"
@@ -763,9 +765,9 @@ json.ui_settigs do
           json.spacing_between_buttons_for_homepage "0px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons_for_homepage "20px"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.spacing_between_buttons_for_homepage "10px"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.spacing_between_buttons_for_homepage (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons_for_homepage.present?) ? @community.design.expressionist.spacing_between_buttons_for_homepage : "0px"
         else
           json.spacing_between_buttons_for_homepage "0px"
@@ -774,9 +776,9 @@ json.ui_settigs do
           json.home_page_buttons_height "200px"
         elsif @community.theme_name == "panther"
           json.home_page_buttons_height "150px"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.home_page_buttons_height "200px"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_buttons_height @community.design.home_page_buttons_height.present? ? @community.design.home_page_buttons_height : "150px"
         else
           json.home_page_buttons_height "150px"
@@ -833,9 +835,9 @@ json.ui_settigs do
           json.home_page_icons_position "Above of text"
         elsif @community.theme_name == "panther"
           json.home_page_icons_position "Above of text"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.home_page_icons_position "Above of text"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_icons_position @community.design.expressionist.present? ? (@community.design.expressionist.home_page_icons_position.present? ? @community.design.expressionist.home_page_icons_position : "Above of text") : "Above of text"
 
         else
@@ -862,11 +864,11 @@ json.ui_settigs do
       json.floorplan_unit_popup do
         if @community.theme_name == "futurist"
           json.header_bg_color "#ffffff"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.header_bg_color "#4f4f4f"
         elsif @community.theme_name == "panther"
           json.header_bg_color "#534841"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.header_bg_color @community.design.header_bg_color.present? ? @community.design.header_bg_color : "#ada6a6"
         else
           json.header_bg_color "#ada6a6"
@@ -878,11 +880,11 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.header_font_color "#565656"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.header_font_color "#ffffff"
         elsif @community.theme_name == "panther"
           json.header_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.header_font_color @community.design.header_font_color.present? ? @community.design.header_font_color : "#ffffff"
         else
           json.header_font_color "#ffffff"
@@ -894,11 +896,11 @@ json.ui_settigs do
         # end
         if @community.theme_name == "futurist"
           json.details_bg_color "#7b7b7b"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.details_bg_color "#4f4f4f"
         elsif @community.theme_name == "panther"
           json.details_bg_color "#b6c5bf"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.details_bg_color @community.design.details_bg_color.present? ? @community.design.details_bg_color : "#ada6a6"
         else
           json.details_bg_color "#ada6a6"
@@ -910,33 +912,33 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.details_font_color "#ffffff"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.details_font_color "#ffffff"
         elsif @community.theme_name == "panther"
           json.details_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.details_font_color @community.design.details_font_color.present? ? @community.design.details_font_color : "#ffff"
         else
           json.details_font_color "#ffff"
         end
         if @community.theme_name == "futurist"
           json.available_appartments_font_color "#ffffff"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.available_appartments_font_color "#ffffff"
         elsif @community.theme_name == "panther"
           json.available_appartments_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.available_appartments_font_color @community.design.available_appartments_font_color.present? ? @community.design.available_appartments_font_color : "#ffff"
         else
           json.available_appartments_font_color "#ffff"
         end
         if @community.theme_name == "futurist"
           json.available_appartments_bg_color "#3c3c3c"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.available_appartments_bg_color "#cf492f"
         elsif @community.theme_name == "panther"
           json.available_appartments_bg_color "#424344"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.available_appartments_bg_color @community.design.available_appartments_bg_color.present? ? @community.design.available_appartments_bg_color : "#ada6a6"
         else
           json.available_appartments_bg_color "#ada6a6"
@@ -948,11 +950,11 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.floor_bg_color "#d2d2d2"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.floor_bg_color "#dedee0"
         elsif @community.theme_name == "panther"
           json.floor_bg_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.floor_bg_color @community.design.floor_bg_color.present? ? @community.design.floor_bg_color : "#565455"
         else
           json.floor_bg_color "#565455"
@@ -964,7 +966,7 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.unit_header_bg_color "#ffffff"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.unit_header_bg_color "#4f4f4f"
         elsif @community.theme_name == "panther"
           json.unit_header_bg_color "#534841"
@@ -980,33 +982,33 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.unit_header_font_color "#565656"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.unit_header_font_color "#ffffff"
         elsif @community.theme_name == "panther"
           json.unit_header_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.unit_header_font_color @community.design.unit_header_font_color.present? ? @community.design.unit_header_font_color : "#ffff"
         else
           json.unit_header_font_color "#ffff"
         end
         if @community.theme_name == "futurist"
           json.unit_details_font_color "#ffffff"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.unit_details_font_color "#ffffff"
         elsif @community.theme_name == "panther"
           json.unit_details_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.unit_details_font_color @community.design.unit_details_font_color.present? ? @community.design.unit_details_font_color : "#ffff"
         else
           json.unit_details_font_color "#ffff"
         end
         if @community.theme_name == "futurist"
           json.unit_details_bg_color "#7b7b7b"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.unit_details_bg_color "#4f4f4f"
         elsif @community.theme_name == "panther"
           json.unit_details_bg_color "#4f4f4f"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.unit_details_bg_color @community.design.unit_details_bg_color.present? ? @community.design.unit_details_bg_color : "#ada6a6"
         else
           json.unit_details_bg_color "#ada6a6"
@@ -1018,11 +1020,11 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.floorplan_name_bg_color "#3d3e3e"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.floorplan_name_bg_color "#cf492f"
         elsif @community.theme_name == "panther"
           json.floorplan_name_bg_color "#424344"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
         else
           json.floorplan_name_bg_color "#ada6a6"
@@ -1034,22 +1036,22 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.floorplan_name_font_color "#ffffff"
         elsif @community.theme_name == "panther"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
         else
           json.floorplan_name_font_color "#ffff"
         end
         if @community.theme_name == "futurist"
           json.unit_bg_color "#d2d2d2"
-        elsif @community.theme_name == "modernist"
+        elsif @community.theme_name == "modernist1"
           json.unit_bg_color "#dedee0"
         elsif @community.theme_name == "panther"
           json.unit_bg_color "#ffffff"
-        elsif @community.theme_name == "expressionist"
+        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.unit_bg_color @community.design.unit_bg_color.present? ? @community.design.unit_bg_color : "#565455"
         else
           json.unit_bg_color "#565455"

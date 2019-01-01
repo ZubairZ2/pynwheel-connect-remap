@@ -2327,16 +2327,16 @@ function hideShowBackgroundColorDiv(radio_button, element, text_field) {
 
 function showTabsAccordingToTheme(theme) {
   window.current_theme = theme;
-  // if (theme == 'cubist' || theme == 'modernist') {
+  // if (theme == 'modernist') {
   //   $('#font-tab').parent().removeClass('hidden');
   //   $('#menu-tab').parent().removeClass('hidden');
   //   //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
   //   //$('#overlay-tab').parent().addClass('hidden');
-  //   $('#global-navigation-tab').parent().addClass('hidden');
-  //   $('#filter-panel-tab').parent().addClass('hidden');
-  //   $('#home-page-tab').parent().addClass('hidden');
-  //   $('#map-marker-tab').parent().addClass('hidden');
-  //   $('#floorplan-unit-popup-tab').parent().addClass('hidden');
+  //     $('#global-navigation-tab').parent().addClass('hidden');
+  //     $('#filter-panel-tab').parent().addClass('hidden');
+  //     $('#home-page-tab').parent().addClass('hidden');
+  //     $('#map-marker-tab').parent().addClass('hidden');
+  //     $('#floorplan-unit-popup-tab').parent().addClass('hidden');
   //   $('#gables-tab').parent().addClass('hidden');
   // }
   // if (theme == 'expressionist') {
@@ -2376,10 +2376,22 @@ function showTabsAccordingToTheme(theme) {
     $('#floorplan-unit-popup-tab').parent().addClass('hidden');
     $('#gables-tab').parent().removeClass('hidden');
   }
+  else if (theme == 'modernist') {
+      $('#font-tab').parent().removeClass('hidden');
+      $('#menu-tab').parent().removeClass('hidden');
+      //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
+      //$('#overlay-tab').parent().addClass('hidden');
+      $('#global-navigation-tab').parent().addClass('hidden');
+      $('#filter-panel-tab').parent().addClass('hidden');
+      $('#home-page-tab').parent().addClass('hidden');
+      $('#map-marker-tab').parent().addClass('hidden');
+      $('#floorplan-unit-popup-tab').parent().addClass('hidden');
+      $('#gables-tab').parent().addClass('hidden');
+  }
   else
   {
-      // $('#font-tab').parent().removeClass('hidden');
-      // $('#menu-tab').parent().removeClass('hidden');
+      $('#font-tab').parent().addClass('hidden');
+      $('#menu-tab').parent().addClass('hidden');
       //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
       //$('#overlay-tab').parent().addClass('hidden');
       $('#global-navigation-tab').parent().removeClass('hidden');
