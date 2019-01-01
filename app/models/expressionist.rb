@@ -26,7 +26,7 @@
 #  global_navigation_button_border_color            :string
 #  spacing_between_buttons                          :string
 #  button_on_bg_color                               :string
-#  display_button_on_bg_color                       :boolean          default(FALSE)
+#  display_button_on_bg_color                       :boolean          default(TRUE)
 #  global_navigation_button_on_font_color           :string
 #  application_background_image                     :string
 #  display_application_background_image             :boolean          default(FALSE)
@@ -86,6 +86,10 @@
 #  filter_buttons_icons_position                    :string
 #  global_navigation_show_background_color          :boolean          default(FALSE)
 #  filter_panel_buttons_show_backround_color        :boolean          default(FALSE)
+#  button_text_position                             :string
+#  display_global_navigation_button_color           :boolean          default(FALSE)
+#  homepage_button_border_thickness                 :string
+#  global_navigation_home_icon                      :boolean          default(FALSE)
 #
 
 class Expressionist < ApplicationRecord
