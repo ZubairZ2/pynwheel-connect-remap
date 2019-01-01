@@ -691,7 +691,7 @@ json.ui_settigs do
           json.display_home_page_image @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_image : true
         else
           json.display_home_page_button_icon true
-          if @community.theme_name == "modernist1"
+          if @community.theme_name == "modernist1" || @community.theme_name == "panther"
             json.display_home_page_image false
           else
             json.display_home_page_image true

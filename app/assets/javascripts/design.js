@@ -2388,7 +2388,7 @@ function showTabsAccordingToTheme(theme) {
       $('#floorplan-unit-popup-tab').parent().addClass('hidden');
       $('#gables-tab').parent().addClass('hidden');
   }
-  else
+  else if (theme == 'expressionist')
   {
       $('#font-tab').parent().addClass('hidden');
       $('#menu-tab').parent().addClass('hidden');
@@ -2399,6 +2399,12 @@ function showTabsAccordingToTheme(theme) {
       $('#home-page-tab').parent().removeClass('hidden');
       $('#map-marker-tab').parent().removeClass('hidden');
       $('#floorplan-unit-popup-tab').parent().removeClass('hidden');
+      $('#gables-tab').parent().addClass('hidden');
+  }
+  else
+  {
+      $('#font-tab').parent().addClass('hidden');
+      $('#menu-tab').parent().addClass('hidden');
       $('#gables-tab').parent().addClass('hidden');
   }
     ///////////////////////// Database changes////////////////////////
