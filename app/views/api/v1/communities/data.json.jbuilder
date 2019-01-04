@@ -9,8 +9,11 @@ json.ui_settigs do
     json.theme "expressionist"
   end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
-
-  json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
+  if @community.theme_name == "futurist" || @community.theme_name == "panther" || @community.theme_name == "modernist"
+    json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+  else
+    json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
+  end
   json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
 
   #if (style_themes.include? @community.theme_name) && @community.design.present?
