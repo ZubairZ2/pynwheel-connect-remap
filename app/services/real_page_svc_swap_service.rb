@@ -3,6 +3,7 @@ class RealPageSvcSwapService < BaseService
     import_realpage_svc_floorplans
     import_realpage_svc_units
     import_realpage_svc_price
+    rename_provider
   end
 
   def import_realpage_svc_floorplans
@@ -105,13 +106,7 @@ class RealPageSvcSwapService < BaseService
             end
           end
 
-          fp = Floorplan.where(community_id: credentials.community_id)
-          fp.each do |d|
-            if d.provider == "realpagesvc_new"
-              d.provider = "realpagesvc"
-              d.save
-            end
-          end
+
         end
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
@@ -319,13 +314,7 @@ class RealPageSvcSwapService < BaseService
             end
           end
 
-          unit = Unit.where(community_id: credentials.community_id)
-          unit.each do |d|
-            if d.provider == "realpagesvc_new"
-              d.provider = "realpagesvc"
-              d.save
-            end
-          end
+
         end
 
       rescue => e
@@ -515,6 +504,23 @@ class RealPageSvcSwapService < BaseService
         return building_result["Text"]
       else
         return ""
+      end
+    end
+  end
+  def rename_provider
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      if d.provider == "realpagesvc_new"
+        d.provider = "realpagesvc"
+        d.save(validate: false)
+      end
+    end
+
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "realpagesvc_new"
+        d.provider = "realpagesvc"
+        d.save(validate: false)
       end
     end
   end

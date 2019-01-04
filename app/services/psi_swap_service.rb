@@ -47,6 +47,7 @@ class PsiSwapService < BaseService
       end
     end
     fill_psi_pricing_details
+    rename_provider
   end
 
   def save_psi_units(units,property_id)
@@ -149,12 +150,7 @@ class PsiSwapService < BaseService
         d.destroy
       end
     end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      if d.provider == "psi_new"
-        d.provider = "psi"
-      end
-    end
+
   end
 
   def save_psi_floorplans(floorplans,property_id)
@@ -261,13 +257,7 @@ class PsiSwapService < BaseService
         d.destroy
       end
     end
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      if d.provider == "psi_new"
-        d.provider = "psi"
 
-      end
-    end
   end
 
   def fill_psi_pricing_details
@@ -341,6 +331,22 @@ class PsiSwapService < BaseService
     community = Community.find credentials.community_id
     community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
   end
+  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "psi_new"
+        d.provider = "psi"
+        d.save
+      end
+    end
 
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      if d.provider == "psi_new"
+        d.provider = "psi"
+        d.save
+      end
+    end
+  end
 
 end
