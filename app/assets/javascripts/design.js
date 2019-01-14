@@ -2406,6 +2406,12 @@ function showTabsAccordingToTheme(theme) {
       $('#font-tab').parent().addClass('hidden');
       $('#menu-tab').parent().addClass('hidden');
       $('#gables-tab').parent().addClass('hidden');
+
+      $('#global-navigation-tab').parent().addClass('hidden');
+      $('#filter-panel-tab').parent().addClass('hidden');
+      $('#home-page-tab').parent().addClass('hidden');
+      $('#map-marker-tab').parent().addClass('hidden');
+      $('#floorplan-unit-popup-tab').parent().addClass('hidden');
   }
     ///////////////////////// Database changes////////////////////////
 

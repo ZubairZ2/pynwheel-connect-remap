@@ -152,7 +152,7 @@ json.ui_settigs do
           json.display_global_navigation_button_bg_color true
         end
         if @community.theme_name == "futurist"
-          json.global_navigation_button_font_family "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeueLTStd-LtCn.ttf#Helvetica Neue LT Std"
+          json.global_navigation_button_font_family "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
         elsif @community.theme_name == "panther"
           json.global_navigation_button_font_family "ms-appx:/Assets/Fonts/Trajan Pro Regular.ttf#Trajan Pro"
         elsif @community.theme_name == "expressionist"
@@ -458,7 +458,7 @@ json.ui_settigs do
           json.filter_panel_color "#3B3B3B"
         end
         if @community.theme_name == "futurist"
-          json.filter_panel_font_style "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeueLTStd-LtCn.ttf#Helvetica Neue LT Std"
+          json.filter_panel_font_style "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
         elsif @community.theme_name == "panther"
           json.filter_panel_font_style "Futura"
         elsif @community.theme_name == "expressionist"
@@ -701,7 +701,7 @@ json.ui_settigs do
           end
         end
         if @community.theme_name == "futurist"
-          json.home_page_button_font_family "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeueLTStd-LtCn.ttf#Helvetica Neue LT Std"
+          json.home_page_button_font_family "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
         elsif @community.theme_name == "panther"
           json.home_page_button_font_family "ms-appx:/Assets/Fonts/Trajan Pro Regular.ttf#Trajan Pro"
         elsif @community.theme_name == "expressionist"
