@@ -1026,7 +1026,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.floorplan_name_bg_color "#cf492f"
         elsif @community.theme_name == "panther"
-          json.floorplan_name_bg_color "#424344"
+          json.floorplan_name_bg_color "#4f4f4f"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
         else
