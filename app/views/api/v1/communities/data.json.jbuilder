@@ -1010,7 +1010,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.unit_details_bg_color "#4f4f4f"
         elsif @community.theme_name == "panther"
-          json.unit_details_bg_color "#4f4f4f"
+          json.unit_details_bg_color "#b6c5bf"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.unit_details_bg_color @community.design.unit_details_bg_color.present? ? @community.design.unit_details_bg_color : "#ada6a6"
         else
@@ -1026,7 +1026,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.floorplan_name_bg_color "#cf492f"
         elsif @community.theme_name == "panther"
-          json.floorplan_name_bg_color "#4f4f4f"
+          json.floorplan_name_bg_color "#424344"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
         else
@@ -1118,7 +1118,7 @@ json.apartments do
   json.display_rent @community.display_rent
   json.display_sitemap @community.display_sitemap
   json.display_floorplan_gallery @community.display_floorplan_gallery
-  if @community.sitemap.present? and !@community.has_floorplates? 
+  if @community.sitemap.present? and !@community.has_floorplates?
     image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
     begin
       json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
@@ -1138,7 +1138,7 @@ json.apartments do
   end
   units_floorplans = []
   floorplans = @community.floorplans
-  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold 
+  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
   json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units available_units_and_sold_units.each do |unit|
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
