@@ -27,7 +27,10 @@ class Amenity < ApplicationRecord
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]
-
+  validate :image_size
+  def image_size
+    errors[:error] << "You can add only three image pages or webpages as display on home page."   if image.size > 1.megabytes
+  end
   def populate_image_urls
     if image.present?
       set_standard_url('Amenity',id)
