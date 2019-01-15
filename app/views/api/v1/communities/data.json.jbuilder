@@ -1032,6 +1032,7 @@ json.ui_settigs do
         else
           json.floorplan_name_bg_color "#ada6a6"
         end
+        
         if @community.theme_name == "expressionist"
           json.floorplan_name_bg_color_opacity @community.design.floorplan_name_bg_color_opacity.present? ? @community.design.floorplan_name_bg_color_opacity : "100%"
         else
