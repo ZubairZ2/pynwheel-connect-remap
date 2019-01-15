@@ -1140,7 +1140,7 @@ json.apartments do
   floorplans = @community.floorplans
   available_units_and_sold_units = @community.units.available_units + @community.units.are_sold 
   json.display_unit_on_homepage @community.display_unit_on_homepage
-  json.units available_units_and_sold_units.each do |unit|
+  json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
       units_floorplans << floorplan
@@ -1214,7 +1214,7 @@ json.apartments do
       end
     end
   end
-  json.floorplans units_floorplans.uniq do |floorplan|
+  json.floorplans units_floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
     json.id floorplan.id
     json.provider_floorplan_id floorplan.provider_floorplan_id
     json.name floorplan.name
