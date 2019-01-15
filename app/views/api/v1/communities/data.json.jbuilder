@@ -1026,13 +1026,12 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.floorplan_name_bg_color "#cf492f"
         elsif @community.theme_name == "panther"
-          json.floorplan_name_bg_color "#4f4f4f"
+          json.floorplan_name_bg_color "#424344"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
         else
           json.floorplan_name_bg_color "#ada6a6"
         end
-        
         if @community.theme_name == "expressionist"
           json.floorplan_name_bg_color_opacity @community.design.floorplan_name_bg_color_opacity.present? ? @community.design.floorplan_name_bg_color_opacity : "100%"
         else
@@ -1148,7 +1147,7 @@ json.apartments do
       json.marketing_name unit.marketing_name
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.availability unit.availability
-      json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day 
+      json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day
       json.available unit.available
       json.sold unit.sold
       json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
@@ -1187,7 +1186,7 @@ json.apartments do
             random_numbers << random_number
             json.id random_number
           else
-            random_number = SecureRandom.random_number(69999)  
+            random_number = SecureRandom.random_number(69999)
             random_numbers << random_number
             json.id random_number
           end
@@ -1205,7 +1204,7 @@ json.apartments do
             random_numbers << random_number
             json.id random_number
           else
-            random_number = SecureRandom.random_number(69999)  
+            random_number = SecureRandom.random_number(69999)
             random_numbers << random_number
             json.id random_number
           end
