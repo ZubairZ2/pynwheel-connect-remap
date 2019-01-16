@@ -63,3 +63,12 @@
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} cancel
           %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard
+#image-size-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Warning
+      .modal-body
+        File can not be greater than 10MB
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok

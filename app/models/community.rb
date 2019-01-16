@@ -69,12 +69,7 @@ class Community < ApplicationRecord
   after_create :create_default_gallery
   validate :validate_page_position
 
-  validate :image_size
-  def image_size
-    if logo.size > 1.megabytes
-      errors[:base] << "File can not be greater than 5MB"
-    end
-  end
+
 
   def is_futurist?
     theme_name == "futurist"
