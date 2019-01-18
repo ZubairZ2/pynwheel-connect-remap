@@ -273,15 +273,25 @@ function readSecondaryURL(input) {
 // preview image function including svg
 function readImageIncludingSVG(input) {  
     if (input.files && input.files[0]) {
-        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" || input.files[0].type == "image/svg+xml"){ 
-          var reader = new FileReader();
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" || input.files[0].type == "image/svg+xml"){
 
-          reader.onload = function (e) {
-              $('#preview-image').attr('src', e.target.result);
-              $('#preview-image').parent().attr('href', e.target.result);
-          }
+            if ((input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" ) && (input.file[0].size > 10000000)) {
+                var reader = new FileReader();
 
-          reader.readAsDataURL(input.files[0]);
+                reader.onload = function (e) {
+                    $('#preview-image').attr('src', e.target.result);
+                    $('#preview-image').parent().attr('href', e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+
+            }
+            else
+            {
+                $(input).val('');
+                $('#image-size-warning').modal('show');
+            }
+
       }
       else{
         $(input).val('');

@@ -221,7 +221,7 @@
         Upload Image
       = form_tag set_image_community_units_path(@community), multipart: true do
         .modal-body.set-floor-modal-body
-          = file_field_tag 'image_file', :accept => 'image/jpeg',:required=>true
+          = file_field_tag 'image_file', :accept => 'image/jpeg',:required=>true, :id => "size_limit"
           .row
             .col-md-4
               = check_box_tag 'select_all_units_for_image'
@@ -238,6 +238,14 @@
 
   / End Panel left Side
   :javascript
+    $('#size_limit').change(function(){
+    input = document.getElementById('size_limit');
+      if (input.files[0].size > 10000000)
+      {
+       $('#image-size-warning').modal('show');
+       $(input).val('');
+      }
+    });
      $(document).ready(function(){
 
       $('.wysihtml5').each(function(i, elem) {

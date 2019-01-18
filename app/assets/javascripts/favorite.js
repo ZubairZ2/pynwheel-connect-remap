@@ -25,6 +25,12 @@ function saveFavoriteImage(){
       $('#image-and-video-upload-warning').modal('show');
       favoriteImageDropzone.removeFile(file);
     }
+      if ((file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")&& (file.size > 10000000))
+      {
+          $(".divLoading").addClass("hidden");
+          $('#image-size-warning').modal('show');
+          favoriteImageDropzone.removeFile(file);
+      }
   });
 }
 
