@@ -339,8 +339,10 @@ class Community < ApplicationRecord
   end
 
   def connect_to_realpagesvc
-    real_page_svc_connection_service = RealPageSvcConnectionService.new(credential.attributes)
-    real_page_svc_connection_service.perform
+    # real_page_svc_connection_service = RealPageSvcConnectionService.new(credential.attributes)
+    # real_page_svc_connection_service.perform
+    real_page_svc_pricing_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
+    real_page_svc_pricing_connection_service.perform
   end
 
   def connect_to_yardi
