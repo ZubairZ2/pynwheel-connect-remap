@@ -1010,7 +1010,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.unit_details_bg_color "#4f4f4f"
         elsif @community.theme_name == "panther"
-          json.unit_details_bg_color "#4f4f4f"
+          json.unit_details_bg_color "#b6c5bf"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.unit_details_bg_color @community.design.unit_details_bg_color.present? ? @community.design.unit_details_bg_color : "#ada6a6"
         else
@@ -1026,13 +1026,12 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.floorplan_name_bg_color "#cf492f"
         elsif @community.theme_name == "panther"
-          json.floorplan_name_bg_color "#4f4f4f"
+          json.floorplan_name_bg_color "#424344"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.floorplan_name_bg_color @community.design.floorplan_name_bg_color.present? ? @community.design.floorplan_name_bg_color : "#ada6a6"
         else
           json.floorplan_name_bg_color "#ada6a6"
         end
-        
         if @community.theme_name == "expressionist"
           json.floorplan_name_bg_color_opacity @community.design.floorplan_name_bg_color_opacity.present? ? @community.design.floorplan_name_bg_color_opacity : "100%"
         else
@@ -1119,7 +1118,7 @@ json.apartments do
   json.display_rent @community.display_rent
   json.display_sitemap @community.display_sitemap
   json.display_floorplan_gallery @community.display_floorplan_gallery
-  if @community.sitemap.present? and !@community.has_floorplates? 
+  if @community.sitemap.present? and !@community.has_floorplates?
     image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
     begin
       json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
@@ -1139,7 +1138,7 @@ json.apartments do
   end
   units_floorplans = []
   floorplans = @community.floorplans
-  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold 
+  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
   json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
@@ -1148,7 +1147,7 @@ json.apartments do
       json.marketing_name unit.marketing_name
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.availability unit.availability
-      json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day 
+      json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day
       json.available unit.available
       json.sold unit.sold
       json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
@@ -1187,7 +1186,7 @@ json.apartments do
             random_numbers << random_number
             json.id random_number
           else
-            random_number = SecureRandom.random_number(69999)  
+            random_number = SecureRandom.random_number(69999)
             random_numbers << random_number
             json.id random_number
           end
@@ -1205,7 +1204,7 @@ json.apartments do
             random_numbers << random_number
             json.id random_number
           else
-            random_number = SecureRandom.random_number(69999)  
+            random_number = SecureRandom.random_number(69999)
             random_numbers << random_number
             json.id random_number
           end
