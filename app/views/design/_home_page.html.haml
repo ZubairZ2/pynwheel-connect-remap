@@ -180,6 +180,14 @@
               Homepage button border thickness
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :homepage_button_border_thickness , options_for_select(global_navigation_border_thickness_space,e.object.homepage_button_border_thickness.present? ? e.object.homepage_button_border_thickness : '0px'),{},{class: "form-control home-page-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Homepage button border
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :homepage_button_border , options_for_select(opacity_options,e.object.homepage_button_border.present? ? e.object.homepage_button_border : "100%"),{},{class: "form-control home-page-field"}
+
 
       -#.form-group
       -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -240,7 +248,7 @@
             = e.check_box :display_home_page_nav_background_image, {class: "home-page-field"}
             %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_nav_background_image"}
             %span.pl-15 Yes
-      #home-page-background-image-fields.hidden            
+      #home-page-background-image-fields.hidden
         .row
           .col-lg-10
             .form-group.mt-30
@@ -251,7 +259,7 @@
                   .select-logo-logo
                     %a.preview-image{:href=>current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
                       = image_tag current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-background-image-preview"
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 %span.btn.btn-primary.btn-file.mt-30
                   %i.fa.fa-upload

@@ -859,6 +859,9 @@ json.ui_settigs do
         else
           json.homepage_button_border_thickness "0px"
         end
+        if @community.theme_name == "expressionist"
+          json.homepage_button_border  @community.design.expressionist.present? ? (@community.design.expressionist.homepage_button_border.present? ? @community.design.expressionist.homepage_button_border : "100%") : "100%"
+        end
       end
       json.map_marker do
         json.marker_background_color @community.design.marker_background_color.present? ? @community.design.marker_background_color : "#565455"
