@@ -100,8 +100,14 @@ var holder = document.getElementById('holder');
             files = e.dataTransfer.files;
                 if (files.length > 0){
                     for (var i = 0; i < files.length; i++) {
-                      if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){   
-                        readImageSrc(files[i]);  
+                      if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                          if(files[i].size < 10000000)
+                          {
+                              readImageSrc(files[i]);
+                          }
+                          else {
+                              $('#image-size-warning').modal('show');
+                          }
                       }
                       else{
                         $('#image-upload-warning').modal('show');
@@ -209,15 +215,23 @@ function drop(ev) {
 function readURL(input) {
 
     if (input.files && input.files[0]) {
-        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){ 
-          var reader = new FileReader();
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
+            if(input.files[0].size < 10000000)
+            {
+                var reader = new FileReader();
 
-          reader.onload = function (e) {
-              $('#preview-image').attr('src', e.target.result);
-              $('#preview-image').parent().attr('href', e.target.result);
-          }
+                reader.onload = function (e) {
+                    $('#preview-image').attr('src', e.target.result);
+                    $('#preview-image').parent().attr('href', e.target.result);
+                }
 
-          reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(input.files[0]);
+            }
+            else {
+                $(input).val('');
+                $('#image-size-warning').modal('show');
+            }
+
       }
       else{
         $(input).val('');
@@ -230,14 +244,23 @@ function readSecondaryURL(input) {
 
     if (input.files && input.files[0]) {
         if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
-          var reader = new FileReader();
 
-          reader.onload = function (e) {
-              $('#preview-secondary-image').attr('src', e.target.result);
-              $('#preview-secondary-image').parent().attr('href', e.target.result);
-          }
+            if(input.files[0].size < 10000000)
+            {
+                var reader = new FileReader();
 
-          reader.readAsDataURL(input.files[0]);
+                reader.onload = function (e) {
+                    $('#preview-secondary-image').attr('src', e.target.result);
+                    $('#preview-secondary-image').parent().attr('href', e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+            else {
+                $(input).val('');
+                $('#image-size-warning').modal('show');
+            }
+
       }
       else{
         $(input).val('');
@@ -280,11 +303,19 @@ $(document).ready(function () {
     $("#mutiple-files").change(function(){
         var files = $(this).prop("files")
         for (var i = 0; i < files.length; i++) {
-            if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-                readImageSrc(files[i]);
+            if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                if(files[i].size < 10000000)
+                {
+                    readImageSrc(files[i]);
+                }
+
             }
         } 
         if(files.length == 1){
+            if(files[0].size > 10000000)
+            {
+                $('#image-size-warning').modal('show');
+            }
            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
             $('#image-upload-warning').modal('show');
            } 
