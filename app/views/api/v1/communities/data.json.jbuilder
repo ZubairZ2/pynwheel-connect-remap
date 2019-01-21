@@ -768,10 +768,10 @@ json.ui_settigs do
           json.spacing_between_buttons_for_homepage "0px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons_for_homepage "20px"
-        elsif @community.theme_name == "modernist1"
-          json.spacing_between_buttons_for_homepage "10px"
-        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
-          json.spacing_between_buttons_for_homepage (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons_for_homepage.present?) ? @community.design.expressionist.spacing_between_buttons_for_homepage : "0px"
+        elsif @community.theme_name == "modernist"
+          json.spacing_between_buttons_for_homepage "0px"
+        elsif @community.theme_name == "expressionist"
+          json.spacing_between_buttons_for_homepage (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons_for_homepage.present?) ? @community.design.expressionist.spacing_between_buttons_for_homepage : "10px"
         else
           json.spacing_between_buttons_for_homepage "0px"
         end

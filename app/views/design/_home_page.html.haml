@@ -158,7 +158,7 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Spacing between buttons
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :spacing_between_buttons_for_homepage , options_for_select(spacing_options,e.object.spacing_between_buttons_for_homepage.present? ? e.object.spacing_between_buttons_for_homepage : '0px'),{},{class: "form-control home-page-field"}
+              = e.select :spacing_between_buttons_for_homepage , options_for_select(spacing_between_buttons_options,e.object.spacing_between_buttons_for_homepage.present? ? e.object.spacing_between_buttons_for_homepage : '10px'),{},{class: "form-control home-page-field"}
       .row
         .col-lg-10
           .form-group.mt-30
