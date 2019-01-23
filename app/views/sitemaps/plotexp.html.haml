@@ -53,6 +53,8 @@
               %h5.mt-40.mb-20 SELECT UNITS TO PLOT
               %select.amenities-list.form-control{:multiple=>"multiple"}
                 - arr = []
+                - if @community.data_provider == "psi"
+                  - units = units.sort_by {|obj| obj.building}
                 - units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if @community.data_provider == "psi"
