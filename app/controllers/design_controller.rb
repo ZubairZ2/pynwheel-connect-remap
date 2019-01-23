@@ -28,6 +28,9 @@ class DesignController < ApplicationController
     @design = current_community.design
   end
 
+  def map_marker_design
+    add_breadcrumb "Map Marker"
+  end
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?

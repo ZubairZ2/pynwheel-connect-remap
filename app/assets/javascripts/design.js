@@ -722,6 +722,9 @@ $(document).ready(function () {
     $('#map-marker-form').submit();
   });
 
+    $('.property-map-marker-field').change(function () {
+        $('#property-map-marker-form').submit();
+    });
   $('.floorplan-unit-popup-field').change(function () {
     $('#floorplan-unit-popup-form').submit();
   });

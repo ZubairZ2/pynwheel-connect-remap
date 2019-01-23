@@ -119,6 +119,7 @@ Rails.application.routes.draw do
       collection do
         get :logo
         get :secondary_logo
+        get :map_marker_design
       end
     end
     resources :home_page, only: :index do

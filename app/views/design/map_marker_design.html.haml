@@ -1,0 +1,45 @@
+- content_for :title, "Map Marker - Pynwheel"
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-bank
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Map
+          %span Marker
+
+      .box-body
+        .row
+          .col-lg-9.col-lg-offset-1
+            = form_for @community,:method=>"PUT",:html=>{:id=>"property-map-marker-form"},:remote=>true  do |f|
+              = hidden_field_tag "map_marker_tab", true
+              = f.fields_for :design do |d|
+                .row
+                  .col-lg-12
+                    %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+                      Map Marker Options
+                - if @community.theme_name == 'expressionist' || @community.theme_name.include?('gables')
+                  .row
+                    .col-lg-10
+                      .form-group.mt-30
+                        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                          Property map color
+                        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                          .input-group.colorpicker-style.hex-format-colorpicker
+                            .input-group-addon
+                              %i
+                              = d.text_field :property_map_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.property_map_color
+                .row
+                  .col-lg-10
+                    .form-group.mt-30
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Property map size
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
+                        = d.select :property_map_size , options_for_select(["25px","30px","35px"],d.object.property_map_size.present? ? d.object.property_map_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}

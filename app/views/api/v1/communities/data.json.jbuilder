@@ -16,6 +16,8 @@ json.ui_settigs do
   end
   json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
 
+  json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
+  json.property_map_size @community.design.present? ? (@community.design.property_map_size.present? ? @community.design.property_map_size : '30px') : '30px'
   #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
