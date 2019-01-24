@@ -37,6 +37,8 @@
               %a#map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-map-marker", :role => "tab"} Map Marker
             %li.hidden{:role => "presentation"}
               %a#gables-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-gables", :role => "tab"} Gables Settings                
+            %li{:role => "presentation"}
+              %a#community-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#community-map-marker", :role => "tab"} Community Map Marker
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Style
@@ -74,6 +76,8 @@
               = render 'custom_style'
             #u-button.tab-pane.fade{:role => "tabpanel"}
               = render 'button'
+            #community-map-marker.tab-pane.fade{:role => "tabpanel"}
+              = render 'community_map_marker'
 :javascript 
   var community_id = #{params[:community_id]};
   var selected_theme = '#{@community.theme_name}';

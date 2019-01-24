@@ -25,7 +25,7 @@
                     %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
                       Map Marker Options
                 - if @community.theme_name == 'expressionist' || @community.theme_name.include?('gables')
-                  .row
+                  .row.hidden.property_map_color_field
                     .col-lg-10
                       .form-group.mt-30
                         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15

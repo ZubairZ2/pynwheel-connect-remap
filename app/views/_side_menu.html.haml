@@ -86,11 +86,6 @@
             %i.fa.fa-pagelines
             %span Additional Pages
       - if (current_user.is_super_admin? || current_user.is_community_admin? )
-        %li{:class=>"#{controller_name =='design' && params[:action] =='map_marker_design' ? 'active' : ''}"}
-          %a{:href => "#{map_marker_design_community_design_index_path(current_community)}"}
-            %i.fa.fa-map-marker
-            %span Map Marker
-      - if (current_user.is_super_admin? || current_user.is_community_admin? )
         %li
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
             %i.fa.fa-share

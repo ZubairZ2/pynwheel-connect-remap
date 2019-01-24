@@ -18,6 +18,9 @@ json.ui_settigs do
 
   json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   json.property_map_size @community.design.present? ? (@community.design.property_map_size.present? ? @community.design.property_map_size : '30px') : '30px'
+
+  json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#d37474'
+  json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size.present? ? @community.design.amenity_map_marker_size : '30px') : '30px'
   #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
