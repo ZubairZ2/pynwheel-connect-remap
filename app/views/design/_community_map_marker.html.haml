@@ -29,7 +29,7 @@
                     .col-lg-10
                       .form-group.mt-30
                         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                          Property map color
+                          Property map marker color
                         .col-sm-12.col-lg-9.col-md-9.col-xs-12
                           .input-group.colorpicker-style.hex-format-colorpicker
                             .input-group-addon
@@ -39,16 +39,16 @@
                   .col-lg-10
                     .form-group.mt-30
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                        Property map size
+                        Property map marker size
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
                         = d.select :property_map_size , options_for_select(spacing_between_buttons_options,d.object.property_map_size.present? ? d.object.property_map_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
 
-                .row
+                .row.hidden
                   .col-lg-10
                     .form-group.mt-30
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                        Amenity map color
+                        Amenity map marker color
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .input-group.colorpicker-style.hex-format-colorpicker
                           .input-group-addon
@@ -59,7 +59,7 @@
                   .col-lg-10
                     .form-group.mt-30
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                        Amenity map size
+                        Amenity map marker size
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
                         = d.select :amenity_map_marker_size , options_for_select(spacing_between_buttons_options,d.object.amenity_map_marker_size.present? ? d.object.amenity_map_marker_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
