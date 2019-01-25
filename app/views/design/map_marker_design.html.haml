@@ -42,7 +42,7 @@
                         Property map size
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
-                        = d.select :property_map_size , options_for_select(spacing_between_buttons_options,d.object.property_map_size.present? ? d.object.property_map_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
+                        = d.select :property_map_size , options_for_select(map_marker_size_option,d.object.property_map_size.present? ? d.object.property_map_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
 
                 .row
                   .col-lg-10
@@ -62,5 +62,5 @@
                         Amenity map size
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
-                        = d.select :amenity_map_marker_size , options_for_select(spacing_between_buttons_options,d.object.amenity_map_marker_size.present? ? d.object.amenity_map_marker_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
+                        = d.select :amenity_map_marker_size , options_for_select(map_marker_size_option,d.object.amenity_map_marker_size.present? ? d.object.amenity_map_marker_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
 

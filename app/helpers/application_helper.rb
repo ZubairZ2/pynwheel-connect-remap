@@ -776,6 +776,11 @@ module ApplicationHelper
   def spacing_between_buttons_options
     ["0px","5px","10px","20px","30px","40px","50px","60px","70px","80px","90px","100px"]
   end
+
+  def map_marker_size_option
+    ["25px","30px","35px"]
+  end
+
   def global_navigation_border_thickness_space
     ["0px","2px","4px","6px","8px","10px","12px","14px","16px","18px","20px","22px","24px","26px","28px","30px","32px",
      "34px","36px","38px","40px","42px","44px","46px","48px","50px"]
