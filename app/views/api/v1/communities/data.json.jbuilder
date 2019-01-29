@@ -16,8 +16,10 @@ json.ui_settigs do
   end
   json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
 
-  if @community.theme_name.include?('gables') || @community.temporary_theme_name == 'expressionist'
+  if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
+  elsif @community.temporary_theme_name == 'modernist'
+    json.property_map_color @community.design.present? ? (@community.design.modernist_map_marker_color.present? ? (@community.design.modernist_map_marker_color == 'no color' ? @community.design.primary_color : @community.design.modernist_map_marker_color) : @community.design.primary_color) : '#d37474'
   else
     json.property_map_color '#d37474'
   end
