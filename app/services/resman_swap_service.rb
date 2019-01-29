@@ -43,13 +43,13 @@ class ResmanSwapService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MITS:MarketingName"]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"]).first
       if unit.present?
         unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-        # unit.marketing_name = u["Unit"]["MITS:MarketingName"]
+        # unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
@@ -84,7 +84,7 @@ class ResmanSwapService < BaseService
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-        unit.marketing_name = u["Unit"]["MITS:MarketingName"]
+        unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
