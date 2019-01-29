@@ -50,15 +50,23 @@
           /       %i.fa.fa-location-arrow
           .bg-bottom
             .need-to
+              %h3 Want to add favorites?
+              %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
+              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary btn-block btn-lg"
+              -#%button.btn.btn-primary.btn-block.btn-lg{:href=>community_favorite_settings_path} Take me there
+          .bg-bottom
+            .need-to
               %h3 Want to share your list?
-              %p Click the share button and share your favorites link
+              %p{:style => "margin-bottom: 20px"} Click the share button and share your favorites link
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
           .bg-bottom
             .need-to
               %h3 Need to pare down your list?
-              %p Tap the heart to remove an item from the page, or click the clear button below to remove all items.
+              %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
       .right-side
+        - if @units.count == 0
+          %b{:style => "color: #FFFFFF; position: relative; top: 45%; left: 45%;"} You have no favorites
         - @units.each do |unit|
           - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
           .row{:id=>"row-#{unit.id}"}
@@ -103,7 +111,7 @@
                           - if @community.data_provider == "realpagesvc"
                             = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank"
                           - elsif @community.data_provider == "psi" and floorplan.present?
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-lease-term"=>unit.lease_term
+                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id
                     .col-md-6
                       .plan-image
                         = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")

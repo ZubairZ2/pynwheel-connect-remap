@@ -48,6 +48,7 @@ class ZarembaSwapService < BaseService
       puts u
       flag = 0
       vacateDate = ""
+
       # unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["MarketingName"])
       # unless unit.present?
       unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["BuildingID"]+"-"+u["MarketingName"])
@@ -102,7 +103,7 @@ class ZarembaSwapService < BaseService
         end
         unit = Unit.new
 
-        flag = 0
+
         # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
         # u1.each do |u2|
         #   unless u2.building == u["BuildingID"]
@@ -114,10 +115,10 @@ class ZarembaSwapService < BaseService
         #   # end
         # end
 
-
         unit.community_id = credentials.community_id
         unit.property_id = property_id
         unit.provider = "zaremba_new"
+
         unit.provider_unit_id =  u["BuildingID"]+"-"+u["IDValue"]
         unit.unit_type = u["UnitType"]
 
@@ -126,7 +127,6 @@ class ZarembaSwapService < BaseService
         # else
         #   unit.marketing_name = u["MarketingName"]
         # end
-
 
         unit.floorplan_id = u["Units"]["Unit"]["Identification"][1]["IDValue"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues

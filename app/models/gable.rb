@@ -2,20 +2,30 @@
 #
 # Table name: gables
 #
-#  id                        :integer          not null, primary key
-#  hide_tagline              :boolean          default(TRUE)
-#  appartment_button_color   :string
-#  gallery_button_color      :string
-#  neighborhood_button_color :string
-#  favorite_button_color     :string
-#  filter_panel_color        :string
-#  design_id                 :integer
-#  created_at                :datetime         not null
-#  updated_at                :datetime         not null
-#  webpages_button_color     :string
-#  imagepages_button_color   :string
+#  id                                    :integer          not null, primary key
+#  hide_tagline                          :boolean          default(TRUE)
+#  appartment_button_color               :string
+#  gallery_button_color                  :string
+#  neighborhood_button_color             :string
+#  favorite_button_color                 :string
+#  filter_panel_color                    :string
+#  design_id                             :integer
+#  created_at                            :datetime         not null
+#  updated_at                            :datetime         not null
+#  webpages_button_color                 :string
+#  imagepages_button_color               :string
+#  home_page_nav_bg_image                :string
+#  display_home_page_nav_bg_image_button :boolean          default(FALSE)
+#  global_nav_bg_image                   :string
+#  display_global_nav_bg_image_button    :boolean          default(FALSE)
+#  filter_panel_bg_image                 :string
+#  display_filter_panel_bg_image_button  :boolean          default(FALSE)
 #
 
 class Gable < ApplicationRecord
   belongs_to :design
+  mount_base64_uploader :home_page_nav_bg_image, AvatarUploader
+  mount_base64_uploader :global_nav_bg_image, AvatarUploader
+  mount_base64_uploader :filter_panel_bg_image, AvatarUploader
+
 end

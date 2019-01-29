@@ -67,7 +67,6 @@ class ZarembaStaticService < BaseService
       #     u2.save(validate: false)
       #   end
       # end
-
       unit = Unit.where(provider: "zaremba",community_id: credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"]).first_or_initialize
 
       unit.property_id = property_id

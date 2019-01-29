@@ -23,8 +23,9 @@ class CommunitiesController < ApplicationController
   def create
     @community = current_company.communities.new(community_params)
     if @community.save
+      @community.create_neighborhood
       flash[:notice] = "Community created successfully."
-      redirect_to company_communities_path(current_company)
+      redirect_to community_design_index_path(@community)
     else
       flash[:error] = @community.errors.full_messages.join(',')
       render :new
@@ -176,6 +177,20 @@ class CommunitiesController < ApplicationController
       redirect_to community_import_page_path(current_community) 
     end
   end
+  def psi_pricing_test_connection
+    @community = Community.find params[:community_id]
+    if @community.credentials_are_present?
+      if xml = @community.connect_to_psi_pricing
+        render :json => xml
+      else
+        flash[:error] = "Please enter correct credentials in settings before importing data."
+        redirect_to community_import_page_path(current_community)
+      end
+    else
+      flash[:error] = "Please enter credentials in settings before importing data."
+      redirect_to community_import_page_path(current_community)
+    end
+  end
 
   def credentials
     @community = Community.find params[:community_id]
@@ -245,7 +260,7 @@ class CommunitiesController < ApplicationController
   def add_plots
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
     units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
-    redirect_to plotexp_community_sitemaps_path(@community), notice: "Plots are added successfully."
+    redirect_to plotexp_community_sitemaps_path(@community.present? ? @community : current_community), notice: "Plots are added successfully."
   end
   
   def add_plots_on_floorplate
@@ -341,7 +356,7 @@ class CommunitiesController < ApplicationController
         :button_background_color,:button_hover_color,:manage_background,:background_color,:vertical_menu_position,:horizontal_menu_position],
         :main_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:menu_position,:manage_background,
         :background_color],:home_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:about_button,
-        :building_button,:floorplan_button,:menu_position,:manage_background,:background_color],:gable_attributes=>[:id,:hide_tagline,
+        :building_button,:floorplan_button,:menu_position,:manage_background,:background_color],:gable_attributes=>[:id,:hide_tagline,:home_page_nav_bg_image, :display_home_page_nav_bg_image_button, :global_nav_bg_image, :display_global_nav_bg_image_button, :filter_panel_bg_image,:display_filter_panel_bg_image_button,
         :appartment_button_color,:gallery_button_color,:neighborhood_button_color,:favorite_button_color,:filter_panel_color,:webpages_button_color,
         :imagepages_button_color],:expressionist_attributes=>[:id,:home_page_menu_position,:home_page_position_of_logo,:home_page_logo_size,
         :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:home_page_button_font_size,:display_home_page_image,
