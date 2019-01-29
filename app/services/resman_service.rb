@@ -48,7 +48,7 @@ class ResmanService < BaseService
 
           # unit.property_id = property_id
           # unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-          # unit.marketing_name = u["Unit"]["MITS:MarketingName"]
+          # unit.marketing_name = u["Id"]
           # unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
           unit.effective_rent = 1.0 #Setting rent to avoid validation issues
           if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
