@@ -44,7 +44,7 @@
             = d.select :property_map_size , options_for_select(map_marker_size_option,d.object.property_map_size.present? ? d.object.property_map_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
 
 
-    .row.hidden
+    .row.hidden.amenity_map_marker_color
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -54,6 +54,18 @@
               .input-group-addon
                 %i
                 = d.text_field :amenity_map_marker_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.amenity_map_marker_color
+    .row.hidden.modernist_amenity_map_marker_color
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Amenity map marker color modre
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :modernists_amenity_map_marker_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.modernists_amenity_map_marker_color == 'no color' ? d.object.primary_color : d.object.modernists_amenity_map_marker_color
+
+
 
 
     .row
