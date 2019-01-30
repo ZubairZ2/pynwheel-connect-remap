@@ -2816,6 +2816,8 @@ function showTabsAccordingToTheme(theme) {
     $('#gables-tab').parent().removeClass('hidden');
     $('.property_map_color_field').removeClass('hidden');
     $('.mordernist_property_map_color_field').addClass('hidden');
+    $('.amenity_map_marker_color').removeClass('hidden');
+    $('.modernist_amenity_map_marker_color').addClass('hidden');
   }
   else if (theme == 'modernist') {
       $('#font-tab').parent().removeClass('hidden');
@@ -2830,6 +2832,8 @@ function showTabsAccordingToTheme(theme) {
       $('#gables-tab').parent().addClass('hidden');
       $('.property_map_color_field').addClass('hidden');
       $('.mordernist_property_map_color_field').removeClass('hidden');
+      $('.amenity_map_marker_color').addClass('hidden');
+      $('.modernist_amenity_map_marker_color').removeClass('hidden');
   }
   else if (theme == 'expressionist')
   {
@@ -2845,6 +2849,8 @@ function showTabsAccordingToTheme(theme) {
       $('#gables-tab').parent().addClass('hidden');
       $('.property_map_color_field').addClass('hidden');
       $('.mordernist_property_map_color_field').addClass('hidden');
+      $('.amenity_map_marker_color').addClass('hidden');
+      $('.modernist_amenity_map_marker_color').addClass('hidden');
 
   }
   else
@@ -2860,6 +2866,8 @@ function showTabsAccordingToTheme(theme) {
       $('#floorplan-unit-popup-tab').parent().addClass('hidden');
       $('.property_map_color_field').addClass('hidden');
       $('.mordernist_property_map_color_field').addClass('hidden');
+      $('.amenity_map_marker_color').addClass('hidden');
+      $('.modernist_amenity_map_marker_color').addClass('hidden');
   }
     ///////////////////////// Database changes////////////////////////
 
