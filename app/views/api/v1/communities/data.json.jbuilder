@@ -26,7 +26,7 @@ json.ui_settigs do
   json.property_map_size @community.design.present? ? (@community.design.property_map_size.present? ? @community.design.property_map_size : '30px') : '30px'
 
   if @community.theme_name.include?('gables')
-    json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#d37474'
+    json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#FF0000'
   elsif @community.temporary_theme_name == 'modernist'
     json.amenity_map_marker_color @community.design.present? ? (@community.design.modernists_amenity_map_marker_color.present? ? (@community.design.modernists_amenity_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernists_amenity_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
   else
