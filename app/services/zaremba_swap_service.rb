@@ -41,8 +41,7 @@ class ZarembaSwapService < BaseService
         puts '----------------------------' , e.message
       end
     end
-
-
+    rename_provider
   end
   def save_zaremba_units(units,property_id)
     units.each do |u|
@@ -159,14 +158,6 @@ class ZarembaSwapService < BaseService
       end
     end
 
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      if d.provider == "zaremba_new"
-        d.provider = "zaremba"
-
-        d.save(validate: false)
-      end
-    end
   end
 
   def save_zaremba_floorplans(floorplans,property_id)
@@ -253,13 +244,6 @@ class ZarembaSwapService < BaseService
       end
     end
 
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      if d.provider == "zaremba_new"
-        d.provider = "zaremba"
-        d.save
-      end
-    end
   end
 
   def save_zaremba_single_floorplans(floorplans,property_id)
@@ -344,13 +328,22 @@ class ZarembaSwapService < BaseService
       end
     end
 
+  end
+  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "zaremba_new"
+        d.provider = "zaremba"
+        d.save(validate: false)
+      end
+    end
+
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       if d.provider == "zaremba_new"
         d.provider = "zaremba"
-        d.save
+        d.save(validate: false)
       end
     end
   end
-
 end
