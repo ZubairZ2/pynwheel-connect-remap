@@ -199,6 +199,7 @@ class PsiStaticService < BaseService
               unit.availability = 'Occupied'
               unit.save
             end
+            
             if pricing.to_f > 0
               unit.effective_rent = pricing.to_f
               unit.save(validate: false)
