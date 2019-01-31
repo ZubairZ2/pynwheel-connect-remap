@@ -189,9 +189,10 @@ class PsiService < BaseService
                 year = dateSplit[2]
                 unit.available_date = Date.parse("#{month}-#{day}-#{year}")
               end
-              unit.availability = true
+              unit.availability = 'Unoccupied'
+              unit.available = true
             else
-              unit.availability = false
+              unit.availability = 'Occupied'
             end
 
             if pricing.to_f > 0
