@@ -152,8 +152,8 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
       if @community.data_is_imported and Thread.current[:errors].empty?
-        flash[:notice] = "Your data will be imported shortly.Refresh your page after few minutes."
-        redirect_to community_floorplans_path(:community_id=>@community.id)
+        flash[:notice] = "Good job! You have successfully imported this property's data."
+        redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',') 
         redirect_to community_import_page_path(current_community)
@@ -210,7 +210,7 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
       if @community.data_is_swaped and Thread.current[:errors].empty?
-        flash[:notice] = "Your data will be swapped shortly.Refresh your page after few minutes."
+        flash[:notice] = "Good job! You have successfully imported this property's data."
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
@@ -243,8 +243,8 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
       if current_community.data_is_imported and Thread.current[:errors].empty?
-        flash[:notice] = "Your data will be imported shortly.Refresh your page after few minutes."
-        redirect_to community_floorplans_path(:community_id=>@community.id)
+        flash[:notice] = "Good job! You have successfully imported this property's data."
+        redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
         redirect_to community_import_page_path(current_community)
