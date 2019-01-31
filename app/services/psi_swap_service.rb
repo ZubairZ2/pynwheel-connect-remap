@@ -308,8 +308,10 @@ class PsiSwapService < BaseService
               end
               unit.availability = 'Unoccupied'
               unit.available = true
+              unit.save
             else
               unit.availability = 'Occupied'
+              unit.save
             end
 
             if pricing.to_f > 0

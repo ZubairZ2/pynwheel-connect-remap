@@ -182,6 +182,7 @@ class PsiStaticService < BaseService
             unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
             pricing = u[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")
 
+
             if u[1]["@attributes"]["Availability"] == "Available"
               begin
                 date = u[1]["@attributes"]["AvailableOn"]
@@ -193,8 +194,10 @@ class PsiStaticService < BaseService
               end
               unit.availability = 'Unoccupied'
               unit.available = true
+              unit.save
             else
               unit.availability = 'Occupied'
+              unit.save
             end
             if pricing.to_f > 0
               unit.effective_rent = pricing.to_f
