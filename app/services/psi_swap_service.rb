@@ -311,6 +311,7 @@ class PsiSwapService < BaseService
               unit.save
             else
               unit.availability = 'Occupied'
+              unit.available_date = ""
               unit.save
             end
 
