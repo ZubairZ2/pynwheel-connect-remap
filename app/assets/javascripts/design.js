@@ -722,6 +722,9 @@ $(document).ready(function () {
     $('#map-marker-form').submit();
   });
 
+    $('.property-map-marker-field').change(function () {
+        $('#property-map-marker-form').submit();
+    });
   $('.floorplan-unit-popup-field').change(function () {
     $('#floorplan-unit-popup-form').submit();
   });
@@ -2811,6 +2814,10 @@ function showTabsAccordingToTheme(theme) {
     $('#map-marker-tab').parent().addClass('hidden');
     $('#floorplan-unit-popup-tab').parent().addClass('hidden');
     $('#gables-tab').parent().removeClass('hidden');
+    $('.property_map_color_field').removeClass('hidden');
+    $('.mordernist_property_map_color_field').addClass('hidden');
+    $('.amenity_map_marker_color').removeClass('hidden');
+    $('.modernist_amenity_map_marker_color').addClass('hidden');
   }
   else if (theme == 'modernist') {
       $('#font-tab').parent().removeClass('hidden');
@@ -2823,6 +2830,10 @@ function showTabsAccordingToTheme(theme) {
       $('#map-marker-tab').parent().addClass('hidden');
       $('#floorplan-unit-popup-tab').parent().addClass('hidden');
       $('#gables-tab').parent().addClass('hidden');
+      $('.property_map_color_field').addClass('hidden');
+      $('.mordernist_property_map_color_field').removeClass('hidden');
+      $('.amenity_map_marker_color').addClass('hidden');
+      $('.modernist_amenity_map_marker_color').removeClass('hidden');
   }
   else if (theme == 'expressionist')
   {
@@ -2836,6 +2847,11 @@ function showTabsAccordingToTheme(theme) {
       $('#map-marker-tab').parent().removeClass('hidden');
       $('#floorplan-unit-popup-tab').parent().removeClass('hidden');
       $('#gables-tab').parent().addClass('hidden');
+      $('.property_map_color_field').addClass('hidden');
+      $('.mordernist_property_map_color_field').addClass('hidden');
+      $('.amenity_map_marker_color').addClass('hidden');
+      $('.modernist_amenity_map_marker_color').addClass('hidden');
+
   }
   else
   {
@@ -2848,6 +2864,10 @@ function showTabsAccordingToTheme(theme) {
       $('#home-page-tab').parent().addClass('hidden');
       $('#map-marker-tab').parent().addClass('hidden');
       $('#floorplan-unit-popup-tab').parent().addClass('hidden');
+      $('.property_map_color_field').addClass('hidden');
+      $('.mordernist_property_map_color_field').addClass('hidden');
+      $('.amenity_map_marker_color').addClass('hidden');
+      $('.modernist_amenity_map_marker_color').addClass('hidden');
   }
     ///////////////////////// Database changes////////////////////////
 

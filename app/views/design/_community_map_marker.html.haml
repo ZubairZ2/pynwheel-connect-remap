@@ -1,0 +1,81 @@
+- content_for :title, "Map Marker - Pynwheel"
+
+
+
+= form_for @community,:method=>"PUT",:html=>{:id=>"property-map-marker-form"},:remote=>true  do |f|
+  = hidden_field_tag "map_marker_tab", true
+  = f.fields_for :design do |d|
+    .row
+      .col-md-12
+        %p.title-box Customize Community Map Marker
+    .row
+      .col-lg-12
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+          Community Map Marker Options
+    .row.hidden.property_map_color_field
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Property map marker color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :property_map_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.property_map_color
+    .row.hidden.mordernist_property_map_color_field
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Property map marker color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :modernist_map_marker_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.modernist_map_marker_color == 'no color' ? d.object.primary_color : d.object.modernist_map_marker_color
+
+
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Property map marker size
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
+            = d.select :property_map_size , options_for_select(map_marker_size_option,d.object.property_map_size.present? ? d.object.property_map_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
+
+
+    .row.hidden.amenity_map_marker_color
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Amenity map marker color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :amenity_map_marker_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.amenity_map_marker_color
+    .row.hidden.modernist_amenity_map_marker_color
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Amenity map marker color
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :modernists_amenity_map_marker_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.modernists_amenity_map_marker_color == 'no color' ? d.object.primary_color : d.object.modernists_amenity_map_marker_color
+
+
+
+
+    .row
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Amenity map marker size
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
+            = d.select :amenity_map_marker_size , options_for_select(map_marker_size_option,d.object.amenity_map_marker_size.present? ? d.object.amenity_map_marker_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
+
+
+

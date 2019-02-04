@@ -38,18 +38,19 @@ class ResmanSwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
+    rename_provider
   end
   def save_resman_units(units,property_id)
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MITS:MarketingName"]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"]).first
       if unit.present?
         unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-        # unit.marketing_name = u["Unit"]["MITS:MarketingName"]
+        # unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
@@ -84,7 +85,7 @@ class ResmanSwapService < BaseService
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-        unit.marketing_name = u["Unit"]["MITS:MarketingName"]
+        unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
@@ -116,13 +117,7 @@ class ResmanSwapService < BaseService
       end
     end
 
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      if d.provider == "resman_new"
-        d.provider = "resman"
-        d.save
-      end
-    end
+
   end
 
   def save_resman_floorplans(floorplans,property_id)
@@ -210,6 +205,18 @@ class ResmanSwapService < BaseService
       end
     end
 
+
+  end
+
+  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "resman_new"
+        d.provider = "resman"
+        d.save
+      end
+    end
+
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       if d.provider == "resman_new"
@@ -217,6 +224,6 @@ class ResmanSwapService < BaseService
         d.save
       end
     end
+    
   end
-
 end

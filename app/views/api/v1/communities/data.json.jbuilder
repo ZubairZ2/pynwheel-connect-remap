@@ -16,6 +16,23 @@ json.ui_settigs do
   end
   json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
 
+  if @community.theme_name.include?('gables')
+    json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
+  elsif @community.temporary_theme_name == 'modernist'
+    json.property_map_color @community.design.present? ? (@community.design.modernist_map_marker_color.present? ? (@community.design.modernist_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#d37474'
+  else
+    json.property_map_color '#d37474'
+  end
+  json.property_map_size @community.design.present? ? (@community.design.property_map_size.present? ? @community.design.property_map_size : '30px') : '30px'
+
+  if @community.theme_name.include?('gables')
+    json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#FF0000'
+  elsif @community.temporary_theme_name == 'modernist'
+    json.amenity_map_marker_color @community.design.present? ? (@community.design.modernists_amenity_map_marker_color.present? ? (@community.design.modernists_amenity_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernists_amenity_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
+  else
+    json.amenity_map_marker_color '#ff0000'
+  end
+  json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size.present? ? @community.design.amenity_map_marker_size : '30px') : '30px'
   #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
@@ -768,10 +785,10 @@ json.ui_settigs do
           json.spacing_between_buttons_for_homepage "0px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons_for_homepage "20px"
-        elsif @community.theme_name == "modernist1"
-          json.spacing_between_buttons_for_homepage "10px"
-        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
-          json.spacing_between_buttons_for_homepage (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons_for_homepage.present?) ? @community.design.expressionist.spacing_between_buttons_for_homepage : "0px"
+        elsif @community.theme_name == "modernist"
+          json.spacing_between_buttons_for_homepage "0px"
+        elsif @community.theme_name == "expressionist"
+          json.spacing_between_buttons_for_homepage (@community.design.expressionist.present? and @community.design.expressionist.spacing_between_buttons_for_homepage.present?) ? @community.design.expressionist.spacing_between_buttons_for_homepage : "10px"
         else
           json.spacing_between_buttons_for_homepage "0px"
         end

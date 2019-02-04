@@ -22,7 +22,7 @@
             %i.fa.fa-info
             %span Community Info
       - if (current_user.is_super_admin?)
-        %li{:class=>"#{controller_name =='design' && params[:action] != 'logo' && params[:action] != 'secondary_logo' ? 'active' : ''}"}
+        %li{:class=>"#{controller_name =='design' && params[:action] != 'logo' && params[:action] != 'secondary_logo' && params[:action] !='map_marker_design' ? 'active' : ''}"}
           = link_to community_design_index_path(current_community) do
             %i.fa.fa-tv
             %span Design
@@ -84,7 +84,7 @@
         %li{:class=>"#{controller_name =='additional_pages' || controller_name =='imagepages' ? 'active' : ''}"}
           %a{:href => "#{community_additional_pages_path(current_community)}"}
             %i.fa.fa-pagelines
-            %span Additional Pages    
+            %span Additional Pages
       - if (current_user.is_super_admin? || current_user.is_community_admin? )
         %li
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}

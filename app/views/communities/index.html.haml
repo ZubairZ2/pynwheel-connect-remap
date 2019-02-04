@@ -41,7 +41,7 @@
                           %td
                             = index+1
                           %td
-                            = link_to f.name, community_design_index_path(f)
+                            = link_to f.name, edit_company_community_path(current_company,f)
                           %td
                             = link_to edit_company_community_path(current_company,f),:class=>"text-success" do
                               %i.fa.fa-edit
@@ -57,7 +57,7 @@
                           %td
                             = index+1
                           %td
-                            = link_to f.name, community_design_index_path(f)
+                            = link_to f.name, edit_company_community_path(current_company,f)
                           %td
                             = link_to edit_company_community_path(current_company,f),:class=>"text-success" do
                               %i.fa.fa-edit

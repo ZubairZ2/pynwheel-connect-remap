@@ -43,7 +43,7 @@
 						.col-md-12
 							.mt-25.mb-40
 								%label Image
-								= f.file_field :image
+								= f.file_field :image,html: {id: "location_image" }
 				.modal-footer
 					= f.submit "Save", :class=>"btn btn-primary"
 					%button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Cancel
