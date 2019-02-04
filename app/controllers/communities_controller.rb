@@ -185,20 +185,18 @@ class CommunitiesController < ApplicationController
     end
   end
   def psi_pricing_test_connection
-    if @community.data_provider == "realpagesvc"
-
-    end
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
       if xml = @community.connect_to_pricing
         if @community.data_provider == "realpagesvc"
           unless xml.present?
-            render :json => "No Data"
+            render :json => "Wait until data loads"
           else
             render :json => xml
           end
+        else
+          render :json => xml
         end
-        render :json => xml
       else
         flash[:error] = "Please enter correct credentials in settings before importing data."
         redirect_to community_import_page_path(current_community)
