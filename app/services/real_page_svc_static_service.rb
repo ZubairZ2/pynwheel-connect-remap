@@ -260,6 +260,7 @@ class RealPageSvcStaticService < BaseService
           result = Ox.load(response.body, mode: :hash)
           if result[:"s:Envelope"][1][:"s:Body"][1].present?
 
+            byebug
             units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
 
 

@@ -315,9 +315,23 @@ class Community < ApplicationRecord
     end
   end
 
-  def connect_to_psi_pricing
+  def connect_to_pricing
+    case data_provider
+      when "psi"
+        connect_pricing_to_psi
+      when "realpagesvc"
+        connect_to_realpagesvc_pricing
+    end
+
+  end
+  def connect_pricing_to_psi
     psi_pricing_connection_service = PsiPricingConnectionService.new(credential.attributes)
     psi_pricing_connection_service.perform
+  end
+  def connect_to_realpagesvc_pricing
+    RealPageSvcPricingJob.perform_async credential.attributes.to_json
+    # real_page_svc_pricing_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
+    # real_page_svc_pricing_connection_service.perform
   end
   def connect_to_psi
     psi_connection_service = PsiConnectionService.new(credential.attributes)
@@ -339,10 +353,11 @@ class Community < ApplicationRecord
   end
 
   def connect_to_realpagesvc
-    # real_page_svc_connection_service = RealPageSvcConnectionService.new(credential.attributes)
-    # real_page_svc_connection_service.perform
-    real_page_svc_pricing_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
-    real_page_svc_pricing_connection_service.perform
+    real_page_svc_connection_service = RealPageSvcConnectionService.new(credential.attributes)
+    real_page_svc_connection_service.perform
+    # RealPageSvcPricingJob.perform_async credential.attributes.to_json
+    # real_page_svc_pricing_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
+    # real_page_svc_pricing_connection_service.perform
   end
 
   def connect_to_yardi

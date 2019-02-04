@@ -33,7 +33,7 @@
             %p
               This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
             = link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
-            -#= link_to "Get Entrata Pricing" , community_psi_pricing_test_connection_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "entrata_pricing_button"
+            = link_to "Test Pricing" , community_psi_pricing_test_connection_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "entrata_pricing_button"
         .row
           .col-md-6
             %h4.title Import Vendor Data
