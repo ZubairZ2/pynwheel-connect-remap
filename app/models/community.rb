@@ -315,12 +315,12 @@ class Community < ApplicationRecord
     end
   end
 
-  def connect_to_pricing
+  def connect_to_pricing(com)
     case data_provider
       when "psi"
         connect_pricing_to_psi
       when "realpagesvc"
-        connect_to_realpagesvc_pricing
+        connect_to_realpagesvc_pricing(com)
     end
 
   end
@@ -328,8 +328,11 @@ class Community < ApplicationRecord
     psi_pricing_connection_service = PsiPricingConnectionService.new(credential.attributes)
     psi_pricing_connection_service.perform
   end
-  def connect_to_realpagesvc_pricing
+  def connect_to_realpagesvc_pricing(com)
     RealPageSvcPricingJob.perform_async credential.attributes.to_json
+    # if com.realpage_pricing_data.present?
+    #   return com.realpage_pricing_data
+    # end
     # real_page_svc_pricing_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
     # real_page_svc_pricing_connection_service.perform
   end

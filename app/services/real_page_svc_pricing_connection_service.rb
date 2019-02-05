@@ -2,7 +2,11 @@ class RealPageSvcPricingConnectionService < BaseService
   def perform
     import_realpage_svc_units
     import_realpage_svc_price
-    current_community.realpage_pricing_data = @doc
+    com = Community.find(credentials.community_id)
+    com.realpage_pricing_data = @doc
+    com.realpage_pricing_data_uploaded = true
+    com.save
+    @doc
   end
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
@@ -47,7 +51,7 @@ class RealPageSvcPricingConnectionService < BaseService
           ')
         result = Ox.load(response.body, mode: :hash)
         @hash3 = response.body
-        @doc = nil
+        @doc = ""
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
           units.each do |u|
@@ -199,12 +203,36 @@ class RealPageSvcPricingConnectionService < BaseService
             # hash2 = response2.body
             # @hash3.merge(hash2)
 
-            if @doc.present?
-              @doc = @doc + "\n"
-              @doc = @doc + response.body
-            else
-              @doc = response.body
+            units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
+
+
+            #Refactor code
+            units.each do |u|
+              unit_no = u[:Address][:UnitID]
+              if hash[:units].include?(unit_no)
+                if u[:RentMatrix].present?
+                  best_price = nil
+                  u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
+                    if opt.key?(:Option)
+                      o  = opt[:Option][0]
+                      if o[:Best] == "true"
+                        best_price = o[:Rent]
+                        @doc = @doc + response.body
+                      end
+                    end
+                  end
+                  if best_price.present?
+                    unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
+                    unit.effective_rent = best_price
+                    puts " **** price updated *** "
+                  end
+                end
+              end
             end
+
+
+
+
           end
         end
       rescue => e

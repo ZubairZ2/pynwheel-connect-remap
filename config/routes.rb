@@ -33,6 +33,8 @@ Rails.application.routes.draw do
     get :change_expressionist_default
     get :test_connection
     get :psi_pricing_test_connection
+    get :realpage_load_pricing_data
+    get :show_realpage_pricing_data
     post :save_temporary_image
     delete :delete_temporary_image
     resources :floorplans do

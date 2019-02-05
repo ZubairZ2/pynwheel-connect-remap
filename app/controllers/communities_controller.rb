@@ -187,12 +187,12 @@ class CommunitiesController < ApplicationController
   def psi_pricing_test_connection
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
-      if xml = @community.connect_to_pricing
+      if xml = @community.connect_to_pricing(@community)
         if @community.data_provider == "realpagesvc"
           unless xml.present?
-            render :json => "Wait until data loads"
+            render :xml => "Wait until data loads"
           else
-            render :json => xml
+            render :xml => Nokogiri::XML(@community.realpage_pricing_data)
           end
         else
           render :json => xml
@@ -204,6 +204,23 @@ class CommunitiesController < ApplicationController
     else
       flash[:error] = "Please enter credentials in settings before importing data."
       redirect_to community_import_page_path(current_community)
+    end
+  end
+  def realpage_load_pricing_data
+    @community = Community.find params[:community_id]
+    @community.connect_to_pricing(@community)
+    @community.realpage_pricing_data_uploaded = false
+    @community.save
+    flash[:error] = "Loading Realpage data."
+    redirect_to community_settings_path(current_community)
+
+  end
+  def show_realpage_pricing_data
+    @community = Community.find params[:community_id]
+    if @community.realpage_pricing_data.present?
+      render :xml => Nokogiri::XML(@community.realpage_pricing_data)
+    else
+      render :json => Nokogiri::XML("<data>No Data</data>")
     end
   end
 
