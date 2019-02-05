@@ -1,12 +1,86 @@
 class RealPageSvcPricingConnectionService < BaseService
   def perform
+    @doc = ""
     import_realpage_svc_units
     import_realpage_svc_price
+    @doc = @doc + "</UnitObjects>"
     com = Community.find(credentials.community_id)
+
     com.realpage_pricing_data = @doc
     com.realpage_pricing_data_uploaded = true
     com.save
     @doc
+  end
+  def import_realpage_svc_floorplans
+    site_ids = credentials.site_id.split(',') rescue []
+    site_ids.each do |site_id|
+      begin
+        url = REALPAGE_URL
+        soap_action = REALPAGE_FLOORPLAN_ACTION
+        pmc_id = credentials.pmc_id
+        #site_id = credentials.site_id
+        username = REALPAGESVC_USERNAME
+        password = REALPAGESVC_PASSWORD
+        license_key = REALPAGESVC_LICENSE_KEY
+        community_id = credentials.community_id
+        response = HTTParty.post(
+            url,
+            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+            :body => '<soapenv:Envelope
+                    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                    xmlns:tem="http://tempuri.org/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                    <soapenv:Header/>
+                    <soapenv:Body>
+
+                      <tem:getfloorplanlist>
+                        <tem:auth>
+                          <tem:pmcid>'+pmc_id+'</tem:pmcid>
+                          <tem:siteid>'+site_id+'</tem:siteid>
+                          <tem:username>'+username+'</tem:username>
+                          <tem:password>'+password+'</tem:password>
+                          <tem:licensekey>'+license_key+'</tem:licensekey>
+                          <tem:system>OneSite</tem:system>
+                        </tem:auth>
+                      </tem:getfloorplanlist>
+
+                    </soapenv:Body>
+                  </soapenv:Envelope>')
+
+        #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
+        result = Ox.load(response.body, mode: :hash)
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplanlistResponse][1][:getfloorplanlistResult][:GetFloorPlanList]
+          floorplans.each do |fp|
+            if fp.key?(:FloorPlanObject)
+              fp = fp[:FloorPlanObject]
+              floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
+
+              if fp[:FloorPlanNameMarketing].present?
+                floorplan.name = fp[:FloorPlanNameMarketing]
+              elsif fp[:FloorPlanCode].present?
+                if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                else
+                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                end
+              else
+                floorplan.name = fp[:FloorPlanName]
+              end
+              floorplan.bathrooms = fp[:Bathrooms]
+              floorplan.bedrooms = fp[:Bedrooms]
+              # floorplan.market_rent = fp[:RentMin]
+              floorplan.square_feet = fp[:GrossSquareFootage]
+              # floorplan.save(:validate => false)
+
+            end
+          end
+        end
+      rescue => e
+        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      end
+    end
   end
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
@@ -50,8 +124,6 @@ class RealPageSvcPricingConnectionService < BaseService
                       </soapenv:Envelope>
           ')
         result = Ox.load(response.body, mode: :hash)
-        @hash3 = response.body
-        @doc = ""
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
           units.each do |u|
@@ -138,7 +210,7 @@ class RealPageSvcPricingConnectionService < BaseService
   end
 
   def import_realpage_svc_price
-    @hash3 = nil
+    flag = true
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
@@ -211,19 +283,26 @@ class RealPageSvcPricingConnectionService < BaseService
               unit_no = u[:Address][:UnitID]
               if hash[:units].include?(unit_no)
                 if u[:RentMatrix].present?
+
                   best_price = nil
                   u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
                     if opt.key?(:Option)
                       o  = opt[:Option][0]
                       if o[:Best] == "true"
                         best_price = o[:Rent]
-                        @doc = @doc + response.body
+
                       end
                     end
                   end
                   if best_price.present?
                     unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
                     unit.effective_rent = best_price
+
+                    if flag
+                      @doc = "<UnitObjects>"
+                      flag = false
+                    end
+                    @doc = @doc + "<UnitObject><PropertyNumberID>"+u[:PropertyNumberID]+"</PropertyNumberID><BaseRentAmount>"+best_price+"</BaseRentAmount><FloorPlanMarketRent>"+u[:FloorPlanMarketRent]+"</FloorPlanMarketRent><UnitMarketRent>"+u[:UnitMarketRent]+"</UnitMarketRent><NonRevenueFlag>"+u[:NonRevenueFlag]+"</NonRevenueFlag><NonRefundFee>"+u[:NonRefundFee]+"</NonRefundFee><DepositAmount>"+u[:DepositAmount]+"</DepositAmount><Address><Address1>"+u[:Address][:Address1]+"</Address1><BuildingID>"+u[:Address][:BuildingID]+"</BuildingID><CityName>"+u[:Address][:CityName]+"</CityName><CountryName>"+u[:Address][:CountryName]+"</CountryName><CountyName>"+u[:Address][:CountyName]+"</CountyName><State>"+u[:Address][:State]+"</State><UnitID>"+u[:Address][:UnitID]+"</UnitID><UnitNumber>"+u[:Address][:UnitNumber]+"</UnitNumber><Zip>"+u[:Address][:Zip]+"</Zip></Address><Availability><MadeReadyBit>"+u[:Availability][:MadeReadyBit]+"</MadeReadyBit><MadeReadyDate>"+u[:Availability][:MadeReadyDate]+"</MadeReadyDate><AvailableDate>"+u[:Availability][:AvailableDate]+"</AvailableDate><AvailableBit>"+u[:Availability][:AvailableBit]+"</AvailableBit><VacantDate>"+u[:Availability][:VacantDate]+"</VacantDate><VacantBit>"+u[:Availability][:VacantBit]+"</VacantBit></Availability><FloorPlan><FloorPlanID>"+u[:FloorPlan][:FloorPlanID]+"</FloorPlanID><FloorPlanCode>"+u[:FloorPlan][:FloorPlanCode]+"</FloorPlanCode><FloorPlanName>"+u[:FloorPlan][:FloorPlanName]+"</FloorPlanName><FloorPlanGroupName>"+u[:FloorPlan][:FloorPlanGroupName]+"</FloorPlanGroupName></FloorPlan><UnitDetails><Bedrooms>"+u[:UnitDetails][:Bedrooms]+"</Bedrooms><Bathrooms>"+u[:UnitDetails][:Bathrooms]+"</Bathrooms><GrossSqFtCount>"+u[:UnitDetails][:GrossSqFtCount]+"</GrossSqFtCount><RentSqFtCount>"+u[:UnitDetails][:RentSqFtCount]+"</RentSqFtCount><FloorNumber>"+u[:UnitDetails][:FloorNumber]+"</FloorNumber></UnitDetails></UnitObject>"
                     puts " **** price updated *** "
                   end
                 end

@@ -211,14 +211,23 @@ class CommunitiesController < ApplicationController
     @community.connect_to_pricing(@community)
     @community.realpage_pricing_data_uploaded = false
     @community.save
-    flash[:error] = "Loading Realpage data."
+    flash[:notice] = "Data is loading. Please refresh after time."
     redirect_to community_settings_path(current_community)
 
   end
   def show_realpage_pricing_data
     @community = Community.find params[:community_id]
     if @community.realpage_pricing_data.present?
-      render :xml => Nokogiri::XML(@community.realpage_pricing_data)
+      # doc =  Nokogiri::XML(@community.realpage_pricing_data)
+      # byebug
+      # doc.xpath('s:Envelope').each do
+      #
+      # |char_element|
+      #
+      #   puts char_element.text
+      #
+      # end
+      render :xml => @community.realpage_pricing_data
     else
       render :json => Nokogiri::XML("<data>No Data</data>")
     end
