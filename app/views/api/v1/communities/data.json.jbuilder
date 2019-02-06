@@ -23,7 +23,7 @@ json.ui_settigs do
   else
     json.property_map_color '#d37474'
   end
-  json.property_map_size @community.design.present? ? (@community.design.property_map_size.present? ? @community.design.property_map_size : '30px') : '30px'
+  json.property_map_size @community.design.present? ? (@community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer.to_s + "px" : '30px') : '30px'
 
   if @community.theme_name.include?('gables')
     json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#FF0000'
@@ -32,7 +32,7 @@ json.ui_settigs do
   else
     json.amenity_map_marker_color '#ff0000'
   end
-  json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size.present? ? @community.design.amenity_map_marker_size : '30px') : '30px'
+  json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer.to_s + "px" : '30px') : '30px'
   #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
