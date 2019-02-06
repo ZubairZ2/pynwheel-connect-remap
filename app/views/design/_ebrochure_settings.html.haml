@@ -1,0 +1,75 @@
+- content_for :title, "Map Marker - Pynwheel"
+
+
+
+= form_for @community,:method=>"PUT",:html=>{:id=>"ebrochure-settings-form"},:remote=>true  do |f|
+  = hidden_field_tag "ebrochure_settings_tab", true
+  = f.fields_for :design do |d|
+    .row
+      .col-md-12
+        %p.title-box Customize Ebrochure Settings
+    .row
+      .col-lg-12
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+          Ebrochure Options
+
+    .form-group
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+        Display ebrochure header color
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        .TriSea-technologies-Switch
+          %span.pr-15 No
+          = d.check_box :display_ebrochure_header_background_color, {class: "ebrochure-setting-field"}
+          %label.label-primary{:for => "community_design_attributes_display_ebrochure_header_background_color"}
+          %span.pl-15 Yes
+
+    .row.hidden#futurist_ebrochure_header_background_color
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Ebrochure header color futurist
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :futurist_ebrochure_header_background_color , class: "form-control ebrochure-setting-field",autocomplete: true,:value=>d.object.futurist_ebrochure_header_background_color.present? ? d.object.futurist_ebrochure_header_background_color : "#808080"
+    .row.hidden#modernist_ebrochure_header_background_color
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Ebrochure header color modernist
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :modernist_ebrochure_header_background_color , class: "form-control ebrochure-setting-field",autocomplete: true,:value=>d.object.modernist_ebrochure_header_background_color == "No color" ? (d.object.primary_color.present? ? d.object.primary_color : "#CF492E" ) : d.object.modernist_ebrochure_header_background_color
+    .row.hidden#gables_ebrochure_header_background_color
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Ebrochure header color gales
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :gables_ebrochure_header_background_color , class: "form-control ebrochure-setting-field",autocomplete: true,:value=>d.object.gables_ebrochure_header_background_color.present? ? d.object.gables_ebrochure_header_background_color : "#808080"
+    .row.hidden#panther_ebrochure_header_background_color
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Ebrochure header color panther
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :panther_ebrochure_header_background_color , class: "form-control ebrochure-setting-field",autocomplete: true,:value=>d.object.panther_ebrochure_header_background_color.present? ? d.object.panther_ebrochure_header_background_color : "#808080"
+    .row.hidden#expressionist_ebrochure_header_background_color
+      .col-lg-10
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Ebrochure header color experiosn
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            .input-group.colorpicker-style.hex-format-colorpicker
+              .input-group-addon
+                %i
+                = d.text_field :expressionist_ebrochure_header_background_color , class: "form-control ebrochure-setting-field",autocomplete: true,:value=>d.object.expressionist_ebrochure_header_background_color == "No color" ? "#808080" : d.object.expressionist_ebrochure_header_background_color

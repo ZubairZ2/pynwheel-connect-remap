@@ -333,7 +333,7 @@
                             %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                                 %tr
-                                  %td.textContent{:align => "center", :style => "padding: 8px 20px; background-color:#FFFFFF;", :valign => "top"}
+                                  %td.textContent{:align => "center", :style => "padding: 8px 20px; background-color: #{@community.design.theme_name == "futurist" ? @community.design.futurist_ebrochure_header_background_color : (@community.design.theme_name == "panther" ? @community.design.panther_ebrochure_header_background_color : (@community.design.theme_name.include? "gables" ? @community.design.gables_ebrochure_header_background_color : (@community.design.theme_name == "modernist" ? (@community.design.modernist_ebrochure_header_background_color == "No color" ? (d.object.primary_color.present? ? d.object.primary_color : "#CF492E" ) : @community.design.modernist_ebrochure_header_background_color ) : (@community.design.theme_name == "expressionist" ? (@community.design.expressionist_ebrochure_header_background_color == "No color" ? "#808080" : @community.design.expressionist_ebrochure_header_background_color) : "#808080")) ))};", :valign => "top"}
                                     %h1{:style => "margin-bottom:0px;text-align:center;"}
                                       %div{:style => "width: 350px;display: inline-block;overflow: hidden;"}
                                         %img{:src => "#{@community.logo.url}", width: '350', :style => "max-width: 100%;height:auto;object-fit: contain;"}/
