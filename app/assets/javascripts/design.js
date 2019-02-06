@@ -728,6 +728,9 @@ $(document).ready(function () {
     $('.ebrochure-setting-field').change(function () {
         $('#ebrochure-settings-form').submit();
     });
+    $('.ebrochure-setting-field-mordernist').change(function () {
+        $('#ebrochure-settings-form-for-mordernist').submit();
+    });
   $('.floorplan-unit-popup-field').change(function () {
     $('#floorplan-unit-popup-form').submit();
   });
