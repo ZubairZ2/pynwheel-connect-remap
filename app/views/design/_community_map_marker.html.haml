@@ -41,7 +41,7 @@
             Property map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
-            = d.number_field :property_map_size_integer,{class: "form-control property-map-marker-field ",:id => "input_count_field",:max => 35,:min => 25,:step => 1}
+            = d.number_field :property_map_size_integer,{class: "form-control property-map-marker-field ",:id => "property_map_size_integer_field",:max => 35,:min => 25,:step => 1}
 
 
     .row.hidden.amenity_map_marker_color
@@ -75,24 +75,32 @@
             Amenity map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
-            = d.number_field :amenity_map_marker_size_integer ,{class: "form-control property-map-marker-field ",:id => "input_count_field",:max => 35,:min => 25,:step => 1}
+            = d.number_field :amenity_map_marker_size_integer ,{class: "form-control property-map-marker-field ",:id => "amenity_map_marker_size_integer_field",:max => 35,:min => 25,:step => 1}
             -#= d.select :amenity_map_marker_size , options_for_select(map_marker_size_option,d.object.amenity_map_marker_size.present? ? d.object.amenity_map_marker_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
 
 
 
 :javascript
 
-  if (#{current_community.design.amenity_map_marker_size} > 35)
+
+  $('#property_map_size_integer_field').on('change', function() {
+  if ($('#property_map_size_integer_field').val() > 35)
   {
-  $('#input_count_field').val("35")
+  $('#property_map_size_integer_field').val("35")
   }
-  $('#input_count_field').on('change', function() {
-  if ($('#input_count_field').val() > 35)
+  else if ($('#property_map_size_integer_field').val() < 25)
   {
-  $('#input_count_field').val("35")
+  $('#property_map_size_integer_field').val("25")
   }
-  else if ($('#input_count_field').val() < 25)
+  });
+
+  $('#amenity_map_marker_size_integer_field').on('change', function() {
+  if ($('#amenity_map_marker_size_integer_field').val() > 35)
   {
-  $('#input_count_field').val("25")
+  $('#amenity_map_marker_size_integer_field').val("35")
+  }
+  else if ($('#amenity_map_marker_size_integer_field').val() < 25)
+  {
+  $('#amenity_map_marker_size_integer_field').val("25")
   }
   });
