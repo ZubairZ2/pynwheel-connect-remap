@@ -41,7 +41,7 @@
             Property map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
-            = d.number_field :property_map_size_integer,{class: "form-control property-map-marker-field ",:id => "property_map_size_integer_field",:max => 35,:min => 25,:step => 1}
+            = d.number_field :property_map_size_integer,{class: "form-control property-map-marker-field ",:id => "property_map_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;"}
 
 
     .row.hidden.amenity_map_marker_color
@@ -75,7 +75,7 @@
             Amenity map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
-            = d.number_field :amenity_map_marker_size_integer ,{class: "form-control property-map-marker-field ",:id => "amenity_map_marker_size_integer_field",:max => 35,:min => 25,:step => 1}
+            = d.number_field :amenity_map_marker_size_integer ,{class: "form-control property-map-marker-field ",:id => "amenity_map_marker_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;"}
             -#= d.select :amenity_map_marker_size , options_for_select(map_marker_size_option,d.object.amenity_map_marker_size.present? ? d.object.amenity_map_marker_size : '30px'),{},{class: "form-control selectpicker property-map-marker-field"}
 
 
