@@ -47,6 +47,7 @@ class PsiSwapService < BaseService
       end
     end
     fill_psi_pricing_details
+    rename_provider
   end
 
   def save_psi_units(units,property_id)
@@ -149,12 +150,7 @@ class PsiSwapService < BaseService
         d.destroy
       end
     end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      if d.provider == "psi_new"
-        d.provider = "psi"
-      end
-    end
+
   end
 
   def save_psi_floorplans(floorplans,property_id)
@@ -261,13 +257,7 @@ class PsiSwapService < BaseService
         d.destroy
       end
     end
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      if d.provider == "psi_new"
-        d.provider = "psi"
 
-      end
-    end
   end
 
   def fill_psi_pricing_details
@@ -306,6 +296,21 @@ class PsiSwapService < BaseService
           psi_units.each do |u|
             unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
             pricing = u[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")
+
+            if u[1]["@attributes"]["Availability"] == "Available"
+              begin
+                date = u[1]["@attributes"]["AvailableOn"]
+                dateSplit = date.split('/')
+                day = dateSplit[0]
+                month = dateSplit[1]
+                year = dateSplit[2]
+                unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+              end
+              unit.availability = true
+            else
+              unit.availability = false
+            end
+
             if pricing.to_f > 0
               unit.effective_rent = pricing.to_f
               unit.save(validate: false)
@@ -341,6 +346,22 @@ class PsiSwapService < BaseService
     community = Community.find credentials.community_id
     community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
   end
+  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "psi_new"
+        d.provider = "psi"
+        d.save
+      end
+    end
 
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      if d.provider == "psi_new"
+        d.provider = "psi"
+        d.save
+      end
+    end
+  end
 
 end
