@@ -27,7 +27,7 @@ class Amenity < ApplicationRecord
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]
-  validate :image_size
+  # validate :image_size
   def image_size
     if image.size > 1.megabytes
       errors[:base] << "File can not be greater than 5MB"
