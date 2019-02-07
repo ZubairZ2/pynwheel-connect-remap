@@ -82,6 +82,18 @@
 
 :javascript
 
+  $('#property_map_size_integer_field').keypress(
+    function(event){
+      if (event.which == '69' || event.which == '101' || event.which == '46') {
+        event.preventDefault();
+      }
+  });
+  $('#amenity_map_marker_size_integer_field').keypress(
+    function(event){
+      if (event.which == '69' || event.which == '101' || event.which == '46') {
+        event.preventDefault();
+      }
+  });
 
   $('#property_map_size_integer_field').on('change', function() {
   if ($('#property_map_size_integer_field').val() > 35)
