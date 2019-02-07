@@ -10,9 +10,4 @@ $("#new_location").validationEngine({binded: false});
       }
       else{$('#image-upload-warning').modal('show');
           $(input).val('');}
-    if (input.files[0].size > 10000000)
-    {
-      $('#image-size-warning').modal('show');
-      $(input).val('');
-    }
 });

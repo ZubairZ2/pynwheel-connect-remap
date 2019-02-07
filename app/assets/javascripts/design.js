@@ -9,12 +9,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
-          if (files[0].size < 10000000){
-            readDesignPageLogoSrc(files[0]);}
-            else
-          {
-              $('#image-size-warning').modal('show');
-          }
+            readDesignPageLogoSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -28,12 +23,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-            if (files[0].size < 10000000){
-                readDesignPageSecondaryLogoSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+            readDesignPageSecondaryLogoSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -48,12 +38,8 @@ $(document).ready(function () {
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
 
-            if (files[0].size < 10000000){
-                readSecondaryPageBackgroundImageSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+                readSecondaryPageBackgroundImageSrc(files[0]);
+
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -68,12 +54,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-            if (files[0].size < 10000000){
-                readGlobalNavButtonOnSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+                readGlobalNavButtonOnSrc(files[0]);
+
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -87,13 +69,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readApartmentNavButtonOnSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readApartmentNavButtonOnSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -107,13 +84,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readGalleryNavButtonOnSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readGalleryNavButtonOnSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -127,13 +99,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                readNeighborhoodNavButtonOnSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             readNeighborhoodNavButtonOnSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -147,13 +113,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                readImagepageNavButtonOnSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             readImagepageNavButtonOnSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -166,13 +126,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                readWebpageNavButtonOnSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             readWebpageNavButtonOnSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -187,13 +141,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                readFavouriteNavButtonOnSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             readFavouriteNavButtonOnSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -206,13 +154,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                readApertmentButtonOffImageSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             readApertmentButtonOffImageSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -225,13 +167,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                readGalleryButtonOffImageSrc(files[0]);}
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             readGalleryButtonOffImageSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -244,14 +180,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readNeighborhoodButtonOffImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readNeighborhoodButtonOffImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -264,14 +194,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readImagepageButtonOffImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readImagepageButtonOffImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -284,14 +208,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readWebpageButtonOffImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readWebpageButtonOffImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -304,14 +222,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readfavouriteButtonOffImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readfavouriteButtonOffImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -324,14 +236,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readGlobalNavButtonOffSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readGlobalNavButtonOffSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -345,14 +251,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readApplicationBackgroundImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readApplicationBackgroundImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -368,14 +268,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readApartmentNavigationBgImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readApartmentNavigationBgImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -390,14 +284,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                readGalleryNavigationBgImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             readGalleryNavigationBgImageSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -412,14 +299,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                readFavouritiesNavigationBgImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             readFavouritiesNavigationBgImageSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -434,14 +314,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             readAdditionalPagesNavigationBgImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                readAdditionalPagesNavigationBgImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -456,14 +330,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             filterButtonSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                filterButtonSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -478,14 +346,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                galleryButtonSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             galleryButtonSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -500,14 +361,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                filterPanelBackgroundImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             filterPanelBackgroundImageSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -522,14 +376,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             homePageButtonImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                homePageButtonImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -544,14 +392,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             homePageBackgroundImageSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                homePageBackgroundImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -566,14 +408,8 @@ $(document).ready(function () {
           e.preventDefault();
           files = e.dataTransfer.files;
           if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+               gableHomePageNavBackgroundImageSrc(files[0]);
 
-              if (files[0].size < 10000000){
-                  gableHomePageNavBackgroundImageSrc(files[0]);
-              }
-              else
-              {
-                  $('#image-size-warning').modal('show');
-              }
           } else {
             console.log('file type is not allowed');
             $('#image-upload-warning').modal('show');
@@ -587,14 +423,8 @@ $(document).ready(function () {
               e.preventDefault();
               files = e.dataTransfer.files;
               if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+                   gableGlobalNavBackgroundImageSrc(files[0]);
 
-                  if (files[0].size < 10000000){
-                      gableGlobalNavBackgroundImageSrc(files[0]);
-                  }
-                  else
-                  {
-                      $('#image-size-warning').modal('show');
-                  }
               } else {
                   console.log('file type is not allowed');
                   $('#image-upload-warning').modal('show');
@@ -608,14 +438,8 @@ $(document).ready(function () {
               e.preventDefault();
               files = e.dataTransfer.files;
               if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+                   gableFilterPanelBackgroundImageSrc(files[0]);
 
-                  if (files[0].size < 10000000){
-                      gableFilterPanelBackgroundImageSrc(files[0]);
-                  }
-                  else
-                  {
-                      $('#image-size-warning').modal('show');
-                  }
               } else {
                   console.log('file type is not allowed');
                   $('#image-upload-warning').modal('show');
@@ -630,14 +454,7 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
-
-            if (files[0].size < 10000000){
-                globalNavBackgroundImageSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
+             globalNavBackgroundImageSrc(files[0]);
         } else {
           console.log('file type is not allowed');
           $('#image-upload-warning').modal('show');
@@ -652,14 +469,8 @@ $(document).ready(function () {
         e.preventDefault();
         files = e.dataTransfer.files;
         if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+             galleryImageOnSrc(files[0]);
 
-            if (files[0].size < 10000000){
-                galleryImageOnSrc(files[0]);
-            }
-            else
-            {
-                $('#image-size-warning').modal('show');
-            }
         } else {
           $('#image-upload-warning').modal('show');
         }
@@ -962,7 +773,6 @@ function readURLOnDesignPage(input, preview_element, button_name, screen_id, mai
 
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000){
         var reader = new FileReader();
 
       reader.onload = function (e) {
@@ -978,12 +788,8 @@ function readURLOnDesignPage(input, preview_element, button_name, screen_id, mai
 
       }
 
-      reader.readAsDataURL(input.files[0]);}
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+      reader.readAsDataURL(input.files[0]);
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -1912,7 +1718,6 @@ function designPageHomeScreenbutton(src, button, screen_id) {
 function readDesignPageLogoSrcFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000){
         var reader = new FileReader();
 
       reader.onload = function (e) {
@@ -1921,12 +1726,8 @@ function readDesignPageLogoSrcFromInput(input) {
         designPageLogo(e.target.result);
       }
 
-      reader.readAsDataURL(input.files[0]);}
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+      reader.readAsDataURL(input.files[0]);
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -1938,7 +1739,6 @@ function readDesignPageLogoSrcFromInput(input) {
 function readDesignPageSecondaryLogoSrcFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -1948,12 +1748,7 @@ function readDesignPageSecondaryLogoSrcFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -1965,7 +1760,6 @@ function readDesignPageSecondaryLogoSrcFromInput(input) {
 function readSecondaryBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
         var reader = new FileReader();
 
       reader.onload = function (e) {
@@ -1974,12 +1768,7 @@ function readSecondaryBackgroundImageFromInput(input) {
         secondaryPageBackgroundImage(e.target.result);
       }
 
-      reader.readAsDataURL(input.files[0]);}
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+      reader.readAsDataURL(input.files[0]);
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -1992,7 +1781,6 @@ function readSecondaryBackgroundImageFromInput(input) {
 function readGlobalNavButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
         var reader = new FileReader();
 
       reader.onload = function (e) {
@@ -2001,12 +1789,7 @@ function readGlobalNavButtonOnFromInput(input) {
         globalNavButtonOnImage(e.target.result);
       }
 
-      reader.readAsDataURL(input.files[0]);}
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+      reader.readAsDataURL(input.files[0]);
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2018,7 +1801,6 @@ function readGlobalNavButtonOnFromInput(input) {
 function readApartmentButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2028,12 +1810,7 @@ function readApartmentButtonOnFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2045,7 +1822,6 @@ function readApartmentButtonOnFromInput(input) {
 function readGalleryButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2055,12 +1831,7 @@ function readGalleryButtonOnFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2072,7 +1843,6 @@ function readGalleryButtonOnFromInput(input) {
 function readNeighborhoodButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2082,12 +1852,7 @@ function readNeighborhoodButtonOnFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2098,7 +1863,6 @@ function readNeighborhoodButtonOnFromInput(input) {
 function readImagepageButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2108,12 +1872,7 @@ function readImagepageButtonOnFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2124,7 +1883,6 @@ function readImagepageButtonOnFromInput(input) {
 function readWebpageButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2134,12 +1892,7 @@ function readWebpageButtonOnFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2150,7 +1903,6 @@ function readWebpageButtonOnFromInput(input) {
 function readFavouriteButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2160,12 +1912,7 @@ function readFavouriteButtonOnFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2176,7 +1923,6 @@ function readFavouriteButtonOnFromInput(input) {
 function readApartmentButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2186,12 +1932,7 @@ function readApartmentButtonOffFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2202,7 +1943,6 @@ function readApartmentButtonOffFromInput(input) {
 function readGalleryButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2212,12 +1952,7 @@ function readGalleryButtonOffFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2228,7 +1963,6 @@ function readGalleryButtonOffFromInput(input) {
 function readNeighborhoodButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2238,12 +1972,7 @@ function readNeighborhoodButtonOffFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2254,7 +1983,6 @@ function readNeighborhoodButtonOffFromInput(input) {
 function readImagepageButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2264,12 +1992,7 @@ function readImagepageButtonOffFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2280,7 +2003,6 @@ function readImagepageButtonOffFromInput(input) {
 function readWebpageButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2290,12 +2012,7 @@ function readWebpageButtonOffFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2306,7 +2023,6 @@ function readWebpageButtonOffFromInput(input) {
 function readFavouriteButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2316,12 +2032,7 @@ function readFavouriteButtonOffFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2332,7 +2043,6 @@ function readFavouriteButtonOffFromInput(input) {
 function readGlobalNavButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2342,12 +2052,7 @@ function readGlobalNavButtonOffFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2359,7 +2064,6 @@ function readGlobalNavButtonOffFromInput(input) {
 function readApplicationBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2369,12 +2073,7 @@ function readApplicationBackgroundImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2386,7 +2085,6 @@ function readApplicationBackgroundImageFromInput(input) {
 function readApartmentNavBgImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2396,12 +2094,7 @@ function readApartmentNavBgImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2413,7 +2106,6 @@ function readApartmentNavBgImageFromInput(input) {
 function readGalleryNavBgImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2423,12 +2115,7 @@ function readGalleryNavBgImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2440,7 +2127,6 @@ function readGalleryNavBgImageFromInput(input) {
 function readFavouritiesNavBgImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2450,12 +2136,7 @@ function readFavouritiesNavBgImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2467,7 +2148,6 @@ function readFavouritiesNavBgImageFromInput(input) {
 function readAdditionalPagesNavBgImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2477,12 +2157,7 @@ function readAdditionalPagesNavBgImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2495,7 +2170,6 @@ function readAdditionalPagesNavBgImageFromInput(input) {
 function readFilterButtonFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2505,12 +2179,7 @@ function readFilterButtonFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2523,7 +2192,6 @@ function readFilterButtonFromInput(input) {
 function readGalleryButtonFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2533,12 +2201,7 @@ function readGalleryButtonFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2551,7 +2214,6 @@ function readGalleryButtonFromInput(input) {
 function readFilterPanelBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2561,12 +2223,7 @@ function readFilterPanelBackgroundImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2578,7 +2235,6 @@ function readFilterPanelBackgroundImageFromInput(input) {
 function readHomePageButtonImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2588,12 +2244,7 @@ function readHomePageButtonImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2604,7 +2255,6 @@ function readHomePageButtonImageFromInput(input) {
 function readHomePageBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2614,12 +2264,7 @@ function readHomePageBackgroundImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2631,7 +2276,6 @@ function readHomePageBackgroundImageFromInput(input) {
 function readGlobalHomePageNavBackgroundImageFromInput(input) {
     if (input.files && input.files[0]) {
         if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-            if (input.files[0].size < 10000000) {
                 var reader = new FileReader();
 
                 reader.onload = function (e) {
@@ -2641,12 +2285,7 @@ function readGlobalHomePageNavBackgroundImageFromInput(input) {
                 }
 
                 reader.readAsDataURL(input.files[0]);
-            }
-            else {
-                $(input).val('');
-                $('#image-size-warning').modal('show');
-                //console.log($(input).val());
-            }
+
         } else {
             $(input).val('');
             $('#image-upload-warning').modal('show');
@@ -2658,7 +2297,6 @@ function readGlobalHomePageNavBackgroundImageFromInput(input) {
 function readGableGlobalNavBackgroundImageFromInput(input) {
     if (input.files && input.files[0]) {
         if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-            if (input.files[0].size < 10000000) {
                 var reader = new FileReader();
 
                 reader.onload = function (e) {
@@ -2668,12 +2306,7 @@ function readGableGlobalNavBackgroundImageFromInput(input) {
                 }
 
                 reader.readAsDataURL(input.files[0]);
-            }
-            else {
-                $(input).val('');
-                $('#image-size-warning').modal('show');
-                //console.log($(input).val());
-            }
+
         } else {
             $(input).val('');
             $('#image-upload-warning').modal('show');
@@ -2685,7 +2318,6 @@ function readGableGlobalNavBackgroundImageFromInput(input) {
 function readGableFilterPanelBackgroundImageFromInput(input) {
     if (input.files && input.files[0]) {
         if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-            if (input.files[0].size < 10000000) {
                 var reader = new FileReader();
 
                 reader.onload = function (e) {
@@ -2695,12 +2327,7 @@ function readGableFilterPanelBackgroundImageFromInput(input) {
                 }
 
                 reader.readAsDataURL(input.files[0]);
-            }
-            else {
-                $(input).val('');
-                $('#image-size-warning').modal('show');
-                //console.log($(input).val());
-            }
+
         } else {
             $(input).val('');
             $('#image-upload-warning').modal('show');
@@ -2711,7 +2338,6 @@ function readGableFilterPanelBackgroundImageFromInput(input) {
 function readGlobalNavBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2721,12 +2347,7 @@ function readGlobalNavBackgroundImageFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');
@@ -2737,7 +2358,6 @@ function readGlobalNavBackgroundImageFromInput(input) {
 function readGalleryImageOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        if (input.files[0].size < 10000000) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2747,12 +2367,7 @@ function readGalleryImageOnFromInput(input) {
             }
 
             reader.readAsDataURL(input.files[0]);
-        }
-        else {
-            $(input).val('');
-            $('#image-size-warning').modal('show');
-            //console.log($(input).val());
-        }
+
     } else {
       $(input).val('');
       $('#image-upload-warning').modal('show');

@@ -54,19 +54,10 @@ $(document).ready(function(){
       var files = $(this).prop("files")
       for (var i = 0; i < files.length; i++) {
           if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-
-              if (files[i].size < 10000000){
-                  readAmenityImageSrc(files[i],'community');}
-              else
-              {
-                  $('#image-size-warning').modal('show');
-              }
+               readAmenityImageSrc(files[i],'community');
         } 
       }
       if(files.length == 1){
-          if (files[i].size < 10000000){
-              $('#image-size-warning').modal('show');
-          }
         if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
           $('#image-upload-warning').modal('show');
         } 
@@ -78,19 +69,11 @@ $(document).ready(function(){
       var files = $(this).prop("files")
       for (var i = 0; i < files.length; i++) {
           if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+               readAmenityImageSrc(files[i],'floorplan');
 
-              if (files[i].size < 10000000){
-                  readAmenityImageSrc(files[i],'floorplan');}
-              else
-              {
-                  $('#image-size-warning').modal('show');
-              }
         } 
       }
       if(files.length == 1){
-          if (files[i].size < 10000000){
-              $('#image-size-warning').modal('show');
-          }
         if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
           $('#image-upload-warning').modal('show');
         } 
@@ -102,19 +85,10 @@ $(document).ready(function(){
       var files = $(this).prop("files")
       for (var i = 0; i < files.length; i++) {
           if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-
-              if (files[i].size < 10000000){
-                  readAmenityImageSrc(files[i],'sitemap');}
-              else
-              {
-                  $('#image-size-warning').modal('show');
-              }
+               readAmenityImageSrc(files[i],'sitemap');
         } 
       }
       if(files.length == 1){
-          if (files[i].size < 10000000){
-              $('#image-size-warning').modal('show');
-          }
         if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
           $('#image-upload-warning').modal('show');
         } 
@@ -357,19 +331,12 @@ function saveAnimation(value){
           if (files.length > 0){
               for (var i = 0; i < files.length; i++) {
                 if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
-                    if (files[i].size < 10000000){
-                        readAmenityImageSrc(files[i],'community');}
-                    else
-                    {
-                        $('#image-size-warning').modal('show');
-                    }
+                        readAmenityImageSrc(files[i],'community');
+
                 }
               }
           }
           if(files.length == 1){
-              if (files[i].size < 10000000){
-                  $('#image-size-warning').modal('show');
-              }
             console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
             if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
               $('#image-upload-warning').modal('show');
@@ -388,20 +355,11 @@ function saveAnimation(value){
           if (files.length > 0){
               for (var i = 0; i < files.length; i++) {
                 if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-
-                    if (files[i].size < 10000000){
-                        readAmenityImageSrc(files[i],'floorplan');}
-                    else
-                    {
-                        $('#image-size-warning').modal('show');
-                    }
+                     readAmenityImageSrc(files[i],'floorplan');
                 }
               }
           }
           if(files.length == 1){
-              if (files[i].size < 10000000){
-                  $('#image-size-warning').modal('show');
-              }
             console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
             if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
               $('#image-upload-warning').modal('show');
@@ -420,20 +378,11 @@ function saveAnimation(value){
           if (files.length > 0){
               for (var i = 0; i < files.length; i++) {
                 if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-
-                    if (files[i].size < 10000000){
-                        readAmenityImageSrc(files[i],'sitemap');}
-                    else
-                    {
-                        $('#image-size-warning').modal('show');
-                    }
+                     readAmenityImageSrc(files[i],'sitemap');
                 }
               }
           }
           if(files.length == 1){
-              if (files[i].size < 10000000){
-                  $('#image-size-warning').modal('show');
-              }
             console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
             if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
               $('#image-upload-warning').modal('show');
@@ -522,12 +471,7 @@ function saveGalleryImage(){
       $('#image-and-video-upload-warning').modal('show');
       galleryImageDropzone.removeFile(file);
     }
-      if ((file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")&& (file.size > 10000000))
-      {
-          $(".divLoading").addClass("hidden");
-          $('#image-size-warning').modal('show');
-          favoriteImageDropzone.removeFile(file);
-      }
+
   });
 }
 
@@ -549,11 +493,6 @@ function saveAdditionalImage(){
       $(".divLoading").addClass("hidden");
       $('#image-upload-warning').modal('show');
       additionalImageDropzone.removeFile(file);
-    }
-    else if (file.size > 10000000){
-        $(".divLoading").addClass("hidden");
-        $('#image-size-warning').modal('show');
-        additionalImageDropzone.removeFile(file);
     }
   });
 }
@@ -577,11 +516,6 @@ function saveHomePageImage(){
       $('#image-upload-warning').modal('show');
       homePageImageDropzone.removeFile(file);
     }
-    else if (file.size > 10000000) {
-        $(".divLoading").addClass("hidden");
-        $('#image-size-warning').modal('show');
-        homePageImageDropzone.removeFile(file);
-    }
   });
 }
 
@@ -603,11 +537,6 @@ function saveHomePageIcon(){
       $(".divLoading").addClass("hidden");
       $('#image-upload-warning').modal('show');
       homePageIconDropzone.removeFile(file);
-    }
-    else if (file.size > 10000000) {
-        $(".divLoading").addClass("hidden");
-        $('#image-size-warning').modal('show');
-        homePageIconDropzone.removeFile(file);
     }
   });
 }

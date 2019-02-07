@@ -238,14 +238,7 @@
 
   / End Panel left Side
   :javascript
-    $('#size_limit').change(function(){
-    input = document.getElementById('size_limit');
-      if (input.files[0].size > 10000000)
-      {
-       $('#image-size-warning').modal('show');
-       $(input).val('');
-      }
-    });
+
      $(document).ready(function(){
 
       $('.wysihtml5').each(function(i, elem) {
