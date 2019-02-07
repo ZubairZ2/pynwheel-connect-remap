@@ -39,6 +39,8 @@
               %a#gables-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-gables", :role => "tab"} Gables Settings                
             %li{:role => "presentation"}
               %a#community-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#community-map-marker", :role => "tab"} Community Map Marker
+            %li{:role => "presentation"}
+              %a#ebrochure-settings{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#ebrochure-settings-tab", :role => "tab"} Ebrochure Settings
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Style
@@ -78,6 +80,8 @@
               = render 'button'
             #community-map-marker.tab-pane.fade{:role => "tabpanel"}
               = render 'community_map_marker'
+            #ebrochure-settings-tab.tab-pane.fade{:role => "tabpanel"}
+              = render 'ebrochure_settings'
 :javascript 
   var community_id = #{params[:community_id]};
   var selected_theme = '#{@community.theme_name}';

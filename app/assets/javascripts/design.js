@@ -725,6 +725,12 @@ $(document).ready(function () {
     $('.property-map-marker-field').change(function () {
         $('#property-map-marker-form').submit();
     });
+    $('.ebrochure-setting-field').change(function () {
+        $('#ebrochure-settings-form').submit();
+    });
+    $('.ebrochure-setting-field-mordernist').change(function () {
+        $('#ebrochure-settings-form-for-mordernist').submit();
+    });
   $('.floorplan-unit-popup-field').change(function () {
     $('#floorplan-unit-popup-form').submit();
   });
@@ -2818,6 +2824,12 @@ function showTabsAccordingToTheme(theme) {
     $('.mordernist_property_map_color_field').addClass('hidden');
     $('.amenity_map_marker_color').removeClass('hidden');
     $('.modernist_amenity_map_marker_color').addClass('hidden');
+
+    $('#futurist_ebrochure_header_background_color').addClass('hidden');
+    $('#modernist_ebrochure_header_background_color').addClass('hidden');
+    $('#panther_ebrochure_header_background_color').addClass('hidden');
+    $('#expressionist_ebrochure_header_background_color').addClass('hidden');
+    $('#gables_ebrochure_header_background_color').removeClass('hidden');
   }
   else if (theme == 'modernist') {
       $('#font-tab').parent().removeClass('hidden');
@@ -2834,6 +2846,13 @@ function showTabsAccordingToTheme(theme) {
       $('.mordernist_property_map_color_field').removeClass('hidden');
       $('.amenity_map_marker_color').addClass('hidden');
       $('.modernist_amenity_map_marker_color').removeClass('hidden');
+
+
+      $('#futurist_ebrochure_header_background_color').addClass('hidden');
+      $('#modernist_ebrochure_header_background_color').removeClass('hidden');
+      $('#panther_ebrochure_header_background_color').addClass('hidden');
+      $('#expressionist_ebrochure_header_background_color').addClass('hidden');
+      $('#gables_ebrochure_header_background_color').addClass('hidden');
   }
   else if (theme == 'expressionist')
   {
@@ -2852,6 +2871,13 @@ function showTabsAccordingToTheme(theme) {
       $('.amenity_map_marker_color').addClass('hidden');
       $('.modernist_amenity_map_marker_color').addClass('hidden');
 
+
+      $('#futurist_ebrochure_header_background_color').addClass('hidden');
+      $('#modernist_ebrochure_header_background_color').addClass('hidden');
+      $('#panther_ebrochure_header_background_color').addClass('hidden');
+      $('#expressionist_ebrochure_header_background_color').removeClass('hidden');
+      $('#gables_ebrochure_header_background_color').addClass('hidden');
+
   }
   else
   {
@@ -2868,6 +2894,29 @@ function showTabsAccordingToTheme(theme) {
       $('.mordernist_property_map_color_field').addClass('hidden');
       $('.amenity_map_marker_color').addClass('hidden');
       $('.modernist_amenity_map_marker_color').addClass('hidden');
+
+      $('#futurist_ebrochure_header_background_color').addClass('hidden');
+      $('#modernist_ebrochure_header_background_color').addClass('hidden');
+      $('#panther_ebrochure_header_background_color').addClass('hidden');
+      $('#expressionist_ebrochure_header_background_color').addClass('hidden');
+      $('#gables_ebrochure_header_background_color').addClass('hidden');
+
+      if (theme == 'futurist')
+      {
+          $('#futurist_ebrochure_header_background_color').removeClass('hidden');
+          $('#modernist_ebrochure_header_background_color').addClass('hidden');
+          $('#panther_ebrochure_header_background_color').addClass('hidden');
+          $('#expressionist_ebrochure_header_background_color').addClass('hidden');
+          $('#gables_ebrochure_header_background_color').addClass('hidden');
+      }
+      else if (theme == 'panther')
+      {
+          $('#futurist_ebrochure_header_background_color').addClass('hidden');
+          $('#modernist_ebrochure_header_background_color').addClass('hidden');
+          $('#panther_ebrochure_header_background_color').removeClass('hidden');
+          $('#expressionist_ebrochure_header_background_color').addClass('hidden');
+          $('#gables_ebrochure_header_background_color').addClass('hidden');
+      }
   }
     ///////////////////////// Database changes////////////////////////
 
