@@ -92,6 +92,10 @@
   {
   $('#property_map_size_integer_field').val("25")
   }
+  else
+  {
+  $('#property_map_size_integer_field').val( Math.trunc( $('#property_map_size_integer_field').val()))
+  }
   });
 
   $('#amenity_map_marker_size_integer_field').on('change', function() {
@@ -102,5 +106,9 @@
   else if ($('#amenity_map_marker_size_integer_field').val() < 25)
   {
   $('#amenity_map_marker_size_integer_field').val("25")
+  }
+  else
+  {
+  $('#amenity_map_marker_size_integer_field').val( Math.trunc( $('#amenity_map_marker_size_integer_field').val()))
   }
   });
