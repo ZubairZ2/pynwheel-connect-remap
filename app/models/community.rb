@@ -201,8 +201,8 @@ class Community < ApplicationRecord
     end
   end
   def unique_community_code_on_create
-    unless attributes["code"] == ""
-      com = Community.where(code: attributes["code"]) || attributes["code"] == nil 
+    unless attributes["code"] == "" || attributes["code"] == nil
+      com = Community.where(code: attributes["code"])
       if com.count < 1
         true
       else
@@ -211,7 +211,7 @@ class Community < ApplicationRecord
     end
   end
   def unique_community_code_on_update
-    unless attributes["code"] == "" || attributes["code"] == nil
+    unless attributes["code"] == "" || attributes["code"] == nil 
       com = Community.where(code: attributes["code"])
       if com.count == 0
         true
