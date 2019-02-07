@@ -79,6 +79,7 @@ class Yardi4SwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
+    rename_provider
   end
     
 
@@ -185,14 +186,6 @@ class Yardi4SwapService < BaseService
       end
     end
 
-
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      if d.provider == "yardi_new"
-        d.provider = "yardi"
-        d.save
-      end
-    end
   end
 
   def update_yardi4_floorplans(floorplans)
@@ -246,9 +239,9 @@ class Yardi4SwapService < BaseService
           # fp = Floorplan.where(community_id: credentials.community_id).first
           fp = Floorplan.new
           fp.community_id = credentials.community_id
+          fp.provider = "yardi_new"
           rooms = []
           floorplan.each do |f|
-            provider = "yardi_new"
             fp.provider_floorplan_id = floorplan[0][:IDValue]
             if f.key?(:Room)
               rooms << f
@@ -296,6 +289,17 @@ class Yardi4SwapService < BaseService
       end
     end
 
+
+
+  end
+  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "yardi_new"
+        d.provider = "yardi"
+        d.save
+      end
+    end
 
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|

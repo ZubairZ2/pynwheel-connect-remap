@@ -38,6 +38,7 @@ class ResmanSwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
+    rename_provider
   end
   def save_resman_units(units,property_id)
     units.each do |u|
@@ -116,13 +117,7 @@ class ResmanSwapService < BaseService
       end
     end
 
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      if d.provider == "resman_new"
-        d.provider = "resman"
-        d.save
-      end
-    end
+
   end
 
   def save_resman_floorplans(floorplans,property_id)
@@ -210,6 +205,18 @@ class ResmanSwapService < BaseService
       end
     end
 
+
+  end
+
+  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      if d.provider == "resman_new"
+        d.provider = "resman"
+        d.save
+      end
+    end
+
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       if d.provider == "resman_new"
@@ -217,6 +224,6 @@ class ResmanSwapService < BaseService
         d.save
       end
     end
+    
   end
-
 end
