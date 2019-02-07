@@ -418,6 +418,9 @@ function showRealPageSVCFields(){
     //$('#community_credential_attributes_site_id').addClass("validate[required]"); 
     $('#data-connection-buttons').show();
     $('#data-replace-update-buttons').hide();
+
+    $('#realpage_store_pricing_button').show();
+    $('#realpage_show_pricing_button').show();
 }
 
 function showFileFields(){

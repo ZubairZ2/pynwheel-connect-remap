@@ -24,7 +24,7 @@ class PsiPricingConnectionService < BaseService
                                :headers => { 'Content-Type' => 'application/json' } )
       response =  response.body.gsub('@','')
       hash = JSON.parse(response)
-      hash.to_xml
+      # hash.to_xml
     rescue => e
       false
     end

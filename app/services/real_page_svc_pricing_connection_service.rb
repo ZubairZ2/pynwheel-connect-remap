@@ -1,15 +1,16 @@
-class RealPageSvcStaticService < BaseService
+class RealPageSvcPricingConnectionService < BaseService
   def perform
     @doc = ""
-    import_realpage_svc_floorplans
     import_realpage_svc_units
     import_realpage_svc_price
+    @doc = @doc + "</UnitObjects>"
     com = Community.find(credentials.community_id)
+
     com.realpage_pricing_data = @doc
     com.realpage_pricing_data_uploaded = true
     com.save
+    @doc
   end
-
   def import_realpage_svc_floorplans
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
@@ -71,7 +72,7 @@ class RealPageSvcStaticService < BaseService
               floorplan.bedrooms = fp[:Bedrooms]
               # floorplan.market_rent = fp[:RentMin]
               floorplan.square_feet = fp[:GrossSquareFootage]
-              floorplan.save(:validate => false)
+              # floorplan.save(:validate => false)
 
             end
           end
@@ -81,7 +82,6 @@ class RealPageSvcStaticService < BaseService
       end
     end
   end
-
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
     site_ids = credentials.site_id.split(',') rescue []
@@ -196,7 +196,7 @@ class RealPageSvcStaticService < BaseService
                 #   end
                 # end
                 unit.manually_updated = false
-                unit.save(validate: false)
+                # unit.save(validate: false)
                 #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
               end
             end
@@ -210,6 +210,7 @@ class RealPageSvcStaticService < BaseService
   end
 
   def import_realpage_svc_price
+    flag = true
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
@@ -265,61 +266,52 @@ class RealPageSvcStaticService < BaseService
           result = Ox.load(response.body, mode: :hash)
           if result[:"s:Envelope"][1][:"s:Body"][1].present?
 
+
+            # response2 = (response.body).to_xml
+            response2 = response.body
+            # response2 = Hash.from_xml(response.body)
+            # new_products = Nokogiri::XML(response2).search('/s:Envelope')
+            # @doc.at('/s:Envelope').add_child(new_products)
+            # hash2 = response2.body
+            # @hash3.merge(hash2)
+
             units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
 
-
-            #Old code
-            # units.each do |u|
-            #   unit_no = u[:Address][:UnitID].to_i
-            #   unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no)
-            #   if unit.present?
-            #     hash[:units].each do |unit_in_array|
-            #       if unit_in_array == unit.first.id
-            #         best_price = nil
-            #         if u[:RentMatrix].present?
-            #           u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
-            #             if opt.key?(:Option)
-            #               o  = opt[:Option][0]
-            #               if o[:Best] == "true"
-            #                 best_price = o[:Rent]
-            #               end
-            #             end
-            #           end
-            #           if best_price.present? && unit.present?
-            #             unit.first.effective_rent = best_price
-            #             unit.first.save(:validate => false)
-            #             puts " **** price updated *** "
-            #           end
-            #         end
-            #       end
-            #     end
-            #   end
-            # end
 
             #Refactor code
             units.each do |u|
               unit_no = u[:Address][:UnitID]
               if hash[:units].include?(unit_no)
                 if u[:RentMatrix].present?
+
                   best_price = nil
                   u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
                     if opt.key?(:Option)
                       o  = opt[:Option][0]
                       if o[:Best] == "true"
                         best_price = o[:Rent]
+
                       end
                     end
                   end
                   if best_price.present?
                     unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
                     unit.effective_rent = best_price
-                    unit.save(:validate => false)
-                    @doc = @doc + response.body
-                    puts " **** price updated *** ",unit.marketing_name
+
+                    if flag
+                      @doc = "<UnitObjects>"
+                      flag = false
+                    end
+                    @doc = @doc + "<UnitObject><PropertyNumberID>"+u[:PropertyNumberID]+"</PropertyNumberID><BaseRentAmount>"+best_price+"</BaseRentAmount><FloorPlanMarketRent>"+u[:FloorPlanMarketRent]+"</FloorPlanMarketRent><UnitMarketRent>"+u[:UnitMarketRent]+"</UnitMarketRent><NonRevenueFlag>"+u[:NonRevenueFlag]+"</NonRevenueFlag><NonRefundFee>"+u[:NonRefundFee]+"</NonRefundFee><DepositAmount>"+u[:DepositAmount]+"</DepositAmount><Address><Address1>"+u[:Address][:Address1]+"</Address1><BuildingID>"+u[:Address][:BuildingID]+"</BuildingID><CityName>"+u[:Address][:CityName]+"</CityName><CountryName>"+u[:Address][:CountryName]+"</CountryName><CountyName>"+u[:Address][:CountyName]+"</CountyName><State>"+u[:Address][:State]+"</State><UnitID>"+u[:Address][:UnitID]+"</UnitID><UnitNumber>"+u[:Address][:UnitNumber]+"</UnitNumber><Zip>"+u[:Address][:Zip]+"</Zip></Address><Availability><MadeReadyBit>"+u[:Availability][:MadeReadyBit]+"</MadeReadyBit><MadeReadyDate>"+u[:Availability][:MadeReadyDate]+"</MadeReadyDate><AvailableDate>"+u[:Availability][:AvailableDate]+"</AvailableDate><AvailableBit>"+u[:Availability][:AvailableBit]+"</AvailableBit><VacantDate>"+u[:Availability][:VacantDate]+"</VacantDate><VacantBit>"+u[:Availability][:VacantBit]+"</VacantBit></Availability><FloorPlan><FloorPlanID>"+u[:FloorPlan][:FloorPlanID]+"</FloorPlanID><FloorPlanCode>"+u[:FloorPlan][:FloorPlanCode]+"</FloorPlanCode><FloorPlanName>"+u[:FloorPlan][:FloorPlanName]+"</FloorPlanName><FloorPlanGroupName>"+u[:FloorPlan][:FloorPlanGroupName]+"</FloorPlanGroupName></FloorPlan><UnitDetails><Bedrooms>"+u[:UnitDetails][:Bedrooms]+"</Bedrooms><Bathrooms>"+u[:UnitDetails][:Bathrooms]+"</Bathrooms><GrossSqFtCount>"+u[:UnitDetails][:GrossSqFtCount]+"</GrossSqFtCount><RentSqFtCount>"+u[:UnitDetails][:RentSqFtCount]+"</RentSqFtCount><FloorNumber>"+u[:UnitDetails][:FloorNumber]+"</FloorNumber></UnitDetails></UnitObject>"
+                    puts " **** price updated *** "
                   end
                 end
               end
             end
+
+
+
+
           end
         end
       rescue => e
@@ -328,70 +320,4 @@ class RealPageSvcStaticService < BaseService
     end
   end
 
-  def realpage_building
-    begin
-      url = REALPAGE_URL
-      soap_action = REALPAGE_BUILDING_ACTION
-      pmc_id = credentials.pmc_id
-      site_id = credentials.site_id
-      username = REALPAGESVC_USERNAME
-      password = REALPAGESVC_PASSWORD
-      license_key = REALPAGESVC_LICENSE_KEY
-      response = HTTParty.post(
-          url,
-          :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-          :body => '<soapenv:Envelope
-                      xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:tem="http://tempuri.org/"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                      <soapenv:Header/>
-                      <soapenv:Body>
-
-                        <tem:getpicklist>
-                          <tem:auth>
-                            <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                            <tem:siteid>'+site_id+'</tem:siteid>
-                            <tem:username>'+username+'</tem:username>
-                            <tem:password>'+password+'</tem:password>
-                            <tem:licensekey>'+license_key+'</tem:licensekey>
-                            <tem:system>OneSite</tem:system>
-                          </tem:auth>
-                          <tem:lType>LIST_BUILDING</tem:lType>
-                        </tem:getpicklist>
-
-                      </soapenv:Body>
-                    </soapenv:Envelope>
-        ')
-      result = Hash.from_xml(response.body)
-      unless result["Envelope"]["Body"]["Fault"].present?
-        return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
-      else
-        #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]
-        puts '-----------------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"]
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})
-      end
-    rescue => e
-      #Thread.current[:errors] << e.message
-      puts '-------------------------------------', e.message
-      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
-    end
-  end
-
-  def getBuildingNumber(building_no, building_result)
-    if building_result.is_a?(Array)
-      building = building_result.select{|x| x if x['Value'] == building_no}
-      if building.present?
-        return building.first["Text"]
-      else
-        return ""
-      end
-    else
-      if building_result["Value"] == building_no
-        return building_result["Text"]
-      else
-        return ""
-      end
-    end
-  end
 end
