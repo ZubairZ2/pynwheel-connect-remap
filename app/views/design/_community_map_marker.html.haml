@@ -84,13 +84,13 @@
 
   $('#property_map_size_integer_field').keypress(
     function(event){
-      if (event.which == '69' || event.which == '101' || event.which == '46') {
+      if (!(event.which >= '48' && event.which <= '57')) {
         event.preventDefault();
       }
   });
   $('#amenity_map_marker_size_integer_field').keypress(
     function(event){
-      if (event.which == '69' || event.which == '101' || event.which == '46') {
+      if (!(event.which >= '48' && event.which <= '57')) {
         event.preventDefault();
       }
   });
