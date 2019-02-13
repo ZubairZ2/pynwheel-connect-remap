@@ -1,5 +1,6 @@
 local_assets_base_url = "http://192.168.101.77:3000"
 random_numbers = []
+json.version @community.fvhrjhr
 json.version @version
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
