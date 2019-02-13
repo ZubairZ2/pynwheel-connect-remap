@@ -302,7 +302,7 @@
       }
   %body{:bgcolor => "#E1E1E1", :leftmargin => "0", :marginheight => "0", :marginwidth => "0", :offset => "0", :topmargin => "0"}
     %p
-      = @community.design.ebrochure_email_message.sub("<community_name>",@community.name).gsub("\n"," </p><p> ")
+      = @community.design.ebrochure_email_message.gsub("<community_name>",@community.name).gsub("\n","</p><p>").gsub("\r","")
     %center{:style => "background-color:#E1E1E1;"}
       %table#bodyTable{:border => "0", :cellpadding => "0", :cellspacing => "0", :height => "100%", :style => "table-layout: fixed;max-width:100% !important;width: 100% !important;min-width: 100% !important;", :width => "100%"}
         %tr
