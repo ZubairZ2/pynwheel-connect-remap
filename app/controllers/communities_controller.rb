@@ -121,6 +121,8 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Map marker options selected successfully.</div>'
     elsif params[:ebrochure_settings_tab].present?
       '<div class="alert alert-success">Ebrochure settings options selected successfully.</div>'
+    elsif params[:ebrochure_settings_tab_message].present?
+      '<div class="alert alert-success">Ebrochure settings options selected successfully.</div>'
     elsif params[:floorplan_unit_popup_tab].present? 
       '<div class="alert alert-success">Floor plan/Unit popup options selected successfully.</div>'          
     elsif params[:community][:design_attributes][:gable_attributes].present? 
@@ -380,7 +382,7 @@ class CommunitiesController < ApplicationController
       :credential_attributes=>[:id,:url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
         :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
-        :display_ebrochure_header_background_color,:expressionist_ebrochure_header_background_color,:panther_ebrochure_header_background_color,:gables_ebrochure_header_background_color,:modernist_ebrochure_header_background_color,:futurist_ebrochure_header_background_color,:property_map_size_integer,:modernists_amenity_map_marker_color,:secondary_page_background_image,:loop_type,:primary_color,:secondary_color,:primary_font_family,:primary_font_size,:primary_font_weight,
+        :display_ebrochure_header_background_color,:expressionist_ebrochure_header_background_color,:panther_ebrochure_header_background_color,:gables_ebrochure_header_background_color,:modernist_ebrochure_header_background_color,:ebrochure_email_message,:futurist_ebrochure_header_background_color,:property_map_size_integer,:modernists_amenity_map_marker_color,:secondary_page_background_image,:loop_type,:primary_color,:secondary_color,:primary_font_family,:primary_font_size,:primary_font_weight,
         :primary_text_align,:primary_font_color,:secondary_font_family,:secondary_font_size,:secondary_font_weight,:secondary_text_align,
         :secondary_font_color,:global_navigation_font_color,:global_navigation_background_color,:global_navigation_button_color,
         :global_navigation_buttons_opacity,:global_nav_bg_opacity,:button_shape,:global_nav_buttons_height,:global_nav_buttons_width,
