@@ -104,24 +104,3 @@
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.text_area :ebrochure_email_message, class: "form-control ebrochure-setting-field-for-message default_ebrochure_message",:rows => "5",:value=> - @community.design.ebrochure_email_message.sub("<community_name>",@community.name) #d.object.ebrochure_email_message
 
-    .row.pb-20.hidden#updated_ebrochure_message
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Ebrochure message
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.text_area :ebrochure_email_message, class: "form-control ebrochure-setting-field-for-message updated_ebrochure_message",:rows => "5",:value=> - @community.design.ebrochure_email_message.sub("<community_name>",@community.name)
-
-:javascript
-  if (#{@community.design.ebrochure_email_message_updated})
-  {
-    $('#default_ebrochure_message').addClass('hidden');
-    $('#updated_ebrochure_message').removeClass('hidden');
-  }
-   $(".default_ebrochure_message").change(function(e)
-   {
-    $('#default_ebrochure_message').addClass('hidden');
-    $('#updated_ebrochure_message').removeClass('hidden');
-    #{@community.design.ebrochure_email_message_updated = true}
-    #{@community.save}
-   });
