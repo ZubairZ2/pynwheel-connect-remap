@@ -3,7 +3,7 @@
   var unit_id = "<%= @unit.id%>";
   var marketing_name = "<%= @unit.marketing_name%>";
   var url = "/communities/"+community_id+"/webpages/save_favorite?unit_id="+unit_id;
-  var html = '<a href="'+url+'" data-remote="true"><i class="fa fa-heart-o"></i></a>';
+  var html = '<a href="'+url+'" data-remote="true"><i class="far fa-heart"></i></a>';
   $('#fav-icon-tag').html(html);
   $('#m_'+marketing_name).data('is-fav',false);
 <%else%>
