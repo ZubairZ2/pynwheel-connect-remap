@@ -1940,6 +1940,14 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     margin-top: 4px;
     color: rgba(247, 0, 0, 0.61);
 }
+.fa-map-marker-alt span
+{
+    /*color: white;*/
+    font-size: 13px;
+    position: absolute;
+    top: 7px;
+    left: 10px;
+}
 .custom-icon-black{
   font-size: 20px;
   color: black;
