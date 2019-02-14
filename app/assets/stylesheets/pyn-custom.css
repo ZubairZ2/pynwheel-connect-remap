@@ -1922,19 +1922,23 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 }
 .custom-icon{
   font-size: 13px;     
-  border: 2px solid #fff;
+  border: 2px solid rgba(247, 0, 0, 0.61);
   box-shadow: 1px 1px 1px 1px #17171769;
-  color: #ffffff; 
+  /*color: rgba(247, 0, 0, 0.61); */
   width: 25px; 
   height: 25px; 
   border-radius: 100%; 
-  background: rgba(247, 0, 0, 0.61);
+  background: transparent;
   text-align: center; 
   display: inline-block; 
   line-height: 20px;
 }
 .custom-icon .fa-camera{
-  margin-top: 3px;
+    margin-top: 3px;
+}
+.custom-icon .fa-camera-retro{
+    margin-top: 4px;
+    color: rgba(247, 0, 0, 0.61);
 }
 .custom-icon-black{
   font-size: 20px;
@@ -2361,7 +2365,11 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   box-shadow: 0px 1px 1px 1px #0006;
   height: 27px; 
   transform: rotate(-45deg); 
-} 
+}
+.fa-map-marker-alt {
+    font-size: 35px;
+    color: rgba(247, 0, 0, 0.61);
+}
 .pin1 span { 
   position: absolute;
   content: '';
