@@ -782,7 +782,7 @@ function setModalAttributes(element) {
     var community_id = $(element).data('community-id');
     var unit_id = $(element).data('unit-id');
     var url = "/communities/" + community_id + "/webpages/save_favorite?unit_id=" + unit_id;
-    var html = '<a href="' + url + '" data-remote="true"><i class="fa fa-heart-o"></i></a>';
+    var html = '<a href="' + url + '" data-remote="true"><i class="far fa-heart"></i></a>';
     $('#fav-icon-tag').html(html);
   } else {
     var community_id = $(element).data('community-id');
