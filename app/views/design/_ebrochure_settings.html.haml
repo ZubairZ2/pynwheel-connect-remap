@@ -90,17 +90,17 @@
               .input-group-addon
                 %i
                 = d.text_field :modernist_ebrochure_header_background_color , class: "form-control ebrochure-setting-field-mordernist",autocomplete: true,:value=>d.object.modernist_ebrochure_header_background_color == "No color" ? (d.object.primary_color.present? ? d.object.primary_color : "#CF492E" ) : d.object.modernist_ebrochure_header_background_color
-
-= form_for @community,:method=>"PUT",:html=>{:id=>"ebrochure-settings-form-for-message"},:remote=>true  do |f|
-  = hidden_field_tag "ebrochure_settings_tab_message", true
-  = f.fields_for :design do |d|
-
-
-    .row.pb-20#default_ebrochure_message
-      .col-lg-10
-        .form-group.mt-30
-          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Ebrochure message
-          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.text_area :ebrochure_email_message, class: "form-control ebrochure-setting-field-for-message default_ebrochure_message",:rows => "5",:value=> - @community.design.ebrochure_email_message.gsub("<community_name>",@community.name) #d.object.ebrochure_email_message
+-#
+-#= form_for @community,:method=>"PUT",:html=>{:id=>"ebrochure-settings-form-for-message"},:remote=>true  do |f|
+-#  = hidden_field_tag "ebrochure_settings_tab_message", true
+-#  = f.fields_for :design do |d|
+-#
+-#
+-#    .row.pb-20#default_ebrochure_message
+-#      .col-lg-10
+-#        .form-group.mt-30
+-#          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+-#            Ebrochure message
+-#          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+-#            = d.text_area :ebrochure_email_message, class: "form-control ebrochure-setting-field-for-message default_ebrochure_message",:rows => "5",:value=> - @community.design.ebrochure_email_message.gsub("<community_name>",@community.name) #d.object.ebrochure_email_message
 
