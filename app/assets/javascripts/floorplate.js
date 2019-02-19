@@ -93,7 +93,7 @@ $(document).ready(function () {
           // add new marker to display
           //tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
           tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-          tag += "<i class='fa fa-asterisk'></i>";
+          tag += "<i class='fas fa-map-marker-alt'></i>";
           tag += "</a>"
           $('#map').append(tag);
           // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
