@@ -18,7 +18,7 @@
 .row
   .col-lg-12
     .form-group
-      .select-logo.center-img.mb-20.mt-30
+      .select-logo.center-img.mb-20.mt-30.logo-upload-bg
         .select-logo-logo
           %a.preview-image{:href=>current_community.secondary_logo.present? ? current_community.secondary_logo.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Logo"}
             = image_tag current_community.secondary_logo.present? ? current_community.secondary_logo.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"preview-image"                  
