@@ -84,6 +84,10 @@ $(document).ready(function(){
           e.preventDefault();
           dx = parseInt($('#active_x_plot').html())-8;
           dy = parseInt($('#active_y_plot').html()-10);
+
+          marker_color = $('#marker-color').html();
+          marker_font_size = $('#marker-font-size').html();
+
           if (addmode) {
             // save plotting for each selected unit
             for (i=0; i<selected.length; i++) {
@@ -106,7 +110,7 @@ $(document).ready(function(){
             // add new marker to display
             //tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][0] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
             tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-            tag += "<i class='custom-icon'><i class='fas fa-camera-retro'></i></i>";
+            tag += "<i class='custom-icon' style='width: "+ marker_font_size +"px; height: "+ marker_font_size +"px; border: 2px solid "+ marker_color+"; '><i class='fas fa-camera-retro' style='color: "+marker_color+"; font-size: "+(parseInt(marker_font_size) -11)+"px;'></i></i>";
             tag += "</a>"
             $('#map').append(tag);
             // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
