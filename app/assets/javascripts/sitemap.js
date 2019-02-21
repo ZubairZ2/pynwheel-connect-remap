@@ -91,6 +91,7 @@ $(document).ready(function () {
         // dx = dx - left_margin;
         // dy = dy -right_margin;
         fontSize = $('#font_size').html();
+        marker_color = $('#marker_color').html();
 
         if (addmode) {
           // save plotting for each selected unit
@@ -100,7 +101,7 @@ $(document).ready(function () {
           // add new marker to display
           tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + (dx - left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: "+ fontSize+"px;'>";
 
-          tag += "<i class='fas fa-map-marker-alt'></i>";
+          tag += "<i class='fas fa-map-marker-alt' style='color: "+marker_color+";'></i>";
           tag += "</a>"
           $('#map').append(tag);
           // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
