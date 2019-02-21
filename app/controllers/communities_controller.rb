@@ -315,7 +315,7 @@ class CommunitiesController < ApplicationController
   end
 
   def remove_plots_from_floorplate
-    @community.delete_plots_from_floorplate(params[:floorplate_id])
+    current_community.delete_plots_from_floorplate(params[:floorplate_id])
     redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "All plots have been deleted successfully."
   end
 
