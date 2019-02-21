@@ -197,7 +197,7 @@
                 arr[j][2] = Math.round(ui.position.top);
               }
             }
-            savePlot(temp[i], Math.round(ui.position.left ), Math.round(ui.position.top ));
+            savePlot(temp[i], Math.round(ui.position.left ) + left_margin, Math.round(ui.position.top ) + right_margin);
           }
         }
       }
