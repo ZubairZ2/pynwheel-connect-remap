@@ -134,6 +134,8 @@
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel         
 :javascript
   var arr = #{raw arr}
+  var lmargin = #{raw left_margin}
+  var rmargin = #{raw right_margin}
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
   var addmode = false;

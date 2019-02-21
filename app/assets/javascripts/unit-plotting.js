@@ -166,8 +166,6 @@
         console.log("start drag")
         xpos = Math.round(ui.position.left);
         ypos = Math.round(ui.position.top);
-        lmargin = arr[1][5];
-        rmargin = arr[1][6];
         // temp array of just markers at same x/y
         temp=[];
         if (arr != null) {
