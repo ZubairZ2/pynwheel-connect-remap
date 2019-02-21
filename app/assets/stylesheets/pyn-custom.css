@@ -1922,7 +1922,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 
 }
 .custom-icon{
-  font-size: 13px;
+  font-size: 0px;
   /*border: 2px solid rgba(247, 0, 0, 0.61);*/
   box-shadow: 1px 1px 1px 1px #17171769;
   /*color: rgba(247, 0, 0, 0.61); */
@@ -1938,7 +1938,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     margin-top: 3px;
 }
 .custom-icon .fa-camera-retro{
-    margin-top: 4px;
+    /*margin-top: 4px;*/
     color: rgba(247, 0, 0, 0.61);
 }
 /*.fa-map-marker-alt span*/
