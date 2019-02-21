@@ -82,8 +82,14 @@ $(document).ready(function () {
       // first check if user is clicking on scrollbar
       if (e.target != $('#map').get(0)) {
         e.preventDefault();
+        left_margin = parseInt($('#left_margin').html());
+        right_margin = parseInt($('#right_margin').html());
+
         dx = parseInt($('#active_x_plot').html()) - 8;
         dy = parseInt($('#active_y_plot').html() - 10);
+
+        fontSize = $('#font_size').html();
+
         if (addmode) {
           // save plotting for each selected unit
           for (i = 0; i < selected.length; i++) {
@@ -92,7 +98,7 @@ $(document).ready(function () {
           var url = '/communities/' + community_id + '/units/' + selected[0][0] + '/remove_plot_from_floorplate?floorplate_id=' + floorplate_id;
           // add new marker to display
           //tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
-          tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+          tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: "+ fontSize+"px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
           tag += "<i class='fas fa-map-marker-alt'></i>";
           tag += "</a>"
           $('#map').append(tag);

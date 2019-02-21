@@ -17,6 +17,12 @@
           %span.hidden#active_x_plot 0
           
           %span.hidden#active_y_plot 0
+
+          - marker_font_size = @community.design.amenity_map_marker_size_integer
+          - marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
+          %span.hidden#marker-font-size #{marker_font_size}
+          %span.hidden#marker-color #{marker_color}
+
         .pull-right.btn-btn-danger
           = link_to "Plot Units", plotexp_community_sitemaps_path(@community), class: "btn btn-primary"
           %a.btn.btn-danger{"data-name" => "sitemap's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/remove_amenities_plot"} Reset all plots
@@ -31,7 +37,7 @@
                   = image_tag @sitemap.present? ? @sitemap.image.url : "default.jpeg"
                   - @sitemap.amenities.each do |amenity|
                     - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                      = link_to "<i class='custom-icon'><i class='fas fa-camera-retro'></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{marker_font_size -11}px; color: #{marker_color};'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
             .col-lg-3
               %h5.mt-40.mb-20 SELECT AMENITIES TO PLOT
               .imageselect
