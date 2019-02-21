@@ -570,7 +570,7 @@ table.upload-image tr td{
 }
 .select-logo{ 
   width:315px; 
-  height:190px; 
+  /*height:190px; */
   padding:8px;
   background-color:#fff;
 }
@@ -2774,4 +2774,16 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .logo-upload-bg
 {
     background: #dadada;
+}
+.logo-upload-container
+{
+  width: 300px;
+    height: 250px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.logo-container a img
+{
+    height: 100%;
 }
