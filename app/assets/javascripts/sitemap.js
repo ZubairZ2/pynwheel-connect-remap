@@ -88,8 +88,8 @@ $(document).ready(function () {
 
         dx = parseInt($('#active_x_plot').html()) - 8;
         dy = parseInt($('#active_y_plot').html() - 10);
-        dx = dx - left_margin;
-        dy = dy -right_margin;
+        // dx = dx - left_margin;
+        // dy = dy -right_margin;
         fontSize = $('#font_size').html();
         marker_color = $('#marker_color').html();
 
@@ -99,7 +99,7 @@ $(document).ready(function () {
             savePlot(selected[i][0], dx, dy);
           }
           // add new marker to display
-          tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute; font-size: "+ fontSize+"px;'>";
+          tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + (dx - left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: "+ fontSize+"px;'>";
 
           tag += "<i class='fas fa-map-marker-alt' style='color: "+marker_color+";'></i>";
           tag += "</a>"
