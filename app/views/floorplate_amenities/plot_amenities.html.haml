@@ -68,6 +68,8 @@
           %i.icon-screenshot
 :javascript
   var arr = #{raw amenity_arr}
+  var lmargin = 0
+  var rmargin = 0
   var community_id = #{params[:community_id]}
   var addmode = false;
   var floorplate_id_for_amenity = #{@sitemap.id}
