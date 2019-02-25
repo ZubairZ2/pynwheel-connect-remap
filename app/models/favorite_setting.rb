@@ -17,4 +17,20 @@ class FavoriteSetting < ApplicationRecord
   belongs_to :community
   has_many :favorite_images, dependent: :destroy
   has_many :ebrochure_menu_buttons, dependent: :destroy
+  validate :page_name_length_validate
+
+  def page_name_length_validate
+    if attributes['favorite_name'].present?
+      words = attributes['favorite_name'].split(" ")
+      if words.size > 3
+        errors[:base] << "Page name can be added upto three words and each word must be 15 characters long."
+      end
+
+      words.each do |w|
+        if w.size > 15
+          errors[:base] << "Page name can be added upto three words and each word must be 15 characters long."
+        end
+      end
+    end
+  end
 end
