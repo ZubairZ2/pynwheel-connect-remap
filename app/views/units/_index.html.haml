@@ -69,7 +69,7 @@
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
                   %tr{style: "background-color: #{u.manual_override ? '#cecece' : ''}"}
                     %td= index+1
-                    %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name }
+                    %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u),:display_as => :unit_market,:value => u.unit_market , :data => {:number => u.marketing_name }
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil }
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
                     %td{:id=>"best_in_place_unit_#{u.id}_manually_updated"}= u.manually_updated ? "Yes" : "No"
