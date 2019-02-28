@@ -68,13 +68,17 @@ class Unit < ApplicationRecord
     if self.provider == "realpagesvc" || self.provider == "zaremba"
       if self.building.present?
         marketing_nameSplit = self.marketing_name.split('-')
-        marketing_name = marketing_nameSplit[1..marketing_nameSplit.length-1].map {|str| "#{str}"}.join('-')
-        unit = Unit.where('community_id = ? AND marketing_name LIKE ? ', self.community_id, "%-#{marketing_name}")
-        if unit.count == 1
-          return marketing_name
-        end
-        if unit.count >= 2
-           return self.marketing_name
+        if marketing_nameSplit.count > 1
+          marketing_name = marketing_nameSplit[1..marketing_nameSplit.length-1].map {|str| "#{str}"}.join('-')
+          unit = Unit.where('community_id = ? AND marketing_name LIKE ? ', self.community_id, "%-#{marketing_name}")
+          if unit.count == 1
+            return marketing_name
+          end
+          if unit.count >= 2
+            return self.marketing_name
+          end
+        else
+          return self.marketing_name
         end
       else
         return self.marketing_name
@@ -92,6 +96,7 @@ class Unit < ApplicationRecord
         end
       end
     end
+    return self.marketing_name
   end
 
   def populate_image_urls
