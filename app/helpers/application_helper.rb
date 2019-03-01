@@ -788,6 +788,9 @@ module ApplicationHelper
   def home_page_icons_position_option
     ["Left of text","Right of text","Above the text"]
   end
+  def global_nav_button_icon_size_option
+    ["65px","55px","45px","35px","25px"]
+  end
 
   def convert_float_to_integer(x)
     if x%1 == 0
