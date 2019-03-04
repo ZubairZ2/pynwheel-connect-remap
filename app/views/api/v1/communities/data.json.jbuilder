@@ -1165,7 +1165,7 @@ json.apartments do
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
       units_floorplans << floorplan
-      json.marketing_name unit.marketing_name
+      json.marketing_name unit.unit_market
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.availability unit.availability
       json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day
