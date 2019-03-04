@@ -10,11 +10,11 @@ json.ui_settigs do
   end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
   if @community.theme_name == "futurist" || @community.theme_name == "modernist"
-    json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+    json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   else
-    json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+    json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
   end
-  json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
+  json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
 
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
@@ -58,11 +58,11 @@ json.ui_settigs do
       json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#FDFDFD"
     end
 
-    json.gables do 
+    json.gables do
       json.hide_tagline @community.design.gable.present? ? @community.design.gable.hide_tagline : true
-      json.appartment_button_color (@community.design.gable.present? and @community.design.gable.appartment_button_color.present?) ? @community.design.gable.appartment_button_color : "#8A8A8D" 
-      json.gallery_button_color (@community.design.gable.present? and @community.design.gable.gallery_button_color.present?) ? @community.design.gable.gallery_button_color : "#44797B" 
-      json.neighborhood_button_color (@community.design.gable.present? and @community.design.gable.neighborhood_button_color.present?) ? @community.design.gable.neighborhood_button_color : "#0475A9" 
+      json.appartment_button_color (@community.design.gable.present? and @community.design.gable.appartment_button_color.present?) ? @community.design.gable.appartment_button_color : "#8A8A8D"
+      json.gallery_button_color (@community.design.gable.present? and @community.design.gable.gallery_button_color.present?) ? @community.design.gable.gallery_button_color : "#44797B"
+      json.neighborhood_button_color (@community.design.gable.present? and @community.design.gable.neighborhood_button_color.present?) ? @community.design.gable.neighborhood_button_color : "#0475A9"
       json.favorite_button_color (@community.design.gable.present? and @community.design.gable.favorite_button_color.present?) ? @community.design.gable.favorite_button_color : "#D5C228"
       if @community.theme_name == "panther"
         json.filter_panel_color "#cae0da"
@@ -79,7 +79,7 @@ json.ui_settigs do
       json.filter_panel_bg_image @community.design.gable.present? ? (@community.design.gable.filter_panel_bg_image.present? ? @community.design.gable.filter_panel_bg_image.url : "No Image") : "No Image"
       json.display_filter_panel_bg_image @community.design.gable.present? ? (@community.design.gable.display_filter_panel_bg_image_button.present? ? @community.design.gable.display_filter_panel_bg_image_button : false) : false
     end
-    
+
     json.expressionist do
       json.global_navigation do
         if @community.theme_name == "panther"
@@ -370,7 +370,7 @@ json.ui_settigs do
           json.display_favourite_btn_on_image false
 
         end
-        
+
 
 
 
