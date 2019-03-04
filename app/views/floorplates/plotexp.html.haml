@@ -55,6 +55,7 @@
                         = link_to "<i class='fas fa-map-marker-alt' style='color: #{marker_color};' ></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => ((@community.data_provider == "zaremba" ? '' : (unit.building.present? ? unit.building : '') + (unit.building.present? ? '-' : '')) + unit.marketing_name), :id => "m_#{unit.provider_unit_id}", :style => "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - right_margin}px; position:absolute; font-size: #{@community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30}px", "data-name" => "plot", "data-target" => "#markers-modal", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-horizontal"=>unit.x_plot,"data-vertical"=>unit.y_plot,"data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"
 
                       .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}","data-title"=>((@community.data_provider == "zaremba" ? '' : (unit.building.present? ? unit.building : '') + (unit.building.present? ? '-' : '')) + unit.marketing_name),:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
+
             .col-lg-3.multi-select-units.select-units-on-page
               %h5.mt-40.mb-20 SELECT UNITS TO PLOT
               %select.amenities-list.form-control{:multiple=>"multiple"}
@@ -67,7 +68,7 @@
                   - community_units = community_units.sort_by {|obj| obj.building.to_i}
                 - community_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
-                    - if @community.data_provider != "zaremba" && unit.building != nil && unit.building != ""
+                    - if @community.data_provider != "zaremba" && @community.data_provider != "realpagesvc" && unit.building != nil && unit.building != ""
                       %option{:value => "#{unit.provider_unit_id}"}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value => "#{unit.provider_unit_id}"}= unit.marketing_name
@@ -126,7 +127,7 @@
                   - community_units = community_units.sort_by {|obj| obj.building.to_i}
                 - community_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
-                    - if @community.data_provider != "zaremba" && unit.building != nil && unit.building != ""
+                    - if @community.data_provider != "zaremba" && @community.data_provider != "realpagesvc" && unit.building != nil && unit.building != ""
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"

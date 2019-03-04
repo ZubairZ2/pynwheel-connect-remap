@@ -64,6 +64,51 @@ class Unit < ApplicationRecord
     self.image.present? ? self.image.url : (self.floorplan.present? && self.floorplan.image.present? ? self.floorplan.image.url : "/assets/default.jpeg")
   end
 
+  def unit_market
+    if self.provider == "realpagesvc" || self.provider == "zaremba" || self.provider == "realpagesvc_new" || self.provider == "zaremba_new"
+      if self.building.present?
+        return unit_check_like_marketname(self)
+      else
+
+        return unit_check_like_marketname(self)
+
+      end
+    else
+      return unit_check_like_marketname(self)
+    end
+    return self.marketing_name
+  end
+
+  def unit_check_like_marketname(unitObj)
+    marketing_nameSplit = unitObj.marketing_name.split('-')
+    if marketing_nameSplit.count > 1
+      marketing_name = marketing_nameSplit[1..marketing_nameSplit.length-1].map {|str| "#{str}"}.join('-')
+      unit = Unit.where('community_id = ? AND marketing_name LIKE ? ', unitObj.community_id, "%-#{marketing_name}")
+      if unit.count == 1
+        return marketing_name
+      end
+      if unit.count >= 2
+        return unitObj.marketing_name
+      end
+    else
+      return unit_check_same_marketname(self)
+    end
+  end
+
+  def unit_check_same_marketname(unitObj)
+    unit = Unit.where(community_id: self.community_id,marketing_name: unitObj.marketing_name)
+    if unit.count == 1
+      return unitObj.marketing_name
+    end
+    if unit.count >= 2
+      if unitObj.building.present?
+        return unitObj.building + "-" + unitObj.marketing_name
+      else
+        return unitObj.marketing_name
+      end
+    end
+  end
+
   def populate_image_urls
     if image.present?
       set_standard_url('Unit',id)

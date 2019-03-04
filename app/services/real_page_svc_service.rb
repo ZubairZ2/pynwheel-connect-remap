@@ -131,12 +131,7 @@ class RealPageSvcService < BaseService
               unit = Unit.find_by(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID])#.first_or_initialize
               if unit.present?
                 unless unit.manual_override
-                  com = Community.find community_id
-                  if com.name == "Centre pointe check"
-                    u2 = Unit.find_by(provider: "realpagesvc",community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber])
-                    u2.marketing_name = u[:UnitNumber]
-                    u2.save(validate: false)
-                  end
+
                   # unit.property_id = u[:SiteID]
                   # unit.provider_unit_id = u[:UnitID]
                   # unit.unit_type = u[:UnitNumber]
