@@ -444,7 +444,7 @@ json.ui_settigs do
         else
           json.global_navigation_icons_position "Above the text"
         end
-        json.global_nav_button_icon_size @community.design.expressionist.present? ? (@community.design.expressionist.global_nav_button_icon_size.present? ? @community.design.expressionist.global_nav_button_icon_size : "55px") : "55px"
+        # json.global_nav_button_icon_size @community.design.expressionist.present? ? (@community.design.expressionist.global_nav_button_icon_size.present? ? @community.design.expressionist.global_nav_button_icon_size : "55px") : "55px"
         if @community.theme_name == "modernist1"
           json.global_navigation_show_background_color true
         elsif @community.theme_name == "expressionist"
