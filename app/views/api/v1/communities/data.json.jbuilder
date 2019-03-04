@@ -10,11 +10,11 @@ json.ui_settigs do
   end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
   if @community.theme_name == "futurist" || @community.theme_name == "modernist"
-    json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
-  else
     json.secondary_logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
+  else
+    json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   end
-  json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+  json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
 
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
