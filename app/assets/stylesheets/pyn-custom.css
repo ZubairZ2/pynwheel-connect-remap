@@ -2755,3 +2755,13 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
   z-index: 100 !important;
 }
+.entrata_label
+{
+    padding-top: 15px;
+    font-size: 16px;
+    font-family: Brown Light, sans-serif;
+}
+.entrata_input
+{
+    margin-right: -15px;
+}

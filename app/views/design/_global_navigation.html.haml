@@ -89,7 +89,7 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Global navigation button height 
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :global_nav_buttons_height , options_for_select(navigation_button_height_options,d.object.global_nav_buttons_height),{},{class: "form-control global-navigation-field"}
+              = d.select :global_nav_buttons_height , options_for_select(navigation_button_height_options,d.object.global_nav_buttons_height.present? ? d.object.global_nav_buttons_height : "110px"),{},{class: "form-control global-navigation-field"}
       .row.button-width-field-on-global-navigation
         .col-lg-10
           .form-group.mt-30

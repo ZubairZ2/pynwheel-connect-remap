@@ -5,7 +5,7 @@ class PsiService < BaseService
     property_ids.each do |property_id|
       begin
         @@floorplanHash = {}
-        url = credentials.url
+        url = "https://"+credentials.url+".entrata.com/api/v1/propertyunits"
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
@@ -148,7 +148,7 @@ class PsiService < BaseService
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
-        url = credentials.url
+        url = "https://"+credentials.url+".entrata.com/api/v1/propertyunits"
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id

@@ -334,7 +334,8 @@ function selectDataProvider(data_provider){
 function showPsiFields(){
     $('.credential_fields').hide();
     //removeValidationsClass();
-    $('#url').show();
+    $('#url').hide();
+    $('.entrata_url').show();
     //$('#community_credential_attributes_url').addClass("validate[required]");
     $('#password').show();
     //$('#community_credential_attributes_password').addClass("validate[required]");
