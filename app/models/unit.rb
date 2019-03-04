@@ -65,18 +65,13 @@ class Unit < ApplicationRecord
   end
 
   def unit_market
-    if self.provider == "realpagesvc" || self.provider == "zaremba" || self.provider == "realpagesvc_new" || self.provider == "zaremba_new"
-      if self.building.present?
-        return unit_check_like_marketname(self)
-      else
-
-        return unit_check_like_marketname(self)
-
-      end
-    else
-      return unit_check_like_marketname(self)
+    unless self.marketing_name.present?
+      return ""
     end
-    return self.marketing_name
+    return unit_check_same_marketname(self)
+    # return unit_check_like_marketname(self)
+    #
+    # return self.marketing_name
   end
 
   def unit_check_like_marketname(unitObj)
