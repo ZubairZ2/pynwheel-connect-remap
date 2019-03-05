@@ -786,7 +786,7 @@ module ApplicationHelper
      "34px","36px","38px","40px","42px","44px","46px","48px","50px"]
   end
   def home_page_icons_position_option
-    ["Left of text","Right of text","Above the text"]
+    ["Left of text","Right of text","Above of text"]
   end
   def global_nav_button_icon_size_option
     ["65px","55px","45px","35px","25px"]
