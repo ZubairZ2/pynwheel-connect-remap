@@ -240,7 +240,7 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Global navigation icons position
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :global_navigation_icons_position , options_for_select(home_page_icons_position_option,e.object.global_navigation_icons_position.present? ? e.object.global_navigation_icons_position : 'Left of text'),{},{class: "form-control global-navigation-field global_navigation_icons_position"}
+              = e.select :global_navigation_icons_position , options_for_select(global_nav_icons_position_option,e.object.global_navigation_icons_position.present? ? e.object.global_navigation_icons_position : 'Above the text'),{},{class: "form-control global-navigation-field global_navigation_icons_position"}
       .row
         .col-lg-10
           .form-group.mt-30
