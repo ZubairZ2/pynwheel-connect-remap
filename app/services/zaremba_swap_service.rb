@@ -49,9 +49,10 @@ class ZarembaSwapService < BaseService
       flag = 0
       vacateDate = ""
 
-      # unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["MarketingName"])
-      # unless unit.present?
-      unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["BuildingID"]+"-"+u["MarketingName"])
+      unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["MarketingName"])
+      unless unit.present?
+        unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["BuildingID"]+"-"+u["MarketingName"])
+      end
       if unit.present?
         # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
         # u1.each do |u2|
@@ -66,7 +67,7 @@ class ZarembaSwapService < BaseService
 
         unit.property_id = property_id
         unit.provider = "zaremba_new"
-        unit.provider_unit_id =  u["BuildingID"]+"-"+u["IDValue"]
+        unit.provider_unit_id =  u["IDValue"]
         unit.unit_type = u["UnitType"]
 
         # if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building

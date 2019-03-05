@@ -137,12 +137,12 @@ class RealPageSvcStaticService < BaseService
                 unit.provider_unit_id = u[:UnitID]
                 unit.unit_type = u[:UnitNumber]
                 if u[:BuildingID].present?
-                  unit.marketing_name = u[:UnitNumber]
-                else
-                  unit.marketing_name = u[:UnitNumber]
+                  unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
+                unit.marketing_name = u[:UnitNumber]
+
                 unit.floorplan_id = u[:FloorplanID]
-                unit.building = u[:BuildingNumber]
+
                 # unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 # unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"

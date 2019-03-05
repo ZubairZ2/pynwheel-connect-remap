@@ -175,7 +175,7 @@ class RealPageSvcSwapService < BaseService
                 unit.property_id = u[:SiteID]
                 unit.unit_type = u[:UnitNumber]
                 unit.floorplan_id = u[:FloorplanID]
-                unit.building = u[:BuildingID]
+                unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
@@ -244,10 +244,10 @@ class RealPageSvcSwapService < BaseService
                 unit.provider_unit_id = u[:UnitID]
                 unit.unit_type = u[:UnitNumber]
                 if u[:BuildingID].present?
-                  unit.marketing_name = u[:BuildingID] + "-" + u[:UnitNumber]
-                else
-                  unit.marketing_name = u[:UnitNumber]
+                  unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
+                unit.marketing_name = u[:UnitNumber]
+
                 unit.building = u[:BuildingID]
                 unit.floorplan_id = u[:FloorplanID]
                 unit.market_rent = u[:BaseRentAmount]
