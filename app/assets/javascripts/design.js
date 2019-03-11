@@ -2429,6 +2429,7 @@ function showTabsAccordingToTheme(theme) {
   // }
   if (theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural' || theme == 'gables_custom') {
     $('#font-tab').parent().addClass('hidden');
+    $('#community-map-marker-tab').removeClass('hidden');
     $('#menu-tab').parent().addClass('hidden');
     //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
     //$('#overlay-tab').parent().addClass('hidden');
@@ -2442,14 +2443,40 @@ function showTabsAccordingToTheme(theme) {
     $('.mordernist_property_map_color_field').addClass('hidden');
     $('.amenity_map_marker_color').removeClass('hidden');
     $('.modernist_amenity_map_marker_color').addClass('hidden');
-
     $('#futurist_ebrochure_header_background_color').addClass('hidden');
     $('#modernist_ebrochure_header_background_color').addClass('hidden');
     $('#panther_ebrochure_header_background_color').addClass('hidden');
     $('#expressionist_ebrochure_header_background_color').addClass('hidden');
     $('#gables_ebrochure_header_background_color').removeClass('hidden');
+    $('.gables_property_map_size_field').removeClass('hidden');
+    $('.gables_amenity_map_marker_size').removeClass('hidden');
+
+      $('.futurist_property_map_color_field').addClass('hidden');
+      $('.expressionist_property_map_color_field').addClass('hidden');
+      $('.panther_property_map_color_field').addClass('hidden');
+
+      $('.futurist_amenity_map_marker_color').addClass('hidden');
+      $('.expressionist_amenity_map_marker_color').addClass('hidden');
+      $('.panther_amenity_map_marker_color').addClass('hidden');
+
+      $('.modernist_property_map_size_field').addClass('hidden');
+      $('.futurist_property_map_size_field').addClass('hidden');
+      $('.expressionist_property_map_size_field').addClass('hidden');
+      $('.panther_property_map_size_field').addClass('hidden');
+
+      $('.futurist_amenity_map_marker_size').addClass('hidden');
+      $('.modernist_amenity_map_marker_size').addClass('hidden');
+      $('.expressionist_amenity_map_marker_size').addClass('hidden');
+      $('.panther_amenity_map_marker_size').addClass('hidden');
+
+      $('.futurist_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.expressionist_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.panther_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.gables_unit_floorplan_map_marker_color').removeClass('hidden');
+      $('.modernist_unit_floorplan_map_marker_color').addClass('hidden');
   }
   else if (theme == 'modernist') {
+      $('#community-map-marker-tab').removeClass('hidden');
       $('#font-tab').parent().removeClass('hidden');
       $('#menu-tab').parent().removeClass('hidden');
       //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
@@ -2464,16 +2491,43 @@ function showTabsAccordingToTheme(theme) {
       $('.mordernist_property_map_color_field').removeClass('hidden');
       $('.amenity_map_marker_color').addClass('hidden');
       $('.modernist_amenity_map_marker_color').removeClass('hidden');
-
-
       $('#futurist_ebrochure_header_background_color').addClass('hidden');
       $('#modernist_ebrochure_header_background_color').removeClass('hidden');
       $('#panther_ebrochure_header_background_color').addClass('hidden');
       $('#expressionist_ebrochure_header_background_color').addClass('hidden');
       $('#gables_ebrochure_header_background_color').addClass('hidden');
+      $('.gables_property_map_size_field').addClass('hidden');
+      $('.gables_amenity_map_marker_size').addClass('hidden');
+      $('.futurist_property_map_color_field').addClass('hidden');
+      $('.expressionist_property_map_color_field').addClass('hidden');
+      $('.panther_property_map_color_field').addClass('hidden');
+      $('.futurist_amenity_map_marker_color').addClass('hidden');
+      $('.expressionist_amenity_map_marker_color').addClass('hidden');
+      $('.panther_amenity_map_marker_color').addClass('hidden');
+      $('.modernist_property_map_size_field').removeClass('hidden');
+      $('.futurist_property_map_size_field').addClass('hidden');
+      $('.expressionist_property_map_size_field').addClass('hidden');
+      $('.panther_property_map_size_field').addClass('hidden');
+
+      $('.futurist_amenity_map_marker_size').addClass('hidden');
+      $('.modernist_amenity_map_marker_size').removeClass('hidden');
+      $('.expressionist_amenity_map_marker_size').addClass('hidden');
+      $('.panther_amenity_map_marker_size').addClass('hidden');
+
+
+      $('.futurist_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.expressionist_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.panther_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.gables_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.modernist_unit_floorplan_map_marker_color').removeClass('hidden');
+  }
+  else if (theme == 'cubist')
+  {
+      $('#community-map-marker-tab').addClass('hidden');
   }
   else if (theme == 'expressionist')
   {
+      $('#community-map-marker-tab').removeClass('hidden');
       $('#font-tab').parent().addClass('hidden');
       $('#menu-tab').parent().addClass('hidden');
       //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
@@ -2488,21 +2542,41 @@ function showTabsAccordingToTheme(theme) {
       $('.mordernist_property_map_color_field').addClass('hidden');
       $('.amenity_map_marker_color').addClass('hidden');
       $('.modernist_amenity_map_marker_color').addClass('hidden');
-
-
       $('#futurist_ebrochure_header_background_color').addClass('hidden');
       $('#modernist_ebrochure_header_background_color').addClass('hidden');
       $('#panther_ebrochure_header_background_color').addClass('hidden');
       $('#expressionist_ebrochure_header_background_color').removeClass('hidden');
       $('#gables_ebrochure_header_background_color').addClass('hidden');
+      $('.gables_property_map_size_field').addClass('hidden');
+      $('.gables_amenity_map_marker_size').addClass('hidden');
+      $('.futurist_property_map_color_field').addClass('hidden');
+      $('.expressionist_property_map_color_field').removeClass('hidden');
+      $('.panther_property_map_color_field').addClass('hidden');
+      $('.futurist_amenity_map_marker_color').addClass('hidden');
+      $('.expressionist_amenity_map_marker_color').removeClass('hidden');
+      $('.panther_amenity_map_marker_color').addClass('hidden');
+      $('.modernist_property_map_size_field').addClass('hidden');
+      $('.futurist_property_map_size_field').addClass('hidden');
+      $('.expressionist_property_map_size_field').removeClass('hidden');
+      $('.panther_property_map_size_field').addClass('hidden');
 
+      $('.futurist_amenity_map_marker_size').addClass('hidden');
+      $('.modernist_amenity_map_marker_size').addClass('hidden');
+      $('.expressionist_amenity_map_marker_size').removeClass('hidden');
+      $('.panther_amenity_map_marker_size').addClass('hidden');
+
+      $('.futurist_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.expressionist_unit_floorplan_map_marker_color').removeClass('hidden');
+      $('.panther_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.gables_unit_floorplan_map_marker_color').addClass('hidden');
+      $('.modernist_unit_floorplan_map_marker_color').addClass('hidden');
   }
   else
   {
+      $('#community-map-marker-tab').removeClass('hidden');
       $('#font-tab').parent().addClass('hidden');
       $('#menu-tab').parent().addClass('hidden');
       $('#gables-tab').parent().addClass('hidden');
-
       $('#global-navigation-tab').parent().addClass('hidden');
       $('#filter-panel-tab').parent().addClass('hidden');
       $('#home-page-tab').parent().addClass('hidden');
@@ -2512,12 +2586,14 @@ function showTabsAccordingToTheme(theme) {
       $('.mordernist_property_map_color_field').addClass('hidden');
       $('.amenity_map_marker_color').addClass('hidden');
       $('.modernist_amenity_map_marker_color').addClass('hidden');
-
       $('#futurist_ebrochure_header_background_color').addClass('hidden');
       $('#modernist_ebrochure_header_background_color').addClass('hidden');
       $('#panther_ebrochure_header_background_color').addClass('hidden');
       $('#expressionist_ebrochure_header_background_color').addClass('hidden');
       $('#gables_ebrochure_header_background_color').addClass('hidden');
+
+      $('.gables_property_map_size_field').addClass('hidden');
+      $('.gables_amenity_map_marker_size').addClass('hidden');
 
       if (theme == 'futurist')
       {
@@ -2526,6 +2602,28 @@ function showTabsAccordingToTheme(theme) {
           $('#panther_ebrochure_header_background_color').addClass('hidden');
           $('#expressionist_ebrochure_header_background_color').addClass('hidden');
           $('#gables_ebrochure_header_background_color').addClass('hidden');
+          $('.futurist_property_map_color_field').removeClass('hidden');
+          $('.expressionist_property_map_color_field').addClass('hidden');
+          $('.panther_property_map_color_field').addClass('hidden');
+          $('.futurist_amenity_map_marker_color').removeClass('hidden');
+          $('.expressionist_amenity_map_marker_color').addClass('hidden');
+          $('.panther_amenity_map_marker_color').addClass('hidden');
+          $('.modernist_property_map_size_field').addClass('hidden');
+          $('.futurist_property_map_size_field').removeClass('hidden');
+          $('.expressionist_property_map_size_field').addClass('hidden');
+          $('.panther_property_map_size_field').addClass('hidden');
+
+          $('.futurist_amenity_map_marker_size').removeClass('hidden');
+          $('.modernist_amenity_map_marker_size').addClass('hidden');
+          $('.expressionist_amenity_map_marker_size').addClass('hidden');
+          $('.panther_amenity_map_marker_size').addClass('hidden');
+
+          $('.futurist_unit_floorplan_map_marker_color').removeClass('hidden');
+          $('.expressionist_unit_floorplan_map_marker_color').addClass('hidden');
+          $('.panther_unit_floorplan_map_marker_color').addClass('hidden');
+          $('.gables_unit_floorplan_map_marker_color').addClass('hidden');
+          $('.modernist_unit_floorplan_map_marker_color').addClass('hidden');
+
       }
       else if (theme == 'panther')
       {
@@ -2534,6 +2632,28 @@ function showTabsAccordingToTheme(theme) {
           $('#panther_ebrochure_header_background_color').removeClass('hidden');
           $('#expressionist_ebrochure_header_background_color').addClass('hidden');
           $('#gables_ebrochure_header_background_color').addClass('hidden');
+          $('.futurist_property_map_color_field').addClass('hidden');
+          $('.expressionist_property_map_color_field').addClass('hidden');
+          $('.panther_property_map_color_field').removeClass('hidden');
+          $('.futurist_amenity_map_marker_color').addClass('hidden');
+          $('.expressionist_amenity_map_marker_color').addClass('hidden');
+          $('.panther_amenity_map_marker_color').removeClass('hidden');
+
+          $('.modernist_property_map_size_field').addClass('hidden');
+          $('.futurist_property_map_size_field').addClass('hidden');
+          $('.expressionist_property_map_size_field').addClass('hidden');
+          $('.panther_property_map_size_field').removeClass('hidden');
+
+          $('.futurist_amenity_map_marker_size').addClass('hidden');
+          $('.modernist_amenity_map_marker_size').addClass('hidden');
+          $('.expressionist_amenity_map_marker_size').addClass('hidden');
+          $('.panther_amenity_map_marker_size').removeClass('hidden');
+
+          $('.futurist_unit_floorplan_map_marker_color').addClass('hidden');
+          $('.expressionist_unit_floorplan_map_marker_color').addClass('hidden');
+          $('.panther_unit_floorplan_map_marker_color').removeClass('hidden');
+          $('.gables_unit_floorplan_map_marker_color').addClass('hidden');
+          $('.modernist_unit_floorplan_map_marker_color').addClass('hidden');
       }
   }
     ///////////////////////// Database changes////////////////////////

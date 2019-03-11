@@ -3,16 +3,16 @@
   = f.fields_for :design do |d|
     .row
       .col-md-12
-        %p.title-box Customize Map Marker
+        %p.title-box Customize Neighborhood Map Marker
     .row
       .col-lg-12
         %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-          Map Marker Options
+          Neighborhood Map Marker Options
     .row
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Map marker background color
+            Neighborhood Map marker background color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -22,7 +22,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Map marker style
+            Neighborhood Map marker style
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
             = d.select :marker_style , options_for_select(["Tear Drop","Circle"],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}       
