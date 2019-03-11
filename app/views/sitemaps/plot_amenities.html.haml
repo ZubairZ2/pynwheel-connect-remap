@@ -19,11 +19,37 @@
           
           %span.hidden#active_y_plot 0
 
-          - marker_font_size = @community.design.amenity_map_marker_size_integer
-          - marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
+          - if @community.theme_name.include?('gables')
+            - marker_color = @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'modernist'
+            - marker_color = @community.design.modernists_amenity_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color
+          - elsif @community.theme_name == 'futurist'
+            - marker_color = @community.design.futurist_amenity_map_marker_color.present? ? @community.design.futurist_amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'expressionist'
+            - marker_color = @community.design.expressionist__amenity_map_marker_color.present? ? @community.design.expressionist__amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'panther'
+            - marker_color = @community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : "#d37474"
+          - else
+            - marker_color = 'rgba(247, 0, 0, 0.61)'
+
+          - if @community.theme_name.include?('gables')
+            - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : "30"
+          - elsif @community.theme_name == 'modernist'
+            - marker_font_size = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : "30"
+          - elsif @community.theme_name == 'futurist'
+            - marker_font_size = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : "30"
+          - elsif @community.theme_name == 'expressionist'
+            - marker_font_size = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : "30"
+          - elsif @community.theme_name == 'panther'
+            - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : "30"
+          - else
+            - marker_font_size = '30'
+
+          -#- marker_font_size = @community.design.amenity_map_marker_size_integer
+          -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
           - marker_font_size = marker_font_size -5
           - camera_font_size = marker_font_size / 2
-          - camera_margin = (@community.design.amenity_map_marker_size_integer <= 27 ? 3 : (@community.design.amenity_map_marker_size_integer <= 30 ? 4 : (@community.design.amenity_map_marker_size_integer <= 33 ? 5 : (@community.design.amenity_map_marker_size_integer <= 35 ? 6 : 6))))
+          - camera_margin = (marker_font_size <= 27 ? 3 : (marker_font_size <= 30 ? 4 : (marker_font_size <= 33 ? 5 : (marker_font_size <= 35 ? 6 : 6))))
           %span.hidden#marker-font-size #{marker_font_size}
           %span.hidden#marker-color #{marker_color}
           %span.hidden#camera-margin #{camera_margin}
