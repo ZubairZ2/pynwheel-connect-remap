@@ -20,7 +20,19 @@
           %span.hidden#active_y_plot 0
 
           - marker_font_size = @community.design.amenity_map_marker_size_integer
-          - marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
+          - if @community.theme_name.include?('gables')
+            - marker_color = @community.design.gables_unit_floorplan_map_marker_color.present? ? @community.design.gables_unit_floorplan_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'modernist'
+            - marker_color = @community.design.modernist_unit_floorplan_map_marker_color.present? ? @community.design.modernist_unit_floorplan_map_marker_color : (@community.design.primary_color.present? ? @community.design.primary_color : "#CF492F")
+          - elsif @community.theme_name == 'futurist'
+            - marker_color = @community.design.futurist_unit_floorplan_map_marker_color.present? ? @community.design.futurist_unit_floorplan_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'expressionist'
+            - marker_color = @community.design.expressionist_unit_floorplan_map_marker_color.present? ? @community.design.expressionist_unit_floorplan_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'panther'
+            - marker_color = @community.design.panther_unit_floorplan_map_marker_color.present? ? @community.design.panther_unit_floorplan_map_marker_color : "#d37474"
+          - else
+            - marker_color = 'rgba(247, 0, 0, 0.61)'
+          -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
           - marker_font_size = marker_font_size -5
           - marker_font_size = 27
           - camera_font_size = marker_font_size / 2

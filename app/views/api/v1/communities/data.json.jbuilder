@@ -19,20 +19,71 @@ json.ui_settigs do
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
-    json.property_map_color @community.design.present? ? (@community.design.modernist_map_marker_color.present? ? (@community.design.modernist_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#d37474'
+    json.property_map_color @community.design.present? ? (@community.design.modernist_map_marker_color.present? ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#d37474'
+  elsif @community.temporary_theme_name == 'futurist'
+    json.property_map_color @community.design.present? ? (@community.design.futurist_property_map_marker_color.present? ?  @community.design.futurist_property_map_marker_color : "#d37474") : "#d37474"
+  elsif @community.temporary_theme_name == 'panther'
+    json.property_map_color @community.design.present? ? (@community.design.panther_property_map_marker_color.present? ?  @community.design.panther_property_map_marker_color : "#d37474") : "#d37474"
+  elsif @community.temporary_theme_name == 'expressionist'
+    json.property_map_color @community.design.present? ? (@community.design.expressionist_property_map_marker_color.present? ?  @community.design.expressionist_property_map_marker_color : "#d37474") : "#d37474"
   else
     json.property_map_color '#d37474'
   end
-  json.property_map_size @community.design.present? ? (@community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer.to_s + "px" : '30px') : '30px'
 
+  if @community.theme_name.include?('gables')
+    json.property_map_size @community.design.present? ? (@community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer.to_s + "px" : '30px') : '30px'
+  elsif @community.temporary_theme_name == 'modernist'
+    json.property_map_size @community.design.present? ? (@community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size.to_s + "px" : '30px') : '30px'
+  elsif @community.temporary_theme_name == 'futurist'
+    json.property_map_size @community.design.present? ? (@community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size.to_s + "px" : '30px') : '30px'
+  elsif @community.temporary_theme_name == 'panther'
+    json.property_map_size @community.design.present? ? (@community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size.to_s + "px" : '30px') : '30px'
+  elsif @community.temporary_theme_name == 'expressionist'
+    json.property_map_size @community.design.present? ? (@community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size.to_s + "px" : '30px') : '30px'
+  else
+    json.property_map_color '#d37474'
+  end
   if @community.theme_name.include?('gables')
     json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#FF0000'
   elsif @community.temporary_theme_name == 'modernist'
     json.amenity_map_marker_color @community.design.present? ? (@community.design.modernists_amenity_map_marker_color.present? ? (@community.design.modernists_amenity_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernists_amenity_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
+  elsif @community.temporary_theme_name == 'futurist'
+    json.amenity_map_marker_color @community.design.present? ? (@community.design.futurist_amenity_map_marker_color.present? ? @community.design.futurist_amenity_map_marker_color : '#d37474' ) : '#d37474'
+  elsif @community.temporary_theme_name == 'expressionist'
+    json.amenity_map_marker_color @community.design.present? ? (@community.design.expressionist__amenity_map_marker_color.present? ? @community.design.expressionist__amenity_map_marker_color : '#d37474' ) : '#d37474'
+  elsif @community.temporary_theme_name == 'panther'
+    json.amenity_map_marker_color @community.design.present? ? (@community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : '#d37474' ) : '#d37474'
   else
     json.amenity_map_marker_color '#ff0000'
   end
-  json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer.to_s + "px" : '30px') : '30px'
+
+  if @community.theme_name.include?('gables')
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer.to_s + "px" : '30px') : '30px'
+  elsif @community.temporary_theme_name == 'modernist'
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.modernist_amenity_map_size.present? ? (@community.design.modernist_amenity_map_size == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernists_amenity_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
+  elsif @community.temporary_theme_name == 'futurist'
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : '#d37474' ) : '#d37474'
+  elsif @community.temporary_theme_name == 'expressionist'
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : '#d37474' ) : '#d37474'
+  elsif @community.temporary_theme_name == 'panther'
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : '#d37474' ) : '#d37474'
+  else
+    json.amenity_map_marker_size '#ff0000'
+  end
+
+  if @community.theme_name.include?('gables')
+    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.gables_unit_floorplan_map_marker_color.present? ? @community.design.gables_unit_floorplan_map_marker_color.to_s + "px" : '30px') : '30px'
+  elsif @community.temporary_theme_name == 'modernist'
+    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.modernist_unit_floorplan_map_marker_color.present? ? (@community.design.modernist_unit_floorplan_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_unit_floorplan_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
+  elsif @community.temporary_theme_name == 'futurist'
+    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.futurist_unit_floorplan_map_marker_color.present? ? @community.design.futurist_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
+  elsif @community.temporary_theme_name == 'expressionist'
+    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.expressionist_unit_floorplan_map_marker_color.present? ? @community.design.expressionist_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
+  elsif @community.temporary_theme_name == 'panther'
+    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.panther_unit_floorplan_map_marker_color.present? ? @community.design.panther_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
+  else
+    json.unit_floorplan_map_marker_color '#ff0000'
+  end
   #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
