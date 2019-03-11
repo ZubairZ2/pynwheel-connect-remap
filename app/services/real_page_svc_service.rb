@@ -152,9 +152,6 @@ class RealPageSvcService < BaseService
                   if u[:AvailableDate].present?
                     unit.available_date = u[:AvailableDate]
                   end
-                  if u[:BuildingNumber].present?
-                    unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
-                  end
                   if u[:MadeReadyDate].present?
                     unit.available_date = u[:MadeReadyDate]
                   end
