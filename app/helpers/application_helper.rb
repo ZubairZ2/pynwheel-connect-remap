@@ -699,7 +699,7 @@ module ApplicationHelper
     ["Top","Middle","Bottom"]
   end
   def horizontal_menu_position_homepage
-    ["Top","Middle","Bottom","Bottom left","Vertical left","Vertical right","Vertical middle"]
+    ["Top","Middle","Bottom"]
   end
   
   def home_page_position_of_logo
