@@ -49,7 +49,9 @@
           -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
           - marker_font_size = marker_font_size -5
           - camera_font_size = marker_font_size / 2
-          - camera_margin = (marker_font_size <= 27 ? 3 : (marker_font_size <= 30 ? 4 : (marker_font_size <= 33 ? 5 : (marker_font_size <= 35 ? 6 : 6))))
+
+          - marker_font_size2 = marker_font_size
+          - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
           %span.hidden#marker-font-size #{marker_font_size}
           %span.hidden#marker-color #{marker_color}
           %span.hidden#camera-margin #{camera_margin}
