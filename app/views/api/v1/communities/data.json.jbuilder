@@ -72,7 +72,7 @@ json.ui_settigs do
   end
 
   if @community.theme_name.include?('gables')
-    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.gables_unit_floorplan_map_marker_color.present? ? @community.design.gables_unit_floorplan_map_marker_color.to_s + "px" : '30px') : '30px'
+    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.gables_unit_floorplan_map_marker_color.present? ? @community.design.gables_unit_floorplan_map_marker_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
     json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.modernist_unit_floorplan_map_marker_color.present? ? (@community.design.modernist_unit_floorplan_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_unit_floorplan_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
   elsif @community.temporary_theme_name == 'futurist'
