@@ -16,7 +16,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Gables Property map marker color
+            Property map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -26,7 +26,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Modernist Property map marker color
+            Property map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -37,7 +37,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Futurist Property map marker color
+            Property map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -48,7 +48,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Experssionst Property map marker color
+            Property map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -59,7 +59,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Panther Property map marker color
+            Property map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -72,7 +72,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Gables Property map marker size
+            Property map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
             = d.number_field :property_map_size_integer,{class: "form-control property-map-marker-field ",:id => "property_map_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;"}
@@ -81,7 +81,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Modernist Property map marker size
+            Property map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
             = d.number_field :modernist_property_map_size,{class: "form-control property-map-marker-field ",:id => "modernist_property_map_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;",:value => d.object.modernist_property_map_size.present? ? d.object.modernist_property_map_size : 30}
@@ -90,7 +90,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            futurist Property map marker size
+            Property map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
             = d.number_field :futurist_property_map_size,{class: "form-control property-map-marker-field ",:id => "futurist_property_map_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;",:value => d.object.futurist_property_map_size.present? ? d.object.futurist_property_map_size : 30}
@@ -108,7 +108,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Panther Property map marker size
+            Property map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
             = d.number_field :panther_property_map_size,{class: "form-control property-map-marker-field ",:id => "panther_property_map_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;",:value => d.object.panther_property_map_size.present? ? d.object.panther_property_map_size : 30}
@@ -118,7 +118,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Gables Amenity map marker color
+            Amenity map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -128,7 +128,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Modernist Amenity map marker color
+            Amenity map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -139,7 +139,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Futurist Amenity map marker color
+            Amenity map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -150,7 +150,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Experssionst Amenity map marker color
+            Amenity map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -161,7 +161,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Panther Amenity map marker color
+            Amenity map marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -174,7 +174,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Gables Amenity map marker size
+            Amenity map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
             = d.number_field :amenity_map_marker_size_integer ,{class: "form-control property-map-marker-field ",:id => "amenity_map_marker_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;"}
@@ -183,7 +183,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Futurist Amenity map marker size
+            Amenity map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.number_field :futurist_amenity_map_size ,{class: "form-control property-map-marker-field ",:id => "futurist_amenity_map_marker_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;",:value => d.object.futurist_amenity_map_size.present? ? d.object.futurist_amenity_map_size : 30}
 
@@ -191,7 +191,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Modernist Amenity map marker size
+            Amenity map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.number_field :modernist_amenity_map_size ,{class: "form-control property-map-marker-field ",:id => "modernist_amenity_map_marker_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;",:value => d.object.modernist_amenity_map_size.present? ? d.object.modernist_amenity_map_size : 30}
 
@@ -199,7 +199,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Expressionist Amenity map marker size
+            Amenity map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.number_field :expressionist_amenity_map_size ,{class: "form-control property-map-marker-field ",:id => "expressionist_amenity_map_marker_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;",:value => d.object.expressionist_amenity_map_size.present? ? d.object.expressionist_amenity_map_size : 30}
 
@@ -207,7 +207,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            panther Amenity map marker size
+            Amenity map marker size
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             = d.number_field :panther_amenity_map_size ,{class: "form-control property-map-marker-field ",:id => "panther_amenity_map_marker_size_integer_field",:max => 35,:min => 25,:step => 1,:style => "line-height: 3.2;",:value => d.object.panther_amenity_map_size.present? ? d.object.panther_amenity_map_size : 30}
 
@@ -215,7 +215,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Futurist Unit/Floorplan amenity marker color
+            Unit/Floorplan amenity marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -225,7 +225,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Experssionist Unit/Floorplan amenity marker color
+            Unit/Floorplan amenity marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -235,7 +235,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Panther Unit/Floorplan amenity marker color
+            Unit/Floorplan amenity marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -245,7 +245,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Gables Unit/Floorplan amenity marker color
+            Unit/Floorplan amenity marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
@@ -255,7 +255,7 @@
       .col-lg-10
         .form-group.mt-30
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            Modernist Unit/Floorplan amenity marker color
+            Unit/Floorplan amenity marker color
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             .input-group.colorpicker-style.hex-format-colorpicker
               .input-group-addon
