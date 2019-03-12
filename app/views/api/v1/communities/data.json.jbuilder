@@ -41,7 +41,7 @@ json.ui_settigs do
   elsif @community.temporary_theme_name == 'expressionist'
     json.property_map_size @community.design.present? ? (@community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size.to_s + "px" : '30px') : '30px'
   else
-    json.property_map_color '#d37474'
+    json.property_map_color '30px'
   end
   if @community.theme_name.include?('gables')
     json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#FF0000'
@@ -60,15 +60,15 @@ json.ui_settigs do
   if @community.theme_name.include?('gables')
     json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer.to_s + "px" : '30px') : '30px'
   elsif @community.temporary_theme_name == 'modernist'
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.modernist_amenity_map_size.present? ? (@community.design.modernist_amenity_map_size == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernists_amenity_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
   elsif @community.temporary_theme_name == 'futurist'
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : '#d37474' ) : '#d37474'
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
   elsif @community.temporary_theme_name == 'expressionist'
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : '#d37474' ) : '#d37474'
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
   elsif @community.temporary_theme_name == 'panther'
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : '#d37474' ) : '#d37474'
+    json.amenity_map_marker_size @community.design.present? ? (@community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size.to_s + "px" : '30px' ) : '30px'
   else
-    json.amenity_map_marker_size '#ff0000'
+    json.amenity_map_marker_size '30px'
   end
 
   if @community.theme_name.include?('gables')
