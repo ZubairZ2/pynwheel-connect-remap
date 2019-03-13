@@ -136,7 +136,7 @@ class RealPageSvcStaticService < BaseService
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = u[:UnitID]
                 unit.unit_type = u[:UnitNumber]
-                if u[:BuildingID].present?
+                if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
                 unit.marketing_name = u[:UnitNumber]

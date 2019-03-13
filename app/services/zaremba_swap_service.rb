@@ -124,7 +124,7 @@ class ZarembaSwapService < BaseService
         unit.unit_type = u["UnitType"]
 
         # if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building
-        unit.marketing_name = u["BuildingID"]+"-"+u["MarketingName"]
+        unit.marketing_name = u["MarketingName"]
         # else
         #   unit.marketing_name = u["MarketingName"]
         # end
