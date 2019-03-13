@@ -178,14 +178,19 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
       if xml = @community.connect_to_provider
-        render :xml => xml
+        begin
+          render :xml => xml
+        rescue
+          flash[:error] = "Please enter correct credentials in settings before importing data."
+          redirect_to community_settings_path(:community_id=>@community.id)
+        end
       else
         flash[:error] = "Please enter correct credentials in settings before importing data."
-        redirect_to community_import_page_path(current_community) 
+        redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
       flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_import_page_path(current_community) 
+      redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
   def psi_pricing_test_connection
