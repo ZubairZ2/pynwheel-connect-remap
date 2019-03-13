@@ -16,14 +16,14 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Menu Position
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :home_page_menu_position , options_for_select(horizontal_menu_position_homepage,e.object.home_page_menu_position.present? ? e.object.home_page_menu_position : "Bottom"),{},{class: "form-control home-page-field"}
+              = e.select :home_page_menu_position , options_for_select(horizontal_menu_position_homepage,e.object.home_page_menu_position.present? ? e.object.home_page_menu_position : "Bottom"),{},{class: "form-control home-page-field",id: "home_page_menu_position"}
       .row
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Position of logo
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :home_page_position_of_logo , options_for_select(home_page_position_of_logo,e.object.home_page_position_of_logo),{},{class: "form-control home-page-field"}
+              = e.select :home_page_position_of_logo , options_for_select(home_page_position_of_logo,e.object.home_page_position_of_logo),{},{class: "form-control home-page-field",id: "home_page_position_of_logo"}
       .row
         .col-lg-10
           .form-group.mt-30
@@ -57,7 +57,7 @@
       .row
         .col-lg-10
           .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15#home_page_navigation_background_height
               Home page navigation background height 
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :home_page_navigation_background_height , options_for_select(navigation_background_height_options,d.object.home_page_navigation_background_height),{},{class: "form-control home-page-field"}
@@ -314,5 +314,8 @@
     $('.homepage_icons_position').children("option").hide();
     $('.homepage_icons_position').val("Above the text");
   }
-
+  adjustHomepagePositionOfLogo($('#home_page_menu_position').val());
+  $('#home_page_menu_position').change(function(){
+    adjustHomepagePositionOfLogo($(this).val());
+  });
   adjustLogoSizeAndButtonWidthFields($('#community_design_attributes_expressionist_attributes_home_page_position_of_logo').val());

@@ -2707,7 +2707,31 @@ function adjustLogoSizeAndButtonWidthFields(value) {
     $('#community_design_attributes_home_page_buttons_width').children("option[value^=600px]").show();
   }
 }
-
+function adjustHomepagePositionOfLogo(value){
+    if (value == 'Vertical_Left' || value == 'Vertical_Middle' || value == 'Vertical_Right') {
+        $('#home_page_navigation_background_height').text('Home page navigation background width');
+        if ($('#home_page_position_of_logo').val() == "Right" || $('#home_page_position_of_logo').val() == "Left")
+        {
+            $('#home_page_position_of_logo').val("Top");
+        }
+        $('#home_page_position_of_logo').children("option[value^=Top]").show();
+        $('#home_page_position_of_logo').children("option[value^=Bottom]").show();
+        $('#home_page_position_of_logo').children("option[value^=Right]").hide();
+        $('#home_page_position_of_logo').children("option[value^=Left]").hide();
+    }
+    else
+    {
+        $('#home_page_navigation_background_height').text('Home page navigation background height');
+        if ($('#home_page_position_of_logo').val() == "Top" || $('#home_page_position_of_logo').val() == "Bottom")
+        {
+            $('#home_page_position_of_logo').val("Right");
+        }
+        $('#home_page_position_of_logo').children("option[value^=Top]").hide();
+        $('#home_page_position_of_logo').children("option[value^=Bottom]").hide();
+        $('#home_page_position_of_logo').children("option[value^=Right]").show();
+        $('#home_page_position_of_logo').children("option[value^=Left]").show();
+    }
+}
 
 function setFontSize(value) {
   if (value == "Circular") {

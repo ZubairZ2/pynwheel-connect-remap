@@ -699,11 +699,11 @@ module ApplicationHelper
     ["Top","Middle","Bottom"]
   end
   def horizontal_menu_position_homepage
-    ["Top","Middle","Bottom"]
+    ["Top","Middle","Bottom",["Vertical Left","Vertical_Left"],["Vertical Middle","Vertical_Middle"],["Vertical Right","Vertical_Right"]]
   end
   
   def home_page_position_of_logo
-    ["Right","Left","Upper right","Upper left","Upper centre","Centre","Bottom center"]
+    [["Right align (Horizontal)","Right"],["Left align (Horizontal)","Left"],"Upper right","Upper left","Upper centre","Centre","Bottom center",["Top align (Vertical)","Top"], ["Bottom align (Vertical)","Bottom"]]
   end
   
   def home_page_logo_size
