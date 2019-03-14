@@ -28,6 +28,9 @@ class Yardi2StaticService < BaseService
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
+            puts "0000000000000000000000000000 =========================", pr
+            puts "111111111111111111111111111 =========================", pr[0]
+            puts "222222222222222222222222222 =========================", pr[1]
             if pr[0].to_s == "PropertyID"
               external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
             end
