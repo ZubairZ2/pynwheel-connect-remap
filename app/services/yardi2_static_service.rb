@@ -38,7 +38,6 @@ class Yardi2StaticService < BaseService
               ils_units << pr[1]
             end
           end
-          puts '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'*500
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           #else
@@ -46,7 +45,7 @@ class Yardi2StaticService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
         end
       rescue => e
-        puts '----------------------------------',*300+ e.message
+        puts '----------------------------------'*400, e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
