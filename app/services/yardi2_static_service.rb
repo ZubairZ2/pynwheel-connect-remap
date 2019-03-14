@@ -28,6 +28,7 @@ class Yardi2StaticService < BaseService
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
+            puts "================================================================================================================>----- ", pr[0].to_s
             if pr[0].to_s == "PropertyID"
               external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
             end
@@ -38,17 +39,18 @@ class Yardi2StaticService < BaseService
               ils_units << pr[1]
             end
           end
-          unitt = []
+          # unitt = []
+          #
+          # result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property].each do |u|
+          #   byebug
+          #   if u[0].to_s == "Floorplan"
+          #     floorplans << u[1]
+          #   end
+          #   if u[0].to_s == "ILS_Unit"
+          #     ils_units << u[1]
+          #   end
+          # end
 
-          result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property].each do |u|
-            if u[0].to_s == "Floorplan"
-              floorplans << u[1]
-            end
-            if u[0].to_s == "ILS_Unit"
-              ils_units << u[1]
-            end
-          end
-          
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           #else
