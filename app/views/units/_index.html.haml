@@ -64,6 +64,8 @@
                   %th Amenities
                   %th Actions
               %tbody
+
+                - @community_info.units.map{|i| i.marketing_name = '' if i.marketing_name.nil? }
                 - units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
                 - units.each_with_index  do |u,index|
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
