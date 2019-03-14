@@ -39,10 +39,16 @@ class Yardi2StaticService < BaseService
             end
           end
           unitt = []
-          result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property][:ILS_Unit].each do |u|
-            unitt << u
+
+          result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property].each do |u|
+            if u[0].to_s == "Floorplan"
+              floorplans << u[1]
+            end
+            if u[0].to_s == "ILS_Unit"
+              ils_units << u[1]
+            end
           end
-          puts "444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444", unitt
+          
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           #else
