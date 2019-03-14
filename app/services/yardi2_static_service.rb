@@ -38,9 +38,7 @@ class Yardi2StaticService < BaseService
               ils_units << pr[1]
             end
           end
-          if ils_units.nil?
-            puts "000000000000000000000000000000000000000"*300
-          end
+
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           #else
@@ -55,6 +53,8 @@ class Yardi2StaticService < BaseService
   end
 
   def save_yardi2_units(ils_units,property_id)
+    puts "000000000000000000000000000000000000000000000000000000000==================", ils_units[0]
+    puts "1111111111111111111111111111111111111111111111111111=====================", ils_units
     ils_units[0].lazy.each do |unit_entries|
       begin
         unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id]).first_or_initialize
