@@ -35,10 +35,12 @@ class Yardi2StaticService < BaseService
               floorplans << pr[1]
             end
             if pr[0].to_s == "ILS_Unit"
+              puts "0000000000000000000000000000 =========================", pr
+              puts "111111111111111111111111111 =========================", pr[0]
+              puts "222222222222222222222222222 =========================", pr[1]
               ils_units << pr[1]
             end
           end
-          puts "****************************888888888888888     ", ils_units
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           #else
