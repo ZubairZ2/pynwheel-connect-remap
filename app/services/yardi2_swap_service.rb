@@ -147,7 +147,7 @@ class Yardi2SwapService < BaseService
       begin
 
 
-        fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[0][:Name]).first
+        fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name]).first
         if fp.present?
           rooms = []
           floorplan.each do |f|
@@ -155,8 +155,11 @@ class Yardi2SwapService < BaseService
             if f.key?(:Room)
               rooms << f
             end
-            fp.provider_floorplan_id= f[:Id]
 
+            if f.key?(:Id)
+              fp.provider_floorplan_id= f[:Id]
+              fp.provider = "yardi_new"
+            end
             if f.key?(:MarketRent)
               if f[:MarketRent][0][:Min].to_f > 0
                 fp.market_rent = f[:MarketRent][0][:Min]
@@ -186,19 +189,25 @@ class Yardi2SwapService < BaseService
           fp.save(validate: false)
         else
 
+
+          fp = Floorplan.new
+          rooms = []
           floorplan.each do |f|
-            dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f[:Id])
-            if dup.present?
-              dup.destroy
-            end
-            fp = Floorplan.new
+
             fp.community_id = credentials.community_id
-            rooms = []
-            fp.provider = "yardi_new"
+
+
             if f.key?(:Room)
               rooms << f
             end
-            fp.provider_floorplan_id= f[:Id]
+            if f.key?(:Id)
+              dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id])
+              if dup.present?
+                dup.destroy
+              end
+              fp.provider_floorplan_id = f[:Id]
+              fp.provider = "yardi_new"
+            end
             if f.key?(:Name)
               fp.name = f[:Name]
             end
@@ -228,7 +237,6 @@ class Yardi2SwapService < BaseService
               fp.bathrooms = room[:Room][1][:Count]
             end
           end
-
           fp.save(validate: false)
         end
 
