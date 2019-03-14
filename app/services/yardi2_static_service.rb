@@ -3,6 +3,7 @@ class Yardi2StaticService < BaseService
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
+        sleep 3
         require 'rest-client'
         #################################################
         RestClient.proxy = ENV["QUOTAGUARDSTATIC_URL"]
@@ -33,9 +34,12 @@ class Yardi2StaticService < BaseService
             :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
         #result = Hash.from_xml(response.body) This method consumes a lot of memory on heroku
         result = Ox.load(response.body, mode: :hash)
+        sleep 3
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
+            sleep 3
+            puts "================================================================================================================>----- ", pr[0].to_s
             if pr[0].to_s == "PropertyID"
               external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
             end
