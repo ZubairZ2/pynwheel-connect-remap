@@ -28,21 +28,20 @@ class Yardi2StaticService < BaseService
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
-            puts "0000000000000000000000000000 =========================", pr
-            puts "111111111111111111111111111 =========================", pr[0]
-            puts "222222222222222222222222222 =========================", pr[1]
             if pr[0].to_s == "PropertyID"
+              puts "PropertyID" *30
               external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
             end
             if pr[0].to_s == "Floorplan"
+              puts "Floorplan" *30
               floorplans << pr[1]
             end
             if pr[0].to_s == "ILS_Unit"
-              puts "0000000000000000000000000000 =========================", pr
-              puts "111111111111111111111111111 =========================", pr[0]
-              puts "222222222222222222222222222 =========================", pr[1]
+              puts "ILS_Unit" *30
+
               ils_units << pr[1]
             end
+            puts "======================================================>", pr[0]
           end
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
