@@ -21,6 +21,7 @@
                 %th Image
                 %th Actions
             %tbody
+              - @floorplans.map{|x| x.name = '' if x.name.nil? }
               - @floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@floorplans).sort.map{|x,y| y}.each_with_index  do |f,index|
                 %tr
                   %td= index+1
