@@ -15,6 +15,10 @@
 
 class Imagepage < ApplicationRecord
   belongs_to :community
+
+  include RailsSortable::Model
+  set_sortable :sort
+
   has_many :additional_images, dependent: :destroy
   validates_uniqueness_of :name, scope: :community_id
   validates_presence_of :name
