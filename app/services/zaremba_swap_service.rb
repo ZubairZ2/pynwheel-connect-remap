@@ -12,11 +12,26 @@ class ZarembaSwapService < BaseService
         response = HTTParty.get(url)
         if response.present?
           result = ""
-          response['PhysicalProperty']['Property'].each do |p|
+          if response['PhysicalProperty']['Property'].class == Array
+            response['PhysicalProperty']['Property'].each do |p|
+
+              if p['IDValue'] == property_id
+                result = p
+              end
+            end
+          else
+            p = response['PhysicalProperty']['Property']
+
             if p['IDValue'] == property_id
               result = p
             end
           end
+
+          # response['PhysicalProperty']['Property'].each do |p|
+          #   if p['IDValue'] == property_id
+          #     result = p
+          #   end
+          # end
           units = []
           floorplans = []
           response['PhysicalProperty']['Property'].present? && result['ILS_Unit'].class == Array && result['ILS_Unit'].each do |pro|
@@ -71,7 +86,7 @@ class ZarembaSwapService < BaseService
         unit.unit_type = u["UnitType"]
 
         # if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building
-        unit.marketing_name = u["BuildingID"]+"-"+u["MarketingName"]
+        unit.marketing_name = u["MarketingName"]
         # else
         #   unit.marketing_name = u["MarketingName"]
         # end
