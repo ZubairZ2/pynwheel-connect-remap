@@ -12,11 +12,26 @@ class ZarembaSwapService < BaseService
         response = HTTParty.get(url)
         if response.present?
           result = ""
-          response['PhysicalProperty']['Property'].each do |p|
+          if response['PhysicalProperty']['Property'].class == Array
+            response['PhysicalProperty']['Property'].each do |p|
+
+              if p['IDValue'] == property_id
+                result = p
+              end
+            end
+          else
+            p = response['PhysicalProperty']['Property']
+
             if p['IDValue'] == property_id
               result = p
             end
           end
+
+          # response['PhysicalProperty']['Property'].each do |p|
+          #   if p['IDValue'] == property_id
+          #     result = p
+          #   end
+          # end
           units = []
           floorplans = []
           response['PhysicalProperty']['Property'].present? && result['ILS_Unit'].class == Array && result['ILS_Unit'].each do |pro|
@@ -49,7 +64,7 @@ class ZarembaSwapService < BaseService
       flag = 0
       vacateDate = ""
 
-      unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["MarketingName"])
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["MarketingName"]).last
       unless unit.present?
         unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["BuildingID"]+"-"+u["MarketingName"])
       end
@@ -67,11 +82,11 @@ class ZarembaSwapService < BaseService
 
         unit.property_id = property_id
         unit.provider = "zaremba_new"
-        unit.provider_unit_id =  u["IDValue"]
+        unit.provider_unit_id = u["BuildingID"]+"-"+u["IDValue"]
         unit.unit_type = u["UnitType"]
 
         # if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building
-        unit.marketing_name = u["BuildingID"]+"-"+u["MarketingName"]
+        unit.marketing_name = u["MarketingName"]
         # else
         #   unit.marketing_name = u["MarketingName"]
         # end

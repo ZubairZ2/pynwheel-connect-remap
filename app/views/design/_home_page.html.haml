@@ -24,13 +24,13 @@
               Position of logo
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :home_page_position_of_logo , options_for_select(home_page_position_of_logo,e.object.home_page_position_of_logo),{},{class: "form-control home-page-field",id: "home_page_position_of_logo"}
-      .row
+      .row.logo_size_div_field
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Logo size
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :home_page_logo_size , options_for_select(home_page_logo_size,e.object.home_page_logo_size),{},{class: "form-control home-page-field"}
+              = e.select :home_page_logo_size , options_for_select(home_page_logo_size,e.object.home_page_logo_size),{},{class: "form-control home-page-field", id: "logo_size_field"}
       .row
         .col-lg-10
           .form-group.mt-30
@@ -318,4 +318,22 @@
   $('#home_page_menu_position').change(function(){
     adjustHomepagePositionOfLogo($(this).val());
   });
+  $('#home_page_position_of_logo').change(function(){
+  if ($(this).val() == "Top" || $(this).val() == "Bottom")
+  {
+    $('.logo_size_div_field').hide();
+  }
+  else
+  {
+    $('.logo_size_div_field').show();
+  }
+  });
+  if ($('#home_page_position_of_logo').val() == "Top" || $('#home_page_position_of_logo').val() == "Bottom")
+  {
+    $('.logo_size_div_field').hide();
+  }
+  else
+  {
+    $('.logo_size_div_field').show();
+  }
   adjustLogoSizeAndButtonWidthFields($('#community_design_attributes_expressionist_attributes_home_page_position_of_logo').val());

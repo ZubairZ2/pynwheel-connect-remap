@@ -15,12 +15,26 @@ class ZarembaStaticService < BaseService
         fcount = 0
         if response.present?
 
-          response['PhysicalProperty']['Property'].each do |p|
+          if response['PhysicalProperty']['Property'].class == Array
+            response['PhysicalProperty']['Property'].each do |p|
+
+              if p['IDValue'] == property_id
+                result = p
+              end
+            end
+          else
+            p = response['PhysicalProperty']['Property']
 
             if p['IDValue'] == property_id
               result = p
             end
           end
+          # response['PhysicalProperty']['Property'].each do |p|
+          #
+          #   if p['IDValue'] == property_id
+          #     result = p
+          #   end
+          # end
           units = []
           floorplans = []
 

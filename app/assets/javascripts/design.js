@@ -2834,6 +2834,14 @@ function adjustHomepagePositionOfLogo(value){
         {
             $('#home_page_position_of_logo').val("Top");
         }
+        if ($('#home_page_position_of_logo').val() == "Bottom" || $('#home_page_position_of_logo').val() == "Top")
+        {
+            $('.logo_size_div_field').hide();
+        }
+        else
+        {
+            $('.logo_size_div_field').show();
+        }
         $('#home_page_position_of_logo').children("option[value^=Top]").show();
         $('#home_page_position_of_logo').children("option[value^=Bottom]").show();
         $('#home_page_position_of_logo').children("option[value^=Right]").hide();
@@ -2841,6 +2849,7 @@ function adjustHomepagePositionOfLogo(value){
     }
     else
     {
+        $('.logo_size_div_field').show();
         $('#home_page_navigation_background_height').text('Home page navigation background height');
         if ($('#home_page_position_of_logo').val() == "Top" || $('#home_page_position_of_logo').val() == "Bottom")
         {

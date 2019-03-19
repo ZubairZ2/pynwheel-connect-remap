@@ -13,10 +13,22 @@ class ZarembaConnectionService < BaseService
       result = ""
       response = HTTParty.get(url)
 
-      response['PhysicalProperty']['Property'].each do |p|
+      if response['PhysicalProperty']['Property'].class == Array
+        response['PhysicalProperty']['Property'].each do |p|
+
+          if p['IDValue'].present?
+            if p['IDValue'] == property_id
+              result = p
+            end
+          end
+        end
+      else
+        p = response['PhysicalProperty']['Property']
 
         if p['IDValue'] == property_id
           result = p
+        else
+          result = "<data>No result match with property id "+ property_id + "</data>"
         end
       end
       result
