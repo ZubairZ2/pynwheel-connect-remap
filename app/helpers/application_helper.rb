@@ -703,7 +703,7 @@ module ApplicationHelper
   end
   
   def home_page_position_of_logo
-    [["Right align (Horizontal)","Right"],["Left align (Horizontal)","Left"],"Upper right","Upper left","Upper centre","Centre","Bottom right","Bottom left","Bottom center",["Top align (Vertical)","Top"], ["Bottom align (Vertical)","Bottom"]]
+    [["Right align (Horizontal)","Right"],["Left align (Horizontal)","Left"],"Upper right","Upper left","Upper centre","Centre","Bottom center",["Top align (Vertical)","Top"], ["Bottom align (Vertical)","Bottom"]]
   end
   
   def home_page_logo_size

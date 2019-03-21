@@ -10,6 +10,7 @@ class ZarembaService < BaseService
         url = url + "?" + "filename=" + filename + ".xml" + "&" + "username=" + username + "&" + "password=" + password
 
 
+        result = ""
         response = HTTParty.get(url)
         if response.present?
 
@@ -35,11 +36,11 @@ class ZarembaService < BaseService
           # end
           units = []
           floorplans = []
-          response['PhysicalProperty']['Property'].present? && response['PhysicalProperty']['Property'].class == Array && result['ILS_Unit'].each do |pro|
+          response['PhysicalProperty']['Property'].present? && result['ILS_Unit'].class == Array && result['ILS_Unit'].each do |pro|
             units << pro
-
           end
-          response['PhysicalProperty']['Property'].present? && response['PhysicalProperty']['Property'].class == Array && result["Floorplan"].each do |pro|
+
+          response['PhysicalProperty']['Property'].present? && result['Floorplan'].class == Array && result["Floorplan"].each do |pro|
             floorplans << pro
           end
           save_zaremba_units(units,property_id)

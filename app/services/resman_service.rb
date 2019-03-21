@@ -19,6 +19,9 @@ class ResmanService < BaseService
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
+          begin
+            availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["PropertyAvailabilityURL"]
+          end
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["ILS_Unit"].each do |pro|
             units << pro
           end
@@ -26,7 +29,7 @@ class ResmanService < BaseService
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
             floorplans << pro
           end
-          save_resman_units(units,property_id)
+          save_resman_units(units,property_id,availability_url)
           save_resman_floorplans(floorplans,property_id)
           # save_website_column_of_community(response)
         else
@@ -39,7 +42,7 @@ class ResmanService < BaseService
       end
     end
   end
-  def save_resman_units(units,property_id)
+  def save_resman_units(units,property_id,availability_url)
     units.each do |u|
       vacateDate = ""
       unit = Unit.find_by(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"])#.first_or_initialize
@@ -70,6 +73,7 @@ class ResmanService < BaseService
           # building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
           # unit.building = building.present? ? building.gsub("Building ", "") : ""
           # unit.manually_updated = false
+          unit.availability_url = availability_url if availability_url.present?
           unit.save(validate: false)
         end
       end
