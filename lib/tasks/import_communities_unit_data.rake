@@ -27,7 +27,7 @@ namespace :import do
         end    
       end
       puts 'Now waiting for 2 min for 3 background jobs to complete.'
-      sleep 90
+      sleep 60
     end
   end
 end
