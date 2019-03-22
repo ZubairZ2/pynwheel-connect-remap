@@ -43,7 +43,7 @@
           - elsif @community.theme_name == 'panther'
             - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : "30"
           - else
-            - marker_font_size = '30'
+            - marker_font_size = 30
 
           -#- marker_font_size = @community.design.amenity_map_marker_size_integer
           -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
