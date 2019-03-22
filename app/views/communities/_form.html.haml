@@ -109,10 +109,10 @@
           %label Handicap accessible logo                   
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Powered by pynwheel
+    Powered by Pynwheel
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .TriSea-technologies-Switch
       %span.pr-15 No
-      = f.check_box :powered_by_btn
+      = f.check_box :powered_by_btn,:value => true
       %label.label-primary{:for => "community_powered_by_btn"}
       %span.pl-15 Yes
