@@ -16,9 +16,9 @@ namespace :import do
           when "yardirentcafe"
             #YardiRentCafeService.new(community.credential.attributes).perform
             ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
-          when "realpagesvc"
-            #RealPageSvcService.new(community.credential.attributes).perform
-            ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
+          # when "realpagesvc"
+          #   #RealPageSvcService.new(community.credential.attributes).perform
+          #   ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
           when "yardi"
             #community.credential.url.include?("20") ? (Yardi2Service.new(community.credential.attributes).perform) : (Yardi4Service.new(community.credential.attributes).perform)
             community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
@@ -29,7 +29,7 @@ namespace :import do
         end    
       end
       puts 'Now waiting for 2 min for 3 background jobs to complete.'
-      sleep 60
+      sleep 30
     end
   end
 end
