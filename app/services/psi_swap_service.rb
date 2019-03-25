@@ -9,6 +9,35 @@ class PsiSwapService < BaseService
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
+        unitPricingHash = Hash.new
+        #property_id = credentials.property_id
+        begin
+          response2 = HTTParty.post(url,
+                                    :body => {
+                                        "auth": {
+                                            "type": "basic",
+                                            "password": password,
+                                            "username": username
+                                        },
+                                        "method": {
+                                            "name": "getMitsPropertyUnits",
+                                            "params": {
+                                                "propertyIds": property_id,
+                                                "availableUnitsOnly": "0"
+                                            }
+                                        }
+                                    }.to_json,
+                                    :headers => { 'Content-Type' => 'application/json' } )
+          response2 =  JSON.parse(response2.body)
+          if response2["response"]["code"] == 200
+            response2['response']['result']["PhysicalProperty"]["Property"][0]["ILS_Unit"].each do |ils|
+              if ils["Units"]["Unit"]["MarketRent"].present?
+                unitPricingHash[ils["Units"]["Unit"]["Identification"]["IDValue"].to_s] = ils["Units"]["Unit"]["MarketRent"]
+              end
+            end
+          end
+        end
+        #######
         response = HTTParty.post(url,
                                  :body => {
                                      "auth": {
@@ -39,7 +68,7 @@ class PsiSwapService < BaseService
             end
           end
           save_psi_floorplans(floorplans,property_id)
-          save_psi_units(units,property_id)
+          save_psi_units(units,property_id,unitPricingHash)
           # save_website_column_of_community(response)
           end
       rescue => e
@@ -51,7 +80,7 @@ class PsiSwapService < BaseService
     rename_provider
   end
 
-  def save_psi_units(units,property_id)
+  def save_psi_units(units,property_id,unitPricingHash)
     units.each do |u|
 
       vacateDate = ""
@@ -80,10 +109,10 @@ class PsiSwapService < BaseService
         end
         if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
-        elsif u["Units"]["Unit"]["UnitRent"].present?
-          unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
+        elsif unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s].present?
+          unit.effective_rent = unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
         else
-          unit.effective_rent = 0
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
         # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         unit.floor = u["FloorLevel"]
@@ -119,10 +148,10 @@ class PsiSwapService < BaseService
 
         if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
-        elsif u["Units"]["Unit"]["UnitRent"].present?
-          unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
+        elsif unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s].present?
+          unit.effective_rent = unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
         else
-          unit.effective_rent = 0
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
         if u["Units"]["Unit"]["MinSquareFeet"].present?
           if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
