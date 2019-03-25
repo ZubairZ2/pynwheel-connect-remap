@@ -20,7 +20,8 @@ class PsiService < BaseService
               "name": "getMitsPropertyUnits",
               "params": {
                 "propertyIds": property_id,
-                "availableUnitsOnly": "0"
+                "availableUnitsOnly": "0",
+                "showUnitSpaces": "1"
               }
             }
           }.to_json,
@@ -55,7 +56,8 @@ class PsiService < BaseService
   def save_psi_units(units,property_id)
     units.each do |u|
       vacateDate = ""
-      unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])#.first_or_initialize
+
+      unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
       if unit.present?
         unless unit.manual_override
           # unit.property_id = property_id
@@ -81,7 +83,9 @@ class PsiService < BaseService
           # end
           # unit.floor = u["FloorLevel"]
           unit.availability = u["Availability"]["VacancyClass"]
+          unit.available = false
           if u["Availability"]["VacancyClass"] == "Unoccupied"
+            unit.available = true
             year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
             month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
             day = u["Availability"]["VacateDate"]["@attributes"]["Day"]

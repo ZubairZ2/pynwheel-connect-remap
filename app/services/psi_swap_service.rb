@@ -20,7 +20,8 @@ class PsiSwapService < BaseService
                                          "name": "getMitsPropertyUnits",
                                          "params": {
                                              "propertyIds": property_id,
-                                             "availableUnitsOnly": "0"
+                                             "availableUnitsOnly": "0",
+                                             "showUnitSpaces": "1"
                                          }
                                      }
                                  }.to_json,
@@ -39,27 +40,29 @@ class PsiSwapService < BaseService
           end
           save_psi_floorplans(floorplans,property_id)
           save_psi_units(units,property_id)
-          save_website_column_of_community(response)
+          # save_website_column_of_community(response)
           end
       rescue => e
         puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    fill_psi_pricing_details
+    # fill_psi_pricing_details
     rename_provider
   end
 
   def save_psi_units(units,property_id)
     units.each do |u|
+
       vacateDate = ""
       puts '+++++++++++++++++++++++++++ update outer  +++++++++++++++++++++++++++++'
 
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"]).first
       if unit.present?
+
         puts '+++++++++++++++++++++++++++ update inner  +++++++++++++++++++++++++++++'
         unit.provider = "psi_new"
-        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
+        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         # unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
@@ -96,7 +99,7 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
       else
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])
+        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s+ "-" + u["Units"]["Unit"]["MarketingName"])
         if dup.present?
           dup.destroy
         end
@@ -106,8 +109,8 @@ class PsiSwapService < BaseService
         unit.provider = "psi_new"
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
-        unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
-        unit.provider_unit_id =  u["Units"]["Unit"]["Identification"]["IDValue"]
+        unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
+        unit.provider_unit_id =  u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Units"]["Unit"]["MarketRent"].present?

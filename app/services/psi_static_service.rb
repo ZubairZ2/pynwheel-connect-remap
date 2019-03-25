@@ -20,7 +20,8 @@ class PsiStaticService < BaseService
                                          "name": "getMitsPropertyUnits",
                                          "params": {
                                              "propertyIds": property_id,
-                                             "availableUnitsOnly": "0"
+                                             "availableUnitsOnly": "0",
+                                             "showUnitSpaces": "1"
                                          }
                                      }
                                  }.to_json,
@@ -49,17 +50,18 @@ class PsiStaticService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    fill_psi_pricing_details
+    # fill_psi_pricing_details
   end
 
   def save_psi_units(units,property_id)
     units.each do |u|
       vacateDate = ""
-      unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first_or_initialize
+
+      unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first_or_initialize
 
       unit.property_id = property_id
       unit.unit_type = u["Units"]["Unit"]["UnitType"]
-      unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
+      unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
 
       if u["Units"]["Unit"]["MinSquareFeet"].present?
         if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
@@ -83,8 +85,11 @@ class PsiStaticService < BaseService
 
       # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
       unit.floor = u["FloorLevel"]
+      unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
       unit.availability = u["Availability"]["VacancyClass"]
+      unit.available = false
       if u["Availability"]["VacancyClass"] == "Unoccupied"
+        unit.available = true
         year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
         month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
         day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
