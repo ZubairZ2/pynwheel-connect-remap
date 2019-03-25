@@ -6,7 +6,7 @@ namespace :import_unit_data do
       puts '****************************' , community.id
       #RealPageSvcService.new(community.credential.attributes).perform
       ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
+      sleep 20
     end
-    sleep 20
   end
 end
