@@ -78,7 +78,7 @@ class PsiService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    fill_psi_pricing_details
+    # fill_psi_pricing_details
   end
 
   def save_psi_units(units,property_id,unitPricingHash)
