@@ -17,7 +17,8 @@ class PsiConnectionService < BaseService
             "name": "getMitsPropertyUnits",
             "params": {
               "propertyIds": property_id,
-              "availableUnitsOnly": "0"
+              "availableUnitsOnly": "0",
+              "showUnitSpaces": "1"
             }
           }
         }.to_json,
