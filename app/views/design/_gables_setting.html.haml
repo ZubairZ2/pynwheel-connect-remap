@@ -99,6 +99,23 @@
                 .input-group-addon
                   %i
                   = g.text_field :imagepages_button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.imagepages_button_color.present? ? g.object.imagepages_button_color : "#96348F"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel text color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = g.text_field :filter_panel_text_color , class: "form-control gables-field",autocomplete: true,"data-value"=>g.object.filter_panel_text_color.present? ? g.object.filter_panel_text_color : "#96348F"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = g.select :filter_panel_opacity , options_for_select(opacity_options,d.object.filter_panel_opacity.present? ? d.object.filter_panel_opacity : "100%"),{},{class: "form-control gables-field"}
 
       .form-group
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -193,8 +210,195 @@
           %span.icon-upload
             = image_tag "upload-image.png"
             %p Drag &amp; Drop file to Upload
+      /---------------------------------------  Tab for background images ------------------------------------/
+
+      .row
+        .col-md-12
+          %ul.nav.nav-tabs
+            %li.active
+              %a{"data-toggle" => "tab", :href => "#application-background-image-gables"} Application background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#apartment-navigation-background-image-gables"} Apartment background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#Gallery-navigation-background-image-gables"} Gallery background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#favourites-navigation-background-image-gables"} Favourites background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#additional-pages-navigation-background-image-gables"} Additional pages background image
+          .tab-content
+            #application-background-image-gables.tab-pane.fade.in.active
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                  Upload application background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = g.check_box :display_application_bg_image_gables, {class: "gables-field"}
+                    %label.label-primary{:for => "community_design_attributes_gable_attributes_display_application_bg_image_gables"}
+                    %span.pl-15 Yes
+              .row.application-bg-image-gables-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Application background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.gable.application_bg_image_gables.present? ? current_community.design.gable.application_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Application Background Image"}
+                            = image_tag current_community.design.gable.application_bg_image_gables.present? ? current_community.design.gable.application_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"application-bg-image-gables-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :application_bg_image_gables
+              .text-center.drag-box.mt-15.image-upload#application-bg-image-gables-upload-holder.application-bg-image-gables-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            #apartment-navigation-background-image-gables.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                  Upload apartment navigation background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = g.check_box :display_apartment_bg_image_gables, {class: "gables-field"}
+                    %label.label-primary{:for => "community_design_attributes_gable_attributes_display_apartment_bg_image_gables"}
+                    %span.pl-15 Yes
+              .row.apartment-bg-image-gables-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Apartment navigation background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.gable.apartment_bg_image_gables.present? ? current_community.design.gable.apartment_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Apartment Background Image"}
+                            = image_tag current_community.design.gable.apartment_bg_image_gables.present? ? current_community.design.gable.apartment_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-nav-bg-image-gables-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :apartment_bg_image_gables
+              .text-center.drag-box.mt-15.image-upload#apartment-nav-bg-image-gables-upload-holder.apartment-bg-image-gables-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            #Gallery-navigation-background-image-gables.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                  Upload gallery background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = g.check_box :display_gallery_bg_image_gables, {class: "gables-field"}
+                    %label.label-primary{:for => "community_design_attributes_gable_attributes_display_gallery_bg_image_gables"}
+                    %span.pl-15 Yes
+              .row.gallery-bg-image-gables-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Gallery background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.gable.gallery_bg_image_gables.present? ? current_community.design.gable.gallery_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery Background Image"}
+                            = image_tag current_community.design.gable.gallery_bg_image_gables.present? ? current_community.design.gable.gallery_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-bg-image-gables-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :gallery_bg_image_gables
+              .text-center.drag-box.mt-15.image-upload#gallery-bg-image-gables-upload-holder.gallery-bg-image-gables-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            #favourites-navigation-background-image-gables.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                  Upload Favourite background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = g.check_box :display_favourite_bg_image_gables, {class: "gables-field"}
+                    %label.label-primary{:for => "community_design_attributes_gable_attributes_display_favourite_bg_image_gables"}
+                    %span.pl-15 Yes
+              .row.favourite-bg-image-gables-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Favourite background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.gable.favourite_bg_image_gables.present? ? current_community.design.gable.favourite_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Favourite Background Image"}
+                            = image_tag current_community.design.gable.favourite_bg_image_gables.present? ? current_community.design.gable.favourite_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-bg-image-gables-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :favourite_bg_image_gables
+              .text-center.drag-box.mt-15.image-upload#favourite-bg-image-gables-upload-holder.favourite-bg-image-gables-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+            #additional-pages-navigation-background-image-gables.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
+                  Upload Additional pages background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = g.check_box :display_additional_pages_bg_image_gables, {class: "gables-field"}
+                    %label.label-primary{:for => "community_design_attributes_gable_attributes_display_additional_pages_bg_image_gables"}
+                    %span.pl-15 Yes
+              .row.additional-pages-bg-image-gables-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Additional pages background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.gable.additional_pages_bg_image_gables.present? ? current_community.design.gable.additional_pages_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Additional Pages Background Image"}
+                            = image_tag current_community.design.gable.additional_pages_bg_image_gables.present? ? current_community.design.gable.additional_pages_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"additional-pages-bg-image-gables-preview-image"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :additional_pages_bg_image_gables
+              .text-center.drag-box.mt-15.image-upload#additional-pages-bg-image-gables-upload-holder.additional-pages-bg-image-gables-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+
+
+      /---------------------------------------  End for background images ------------------------------------/
 
 :javascript
+
+  var display_application_bg_image_gables = "#{current_community.design.gable.display_application_bg_image_gables}"
+  var display_apartment_bg_image_gables = "#{current_community.design.gable.display_apartment_bg_image_gables}"
+  var display_gallery_bg_image_gables = "#{current_community.design.gable.display_gallery_bg_image_gables}"
+  var display_favourite_bg_image_gables = "#{current_community.design.gable.display_favourite_bg_image_gables}"
+  var display_additional_pages_bg_image_gables = "#{current_community.design.gable.display_additional_pages_bg_image_gables}"
+
+  if(display_application_bg_image_gables == "true")
+    $('.application-bg-image-gables-upload-fields').removeClass('hidden');
+  if(display_apartment_bg_image_gables == "true")
+    $('.apartment-bg-image-gables-upload-fields').removeClass('hidden');
+  if(display_gallery_bg_image_gables == "true")
+    $('.gallery-bg-image-gables-upload-fields').removeClass('hidden');
+  if(display_favourite_bg_image_gables == "true")
+    $('.favourite-bg-image-gables-upload-fields').removeClass('hidden');
+  if(display_additional_pages_bg_image_gables == "true")
+    $('.additional-pages-bg-image-gables-upload-fields').removeClass('hidden');
+
   var display_home_page_image = "#{current_community.design.gable.display_home_page_nav_bg_image_button}"
   if(display_home_page_image == "true")
     $('#home_page_nav_bg_image_fields').removeClass('hidden');
@@ -204,6 +408,47 @@
       }
     else{
         $('#home_page_nav_bg_image_fields').addClass('hidden');
+     }
+  });
+
+  $('#community_design_attributes_gable_attributes_display_application_bg_image_gables').change(function(){
+    if($(this).is(':checked')){
+        $('.application-bg-image-gables-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.application-bg-image-gables-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_gable_attributes_display_apartment_bg_image_gables').change(function(){
+    if($(this).is(':checked')){
+        $('.apartment-bg-image-gables-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.apartment-bg-image-gables-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_gable_attributes_display_gallery_bg_image_gables').change(function(){
+    if($(this).is(':checked')){
+        $('.gallery-bg-image-gables-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.gallery-bg-image-gables-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_gable_attributes_display_favourite_bg_image_gables').change(function(){
+    if($(this).is(':checked')){
+        $('.favourite-bg-image-gables-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.favourite-bg-image-gables-upload-fields').addClass('hidden');
+     }
+  });
+  $('#community_design_attributes_gable_attributes_display_additional_pages_bg_image_gables').change(function(){
+    if($(this).is(':checked')){
+        $('.additional-pages-bg-image-gables-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.additional-pages-bg-image-gables-upload-fields').addClass('hidden');
      }
   });
 

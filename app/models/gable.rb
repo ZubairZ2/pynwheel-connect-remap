@@ -28,4 +28,9 @@ class Gable < ApplicationRecord
   mount_base64_uploader :global_nav_bg_image, AvatarUploader
   mount_base64_uploader :filter_panel_bg_image, AvatarUploader
 
+  mount_base64_uploader :application_bg_image_gables, AvatarUploader
+  mount_base64_uploader :apartment_bg_image_gables, AvatarUploader
+  mount_base64_uploader :gallery_bg_image_gables, AvatarUploader
+  mount_base64_uploader :favourite_bg_image_gables, AvatarUploader
+  mount_base64_uploader :additional_pages_bg_image_gables, AvatarUploader
 end
