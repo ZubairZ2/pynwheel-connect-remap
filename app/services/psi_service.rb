@@ -10,6 +10,7 @@ class PsiService < BaseService
         username = credentials.username
         #property_id = credentials.property_id
         unitPricingHash = Hash.new
+        unitLeaseTermHash = Hash.new
         begin
           response2 = HTTParty.post(url,
                                     :body => {
@@ -37,6 +38,45 @@ class PsiService < BaseService
           end
         end
         ########
+
+        # ############## Lease term function
+        begin
+          response3 = HTTParty.post(url,
+                                   :body => {
+                                       "auth": {
+                                           "type": "basic",
+                                           "password": password,
+                                           "username": username
+                                       },
+                                       "method": {
+                                           "name": "getUnitsAvailabilityAndPricing",
+                                           "params": {
+                                               "propertyId": property_id,
+                                               "availableUnitsOnly": "0"
+                                           }
+                                       }
+                                   }.to_json,
+                                   :headers => { 'Content-Type' => 'application/json' } )
+          response3 =  JSON.parse(response3.body)
+          if response3["response"]["code"] == 200
+            psi_units = response3["response"]["result"]["ILS_Units"]["Unit"]
+            psi_units.each do |ils|
+              if ils[1]["Rent"]["TermRent"].count > 1
+                leaseStr = "<TermRent>"
+                ils[1]["Rent"]["TermRent"].each do |rt|
+                  leaseStr = leaseStr + "<Rent>"
+                  leaseStr =leaseStr + "<"+rt['@attributes']['LeaseTerm']+">"+rt['@attributes']['Rent'].to_s + "</"+rt['@attributes']['LeaseTerm']+">"
+                  leaseStr = leaseStr + "</Rent>"
+                end
+                leaseStr = leaseStr + "</TermRent>"
+                byebug
+              end
+            end
+          end
+        rescue => ex
+          byebug
+        end
+        # ##############
         response = HTTParty.post(url,
           :body => {
             "auth": {
