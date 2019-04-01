@@ -9,6 +9,35 @@ class PsiSwapService < BaseService
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
+        unitPricingHash = Hash.new
+        #property_id = credentials.property_id
+        begin
+          response2 = HTTParty.post(url,
+                                    :body => {
+                                        "auth": {
+                                            "type": "basic",
+                                            "password": password,
+                                            "username": username
+                                        },
+                                        "method": {
+                                            "name": "getMitsPropertyUnits",
+                                            "params": {
+                                                "propertyIds": property_id,
+                                                "availableUnitsOnly": "0"
+                                            }
+                                        }
+                                    }.to_json,
+                                    :headers => { 'Content-Type' => 'application/json' } )
+          response2 =  JSON.parse(response2.body)
+          if response2["response"]["code"] == 200
+            response2['response']['result']["PhysicalProperty"]["Property"][0]["ILS_Unit"].each do |ils|
+              if ils["Units"]["Unit"]["MarketRent"].present?
+                unitPricingHash[ils["Units"]["Unit"]["Identification"]["IDValue"].to_s] = ils["Units"]["Unit"]["MarketRent"]
+              end
+            end
+          end
+        end
+        #######
         response = HTTParty.post(url,
                                  :body => {
                                      "auth": {
@@ -20,7 +49,8 @@ class PsiSwapService < BaseService
                                          "name": "getMitsPropertyUnits",
                                          "params": {
                                              "propertyIds": property_id,
-                                             "availableUnitsOnly": "0"
+                                             "availableUnitsOnly": "0",
+                                             "showUnitSpaces": "1"
                                          }
                                      }
                                  }.to_json,
@@ -38,28 +68,30 @@ class PsiSwapService < BaseService
             end
           end
           save_psi_floorplans(floorplans,property_id)
-          save_psi_units(units,property_id)
-          save_website_column_of_community(response)
+          save_psi_units(units,property_id,unitPricingHash)
+          # save_website_column_of_community(response)
           end
       rescue => e
         puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    fill_psi_pricing_details
+    # fill_psi_pricing_details
     rename_provider
   end
 
-  def save_psi_units(units,property_id)
+  def save_psi_units(units,property_id,unitPricingHash)
     units.each do |u|
+
       vacateDate = ""
       puts '+++++++++++++++++++++++++++ update outer  +++++++++++++++++++++++++++++'
 
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"]).first
       if unit.present?
+
         puts '+++++++++++++++++++++++++++ update inner  +++++++++++++++++++++++++++++'
         unit.provider = "psi_new"
-        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
+        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         # unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
@@ -77,10 +109,10 @@ class PsiSwapService < BaseService
         end
         if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
-        elsif u["Units"]["Unit"]["UnitRent"].present?
-          unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
+        elsif unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s].present?
+          unit.effective_rent = unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
         else
-          unit.effective_rent = 0
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
         # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         unit.floor = u["FloorLevel"]
@@ -96,7 +128,7 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
       else
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])
+        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s+ "-" + u["Units"]["Unit"]["MarketingName"])
         if dup.present?
           dup.destroy
         end
@@ -106,8 +138,8 @@ class PsiSwapService < BaseService
         unit.provider = "psi_new"
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
-        unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
-        unit.provider_unit_id =  u["Units"]["Unit"]["Identification"]["IDValue"]
+        unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
+        unit.provider_unit_id =  u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Units"]["Unit"]["MarketRent"].present?
@@ -116,10 +148,10 @@ class PsiSwapService < BaseService
 
         if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
-        elsif u["Units"]["Unit"]["UnitRent"].present?
-          unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
+        elsif unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s].present?
+          unit.effective_rent = unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
         else
-          unit.effective_rent = 0
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
         if u["Units"]["Unit"]["MinSquareFeet"].present?
           if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1

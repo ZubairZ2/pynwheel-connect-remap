@@ -129,6 +129,20 @@ json.ui_settigs do
       json.display_global_navigation_bg_image @community.design.gable.present? ? (@community.design.gable.display_global_nav_bg_image_button.present? ? @community.design.gable.display_global_nav_bg_image_button : false) : false
       json.filter_panel_bg_image @community.design.gable.present? ? (@community.design.gable.filter_panel_bg_image.present? ? @community.design.gable.filter_panel_bg_image.url : "No Image") : "No Image"
       json.display_filter_panel_bg_image @community.design.gable.present? ? (@community.design.gable.display_filter_panel_bg_image_button.present? ? @community.design.gable.display_filter_panel_bg_image_button : false) : false
+
+      json.filter_panel_opacity @community.design.gable.present? ? (@community.design.gable.filter_panel_opacity.present? ? @community.design.gable.filter_panel_opacity : "100%") : "100%"
+      json.filter_panel_text_color (@community.design.gable.present? and @community.design.gable.filter_panel_text_color.present?) ? @community.design.gable.filter_panel_text_color : "#000000"
+
+      json.display_application_bg_image_gables @community.design.gable.present? ? (@community.design.gable.display_application_bg_image_gables.present? ? @community.design.gable.display_application_bg_image_gables : false) : false
+      json.application_bg_image_gables @community.design.gable.present? ? (@community.design.gable.application_bg_image_gables.present? ? @community.design.gable.application_bg_image_gables.url : "No Image") : "No Image"
+      json.display_apartment_bg_image_gables @community.design.gable.present? ? (@community.design.gable.display_apartment_bg_image_gables.present? ? @community.design.gable.display_apartment_bg_image_gables : false) : false
+      json.apartment_bg_image_gables @community.design.gable.present? ? (@community.design.gable.apartment_bg_image_gables.present? ? @community.design.gable.apartment_bg_image_gables.url : "No Image") : "No Image"
+      json.display_gallery_bg_image_gables @community.design.gable.present? ? (@community.design.gable.display_gallery_bg_image_gables.present? ? @community.design.gable.display_gallery_bg_image_gables : false) : false
+      json.gallery_bg_image_gables @community.design.gable.present? ? (@community.design.gable.gallery_bg_image_gables.present? ? @community.design.gable.gallery_bg_image_gables.url : "No Image") : "No Image"
+      json.display_favourite_bg_image_gables @community.design.gable.present? ? (@community.design.gable.display_favourite_bg_image_gables.present? ? @community.design.gable.display_favourite_bg_image_gables : false) : false
+      json.favourite_bg_image_gables @community.design.gable.present? ? (@community.design.gable.favourite_bg_image_gables.present? ? @community.design.gable.favourite_bg_image_gables.url : "No Image") : "No Image"
+      json.display_additional_pages_bg_image_gables @community.design.gable.present? ? (@community.design.gable.display_additional_pages_bg_image_gables.present? ? @community.design.gable.display_additional_pages_bg_image_gables : false) : false
+      json.additional_pages_bg_image_gables @community.design.gable.present? ? (@community.design.gable.additional_pages_bg_image_gables.present? ? @community.design.gable.additional_pages_bg_image_gables.url : "No Image") : "No Image"
     end
 
     json.expressionist do

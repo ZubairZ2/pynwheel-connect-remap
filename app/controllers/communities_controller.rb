@@ -411,6 +411,8 @@ class CommunitiesController < ApplicationController
         :main_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:menu_position,:manage_background,
         :background_color],:home_screen_attributes=>[:id,:appartments_button,:galleries_button,:neighborhood_button,:favorities_button,:about_button,
         :building_button,:floorplan_button,:menu_position,:manage_background,:background_color],:gable_attributes=>[:id,:hide_tagline,:home_page_nav_bg_image, :display_home_page_nav_bg_image_button, :global_nav_bg_image, :display_global_nav_bg_image_button, :filter_panel_bg_image,:display_filter_panel_bg_image_button,
+        :filter_panel_text_color,:filter_panel_opacity,:application_bg_image_gables,:apartment_bg_image_gables,:gallery_bg_image_gables,
+        :favourite_bg_image_gables,:additional_pages_bg_image_gables,:display_application_bg_image_gables,:display_apartment_bg_image_gables,:display_gallery_bg_image_gables,:display_favourite_bg_image_gables,:display_additional_pages_bg_image_gables,
         :appartment_button_color,:gallery_button_color,:neighborhood_button_color,:favorite_button_color,:filter_panel_color,:webpages_button_color,
         :imagepages_button_color],:expressionist_attributes=>[:id,:home_page_menu_position,:home_page_position_of_logo,:home_page_logo_size,
         :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:home_page_button_font_size,:display_home_page_image,
