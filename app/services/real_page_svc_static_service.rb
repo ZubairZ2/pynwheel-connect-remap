@@ -1,13 +1,13 @@
 class RealPageSvcStaticService < BaseService
   def perform
-    @doc = ""
+    # @doc = ""
     import_realpage_svc_floorplans
     import_realpage_svc_units
     import_realpage_svc_price
-    com = Community.find(credentials.community_id)
-    com.realpage_pricing_data = @doc
-    com.realpage_pricing_data_uploaded = true
-    com.save
+    # com = Community.find(credentials.community_id)
+    # com.realpage_pricing_data = @doc
+    # com.realpage_pricing_data_uploaded = true
+    # com.save
   end
 
   def import_realpage_svc_floorplans
@@ -315,7 +315,7 @@ class RealPageSvcStaticService < BaseService
                     unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
                     unit.effective_rent = best_price
                     unit.save(:validate => false)
-                    @doc = @doc + response.body
+                    # @doc = @doc + response.body
                     puts " **** price updated *** ",unit.marketing_name
                   end
                 end

@@ -121,6 +121,23 @@ class Yardi4Service < BaseService
             end
 
           end
+          pr = api_unit[3]
+          unitHash = Hash.new
+          if pr[:Pricing].present?
+            pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing,index|
+              month = pricing[:DateRange][:StartDate][0][:Month]
+              day = pricing[:DateRange][:StartDate][0][:Day]
+              year = pricing[:DateRange][:StartDate][0][:Year]
+              startDate = "#{day}/#{month}-#{year}"
+              month = pricing[:DateRange][:EndDate][0][:Month]
+              day = pricing[:DateRange][:EndDate][0][:Day]
+              year = pricing[:DateRange][:EndDate][0][:Year]
+              endDate =  "#{day}/#{month}-#{year}"
+
+              hash = {(pricing[:Term]+" Months-"+ index.to_s) => [ pricing[:EffectiveRent], startDate, endDate ]}
+              unitHash.merge! hash
+            end
+          end
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           unit.available_date = vacate_date
           unit.save

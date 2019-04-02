@@ -61,20 +61,18 @@ class PsiService < BaseService
           if response3["response"]["code"] == 200
             psi_units = response3["response"]["result"]["ILS_Units"]["Unit"]
             psi_units.each do |ils|
+
+              unitHash = Hash.new
               if ils[1]["Rent"]["TermRent"].count > 1
-                leaseStr = "<TermRent>"
                 ils[1]["Rent"]["TermRent"].each do |rt|
-                  leaseStr = leaseStr + "<Rent>"
-                  leaseStr =leaseStr + "<"+rt['@attributes']['LeaseTerm']+">"+rt['@attributes']['Rent'].to_s + "</"+rt['@attributes']['LeaseTerm']+">"
-                  leaseStr = leaseStr + "</Rent>"
+                  hash = {rt['@attributes']['LeaseTerm'] => [rt['@attributes']['Rent'].to_s]}
+                  unitHash.merge! hash
                 end
-                leaseStr = leaseStr + "</TermRent>"
-                byebug
+                unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = unitHash
               end
             end
           end
         rescue => ex
-          byebug
         end
         # ##############
         response = HTTParty.post(url,
@@ -107,7 +105,7 @@ class PsiService < BaseService
             end
           end
           save_psi_floorplans(floorplans,property_id)
-          save_psi_units(units,property_id,unitPricingHash)
+          save_psi_units(units,property_id,unitPricingHash,unitLeaseTermHash)
           save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
@@ -121,7 +119,7 @@ class PsiService < BaseService
     # fill_psi_pricing_details
   end
 
-  def save_psi_units(units,property_id,unitPricingHash)
+  def save_psi_units(units,property_id,unitPricingHash,unitLeaseTermHash)
     units.each do |u|
       vacateDate = ""
 
@@ -163,6 +161,8 @@ class PsiService < BaseService
             vacateDate = Date.parse("#{year}-#{month}-#{day}")
           end
           unit.available_date = vacateDate
+          byebug
+          unitLeaseTermHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
           # building = u["Units"]["Unit"]["BuildingName"]
           # unit.building = building.present? ? building.gsub("Building ", "") : ""
           unit.save(validate: false)
