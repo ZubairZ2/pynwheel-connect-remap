@@ -153,6 +153,11 @@ $('#confirm-delete-update-data').on('show.bs.modal', function(e) {
     $(this).find('#update-record-name').html($(e.relatedTarget).data('name'));
     $(this).find('#update-record-message').html('Are you sure you want to replace the previously uploaded data with the data you are uploading now?');
 });
+$('#confirm-delete-gallery').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok-gallery').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find('#record-name-gallery').html($(e.relatedTarget).data('name'));
+    $(this).find('#record-message-gallery').html('Are you sure you want to delete this gallery? This cannot be undone.');
+});
 $('#markers-modal').on('show.bs.modal', function(e) {
     console.log("Displaying plotted unit information in markers modal");
     $('.unit-buttons').empty();
