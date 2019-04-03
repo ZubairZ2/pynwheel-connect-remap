@@ -30,6 +30,7 @@ Rails.application.routes.draw do
     get :import
     get :experimental_import
     get :credentials
+    get :settings_page
     get :change_expressionist_default
     get :test_connection
     get :psi_pricing_test_connection

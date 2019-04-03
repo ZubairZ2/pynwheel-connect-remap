@@ -3,8 +3,8 @@ class CommunitiesController < ApplicationController
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
   add_breadcrumb "Home", :root_path
-  add_breadcrumb "Companies", :companies_path, except: [:import_page]
-  add_breadcrumb "Communities", :company_communities_path, except: [:import_page]
+  add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
+  add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
 
   def index
     #@communities = Community.page(params[:page]).per(10)
@@ -34,6 +34,9 @@ class CommunitiesController < ApplicationController
 
   def edit
     add_breadcrumb "Edit Community", edit_company_community_path(current_company,@community)  
+  end
+  def settings_page
+    @community = Community.find params[:community_id]
   end
   def update
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
