@@ -72,11 +72,19 @@ class CommunitiesController < ApplicationController
       else
         if @community.update(community_params)
           @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
-          format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
+          if params[:community][:name].present?
+            format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+          else
+            format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+          end
           format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
         else
           flash[:error] = @community.errors.full_messages.join(',')
-          format.html { render :edit }
+          if params[:community][:name].present?
+            format.html { render :edit }
+          else
+            format.html { render :settings_page }
+          end
           message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
