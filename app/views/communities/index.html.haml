@@ -57,9 +57,9 @@
                           %td
                             = index+1
                           %td
-                            = link_to f.name, edit_company_community_path(current_company,f)
+                            = link_to f.name, community_home_page_index_path(f)
                           %td
-                            = link_to edit_company_community_path(current_company,f),:class=>"text-success" do
+                            = link_to community_home_page_index_path(f),:class=>"text-success" do
                               %i.fa.fa-edit
                             %a.text-danger{"data-name"=>"Community","data-href" => "/companies/#{current_company.id}/communities/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                               %i.fa.fa-trash

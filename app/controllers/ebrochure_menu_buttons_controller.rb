@@ -5,7 +5,7 @@ class EbrochureMenuButtonsController < ApplicationController
   before_action :set_ebrochure_menu_button,only: [:edit,:update,:destroy]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Favorites", :community_favorite_settings_path
-  add_breadcrumb "Ebrochure menu buttons",:community_favorite_setting_ebrochure_menu_buttons_path
+  add_breadcrumb "Add Weblinks",:community_favorite_setting_ebrochure_menu_buttons_path
 
   def index
     @ebrochure_menu_buttons = @community.favorite_setting.ebrochure_menu_buttons.size > 0 ? @community.favorite_setting.ebrochure_menu_buttons : []
@@ -19,7 +19,7 @@ class EbrochureMenuButtonsController < ApplicationController
   def create
     @ebrochure_menu_button = @community.favorite_setting.ebrochure_menu_buttons.new(ebrochure_menu_button_params)
     if @ebrochure_menu_button.save
-      flash[:notice] = "Menu button created successfully."
+      flash[:notice] = "Weblinks added successfully."
       redirect_to community_favorite_setting_ebrochure_menu_buttons_path(@community,@favorite_setting)
     else
       flash[:error] = @ebrochure_menu_button.errors.full_messages.join(',')
@@ -48,7 +48,7 @@ class EbrochureMenuButtonsController < ApplicationController
 
   def update
     if @ebrochure_menu_button.update(ebrochure_menu_button_params)
-      flash[:notice] = "Menu button updated successfully."
+      flash[:notice] = "Weblinks updated successfully."
       redirect_to community_favorite_setting_ebrochure_menu_buttons_path(@community,@favorite_setting)
     else
       flash[:error] = @ebrochure_menu_button.errors.full_messages.join(',')

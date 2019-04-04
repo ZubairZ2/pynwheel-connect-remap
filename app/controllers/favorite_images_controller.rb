@@ -2,7 +2,7 @@ class FavoriteImagesController < ApplicationController
   before_action :set_community
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Favorites", :community_favorite_settings_path
-  add_breadcrumb "Favorites Images"
+  add_breadcrumb "Add Images"
   before_action :check_community
 
   def index
