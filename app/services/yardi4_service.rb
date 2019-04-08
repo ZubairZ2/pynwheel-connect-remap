@@ -138,6 +138,8 @@ class Yardi4Service < BaseService
               unitHash.merge! hash
             end
           end
+          unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
+          unit.lease_pricing = unitHash.to_s
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           unit.available_date = vacate_date
           unit.save

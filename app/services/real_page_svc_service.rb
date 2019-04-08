@@ -311,6 +311,8 @@ class RealPageSvcService < BaseService
                     end
                   end
 
+                  unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
+                  unit.lease_pricing = unitHash.to_s
                   u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
                     if opt.key?(:Option)
                       o  = opt[:Option][0]
