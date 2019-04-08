@@ -1,13 +1,13 @@
 class RealPageSvcStaticService < BaseService
   def perform
-    @doc = ""
+    # @doc = ""
     import_realpage_svc_floorplans
     import_realpage_svc_units
     import_realpage_svc_price
-    com = Community.find(credentials.community_id)
-    com.realpage_pricing_data = @doc
-    com.realpage_pricing_data_uploaded = true
-    com.save
+    # com = Community.find(credentials.community_id)
+    # com.realpage_pricing_data = @doc
+    # com.realpage_pricing_data_uploaded = true
+    # com.save
   end
 
   def import_realpage_svc_floorplans
@@ -299,10 +299,27 @@ class RealPageSvcStaticService < BaseService
 
             #Refactor code
             units.each do |u|
+              unitHash = Hash.new
               unit_no = u[:Address][:UnitID]
               if hash[:units].include?(unit_no)
                 if u[:RentMatrix].present?
                   best_price = nil
+                  begin
+
+                    u[:RentMatrix][1][:Rows][:Row].each_with_index do |opts,index|
+                      next if index == 0
+                      startdate = u[:RentMatrix][1][:Rows][:Row][index][:Options][0][:LeaseStartDate]
+                      u[:RentMatrix][1][:Rows][:Row][index][:Options].each_with_index do |opt, ind|
+                        next if ind == 0
+                        hashData = {(u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s + " Months-"+index.to_s) => [u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:Rent], startdate, u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseEndDate] ]}
+                        unitHash.merge! hashData
+                      end
+                    end
+
+                    unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
+                  rescue
+                    unitHash = nil
+                  end
                   u[:RentMatrix][1][:Rows][:Row][1][:Options].each do |opt|
                     if opt.key?(:Option)
                       o  = opt[:Option][0]
@@ -311,11 +328,13 @@ class RealPageSvcStaticService < BaseService
                       end
                     end
                   end
+
                   if best_price.present?
                     unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
                     unit.effective_rent = best_price
+                    unit.lease_pricing = unitHash.to_s
                     unit.save(:validate => false)
-                    @doc = @doc + response.body
+                    # @doc = @doc + response.body
                     puts " **** price updated *** ",unit.marketing_name
                   end
                 end
@@ -324,6 +343,7 @@ class RealPageSvcStaticService < BaseService
           end
         end
       rescue => e
+        puts "Pricing Error ********************"
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end

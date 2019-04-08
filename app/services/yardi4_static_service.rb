@@ -56,7 +56,7 @@ class Yardi4StaticService < BaseService
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
-            puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ", pr
+            # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ", pr
             if pr.key?(:IDValue)
               external_property_id = pr[:IDValue]
             end
@@ -71,11 +71,11 @@ class Yardi4StaticService < BaseService
           save_yardi4_floorplans(floorplans)
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
-          puts "Invalid credentials.Please enter correct one and try again."
+          # puts "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
         end
       rescue => e
-        #puts '------------------------' , e.message
+        puts '------------------------'*20 , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -118,6 +118,29 @@ class Yardi4StaticService < BaseService
             unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
           end
 
+        end
+        pr = api_unit[3]
+        unitHash = Hash.new
+        begin
+          if pr[:Pricing].present?
+            pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing,index|
+              month = pricing[:DateRange][:StartDate][0][:Month]
+              day = pricing[:DateRange][:StartDate][0][:Day]
+              year = pricing[:DateRange][:StartDate][0][:Year]
+              startDate = "#{day}/#{month}-#{year}"
+              month = pricing[:DateRange][:EndDate][0][:Month]
+              day = pricing[:DateRange][:EndDate][0][:Day]
+              year = pricing[:DateRange][:EndDate][0][:Year]
+              endDate =  "#{day}/#{month}-#{year}"
+
+              hashData = {(pricing[:Term]+" Months-"+ index.to_s) => [ pricing[:EffectiveRent], startDate, endDate ]}
+              unitHash.merge! hashData
+            end
+          end
+          unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
+          unit.lease_pricing = unitHash.to_s
+        rescue
+          unit.lease_pricing = nil
         end
         unit.availability = is_available ? "Unoccupied" : "Occupied"
         unit.available_date = vacate_date
