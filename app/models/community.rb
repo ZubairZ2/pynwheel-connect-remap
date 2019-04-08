@@ -228,12 +228,12 @@ class Community < ApplicationRecord
     #psi_service = PsiService.new(credential.attributes)
     #psi_service.perform
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
-    ImportPsiDataJob.perform_async credential.attributes.to_json
+    # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
 
   def import_zaremba_provider
     ImportZarembaStaticDataJob.perform_async credential.attributes.to_json
-    ImportZarembaDataJob.perform_async credential.attributes.to_json
+    # ImportZarembaDataJob.perform_async credential.attributes.to_json
   end
 
   def swap_psi_data
@@ -248,7 +248,7 @@ class Community < ApplicationRecord
   def import_yardirentcafe_data
       #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
       #yardi_rent_cafe_service.perform
-    ImportYardirentcafeDataJob.perform_async credential.attributes.to_json
+    # ImportYardirentcafeDataJob.perform_async credential.attributes.to_json
     ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
   end
   def swap_yardirentcafe_data
@@ -258,7 +258,7 @@ class Community < ApplicationRecord
     #yardi2_service = Yardi2Service.new(credential.attributes)
     #yardi2_service.perform
     ImportYardi2StaticDataJob.perform_async credential.attributes.to_json
-    ImportYardi2DataJob.perform_async credential.attributes.to_json
+    # ImportYardi2DataJob.perform_async credential.attributes.to_json
   end
 
   def swap_yardi2_data
@@ -268,8 +268,8 @@ class Community < ApplicationRecord
   def import_yardi4_data
     #yardi4_service = Yardi4Service.new(credential.attributes)
     #yardi4_service.perform
-    ImportYardi4DataJob.perform_async credential.attributes.to_json
     ImportYardi4StaticDataJob.perform_async credential.attributes.to_json
+    # ImportYardi4DataJob.perform_async credential.attributes.to_json
   end
 
   def swap_yardi4_data
@@ -278,13 +278,13 @@ class Community < ApplicationRecord
   def import_realpage_svc_data
     #real_page_svc_service = RealPageSvcService.new(credential.attributes)
     #real_page_svc_service.perform
-    ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
     ImportRealpageSvcStaticDataJob.perform_async credential.attributes.to_json
+    # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
   def select_resman_provider
 
     ImportResmanStaticDataJob.perform_async credential.attributes.to_json
-    ImportResmanDataJob.perform_async credential.attributes.to_json
+    # ImportResmanDataJob.perform_async credential.attributes.to_json
   end
   def swap_realpage_svc_data
     ImportRealpageSvcSwapDataJob.perform_async credential.attributes.to_json
