@@ -5,7 +5,6 @@ class PsiService < BaseService
     property_ids.each do |property_id|
       begin
         @@floorplanHash = {}
-        byebug
         if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
           url = credentials.entrata_url
         else
