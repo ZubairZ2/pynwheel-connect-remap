@@ -21,11 +21,11 @@
           = link_to edit_company_community_path(current_company,current_community) do
             %i.fa.fa-info
             %span Community Info
-      - if (current_user.is_super_admin?)
-        %li{:class=>"#{controller_name =='communities' && params[:action] =='settings' ? 'active' : ''}"}
-          = link_to community_settings_page_path(current_community) do
-            %i.fa.fa-cog
-            %span Settings
+      -#- if (current_user.is_super_admin?)
+      -#  %li{:class=>"#{controller_name =='communities' && params[:action] =='settings' ? 'active' : ''}"}
+      -#    = link_to community_settings_page_path(current_community) do
+      -#      %i.fa.fa-cog
+      -#      %span Settings
       - if (current_user.is_super_admin?)
         %li{:class=>"#{controller_name =='design' && params[:action] != 'logo' && params[:action] != 'secondary_logo' && params[:action] !='map_marker_design' ? 'active' : ''}"}
           = link_to community_design_index_path(current_community) do

@@ -4,12 +4,12 @@
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name"
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Code
--#
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Code
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
@@ -65,55 +65,55 @@
         = f.text_field :longitude, :class=>"form-control", :placeholder=>"Longitude",:maxlength=>"15", :id=>"longitude"
         %small Longitude
 
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Company
--#
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    = f.select :company_id, Company.all.collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Property Map / Floorplates
--#
--#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
--#    = f.radio_button :is_sitemap, true
--#    = f.label :is_sitemap, "Property Map", :value => "true"
--#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
--#    = f.radio_button :is_sitemap, false
--#    = f.label :is_sitemap, "Floorplates", :value => "false"
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Inactivate
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    .row
--#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
--#        .checkbox
--#          = f.check_box :locked
--#          %label Inactivate
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Equal housing opportunity logo
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    .row
--#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
--#        .checkbox
--#          = f.check_box :equal_housing_opportunity_logo
--#          %label Equal housing opportunity logo
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Handicap accessible logo
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    .row
--#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
--#        .checkbox
--#          = f.check_box :handicap_accessible_logo
--#          %label Handicap accessible logo
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Powered by Pynwheel
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    .TriSea-technologies-Switch
--#      %span.pr-15 No
--#      = f.check_box :powered_by_btn,:value => true
--#      %label.label-primary{:for => "community_powered_by_btn"}
--#      %span.pl-15 Yes
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Company
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.select :company_id, Company.all.collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Property Map / Floorplates
+
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :is_sitemap, true
+    = f.label :is_sitemap, "Property Map", :value => "true"
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :is_sitemap, false
+    = f.label :is_sitemap, "Floorplates", :value => "false"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Inactivate
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :locked
+          %label Inactivate
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Equal housing opportunity logo
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :equal_housing_opportunity_logo
+          %label Equal housing opportunity logo
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Handicap accessible logo
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :handicap_accessible_logo
+          %label Handicap accessible logo
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Powered by Pynwheel
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :powered_by_btn,:value => true
+      %label.label-primary{:for => "community_powered_by_btn"}
+      %span.pl-15 Yes
