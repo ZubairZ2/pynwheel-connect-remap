@@ -5,7 +5,13 @@ class PsiService < BaseService
     property_ids.each do |property_id|
       begin
         @@floorplanHash = {}
-        url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        byebug
+        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+          url = credentials.entrata_url
+        else
+          url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        end
+
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
