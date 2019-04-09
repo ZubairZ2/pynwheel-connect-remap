@@ -1,6 +1,12 @@
 class PsiService < BaseService
   @@floorplanHash = Hash.new
   def perform
+    puts "************************************"*200 , credentials.community_id
+    if credentials.community_id == 720 || credentials.community_id == 721 || credentials.community_id == 664
+      coo = Community.find credentials.community_id
+      coo.address = "Testing address for code"
+      coo.save
+    end
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
