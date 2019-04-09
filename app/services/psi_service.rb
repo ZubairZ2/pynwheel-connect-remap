@@ -60,10 +60,12 @@ class PsiService < BaseService
           }.to_json,
           :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
+        sleep 2
         if response["response"]["code"] == 200
           units = []
           floorplans = []
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
+            sleep 1
             pro["ILS_Unit"].each do |ils|
               units << ils
             end
@@ -71,6 +73,7 @@ class PsiService < BaseService
               floorplans << f
             end
           end
+          sleep 1
           save_psi_floorplans(floorplans,property_id)
           save_psi_units(units,property_id,unitPricingHash)
           save_website_column_of_community(response)
