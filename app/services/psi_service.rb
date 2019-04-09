@@ -1,12 +1,6 @@
 class PsiService < BaseService
   @@floorplanHash = Hash.new
   def perform
-    puts "************************************"*200 , credentials.community_id
-    if credentials.community_id == 720 || credentials.community_id == 721 || credentials.community_id == 664
-      coo = Community.find credentials.community_id
-      coo.address = "Testing address for code"
-      coo.save
-    end
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -71,10 +65,11 @@ class PsiService < BaseService
           units = []
           floorplans = []
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
-            sleep 1
+            sleep 3
             pro["ILS_Unit"].each do |ils|
               units << ils
             end
+            sleep 2
             pro["Floorplan"].each do |f|
               floorplans << f
             end
