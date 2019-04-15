@@ -333,6 +333,9 @@ function selectDataProvider(data_provider){
         case "zaremba":
             showZarembaFields();
             break;
+        case "xml":
+            showXmlFields();
+            break;
     }
 }
 
@@ -364,6 +367,13 @@ function showZarembaFields(){
     //$('#community_credential_attributes_username').addClass("validate[required]");
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
+    $('#data-replace-update-buttons').hide();
+}
+function showXmlFields(){
+    $('.credential_fields').hide();
+    $('#xml_filename').show();
+    $('#xml_domain').show();
+
     $('#data-replace-update-buttons').hide();
 }
 function showResmanFields(){

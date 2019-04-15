@@ -145,6 +145,8 @@ class Community < ApplicationRecord
         select_resman_provider
       when "zaremba"
         import_zaremba_provider
+      when "xml"
+        import_xml_provider
     end
   end
 
@@ -162,6 +164,8 @@ class Community < ApplicationRecord
       swap_resman_data
     when "zaremba"
       swap_zaremba_data
+    when "xml"
+      swap_xml_data
     end
 
   end
@@ -235,6 +239,10 @@ class Community < ApplicationRecord
     ImportZarembaStaticDataJob.perform_async credential.attributes.to_json
     ImportZarembaDataJob.perform_async credential.attributes.to_json
   end
+  def import_xml_provider
+    ImportXmlStaticDataJob.perform_async credential.attributes.to_json
+    # ImportXmlDataJob.perform_async credential.attributes.to_json
+  end
 
   def swap_psi_data
     ImportPsiSwapDataJob.perform_async credential.attributes.to_json
@@ -244,6 +252,9 @@ class Community < ApplicationRecord
   end
   def swap_zaremba_data
     ImportZarembaSwapDataJob.perform_async credential.attributes.to_json
+  end
+  def swap_xml_data
+    ImportXmlSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardirentcafe_data
       #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
@@ -312,6 +323,8 @@ class Community < ApplicationRecord
         connect_to_resman
       when "zaremba"
         connect_to_zaremba
+      when "xml"
+        connect_to_xml
     end
   end
 
@@ -349,7 +362,10 @@ class Community < ApplicationRecord
     zaremba_connection_service = ZarembaConnectionService.new(credential.attributes)
     zaremba_connection_service.perform
   end
-
+  def connect_to_xml
+    xml_connection_service = XmlConnectionService.new(credential.attributes)
+    xml_connection_service.perform
+  end
   def connect_to_yardirentcafe
     yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
     yardi_rent_cafe_connection_service.perform
