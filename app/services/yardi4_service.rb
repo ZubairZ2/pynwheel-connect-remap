@@ -134,7 +134,7 @@ class Yardi4Service < BaseService
                 year = pricing[:DateRange][:EndDate][0][:Year]
                 endDate =  "#{day}/#{month}-#{year}"
 
-                hashData = {(pricing[:Term]+" Months-"+ index.to_s) => [ pricing[:EffectiveRent], startDate, endDate ]}
+                hashData = {(pricing[:Term]) => [ pricing[:EffectiveRent], startDate, endDate ]}
                 unitHash.merge! hashData
               end
             end

@@ -63,9 +63,14 @@ class PsiService < BaseService
             psi_units.each do |ils|
 
               unitHash = Hash.new
+              leaseStr = ""
               if ils[1]["Rent"]["TermRent"].count > 1
                 ils[1]["Rent"]["TermRent"].each do |rt|
-                  hash = {rt['@attributes']['LeaseTerm'] => [rt['@attributes']['Rent'].to_s]}
+
+                  # str = rt['@attributes']['LeaseTerm'] + ":" + rt['@attributes']['Rent'].to_s + ":-" + ":-"
+                  # leaseStr = leaseStr + str
+                  #
+                  hash = {(rt['@attributes']['LeaseTerm']).split(" ")[0] => [rt['@attributes']['Rent'].to_s]}
                   unitHash.merge! hash
                 end
                 unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = unitHash
