@@ -66,16 +66,14 @@ class PsiService < BaseService
               leaseStr = ""
               if ils[1]["Rent"]["TermRent"].count > 1
                 ils[1]["Rent"]["TermRent"].each do |rt|
-                  unless leaseStr.present?
-                    leaseStr = leaseStr + "!"
-                  end
-                  str = rt['@attributes']['LeaseTerm'] + ":" + rt['@attributes']['Rent'].to_s + ":-" + ":-"
-                  leaseStr = leaseStr + str
 
-                  # hash = {rt['@attributes']['LeaseTerm'] => [rt['@attributes']['Rent'].to_s]}
-                  # unitHash.merge! hash
+                  # str = rt['@attributes']['LeaseTerm'] + ":" + rt['@attributes']['Rent'].to_s + ":-" + ":-"
+                  # leaseStr = leaseStr + str
+                  #
+                  hash = {rt['@attributes']['LeaseTerm'] => [rt['@attributes']['Rent'].to_s]}
+                  unitHash.merge! hash
                 end
-                unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = leaseStr
+                unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = unitHash
               end
             end
           end
