@@ -308,7 +308,7 @@ class RealPageSvcService < BaseService
                       startdate = u[:RentMatrix][1][:Rows][:Row][index][:Options][0][:LeaseStartDate]
                       u[:RentMatrix][1][:Rows][:Row][index][:Options].each_with_index do |opt, ind|
                         next if ind == 0
-                        hashData = {(u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s + " Months-"+index.to_s) => [u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:Rent], startdate, u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseEndDate] ]}
+                        hashData = {(u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s) => [u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:Rent], startdate, u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseEndDate] ]}
                         unitHash.merge! hashData
                       end
                     end

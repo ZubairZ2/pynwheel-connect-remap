@@ -71,7 +71,7 @@ class PsiStaticService < BaseService
                   # str = rt['@attributes']['LeaseTerm'] + ":" + rt['@attributes']['Rent'].to_s + ":-" + ":-"
                   # leaseStr = leaseStr + str
 
-                  hash = {rt['@attributes']['LeaseTerm'] => [rt['@attributes']['Rent'].to_s]}
+                  hash = {(rt['@attributes']['LeaseTerm']).split(" ")[0] => [rt['@attributes']['Rent'].to_s]}
                   unitHash.merge! hash
                 end
                 unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = unitHash
