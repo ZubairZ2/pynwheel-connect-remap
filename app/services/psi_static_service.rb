@@ -9,6 +9,7 @@ class PsiStaticService < BaseService
         password = credentials.password
         username = credentials.username
         unitPricingHash = Hash.new
+        unitLeaseTermHash = Hash.new
         #property_id = credentials.property_id
         begin
           response2 = HTTParty.post(url,
@@ -36,6 +37,50 @@ class PsiStaticService < BaseService
             end
           end
         end
+
+        # ############## Lease term function
+        begin
+          response3 = HTTParty.post(url,
+                                    :body => {
+                                        "auth": {
+                                            "type": "basic",
+                                            "password": password,
+                                            "username": username
+                                        },
+                                        "method": {
+                                            "name": "getUnitsAvailabilityAndPricing",
+                                            "params": {
+                                                "propertyId": property_id,
+                                                "availableUnitsOnly": "0"
+                                            }
+                                        }
+                                    }.to_json,
+                                    :headers => { 'Content-Type' => 'application/json' } )
+          response3 =  JSON.parse(response3.body)
+          if response3["response"]["code"] == 200
+            psi_units = response3["response"]["result"]["ILS_Units"]["Unit"]
+            psi_units.each do |ils|
+
+              unitHash = Hash.new
+              leaseStr = ""
+              if ils[1]["Rent"]["TermRent"].count > 1
+                ils[1]["Rent"]["TermRent"].each do |rt|
+                  unless leaseStr.present?
+                    leaseStr = leaseStr + "!"
+                  end
+                  str = rt['@attributes']['LeaseTerm'] + ":" + rt['@attributes']['Rent'].to_s + ":-" + ":-"
+                  leaseStr = leaseStr + str
+
+                  # hash = {rt['@attributes']['LeaseTerm'] => [rt['@attributes']['Rent'].to_s]}
+                  # unitHash.merge! hash
+                end
+                unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = leaseStr
+              end
+            end
+          end
+        rescue => ex
+        end
+
         ########
         response = HTTParty.post(url,
                                  :body => {
@@ -67,7 +112,7 @@ class PsiStaticService < BaseService
             end
           end
           save_psi_floorplans(floorplans,property_id)
-          save_psi_units(units,property_id,unitPricingHash)
+          save_psi_units(units,property_id,unitPricingHash,unitLeaseTermHash)
           save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
@@ -81,7 +126,7 @@ class PsiStaticService < BaseService
     # fill_psi_pricing_details
   end
 
-  def save_psi_units(units,property_id,unitPricingHash)
+  def save_psi_units(units,property_id,unitPricingHash,unitLeaseTermHash)
     units.each do |u|
       vacateDate = ""
 
