@@ -121,25 +121,31 @@ class Yardi4Service < BaseService
 
           end
           pr = api_unit[3]
-          unitHash = Hash.new
+          # unitHash = Hash.new
+          rentStr = ""
+          unitLeaseTerm = []
           begin
             if pr[:Pricing].present?
               pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing,index|
                 month = pricing[:DateRange][:StartDate][0][:Month]
                 day = pricing[:DateRange][:StartDate][0][:Day]
                 year = pricing[:DateRange][:StartDate][0][:Year]
-                startDate = "#{day}/#{month}-#{year}"
+                startDate = "#{day}/#{month}/#{year}"
                 month = pricing[:DateRange][:EndDate][0][:Month]
                 day = pricing[:DateRange][:EndDate][0][:Day]
                 year = pricing[:DateRange][:EndDate][0][:Year]
-                endDate =  "#{day}/#{month}-#{year}"
+                endDate =  "#{day}/#{month}/#{year}"
 
-                hashData = {(pricing[:Term]) => [ pricing[:EffectiveRent], startDate, endDate ]}
-                unitHash.merge! hashData
+                unless unitLeaseTerm.include?(pricing[:Term])
+                  rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +":"+ startDate +":"+ endDate + ";"
+                  unitLeaseTerm << pricing[:Term]
+                end
+                # hashData = {(pricing[:Term]) => [ pricing[:EffectiveRent], startDate, endDate ]}
+                # unitHash.merge! hashData
               end
             end
-            unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
-            unit.lease_pricing = unitHash.to_s
+            # unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
+            unit.lease_pricing = rentStr
           rescue
             unit.lease_pricing = nil
           end

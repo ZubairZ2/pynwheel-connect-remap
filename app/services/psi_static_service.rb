@@ -61,20 +61,18 @@ class PsiStaticService < BaseService
             psi_units = response3["response"]["result"]["ILS_Units"]["Unit"]
             psi_units.each do |ils|
 
-              unitHash = Hash.new
+              # unitHash = Hash.new
               leaseStr = ""
               if ils[1]["Rent"]["TermRent"].count > 1
                 ils[1]["Rent"]["TermRent"].each do |rt|
-                  # unless leaseStr.present?
-                  #   leaseStr = leaseStr + "!"
-                  # end
-                  # str = rt['@attributes']['LeaseTerm'] + ":" + rt['@attributes']['Rent'].to_s + ":-" + ":-"
-                  # leaseStr = leaseStr + str
 
-                  hash = {(rt['@attributes']['LeaseTerm']).split(" ")[0] => [rt['@attributes']['Rent'].to_s]}
-                  unitHash.merge! hash
+                  leaseStr = leaseStr + rt['@attributes']['LeaseTerm'].split(" ")[0] + ":" + rt['@attributes']['Rent'].gsub(/[\s,]/ ,"") + "::;"
+
+
+                  # hash = {(rt['@attributes']['LeaseTerm']).split(" ")[0] => [rt['@attributes']['Rent'].to_s]}
+                  # unitHash.merge! hash
                 end
-                unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = unitHash
+                unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = leaseStr
               end
             end
           end
@@ -171,7 +169,7 @@ class PsiStaticService < BaseService
       unit.available_date = vacateDate
       begin
         lease_rent_hash = unitLeaseTermHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
-        lease_rent_hash = (lease_rent_hash.sort_by {|k, v| k.to_i}).to_h
+        # lease_rent_hash = (lease_rent_hash.sort_by {|k, v| k.to_i}).to_h
         unit.lease_pricing = lease_rent_hash.to_s
       rescue
         unit.lease_pricing = nil
