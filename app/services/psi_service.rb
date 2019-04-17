@@ -9,76 +9,7 @@ class PsiService < BaseService
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
-        unitPricingHash = Hash.new
-        unitLeaseTermHash = Hash.new
-        begin
-          response2 = HTTParty.post(url,
-                                    :body => {
-                                        "auth": {
-                                            "type": "basic",
-                                            "password": password,
-                                            "username": username
-                                        },
-                                        "method": {
-                                            "name": "getMitsPropertyUnits",
-                                            "params": {
-                                                "propertyIds": property_id,
-                                                "availableUnitsOnly": "0"
-                                            }
-                                        }
-                                    }.to_json,
-                                    :headers => { 'Content-Type' => 'application/json' } )
-          response2 =  JSON.parse(response2.body)
-          if response2["response"]["code"] == 200
-            response2['response']['result']["PhysicalProperty"]["Property"][0]["ILS_Unit"].each do |ils|
-              if ils["Units"]["Unit"]["MarketRent"].present?
-                unitPricingHash[ils["Units"]["Unit"]["Identification"]["IDValue"].to_s] = ils["Units"]["Unit"]["MarketRent"]
-              end
-            end
-          end
-        end
-        ########
 
-        # ############## Lease term function
-        begin
-          response3 = HTTParty.post(url,
-                                   :body => {
-                                       "auth": {
-                                           "type": "basic",
-                                           "password": password,
-                                           "username": username
-                                       },
-                                       "method": {
-                                           "name": "getUnitsAvailabilityAndPricing",
-                                           "params": {
-                                               "propertyId": property_id,
-                                               "availableUnitsOnly": "0"
-                                           }
-                                       }
-                                   }.to_json,
-                                   :headers => { 'Content-Type' => 'application/json' } )
-          response3 =  JSON.parse(response3.body)
-          if response3["response"]["code"] == 200
-            psi_units = response3["response"]["result"]["ILS_Units"]["Unit"]
-            psi_units.each do |ils|
-
-              # unitHash = Hash.new
-              leaseStr = ""
-              if ils[1]["Rent"]["TermRent"].count > 1
-                ils[1]["Rent"]["TermRent"].each do |rt|
-
-                  leaseStr = leaseStr + rt['@attributes']['LeaseTerm'].split(" ")[0] + ":" + rt['@attributes']['Rent'].gsub(/[\s,]/ ,"") + "::;"
-                  #
-                  # hash = {(rt['@attributes']['LeaseTerm']).split(" ")[0] => [rt['@attributes']['Rent'].to_s]}
-                  # unitHash.merge! hash
-                end
-                unitLeaseTermHash[ils[1]["@attributes"]["PropertyUnitId"].to_s] = leaseStr
-              end
-            end
-          end
-        rescue => ex
-        end
-        # ##############
         response = HTTParty.post(url,
           :body => {
             "auth": {
@@ -109,7 +40,7 @@ class PsiService < BaseService
             end
           end
           save_psi_floorplans(floorplans,property_id)
-          save_psi_units(units,property_id,unitPricingHash,unitLeaseTermHash)
+          save_psi_units(units,property_id)
           save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
@@ -120,11 +51,11 @@ class PsiService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    # fill_psi_pricing_details
+    fill_psi_pricing_details
   end
 
-  def save_psi_units(units,property_id,unitPricingHash,unitLeaseTermHash)
-    units.each do |u|
+  def save_psi_units(units,property_id)
+      units.each do |u|
       vacateDate = ""
 
       unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
@@ -142,13 +73,10 @@ class PsiService < BaseService
           if u["Units"]["Unit"]["MarketRent"].present?
             unit.market_rent = u["Units"]["Unit"]["MarketRent"]
           end
-          if u["Units"]["Unit"]["MarketRent"].present?
-            unit.market_rent = u["Units"]["Unit"]["MarketRent"]
-          end
           if u["EffectiveRent"].present?
             unit.effective_rent = u["EffectiveRent"]
-          elsif unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s].present?
-            unit.effective_rent = unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
+          elsif u["Units"]["Unit"]["MarketRent"].present?
+            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
           else
             unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           end
@@ -169,13 +97,6 @@ class PsiService < BaseService
             vacateDate = Date.parse("#{year}-#{month}-#{day}")
           end
           unit.available_date = vacateDate
-          begin
-            lease_rent_hash = unitLeaseTermHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
-            # lease_rent_hash = (lease_rent_hash.sort_by {|k, v| k.to_i}).to_h
-            unit.lease_pricing = lease_rent_hash.to_s
-          rescue
-            unit.lease_pricing = nil
-          end
           # building = u["Units"]["Unit"]["BuildingName"]
           # unit.building = building.present? ? building.gsub("Building ", "") : ""
           unit.save(validate: false)
@@ -232,7 +153,7 @@ class PsiService < BaseService
   end
 
   def fill_psi_pricing_details
-    floorplanHash = Hash.new
+    # floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -251,7 +172,8 @@ class PsiService < BaseService
                                          "name": "getUnitsAvailabilityAndPricing",
                                          "params": {
                                              "propertyId": property_id,
-                                             "availableUnitsOnly": "0"
+                                             "availableUnitsOnly": "0",
+                                             "showUnitSpaces": "1"
                                          }
                                      }
                                  }.to_json,
@@ -259,52 +181,51 @@ class PsiService < BaseService
         response =  JSON.parse(response.body)
 
         if response["response"]["code"] == 200
-          psi_units = response["response"]["result"]["ILS_Units"]["Unit"]
-          psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
-          psi_floorplan.each_with_index do |f,index|
-            floorplanHash[psi_floorplan[index]["Name"]] = psi_floorplan[index]["MarketRent"]["@attributes"]["Min"]
-          end
+          psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
+          # psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+          # psi_floorplan.each_with_index do |f,index|
+          #   floorplanHash[psi_floorplan[index]["Name"]] = psi_floorplan[index]["MarketRent"]["@attributes"]["Min"]
+          # end
           psi_units.each do |u|
-            unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
-            pricing = u[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")
-
-            if u[1]["@attributes"]["Availability"] == "Available"
+            u['UnitSpace'].each do |us|
               begin
-                date = u[1]["@attributes"]["AvailableOn"]
-                dateSplit = date.split('/')
-                day = dateSplit[0]
-                month = dateSplit[1]
-                year = dateSplit[2]
-                unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                if u['UnitSpace'].count == 1
+                  unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                else
+                  unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                end
+                unless unit.present?
+                  unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
+                end
+                if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                  unit.availability = 'Unoccupied'
+                  unit.available = true
+                else
+                  unit.availability = 'Occupied'
+                  unit.available = false
+                end
+
+                if us[1]["@attributes"]["AvailableOn"].present?
+                  date = us[1]["@attributes"]["AvailableOn"]
+                  dateSplit = date.split('/')
+                  day = dateSplit[0]
+                  month = dateSplit[1]
+                  year = dateSplit[2]
+                  unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                end
+                if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f > 0.0
+                  unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                end
+                rentStr = ""
+                if us[1]["Rent"]["TermRent"].count > 1
+                  us[1]["Rent"]["TermRent"].each do |tr|
+                    rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
+                  end
+                end
+                unit.lease_pricing = rentStr;
+
+                unit.save(validate: false)
               end
-              unit.availability = 'Unoccupied'
-              unit.available = true
-              unit.save
-            else
-              unit.availability = 'Occupied'
-              unit.available_date = ""
-              unit.save
-            end
-
-            if pricing.to_f > 0
-              unit.effective_rent = pricing.to_f
-              unit.save(validate: false)
-              # u[1]['Rent']['TermRent'].each do |a|
-              #   if a["@attributes"]["IsBestPrice"] == "true"
-              #     unit = Unit.find_by(provider_unit_id: u[1]["@attributes"]["PropertyUnitId"],community_id: credentials.community_id)
-              #     if unit.present?
-              #       lease_term = a["@attributes"]["LeaseTerm"].split(" ")
-              #       # unit.effective_rent = a["@attributes"]["Rent"].remove(',').to_f
-              #       unit.lease_term = lease_term[0]
-              #       unit.save(validate: false)
-              #     end
-              #   end
-              # end
-            elsif unit.effective_rent <= 1
-              pricing = floorplanHash[u[1]["@attributes"]["FloorPlanName"]].to_s.gsub(/[\s,]/ ,"")
-              unit.effective_rent = pricing.to_f
-
-              unit.save(validate: false)
             end
           end
           #else
