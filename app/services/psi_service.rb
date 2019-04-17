@@ -51,7 +51,7 @@ class PsiService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    # fill_psi_pricing_details
+    fill_psi_pricing_details
   end
 
   def save_psi_units(units,property_id)
@@ -73,11 +73,10 @@ class PsiService < BaseService
           if u["Units"]["Unit"]["MarketRent"].present?
             unit.market_rent = u["Units"]["Unit"]["MarketRent"]
           end
-          if u["Units"]["Unit"]["MarketRent"].present?
-            unit.market_rent = u["Units"]["Unit"]["MarketRent"]
-          end
           if u["EffectiveRent"].present?
             unit.effective_rent = u["EffectiveRent"]
+          elsif u["Units"]["Unit"]["MarketRent"].present?
+            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
           else
             unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           end
