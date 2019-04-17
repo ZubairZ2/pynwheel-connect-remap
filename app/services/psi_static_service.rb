@@ -76,10 +76,10 @@ class PsiStaticService < BaseService
       if u["Units"]["Unit"]["MarketRent"].present?
         unit.market_rent = u["Units"]["Unit"]["MarketRent"]
       end
-      if u["EffectiveRent"].present?
-        unit.effective_rent = u["EffectiveRent"]
-      elsif u["Units"]["Unit"]["MarketRent"].present?
+      if u["Units"]["Unit"]["MarketRent"].present?
         unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+      elsif u["EffectiveRent"].present?
+        unit.effective_rent = u["EffectiveRent"]
       else
         unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
       end
