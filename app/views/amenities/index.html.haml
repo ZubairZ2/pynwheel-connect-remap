@@ -14,20 +14,30 @@
         .row
           .col-md-6
             %h4.title Amenity Images
-          .col-md-6
+            %h6#slide_show_span
+              Upload images here to add to your property map. Then plot them on the property map so that they appear in the correct place.
+              .br
+              Images will appear at a size of 300 x 200 px. Please note that images that are too small may appear pixelated.
+
             .mt-35
               /%span.btn.btn-primary.btn-file.pull-right.mb-20
-              - if @community.is_sitemap
-                = link_to "Plot Amenity", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary btn-file pull-right"
-              %span.btn.btn-success.btn-file.pull-right.mb-20.some{ :style => "margin-right: 5px;" }
+              %span.btn.btn-success.btn-file.some{ :style => "margin-right: 5px; width: 120px" }
                 %i.fa.fa-plus-circle
-                Add Image
-                %input#amenity-images{:multiple => "multiple", :type => "file"}/ 
+                ADD FILES
+                %input#amenity-images{:multiple => "multiple", :type => "file"}/
+            .mt-10
+              - if @community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? )
+                = link_to "Plot Amenities", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
             .divLoading.hidden
         #images-index
           = render :partial=>'index'
 #edit-image.modal.fade.edit-image
 :javascript
   var community_id = #{params[:community_id]}
-
-        
+  $('#amenity-images').change(function () {
+    $('.plot_amenities_btn').removeClass('hidden');
+  });
+  if (#{@amenities.count > 0})
+  {
+    $('.plot_amenities_btn').removeClass('hidden');
+  }

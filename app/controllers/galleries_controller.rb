@@ -4,7 +4,7 @@ class GalleriesController < ApplicationController
 	add_breadcrumb "Home", :root_path
 
 	def index
-		add_breadcrumb "Galleries", community_galleries_path(@community)
+		add_breadcrumb "Gallery Page", community_galleries_path(@community)
 		@galleries = @community.galleries
 		# @gallery_images = @community.gallery_images.order(:sort).all
 	end

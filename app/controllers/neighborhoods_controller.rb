@@ -1,6 +1,6 @@
 class NeighborhoodsController < ApplicationController
 	add_breadcrumb "Home", :root_path
-	add_breadcrumb "Neighborhood"
+	add_breadcrumb "Neighborhood Settings"
   before_action :check_community
   before_action :set_community
 

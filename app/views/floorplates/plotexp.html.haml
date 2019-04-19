@@ -29,17 +29,17 @@
             - marker_color = 'rgba(247, 0, 0, 0.61)'
           -#-
           - if @community.theme_name.include?('gables')
-            - fontsize = @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : "30"
+            - fontsize = @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30
           - elsif @community.theme_name == 'modernist'
-            - fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : "30"
+            - fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : 30
           - elsif @community.theme_name == 'futurist'
-            - fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : "30"
+            - fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : 30
           - elsif @community.theme_name == 'expressionist'
-            - fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : "30"
+            - fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : 30
           - elsif @community.theme_name == 'panther'
-            - fontsize = @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : "30"
+            - fontsize = @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : 30
           - else
-            - fontsize = '30'
+            - fontsize = 30
 
           -#- fontsize = @community.design.property_map_size_integer
           - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i

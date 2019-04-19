@@ -32,7 +32,7 @@
           .carousel-inner{:style=>"height: 500px;"}
             - @gallery_images.each_with_index do |gallery_image,index|
               .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
-                - unless gallery_image.is_video? 
+                - unless gallery_image.is_video?
                   = image_tag gallery_image.image.url(:thumb)
                   .carousel-caption
                     image  
@@ -45,5 +45,5 @@
 
 :javascript
   $('.image_slide_view').bind("DOMSubtreeModified",function(){
-    $('#image_count').text('#{@gallery.name.capitalize} Gallery - #{@gallery_images.count} image');
+    $('#image_count').text('#{@gallery.name.capitalize} Gallery - #{@gallery_images.count} #{@gallery_images.count > 1 ? "images" : "image"}');
   });

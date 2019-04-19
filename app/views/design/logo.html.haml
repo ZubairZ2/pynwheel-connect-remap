@@ -1,22 +1,46 @@
-- content_for :title, "Logo - Pynwheel"
+- content_for :title, "Property Logo - Pynwheel"
 .divLoading.hidden
 %section.is-home-page
   .content
     .title-heading
       %h4
-        %i.fa.fa-image
+        %i.fa.fa-cubes
         = @community.name.capitalize
         %br
           %small.text-primary
             = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          PROPERTY
+          %span LOGO
     .row
       / Start Panel left Side
-      .col-lg-12.col-md-12.mt-30
+      .col-lg-12.col-md-12
         .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
           #myTabContent.tab-content.add-plan
             / Start L>ogo Upload section
             #home.tab-pane.fade.active.in{:role => "tabpanel"}
               = render 'logo'
+
+%section.is-home-page
+  .content
+    -#.title-heading
+    -#  %h4
+    -#    %i.fa.fa-image
+    -#    = @community.name.capitalize
+    -#    %br
+    -#      %small.text-primary
+    -#        = @community.code
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
+          #myTabContent.tab-content.add-plan
+            / Start L>ogo Upload section
+            #home.tab-pane.fade.active.in{:role => "tabpanel"}
+              = render 'secondary_logo'
+
 :javascript 
   var community_id = #{params[:community_id]};
   var selected_theme = '#{@community.theme_name}';

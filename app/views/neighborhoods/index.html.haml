@@ -11,10 +11,8 @@
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
-          Add
-          %span Neighborhood
-        .pull-right.btn-btn-danger
-          = link_to "Custom locations for map", community_neighborhood_locations_path(@community,@neighborhood), class: "btn btn-primary" unless @neighborhood.new_record?
+          NEIGHBORHOOD
+          %span SETTINGS
 
       = form_for [@community,@neighborhood], :html=>{:class=>"form-horizontal neighborhood-form"},:remote=>true do |f|
         .box-body

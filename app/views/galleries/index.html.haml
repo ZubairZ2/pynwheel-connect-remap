@@ -1,14 +1,19 @@
-- content_for :title, "Galleries - Pynwheel"
+- content_for :title, "Gallery Page - Pynwheel"
 / Main content
 %section
   .content
     .title-heading
       %h4
-        %i.fa.fa-cubes
+        %i.fa.fa-image
         = @community.name.capitalize
         %br
           %small.text-primary
             = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          GALLERY
+          %span PAGE
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
@@ -34,7 +39,7 @@
                       %span.pl-15 Yes
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                    Display on homepage
+                    Add to Home Page Menu
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -66,7 +71,7 @@
                           %i.fa.fa-trash
         .row
           .col-md-12
-            = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success pull-right mb-20" do
+            = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success mb-20" do
               %i.fa.fa-plus-circle
               ADD GALLERY
 
