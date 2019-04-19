@@ -1,6 +1,6 @@
 class FavoriteSettingsController < ApplicationController
 	add_breadcrumb "Home", :root_path
-	add_breadcrumb "Favorites"
+	add_breadcrumb "Favorites Page"
   before_action :set_community
   before_action :check_community
 

@@ -10,6 +10,14 @@
           -if current_user.is_super_admin?
             %small.text-primary
               = @community.code
+
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          HOME PAGE
+          %span
+    %h4.mt-30
+      Select Home Page Type
     .row
       .col-lg-12
         .form-group 
@@ -36,7 +44,11 @@
           .row
             .col-lg-12
               .title-home
-                %h4 Slide Show Images
+                %h4
+                  Slide Show Images
+                  .br
+                  %h6#slide_show_span
+                    Images will appear at a size of 1920 x 1080 px. Please note that images that are too small may appear pixelated.
                 
                 
                 %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-image-upload-holder').click();"}

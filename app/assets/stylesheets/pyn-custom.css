@@ -2797,3 +2797,14 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     margin-right: -15px;
 }
+#logo_header
+{
+    margin-bottom: 0px;
+}
+#slide_show_span{
+    color: grey;
+    margin-top: -10px;
+}
+#gallery_header_span{
+    color: grey;
+}

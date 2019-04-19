@@ -913,8 +913,8 @@ function readDesignPageSecondaryLogoSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
   reader.onload = function (e) {
-    $('#preview-image').attr('src', e.target.result);
-    $('#preview-image').parent().attr('href', e.target.result);
+    $('#preview-image-secondary').attr('src', e.target.result);
+    $('#preview-image-secondary').parent().attr('href', e.target.result);
     designPageSecondaryLogo(e.target.result);
   }
   reader.readAsDataURL(file);
@@ -1955,8 +1955,8 @@ function readDesignPageSecondaryLogoSrcFromInput(input) {
             var reader = new FileReader();
 
             reader.onload = function (e) {
-                $('#preview-image').attr('src', e.target.result);
-                $('#preview-image').parent().attr('href', e.target.result);
+                $('#preview-image-secondary').attr('src', e.target.result);
+                $('#preview-image-secondary').parent().attr('href', e.target.result);
                 designPageSecondaryLogo(e.target.result);
             }
 

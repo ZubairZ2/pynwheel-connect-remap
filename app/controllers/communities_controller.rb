@@ -33,7 +33,7 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
-    add_breadcrumb "Edit Community", edit_company_community_path(current_company,@community)  
+    add_breadcrumb "Property Settings", edit_company_community_path(current_company,@community)
   end
   def settings_page
     @community = Community.find params[:community_id]

@@ -18,7 +18,7 @@ class DesignController < ApplicationController
   end
 
   def logo
-    add_breadcrumb "Logo"
+    add_breadcrumb "Property Logo"
     @design = current_community.design || current_community.create_design
   end
 

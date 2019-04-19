@@ -1,24 +1,24 @@
-.row
-  .col-md-12
-    .form-group
-      - if gables_theme(@community) || @community.is_panther? || @community.is_expressionist?
-        = link_to "Home Page Logo", secondary_logo_community_design_index_path(@community), class: "btn btn-primary btn-file pull-right mr-15"
+-#.row
+-#  .col-md-12
+-#    .form-group
+-#      - if gables_theme(@community) || @community.is_panther? || @community.is_expressionist?
+-#        = link_to "Home Page Logo", secondary_logo_community_design_index_path(@community), class: "btn btn-primary btn-file pull-right mr-15"
 .row
   .col-lg-12
     .form-group
       %label.col-sm-12.col-lg-4.col-md-4.col-xs-12.control-label
         Upload Logo
-        %span Upload site logo to display in page
+        %span Upload your property logo to be displayed in each page your Pynwheel app and in your eBrochure.
     %span.btn.btn-primary.btn-file.ml-15
       %i.fa.fa-upload
       Upload File
-      = file_field_tag :logo  
+      = file_field_tag :logo
 
 .text-center.drag-box.mt-15.image-upload#design-page-logo-upload-holder
   %span.icon-upload
     = image_tag "upload-image.png"
-    %p Drag &amp; Drop file to Upload  
-      
+    %p Drag &amp; Drop file to Upload
+
 .row
   .col-lg-12
     .form-group.logo-upload-bg.pt-15
