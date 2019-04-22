@@ -295,10 +295,11 @@ class PsiSwapService < BaseService
 
         if response["response"]["code"] == 200
           psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-          # psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
-          # psi_floorplan.each_with_index do |f,index|
-          #   floorplanHash[psi_floorplan[index]["Name"]] = psi_floorplan[index]["MarketRent"]["@attributes"]["Min"]
-          # end
+
+          psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+          psi_floorplan.each_with_index do |f,index|
+            floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
+          end
           psi_units.each do |u|
             u['UnitSpace'].each do |us|
               begin
@@ -326,8 +327,13 @@ class PsiSwapService < BaseService
                   year = dateSplit[2]
                   unit.available_date = Date.parse("#{month}-#{day}-#{year}")
                 end
-                if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f > 0.0
+
+                if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
                   unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
+                  unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                else
+                  unit.effective_rent = 0.0
                 end
                 rentStr = ""
                 if us[1]["Rent"]["TermRent"].count > 1
@@ -335,9 +341,11 @@ class PsiSwapService < BaseService
                     rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
                   end
                 end
-                unit.lease_pricing = rentStr;
 
+                unit.lease_pricing = rentStr
                 unit.save(validate: false)
+              rescue => ex
+                puts "---------------- filling pricing inside loop", ex.message
               end
             end
           end
@@ -345,7 +353,7 @@ class PsiSwapService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
-        puts '----------------------------' , e.message
+        puts '-------------- Filling pricing -----------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
