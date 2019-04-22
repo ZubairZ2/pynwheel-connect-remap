@@ -16,7 +16,7 @@
               %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             = link_to "Communities", root_path
-      - if (current_user.is_super_admin?)
+      - if (current_user.is_super_admin? || current_user.is_community_admin? )
         %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
           = link_to edit_company_community_path(current_company,current_community) do
             %i.fa.fa-info

@@ -12,12 +12,13 @@
       / Start Panel left Side
       .col-lg-12.col-md-12
         .row
-          .col-md-6
+          .col-md-12
             %h4.title Amenity Images
-            %h6#slide_show_span
-              Upload images here to add to your property map. Then plot them on the property map so that they appear in the correct place.
-              .br
-              Images will appear at a size of 300 x 200 px. Please note that images that are too small may appear pixelated.
+            %h4#slide_show_span
+              %p
+                Upload images here to add to your property map. Then plot them on the property map so that they appear in the correct place.
+              %p
+                Images will appear at a size of 300 x 200 px. Please note that images that are too small may appear pixelated.
 
             .mt-35
               /%span.btn.btn-primary.btn-file.pull-right.mb-20
@@ -27,7 +28,7 @@
                 %input#amenity-images{:multiple => "multiple", :type => "file"}/
             .mt-10
               - if @community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? )
-                = link_to "Plot Amenities", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
+                = link_to "PLOT AMENITIES", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
             .divLoading.hidden
         #images-index
           = render :partial=>'index'

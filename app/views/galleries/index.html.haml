@@ -56,10 +56,11 @@
                     %th{:width => "79"} Sr #
                     %th Gallery Name
                     %th{:width => "100"} Actions
-                %tbody
-                  - @galleries.each_with_index do |gallery,index|
-                    %tr
-                      %td= index+1
+                %tbody.sortable_list
+                  - orderVar = 0
+                  - sortable_fetch(@galleries) do |gallery,index|
+                    %tr{:id=> index}
+                      %td= orderVar + 1
                       %td
                         = link_to gallery.name, show_images_community_gallery_path(@community,gallery.id)
                       %td
@@ -102,3 +103,4 @@
       $('.gallery-settings-form').submit();
     }
   });
+  $('.sortable_list').railsSortable();

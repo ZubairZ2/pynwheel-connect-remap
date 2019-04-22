@@ -1433,7 +1433,7 @@ json.gallery do
   json.gallery_page_name @community.gallery_page_name
   json.display_gallery_on_homepage @community.display_gallery_on_homepage
   if @community.gallery_images.present?
-    json.categories @community.galleries.pluck(:name).each do |name|
+    json.categories @community.galleries.order(:sort).pluck(:name).each do |name|
       json.title name
     end
     #json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
