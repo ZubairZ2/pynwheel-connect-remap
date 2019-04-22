@@ -152,7 +152,7 @@ class PsiStaticService < BaseService
   end
 
   def fill_psi_pricing_details
-    # floorplanHash = Hash.new
+    floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -181,10 +181,10 @@ class PsiStaticService < BaseService
 
         if response["response"]["code"] == 200
           psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-          # psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
-          # psi_floorplan.each_with_index do |f,index|
-          #   floorplanHash[psi_floorplan[index]["Name"]] = psi_floorplan[index]["MarketRent"]["@attributes"]["Min"]
-          # end
+          psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+          psi_floorplan.each_with_index do |f,index|
+            floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
+          end
           psi_units.each do |u|
             u['UnitSpace'].each do |us|
               begin
@@ -212,17 +212,24 @@ class PsiStaticService < BaseService
                   year = dateSplit[2]
                   unit.available_date = Date.parse("#{month}-#{day}-#{year}")
                 end
-                if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f > 0.0
+                if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
                   unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0
+                  unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                else
+                  unit.effective_rent = 0.0
                 end
-                # rentStr = ""
-                # if us[1]["Rent"]["TermRent"].count > 1
-                #   us[1]["Rent"]["TermRent"].each do |tr|
-                #     rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
-                #   end
-                # end
+                rentStr = ""
+                if us[1]["Rent"]["TermRent"].count > 1
+                  us[1]["Rent"]["TermRent"].each do |tr|
+                    rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
+                  end
+                end
+                unit.lease_pricing = rentStr
 
                 unit.save(validate: false)
+              rescue => ex
+                puts "---------------- filling pricing inside loop", ex.message
               end
             end
           end
