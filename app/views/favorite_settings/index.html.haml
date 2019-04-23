@@ -11,19 +11,19 @@
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
-          eBrochure
-          %span Settings
+          eBrochure Settings
+          %span
         .mt-10{ :style => "margin-left: -15px;" }
-          .col-lg-1
+          .col-lg-12
             .btn-btn-danger
-              = link_to community_favorite_setting_favorite_images_path(@community,@favorite), class: "btn btn-success" do
+              = link_to community_favorite_setting_favorite_images_path(@community,@favorite),style: "width: 142px;", class: "btn btn-success" do
                 %i.fa.fa-plus-circle
-                  ADD IMAGES
-          .col-lg-1
+                ADD IMAGES
+          .col-lg-12.mt-5
             .btn-btn-danger
-              = link_to  community_favorite_setting_ebrochure_menu_buttons_path(@community,@community.favorite_setting), class: "btn btn-success ml-10" do
+              = link_to  community_favorite_setting_ebrochure_menu_buttons_path(@community,@community.favorite_setting), class: "btn btn-success" do
                 %i.fa.fa-plus-circle
-                  ADD WEBLINKS
+                ADD WEBLINKS
 
       = form_for [@community,@favorite],:html=>{:class=>"form-horizontal",:id=>"favorite-settings-form"} do |f|
         .box-body

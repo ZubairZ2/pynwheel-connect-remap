@@ -10,20 +10,21 @@
         %br
           %small.text-primary
             = @community.code
-    %h5.pull-right
-      = link_to "< Back to All Galleries", community_galleries_path(@community), class: "btn btn-success mb-20"
+    %h5
+      = link_to "< Back to All Galleries", community_galleries_path(@community), class: "btn mb-20",style: "background-color: #8f4a9b; color: white;"
     / Start Tabs Secttions
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
         / Start image-slide section
         #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
           .row
-            .col-md-7
+            .col-md-12
               %h4#image_count #{@gallery.name.capitalize} Gallery - #{@gallery_images.count} #{@gallery_images.count > 1 ? "images" : "image"}
-              %h6#gallery_header_span
-                Upload images and videos here for your gallery. You can also drag and drop them to rearrange them.
-                .br
-                Images will appear at a size of 100x100 and can be expanded up to 200x200. Please note that images that are too small may appear pixelated.
+              %h4#gallery_header_span
+                %p
+                  Upload images and videos here for your gallery. You can also drag and drop them to rearrange them.
+                %p
+                  Images will appear at a size of 100x100 and can be expanded up to 200x200. Please note that images that are too small may appear pixelated.
           .row
             .col-md-6
               .mt-35
