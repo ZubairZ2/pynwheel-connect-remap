@@ -36,6 +36,9 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Property Settings", edit_company_community_path(current_company,@community)
   end
   def settings_page
+    add_breadcrumb "Companies", companies_path(current_company)
+    add_breadcrumb "Communities", company_communities_path(current_company)
+    add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
   end
   def update

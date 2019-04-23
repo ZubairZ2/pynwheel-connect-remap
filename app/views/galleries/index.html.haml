@@ -60,7 +60,8 @@
                   - orderVar = 0
                   - sortable_fetch(@galleries) do |gallery,index|
                     %tr{:id=> index}
-                      %td= orderVar + 1
+                      - orderVar = orderVar + 1
+                      %td= orderVar
                       %td
                         = link_to gallery.name, show_images_community_gallery_path(@community,gallery.id)
                       %td
