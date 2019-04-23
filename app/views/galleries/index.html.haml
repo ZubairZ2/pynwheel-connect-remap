@@ -62,7 +62,7 @@
                           %i.fa.fa-eye
                         = link_to edit_community_gallery_path(@community,gallery), remote: true, class: "text-success ml-5" do
                           %i.fa.fa-edit
-                        %a.text-danger{"data-name"=>"Gallery","data-href" => "/communities/#{@community.id}/galleries/#{gallery.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                        %a.text-danger{"data-name"=>"Gallery","data-href" => "/communities/#{@community.id}/galleries/#{gallery.id}", "data-target" => "#confirm-delete-gallery", "data-toggle" => "modal", :href => "javascrip::;"}
                           %i.fa.fa-trash
         .row
           .col-md-12

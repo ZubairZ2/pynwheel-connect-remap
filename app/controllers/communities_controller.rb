@@ -3,8 +3,8 @@ class CommunitiesController < ApplicationController
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
   add_breadcrumb "Home", :root_path
-  add_breadcrumb "Companies", :companies_path, except: [:import_page]
-  add_breadcrumb "Communities", :company_communities_path, except: [:import_page]
+  add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
+  add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
 
   def index
     #@communities = Community.page(params[:page]).per(10)
@@ -34,6 +34,9 @@ class CommunitiesController < ApplicationController
 
   def edit
     add_breadcrumb "Edit Community", edit_company_community_path(current_company,@community)  
+  end
+  def settings_page
+    @community = Community.find params[:community_id]
   end
   def update
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
@@ -69,11 +72,19 @@ class CommunitiesController < ApplicationController
       else
         if @community.update(community_params)
           @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
-          format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
+          if params[:community][:name].present?
+            format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+          else
+            format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+          end
           format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
         else
           flash[:error] = @community.errors.full_messages.join(',')
-          format.html { render :edit }
+          if params[:community][:name].present?
+            format.html { render :edit }
+          else
+            format.html { render :settings_page }
+          end
           message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end

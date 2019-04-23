@@ -754,7 +754,7 @@ json.ui_settigs do
         elsif @community.theme_name == "panther"
           json.home_page_position_of_logo "Bottom center"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
-          json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? @community.design.expressionist.home_page_position_of_logo : "Right"
+          json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? (@community.design.expressionist.home_page_position_of_logo.sub '=','') : "Right"
         else
           json.home_page_position_of_logo "Right"
         end

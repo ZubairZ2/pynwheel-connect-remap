@@ -128,6 +128,10 @@ class PsiService < BaseService
       vacateDate = ""
 
       unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      unless unit.present?
+        unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])#.first_or_initialize
+      end
+
       if unit.present?
         unless unit.manual_override
           # unit.property_id = property_id

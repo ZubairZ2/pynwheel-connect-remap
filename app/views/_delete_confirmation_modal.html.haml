@@ -27,6 +27,18 @@
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
         %a.btn.btn-danger.update-btn-ok#update-delete_button Update
+
+#confirm-delete-gallery.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#record-name-gallery
+
+      .modal-body#record-message-gallery
+
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        %a.btn.btn-danger.btn-ok-gallery#delete_button_gallery{"data-method"=>"delete"} Delete
+
 :javascript
   $('#delete_button').on('click',function(){
     $('#delete_button').hide();

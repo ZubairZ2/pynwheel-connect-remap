@@ -55,12 +55,15 @@ class GalleriesController < ApplicationController
 	end
 
 	def destroy
+
 		@gallery = @community.galleries.find(params[:id])
-    if @gallery.destroy
-      flash[:notice] = "Gallery deleted successfully."
-    else
-      flash[:error] = @gallery.errors.full_messages.join(',')
-    end
+		@gallery.delete_gallery
+		flash[:notice] = "Your gallery will be deleted shortly."
+    # if @gallery.destroy
+    #   flash[:notice] = "Gallery deleted successfully."
+    # else
+    #   flash[:error] = @gallery.errors.full_messages.join(',')
+    # end
     redirect_to community_galleries_path(@community)
 	end
 
