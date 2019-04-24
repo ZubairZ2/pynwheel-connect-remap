@@ -228,7 +228,7 @@ class Community < ApplicationRecord
     #psi_service = PsiService.new(credential.attributes)
     #psi_service.perform
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
-    ImportPsiDataJob.perform_async credential.attributes.to_json
+    # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
 
   def import_zaremba_provider
