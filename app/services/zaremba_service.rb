@@ -79,7 +79,10 @@ class ZarembaService < BaseService
             unit.effective_rent = u["EffectiveRent"]["Min"]
           end
           # unit.floor = u["FloorLevel"]
-          unit.availability = u["Availability"]["VacancyClass"]
+          if u["Availability"]["VacancyClass"] == "Vacant"
+            unit.availability = "Unoccupied"
+            unit.available = true;
+          end
           if u["Availability"]["VacancyClass"] == "Vacant"
             year = u["Availability"]["VacateDate"]["Year"]
             month = u["Availability"]["VacateDate"]["Month"]
