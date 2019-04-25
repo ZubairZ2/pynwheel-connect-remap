@@ -21,7 +21,7 @@
           %i.fa.fa-info
           %span Property Details
       - if (current_user.is_super_admin?)
-        %li{:class=>"#{controller_name =='communities' && params[:action] =='settings' ? 'active' : ''}"}
+        %li{:class=>"#{controller_name =='communities' && params[:action] =='settings_page' ? 'active' : ''}"}
           = link_to community_settings_page_path(current_community) do
             %i.fa.fa-cog
             %span Settings
