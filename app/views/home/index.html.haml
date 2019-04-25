@@ -29,10 +29,7 @@
             %tr
               %td
                 %h4.h4
-                  - if current_user.is_super_admin?
-                    = link_to community.name, edit_company_community_path(community.company,community),:title=>community.data_provider
-                  - else
-                    = link_to community.name, community_home_page_index_path(community),:title=>community.data_provider
+                  = link_to community.name, edit_company_community_path(community.company,community),:title=>community.data_provider
                 %h6.h6 Updated: #{community.updated_at.to_date}  
               %td
                 %h5.h5
