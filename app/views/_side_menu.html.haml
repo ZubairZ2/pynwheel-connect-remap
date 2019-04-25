@@ -16,13 +16,12 @@
               %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             = link_to "Communities", root_path
-      - if (current_user.is_super_admin? || current_user.is_community_admin? )
-        %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
-          = link_to edit_company_community_path(current_company,current_community) do
-            %i.fa.fa-info
-            %span Property Details
+      %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
+        = link_to edit_company_community_path(current_company,current_community) do
+          %i.fa.fa-info
+          %span Property Details
       - if (current_user.is_super_admin?)
-        %li{:class=>"#{controller_name =='communities' && params[:action] =='settings' ? 'active' : ''}"}
+        %li{:class=>"#{controller_name =='communities' && params[:action] =='settings_page' ? 'active' : ''}"}
           = link_to community_settings_page_path(current_community) do
             %i.fa.fa-cog
             %span Settings
@@ -71,7 +70,7 @@
         %li{:class=>"#{controller_name =='floorplates' && params[:amenities].blank? ? 'active' : ''}"}
           %a{:href => "#{community_floorplates_path(current_community)}"}
             %i.fa.fa-database
-            %span Floorplates
+            %span Property Map
             %span.pull-right-container
       %li{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
         %a{:href => "#{community_galleries_path(current_community)}"}
