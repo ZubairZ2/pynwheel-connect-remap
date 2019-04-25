@@ -266,7 +266,7 @@ class PsiSwapService < BaseService
   end
 
   def fill_psi_pricing_details
-    # floorplanHash = Hash.new
+    floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -295,7 +295,6 @@ class PsiSwapService < BaseService
 
         if response["response"]["code"] == 200
           psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-
           psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
           psi_floorplan.each_with_index do |f,index|
             floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
@@ -336,7 +335,6 @@ class PsiSwapService < BaseService
                   year = dateSplit[2]
                   unit.available_date = Date.parse("#{month}-#{day}-#{year}")
                 end
-
                 if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
                   unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                 elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
@@ -362,7 +360,7 @@ class PsiSwapService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
-        puts '-------------- Filling pricing -----------' , e.message
+        puts '-------------- filling pricing --------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
