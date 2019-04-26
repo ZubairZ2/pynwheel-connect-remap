@@ -5,7 +5,12 @@ class PsiService < BaseService
     property_ids.each do |property_id|
       begin
         @@floorplanHash = {}
-        url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+          url = credentials.entrata_url
+        else
+          url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        end
+
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
@@ -97,6 +102,13 @@ class PsiService < BaseService
             vacateDate = Date.parse("#{year}-#{month}-#{day}")
           end
           unit.available_date = vacateDate
+          begin
+            lease_rent_hash = unitLeaseTermHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
+            # lease_rent_hash = (lease_rent_hash.sort_by {|k, v| k.to_i}).to_h
+            unit.lease_pricing = lease_rent_hash.to_s
+          rescue
+            unit.lease_pricing = nil
+          end
           # building = u["Units"]["Unit"]["BuildingName"]
           # unit.building = building.present? ? building.gsub("Building ", "") : ""
           unit.save(validate: false)
