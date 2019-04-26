@@ -10,9 +10,11 @@
             = @community.code
     .box.box-info.add-plan
       .box-header
-        %h3.box-title
-          Edit 
-          %span Floor Plan
+        .row.col-lg-12
+          %h3.box-title
+            Floor Plan Details
+            %span
+        = link_to "<Back to All Floor Plans", community_floorplans_path(@community), class: "btn btn-primary mt-20", style: "background: #8f4a9c; color: white;"
       / /.box-header
       / form start
       = form_for @floorplan,:url=>community_floorplan_path(:id=>@floorplan.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|

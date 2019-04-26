@@ -12,15 +12,17 @@
       / Start Panel left Side
       .col-lg-12.col-md-12
         .row
-          .col-md-6
+          .col-lg-12
+            = link_to "<Back to All Floor Plans", community_floorplans_path(@community), class: "btn btn-primary mt-20", style: "background: #8f4a9c; color: white;"
+          .col-md-12
             %h4.title 
               = @floorplan.name + " Floor Plan Images"
-            = link_to "Plot Images on Floor Plan", plot_amenities_community_floorplan_amenities_path(@community,@floorplan), class: "btn btn-primary mb-20", id: "amenity_image"
+            = link_to "PLOT IMAGES ON FLOOR PLAN", plot_amenities_community_floorplan_amenities_path(@community,@floorplan), class: "btn btn-primary mb-20", id: "amenity_image"
           .col-md-6
             .mt-35
-              %span.btn.btn-success.btn-file.pull-right.mb-20
+              %span.btn.btn-success.btn-file
                 %i.fa.fa-plus-circle
-                Add Image
+                ADD IMAGE
                 %input#floorplan-amenity-images{:multiple => "multiple", :type => "file"}/ 
             .divLoading.hidden
         #images-index
