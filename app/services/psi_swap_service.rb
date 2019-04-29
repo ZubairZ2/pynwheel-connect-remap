@@ -11,32 +11,7 @@ class PsiSwapService < BaseService
         #property_id = credentials.property_id
         unitPricingHash = Hash.new
         #property_id = credentials.property_id
-        begin
-          response2 = HTTParty.post(url,
-                                    :body => {
-                                        "auth": {
-                                            "type": "basic",
-                                            "password": password,
-                                            "username": username
-                                        },
-                                        "method": {
-                                            "name": "getMitsPropertyUnits",
-                                            "params": {
-                                                "propertyIds": property_id,
-                                                "availableUnitsOnly": "0"
-                                            }
-                                        }
-                                    }.to_json,
-                                    :headers => { 'Content-Type' => 'application/json' } )
-          response2 =  JSON.parse(response2.body)
-          if response2["response"]["code"] == 200
-            response2['response']['result']["PhysicalProperty"]["Property"][0]["ILS_Unit"].each do |ils|
-              if ils["Units"]["Unit"]["MarketRent"].present?
-                unitPricingHash[ils["Units"]["Unit"]["Identification"]["IDValue"].to_s] = ils["Units"]["Unit"]["MarketRent"]
-              end
-            end
-          end
-        end
+
         #######
         response = HTTParty.post(url,
                                  :body => {
@@ -109,8 +84,8 @@ class PsiSwapService < BaseService
         end
         if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
-        elsif unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s].present?
-          unit.effective_rent = unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
+        elsif u["Units"]["Unit"]["MarketRent"].present?
+          unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         else
           unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
@@ -148,8 +123,8 @@ class PsiSwapService < BaseService
 
         if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
-        elsif unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s].present?
-          unit.effective_rent = unitPricingHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
+        elsif u["Units"]["Unit"]["MarketRent"].present?
+          unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         else
           unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end

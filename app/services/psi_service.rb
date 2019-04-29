@@ -102,13 +102,6 @@ class PsiService < BaseService
             vacateDate = Date.parse("#{year}-#{month}-#{day}")
           end
           unit.available_date = vacateDate
-          begin
-            lease_rent_hash = unitLeaseTermHash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s]
-            # lease_rent_hash = (lease_rent_hash.sort_by {|k, v| k.to_i}).to_h
-            unit.lease_pricing = lease_rent_hash.to_s
-          rescue
-            unit.lease_pricing = nil
-          end
           # building = u["Units"]["Unit"]["BuildingName"]
           # unit.building = building.present? ? building.gsub("Building ", "") : ""
           unit.save(validate: false)
