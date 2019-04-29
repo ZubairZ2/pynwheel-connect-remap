@@ -39,7 +39,6 @@ class PsiStaticService < BaseService
             end
           end
           save_psi_floorplans(floorplans,property_id)
-
           save_psi_units(units,property_id)
           save_website_column_of_community(response)
           #else

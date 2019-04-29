@@ -60,7 +60,7 @@ class PsiService < BaseService
   end
 
   def save_psi_units(units,property_id)
-      units.each do |u|
+    units.each do |u|
       vacateDate = ""
 
       unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
