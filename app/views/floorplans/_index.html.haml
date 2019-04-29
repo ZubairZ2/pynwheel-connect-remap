@@ -3,6 +3,31 @@
   .row
     .col-md-12
       %h4.title Floor Plans
+  .row
+    .ml-15
+      %a.btn.btn-success.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
+        %i.fa.fa-plus-circle
+        ADD FLOOR PLAN
+    .ml-15
+      %a.btn.btn-success.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
+        %i.fa.fa-plus-circle
+        ADD DETAILS TO MULTIPLE
+  .row{ style: "margin-left: 0px;"}
+    -#.box.box-widget.panel-box.ml-15
+    %h5{style: "color: ; margin-left: 10px;"}
+      %p
+        Add and manage floor plans below.*
+      %p
+        Click the "edit" icon to change the floor plan details. Details that have been changed manually will appear in red in the grid below.
+      %p
+        Click on "manage images" to add interior images to each floor plan.
+      %p
+        Click on the desired column title to rearrange how available floor plans appear in the floor plan gallery.
+  .row.mr-15
+    .box.box-widget.panel-box.ml-15.alert-danger
+      %h5{style: "color: ; margin-left: 10px;"}
+        %p
+          *Note: If you have made changes to floor plans in your property management software, please contact Pynwheel support at support@pynwheel.com to import your data.
   .box.box-widget.panel-box
     .box-header
       
@@ -12,37 +37,37 @@
             %thead
               %tr
                 %th Sr #
-                %th Plan Name
-                %th Sq.Ft
-                %th Bedrooms
-                %th Bathrooms
-                %th Description
-                %th Images
-                %th Image
+                %th Name
+                %th SF
+                %th BR
+                %th BA
+                -#%th Description
+                %th Interior Images
+                %th Floor Plan Image
                 %th Actions
             %tbody
               - @floorplans.map{|x| x.name = '' if x.name.nil? }
               - @floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@floorplans).sort.map{|x,y| y}.each_with_index  do |f,index|
-                %tr
+                %tr{style: "background-color: #{f.manual_override ? "#dd4a39" : ""}; color: #{f.manual_override ? "white" : ""};"}
                   %td= index+1
-                  %td= f.name
-                  %td= f.square_feet
-                  %td= f.bedrooms
-                  %td= f.bathrooms
-                  %td= raw(f.description)
+                  %td{style: "background-color: #{f.name_is_updated ? "#dd4a39" : ""}; color: #{f.name_is_updated ? "white" : ""}; "}= f.name
+                  %td{style: "background-color: #{f.square_feet_is_updated ? "#dd4a39" : ""}; color: #{f.square_feet_is_updated ? "white" : ""}; "}= f.square_feet.to_i
+                  %td{style: "background-color: #{f.bedroom_is_updated ? "#dd4a39" : ""}; color: #{f.bedroom_is_updated ? "white" : ""}; "}= f.bedrooms.to_i
+                  %td{style: "background-color: #{f.bathroom_is_updated ? "#dd4a39" : ""}; color: #{f.bathroom_is_updated ? "white" : ""}; "}= f.bathrooms.to_i
+                  -#%td= raw(f.description)
                   %td
                     = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
                   %td
                     - if f.standard_image_url.present?
-                      .drop-img.drop-img-left
+                      .drop-img.drop-img-left{style: "color: #{f.manual_override ? "black" : ""};"}
                         = image_tag f.standard_image_url
                     - else  
-                      .drop-img.drop-img-left.image-holder{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id}
+                      .drop-img.drop-img-left.image-holder{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id,style: "color: #{f.manual_override ? "black" : ""};"}
                   %td
                     %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
-                      %i.fa.fa-edit
+                      %i.fa.fa-edit{style: "color: #{f.manual_override ? "white" : ""};"}
                     %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
-                      %i.fa.fa-trash
+                      %i.fa.fa-trash{style: "color: #{f.manual_override ? "white" : ""};"}
 
       
 / End Panel left Side

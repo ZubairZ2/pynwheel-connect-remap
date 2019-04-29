@@ -2805,6 +2805,41 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     color: grey;
     margin-top: -10px;
 }
-#gallery_header_span{
+#gallery_header_span {
     color: grey;
+}.tooltip1 {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip1 #tooltiptext1 {
+    visibility: hidden;
+    width: 350px;
+    background-color: #e0e0e0;
+    color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -60px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+.tooltip1 #tooltiptext1::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -120px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.tooltip1:hover #tooltiptext1 {
+    visibility: visible;
 }

@@ -30,7 +30,7 @@ class FloorplansController < ApplicationController
 
   def edit
     add_breadcrumb "Floor plans", community_floorplans_path(@community)
-    add_breadcrumb "Edit Floor plan", edit_community_floorplan_path(@community,@floorplan)
+    add_breadcrumb "Floor plan Details", edit_community_floorplan_path(@community,@floorplan)
   end
 
   def check_community
@@ -57,15 +57,34 @@ class FloorplansController < ApplicationController
       if params[:floorplan][:description].present?
         params[:floorplan][:description] = add_padding_description params[:floorplan][:description]
       end
-      if @floorplan.update(floorplan_params)
-        format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
-        message = '<div class="alert alert-success">'+@floorplan.name+' image uploaded successfully.</div>'
+      if (params[:floorplan][:manual_override] == "false") && (params[:floorplan][:name] != @floorplan.name || params[:floorplan][:provider_floorplan_id] != @floorplan.provider_floorplan_id || params[:floorplan][:square_feet] != @floorplan.square_feet.to_i.to_s || params[:floorplan][:bedrooms] != @floorplan.bedrooms.to_i.to_s || params[:floorplan][:bathrooms] != @floorplan.bathrooms.to_i.to_s || params[:floorplan][:market_rent] != @floorplan.market_rent.to_i.to_s )
+        format.html { render :edit }
+        flash[:error] = "Please set manual override field first"
+        message = '<div class="alert alert-warning">Please set manual override field first</div>'
         format.js {render js: "$('#flash-message').html('#{message}')"}
       else
-        format.html { render :edit }
-        flash[:error] = @floorplan.errors.full_messages.join(',')
-        message = '<div class="alert alert-warning">'+@floorplan.errors.full_messages.join(',')+'</div>'
-        format.js {render js: "$('#flash-message').html('#{message}')"}
+        if params[:floorplan][:name] != @floorplan.name
+          @floorplan.name_is_updated = true
+        end
+        if params[:floorplan][:square_feet] != @floorplan.square_feet.to_i.to_s
+          @floorplan.square_feet_is_updated = true
+        end
+        if params[:floorplan][:bedrooms] != @floorplan.bedrooms.to_i.to_s
+          @floorplan.bedroom_is_updated = true
+        end
+        if params[:floorplan][:bathrooms] != @floorplan.bathrooms.to_i.to_s
+          @floorplan.bathroom_is_updated = true
+        end
+        if @floorplan.update(floorplan_params)
+          format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
+          message = '<div class="alert alert-success">'+@floorplan.name+' image uploaded successfully.</div>'
+          format.js {render js: "$('#flash-message').html('#{message}')"}
+        else
+          format.html { render :edit }
+          flash[:error] = @floorplan.errors.full_messages.join(',')
+          message = '<div class="alert alert-warning">'+@floorplan.errors.full_messages.join(',')+'</div>'
+          format.js {render js: "$('#flash-message').html('#{message}')"}
+        end
       end
     end
   end
