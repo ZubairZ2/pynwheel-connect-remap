@@ -212,7 +212,7 @@
             - units.each do |unit|
               - coordinates_array.push([unit.x_plot,unit.y_plot])
             - units.each do |unit|
-              - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+              - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} and unit.available
                 - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
 
                 - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
