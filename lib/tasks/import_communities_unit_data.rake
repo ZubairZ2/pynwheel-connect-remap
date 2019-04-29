@@ -26,6 +26,8 @@ namespace :import do
             ImportResmanDataJob.perform_async community.credential.attributes.to_json
           when "zaremba"
             ImportZarembaDataJob.perform_async community.credential.attributes.to_json
+          when "xml"
+            ImportXmlDataJob.perform_async community.credential.attributes.to_json
         end    
       end
       puts 'Now waiting for 2 min for 3 background jobs to complete.'

@@ -76,7 +76,7 @@ class CommunitiesController < ApplicationController
         if @community.update(community_params)
           @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
           if params[:community][:name].present?
-            format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+            format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
           else
             format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
           end
