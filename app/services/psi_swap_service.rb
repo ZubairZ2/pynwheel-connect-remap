@@ -9,7 +9,6 @@ class PsiSwapService < BaseService
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
-        
         #######
         response = HTTParty.post(url,
                                  :body => {
@@ -84,6 +83,8 @@ class PsiSwapService < BaseService
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         elsif u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
+        elsif u["Units"]["Unit"]["MarketRent"].present?
+          unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         else
           unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
@@ -123,6 +124,8 @@ class PsiSwapService < BaseService
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         elsif u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]
+        elsif u["Units"]["Unit"]["MarketRent"].present?
+          unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         else
           unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
