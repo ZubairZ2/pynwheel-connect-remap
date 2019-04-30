@@ -2,25 +2,41 @@
   / Start Panel left Side
   .col-lg-12.col-md-12
     .row
-      .col-md-6
+      .col-md-12
         %h4.title Units
-      .col-md-6
-        .mt-35
-          %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/units/new"}
-            %i.fa.fa-plus-circle
-            ADD UNIT
-          .dropdown.pull-right.mb-20.mr-5
-            %button.dropbtn.btn.btn-primary.pull-right.mb-20.mr-5 Mass Overrides
-            .dropdown-content.mass_override_dropdown
-              %a{:href => "##",'data-target' =>'#modal-to-set-available', 'data-toggle' => 'modal'} Available
-              %a{:href => "##","data-target" =>"#modal-to-set-available-date", "data-toggle" => "modal"} Available Date
-              %a{:href => "##","data-target" =>"#modal-to-set-manual-override", "data-toggle" => "modal"} Manual Override 
-              %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
-              - unless @community.is_sitemap
-                %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
-              %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Description
-              %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
+      .col-md-12
+        %a.btn.btn-success{:href => "/communities/#{@community.id}/units/new",:style => "width: 140px;"}
+          %i.fa.fa-plus-circle
+          ADD UNIT
+      .col-md-12
+        .dropdown.mt-5.mb-20
+          %button.dropbtn.btn.btn-primary MASS OVERRIDES
+          .dropdown-content.mass_override_dropdown
+            %a{:href => "##",'data-target' =>'#modal-to-set-available', 'data-toggle' => 'modal'} Available
+            %a{:href => "##","data-target" =>"#modal-to-set-available-date", "data-toggle" => "modal"} Available Date
+            %a{:href => "##","data-target" =>"#modal-to-set-manual-override", "data-toggle" => "modal"} Manual Override
+            %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
+            - unless @community.is_sitemap
+              %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
+            %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Details
+            %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
 
+      .col-md-12
+        %h5{:style => "margin-left: 12px;"}
+          %p
+            Add and manage units below.*
+          %p
+            Click the box under "Manual Override" to make quick changes directly in the grid.
+          %p
+            Or click the "edit" icon to manage the full unit details, including adding a unit-specific floor plan image and adding additional information about the unit such as finishes, specials, or unit-specific features.
+          %p
+            Details that have been changed manually will appear in red in the grid below.
+          %p
+            Click on "manage images" to add interior images.
+      .col-md-12
+        .box.box-widget.panel-box.mb-15.alert-danger{:style => "border-radius: 10px;"}
+          %h5.ml-15.mb-20
+            *Note: If you have made changes to units in your property management software, please contact Pynwheel support at support@pynwheel.com to import your data.
           / - unless @community.is_sitemap  
           /   %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"}
           /     %i.fa.fa-adjust
@@ -47,21 +63,21 @@
             %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units
               %thead
                 %tr
-                  %th{:width => "79"} Sr #
-                  %th Marketing Name
-                  %th Floor Plan
-                  %th Rent
-                  %th Manually Updated
-                  %th Available
+                  %th Sr #
                   %th Manual Override
+                  %th Name
+                  %th Floor Plan
+                  %th Price
+                  %th Available Date
+                  -#%th Manually Updated
+                  %th Available
                   %th Sold
-                  %th Unit Space
+                  -#%th Unit Space
                   - unless @community.is_sitemap
                     %th Floor
-                  %th Available Date
-                  %th Description
-                  %th Image
-                  %th Amenities
+                  -#%th Description
+                  %th Interior Images
+                  %th Floor Plan Image
                   %th Actions
               %tbody
 
@@ -71,23 +87,23 @@
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
                   %tr{style: "background-color: #{u.manual_override ? '#cecece' : ''}"}
                     %td= index+1
+                    %td= best_in_place u, :manual_override, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:manual_override => u.manual_override }
                     %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u),:display_as => :unit_market, :data => {:number => u.marketing_name }
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil }
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
-                    %td{:id=>"best_in_place_unit_#{u.id}_manually_updated"}= u.manually_updated ? "Yes" : "No"
+                    %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date }
+                    -#%td{:id=>"best_in_place_unit_#{u.id}_manually_updated"}= u.manually_updated ? "Yes" : "No"
                     %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available }
-                    %td= best_in_place u, :manual_override, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:manual_override => u.manual_override }
                     %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold }
-                    %td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
+                    -#%td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
                     - unless @community.is_sitemap
                       %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor }
-                    %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date }
-                    %td= raw(u.description)
+                    -#%td= raw(u.description)
+                    %td
+                      = link_to 'Amenities' , plot_amenities_community_unit_amenities_path(@community,u),:class=>"btn-info btn-xs.mr-5"
                     %td
                       .drop-img
                         = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
-                    %td
-                      = link_to 'Amenities' , plot_amenities_community_unit_amenities_path(@community,u),:class=>"btn-info btn-xs.mr-5"
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit
