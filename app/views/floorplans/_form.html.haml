@@ -36,7 +36,7 @@
         = f.text_field :bedrooms, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of bedrooms",:maxlength=>"10", :value => f.object.bedrooms.to_i
         %small Bedrooms (Manual Override Required)
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
-        = f.text_field :bathrooms, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of bathrooms",:maxlength=>"10", :value => f.object.bathrooms.to_i
+        = f.text_field :bathrooms, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of bathrooms",:maxlength=>"10"
         %small Bathrooms (Manual Override Required)
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
         = f.text_field :market_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"0.00",:maxlength=>"10", :value => f.object.market_rent.to_i
