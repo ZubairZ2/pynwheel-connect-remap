@@ -57,7 +57,7 @@ class FloorplansController < ApplicationController
       if params[:floorplan][:description].present?
         params[:floorplan][:description] = add_padding_description params[:floorplan][:description]
       end
-      if (params[:floorplan][:manual_override] == "false") && (params[:floorplan][:name] != @floorplan.name || params[:floorplan][:provider_floorplan_id] != @floorplan.provider_floorplan_id || params[:floorplan][:square_feet] != @floorplan.square_feet.to_i.to_s || params[:floorplan][:bedrooms] != @floorplan.bedrooms.to_i.to_s || params[:floorplan][:bathrooms] != @floorplan.bathrooms.to_i.to_s || params[:floorplan][:market_rent] != @floorplan.market_rent.to_i.to_s )
+      if (params[:floorplan][:manual_override] == "false") && (params[:floorplan][:name] != @floorplan.name || params[:floorplan][:provider_floorplan_id] != @floorplan.provider_floorplan_id || params[:floorplan][:square_feet] != @floorplan.square_feet.to_i.to_s || params[:floorplan][:bedrooms] != @floorplan.bedrooms.to_i.to_s || params[:floorplan][:bathrooms] != @floorplan.bathrooms.to_s || params[:floorplan][:market_rent] != @floorplan.market_rent.to_i.to_s )
         format.html { render :edit }
         flash[:error] = "Please set manual override field first"
         message = '<div class="alert alert-warning">Please set manual override field first</div>'
@@ -72,7 +72,7 @@ class FloorplansController < ApplicationController
         if params[:floorplan][:bedrooms] != @floorplan.bedrooms.to_i.to_s
           @floorplan.bedroom_is_updated = true
         end
-        if params[:floorplan][:bathrooms] != @floorplan.bathrooms.to_i.to_s
+        if params[:floorplan][:bathrooms] != @floorplan.bathrooms.to_s
           @floorplan.bathroom_is_updated = true
         end
         if @floorplan.update(floorplan_params)

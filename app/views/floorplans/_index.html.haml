@@ -1,8 +1,8 @@
 / Start Panel left Side
 .col-lg-8.col-md-12
-  .row
-    .col-md-12
-      %h4.title Floor Plans
+  -#.row
+  -#  .col-md-12
+  -#    %h4.title Floor Plans
   .row
     .ml-15
       %a.btn.btn-success.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
@@ -14,7 +14,7 @@
         ADD DETAILS TO MULTIPLE
   .row{ style: "margin-left: 0px;"}
     -#.box.box-widget.panel-box.ml-15
-    %h5{style: "color: ; margin-left: 10px;"}
+    %h4{style: "color: grey;  "}
       %p
         Add and manage floor plans below.*
       %p
@@ -53,7 +53,7 @@
                   %td{style: "background-color: #{f.name_is_updated ? "#dd4a39" : ""}; color: #{f.name_is_updated ? "white" : ""}; "}= f.name
                   %td{style: "background-color: #{f.square_feet_is_updated ? "#dd4a39" : ""}; color: #{f.square_feet_is_updated ? "white" : ""}; "}= f.square_feet.to_i
                   %td{style: "background-color: #{f.bedroom_is_updated ? "#dd4a39" : ""}; color: #{f.bedroom_is_updated ? "white" : ""}; "}= f.bedrooms.to_i
-                  %td{style: "background-color: #{f.bathroom_is_updated ? "#dd4a39" : ""}; color: #{f.bathroom_is_updated ? "white" : ""}; "}= f.bathrooms.to_i
+                  %td{style: "background-color: #{f.bathroom_is_updated ? "#dd4a39" : ""}; color: #{f.bathroom_is_updated ? "white" : ""}; "}= f.bathrooms
                   -#%td= raw(f.description)
                   %td
                     = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
