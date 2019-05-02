@@ -10,7 +10,15 @@
         = @community.name.capitalize
         %br
           %small.text-primary
-            = @community.code     
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          PROPERTY MAP PAGE (Garden Style Property)
+    .box.box-widget.panel-box.alert-danger
+      %h5{style: "margin-left: 15px; margin-top: 0px;"}
+        Note: If the new image uploaded is not the exact same dimensions as the existing image, the unit and amenity markers will not be in the correct place on the map.
+
     %span.btn.btn-primary.btn-file{:onclick=>"$('#sitemap-image-upload-holder').click();"}
       %i.fa.fa-upload
       Upload File
@@ -18,11 +26,20 @@
     .text-center.image-upload.home-page-drag-box#sitemap-image-upload-holder
       = image_tag "upload-image.png",:class=>"drag-image-padding-top"
       %p Drag &amp; Drop images to Upload
+    %h4{:style => "color: grey;"}
+      %p
+        Select units to add a marker to the map. If nothing appears in the list, then there are no additional units to add.
+      %p
+        Drag and drop markers to reposition them on the property map.
+      %p
+        Click "Grid" to add a grid overlay to the map to make positioning the plots easier.
+      %p
+        Click "Plot Amenities" to switch to plot amenity images on the map.
     .box.box-info.add-plan
       .box-header
         %h3.box-title
-          Plot Property
-          %span Map Units
+          Plot Units on Property Map
+          %span
           %span.hidden#active_x_plot 0
 
           %span.hidden#active_y_plot 0
@@ -62,16 +79,16 @@
           %span.hidden#right_margin #{right_margin}
           %span.hidden#marker_color #{marker_color}
 
-        .pull-right.btn-btn-danger
-          = link_to "Plot Amenities" , plot_amenities_community_sitemaps_path(@community), :class=>"btn btn-success"
-          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} Grid Overlay
-          %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} Reset all plots
+        .btn-btn-danger.mt-10
+          = link_to "MANAGE AMENITIES" , plot_amenities_community_sitemaps_path(@community), :class=>"btn btn-success"
+          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} Grid OVERLAY
+          %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
       / /.box-header
       / form start
       %form.form-horizontal
         .box-body.map-body-top
           .row
-            .col-lg-9#container.p-0
+            .col-lg-9#container.p-0{:style => "float: right;"}
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   .grid-graph.hidden
@@ -87,7 +104,7 @@
 
 
                       .hidden{:class=>"h-#{unit.x_plot}-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"}
-            .col-lg-3.multi-select-units.select-units-on-page
+            .col-lg-3.multi-select-units.select-units-on-page{:style => "float: left;"}
 
               %h5.mt-40.mb-20 SELECT UNITS TO PLOT
               %select.amenities-list.form-control{:multiple=>"multiple"}
