@@ -2808,3 +2808,75 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 #gallery_header_span{
     color: grey;
 }
+.unit_manualoverride {
+    position: relative;
+    display: inline-block;
+}
+
+.unit_manualoverride #unit_manualoverride_text {
+    visibility: hidden;
+    width: 350px;
+    background-color: #e0e0e0;
+    color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -60px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+.unit_manualoverride #unit_manualoverride_text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -120px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.unit_manualoverride:hover #unit_manualoverride_text {
+    visibility: visible;
+}
+.unit_sold {
+    position: relative;
+    display: inline-block;
+}
+
+.unit_sold #unit_sold_text {
+    visibility: hidden;
+    width: 350px;
+    background-color: #e0e0e0;
+    color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -60px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+.unit_sold #unit_sold_text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -120px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.unit_sold:hover #unit_sold_text {
+    visibility: visible;
+}

@@ -3,7 +3,10 @@
   .col-lg-12.col-md-12
     .row
       .col-md-12
-        %h4.title Units
+        .title-heading
+          .box.box-info.add-plan
+            .box-header
+              %h4.title Units
       .col-md-12
         %a.btn.btn-success{:href => "/communities/#{@community.id}/units/new",:style => "width: 140px;"}
           %i.fa.fa-plus-circle
@@ -22,7 +25,7 @@
             %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
 
       .col-md-12
-        %h5{:style => "margin-left: 12px;"}
+        %h4{:style => "margin-left: 3px; color: grey;"}
           %p
             Add and manage units below.*
           %p
@@ -34,7 +37,7 @@
           %p
             Click on "manage images" to add interior images.
       .col-md-12
-        .box.box-widget.panel-box.mb-15.alert-danger{:style => "border-radius: 10px;"}
+        .box.box-widget.panel-box.mb-15.alert-danger
           %h5.ml-15.mb-20
             *Note: If you have made changes to units in your property management software, please contact Pynwheel support at support@pynwheel.com to import your data.
           / - unless @community.is_sitemap  
@@ -60,7 +63,7 @@
       .box-header     
         .row
           .col-md-12
-            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units
+            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.unit_data_table
               %thead
                 %tr
                   %th Sr #
@@ -85,22 +88,22 @@
                 - units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
                 - units.each_with_index  do |u,index|
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
-                  %tr{style: "background-color: #{u.manual_override ? '#cecece' : ''}"}
+                  %tr{style: "color: #{u.manual_override ? '#dd4a39' : ''};"}
                     %td= index+1
                     %td= best_in_place u, :manual_override, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:manual_override => u.manual_override }
-                    %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u),:display_as => :unit_market, :data => {:number => u.marketing_name }
-                    %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil }
-                    %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u), :data => {:rent => u.effective_rent }
-                    %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date }
+                    %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u),:display_as => :unit_market, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
+                    %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil },:style => u.floorplan_id_is_updated? ? "color: #dd4a39;" : ""
+                    %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u),:display_as => :show_integer_rent, :data => {:rent => u.effective_rent },:style => u.effective_rent_is_updated? ? "color: #dd4a39;" : ""
+                    %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date },:style => u.available_date_is_updated? ? "color: #dd4a39;" : ""
                     -#%td{:id=>"best_in_place_unit_#{u.id}_manually_updated"}= u.manually_updated ? "Yes" : "No"
-                    %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available }
-                    %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold }
+                    %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available },:style => u.available_is_updated? ? "color: #dd4a39;" : ""
+                    %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold },:style => u.sold_is_updated? ? "color: #dd4a39;" : ""
                     -#%td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
                     - unless @community.is_sitemap
-                      %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor }
+                      %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor },:style => u.floor_is_updated? ? "color: #dd4a39;" : ""
                     -#%td= raw(u.description)
                     %td
-                      = link_to 'Amenities' , plot_amenities_community_unit_amenities_path(@community,u),:class=>"btn-info btn-xs.mr-5"
+                      = link_to 'Manage Images' , plot_amenities_community_unit_amenities_path(@community,u),:class=>"btn btn-default black-button"
                     %td
                       .drop-img
                         = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
@@ -263,7 +266,6 @@
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
     })
-   
     $('#select_all_units_for_manual_override').change(function(){
       if($(this).is(':checked')){
         $('.manual-override-checkbox').prop('checked',true)
@@ -361,7 +363,7 @@
             break
 
       } 
-      $(this).parent().parent().css('background-color','#cecece');
+      $(this).parent().parent().css('color','#dd4a39');
       var id = $(this).attr("id");
       id = id.split('_');
       if($(this).data('bipAttribute') == 'sold' && $(this).html() == 'Yes'){
@@ -375,30 +377,37 @@
         $('#best_in_place_unit_'+id[4]+'_available_date').css("pointer-events","");
       }
       if($('#best_in_place_unit_'+id[4]+'_manual_override').html() == 'No'){
-        $(this).parent().parent().css('background-color','');
+        $(this).parent().parent().css('color','#00000');
       }
       $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>');
 
       $('#best_in_place_unit_'+id[4]+'_floorplan_id').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+        $('#best_in_place_unit_'+id[4]+'_floorplan_id').css("color","#dd4a39");
       });
       $('#best_in_place_unit_'+id[4]+'_marketing_name').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+        $('#best_in_place_unit_'+id[4]+'_marketing_name').css("color","#dd4a39");
       });
       $('#best_in_place_unit_'+id[4]+'_effective_rent').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+        $('#best_in_place_unit_'+id[4]+'_effective_rent').css("color","#dd4a39");
       });
       $('#best_in_place_unit_'+id[4]+'_available').click(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+        $('#best_in_place_unit_'+id[4]+'_available').css("color","#dd4a39");
       });
       $('#best_in_place_unit_'+id[4]+'_sold').click(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+        $('#best_in_place_unit_'+id[4]+'_sold').css("color","#dd4a39");
       });
       $('#best_in_place_unit_'+id[4]+'_floor').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
+        $('#best_in_place_unit_'+id[4]+'_floor').css("color","#dd4a39");
       });
       $('#best_in_place_unit_'+id[4]+'_available_date').change(function(){
         //alert($('#best_in_place_unit_'+id[4]+'_available_date').html());
+        $('#best_in_place_unit_'+id[4]+'_available_date').css("color","#dd4a39");
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
         if ($('#best_in_place_unit_'+id[4]+'_sold').html() == 'Yes' && $('#best_in_place_unit_'+id[4]+'_available_date').html() == '-')
         {

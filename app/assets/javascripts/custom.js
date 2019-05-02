@@ -474,7 +474,20 @@ function readyJsOnAjaxCall(){
 }
 
 function showDataTables(){
-    $('#miyazaki.table').DataTable({
+    $('#miyazaki.floorplan_data_table').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [4,5,7,8],
+        }],
+        "ordering": true,
+        "stateSave": true,
+        "paging": false
+    });
+    $('#miyazaki.unit_data_table').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [8,10],
+        }],
         "ordering": true,
         "stateSave": true,
         "paging": false
