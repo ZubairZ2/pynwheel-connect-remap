@@ -474,15 +474,15 @@ function readyJsOnAjaxCall(){
 }
 
 function showDataTables(){
-    $('#miyazaki.unit_data_table').DataTable({
-        'aoColumnDefs': [{
-            'bSortable': false,
-            'aTargets': [8,10],
-        }],
-        "ordering": true,
-        "stateSave": true,
-        "paging": false
-    });
+    // $('#miyazaki.unit_data_table').DataTable({
+    //     'aoColumnDefs': [{
+    //         'bSortable': false,
+    //         'aTargets': [8,10],
+    //     }],
+    //     "ordering": true,
+    //     "stateSave": true,
+    //     "paging": false
+    // });
     $('#miyazaki.floorplan_data_table').DataTable({
         'aoColumnDefs': [{
             'bSortable': false,

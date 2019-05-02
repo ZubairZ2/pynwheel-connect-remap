@@ -5,7 +5,7 @@
       %span#unit_manualoverride_text
         When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property's property management software data feed (if the property is using a third party data feed).
 
-  .col-sm-12.col-lg-1.col-md-1.col-xs-12
+  .col-sm-12.col-lg-2.col-md-2.col-xs-12
     = f.radio_button :manual_override, true, class: "settings-field"
     = f.label :manual_override, "Yes", :value => "true"
   .col-sm-12.col-lg-2.col-md-2.col-xs-12
@@ -67,7 +67,7 @@
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Available
 
-  .col-sm-12.col-lg-1.col-md-1.col-xs-12
+  .col-sm-12.col-lg-2.col-md-2.col-xs-12
     = f.radio_button :available, true, class: "settings-field"
     = f.label :manually_updated, "Yes", :value => "true"
   .col-sm-12.col-lg-2.col-md-2.col-xs-12
@@ -83,7 +83,7 @@
 
 
 
-  .col-sm-12.col-lg-1.col-md-1.col-xs-12
+  .col-sm-12.col-lg-2.col-md-2.col-xs-12
     = f.radio_button :sold, true, class: "settings-field"
     = f.label :sold, "Yes", :value => "true"
   .col-sm-12.col-lg-2.col-md-2.col-xs-12

@@ -259,13 +259,34 @@
 
   / End Panel left Side
   :javascript
-
      $(document).ready(function(){
 
       $('.wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
     })
+    if (#{@community.is_sitemap}){
+      $('#miyazaki.unit_data_table').DataTable({
+          'aoColumnDefs': [{
+              'bSortable': false,
+              'aTargets': [8,10],
+          }],
+          "ordering": true,
+          "stateSave": true,
+          "paging": false
+      });
+    }
+    else {
+      $('#miyazaki.unit_data_table').DataTable({
+          'aoColumnDefs': [{
+              'bSortable': false,
+              'aTargets': [9,11],
+          }],
+          "ordering": true,
+          "stateSave": true,
+          "paging": false
+      });
+    }
     $('#select_all_units_for_manual_override').change(function(){
       if($(this).is(':checked')){
         $('.manual-override-checkbox').prop('checked',true)
