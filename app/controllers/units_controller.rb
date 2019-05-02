@@ -36,11 +36,33 @@ class UnitsController < ApplicationController
   def update
 
     respond_to do |format|
+      ######## save item that updated
+      if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name )
+        @unit.name_is_updated = true
+      end
+      if (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id)
+        @unit.floorplan_id_is_updated = true
+      end
+      if (params[:unit][:effective_rent].present? && params[:unit][:effective_rent] != @unit.effective_rent.to_i.to_s)
+        @unit.effective_rent_is_updated = true
+      end
+      if (params[:unit][:available].present? && params[:unit][:available] != @unit.available)
+        @unit.available_is_updated = true
+      end
+      if (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold)
+        @unit.sold_is_updated = true
+      end
+      if (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date)
+        @unit.available_date_is_updated = true
+      end
+      if (params[:unit][:floor].present? && params[:unit][:floor] != @unit.floor.to_i.to_s)
+        @unit.floor_is_updated = true
+      end
+      ########
       if @unit.manual_override
         if params[:unit][:description].present?
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
-
         if @unit.update(unit_params)
           set_manually_updated_column
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
@@ -57,10 +79,22 @@ class UnitsController < ApplicationController
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           format.json { respond_with_bip(@unit) }
         else
-          @unit.errors[:base] << "Please set manual override field first"
-          flash[:error] = @unit.errors.full_messages.join(',')
-          format.html { render :action => "edit" }
-          format.json { respond_with_bip(@unit) }
+          if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name ) || (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id) ||(params[:unit][:effective_rent].present? && params[:unit][:effective_rent] != @unit.effective_rent.to_i.to_s) || (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability) || (params[:unit][:building].present? && params[:unit][:building] != @unit.building) || (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date) ||(params[:unit][:square_feet].present? && params[:unit][:square_feet] != @unit.square_feet.to_i.to_s) || (params[:unit][:available].present? && params[:unit][:available] != @unit.available) || (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold) || (params[:unit][:floor].present? && params[:unit][:floor] != @unit.floor)
+            @unit.errors[:base] << "Please set manual override field first"
+            flash[:error] = @unit.errors.full_messages.join(',')
+            format.html { render :action => "edit" }
+            format.json { respond_with_bip(@unit) }
+          else
+            @unit.update(unit_params)
+            set_manually_updated_column
+            format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+            format.json { respond_with_bip(@unit) }
+          end
+
+          # @unit.errors[:base] << "Please set manual override field first"
+          # flash[:error] = @unit.errors.full_messages.join(',')
+          # format.html { render :action => "edit" }
+          # format.json { respond_with_bip(@unit) }
         end
       end
     end

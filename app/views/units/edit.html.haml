@@ -3,9 +3,12 @@
   .content
     .box.box-info.add-plan.mt-20
       .box-header
-        %h3.box-title
-          Edit
-          %span Unit
+        .col-lg-12
+          %h3.box-title
+            Unit Details
+            %span
+        .col-md-12
+          = link_to "<Back to All Units", community_units_path(@community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
       / /.box-header
       / form start
       = form_for @unit,:url=>community_unit_path(:id=>@unit.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
