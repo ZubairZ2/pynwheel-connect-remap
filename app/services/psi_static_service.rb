@@ -57,8 +57,10 @@ class PsiStaticService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first_or_initialize
-
+      unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
+      unless unit.present?
+        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first_or_initialize
+      end
       unit.property_id = property_id
       unit.unit_type = u["Units"]["Unit"]["UnitType"]
       unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
