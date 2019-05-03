@@ -54,14 +54,14 @@
                         %th Actions
                     %tbody
                       - @floorplates.each_with_index  do |f,index|
-                        %tr
+                        %tr{:style => "color: #{f.manual_override ? "#dd4a39": ""}"}
                           %td
                             = index+1
-                          %td
+                          %td{:style => "color: #{f.name_is_updated ? "#dd4a39": ""}"}
                             = f.name
                           / %td
                           /   = f.number 
-                          %td
+                          %td{:style => "color: #{f.building_is_updated ? "#dd4a39": ""}"}
                             = f.building
                           %td
                             = f.range 

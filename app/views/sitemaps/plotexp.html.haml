@@ -15,6 +15,8 @@
       .box-header
         %h3.box-title
           PROPERTY MAP PAGE (Garden Style Property)
+    %h4{:style => "color: grey;"}
+      To change the image of the property map, upload a new image here.
     .box.box-widget.panel-box.alert-danger
       %h5{style: "margin-left: 15px; margin-top: 0px;"}
         Note: If the new image uploaded is not the exact same dimensions as the existing image, the unit and amenity markers will not be in the correct place on the map.
@@ -81,7 +83,7 @@
 
         .btn-btn-danger.mt-10
           = link_to "MANAGE AMENITIES" , plot_amenities_community_sitemaps_path(@community), :class=>"btn btn-success"
-          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} Grid OVERLAY
+          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} GRID OVERLAY
           %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
       / /.box-header
       / form start

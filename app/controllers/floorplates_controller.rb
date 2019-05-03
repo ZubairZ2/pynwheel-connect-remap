@@ -51,7 +51,7 @@ class FloorplatesController < ApplicationController
 
   def edit
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
-    add_breadcrumb "Edit Floor plate", edit_community_floorplate_path(current_community,@floorplate)
+    add_breadcrumb "Floorplate Details", edit_community_floorplate_path(current_community,@floorplate)
   end
 
   def update
