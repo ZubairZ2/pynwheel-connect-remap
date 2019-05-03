@@ -6,7 +6,7 @@
         .title-heading
           .box.box-info.add-plan
             .box-header
-              %h4.title Units
+              %h3.box-title Units
       .col-md-12
         %a.btn.btn-success{:href => "/communities/#{@community.id}/units/new",:style => "width: 140px;"}
           %i.fa.fa-plus-circle
@@ -29,7 +29,7 @@
           %p
             Add and manage units below.*
           %p
-            Click the box under "Manual Override" to make quick changes directly in the grid.
+            Change "Manual Override" Yes to make quick changes directly in the grid.
           %p
             Or click the "edit" icon to manage the full unit details, including adding a unit-specific floor plan image and adding additional information about the unit such as finishes, specials, or unit-specific features.
           %p
@@ -67,14 +67,22 @@
               %thead
                 %tr
                   %th Sr #
-                  %th Manual Override
+                  %th
+                    Manual Override
+                    %i.unit_manualoverride.fa.fa-question-circle
+                      %span#unit_manualoverride_text
+                        When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property's property management software data feed (if the property is using a third party data feed).
                   %th Name
                   %th Floor Plan
                   %th Price
                   %th Available Date
                   -#%th Manually Updated
                   %th Available
-                  %th Sold
+                  %th
+                    Sold
+                    %i.unit_sold.fa.fa-question-circle
+                      %span#unit_sold_text
+                        This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.
                   -#%th Unit Space
                   - unless @community.is_sitemap
                     %th Floor
