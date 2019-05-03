@@ -51,19 +51,45 @@ class FloorplatesController < ApplicationController
 
   def edit
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
-    add_breadcrumb "Edit Floor plate", edit_community_floorplate_path(current_community,@floorplate)
+    add_breadcrumb "Floorplate Details", edit_community_floorplate_path(current_community,@floorplate)
   end
 
   def update
-    if @floorplate.update(floorplate_params)
-      flash[:notice] = "Floorplate updated successfully."
-      redirect_to community_floorplates_path(current_community)
-    else
-      add_breadcrumb "Floorplates", community_floorplates_path(current_community)
-        add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
-      flash[:error] = @floorplate.errors.full_messages.join(',')
-      render :edit
+    if params[:floorplate][:name] != @floorplate.name
+      @floorplate.name_is_updated = true
     end
+    if params[:floorplate][:building] != @floorplate.building
+      @floorplate.building_is_updated = true
+    end
+    if params[:floorplate][:manual_override] == "true"
+      if @floorplate.update(floorplate_params)
+        flash[:notice] = "Floorplate updated successfully."
+        redirect_to community_floorplates_path(current_community)
+      else
+        add_breadcrumb "Floorplates", community_floorplates_path(current_community)
+        add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
+        flash[:error] = @floorplate.errors.full_messages.join(',')
+        render :edit
+      end
+    else
+      unless (params[:floorplate][:name] != @floorplate.name) || (params[:floorplate][:building] != @floorplate.building)
+        if @floorplate.update(floorplate_params)
+          flash[:notice] = "Floorplate updated successfully."
+          redirect_to community_floorplates_path(current_community)
+        else
+          add_breadcrumb "Floorplates", community_floorplates_path(current_community)
+          add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
+          flash[:error] = @floorplate.errors.full_messages.join(',')
+          render :edit
+        end
+      else
+        add_breadcrumb "Floorplates", community_floorplates_path(current_community)
+        add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
+        flash[:error] = "Please set manual override field first"
+        render :edit
+      end
+    end
+
   end
 
   def destroy

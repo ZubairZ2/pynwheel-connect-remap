@@ -14,9 +14,10 @@
       .row
         / Start Panel left Side
         .col-lg-12.col-md-12
-          .row
-            .col-md-12
-              %h4.title Floorplates
+          .box.box-info.add-plan.mt-10
+            .box-header
+              %h3.box-title
+                PROPERTY MAP PAGE (High Rise / Mid Rise)
           .row
             .col-md-12
               .box.box-widget.panel-box.add-plan.pt-30
@@ -48,7 +49,7 @@
                         %span.pl-15 Yes
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                      Display property map/floorplate
+                      Show property map page
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .TriSea-technologies-Switch
                         %span.pr-15 No
@@ -66,12 +67,26 @@
                         %span.pl-15 Yes
 
                   = submit_tag 'Save', class: "hidden"
-            .col-md-12
+            -#.col-md-12
+            -#  .box.box-info.add-plan.mt-10
+            -#    .box-header
+            -#      %h3.box-title
+            -#        PROPERTY MAP PAGE (High Rise / Mid Rise)
+            .col-md-6
               .mt-35
-                = link_to new_community_floorplate_path(current_community), :class=>"btn btn-success pull-right mb-20" do 
+                = link_to new_community_floorplate_path(current_community), :class=>"btn btn-success mb-20" do
                   %i.fa.fa-plus-circle
                   ADD FLOORPLATE
               .divLoading.hidden
+          %h4{:style => "color: grey;"}
+            %p
+              Add and manage floorplates below.*
+            %p
+              Click on "plot units" to add unit markers to a floorplate.
+            %p
+              Click on "plot amenities" to add amenity images to a floorplate.
+            %p
+              Click on the "edit" icon to edit floorplate details.
           .box.box-widget.panel-box
             .box-header  
               .row
@@ -91,14 +106,14 @@
                         %th Actions
                     %tbody
                       - @floorplates.each_with_index  do |f,index|
-                        %tr
+                        %tr{:style => "color: #{f.manual_override ? "#dd4a39": ""}"}
                           %td
                             = index+1
-                          %td
+                          %td{:style => "color: #{f.name_is_updated ? "#dd4a39": ""}"}
                             = f.name
                           / %td
                           /   = f.number 
-                          %td
+                          %td{:style => "color: #{f.building_is_updated ? "#dd4a39": ""}"}
                             = f.building
                           %td
                             = f.range 
@@ -109,9 +124,9 @@
                             - else  
                               .drop-img.drop-img-left
                           %td
-                            = link_to "Plot Now",community_floorplate_plotexp_path(current_community,f), :class=>"btn btn-default black-button" 
+                            = link_to "Plot Units",community_floorplate_plotexp_path(current_community,f), :class=>"btn btn-default black-button"
                           %td
-                            = link_to "Plot Now",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn btn-default black-button"
+                            = link_to "Manage Amenities",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn btn-default black-button"
 
                           %td
                             = link_to edit_community_floorplate_path(current_community,f), :class=>"text-success" do

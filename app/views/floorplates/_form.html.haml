@@ -1,7 +1,17 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Manual Override
+
+  .col-sm-12.col-lg-1.col-md-1.col-xs-12
+    = f.radio_button :manual_override, true
+    = f.label :manual_override, "Yes"
+  .col-sm-12.col-lg-2.col-md-2.col-xs-12
+    = f.radio_button :manual_override, false
+    = f.label :manual_override, "No"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floorplate Name
-    %span Specify name here
+    %span Specify name here (Manual Override Required)
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Floorplate Name",:maxlength=>"30"
 / .form-group
@@ -13,7 +23,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Building
-    %span Specify building info here
+    %span Specify building info here (Manual Override Required)
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"4"
 .form-group
@@ -24,23 +34,23 @@
 
     = f.text_field :range, :class=>"form-control validate[required,custom[onlyRange]]", :placeholder=>"Range",:maxlength=>"20"
     %small Valid formats: '3' one floor, '3-10' range, '3,5,7,[...]' for specific floors
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-    Add floor name 
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .TriSea-technologies-Switch
-      %span.pr-15 No
-      = f.check_box :floor_name_added
-      %label.label-primary{:for => "floorplate_floor_name_added"}
-      %span.pl-15 Yes
-.form-group#floor-name-field.hidden
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Floor name
-    %span Enter name of floor
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
-    = f.text_field :floor_name, :class=>"form-control", :placeholder=>"Enter floor name",:maxlength=>"3"
-    %small Enter floor names B1,B2,B3 etc 
+-#.form-group
+-#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+-#    Add floor name
+-#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+-#    .TriSea-technologies-Switch
+-#      %span.pr-15 No
+-#      = f.check_box :floor_name_added
+-#      %label.label-primary{:for => "floorplate_floor_name_added"}
+-#      %span.pl-15 Yes
+-#.form-group#floor-name-field.hidden
+-#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+-#    Floor name
+-#    %span Enter name of floor
+-#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+-#
+-#    = f.text_field :floor_name, :class=>"form-control", :placeholder=>"Enter floor name",:maxlength=>"3"
+-#    %small Enter floor names B1,B2,B3 etc
 .form-group.hidden
   %label.col-sm-12.col-lg-12.col-md-3.col-xs-12.control-label
     %p.text-warning
@@ -53,10 +63,12 @@
       %br/
       floorplate.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .select-img.mb-20
-      .select-img-img
+    -#.select-img.mb-20
+    -#  .select-img-img
+    .image-box.video-box
+      .images.height-200
         %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floorplate Image"}
-          = image_tag f.object.image? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+          = image_tag f.object.image? ? f.object.image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :image

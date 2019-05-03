@@ -1227,7 +1227,7 @@ json.apartments do
   available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
   json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
-    if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+    if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && unit.available
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
       units_floorplans << floorplan
       json.marketing_name unit.unit_market
@@ -1361,7 +1361,7 @@ json.apartments do
       json.id floor
       json.number floor
       json.name floorplate.name
-      json.floor_name floorplate.floor_name_added ? floorplate.floor_name : floor
+      json.floor_name floorplate.name# floorplate.floor_name_added ? floorplate.floor_name : floor
       json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
       json.floorplate_amenities floorplate.amenities do |amenity|
         if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)

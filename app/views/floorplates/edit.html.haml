@@ -1,4 +1,4 @@
-- content_for :title, "Edit Floor plate - Pynwheel"
+- content_for :title, "Floorplate Details - Pynwheel"
 %section
   .content
     .title-heading.mb-25
@@ -8,11 +8,17 @@
         %br
           %small.text-primary
             = @community.code
+    %h4{:style => "color: grey;"}
+      %p To change the image of the floorplate, upload a new image here.
+    .box.box-widget.panel-box.alert-danger
+      %h5{style: "margin-left: 15px; margin-top: 0px;"}
+        Note: If the new image uploaded is not the exact same dimensions as the existing image, the unit and amenity markers will not be in the correct place on the map.
     .box.box-info.add-plan
       .box-header
-        %h3.box-title
-          Edit 
-          %span Floor Plate
+        .col-lg-12
+          %h3.box-title{:style => "margin-left: -14px;"}
+            Floorplate Details
+        = link_to "<Back to All Floorplates",community_floorplates_path(current_community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
       / /.box-header
       / form start
       = form_for @floorplate,:url=>community_floorplate_path(:id=>@floorplate.id,:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
