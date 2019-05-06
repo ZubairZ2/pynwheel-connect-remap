@@ -4,64 +4,114 @@
   <title>The page you were looking for doesn't exist (404)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-  body {
-    background-color: #EFEFEF;
-    color: #2E2F30;
-    text-align: center;
-    font-family: arial, sans-serif;
-    margin: 0;
-  }
-
-  div.dialog {
-    width: 95%;
-    max-width: 33em;
-    margin: 4em auto 0;
-  }
-
-  div.dialog > div {
-    border: 1px solid #CCC;
-    border-right-color: #999;
-    border-left-color: #999;
-    border-bottom-color: #BBB;
-    border-top: #B00100 solid 4px;
-    border-top-left-radius: 9px;
-    border-top-right-radius: 9px;
-    background-color: white;
-    padding: 7px 12% 0;
-    box-shadow: 0 3px 8px rgba(50, 50, 50, 0.17);
-  }
-
-  h1 {
-    font-size: 100%;
-    color: #730E15;
-    line-height: 1.5em;
-  }
-
-  div.dialog > p {
-    margin: 0 0 1em;
-    padding: 1em;
-    background-color: #F7F7F7;
-    border: 1px solid #CCC;
-    border-right-color: #999;
-    border-left-color: #999;
-    border-bottom-color: #999;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-top-color: #DADADA;
-    color: #666;
-    box-shadow: 0 3px 8px rgba(50, 50, 50, 0.17);
-  }
+    body{
+      margin: 0;
+      font-family: 'Alegreya Sans', sans-serif;
+      background: url("/bg.jpg");
+      background-size: cover;
+      /*background-image: -webkit-linear-gradient(45deg, #a5d9f1, #bcdff7, #d1e5fa, #e3ebfc, #f1f3fd, #f1f3fd, #f1f3fd, #f1f3fd, #e3ebfc, #d1e5fa, #bcdff7, #a5d9f1);*/
+    }
+    .dog_wrap{
+      width: 10vw;
+      margin-left: 5vw;
+    }
+    .dog{
+      width: 100%;
+    }
+    .text_box{
+      width: 90%;
+      margin: 0 auto;
+      padding-top: 4%;
+      text-align: center;
+    }
+    .text_box p{
+      font-size: 4vw;
+      color: #000;
+      margin: 0;
+    }
+    .text_box p span{
+      color: #008fd5;
+    }
+    .email_wrap{
+      width: 90%;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .email_wrap p{
+      font-size: 2.5vw;
+    }
+    .email_wrap a{
+      font-size: 1.3vw;
+      background: #008fd5;
+      padding: 0.5vw 1vw;
+      text-decoration: none;
+      border-radius: 0.5vw;
+      color: #fff;
+    }
+    .email_wrap a:hover{
+      background: #0080bf;
+    }
+    @media only screen and (max-width: 1400px) and (min-width: 990px) {
+      .email_wrap a {
+        font-size: 1.6vw;
+      }
+      body{
+        background-size: auto;
+      }
+    }
+    @media only screen and (max-width: 991px) and (min-width: 769px) {
+      .email_wrap a {
+        font-size: 1.6vw;
+      }
+      body{
+        background-size: auto;
+      }
+    }
+    @media only screen and (max-width: 768px) and (min-width: 499px) {
+      .email_wrap a {
+        font-size: 2.7vw;
+      }
+      body{
+        background-size: auto;
+      }
+    }
+    @media only screen and (max-width: 500px) and (min-width: 320px) {
+      .email_wrap p {
+        font-size: 4vw;
+      }
+      .email_wrap a {
+        font-size: 4vw;
+      }
+      body{
+        background-size: auto;
+      }
+    }
   </style>
+
+  <title>Pynwheel Popup</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/custom.css">
+  <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans" rel="stylesheet">
+  <script src="js/jquery-3.2.1.min.js"></script>
 </head>
 
 <body>
   <!-- This file lives in public/404.html -->
-  <div class="dialog">
-    <div>
-      <h1>The page you were looking for doesn't exist.</h1>
-      <p>You may have mistyped the address or the page may have moved.</p>
-    </div>
-    <p>If you are the application owner check the logs for more information.</p>
+  <div class="text_box">
+    <p>You have discovered the secret hiding place<br>
+      of the <span>Pynwheel 404 Error Page</span> Dog.<br>
+      His name is Bob.<br>
+      He says, “Hey.”</p>
+  </div>
+
+  <div class="email_wrap">
+    <p>If you need assistance please email support@pynwheel.com or call 303-640-3652  (option 2)</p>
+    <a href="javascript:history.back()">Go Back</a>
+  </div>
+
+  <div class="dog_wrap">
+    <img src="/dog.png" width="293" alt="" class="dog">
   </div>
 </body>
 </html>

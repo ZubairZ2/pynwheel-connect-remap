@@ -1227,7 +1227,12 @@ json.apartments do
   available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
   json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
-    if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && unit.available
+    if @community.data_provider == "psi"
+      conditionAvailable = unit.available
+    else
+      conditionAvailable = 1
+    end  
+    if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && conditionAvailable
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
       units_floorplans << floorplan
       json.marketing_name unit.unit_market
