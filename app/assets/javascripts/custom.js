@@ -475,6 +475,10 @@ function readyJsOnAjaxCall(){
 
 function showDataTables(){
     $('#miyazaki.table').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [4,5,7],
+        }],
         "ordering": true,
         "stateSave": true,
         "paging": false

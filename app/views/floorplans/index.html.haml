@@ -14,28 +14,40 @@
         %br
           %small.text-primary
             = @community.code
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          FLOOR PLANS
     = render 'units/floor_plan_button'   
     .row
       #floorplans-index
         = render 'index'
       .col-lg-4.col-md-12
-        .row
-          .col-md-12
-            .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
-                %i.fa.fa-plus-circle
-                ADD FLOOR PLAN
-            .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
-                ADD DESCRIPTION
+        -#.row
+        -#  .col-md-12
+        -#    %h4{style: "color: grey;"}
+        -#      %p
+        -#        Add and manage floor plans below.*
+        -#      %p
+        -#        Click the "edit" icon to change the floor plan details. Details that have been changed manually will appear in red in the grid below.
+        -#      %p
+        -#        Click on "manage images" to add interior images to each floor plan.
+        -#      %p
+        -#        Click on the desired column title to rearrange how available floor plans appear in the floor plan gallery.
+        -#      %a.btn.btn-success.pull-right.mb-20{:href => "/communities/#{@community.id}/floorplans/new"}
+        -#        %i.fa.fa-plus-circle
+        -#        ADD FLOOR PLAN
+        -#    .mt-35
+        -#      %a.btn.btn-success.pull-right.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
+        -#        ADD DETAILS TO MULTIPLE
 
-        .row
+        .row{style: "margin-top: 197px;"}
           .col-md-12#holder
             .box.box-widget.panel-box.pl-20.pr-20.pb-10
               .row
                 .col-md-12.col-lg-9.col-xs-9
-                  %h4 Upload File
-                  %p.pt-10.mb-20 Upload the File here, then drag  drop it to the image column in the table.Only jpeg,jpg and png files are allowed.
+                  %h4 Mass Upload Floor Plan Images
+                  %p.pt-10.mb-20 Upload files here, then drag and drop them to the floor plan image column in the table. Only jpeg, jpg and png files are accepted.
                 .col-md-12.col-lg-3.col-xs-3
                   %img{:alt => "", :src => "/assets/upload-image.jpg", :style => "max-width:100%;", :title => ""}
               %span.btn.btn-success.btn-file
