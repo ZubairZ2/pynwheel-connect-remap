@@ -72,3 +72,36 @@
         File cannot be greater than 10MB
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok
+-# publish changes model
+
+#publish-changes-model.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog.publish-changes-dialog
+    .modal-content.publish-changes-content
+      .modal_screen1
+        %h1.publish-changes-screen-context
+          Once you have made changes, the property's touchscreen app
+          %br
+          will need to be closed
+          %br
+          and re-opened to make the changes live.
+      .modal_screen2.publish-changes-screen-context.hidden
+        %img{:alt => "Smiley face", :src => "/assets/publish changes_slide 2.png"}/
+      .modal_screen3.publish-changes-screen-context.hidden
+        %img{:alt => "Smiley face", :src => "/assets/publish changes_slide 3.png"}/
+      .modal_screen4.publish-changes-screen-context.hidden
+        %img{:alt => "Smiley face", :src => "/assets/publish changes_slide 4.png"}/
+      .modal_screen5.hidden
+        %h1.publish-changes-screen-context
+          That's it! Once those steps have followed,
+          %br
+          your changes will be live.
+      .modal_next_button1.publish-changes-screen-btn
+        %button.btn.btn-success{:class =>"publish_changes_btn1 publish_changes_btn", :type => "button"} NEXT
+      .modal_next_button2.publish-changes-screen-btn.hidden
+        %button.btn.btn-success{:class =>"publish_changes_btn2 publish_changes_btn", :type => "button"} Next
+      .modal_next_button3.publish-changes-screen-btn.hidden
+        %button.btn.btn-success{:class =>"publish_changes_btn3 publish_changes_btn", :type => "button"} Next
+      .modal_next_button4.publish-changes-screen-btn.hidden
+        %button.btn.btn-success{:class =>"publish_changes_btn4 publish_changes_btn", :type => "button"} Next
+      .modal_next_button5.publish-changes-screen-btn.hidden
+        %button.btn.btn-success{"data-dismiss" => "modal",:class =>"publish_changes_btn5 publish_changes_btn", :type => "button"} OK

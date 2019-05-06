@@ -27,13 +27,50 @@ $(document).ready(function(e){
   })
   ////////// Custom Code for Neighborhood Categories Multi Select ends here //////////
 
-    $('.preview-image').click(function(event){  
+    $('.preview-image').click(function(event){
       event.preventDefault();
       $(this).ekkoLightbox({
         alwaysShowClose: true
       });  
-    }); 
+    });
+    $('#publish_changes').click(function(event){
+       $('#publish-changes-model').modal("show");
+    });
+    $('.publish_changes_btn1').click(function(event){
+        $('.modal_screen1').addClass('hidden');
+        $('.modal_next_button1').addClass('hidden');
+        $('.modal_screen2').removeClass('hidden');
+        $('.modal_next_button2').removeClass('hidden');
 
+    });
+    $('.publish_changes_btn2').click(function(event){
+        $('.modal_screen2').addClass('hidden');
+        $('.modal_next_button2').addClass('hidden');
+        $('.modal_screen3').removeClass('hidden');
+        $('.modal_next_button3').removeClass('hidden');
+
+    });
+    $('.publish_changes_btn3').click(function(event){
+        $('.modal_screen3').addClass('hidden');
+        $('.modal_next_button3').addClass('hidden');
+        $('.modal_screen4').removeClass('hidden');
+        $('.modal_next_button4').removeClass('hidden');
+
+    });
+    $('.publish_changes_btn4').click(function(event){
+        $('.modal_screen4').addClass('hidden');
+        $('.modal_next_button4').addClass('hidden');
+        $('.modal_screen5').removeClass('hidden');
+        $('.modal_next_button5').removeClass('hidden');
+
+    });
+    $('.publish_changes_btn5').click(function(event){
+        $('.modal_screen5').addClass('hidden');
+        $('.modal_next_button5').addClass('hidden');
+        $('.modal_screen1').removeClass('hidden');
+        $('.modal_next_button1').removeClass('hidden');
+
+    });
     //validates form
     $("form").validationEngine({binded: false});
     /* Activating Best In Place */
