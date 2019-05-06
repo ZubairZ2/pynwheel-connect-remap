@@ -1,0 +1,82 @@
+body{
+    margin: 0;
+    font-family: 'Alegreya Sans', sans-serif;
+    background: url("../images/bg.jpg");
+    background-size: cover;
+    /*background-image: -webkit-linear-gradient(45deg, #a5d9f1, #bcdff7, #d1e5fa, #e3ebfc, #f1f3fd, #f1f3fd, #f1f3fd, #f1f3fd, #e3ebfc, #d1e5fa, #bcdff7, #a5d9f1);*/
+}
+.dog_wrap{
+    width: 10vw;
+    margin-left: 5vw;
+}
+.dog{
+    width: 100%;
+}
+.text_box{
+    width: 90%;
+    margin: 0 auto;
+    padding-top: 4%;
+    text-align: center;
+}
+.text_box p{
+    font-size: 4vw;
+    color: #000;
+    margin: 0;
+}
+.text_box p span{
+    color: #008fd5;
+}
+.email_wrap{
+    width: 90%;
+    margin: 0 auto;
+    text-align: center;
+}
+.email_wrap p{
+    font-size: 2.5vw;
+}
+.email_wrap a{
+    font-size: 1.3vw;
+    background: #008fd5;
+    padding: 0.5vw 1vw;
+    text-decoration: none;
+    border-radius: 0.5vw;
+    color: #fff;
+}
+.email_wrap a:hover{
+    background: #0080bf;
+}
+@media only screen and (max-width: 1400px) and (min-width: 990px) {
+    .email_wrap a {
+        font-size: 1.6vw;
+    }
+    body{
+        background-size: auto;
+    }
+}
+@media only screen and (max-width: 991px) and (min-width: 769px) {
+    .email_wrap a {
+        font-size: 1.6vw;
+    }
+    body{
+        background-size: auto;
+    }
+}
+@media only screen and (max-width: 768px) and (min-width: 499px) {
+    .email_wrap a {
+        font-size: 2.7vw;
+    }
+    body{
+        background-size: auto;
+    }
+}
+@media only screen and (max-width: 500px) and (min-width: 320px) {
+    .email_wrap p {
+        font-size: 4vw;
+    }
+    .email_wrap a {
+        font-size: 4vw;
+    }
+    body{
+        background-size: auto;
+    }
+}
