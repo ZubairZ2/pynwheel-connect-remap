@@ -5,7 +5,6 @@ class FloorplansController < ApplicationController
   before_action :set_floorplan, only: [:edit,:update,:destroy]
 
   def index
-    @floorplans.errrr = 1
     @floorplans = @community.floorplans.order(id: :desc)
     @communities = current_company.communities
     add_breadcrumb "Floor plans", community_floorplans_path(@community)
