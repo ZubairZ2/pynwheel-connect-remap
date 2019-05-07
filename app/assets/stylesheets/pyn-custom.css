@@ -2845,3 +2845,17 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .tooltip1:hover #tooltiptext1 {
     visibility: visible;
 }
+.welcome_modal {
+    padding-right: 30%;
+    padding-top: 12%;
+    width: auto;
+}
+#welcome-prompt-modal2 {
+    padding-left: 28%;
+    width: auto;
+}
+.welcome_content img
+{
+    margin: auto;
+    width: 100%;
+}

@@ -85,3 +85,12 @@
           = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
           = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"
 
+
+:javascript
+  $(document).ready(function(e){
+  
+    if !(#{current_user.welcome_prompt})
+    {
+      $('#welcome-prompt-modal1').modal('show');
+    }
+  });

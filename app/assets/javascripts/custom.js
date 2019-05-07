@@ -33,10 +33,6 @@ $(document).ready(function(e){
         alwaysShowClose: true
       });  
     });
-  if (window.location.href.includes("communities") )
-  {
-      $('#welcome-prompt-modal1').modal('show');
-  }
 
     //validates form
     $("form").validationEngine({binded: false});
@@ -84,7 +80,9 @@ $("#company_logo,#community_logo,#user_avatar,#amenity_image,#unit_image").chang
     readURL(this);
 });
 
-
+$(".welcome_prompt_btn1").on("click",function(e){
+    $('#welcome-prompt-modal2').modal('show');
+});
 $(".import_data").on("click",function(e){
     $(".divLoading").removeClass("hidden")
 });
