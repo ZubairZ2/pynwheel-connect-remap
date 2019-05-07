@@ -32,7 +32,11 @@ $(document).ready(function(e){
       $(this).ekkoLightbox({
         alwaysShowClose: true
       });  
-    }); 
+    });
+  if (window.location.href.includes("communities") )
+  {
+      $('#welcome-prompt-modal1').modal('show');
+  }
 
     //validates form
     $("form").validationEngine({binded: false});
