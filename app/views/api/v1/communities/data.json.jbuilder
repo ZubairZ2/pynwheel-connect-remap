@@ -1361,7 +1361,7 @@ json.apartments do
       json.id floor
       json.number floor
       json.name floorplate.name
-      json.floor_name floorplate.name# floorplate.floor_name_added ? floorplate.floor_name : floor
+      json.floor_name floorplate.floor_name_added ? floorplate.floor_name : floor
       json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
       json.floorplate_amenities floorplate.amenities do |amenity|
         if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
