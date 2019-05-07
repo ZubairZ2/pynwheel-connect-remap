@@ -90,7 +90,9 @@
       %p
         Click "Grid" to add a grid overlay to the map to make positioning the plots easier.
       %p
-        Click "Plot Amenities" to switch to plot amenity images on the map.
+        Click "Plot Amenities" to switch to plot amenity images on the map to:
+      %p
+        Click "Manage Amenities" to upload amenity images and plot them on the map.
     .box.box-info.add-plan
       .box-header
         %h3.box-title
@@ -136,7 +138,7 @@
           %span.hidden#marker_color #{marker_color}
 
         .btn-btn-danger.mt-10
-          = link_to "MANAGE AMENITIES" , plot_amenities_community_sitemaps_path(@community), :class=>"btn btn-success"
+          = link_to "MANAGE AMENITIES" , community_amenities_path(@community), :class=>"btn btn-success"
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} GRID OVERLAY
           %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
       / /.box-header
