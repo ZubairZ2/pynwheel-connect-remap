@@ -37,6 +37,6 @@
                   = link_to company.name, company_communities_path(company)
               %td
                 %a.text-success{:href => "/companies/#{company.id}/edit"}
-                  %i.fa.fa-edit
+                  %i.fa.fa-edit.icon_size
                 %a.text-danger{"data-name"=>"Company","data-href" => "/companies/#{company.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-                  %i.fa.fa-trash
+                  %i.fa.fa-trash.icon_size

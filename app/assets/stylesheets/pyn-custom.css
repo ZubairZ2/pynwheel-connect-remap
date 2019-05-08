@@ -2927,3 +2927,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .unit_sold:hover #unit_sold_text {
     visibility: visible;
 }
+.icon_size
+{
+    font-size: large;
+}

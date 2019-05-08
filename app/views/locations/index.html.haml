@@ -55,9 +55,9 @@
                             = image_tag location.standard_image_url.present? ? location.standard_image_url : "/assets/default.jpeg"
                         %td
                           = link_to  edit_community_neighborhood_location_path(@community,@neighborhood,location), remote: true, class: "text-success ml-5" do
-                            %i.fa.fa-edit
+                            %i.fa.fa-edit.icon_size
                           %a.text-danger{"data-name"=>"location","data-href" => "/communities/#{@community.id}/neighborhoods/#{@neighborhood.id}/locations/#{location.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-                            %i.fa.fa-trash
+                            %i.fa.fa-trash.icon_size
       / End Panel left Side
 / /.content
 #show_modal

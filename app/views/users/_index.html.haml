@@ -26,9 +26,9 @@
               %td= u.role
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
-                  %i.fa.fa-edit
+                  %i.fa.fa-edit.icon_size
                 %a.text-danger{"data-name"=>"User","data-href" => "/companies/#{current_company.id}/employees/#{u.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-                  %i.fa.fa-trash
+                  %i.fa.fa-trash.icon_size
         -else
           - s = User.where(invited_by_id: current_user.id)
           - s.each_with_index  do |u,index|

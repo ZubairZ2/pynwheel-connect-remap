@@ -17,6 +17,8 @@
           .col-md-12
             %h4.title 
               = @floorplan.name + " Floor Plan Images"
+            %h4{:style => "color: grey;"}
+              Use the “Add Image” button or drag & drop area below to import images associated with the floor plan. Once images have been added, a button will appear to allow you to plot them on the floor plan.
             = link_to "PLOT IMAGES ON FLOOR PLAN", plot_amenities_community_floorplan_amenities_path(@community,@floorplan), class: "btn btn-primary mb-20", id: "amenity_image"
           .col-md-6
             .mt-35
