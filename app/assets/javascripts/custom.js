@@ -34,6 +34,8 @@ $(document).ready(function(e){
       });  
     });
     $('#publish_changes').click(function(event){
+        $('.modal_screen1').removeClass('hidden');
+        $('.modal_next_button1').removeClass('hidden');
        $('#publish-changes-model').modal("show");
     });
     $('.publish_changes_btn1').click(function(event){
@@ -67,8 +69,6 @@ $(document).ready(function(e){
     $('.publish_changes_btn5').click(function(event){
         $('.modal_screen5').addClass('hidden');
         $('.modal_next_button5').addClass('hidden');
-        $('.modal_screen1').removeClass('hidden');
-        $('.modal_next_button1').removeClass('hidden');
 
     });
     //validates form
