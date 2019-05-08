@@ -80,9 +80,15 @@ $("#company_logo,#community_logo,#user_avatar,#amenity_image,#unit_image").chang
     readURL(this);
 });
 
+
 $(".welcome_prompt_btn1").on("click",function(e){
     $('#welcome-prompt-modal2').modal('show');
 });
+$(".welcome_prompt_btn2").on("click",function(e){
+    $('#welcome-prompt-modal3').modal('show');
+});
+
+
 $(".import_data").on("click",function(e){
     $(".divLoading").removeClass("hidden")
 });

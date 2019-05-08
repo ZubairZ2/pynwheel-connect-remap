@@ -85,9 +85,16 @@
       %img{:alt => "Smiley face", :src => "/assets/message_box.png"}/
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal",:class => "welcome_prompt_btn2", :type => "button"} Ok
+#welcome-prompt-modal3.modal.fade{"aria-hidden" => "true","data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content.welcome_content
+      %img{:alt => "Smiley face", :src => "/assets/message_box.png"}/
+      .modal-footer
+        %button.btn.btn-primary{"data-dismiss" => "modal",:class => "welcome_prompt_btn3", :type => "button"} Ok
 
 
 :javascript
-  $(".welcome_prompt_btn2").on("click",function(e){
-    // alert(#{current_user.id});
+  $(".welcome_prompt_btn3").on("click",function(e){
+    -##{current_user.welcome_prompt = false}
+    -##{current_user.save}
   });

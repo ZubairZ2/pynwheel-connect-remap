@@ -88,8 +88,7 @@
 
 :javascript
   $(document).ready(function(e){
-  
-    if !(#{current_user.welcome_prompt})
+    if (!(#{current_user.welcome_prompt}))
     {
       $('#welcome-prompt-modal1').modal('show');
     }
