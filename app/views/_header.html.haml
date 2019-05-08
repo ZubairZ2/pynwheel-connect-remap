@@ -24,7 +24,7 @@
     %a.sidebar-toggle{"data-toggle" => "push-menu", :href => "#", :role => "button"}
       %span.sr-only Toggle navigation
     .navbar-custom-menu
-      - if user_signed_in?  
+      - if user_signed_in?
         %ul.nav.navbar-nav
           %li.search-box.hidden
             / search form
@@ -35,6 +35,8 @@
                   %button#search-btn.btn.btn-flat{:name => "search", :type => "submit"}
                     %i.fa.fa-search
             / /.search form
+          %li.mt-5
+            %input#publish_changes{:type => "button", :value => "How to Publish Changes" ,:class => "btn btn-primary"}/
           %li.hidden
             %a{"data-toggle" => "control-sidebar", :href => "#"}
               %i.fa.fa-gear
