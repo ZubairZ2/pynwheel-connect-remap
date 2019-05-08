@@ -75,6 +75,9 @@ class FloorplansController < ApplicationController
         if params[:floorplan][:bathrooms] != @floorplan.bathrooms.to_s
           @floorplan.bathroom_is_updated = true
         end
+        if params[:floorplan][:market_rent] != @floorplan.market_rent.to_i.to_s
+          @floorplan.market_rent_is_updated = true
+        end
         if @floorplan.update(floorplan_params)
           format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
           message = '<div class="alert alert-success">'+@floorplan.name+' image uploaded successfully.</div>'

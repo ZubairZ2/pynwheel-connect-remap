@@ -39,8 +39,8 @@ class PsiStaticService < BaseService
             end
           end
           save_psi_floorplans(floorplans,property_id)
-          save_psi_units(units,property_id)
-          save_website_column_of_community(response)
+          # save_psi_units(units,property_id)
+          # save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
@@ -50,7 +50,7 @@ class PsiStaticService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    fill_psi_pricing_details
+    # fill_psi_pricing_details
   end
 
   def save_psi_units(units,property_id)
@@ -112,7 +112,10 @@ class PsiStaticService < BaseService
       floorplan = Floorplan.where(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
       floorplan.property_id = property_id
-      floorplan.name = f["Name"]
+
+      unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+        floorplan.name = f["Name"]
+      end
 
       if f["MarketRent"]["@attributes"]["Min"].to_f > 0
         @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
@@ -127,26 +130,29 @@ class PsiStaticService < BaseService
       room_types = f["Room"]
       room_types.each do |rt|
         if rt["@attributes"]["RoomType"] == "Bedroom"
-          floorplan.bedrooms = rt["Count"]
+          unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+            floorplan.bedrooms = rt["Count"]
+          end
         else
-          floorplan.bathrooms = rt["Count"]
+          unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+            floorplan.bathrooms = rt["Count"]
+          end
         end
       end
-
-      if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
-
-        floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
-      else
-
-
-        floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+      unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+        if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+        else
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+        end
       end
-      if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+      unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
+        else
 
-        floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
-      else
-
-        floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
+          floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
+        end
       end
       floorplan.save(validate: false)
 
