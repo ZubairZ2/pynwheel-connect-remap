@@ -1,6 +1,11 @@
 class PsiService < BaseService
   # @@floorplanHash = Hash.new
   def perform
+    fun_logs = Hash.new
+    fun_logs = {Time.now => credentials.community_id.to_s}
+    current_user = User.find 1
+    current_user.entrata_function_logs = current_user.entrata_function_logs + fun_logs.to_s
+    current_user.save
     if credentials.community_id == 669
       c = Community.find credentials.community_id
       c.description = "Entrata hourly data test"
@@ -41,7 +46,7 @@ class PsiService < BaseService
         if response["response"]["code"] == 200
           units = []
           floorplans = []
-          response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
+          response['response']['result']["PhysicalProperty"]["Pro99perty"].each do |pro|
             pro["ILS_Unit"].each do |ils|
               units << ils
             end
@@ -57,6 +62,12 @@ class PsiService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
+        com = Community.find credentials.community_id
+        unless com.entrata_exception_logs.present?
+          com.entrata_exception_logs = ""
+        end
+        com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||MITS|||||||| " + com.id + "--- "+ e.message
+        com.save
         puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
@@ -257,6 +268,13 @@ class PsiService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
+        com = Community.find credentials.community_id
+        unless com.entrata_exception_logs.present?
+          com.entrata_exception_logs = ""
+        end
+        com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id + "--- "+ e.message
+        com.save
+
         puts '-------------- filling pricing --------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
