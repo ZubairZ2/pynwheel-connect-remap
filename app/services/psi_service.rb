@@ -3,7 +3,7 @@ class PsiService < BaseService
   def perform
     fun_logs = Hash.new
     fun_logs = {Time.now => credentials.community_id.to_s}
-    current_user = User.find 1
+    current_user = User.find 10
     current_user.entrata_function_logs = current_user.entrata_function_logs + fun_logs.to_s
     current_user.save
     if credentials.community_id == 669
