@@ -837,6 +837,8 @@ json.ui_settigs do
         if @community.theme_name == "expressionist"
           json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "All sides"
           json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "250px"
+        elsif @community.theme_name == "futurist" && @community.is_vertical_app
+          json.home_page_navigation_background_height "350px"
         else
           json.home_page_buttons_border "All sides"
           json.home_page_navigation_background_height "250px"
@@ -864,7 +866,9 @@ json.ui_settigs do
         else
           json.home_page_navigation_font_color "#ffff"
         end
-        if @community.theme_name == "futurist"
+        if @community.theme_name == "futurist" && @community.is_vertical_app
+          json.spacing_between_buttons_for_homepage "50px"
+        elsif @community.theme_name == "futurist"
           json.spacing_between_buttons_for_homepage "0px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons_for_homepage "20px"
