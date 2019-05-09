@@ -17,7 +17,7 @@ class PsiService < BaseService
       end
     rescue => m
 
-    end 
+    end
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -69,12 +69,15 @@ class PsiService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
-        com = Community.find credentials.community_id
-        unless com.entrata_exception_logs.present?
-          com.entrata_exception_logs = ""
+        begin
+          com = Community.find credentials.community_id
+          unless com.entrata_exception_logs.present?
+            com.entrata_exception_logs = ""
+          end
+          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||MITS|||||||| " + com.id + "--- "+ e.message
+          com.save
+        rescue => p
         end
-        com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||MITS|||||||| " + com.id + "--- "+ e.message
-        com.save
         puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
@@ -275,13 +278,15 @@ class PsiService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
-        com = Community.find credentials.community_id
-        unless com.entrata_exception_logs.present?
-          com.entrata_exception_logs = ""
+        begin
+          com = Community.find credentials.community_id
+          unless com.entrata_exception_logs.present?
+            com.entrata_exception_logs = ""
+          end
+          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id + "--- "+ e.message
+          com.save
+        rescue => r
         end
-        com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id + "--- "+ e.message
-        com.save
-
         puts '-------------- filling pricing --------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
