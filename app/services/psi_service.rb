@@ -4,6 +4,9 @@ class PsiService < BaseService
     fun_logs = Hash.new
     fun_logs = {Time.now => credentials.community_id.to_s}
     current_user = User.find 10
+    unless current_user.entrata_function_logs.present?
+      current_user.entrata_function_logs = ""
+    end
     current_user.entrata_function_logs = current_user.entrata_function_logs + fun_logs.to_s
     current_user.save
     if credentials.community_id == 669
