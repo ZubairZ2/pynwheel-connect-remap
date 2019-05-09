@@ -3170,7 +3170,29 @@ function adjustHomepagePositionOfLogo(value){
         $('#home_page_position_of_logo').children("option[value^=Left]").show();
     }
 }
+function adjustHomepagePositionOfLogoWithVerticalApp(value){
+    if (value)
+    {
+        $('#home_page_menu_position').children("option[value^=Top]").hide();
+        $('#home_page_menu_position').children("option[value^=Middle]").hide();
+        $('#home_page_menu_position').children("option[value^=Bottom]").hide();
+        $('#home_page_menu_position').children("option[value^=Vertical_Left]").hide();
+        $('#home_page_menu_position').children("option[value^=Vertical_Right]").hide();
 
+        $('#home_page_position_of_logo').children("option[value^=Top]").show();
+        $('#home_page_position_of_logo').children("option[value^=Bottom]").show();
+        $('#home_page_position_of_logo').children("option[value^=Right]").hide();
+        $('#home_page_position_of_logo').children("option[value^=Left]").hide();
+    }
+    if ($('#home_page_menu_position').val() == "Top" || $('#home_page_menu_position').val() == "Middle" || $('#home_page_menu_position').val() == "Bottom")
+    {
+        $('#home_page_menu_position').val("Vertical_Middle");
+    }
+    if ($('#home_page_position_of_logo').val() == "Right" || $('#home_page_position_of_logo').val() == "Left")
+    {
+        $('#home_page_position_of_logo').val("Top");
+    }
+}
 function setFontSize(value) {
   if (value == "Circular") {
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option").hide();
