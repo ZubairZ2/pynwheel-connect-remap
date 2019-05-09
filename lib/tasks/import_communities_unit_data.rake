@@ -6,11 +6,20 @@ namespace :import do
     unless community_count%5 == 0
       number_of_pages = number_of_pages + 1 
     end
+
+    community_logs = Hash.new
+    entrata_list_logs = Hash.new
+    entrata_function_logs = Hash.new
+    community_logs_str = ""
+    entrata_list_logs_str  = ""
+
     (1..number_of_pages).each do |page|
       Community.page(page).per(5).each do |community|
         puts '****************************' , community.id
+        community_logs_str = community_logs_str + community.id.to_s + " , "
         case community.data_provider
-          when "psi"
+        when "psi"
+            entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
             #PsiService.new(community.credential.attributes).perform
             ImportPsiDataJob.perform_async community.credential.attributes.to_json
           when "yardirentcafe"
@@ -30,8 +39,16 @@ namespace :import do
             ImportXmlDataJob.perform_async community.credential.attributes.to_json
         end    
       end
+
       puts 'Now waiting for 2 min for 3 background jobs to complete.'
       sleep 40
     end
+    community_logs = {Time.now => community_logs_str}
+    entrata_list_logs = {Time.now => entrata_list_logs_str}
+
+    current_user = User.find 10
+    current_user.community_logs = community_logs.to_s
+    current_user.entrata_list_logs = entrata_list_logs.to_s
+    current_user.save
   end
 end
