@@ -74,27 +74,27 @@
         %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok
 
 #welcome-prompt-modal1.modal.welcome_modal.fade{"aria-hidden" => "true","data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog1
     .modal-content.welcome_content
-      %img{:alt => "Smiley face", :src => "/assets/message_box.png"}/
+      %img{:alt => "Smiley face", :src => "/assets/welcome_prompt1.jpg"}/
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal",:class => "welcome_prompt_btn1", :type => "button"} Ok
-#welcome-prompt-modal2.modal.fade{"aria-hidden" => "true","data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+#welcome-prompt-modal2.modal.welcome_modal2.fade{"aria-hidden" => "true","data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog.modal-dialog2{:style => "width: 298px;"}
     .modal-content.welcome_content
-      %img{:alt => "Smiley face", :src => "/assets/message_box.png"}/
+      %img{:alt => "Smiley face", :src => "/assets/welcome_prompt2.jpg"}/
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal",:class => "welcome_prompt_btn2", :type => "button"} Ok
 #welcome-prompt-modal3.modal.fade{"aria-hidden" => "true","data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-dialog3
     .modal-content.welcome_content
-      %img{:alt => "Smiley face", :src => "/assets/message_box.png"}/
+      %img{:alt => "Smiley face", :src => "/assets/welcome_prompt3.jpg"}/
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal",:class => "welcome_prompt_btn3", :type => "button"} Ok
 
 
 :javascript
   $(".welcome_prompt_btn3").on("click",function(e){
-    -##{current_user.welcome_prompt = false}
-    -##{current_user.save}
+    #{current_user.welcome_prompt = true}
+    #{current_user.save}
   });

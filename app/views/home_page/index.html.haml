@@ -80,4 +80,10 @@
 :javascript
   var community_id = #{params[:community_id]}
   var design_id = #{current_community.design.id}
-  
+
+  $(document).ready(function(e){
+    if (!(#{current_user.welcome_prompt}))
+    {
+      $('#welcome-prompt-modal1').modal('show');
+    }
+  });

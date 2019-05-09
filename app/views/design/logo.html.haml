@@ -44,3 +44,9 @@
 :javascript 
   var community_id = #{params[:community_id]};
   var selected_theme = '#{@community.theme_name}';
+  $(document).ready(function(e){
+    if (!(#{current_user.welcome_prompt}))
+    {
+      $('#welcome-prompt-modal1').modal('show');
+    }
+  });
