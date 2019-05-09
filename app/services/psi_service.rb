@@ -74,7 +74,7 @@ class PsiService < BaseService
           unless com.entrata_exception_logs.present?
             com.entrata_exception_logs = ""
           end
-          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||MITS|||||||| " + com.id + "--- "+ e.message
+          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||MITS|||||||| " + com.id.to_s + "--- "+ e.message
           com.save
         rescue => p
         end
@@ -283,7 +283,7 @@ class PsiService < BaseService
           unless com.entrata_exception_logs.present?
             com.entrata_exception_logs = ""
           end
-          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id + "--- "+ e.message
+          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
           com.save
         rescue => r
         end
