@@ -1,6 +1,7 @@
 class PsiService < BaseService
   @@floorplanHash = Hash.new
   def perform
+
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin

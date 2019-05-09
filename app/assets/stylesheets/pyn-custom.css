@@ -33,7 +33,7 @@ textarea { resize: none; }
   background-color:#253339;
 }
 .skin-blue .main-header .navbar{
-  padding-top:10px;
+  padding-top:15px;
 }
 .skin-blue .main-header .navbar .sidebar-toggle{
   color:#253339;
@@ -2890,4 +2890,42 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .welcome_content img
 {
     margin: auto;
+}
+.publish-changes-dialog
+{
+    width: auto;
+    padding-left: 40px;
+    padding-right: 30px;
+    max-width: 1200px;
+
+}
+.publish-changes-content
+{
+    min-height: 90vh;
+}
+.publish-changes-screen-context
+{
+
+    text-align: center;
+    height: 85vh;
+    display: grid;
+    width: 100%;
+    align-items: center;
+}
+.publish-changes-screen-context img
+{
+    margin: auto;
+    width: 100%;
+}
+.publish-changes-screen-btn
+{
+    text-align: center;
+    padding-bottom: 20px;
+}
+.publish_changes_btn
+{
+    text-transform: uppercase;
+    font-size: 24px;
+    width: 150px;
+    font-weight: bold;
 }
