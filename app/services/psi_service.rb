@@ -1,10 +1,15 @@
 class PsiService < BaseService
-  @@floorplanHash = Hash.new
+  # @@floorplanHash = Hash.new
   def perform
+    if credentials.community_id == 669
+      c = Community.find credentials.community_id
+      c.description = "Entrata hourly data test"
+      c.save(validate: false)
+    end
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
-        @@floorplanHash = {}
+        # @@floorplanHash = {}
         if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
           url = credentials.entrata_url
         else
@@ -82,8 +87,8 @@ class PsiService < BaseService
             unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
           elsif u["EffectiveRent"].present?
             unit.effective_rent = u["EffectiveRent"]
-          else
-            unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+          # else
+          #   unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           end
           # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           # if u["EffectiveRent"].present?
@@ -139,11 +144,11 @@ class PsiService < BaseService
           #
           #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
           # end
-          if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-            @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
-          else
-            @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
-          end
+          # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+          # else
+          #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+          # end
           if f["MarketRent"]["@attributes"]["Min"].to_f > 0
 
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
