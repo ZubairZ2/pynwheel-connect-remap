@@ -749,6 +749,8 @@ json.ui_settigs do
           json.home_page_menu_position "Vertical_Middle"
         elsif @community.theme_name == "panther"
           json.home_page_menu_position "Middle"
+        elsif @community.theme_name == "expressionist"  && @community.is_vertical_app
+          json.home_page_menu_position "Vertical_Middle"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_menu_position (@community.design.expressionist.present? and @community.design.expressionist.home_page_menu_position.present?) ? @community.design.expressionist.home_page_menu_position : "Bottom"
         else
@@ -763,9 +765,11 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.home_page_position_of_logo "Right"
         elsif @community.theme_name == "panther" && @community.is_vertical_app
-          json.home_page_position_of_logo "Top"
+          json.home_page_position_of_logo "Tophome_page_menu_position"
         elsif @community.theme_name == "panther"
           json.home_page_position_of_logo "Bottom center"
+        elsif @community.theme_name == "expressionist"  && @community.is_vertical_app && @community.design.expressionist.present? &&(@community.design.expressionist.home_page_position_of_logo == "Right" || @community.design.expressionist.home_page_position_of_logo == "Left")
+          json.home_page_position_of_logo "Top"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? (@community.design.expressionist.home_page_position_of_logo.sub '=','') : "Right"
         else
