@@ -838,6 +838,7 @@ json.ui_settigs do
           json.home_page_buttons_border @community.design.home_page_buttons_border.present? ? @community.design.home_page_buttons_border : "All sides"
           json.home_page_navigation_background_height @community.design.home_page_navigation_background_height.present? ? @community.design.home_page_navigation_background_height : "250px"
         elsif @community.theme_name == "futurist" && @community.is_vertical_app
+          json.home_page_buttons_border "No border"
           json.home_page_navigation_background_height "350px"
         else
           json.home_page_buttons_border "All sides"
