@@ -118,6 +118,14 @@ $("#company_logo,#community_logo,#user_avatar,#amenity_image,#unit_image").chang
 });
 
 
+$(".welcome_prompt_btn1").on("click",function(e){
+    $('#welcome-prompt-modal3').modal('show');
+});
+$(".welcome_prompt_btn3").on("click",function(e){
+    $('#welcome-prompt-modal2').modal('show');
+});
+
+
 $(".import_data").on("click",function(e){
     $(".divLoading").removeClass("hidden")
 });

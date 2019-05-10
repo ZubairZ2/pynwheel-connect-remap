@@ -88,3 +88,10 @@
   var expressionist_id = '#{@community.design.expressionist.id}';
   var gable_id = '#{@community.design.gable.id}';
   window.current_theme = '#{@community.theme_name}';
+
+  $(document).ready(function(e){
+    if (!(#{current_user.welcome_prompt}))
+    {
+      $('#welcome-prompt-modal1').modal('show');
+    }
+  });

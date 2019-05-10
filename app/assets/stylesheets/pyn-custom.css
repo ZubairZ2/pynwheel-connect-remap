@@ -2674,6 +2674,25 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   .custom-icon-black{
     font-size: 16px;
   }
+    .welcome_modal .modal-dialog1
+    {
+        margin-top: 0px !important;
+        margin-left: 50px !important;
+    }
+    .welcome_modal
+    {
+        padding-top: 5px !important;
+    }
+    .modal-dialog2
+    {
+        margin: auto !important;
+        margin-top: 20px !important;
+    }
+    .modal-dialog3
+    {
+        margin-right: 40px !important;
+        margin-top: 50px !important;
+    }
 }
 
 
@@ -2927,6 +2946,39 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .unit_sold:hover #unit_sold_text {
     visibility: visible;
 }
+.welcome_modal {
+    padding-right: 30%;
+    padding-top: 150px;
+    width: auto;
+    background-color: transparent;
+}
+.welcome_modal .modal-dialog1
+{
+    width: 274px;
+    margin: 150px auto;
+    margin-left: 300px;
+}
+.modal-dialog3
+{
+    width: 274px;
+    float: right;
+    margin-right: 177px;
+}
+
+#welcome-prompt-modal3 {
+    padding-left: 60%;
+    width: auto;
+    padding-top: 50px;
+}
+.welcome_content
+{
+    background: transparent;
+    box-shadow: none;
+}
+.welcome_content img
+{
+    margin: auto;
+}
 .publish-changes-dialog
 {
     width: auto;
@@ -2964,4 +3016,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     font-size: 24px;
     width: 150px;
     font-weight: bold;
+}
+.welcome_content .modal-footer
+{
+    border-top: none;
+    padding: 0px;
 }
