@@ -50,6 +50,7 @@ class PsiService < BaseService
           }.to_json,
           :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
+        sleep 7
         if response["response"]["code"] == 200
           units = []
           floorplans = []
@@ -210,7 +211,7 @@ class PsiService < BaseService
                                  }.to_json,
                                  :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
-
+        sleep 7
         if response["response"]["code"] == 200
           psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
           psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
