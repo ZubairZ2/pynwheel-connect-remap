@@ -47,8 +47,14 @@ namespace :import do
     entrata_list_logs = {Time.now => entrata_list_logs_str}
 
     current_user = User.find 10
-    current_user.community_logs = community_logs.to_s
-    current_user.entrata_list_logs = entrata_list_logs.to_s
+    unless current_user.community_logs.present?
+      current_user.community_logs = ""
+    end
+    unless current_user.entrata_list_logs.present?
+      current_user.entrata_list_logs = ""
+    end
+    current_user.community_logs = current_user.community_logs + community_logs.to_s
+    current_user.entrata_list_logs = current_user.entrata_list_logs + entrata_list_logs.to_s
     current_user.save
   end
 end
