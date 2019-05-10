@@ -53,7 +53,7 @@ class PsiService < BaseService
         if response["response"]["code"] == 200
           units = []
           floorplans = []
-          response['response']['result']["PhysicalProperty"]["Pro99perty"].each do |pro|
+          response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
             pro["ILS_Unit"].each do |ils|
               units << ils
             end
