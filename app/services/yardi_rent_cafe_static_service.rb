@@ -28,18 +28,47 @@ class YardiRentCafeStaticService < BaseService
               unless unit.manual_override
                 unit.property_id = r["PropertyId"]
                 unit.unit_type = r["ApartmentName"]
-                unit.marketing_name = r["ApartmentName"]
-                unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                unit.floorplan_id = r["FloorplanId"]
+                unless unit.name_is_updated.present? && unit.name_is_updated
+                  unit.marketing_name = r["ApartmentName"]
+                end
+                unless unit.floor_is_updated.present? && unit.floor_is_updated
+                  unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                end
+                unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+                  unit.floorplan_id = r["FloorplanId"]
+                end
+
                 unit.market_rent = r["MinimumRent"]
-                unit.effective_rent = r["MinimumRent"]
-                unit.availability = "Unoccupied"
-                if r["AvailableDate"] != ""
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                  unit.effective_rent = r["MinimumRent"]
+                end
+
+                unless unit.availability_is_updated.present? && unit.availability_is_updated
                   unit.availability = "Unoccupied"
-                  unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
+                end
+                if r["AvailableDate"] != ""
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated
+                    unit.availability = "Unoccupied"
+                  end
+                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+                    unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
+                  end
+
                 else
-                  unit.availability = "Occupied"
-                  unit.available_date = ""
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated
+                    unit.availability = "Occupied"
+                  end
+                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+                    unit.available_date = ""
+                  end
+
+                end
+                unless unit.available_is_updated.present? && unit.available_is_updated
+                  if unit.availability == "Occupied"
+                    unit.available = false
+                  else
+                    unit.available = true
+                  end
                 end
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
@@ -82,17 +111,29 @@ class YardiRentCafeStaticService < BaseService
             unless fp.manual_override
               fp.property_id = r["PropertyId"]
               fp.provider_floorplan_id = r["FloorplanId"]
-              fp.name = r["FloorplanName"]
+              unless fp.name_is_updated.present? && fp.name_is_updated
+                fp.name = r["FloorplanName"]
+              end
+
               fp.unit_count = r[""]
               fp.units_available = r[""]
-              fp.bedrooms = r["Beds"]
-              fp.bathrooms = r["Baths"]
-              if r["MinimumSQFT"].present?
-                fp.square_feet = r["MinimumSQFT"]
-              elsif r["SQFT"].present?
-                fp.square_feet = r["SQFT"]
+              unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
+                fp.bedrooms = r["Beds"]
               end
-              fp.market_rent = r["MinimumRent"]
+              unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
+                fp.bathrooms = r["Baths"]
+              end
+              unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
+                if r["MinimumSQFT"].present?
+                  fp.square_feet = r["MinimumSQFT"]
+                elsif r["SQFT"].present?
+                  fp.square_feet = r["SQFT"]
+                end
+              end
+              unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
+                fp.market_rent = r["MinimumRent"]
+              end
+
               fp.deposit = r["MinimumDeposit"]
               fp.save(validate: false)
             end

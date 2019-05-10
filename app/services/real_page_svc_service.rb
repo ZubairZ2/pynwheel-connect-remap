@@ -65,7 +65,10 @@ class RealPageSvcService < BaseService
                   # end
                   # floorplan.bathrooms = fp[:Bathrooms]
                   # floorplan.bedrooms = fp[:Bedrooms]
-                  floorplan.market_rent = fp[:RentMin]
+                  unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && !(floorplan.manual_override)
+                    floorplan.market_rent = fp[:RentMin]
+                  end
+
                   # floorplan.square_feet = fp[:GrossSquareFootage]
                   floorplan.save(:validate => false)
                 end
@@ -142,24 +145,31 @@ class RealPageSvcService < BaseService
                   # end
                   # unit.floorplan_id = u[:FloorplanID]
                   unit.market_rent = u[:BaseRentAmount]
-                  unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
-                  unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                  unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+                    unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
+                  end
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+                    unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                  end
+
                   # if u[:RentSqFtCount].present?
                   #   unit.square_feet = u[:RentSqFtCount]
                   # end
                   #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                   # unit.floor = u[:FloorNumber] rescue nil
-                  if u[:AvailableDate].present?
-                    unit.available_date = u[:AvailableDate]
-                  end
-                  if u[:MadeReadyDate].present?
-                    unit.available_date = u[:MadeReadyDate]
-                  end
-                  if unit.available_date.year == 1900
-                    unit.available_date = ""
-                  end
-                  if unit.availability == "Occupied" #&& unit.available_date < Date.today
-                    unit.available_date = ""
+                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
+                    if u[:AvailableDate].present?
+                      unit.available_date = u[:AvailableDate]
+                    end
+                    if u[:MadeReadyDate].present?
+                      unit.available_date = u[:MadeReadyDate]
+                    end
+                    if unit.available_date.year == 1900
+                      unit.available_date = ""
+                    end
+                    if unit.availability == "Occupied" #&& unit.available_date < Date.today
+                      unit.available_date = ""
+                    end
                   end
 
                   if unit.available_date.present?
@@ -334,7 +344,10 @@ class RealPageSvcService < BaseService
 
                   if best_price.present?
                     unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
-                    unit.effective_rent = best_price
+                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+                      unit.effective_rent = best_price
+                    end
+
                     unit.lease_pricing = rentStr
                     unit.save(:validate => false)
                     puts " **** price updated *** "
