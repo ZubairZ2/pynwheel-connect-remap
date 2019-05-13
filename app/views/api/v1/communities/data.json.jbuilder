@@ -775,7 +775,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.home_page_position_of_logo "Right"
         elsif @community.theme_name == "panther" && @community.is_vertical_app
-          json.home_page_position_of_logo "Top"
+          json.home_page_position_of_logo "=Bottom center"
         elsif @community.theme_name == "panther"
           json.home_page_position_of_logo "Bottom center"
         elsif @community.theme_name == "expressionist"  && @community.is_vertical_app && @community.design.expressionist.present? &&(@community.design.expressionist.home_page_position_of_logo == "Right" || @community.design.expressionist.home_page_position_of_logo == "Left")
@@ -882,7 +882,7 @@ json.ui_settigs do
         elsif @community.theme_name == "futurist"
           json.spacing_between_buttons_for_homepage "0px"
         elsif @community.theme_name == "panther" && @community.is_vertical_app
-          json.spacing_between_buttons_for_homepage "50px"
+          json.spacing_between_buttons_for_homepage "75px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons_for_homepage "20px"
         elsif @community.theme_name == "modernist"
