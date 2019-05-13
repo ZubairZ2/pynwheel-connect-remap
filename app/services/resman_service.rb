@@ -52,8 +52,8 @@ class ResmanService < BaseService
         # unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         # unit.marketing_name = u["Id"]
         # unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
-        unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
             unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
           elsif u["EffectiveRent"].present?
@@ -63,9 +63,8 @@ class ResmanService < BaseService
 
         # unit.floor = u["FloorLevel"]
         if u["Availability"].present?
-          unless unit.availability_is_updated.present? && unit.availability_is_updated
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Unoccupied"
-            unit.available = true
           end
 
           year = u["Availability"]["VacateDate"]["Year"]
@@ -73,13 +72,19 @@ class ResmanService < BaseService
           day = u["Availability"]["VacateDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
         else
-          unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Occupied"
+          end
+        end
+        unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
+          if unit.availability == "Unoccupied"
+            unit.available = true
+          else
             unit.available = false
           end
-
         end
-        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
+
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
         end
 
@@ -119,7 +124,7 @@ class ResmanService < BaseService
         # else
         #   floorplan.square_feet = f["SquareFeet"]["Max"]
         # end
-        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && !(floorplan.manual_override)
+        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
           if f["MarketRent"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["Min"]
           else

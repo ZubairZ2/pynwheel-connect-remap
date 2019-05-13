@@ -61,7 +61,7 @@ class XmlService < BaseService
           # unit.unit_type = u["Unit"]["Information"]["UnitType"]
           # unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
           # unit.floorplan_id = u["FloorplanID"]
-          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
             unit.effective_rent = 1.0 #Setting rent to avoid validation issues
             if u["EffectiveRent"]["Min"].present?
               unit.effective_rent = u["EffectiveRent"]["Min"]
@@ -72,12 +72,14 @@ class XmlService < BaseService
 
           # unit.floor = u["EntryFloor"]
           if u["Availability"].present?
-            unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+            unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
               unit.availability = u["Availability"]["VacancyClass"]
             end
-            unless unit.available_is_updated.present? && unit.available_is_updated && !(unit.manual_override)
+            unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
               if u["Availability"]["VacancyClass"] == "Unoccupied"
                 unit.available = true
+              else
+                unit.available = false
               end
             end
 
@@ -91,7 +93,7 @@ class XmlService < BaseService
           end
           # unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
           # unit.square_feet = u["Unit"]["Information"]["MinSquareFeet"]
-          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
+          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
             unit.available_date = vacateDate
           end
 
@@ -128,7 +130,7 @@ class XmlService < BaseService
         # else
         #   floorplan.square_feet = f["SquareFeet"]["Max"]
         # end
-        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && unit.manual_override
           if f["MarketRent"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["Min"]
           else

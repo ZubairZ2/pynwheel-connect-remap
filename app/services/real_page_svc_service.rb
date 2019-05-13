@@ -51,27 +51,25 @@ class RealPageSvcService < BaseService
               fp = fp[:FloorPlanObject]
               floorplan = Floorplan.find_by(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID])#.first_or_initialize
               if floorplan.present?
-                unless floorplan.manual_override
-                  # if fp[:FloorPlanNameMarketing].present?
-                  #   floorplan.name = fp[:FloorPlanNameMarketing]
-                  # elsif fp[:FloorPlanCode].present?
-                  #   if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                  #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
-                  #   else
-                  #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
-                  #   end
-                  # else
-                  #   floorplan.name = fp[:FloorPlanName]
-                  # end
-                  # floorplan.bathrooms = fp[:Bathrooms]
-                  # floorplan.bedrooms = fp[:Bedrooms]
-                  unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && !(floorplan.manual_override)
-                    floorplan.market_rent = fp[:RentMin]
-                  end
-
-                  # floorplan.square_feet = fp[:GrossSquareFootage]
-                  floorplan.save(:validate => false)
+                # if fp[:FloorPlanNameMarketing].present?
+                #   floorplan.name = fp[:FloorPlanNameMarketing]
+                # elsif fp[:FloorPlanCode].present?
+                #   if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                #   else
+                #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                #   end
+                # else
+                #   floorplan.name = fp[:FloorPlanName]
+                # end
+                # floorplan.bathrooms = fp[:Bathrooms]
+                # floorplan.bedrooms = fp[:Bedrooms]
+                unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
+                  floorplan.market_rent = fp[:RentMin]
                 end
+
+                # floorplan.square_feet = fp[:GrossSquareFootage]
+                floorplan.save(:validate => false)
               end
             end
           end
@@ -144,10 +142,10 @@ class RealPageSvcService < BaseService
                 # end
                 # unit.floorplan_id = u[:FloorplanID]
                 unit.market_rent = u[:BaseRentAmount]
-                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 end
-                unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+                unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                   unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
                 end
 
@@ -156,7 +154,7 @@ class RealPageSvcService < BaseService
                 # end
                 #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                 # unit.floor = u[:FloorNumber] rescue nil
-                unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
+                unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
                   if u[:AvailableDate].present?
                     unit.available_date = u[:AvailableDate]
                   end
@@ -343,7 +341,7 @@ class RealPageSvcService < BaseService
 
                   if best_price.present?
                     unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
-                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                       unit.effective_rent = best_price
                     end
 

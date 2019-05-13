@@ -93,7 +93,7 @@ class Yardi4Service < BaseService
         # unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
         # unit.floorplan_id = u[:Units][:Unit][:UnitType]
         unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           unit.effective_rent = u[:Units][:Unit][:MarketRent]
         end
 
@@ -117,7 +117,7 @@ class Yardi4Service < BaseService
             #   is_available = true
             # end
           end
-          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
             if unit_with_key.key?(:EffectiveRent)
               unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
             end
@@ -154,13 +154,13 @@ class Yardi4Service < BaseService
         rescue
           unit.lease_pricing = nil
         end
-        unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+        unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
           unit.availability = is_available ? "Unoccupied" : "Occupied"
         end
-        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacate_date
         end
-        unless unit.available_is_updated.present? && unit.available_is_updated && !(unit.manual_override)
+        unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           if unit.availability == "Unoccupied"
             unit.available = true
           else
@@ -186,7 +186,7 @@ class Yardi4Service < BaseService
           # if f.key?(:Name)
           #   fp.name = f[:Name]
           # end
-          unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && !(fp.manual_override)
+          unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
             if f.key?(:MarketRent)
               if f[:MarketRent][0][:Min].to_f > 0
                 fp.market_rent = f[:MarketRent][0][:Min]
