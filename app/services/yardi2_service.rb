@@ -57,36 +57,50 @@ class Yardi2Service < BaseService
       begin
         unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])#.first_or_initialize
         if unit.present?
-          unless unit.manual_override
-            # unit.property_id = property_id
-            # unit.unit_type = unit_entries[0][:Id]
-            # unit.marketing_name = unit_entries[0][:Id]
-            # unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
-            is_available = false
-            vacate_date = ""
-            unit_entries.each do |u|
-              # if u.key?(:Unit)
-              #   unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
-              # end
-              if u.key?(:EffectiveRent)
-                unit.market_rent = u[:EffectiveRent][0][:Min]
+          # unit.property_id = property_id
+          # unit.unit_type = unit_entries[0][:Id]
+          # unit.marketing_name = unit_entries[0][:Id]
+          # unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
+          is_available = false
+          vacate_date = ""
+          unit_entries.each do |u|
+            # if u.key?(:Unit)
+            #   unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
+            # end
+            if u.key?(:EffectiveRent)
+              unit.market_rent = u[:EffectiveRent][0][:Min]
+              unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                 unit.effective_rent = u[:EffectiveRent][0][:Min]
               end
-              if u.key?(:Availability)
-                if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
-                  vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
-                  is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
-                end
-                if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
-                  vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
-                  is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
-                end
+
+            end
+            if u.key?(:Availability)
+              if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
+                vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
+                is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+              end
+              if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
+                vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
+                is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
             end
-            unit.availability = is_available ? "Unoccupied" : "Occupied"
-            unit.available_date = vacate_date
-            unit.save
           end
+          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+            unit.available_date = vacate_date
+          end
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+            unit.availability = is_available ? "Unoccupied" : "Occupied"
+          end
+          unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
+            if unit.availability == "Occupied"
+              unit.available = false
+            else
+              unit.available = true
+            end
+          end
+
+          unit.save
+
         end
       rescue => e
         puts '----------------------------------', e.message
@@ -100,18 +114,17 @@ class Yardi2Service < BaseService
       begin
         fp = Floorplan.find_by(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id])#.first_or_initialize
         if fp.present?
-          unless fp.manual_override
-            rooms = []
-            floorplan.each do |f|
+          rooms = []
+          floorplan.each do |f|
 
-              # if f.key?(:Room)
-              #   rooms << f
-              # end
+            # if f.key?(:Room)
+            #   rooms << f
+            # end
 
-              # if f.key?(:Name)
-              #   fp.name = f[:Name]
-              # end
-
+            # if f.key?(:Name)
+            #   fp.name = f[:Name]
+            # end
+            unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
               if f.key?(:MarketRent)
                 if f[:MarketRent][0][:Min].to_f > 0
                   fp.market_rent = f[:MarketRent][0][:Min]
@@ -119,27 +132,29 @@ class Yardi2Service < BaseService
                   fp.market_rent = f[:MarketRent][0][:Max]
                 end
               end
-
-              # if f.key?(:SquareFeet)
-              #   if f[:SquareFeet][0][:Min].to_f > 0
-              #     fp.square_feet = f[:SquareFeet][0][:Min]
-              #   else
-              #     fp.square_feet = f[:SquareFeet][0][:Max]
-              #   end
-              # end
-
             end
 
-            # rooms.each do |room|
-            #   if room[:Room][0][:Type] == "Bedroom"
-            #     fp.bedrooms = room[:Room][1][:Count]
+
+            # if f.key?(:SquareFeet)
+            #   if f[:SquareFeet][0][:Min].to_f > 0
+            #     fp.square_feet = f[:SquareFeet][0][:Min]
             #   else
-            #     fp.bathrooms = room[:Room][1][:Count]
+            #     fp.square_feet = f[:SquareFeet][0][:Max]
             #   end
             # end
 
-            fp.save(validate: false)
           end
+
+          # rooms.each do |room|
+          #   if room[:Room][0][:Type] == "Bedroom"
+          #     fp.bedrooms = room[:Room][1][:Count]
+          #   else
+          #     fp.bathrooms = room[:Room][1][:Count]
+          #   end
+          # end
+
+          fp.save(validate: false)
+
         end
       rescue => e
         puts '----------------------------------', e.message

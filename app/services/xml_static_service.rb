@@ -58,19 +58,35 @@ class XmlStaticService < BaseService
       unless unit.manual_override
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["Information"]["UnitType"]
-        unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
-        unit.floorplan_id = u["FloorplanID"]
-        unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-        if u["EffectiveRent"]["Min"].present?
-          unit.effective_rent = u["EffectiveRent"]["Min"]
-        elsif u["EffectiveRent"]["Avg"].present?
-          unit.effective_rent = u["EffectiveRent"]["Avg"]
+        unless unit.name_is_updated.present? && unit.name_is_updated
+          unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
         end
-        unit.floor = u["EntryFloor"]
+        unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+          unit.floorplan_id = u["FloorplanID"]
+        end
+
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+          unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+          if u["EffectiveRent"]["Min"].present?
+            unit.effective_rent = u["EffectiveRent"]["Min"]
+          elsif u["EffectiveRent"]["Avg"].present?
+            unit.effective_rent = u["EffectiveRent"]["Avg"]
+          end
+        end
+        unless unit.floor_is_updated.present? && unit.floor_is_updated
+          unit.floor = u["EntryFloor"]
+        end
+
         if u["Availability"].present?
-          unit.availability = u["Availability"]["VacancyClass"]
+          unless unit.availability_is_updated.present? && unit.availability_is_updated
+            unit.availability = u["Availability"]["VacancyClass"]
+          end
+
           if u["Availability"]["VacancyClass"] == "Unoccupied"
-            unit.available = true
+            unless unit.available_is_updated.present? && unit.available_is_updated
+              unit.available = true
+            end
+
           end
           if u["Availability"]["VacateDate"].present?
             year = u["Availability"]["VacateDate"]["Year"]
@@ -82,9 +98,15 @@ class XmlStaticService < BaseService
         end
         unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
         unit.square_feet = u["Unit"]["Information"]["MinSquareFeet"]
-        unit.available_date = vacateDate
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+          unit.available_date = vacateDate
+        end
+
         building = u["BuildingID"]
-        unit.building = building.present? ? building.gsub("Building ", "") : ""
+        unless unit.building_is_updated.present? && unit.building_is_updated
+          unit.building = building.present? ? building.gsub("Building ", "") : ""
+        end
+
         unit.manually_updated = false
         unit.save(validate: false)
       end
@@ -95,28 +117,38 @@ class XmlStaticService < BaseService
     floorplans.each do |f|
       floorplan = Floorplan.where(provider: "xml",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize
       floorplan.property_id = property_id
-      floorplan.name = f["Name"]
+      unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+        floorplan.name = f["Name"]
+      end
+
       floorplan.unit_count = f["UnitCount"]
       floorplan.units_available = f["DisplayedUnitsAvailable"]
       if f["FloorplanAvailabilityURL"].present?
         floorplan.availability_url = f["FloorplanAvailabilityURL"]
       end
-
-      floorplan.bedrooms = f["Room"][0]["Count"]
-
-      floorplan.bathrooms = f["Room"][1]["Count"]
-
-
-      if f["SquareFeet"]["Min"].to_f > 0
-        floorplan.square_feet = f["SquareFeet"]["Min"]
-      else
-        floorplan.square_feet = f["SquareFeet"]["Max"]
+      unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+        floorplan.bedrooms = f["Room"][0]["Count"]
       end
-      if f["MarketRent"]["Min"].to_f > 0
-        floorplan.market_rent = f["MarketRent"]["Min"]
-      else
-        floorplan.market_rent = f["MarketRent"]["Max"]
+
+      unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+        floorplan.bathrooms = f["Room"][1]["Count"]
       end
+      unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+        if f["SquareFeet"]["Min"].to_f > 0
+          floorplan.square_feet = f["SquareFeet"]["Min"]
+        else
+          floorplan.square_feet = f["SquareFeet"]["Max"]
+        end
+      end
+
+      unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+        if f["MarketRent"]["Min"].to_f > 0
+          floorplan.market_rent = f["MarketRent"]["Min"]
+        else
+          floorplan.market_rent = f["MarketRent"]["Max"]
+        end
+      end
+
       floorplan.save(validate: false)
 
     end

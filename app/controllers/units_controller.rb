@@ -58,6 +58,9 @@ class UnitsController < ApplicationController
       if (params[:unit][:floor].present? && params[:unit][:floor] != @unit.floor.to_i.to_s)
         @unit.floor_is_updated = true
       end
+      if (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability)
+        @unit.availability_is_updated = true
+      end
       ########
       if @unit.manual_override
         if params[:unit][:description].present?

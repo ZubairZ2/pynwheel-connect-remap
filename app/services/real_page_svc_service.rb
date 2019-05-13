@@ -51,24 +51,25 @@ class RealPageSvcService < BaseService
               fp = fp[:FloorPlanObject]
               floorplan = Floorplan.find_by(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID])#.first_or_initialize
               if floorplan.present?
-                unless floorplan.manual_override
-                  # if fp[:FloorPlanNameMarketing].present?
-                  #   floorplan.name = fp[:FloorPlanNameMarketing]
-                  # elsif fp[:FloorPlanCode].present?
-                  #   if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                  #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
-                  #   else
-                  #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
-                  #   end
-                  # else
-                  #   floorplan.name = fp[:FloorPlanName]
-                  # end
-                  # floorplan.bathrooms = fp[:Bathrooms]
-                  # floorplan.bedrooms = fp[:Bedrooms]
+                # if fp[:FloorPlanNameMarketing].present?
+                #   floorplan.name = fp[:FloorPlanNameMarketing]
+                # elsif fp[:FloorPlanCode].present?
+                #   if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                #   else
+                #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                #   end
+                # else
+                #   floorplan.name = fp[:FloorPlanName]
+                # end
+                # floorplan.bathrooms = fp[:Bathrooms]
+                # floorplan.bedrooms = fp[:Bedrooms]
+                unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
                   floorplan.market_rent = fp[:RentMin]
-                  # floorplan.square_feet = fp[:GrossSquareFootage]
-                  floorplan.save(:validate => false)
                 end
+
+                # floorplan.square_feet = fp[:GrossSquareFootage]
+                floorplan.save(:validate => false)
               end
             end
           end
@@ -130,25 +131,30 @@ class RealPageSvcService < BaseService
               hit = false
               unit = Unit.find_by(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID])#.first_or_initialize
               if unit.present?
-                unless unit.manual_override
 
-                  # unit.property_id = u[:SiteID]
-                  # unit.provider_unit_id = u[:UnitID]
-                  # unit.unit_type = u[:UnitNumber]
-                  # if u[:BuildingID].present?
-                  #   unit.marketing_name = u[:BuildingID] + "-" + u[:UnitNumber]
-                  # else
-                  #   unit.marketing_name = u[:UnitNumber]
-                  # end
-                  # unit.floorplan_id = u[:FloorplanID]
-                  unit.market_rent = u[:BaseRentAmount]
+                # unit.property_id = u[:SiteID]
+                # unit.provider_unit_id = u[:UnitID]
+                # unit.unit_type = u[:UnitNumber]
+                # if u[:BuildingID].present?
+                #   unit.marketing_name = u[:BuildingID] + "-" + u[:UnitNumber]
+                # else
+                #   unit.marketing_name = u[:UnitNumber]
+                # end
+                # unit.floorplan_id = u[:FloorplanID]
+                unit.market_rent = u[:BaseRentAmount]
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
+                end
+                unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                   unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
-                  # if u[:RentSqFtCount].present?
-                  #   unit.square_feet = u[:RentSqFtCount]
-                  # end
-                  #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                  # unit.floor = u[:FloorNumber] rescue nil
+                end
+
+                # if u[:RentSqFtCount].present?
+                #   unit.square_feet = u[:RentSqFtCount]
+                # end
+                #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                # unit.floor = u[:FloorNumber] rescue nil
+                unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
                   if u[:AvailableDate].present?
                     unit.available_date = u[:AvailableDate]
                   end
@@ -161,41 +167,42 @@ class RealPageSvcService < BaseService
                   if unit.availability == "Occupied" #&& unit.available_date < Date.today
                     unit.available_date = ""
                   end
-
-                  if unit.available_date.present?
-                    current_date = unit.available_date
-                  elsif unit.available_date.present? && unit.available_date < Date.today
-                    current_date = Date.today
-                  end
-
-                  @array_of_dates.each do |hash|
-                    if hash[:ready_date] == current_date
-                      hash[:units] << unit.provider_unit_id
-                      hit = true
-                    end
-                  end
-
-                  if !hit
-                    struct = {
-                      ready_date: current_date,
-                      units: [unit.provider_unit_id]
-                    }
-                    @array_of_dates << struct
-                  end
-
-
-                  # unit.building = ""
-                  # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
-                  # if bldgResult.present?
-                  #   if bldgResult == "N/A"
-                  #     unit.building = ""
-                  #   else
-                  #     unit.building = bldgResult
-                  #   end
-                  # end
-                  unit.save
-
                 end
+
+                if unit.available_date.present?
+                  current_date = unit.available_date
+                elsif unit.available_date.present? && unit.available_date < Date.today
+                  current_date = Date.today
+                end
+
+                @array_of_dates.each do |hash|
+                  if hash[:ready_date] == current_date
+                    hash[:units] << unit.provider_unit_id
+                    hit = true
+                  end
+                end
+
+                if !hit
+                  struct = {
+                    ready_date: current_date,
+                    units: [unit.provider_unit_id]
+                  }
+                  @array_of_dates << struct
+                end
+
+
+                # unit.building = ""
+                # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
+                # if bldgResult.present?
+                #   if bldgResult == "N/A"
+                #     unit.building = ""
+                #   else
+                #     unit.building = bldgResult
+                #   end
+                # end
+                unit.save
+
+
               end
             end
           end
@@ -334,7 +341,10 @@ class RealPageSvcService < BaseService
 
                   if best_price.present?
                     unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
-                    unit.effective_rent = best_price
+                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                      unit.effective_rent = best_price
+                    end
+
                     unit.lease_pricing = rentStr
                     unit.save(:validate => false)
                     puts " **** price updated *** "

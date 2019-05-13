@@ -90,11 +90,20 @@ class Yardi4StaticService < BaseService
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
         unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
-        unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
-        unit.floorplan_id = u[:Units][:Unit][:UnitType]
+        unless unit.name_is_updated.present? && unit.name_is_updated
+          unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
+        end
+        unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+          unit.floorplan_id = u[:Units][:Unit][:UnitType]
+        end
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+          unit.effective_rent = u[:Units][:Unit][:MarketRent]
+        end
         unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
-        unit.effective_rent = u[:Units][:Unit][:MarketRent]
-        unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+        unless unit.floor_is_updated.present? && unit.floor_is_updated
+          unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+        end
+
         is_available = false
         vacate_date = ""
         api_unit.each do |unit_with_key|
@@ -114,9 +123,12 @@ class Yardi4StaticService < BaseService
             #   is_available = true
             # end
           end
-          if unit_with_key.key?(:EffectiveRent)
-            unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+            if unit_with_key.key?(:EffectiveRent)
+              unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
+            end
           end
+
 
         end
         pr = api_unit[3]
@@ -147,8 +159,19 @@ class Yardi4StaticService < BaseService
         rescue
           unit.lease_pricing = nil
         end
-        unit.availability = is_available ? "Unoccupied" : "Occupied"
-        unit.available_date = vacate_date
+        unless unit.availability_is_updated.present? && unit.availability_is_updated
+          unit.availability = is_available ? "Unoccupied" : "Occupied"
+        end
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+          unit.available_date = vacate_date
+        end
+        unless unit.available_is_updated.present? && unit.available_is_updated
+          if unit.availability == "Unoccupied"
+            unit.available = true
+          else
+            unit.available = false
+          end
+        end
         unit.manually_updated = false
         unit.save(validate: false)
       end
@@ -167,32 +190,43 @@ class Yardi4StaticService < BaseService
           end
 
           if f.key?(:Name)
-            fp.name = f[:Name]
-          end
+            unless fp.name_is_updated.present? && fp.name_is_updated
+              fp.name = f[:Name]
+            end
 
-          if f.key?(:MarketRent)
-            if f[:MarketRent][0][:Min].to_f > 0
-              fp.market_rent = f[:MarketRent][0][:Min]
-            else
-              fp.market_rent = f[:MarketRent][0][:Max]
+          end
+          unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
+            if f.key?(:MarketRent)
+              if f[:MarketRent][0][:Min].to_f > 0
+                fp.market_rent = f[:MarketRent][0][:Min]
+              else
+                fp.market_rent = f[:MarketRent][0][:Max]
+              end
             end
           end
 
-          if f.key?(:SquareFeet)
-            if f[:SquareFeet][0][:Min].to_f > 0
-              fp.square_feet = f[:SquareFeet][0][:Min]
-            else
-              fp.square_feet = f[:SquareFeet][0][:Max]
+          unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
+            if f.key?(:SquareFeet)
+              if f[:SquareFeet][0][:Min].to_f > 0
+                fp.square_feet = f[:SquareFeet][0][:Min]
+              else
+                fp.square_feet = f[:SquareFeet][0][:Max]
+              end
             end
           end
+
 
         end
 
         rooms.each do |room|
           if room[:Room][0][:RoomType] == "Bedroom"
-            fp.bedrooms = room[:Room][1][:Count]
+            unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
+              fp.bedrooms = room[:Room][1][:Count]
+            end
           else
-            fp.bathrooms = room[:Room][1][:Count]
+            unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
+              fp.bathrooms = room[:Room][1][:Count]
+            end
           end
         end
 

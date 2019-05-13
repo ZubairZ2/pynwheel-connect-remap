@@ -86,22 +86,38 @@ class ZarembaStaticService < BaseService
       unit.property_id = property_id
       unit.unit_type = u["UnitType"]
       # if flag == 1 #&& unit.marketing_name.split('-')[0] == unit.building
-      unit.marketing_name = u["MarketingName"]
+      unless unit.name_is_updated.present? && unit.name_is_updated
+        unit.marketing_name = u["MarketingName"]
+      end
+
       # else
       # unit.marketing_name = u["MarketingName"]
       # end
-
-      unit.floorplan_id = u["Units"]["Unit"]["Identification"][1]["IDValue"]
-      unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-      if u["MarketRent"].present?
-        unit.effective_rent = u["MarketRent"]
-      elsif u["EffectiveRent"].present?
-        unit.effective_rent = u["EffectiveRent"]["Min"]
+      unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+        unit.floorplan_id = u["Units"]["Unit"]["Identification"][1]["IDValue"]
       end
-      unit.floor = u["FloorLevel"]
-      if u["Availability"]["VacancyClass"] == "Vacant"
-        unit.availability = "Unoccupied"
-        unit.available = true;
+      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+        unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+        if u["MarketRent"].present?
+          unit.effective_rent = u["MarketRent"]
+        elsif u["EffectiveRent"].present?
+          unit.effective_rent = u["EffectiveRent"]["Min"]
+        end
+      end
+      unless unit.floor_is_updated.present? && unit.floor_is_updated
+        unit.floor = u["FloorLevel"]
+      end
+      unless unit.availability_is_updated.present? && unit.availability_is_updated
+        if u["Availability"]["VacancyClass"] == "Vacant"
+          unit.availability = "Unoccupied"
+        end
+      end
+      unless unit.available_is_updated.present? && unit.available_is_updated
+        if  unit.availability == "Unoccupied"
+          unit.available = true
+        else
+          unit.available = false
+        end
       end
       if u["Availability"]["VacancyClass"] == "Vacant"
         year = u["Availability"]["VacateDate"]["Year"]
@@ -109,9 +125,15 @@ class ZarembaStaticService < BaseService
         day = u["Availability"]["VacateDate"]["Day"]
         vacateDate = Date.parse("#{year}-#{month}-#{day}")
       end
-      unit.available_date = vacateDate
+      unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+        unit.available_date = vacateDate
+      end
+
       building = u["BuildingID"]
-      unit.building = building.present? ? building.gsub("Building ", "") : ""
+      unless unit.building_is_updated.present? && unit.building_is_updated
+        unit.building = building.present? ? building.gsub("Building ", "") : ""
+      end
+
       unit.manually_updated = false
       unit.save(validate: false)
     end
@@ -122,7 +144,10 @@ class ZarembaStaticService < BaseService
       puts "=================", f
       floorplan = Floorplan.where(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize
       floorplan.property_id = property_id
-      floorplan.name = f["Name"]
+      unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+        floorplan.name = f["Name"]
+      end
+
       floorplan.unit_count = f["UnitCount"]
       floorplan.units_available = f["UnitsAvailable"]
       if f["Deposit"].present? # No field for this present
@@ -134,21 +159,30 @@ class ZarembaStaticService < BaseService
       room_types = f["Room"]
       room_types.each do |rt|
         if rt["RoomType"] == "Bedroom"
-          floorplan.bedrooms = rt["Count"]
+          unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+            floorplan.bedrooms = rt["Count"]
+          end
         else
-          floorplan.bathrooms = rt["Count"]
+          unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+            floorplan.bathrooms = rt["Count"]
+          end
         end
       end
-      if f["SquareFeet"]["Min"].to_f > 0
-        floorplan.square_feet = f["SquareFeet"]["Min"]
-      else
-        floorplan.square_feet = f["SquareFeet"]["Max"]
+      unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+        if f["SquareFeet"]["Min"].to_f > 0
+          floorplan.square_feet = f["SquareFeet"]["Min"]
+        else
+          floorplan.square_feet = f["SquareFeet"]["Max"]
+        end
       end
-      if f["MarketRent"]["Min"].to_f > 0
-        floorplan.market_rent = f["MarketRent"]["Min"]
-      else
-        floorplan.market_rent = f["MarketRent"]["Max"]
+      unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+        if f["MarketRent"]["Min"].to_f > 0
+          floorplan.market_rent = f["MarketRent"]["Min"]
+        else
+          floorplan.market_rent = f["MarketRent"]["Max"]
+        end
       end
+
       floorplan.save(validate: false)
 
     end
@@ -158,7 +192,10 @@ class ZarembaStaticService < BaseService
 
     floorplan = Floorplan.where(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: floorplans["IDValue"]).first_or_initialize
     floorplan.property_id = property_id
-    floorplan.name = floorplans["Name"]
+    unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+      floorplan.name = floorplans["Name"]
+    end
+
     floorplan.unit_count = floorplans["UnitCount"]
     floorplan.units_available = floorplans["UnitsAvailable"]
     if floorplans["Deposit"].present? # No field for this present
@@ -170,21 +207,31 @@ class ZarembaStaticService < BaseService
     room_types = floorplans["Room"]
     room_types.each do |rt|
       if rt["RoomType"] == "Bedroom"
-        floorplan.bedrooms = rt["Count"]
+        unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+          floorplan.bedrooms = rt["Count"]
+        end
       else
-        floorplan.bathrooms = rt["Count"]
+        unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+          floorplan.bathrooms = rt["Count"]
+        end
+
       end
     end
-    if floorplans["SquareFeet"]["Min"].to_f > 0
-      floorplan.square_feet = floorplans["SquareFeet"]["Min"]
-    else
-      floorplan.square_feet = floorplans["SquareFeet"]["Max"]
+    unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+      if floorplans["SquareFeet"]["Min"].to_f > 0
+        floorplan.square_feet = floorplans["SquareFeet"]["Min"]
+      else
+        floorplan.square_feet = floorplans["SquareFeet"]["Max"]
+      end
     end
-    if floorplans["MarketRent"]["Min"].to_f > 0
-      floorplan.market_rent = floorplans["MarketRent"]["Min"]
-    else
-      floorplan.market_rent = floorplans["MarketRent"]["Max"]
+    unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+      if floorplans["MarketRent"]["Min"].to_f > 0
+        floorplan.market_rent = floorplans["MarketRent"]["Min"]
+      else
+        floorplan.market_rent = floorplans["MarketRent"]["Max"]
+      end
     end
+
     floorplan.save(validate: false)
 
   end

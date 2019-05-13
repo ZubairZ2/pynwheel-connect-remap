@@ -47,35 +47,53 @@ class ResmanService < BaseService
       vacateDate = ""
       unit = Unit.find_by(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"])#.first_or_initialize
       if unit.present?
-        unless unit.manual_override
 
-          # unit.property_id = property_id
-          # unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-          # unit.marketing_name = u["Id"]
-          # unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
-          unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+        # unit.property_id = property_id
+        # unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
+        # unit.marketing_name = u["Id"]
+        # unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
+
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
             unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
           elsif u["EffectiveRent"].present?
             unit.effective_rent = u["EffectiveRent"]["Avg"]
           end
-          # unit.floor = u["FloorLevel"]
-          if u["Availability"].present?
+        end
+
+        # unit.floor = u["FloorLevel"]
+        if u["Availability"].present?
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Unoccupied"
-            year = u["Availability"]["VacateDate"]["Year"]
-            month = u["Availability"]["VacateDate"]["Month"]
-            day = u["Availability"]["VacateDate"]["Day"]
-            vacateDate = Date.parse("#{year}-#{month}-#{day}")
-          else
+          end
+
+          year = u["Availability"]["VacateDate"]["Year"]
+          month = u["Availability"]["VacateDate"]["Month"]
+          day = u["Availability"]["VacateDate"]["Day"]
+          vacateDate = Date.parse("#{year}-#{month}-#{day}")
+        else
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Occupied"
           end
-          unit.available_date = vacateDate
-          # building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
-          # unit.building = building.present? ? building.gsub("Building ", "") : ""
-          # unit.manually_updated = false
-          unit.availability_url = availability_url if availability_url.present?
-          unit.save(validate: false)
         end
+        unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
+          if unit.availability == "Unoccupied"
+            unit.available = true
+          else
+            unit.available = false
+          end
+        end
+
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+          unit.available_date = vacateDate
+        end
+
+        # building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
+        # unit.building = building.present? ? building.gsub("Building ", "") : ""
+        # unit.manually_updated = false
+        unit.availability_url = availability_url if availability_url.present?
+        unit.save(validate: false)
+
       end
     end
   end
@@ -84,36 +102,38 @@ class ResmanService < BaseService
     floorplans.each do |f|
       floorplan = Floorplan.find_by(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["Id"])#.first_or_initialize
       if floorplan.present?
-        unless floorplan.manual_override
-          # floorplan.property_id = property_id
-          # floorplan.name = f["Name"]
-          # floorplan.unit_count = f["UnitCount"]
-          # floorplan.units_available = f["UnitsAvailable"]
-          # floorplan.deposit = f["Deposit"]["Amount"]["Value"]
-          # if f["FloorplanAvailabilityURL"].present?
-          #   floorplan.availability_url = f["FloorplanAvailabilityURL"]
-          # end
-          # puts  f["FloorplanAvailabilityURL"]
-          # room_types = f["Room"]
-          # room_types.each do |rt|
-          #   if rt["Type"] == "Bedroom"
-          #     floorplan.bedrooms = rt["Count"]
-          #   else
-          #     floorplan.bathrooms = rt["Count"]
-          #   end
-          # end
-          # if f["SquareFeet"]["Min"].to_f > 0
-          #   floorplan.square_feet = f["SquareFeet"]["Min"]
-          # else
-          #   floorplan.square_feet = f["SquareFeet"]["Max"]
-          # end
+        # floorplan.property_id = property_id
+        # floorplan.name = f["Name"]
+        # floorplan.unit_count = f["UnitCount"]
+        # floorplan.units_available = f["UnitsAvailable"]
+        # floorplan.deposit = f["Deposit"]["Amount"]["Value"]
+        # if f["FloorplanAvailabilityURL"].present?
+        #   floorplan.availability_url = f["FloorplanAvailabilityURL"]
+        # end
+        # puts  f["FloorplanAvailabilityURL"]
+        # room_types = f["Room"]
+        # room_types.each do |rt|
+        #   if rt["Type"] == "Bedroom"
+        #     floorplan.bedrooms = rt["Count"]
+        #   else
+        #     floorplan.bathrooms = rt["Count"]
+        #   end
+        # end
+        # if f["SquareFeet"]["Min"].to_f > 0
+        #   floorplan.square_feet = f["SquareFeet"]["Min"]
+        # else
+        #   floorplan.square_feet = f["SquareFeet"]["Max"]
+        # end
+        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
           if f["MarketRent"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["Min"]
           else
             floorplan.market_rent = f["MarketRent"]["Max"]
           end
-          floorplan.save
         end
+
+        floorplan.save
+
 
       end
     end

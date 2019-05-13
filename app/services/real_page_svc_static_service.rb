@@ -56,21 +56,34 @@ class RealPageSvcStaticService < BaseService
               fp = fp[:FloorPlanObject]
               floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
 
-              if fp[:FloorPlanNameMarketing].present?
-                floorplan.name = fp[:FloorPlanNameMarketing]
-              elsif fp[:FloorPlanCode].present?
-                if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+              unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+
+                if fp[:FloorPlanNameMarketing].present?
+                  floorplan.name = fp[:FloorPlanNameMarketing]
+                elsif fp[:FloorPlanCode].present?
+                  if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                    floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                  else
+                    floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                  end
                 else
-                  floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                  floorplan.name = fp[:FloorPlanName]
                 end
-              else
-                floorplan.name = fp[:FloorPlanName]
               end
-              floorplan.bathrooms = fp[:Bathrooms]
-              floorplan.bedrooms = fp[:Bedrooms]
-              # floorplan.market_rent = fp[:RentMin]
-              floorplan.square_feet = fp[:GrossSquareFootage]
+              unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+                floorplan.bathrooms = fp[:Bathrooms]
+              end
+
+              unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+                floorplan.bedrooms = fp[:Bedrooms]
+              end
+              unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+                floorplan.square_feet = fp[:GrossSquareFootage]
+              end
+              unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+                floorplan.market_rent = fp[:RentMin]
+              end
+
               floorplan.save(:validate => false)
 
             end
@@ -139,30 +152,50 @@ class RealPageSvcStaticService < BaseService
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
-                unit.marketing_name = u[:UnitNumber]
+                unless unit.name_is_updated.present? && unit.name_is_updated
+                  unit.marketing_name = u[:UnitNumber]
+                end
 
-                unit.floorplan_id = u[:FloorplanID]
+                unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+                  unit.floorplan_id = u[:FloorplanID]
+                end
 
                 # unit.market_rent = u[:BaseRentAmount]
-                unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
-                # unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                  unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
+                end
+
+                unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+                  unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                end
                 if u[:RentSqFtCount].present?
                   unit.square_feet = u[:RentSqFtCount]
                 end
                 #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                unit.floor = u[:FloorNumber] rescue nil
-                if u[:AvailableDate].present?
-                  unit.available_date = u[:AvailableDate]
+                unless unit.floor_is_updated.present? && unit.floor_is_updated
+                  unit.floor = u[:FloorNumber] rescue nil
                 end
+                unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+                  if u[:AvailableDate].present?
+                    unit.available_date = u[:AvailableDate]
+                  end
 
-                if u[:MadeReadyDate].present?
-                  unit.available_date = u[:MadeReadyDate]
+                  if u[:MadeReadyDate].present?
+                    unit.available_date = u[:MadeReadyDate]
+                  end
+                  if unit.available_date.year == 1900
+                    unit.available_date = ""
+                  end
+                  if unit.availability == "Occupied" #&& unit.available_date < Date.today
+                    unit.available_date = ""
+                  end
                 end
-                if unit.available_date.year == 1900
-                  unit.available_date = ""
-                end
-                if unit.availability == "Occupied" #&& unit.available_date < Date.today
-                  unit.available_date = ""
+                unless unit.available_is_updated.present? && unit.available_is_updated
+                  if unit.availability == "Occupied"
+                    unit.available = false
+                  else
+                    unit.available = true
+                  end
                 end
 
                 if unit.available_date.present?
@@ -337,7 +370,9 @@ class RealPageSvcStaticService < BaseService
 
                   if best_price.present?
                     unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, provider_unit_id: unit_no.to_i)
-                    unit.effective_rent = best_price
+                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                      unit.effective_rent = best_price
+                    end
                     unit.lease_pricing = rentStr
                     unit.save(:validate => false)
                     # @doc = @doc + response.body
