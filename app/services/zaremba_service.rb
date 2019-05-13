@@ -72,24 +72,33 @@ class ZarembaService < BaseService
           # unit.unit_type = u["UnitType"]
           # unit.marketing_name = u["MarketingName"]
           # unit.floorplan_id = u["Units"]["Unit"]["Identification"][1]["IDValue"]
-          unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-          if u["MarketRent"].present?
-            unit.effective_rent = u["MarketRent"]
-          elsif u["EffectiveRent"].present?
-            unit.effective_rent = u["EffectiveRent"]["Min"]
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
+            unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+            if u["MarketRent"].present?
+              unit.effective_rent = u["MarketRent"]
+            elsif u["EffectiveRent"].present?
+              unit.effective_rent = u["EffectiveRent"]["Min"]
+            end
           end
+
           # unit.floor = u["FloorLevel"]
-          if u["Availability"]["VacancyClass"] == "Vacant"
-            unit.availability = "Unoccupied"
-            unit.available = true;
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+            if u["Availability"]["VacancyClass"] == "Vacant"
+              unit.availability = "Unoccupied"
+              unit.available = true
+            end
           end
+
           if u["Availability"]["VacancyClass"] == "Vacant"
             year = u["Availability"]["VacateDate"]["Year"]
             month = u["Availability"]["VacateDate"]["Month"]
             day = u["Availability"]["VacateDate"]["Day"]
             vacateDate = Date.parse("#{year}-#{month}-#{day}")
           end
-          unit.available_date = vacateDate
+          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
+            unit.available_date = vacateDate
+          end
+
           # building = u["BuildingID"]
           # unit.building = building.present? ? building.gsub("Building ", "") : ""
           # unit.manually_updated = false
@@ -103,35 +112,37 @@ class ZarembaService < BaseService
     floorplans.each do |f|
       floorplan = Floorplan.find_by(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"])#.first_or_initialize
       if floorplan.present?
-        unless floorplan.manual_override
-          # floorplan.property_id = property_id
-          # floorplan.name = f["Name"]
-          # floorplan.unit_count = f["UnitCount"]
-          floorplan.units_available = f["UnitsAvailable"]
+        # floorplan.property_id = property_id
+        # floorplan.name = f["Name"]
+        # floorplan.unit_count = f["UnitCount"]
+        floorplan.units_available = f["UnitsAvailable"]
 
-          # if f["FloorplanAvailabilityURL"].present?
-          #   floorplan.availability_url = f["FloorplanAvailabilityURL"]
-          # end
-          # room_types = f["Room"]
-          # room_types.each do |rt|
-          #   if rt["RoomType"] == "Bedroom"
-          #     floorplan.bedrooms = rt["Count"]
-          #   else
-          #     floorplan.bathrooms = rt["Count"]
-          #   end
-          # end
-          # if f["SquareFeet"]["Min"].to_f > 0
-          #   floorplan.square_feet = f["SquareFeet"]["Min"]
-          # else
-          #   floorplan.square_feet = f["SquareFeet"]["Max"]
-          # end
+        # if f["FloorplanAvailabilityURL"].present?
+        #   floorplan.availability_url = f["FloorplanAvailabilityURL"]
+        # end
+        # room_types = f["Room"]
+        # room_types.each do |rt|
+        #   if rt["RoomType"] == "Bedroom"
+        #     floorplan.bedrooms = rt["Count"]
+        #   else
+        #     floorplan.bathrooms = rt["Count"]
+        #   end
+        # end
+        # if f["SquareFeet"]["Min"].to_f > 0
+        #   floorplan.square_feet = f["SquareFeet"]["Min"]
+        # else
+        #   floorplan.square_feet = f["SquareFeet"]["Max"]
+        # end
+        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && !(floorplan.manual_override)
           if f["MarketRent"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["Min"]
           else
             floorplan.market_rent = f["MarketRent"]["Max"]
           end
-          floorplan.save
         end
+
+        floorplan.save
+
       end
     end
   end
@@ -162,11 +173,14 @@ class ZarembaService < BaseService
         # else
         #   floorplan.square_feet = floorplans["SquareFeet"]["Max"]
         # end
-        if floorplans["MarketRent"]["Min"].to_f > 0
-          floorplan.market_rent = floorplans["MarketRent"]["Min"]
-        else
-          floorplan.market_rent = floorplans["MarketRent"]["Max"]
+        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated  && !(floorplan.manual_override)
+          if floorplans["MarketRent"]["Min"].to_f > 0
+            floorplan.market_rent = floorplans["MarketRent"]["Min"]
+          else
+            floorplan.market_rent = floorplans["MarketRent"]["Max"]
+          end
         end
+
         floorplan.save
       end
     end

@@ -26,28 +26,42 @@ class YardiRentCafeService < BaseService
             begin
               unit = Unit.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])#.first_or_initialize
               if unit.present?
-                unless unit.manual_override
-                  # unit.property_id = r["PropertyId"]
-                  # unit.unit_type = r["ApartmentName"]
-                  # unit.marketing_name = r["ApartmentName"]
-                  # unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                  # unit.floorplan_id = r["FloorplanId"]
-                  unit.market_rent = r["MinimumRent"]
+                # unit.property_id = r["PropertyId"]
+                # unit.unit_type = r["ApartmentName"]
+                # unit.marketing_name = r["ApartmentName"]
+                # unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                # unit.floorplan_id = r["FloorplanId"]
+                unit.market_rent = r["MinimumRent"]
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && !(unit.manual_override)
                   unit.effective_rent = r["MinimumRent"]
+                end
+                unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
                   unit.availability = "Unoccupied"
-                  if r["AvailableDate"] != ""
+                end
+                unit.availability = "Unoccupied"
+                if r["AvailableDate"] != ""
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
                     unit.availability = "Unoccupied"
+                  end
+                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
                     unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
-                  else
+                  end
+
+                else
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated
                     unit.availability = "Occupied"
+                  end
+                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
                     unit.available_date = ""
                   end
-                  if unit.effective_rent <= 0
-                    unit.effective_rent = 1.0
-                  end
-                  unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"]
-                  unit.save
+
                 end
+                if unit.effective_rent <= 0
+                  unit.effective_rent = 1.0
+                end
+                unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"]
+                unit.save
+
               end
             rescue => e
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
@@ -81,23 +95,25 @@ class YardiRentCafeService < BaseService
           response.each do |r|
             fp = Floorplan.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])#.first_or_initialize
             if fp.present?
-              unless fp.manual_override
-                # fp.property_id = r["PropertyId"]
-                # fp.provider_floorplan_id = r["FloorplanId"]
-                # fp.name = r["FloorplanName"]
-                # fp.unit_count = r[""]
-                # fp.units_available = r[""]
-                # fp.bedrooms = r["Beds"]
-                # fp.bathrooms = r["Baths"]
-                # if r["MinimumSQFT"].present?
-                #   fp.square_feet = r["MinimumSQFT"]
-                # elsif r["SQFT"].present?
-                #   fp.square_feet = r["SQFT"]
-                # end
+              # fp.property_id = r["PropertyId"]
+              # fp.provider_floorplan_id = r["FloorplanId"]
+              # fp.name = r["FloorplanName"]
+              # fp.unit_count = r[""]
+              # fp.units_available = r[""]
+              # fp.bedrooms = r["Beds"]
+              # fp.bathrooms = r["Baths"]
+              # if r["MinimumSQFT"].present?
+              #   fp.square_feet = r["MinimumSQFT"]
+              # elsif r["SQFT"].present?
+              #   fp.square_feet = r["SQFT"]
+              # end
+              unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated && !(fp.manual_override)
                 fp.market_rent = r["MinimumRent"]
-                # fp.deposit = r["MinimumDeposit"]
-                fp.save(validate: false)
               end
+
+              # fp.deposit = r["MinimumDeposit"]
+              fp.save(validate: false)
+
             end
           end
         else 
