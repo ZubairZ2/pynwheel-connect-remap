@@ -3193,6 +3193,16 @@ function adjustHomepagePositionOfLogoWithVerticalApp(value){
         $('#home_page_position_of_logo').val("Top");
     }
 }
+function adjustMenuPositionOfLogoWithVerticalApp(value){
+    if (value)
+    {
+        $('#menu_position_field').children("option[value^=Horizontal]").hide();
+        $('#menu_position_field').val("Vertical");
+        $('#vertical_menu_position').children("option[value^=Right]").hide();
+        $('#vertical_menu_position').children("option[value^=Left]").hide();
+        $('#vertical_menu_position').val("Middle")
+    }
+}
 function setFontSize(value) {
   if (value == "Circular") {
     $('#community_design_attributes_expressionist_attributes_home_page_button_font_size').children("option").hide();

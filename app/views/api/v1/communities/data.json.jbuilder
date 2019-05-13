@@ -99,9 +99,19 @@ json.ui_settigs do
       json.secondary_font_color @community.design.secondary_font_color
     end
     json.menu do
-      json.menu_position @community.design.menu.position
+      if @community.temporary_theme_name == 'modernist' && @community.is_vertical_app
+        json.menu_position "Vertical"
+      else
+        json.menu_position @community.design.menu.position
+      end
+
       json.horizontal_menu_position @community.design.menu.horizontal_menu_position
-      json.vertical_menu_position @community.design.menu.vertical_menu_position
+
+      if @community.temporary_theme_name == 'modernist' && @community.is_vertical_app
+        json.vertical_menu_position "Middle"
+      else
+        json.vertical_menu_position @community.design.menu.vertical_menu_position
+      end
       json.manage_background @community.design.menu.manage_background
       json.background_color @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
       json.primary_color @community.design.primary_color.present? ? @community.design.primary_color : "#CF492F"
@@ -765,7 +775,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.home_page_position_of_logo "Right"
         elsif @community.theme_name == "panther" && @community.is_vertical_app
-          json.home_page_position_of_logo "Tophome_page_menu_position"
+          json.home_page_position_of_logo "Top"
         elsif @community.theme_name == "panther"
           json.home_page_position_of_logo "Bottom center"
         elsif @community.theme_name == "expressionist"  && @community.is_vertical_app && @community.design.expressionist.present? &&(@community.design.expressionist.home_page_position_of_logo == "Right" || @community.design.expressionist.home_page_position_of_logo == "Left")
@@ -871,6 +881,8 @@ json.ui_settigs do
           json.spacing_between_buttons_for_homepage "50px"
         elsif @community.theme_name == "futurist"
           json.spacing_between_buttons_for_homepage "0px"
+        elsif @community.theme_name == "panther" && @community.is_vertical_app
+          json.spacing_between_buttons_for_homepage "50px"
         elsif @community.theme_name == "panther"
           json.spacing_between_buttons_for_homepage "20px"
         elsif @community.theme_name == "modernist"

@@ -14,7 +14,7 @@
               Menu Position
               %span Select position of menu
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control menu-field"}
+              = m.select :position , options_for_select(menu_position,m.object.position),{},{class: "form-control menu-field", id: "menu_position_field"}
       .row#vertical-menu-position
         .col-lg-10
           .form-group.mt-30
@@ -22,7 +22,7 @@
               Vertical Menu Position
               %span Select vertical position of menu
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = m.select :vertical_menu_position , options_for_select(vertical_menu_position,m.object.vertical_menu_position),{},{class: "form-control menu-field"}
+              = m.select :vertical_menu_position , options_for_select(vertical_menu_position,m.object.vertical_menu_position),{},{class: "form-control menu-field", id: "vertical_menu_position"}
       .row#horizontal-menu-position
         .col-lg-10
           .form-group.mt-30
@@ -104,4 +104,5 @@
           .box-footer.mt-30.pt-15 
 :javascript
   var background_color = "#{@community.design.menu.background_color}" 
-  console.log(background_color);                
+  console.log(background_color);
+  adjustMenuPositionOfLogoWithVerticalApp(#{current_community.is_vertical_app});
