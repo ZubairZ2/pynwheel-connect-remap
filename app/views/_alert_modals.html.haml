@@ -130,7 +130,8 @@
         %button.btn.btn-success{"data-dismiss" => "modal",:class =>"publish_changes_btn5 publish_changes_btn", :type => "button"} OK
 
 :javascript
-  $(".welcome_prompt_btn2").on("click",function(e){
+
+  $(".welcome_prompt_btn2").click(function(){
     #{current_user.welcome_prompt = true}
-    #{current_user.save}
+    #{current_user.save unless params["controller"] == "home" && params["action"] == "index"}
   });
