@@ -133,5 +133,5 @@
 
   $(".welcome_prompt_btn2").click(function(){
     #{current_user.welcome_prompt = true}
-    #{current_user.save unless params["controller"] == "home" && params["action"] == "index"}
+    #{current_user.save unless (params["controller"] == "home" && params["action"] == "index") || (params["controller"] == "users" && params["action"] == "profile")}
   });
