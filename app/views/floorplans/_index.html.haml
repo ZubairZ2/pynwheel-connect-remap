@@ -48,12 +48,12 @@
             %tbody
               - @floorplans.map{|x| x.name = '' if x.name.nil? }
               - @floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@floorplans).sort.map{|x,y| y}.each_with_index  do |f,index|
-                %tr{style: "background-color: #{f.manual_override ? "#dd4a39" : ""}; color: #{f.manual_override ? "white" : ""};"}
+                %tr{style: "color: #{f.manual_override ? "#dd4a39" : ""};"}
                   %td= index+1
-                  %td{style: "background-color: #{f.name_is_updated ? "#dd4a39" : ""}; color: #{f.name_is_updated ? "white" : ""}; "}= f.name
-                  %td{style: "background-color: #{f.square_feet_is_updated ? "#dd4a39" : ""}; color: #{f.square_feet_is_updated ? "white" : ""}; "}= f.square_feet.to_i
-                  %td{style: "background-color: #{f.bedroom_is_updated ? "#dd4a39" : ""}; color: #{f.bedroom_is_updated ? "white" : ""}; "}= f.bedrooms.to_i
-                  %td{style: "background-color: #{f.bathroom_is_updated ? "#dd4a39" : ""}; color: #{f.bathroom_is_updated ? "white" : ""}; "}= f.bathrooms
+                  %td{style: "color: #{f.name_is_updated ? "#dd4a39" : ""}; "}= f.name
+                  %td{style: "color: #{f.square_feet_is_updated ? "#dd4a39" : ""}; "}= f.square_feet.to_i
+                  %td{style: "color: #{f.bedroom_is_updated ? "#dd4a39" : ""}; "}= f.bedrooms.to_i
+                  %td{style: "color: #{f.bathroom_is_updated ? "#dd4a39" : ""}; "}= f.bathrooms
                   -#%td= raw(f.description)
                   %td
                     = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
@@ -65,9 +65,9 @@
                       .drop-img.drop-img-left.image-holder{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id,style: "color: #{f.manual_override ? "black" : ""};"}
                   %td
                     %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
-                      %i.fa.fa-edit{style: "color: #{f.manual_override ? "white" : ""};"}
+                      %i.fa.fa-edit
                     %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
-                      %i.fa.fa-trash{style: "color: #{f.manual_override ? "white" : ""};"}
+                      %i.fa.fa-trash
 
       
 / End Panel left Side
