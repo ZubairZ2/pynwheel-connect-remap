@@ -42,7 +42,7 @@ class UnitsController < ApplicationController
           @unit.available_is_updated = true
         end
         @unit.available = true
-      else
+      elsif (params[:unit][:availability].present? && params[:unit][:availability] == "Occupied")
         if @unit.available == true
           @unit.available_is_updated = true
         end
