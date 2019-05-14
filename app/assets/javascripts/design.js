@@ -3183,6 +3183,8 @@ function adjustHomepagePositionOfLogoWithVerticalApp(value){
         $('#home_page_position_of_logo').children("option[value^=Bottom]").show();
         $('#home_page_position_of_logo').children("option[value^=Right]").hide();
         $('#home_page_position_of_logo').children("option[value^=Left]").hide();
+        $('#home_page_position_of_logo').children("option[value^=Bottom]").hide();
+
     }
     if ($('#home_page_menu_position').val() == "Top" || $('#home_page_menu_position').val() == "Middle" || $('#home_page_menu_position').val() == "Bottom")
     {

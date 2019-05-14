@@ -777,7 +777,11 @@ json.ui_settigs do
         elsif @community.theme_name == "panther"
           json.home_page_position_of_logo "Bottom center"
         elsif @community.theme_name == "expressionist"  && @community.is_vertical_app
-          json.home_page_position_of_logo "Top"
+          if @community.design.expressionist.present? && (@community.design.expressionist.home_page_position_of_logo == "Left" || @community.design.expressionist.home_page_position_of_logo == "Right")
+            json.home_page_position_of_logo "Top"
+          else
+            json.home_page_position_of_logo @community.design.expressionist.home_page_position_of_logo.sub '=',''
+          end
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
           json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? (@community.design.expressionist.home_page_position_of_logo.sub '=','') : "Right"
         else
