@@ -23,27 +23,19 @@
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 = text_field_tag :apartment_page_name, @community.apartment_page_name, :class=>"form-control apartment-setting-field"
 
+            -#.form-group
+            -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+            -#    Show property map/floor plans page
+            -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            -#    .TriSea-technologies-Switch
+            -#      %span.pr-15 No
+            -#      = check_box_tag :show_apartment, true, @community.show_apartment, class: "apartment-setting"
+            -#      %label.label-primary{:for => "show_apartment"}
+            -#      %span.pl-15 Yes
+
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                Show this page
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :show_apartment, true, @community.show_apartment, class: "apartment-setting"
-                  %label.label-primary{:for => "show_apartment"}
-                  %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                Display Rent
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :display_rent, true, @community.display_rent, class: "apartment-setting-field"
-                  %label.label-primary{:for => "display_rent"}
-                  %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                Display property map/floorplate
+                Show property map page
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
@@ -52,12 +44,30 @@
                   %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                Display floorplan gallery
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :display_floorplan_gallery, true, @community.display_floorplan_gallery, class: "apartment-setting-field"
+                  %label.label-primary{:for => "display_floorplan_gallery"}
+                  %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                 Display on home page
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting"
+                  = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting-field"
                   %label.label-primary{:for => "display_unit_on_homepage"}
+                  %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                Display Price
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :display_rent, true, @community.display_rent, class: "apartment-setting-field"
+                  %label.label-primary{:for => "display_rent"}
                   %span.pl-15 Yes
 
             = submit_tag 'Save', class: "hidden"
@@ -223,24 +233,7 @@
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
   });
-  $('#show_apartment').change(function(){
-    if (!($(this).is(':checked')))
-    {
-      $('#display_unit_on_homepage').prop('checked',false);
-    }
-    $('.apartment-settings-form').submit();
-  });
-  $('#display_unit_on_homepage').change(function(){
-    if (!($('#show_apartment').is(':checked')))
-    {
-      $('#display_unit_on_homepage').prop('checked',false);
 
-    }
-    else
-    {
-      $('.apartment-settings-form').submit();
-    }
-  });
   var arr = #{raw arr};
   var lmargin = #{raw left_margin}
   var rmargin = #{raw right_margin}
