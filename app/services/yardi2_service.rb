@@ -86,6 +86,7 @@ class Yardi2Service < BaseService
             end
           end
           unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+
             unit.available_date = vacate_date
           end
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override

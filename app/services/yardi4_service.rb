@@ -158,6 +158,7 @@ class Yardi4Service < BaseService
           unit.availability = is_available ? "Unoccupied" : "Occupied"
         end
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+
           unit.available_date = vacate_date
         end
         unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override

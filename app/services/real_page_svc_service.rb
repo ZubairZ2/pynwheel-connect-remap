@@ -166,6 +166,9 @@ class RealPageSvcService < BaseService
                   end
                   if unit.availability == "Occupied" #&& unit.available_date < Date.today
                     unit.available_date = ""
+                    unit.available = false
+                  else
+                    unit.available = true
                   end
                 end
 

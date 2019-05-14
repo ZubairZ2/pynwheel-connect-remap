@@ -121,6 +121,7 @@ class Yardi2StaticService < BaseService
               unit.available = true
             end
           end
+
           unit.manually_updated = false
           unit.save(validate: false)
         end

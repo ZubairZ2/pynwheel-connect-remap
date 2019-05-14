@@ -88,6 +88,7 @@ class ResmanStaticService < BaseService
         end
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated
           unit.available_date = vacateDate
+
         end
         unless unit.building_is_updated.present? && unit.building_is_updated
           building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]

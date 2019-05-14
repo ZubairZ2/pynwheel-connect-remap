@@ -69,6 +69,7 @@ class YardiRentCafeStaticService < BaseService
                   else
                     unit.available = true
                   end
+
                 end
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0

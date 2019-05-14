@@ -196,6 +196,7 @@ class RealPageSvcStaticService < BaseService
                   else
                     unit.available = true
                   end
+
                 end
 
                 if unit.available_date.present?

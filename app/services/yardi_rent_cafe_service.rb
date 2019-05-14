@@ -44,6 +44,7 @@ class YardiRentCafeService < BaseService
                     unit.availability = "Unoccupied"
                   end
                   unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+
                     unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
                   end
 
@@ -52,6 +53,7 @@ class YardiRentCafeService < BaseService
                     unit.availability = "Occupied"
                   end
                   unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+
                     unit.available_date = ""
                   end
 

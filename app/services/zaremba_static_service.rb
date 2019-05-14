@@ -118,6 +118,7 @@ class ZarembaStaticService < BaseService
         else
           unit.available = false
         end
+
       end
       if u["Availability"]["VacancyClass"] == "Vacant"
         year = u["Availability"]["VacateDate"]["Year"]

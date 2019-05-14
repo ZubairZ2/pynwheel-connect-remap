@@ -89,6 +89,7 @@ class ZarembaService < BaseService
               unit.availability = "Occupied"
               unit.available = false
             end
+
           end
 
           if u["Availability"]["VacancyClass"] == "Vacant"
