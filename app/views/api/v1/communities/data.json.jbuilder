@@ -774,8 +774,6 @@ json.ui_settigs do
           json.home_page_position_of_logo "Right"
         elsif @community.theme_name == "modernist1"
           json.home_page_position_of_logo "Right"
-        elsif @community.theme_name == "panther" && @community.is_vertical_app
-          json.home_page_position_of_logo "=Bottom center"
         elsif @community.theme_name == "panther"
           json.home_page_position_of_logo "Bottom center"
         elsif @community.theme_name == "expressionist"  && @community.is_vertical_app && @community.design.expressionist.present? &&(@community.design.expressionist.home_page_position_of_logo == "Right" || @community.design.expressionist.home_page_position_of_logo == "Left")
