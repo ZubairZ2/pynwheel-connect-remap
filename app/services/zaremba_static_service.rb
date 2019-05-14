@@ -101,7 +101,10 @@ class ZarembaStaticService < BaseService
       unit.floor = u["FloorLevel"]
       if u["Availability"]["VacancyClass"] == "Vacant"
         unit.availability = "Unoccupied"
-        unit.available = true;
+        unit.available = true
+      else
+        unit.availability = "Occupied"
+        unit.available = false
       end
       if u["Availability"]["VacancyClass"] == "Vacant"
         year = u["Availability"]["VacateDate"]["Year"]

@@ -150,6 +150,11 @@ class Yardi4Service < BaseService
             unit.lease_pricing = nil
           end
           unit.availability = is_available ? "Unoccupied" : "Occupied"
+          if unit.availability = "Unoccupied"
+            unit.available = true
+          else
+            unit.available = false
+          end
           unit.available_date = vacate_date
           unit.save
         end

@@ -84,6 +84,11 @@ class Yardi2Service < BaseService
               end
             end
             unit.availability = is_available ? "Unoccupied" : "Occupied"
+            if unit.availability = "Unoccupied"
+              unit.available = true
+            else
+              unit.available = false
+            end
             unit.available_date = vacate_date
             unit.save
           end

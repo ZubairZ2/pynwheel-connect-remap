@@ -37,6 +37,17 @@ class UnitsController < ApplicationController
 
     respond_to do |format|
       ######## save item that updated
+      if (params[:unit][:availability].present? && params[:unit][:availability] == "Unoccupied")
+        if @unit.available == false
+          @unit.available_is_updated = true
+        end
+        @unit.available = true
+      else
+        if @unit.available == true
+          @unit.available_is_updated = true
+        end
+        @unit.available = false
+      end
       if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name )
         @unit.name_is_updated = true
       end
@@ -48,8 +59,9 @@ class UnitsController < ApplicationController
       end
       if (params[:unit][:available].present? && params[:unit][:available] != @unit.available)
         @unit.available_is_updated = true
+        @unit.availability_is_updated = true
       end
-      if (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold)
+      if (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold && @unit.sold.present?)
         @unit.sold_is_updated = true
       end
       if (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date)
@@ -58,6 +70,7 @@ class UnitsController < ApplicationController
       if (params[:unit][:floor].present? && params[:unit][:floor] != @unit.floor.to_i.to_s)
         @unit.floor_is_updated = true
       end
+
       ########
       if @unit.manual_override
         if params[:unit][:description].present?

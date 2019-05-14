@@ -71,6 +71,8 @@ class XmlStaticService < BaseService
           unit.availability = u["Availability"]["VacancyClass"]
           if u["Availability"]["VacancyClass"] == "Unoccupied"
             unit.available = true
+          else
+            unit.available = false
           end
           if u["Availability"]["VacateDate"].present?
             year = u["Availability"]["VacateDate"]["Year"]

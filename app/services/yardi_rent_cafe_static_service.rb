@@ -36,9 +36,11 @@ class YardiRentCafeStaticService < BaseService
                 unit.availability = "Unoccupied"
                 if r["AvailableDate"] != ""
                   unit.availability = "Unoccupied"
+                  unit.available = true
                   unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
                 else
                   unit.availability = "Occupied"
+                  unit.available = false
                   unit.available_date = ""
                 end
                 if unit.effective_rent <= 0

@@ -57,12 +57,14 @@ class ResmanStaticService < BaseService
         unit.floor = u["FloorLevel"]
         if u["Availability"].present?
           unit.availability = "Unoccupied"
+          unit.available = true
           year = u["Availability"]["VacateDate"]["Year"]
           month = u["Availability"]["VacateDate"]["Month"]
           day = u["Availability"]["VacateDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
         else
           unit.availability = "Occupied"
+          unit.available = false
         end
         unit.available_date = vacateDate
         building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
