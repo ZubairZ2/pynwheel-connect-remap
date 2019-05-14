@@ -123,7 +123,7 @@ class UnitsController < ApplicationController
     end
     if params[:unit][:available] == 'true'
 
-      @unit.update_attributes(availability: "Unoccupied",available_date: Date.today-1,available: true)
+      @unit.update_attributes(availability: "Unoccupied",available: true)
     end
     if params[:unit][:available] == 'false'
       @unit.update_attributes(availability: "Occupied",available: false)
