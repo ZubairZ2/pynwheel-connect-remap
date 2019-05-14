@@ -155,6 +155,7 @@ class PsiStaticService < BaseService
 
   def fill_psi_pricing_details
     floorplanHash = Hash.new
+    arr = []
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -174,7 +175,8 @@ class PsiStaticService < BaseService
                                          "params": {
                                              "propertyId": property_id,
                                              "availableUnitsOnly": "0",
-                                             "showUnitSpaces": "1"
+                                             "showUnitSpaces": "1",
+                                             "useSpaceConfiguration": "1"
                                          }
                                      }
                                  }.to_json,
@@ -190,6 +192,7 @@ class PsiStaticService < BaseService
           psi_units.each do |u|
             u['UnitSpace'].each do |us|
 
+                # arr << u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s
                 if u['UnitSpace'].count == 1
                   unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                   unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
@@ -230,12 +233,12 @@ class PsiStaticService < BaseService
                 else
                   unit.effective_rent = 0.0
                 end
-                rentStr = ""
-                if us[1]["Rent"]["TermRent"].count > 1
-                  us[1]["Rent"]["TermRent"].each do |tr|
-                    rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
-                  end
-                end
+                # rentStr = ""
+                # if us[1]["Rent"]["TermRent"].count > 1
+                #   us[1]["Rent"]["TermRent"].each do |tr|
+                #     rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
+                #   end
+                # end
                 rentStr = ""
                 if us[1]["Rent"]["TermRent"].count > 1
                   us[1]["Rent"]["TermRent"].each do |tr|
@@ -245,6 +248,7 @@ class PsiStaticService < BaseService
                 unit.lease_pricing = rentStr
 
                 unit.save(validate: false)
+              # arr << unit.marketing_name
               rescue => ex
                 puts "---------------- filling pricing inside loop", ex.message
               end
@@ -252,7 +256,8 @@ class PsiStaticService < BaseService
           end
           #else
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
-        end
+        # puts arr
+      end
       rescue => e
         puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
