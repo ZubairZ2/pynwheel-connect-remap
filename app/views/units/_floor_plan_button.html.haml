@@ -1,16 +1,16 @@
-.box.box-widget.panel-box.add-plan.pt-30
-  = form_tag community_save_floor_plan_button_path(@community) ,{:class => 'apartment-settings-form'} do
-    = hidden_field_tag "community_id", @community.id
-    .form-group
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-        Display floorplan gallery
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        .TriSea-technologies-Switch
-          %span.pr-15 No
-          = check_box_tag :display_floorplan_gallery, true, @community.display_floorplan_gallery, class: "apartment-setting-field"
-          %label.label-primary{:for => "display_floorplan_gallery"}
-          %span.pl-15 Yes
-    = submit_tag 'Save', class: "hidden"
+-#.box.box-widget.panel-box.add-plan.pt-30
+= form_tag community_save_floor_plan_button_path(@community) ,{:class => 'apartment-settings-form'} do
+  = hidden_field_tag "community_id", @community.id
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+      Display floorplan gallery
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      .TriSea-technologies-Switch
+        %span.pr-15 No
+        = check_box_tag :display_floorplan_gallery, true, @community.display_floorplan_gallery, class: "apartment-setting-field"
+        %label.label-primary{:for => "display_floorplan_gallery"}
+        %span.pl-15 Yes
+  = submit_tag 'Save', class: "hidden"
 
 :javascript
   $('.apartment-setting-field').change(function(){

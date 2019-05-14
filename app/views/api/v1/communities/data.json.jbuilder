@@ -1227,10 +1227,10 @@ json.apartments do
   else
     json.map_type "sitemap"
   end
-  if !(@community.display_sitemap || @community.display_floorplan_gallery)
+  if (@community.display_sitemap && @community.display_floorplan_gallery)
     json.show_apartment_page  false
   else
-    json.show_apartment_page @community.show_apartment
+    json.show_apartment_page true
   end
   json.apartment_page_name @community.apartment_page_name
   json.display_rent @community.display_rent
