@@ -1195,10 +1195,10 @@ json.apartments do
   else
     json.map_type "sitemap"
   end
-  if (@community.display_sitemap && @community.display_floorplan_gallery)
-    json.show_apartment_page  false
+  if (@community.display_sitemap || @community.display_floorplan_gallery)
+    json.show_apartment_page  true
   else
-    json.show_apartment_page true
+    json.show_apartment_page false
   end
   json.apartment_page_name @community.apartment_page_name
   json.display_rent @community.display_rent
