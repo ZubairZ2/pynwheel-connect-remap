@@ -117,9 +117,9 @@
                         = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
-                        %i.fa.fa-edit
+                        %i.fa.fa-edit.icon_size
                       %a.text-danger{"data-name"=>"Unit","data-href" => "#{community_unit_path(@community,u)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
-                        %i.fa.fa-trash
+                        %i.fa.fa-trash.icon_size
 
 #modal-to-change-floor.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog

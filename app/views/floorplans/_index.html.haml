@@ -65,9 +65,10 @@
                       .drop-img.drop-img-left.image-holder{:ondragover => "allowDrop(event)", :ondrop => "drop(event)",:id=>f.id,style: "color: #{f.manual_override ? "black" : ""};"}
                   %td
                     %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
-                      %i.fa.fa-edit
+
+                      %i.fa.fa-edit.icon_size{style: "color: #{f.manual_override ? "white" : ""};"}
                     %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
-                      %i.fa.fa-trash
+                      %i.fa.fa-trash.icon_size{style: "color: #{f.manual_override ? "white" : ""};"}
 
       
 / End Panel left Side

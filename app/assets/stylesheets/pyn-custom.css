@@ -3021,4 +3021,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     border-top: none;
     padding: 0px;
+.icon_size
+{
+    font-size: large;
 }
