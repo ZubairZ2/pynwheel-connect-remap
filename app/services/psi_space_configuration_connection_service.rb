@@ -1,4 +1,4 @@
-class PsiPricingConnectionService < BaseService
+class PsiSpaceConfigurationConnectionService < BaseService
   def perform
     begin
       url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
@@ -18,7 +18,8 @@ class PsiPricingConnectionService < BaseService
                                        "params": {
                                            "propertyId": property_id,
                                            "availableUnitsOnly": "0",
-                                           "showUnitSpaces": "1"
+                                           "showUnitSpaces": "1",
+                                           "useSpaceConfiguration": "1"
                                        }
                                    }
                                }.to_json,
@@ -43,17 +44,24 @@ class PsiPricingConnectionService < BaseService
         # byebug
         psi_unit = "<Units>"
         hash["response"]["result"]["PropertyUnits"]["PropertyUnit"].each do |u|
-          # byebug
           psi_unit = psi_unit+ "<Unit><Id>"+u['@attributes']['Id'].to_s+"</Id><UnitNumber>"+u['@attributes']['UnitNumber']+"</UnitNumber><FloorplanId>"+u['@attributes']['FloorplanId'].to_s+"</FloorplanId><UnitTypeId>"+u['@attributes']['UnitTypeId'].to_s+"</UnitTypeId>
           <PropertyId>"+u['@attributes']['PropertyId'].to_s+"</PropertyId><FloorPlanName>"+u['@attributes']['FloorPlanName']+"</FloorPlanName><FloorId>"+u['@attributes']['FloorId'].to_s+"
           </FloorId>"
           u['UnitSpace'].each do |us|
-            # byebug
-            psi_unit = psi_unit + "<UnitSpace><Id>"+us[1]["@attributes"]["Id"].to_s+"</Id><UnitNumber>"+us[1]["@attributes"]["UnitNumber"].to_s+"</UnitNumber><Availability>"+us[1]["@attributes"]["Availability"]+"</Availability><Status>"+us[1]["@attributes"]["Status"]+"</Status>"
+            spaceId = us[1]["@attributes"]["Id"].present? ? us[1]["@attributes"]["Id"].to_s : "" rescue ""
+            spaceUnitNumber = us[1]["@attributes"]["UnitNumber"].present? ? us[1]["@attributes"]["UnitNumber"].to_s : "" rescue ""
+            spaceAvailability = us[1]["@attributes"]["Availability"].present? ? us[1]["@attributes"]["Availability"] : "" rescue ""
+            spaceStatus = us[1]["@attributes"]["Status"].present? ? us[1]["@attributes"]["Status"] : "" rescue ""
+            spaceConfiguration = us[1]["@attributes"]["SpaceConfiguration"].present? ? us[1]["@attributes"]["SpaceConfiguration"]: "" rescue ""
+            psi_unit = psi_unit + "<UnitSpace><Id>"+spaceId+"</Id><UnitNumber>"+spaceUnitNumber+"</UnitNumber><Availability>"+spaceAvailability+"</Availability><Status>"+spaceStatus+"</Status><SpaceConfiguration>"+spaceConfiguration+"</SpaceConfiguration>"
             psi_unit = psi_unit + "<TermRent>"
             us[1]["Rent"]["TermRent"].each do |rent|
-              # byebug
-              psi_unit = psi_unit + "<LeaseTerm>"+rent["@attributes"]["LeaseTerm"].to_s+ "</LeaseTerm><Rent>"+rent["@attributes"]["Rent"].to_s+"</Rent>"
+              leaseTerm = rent["@attributes"]["LeaseTerm"].present? ? rent["@attributes"]["LeaseTerm"].to_s : "" rescue ""
+              rentPrice = rent["@attributes"]["Rent"].present? ? rent["@attributes"]["Rent"].to_s : "" rescue ""
+              spaceOption = rent["@attributes"]["SpaceOption"].present? ? rent["@attributes"]["SpaceOption"] : "" rescue ""
+              startDate = rent["@attributes"]["StartDate"].present? ? rent["@attributes"]["StartDate"] : "" rescue ""
+              endDate = rent["@attributes"]["EndDate"].present? ? rent["@attributes"]["EndDate"] : "" rescue ""
+              psi_unit = psi_unit + "<LeaseTerm>"+leaseTerm+ "</LeaseTerm><Rent>"+rentPrice+"</Rent><SpaceOption>"+spaceOption+"</SpaceOption><StartDate>"+startDate+"</StartDate><EndDate>"+endDate+"</EndDate>"
             end
             psi_unit = psi_unit + "</TermRent>"
             psi_unit = psi_unit + "<Rent>"+us[1]["Rent"]["@attributes"]["MinRent"].to_s+"</Rent>"
@@ -71,7 +79,7 @@ class PsiPricingConnectionService < BaseService
       api_result
 
 
-      # hash.to_xml
+        # hash.to_xml
     rescue => e
       false
     end

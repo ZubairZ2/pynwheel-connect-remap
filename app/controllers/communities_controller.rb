@@ -218,15 +218,29 @@ class CommunitiesController < ApplicationController
             render :xml => Nokogiri::XML(@community.realpage_pricing_data)
           end
         else
-          render :json => xml
+          render :xml => xml
         end
       else
         flash[:error] = "Please enter correct credentials in settings before importing data."
-        redirect_to community_import_page_path(current_community)
+        redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
       flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_import_page_path(current_community)
+      redirect_to community_settings_path(:community_id=>@community.id)
+    end
+  end
+  def psi_space_configuration_test_connection
+    @community = Community.find params[:community_id]
+    if @community.credentials_are_present?
+      if xml = @community.connect_to_pricing_with_space_configuration(@community)
+        render :xml => xml
+      else
+        flash[:error] = "Please enter correct credentials in settings before importing data."
+        redirect_to community_settings_path(:community_id=>@community.id)
+      end
+    else
+      flash[:error] = "Please enter credentials in settings before importing data."
+      redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
   def realpage_load_pricing_data

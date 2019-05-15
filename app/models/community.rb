@@ -337,9 +337,21 @@ class Community < ApplicationRecord
     end
 
   end
+  def connect_to_pricing_with_space_configuration(com)
+    case data_provider
+    when "psi"
+      connect_space_configuration_psi
+    end
+
+  end
+
   def connect_pricing_to_psi
     psi_pricing_connection_service = PsiPricingConnectionService.new(credential.attributes)
     psi_pricing_connection_service.perform
+  end
+  def connect_space_configuration_psi
+    psi_space_configuration_connection_service = PsiSpaceConfigurationConnectionService.new(credential.attributes)
+    psi_space_configuration_connection_service.perform
   end
   def connect_to_realpagesvc_pricing(com)
     RealPageSvcPricingJob.perform_async credential.attributes.to_json
