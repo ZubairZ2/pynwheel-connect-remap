@@ -2808,3 +2808,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 #gallery_header_span{
     color: grey;
 }
+.property_map_intent_list>li>a
+{
+    font-size: 13px !important;
+    color: #94a2a9 !important
+}

@@ -53,7 +53,7 @@
           %span Property Map Page
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
-        %ul.treeview-menu
+        %ul.treeview-menu.property_map_intent_list
           - if (current_community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? ))
             %li{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
               %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
