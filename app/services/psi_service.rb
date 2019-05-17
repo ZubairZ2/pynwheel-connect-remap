@@ -216,77 +216,80 @@ class PsiService < BaseService
         sleep 5
 
         if response["response"]["code"] == 200
-          if response["response"]["result"].include?('No records found')
-          psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-          psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
-          psi_floorplan.each_with_index do |f,index|
-            floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
-          end
-          psi_units.each do |u|
-            u['UnitSpace'].each do |us|
-              begin
-                if u['UnitSpace'].count == 1
-                  unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                  unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                    unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
+          unless response["response"]["result"].include?('No records found')
+            psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
+            psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+            psi_floorplan.each_with_index do |f,index|
+              floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
+            end
+            psi_units.each do |u|
+              u['UnitSpace'].each do |us|
+                begin
+                  if u['UnitSpace'].count == 1
+                    unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                    unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
+                    end
+                  else
+                    unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                    unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                    end
                   end
-                else
-                  unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                  unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                  unless unit.present?
+                    unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
+                  end
+                  unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
                     unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                   end
-                end
-                unless unit.present?
-                  unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
-                end
-                unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
-                  unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                end
-                if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                  unit.availability = 'Unoccupied'
-                  unit.available = true
-                else
-                  unit.availability = 'Occupied'
-                  unit.available = false
-                end
-
-                if us[1]["@attributes"]["AvailableOn"].present?
-                  date = us[1]["@attributes"]["AvailableOn"]
-                  dateSplit = date.split('/')
-                  day = dateSplit[0]
-                  month = dateSplit[1]
-                  year = dateSplit[2]
-                  unit.available_date = Date.parse("#{month}-#{day}-#{year}")
-                end
-                if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                  unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
-                  unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
-                else
-                  unit.effective_rent = 0.0
-                end
-                rentStr = ""
-                if us[1]["Rent"]["TermRent"].count > 1
-                  us[1]["Rent"]["TermRent"].each do |tr|
-                    spaceOption = tr["@attributes"]["SpaceOption"].present? ? tr["@attributes"]["SpaceOption"] : "" rescue ""
-                    startDate = tr["@attributes"]["StartDate"].present? ? tr["@attributes"]["StartDate"] : "" rescue ""
-                    endDate = tr["@attributes"]["EndDate"].present? ? tr["@attributes"]["EndDate"] : "" rescue ""
-                    rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +":"+spaceOption+":"+startDate+":"+endDate+";"
+                  if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                    unit.availability = 'Unoccupied'
+                    unit.available = true
+                  else
+                    unit.availability = 'Occupied'
+                    unit.available = false
                   end
-                end
 
-                unit.lease_pricing = rentStr
-                unit.save(validate: false)
-              rescue => ex
-                puts "---------------- Space configuration inside loop", ex.message
+                  if us[1]["@attributes"]["AvailableOn"].present?
+                    date = us[1]["@attributes"]["AvailableOn"]
+                    dateSplit = date.split('/')
+                    day = dateSplit[0]
+                    month = dateSplit[1]
+                    year = dateSplit[2]
+                    unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                  end
+                  if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                    unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                  elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
+                    unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                  else
+                    unit.effective_rent = 0.0
+                  end
+                  rentStr = ""
+                  begin
+                    if us[1]["Rent"]["TermRent"].count > 0 && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
+                      us[1]["Rent"]["TermRent"].each do |tr|
+                        spaceOption = tr["@attributes"]["SpaceOption"].present? ? tr["@attributes"]["SpaceOption"] : "" rescue ""
+                        startDate = tr["@attributes"]["StartDate"].present? ? tr["@attributes"]["StartDate"] : "" rescue ""
+                        endDate = tr["@attributes"]["EndDate"].present? ? tr["@attributes"]["EndDate"] : "" rescue ""
+                        rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +":"+spaceOption+":"+startDate+":"+endDate+";"
+                      end
+                    end
+                  rescue => rt_ex
+
+                  end
+
+                  unit.lease_pricing = rentStr
+                  unit.save(validate: false)
+                rescue => ex
+                  puts "---------------- Space configuration inside loop", ex.message
+                end
               end
             end
-          end
-          #else
-          #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+            #else
+            #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
           else
             #################################### with unit space pricing
-            
             begin
               url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
               password = credentials.password
@@ -361,10 +364,14 @@ class PsiService < BaseService
                         unit.effective_rent = 0.0
                       end
                       rentStr = ""
-                      if us[1]["Rent"]["TermRent"].count > 1
-                        us[1]["Rent"]["TermRent"].each do |tr|
-                          rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
+                      begin
+                        if us[1]["Rent"]["TermRent"].count > 0 && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
+                          us[1]["Rent"]["TermRent"].each do |tr|
+                            rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
+                          end
                         end
+                      rescue => rt_ex
+
                       end
 
                       unit.lease_pricing = rentStr

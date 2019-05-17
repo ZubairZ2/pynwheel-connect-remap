@@ -311,7 +311,7 @@ class RealPageSvcService < BaseService
                       u[:RentMatrix][1][:Rows][:Row][index][:Options].each_with_index do |opt, ind|
                         next if ind == 0
                         unless unitLeaseTerm.include?(u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s)
-                          rentStr = rentStr + (u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s) + ":" + u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:Rent].gsub(/[\s,]/ ,"")+ ":" + startdate + ":" + u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseEndDate] + ";"
+                          rentStr = rentStr + (u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s) + ":" + u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:Rent].gsub(/[\s,]/ ,"")+ "::" + startdate + ":" + u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseEndDate] + ";"
                           unitLeaseTerm << u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s
                         end
                         # hashData = {(u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s) => [u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:Rent], startdate, u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseEndDate] ]}

@@ -137,7 +137,7 @@ class Yardi4Service < BaseService
                 endDate =  "#{day}/#{month}/#{year}"
 
                 unless unitLeaseTerm.include?(pricing[:Term])
-                  rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +":"+ startDate +":"+ endDate + ";"
+                  rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +"::"+ startDate +":"+ endDate + ";"
                   unitLeaseTerm << pricing[:Term]
                 end
                 # hashData = {(pricing[:Term]) => [ pricing[:EffectiveRent], startDate, endDate ]}
