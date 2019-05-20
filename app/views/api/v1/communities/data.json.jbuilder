@@ -102,22 +102,22 @@ json.ui_settigs do
       if @community.temporary_theme_name == 'modernist' && @community.is_vertical_app
         json.menu_position "Vertical"
       else
-        json.menu_position @community.design.menu.position
+        json.menu_position @community.design.menu.present? ? @community.design.menu.position : nil
       end
 
-      json.horizontal_menu_position @community.design.menu.horizontal_menu_position
+      json.horizontal_menu_position  @community.design.menu.present? ?  @community.design.menu.horizontal_menu_position : nil
 
       if @community.temporary_theme_name == 'modernist' && @community.is_vertical_app
         json.vertical_menu_position "Middle"
       else
-        json.vertical_menu_position @community.design.menu.vertical_menu_position
+        json.vertical_menu_position  @community.design.menu.present? ?  @community.design.menu.vertical_menu_position : nil
       end
-      json.manage_background @community.design.menu.manage_background
-      json.background_color @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
+      json.manage_background  @community.design.menu.present? ?  @community.design.menu.manage_background : nil
+      json.background_color  @community.design.menu.present? && @community.design.menu.background_color.present? ? @community.design.menu.background_color : "#F9AD90"
       json.primary_color @community.design.primary_color.present? ? @community.design.primary_color : "#CF492F"
       json.secondary_color @community.design.secondary_color.present? ? @community.design.secondary_color : "#4F4F4F"
-      json.navigation_text_color @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#636363"
-      json.navigation_background_color @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#FDFDFD"
+      json.navigation_text_color  @community.design.menu.present? && @community.design.menu.navigation_text_color.present? ? @community.design.menu.navigation_text_color : "#636363"
+      json.navigation_background_color  @community.design.menu.present? && @community.design.menu.navigation_background_color.present? ? @community.design.menu.navigation_background_color : "#FDFDFD"
     end
 
     json.gables do
