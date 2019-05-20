@@ -1,11 +1,11 @@
 class PsiService < BaseService
-  @@floorplanHash = Hash.new
+  # @@floorplanHash = Hash.new
   def perform
 
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
-        @@floorplanHash = {}
+        # @@floorplanHash = {}
         if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
           url = credentials.entrata_url
         else
@@ -34,6 +34,7 @@ class PsiService < BaseService
           }.to_json,
           :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
+        sleep 5
         if response["response"]["code"] == 200
           units = []
           floorplans = []
@@ -53,6 +54,15 @@ class PsiService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
+        begin
+          com = Community.find credentials.community_id
+          unless com.entrata_exception_logs.present?
+            com.entrata_exception_logs = ""
+          end
+          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||MITS|||||||| " + com.id.to_s + "--- "+ e.message
+          com.save
+        rescue => p
+        end
         puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
@@ -83,8 +93,8 @@ class PsiService < BaseService
             unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
           elsif u["EffectiveRent"].present?
             unit.effective_rent = u["EffectiveRent"]
-          else
-            unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+          # else
+          #   unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           end
         end
 
@@ -129,29 +139,29 @@ class PsiService < BaseService
         # floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
         # floorplan.availability_url = f["FloorplanAvailabilityURL"]
 
-        # room_types = f["Room"]
-        # room_types.each do |rt|
-        #   if rt["@attributes"]["RoomType"] == "Bedroom"
-        #     floorplan.bedrooms = rt["Count"]
-        #   else
-        #     floorplan.bathrooms = rt["Count"]
-        #   end
-        # end
-        #
-        # if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
-        #
-        #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
-        # else
-        #
-        #
-        #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
-        # end
-        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
-        else
-          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
-        end
-        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
+
+          # room_types = f["Room"]
+          # room_types.each do |rt|
+          #   if rt["@attributes"]["RoomType"] == "Bedroom"
+          #     floorplan.bedrooms = rt["Count"]
+          #   else
+          #     floorplan.bathrooms = rt["Count"]
+          #   end
+          # end
+          #
+          # if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+          #
+          #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+          # else
+          #
+          #
+          #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+          # end
+          # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+          # else
+          #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+          # end
           if f["MarketRent"]["@attributes"]["Min"].to_f > 0
 
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
@@ -165,7 +175,7 @@ class PsiService < BaseService
 
       end
     end
-  end
+
 
   def fill_psi_pricing_details
     floorplanHash = Hash.new
@@ -194,7 +204,7 @@ class PsiService < BaseService
                                  }.to_json,
                                  :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
-
+        sleep 5
         if response["response"]["code"] == 200
           psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
           psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
@@ -270,6 +280,15 @@ class PsiService < BaseService
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
+        begin
+          com = Community.find credentials.community_id
+          unless com.entrata_exception_logs.present?
+            com.entrata_exception_logs = ""
+          end
+          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
+          com.save
+        rescue => r
+        end
         puts '-------------- filling pricing --------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
