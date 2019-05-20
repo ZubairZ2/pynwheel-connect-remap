@@ -398,6 +398,7 @@ function showPsiFields(){
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
     $('#entrata_pricing_button').show();
+    $('#entrata_space_configuration_button').show();
     $('#data-replace-update-buttons').hide();
 }
 function showZarembaFields(){

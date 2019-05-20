@@ -123,27 +123,28 @@ class Yardi4Service < BaseService
             end
           end
 
+          pr = api_unit[3]
+          # unitHash = Hash.new
+          rentStr = ""
+          unitLeaseTerm = []
+          begin
+            if pr[:Pricing].present?
+              pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing,index|
+                month = pricing[:DateRange][:StartDate][0][:Month]
+                day = pricing[:DateRange][:StartDate][0][:Day]
+                year = pricing[:DateRange][:StartDate][0][:Year]
+                startDate = "#{day}/#{month}/#{year}"
+                month = pricing[:DateRange][:EndDate][0][:Month]
+                day = pricing[:DateRange][:EndDate][0][:Day]
+                year = pricing[:DateRange][:EndDate][0][:Year]
+                endDate =  "#{day}/#{month}/#{year}"
 
-        end
-        pr = api_unit[3]
-        # unitHash = Hash.new
-        rentStr = ""
-        unitLeaseTerm = []
-        begin
-          if pr[:Pricing].present?
-            pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing,index|
-              month = pricing[:DateRange][:StartDate][0][:Month]
-              day = pricing[:DateRange][:StartDate][0][:Day]
-              year = pricing[:DateRange][:StartDate][0][:Year]
-              startDate = "#{day}/#{month}/#{year}"
-              month = pricing[:DateRange][:EndDate][0][:Month]
-              day = pricing[:DateRange][:EndDate][0][:Day]
-              year = pricing[:DateRange][:EndDate][0][:Year]
-              endDate =  "#{day}/#{month}/#{year}"
-
-              unless unitLeaseTerm.include?(pricing[:Term])
-                rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +":"+ startDate +":"+ endDate + ";"
-                unitLeaseTerm << pricing[:Term]
+                unless unitLeaseTerm.include?(pricing[:Term])
+                  rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +"::"+ startDate +":"+ endDate + ";"
+                  unitLeaseTerm << pricing[:Term]
+                end
+                # hashData = {(pricing[:Term]) => [ pricing[:EffectiveRent], startDate, endDate ]}
+                # unitHash.merge! hashData
               end
               # hashData = {(pricing[:Term]) => [ pricing[:EffectiveRent], startDate, endDate ]}
               # unitHash.merge! hashData
