@@ -840,13 +840,17 @@ $(document).ready(function () {
   $('#community_design_attributes_menu_attributes_position').change(function () {
     showSelectedMenuPosition();
   });
+    $('#menu_position_field').change(function () {
+        showSelectedMenuPosition();
+    });
 
 
 });
 
 
 function showSelectedMenuPosition() {
-  if ($('#community_design_attributes_menu_attributes_position').val() == "Horizontal") {
+   
+  if ($('#menu_position_field').val() == "Horizontal") {
     $('#horizontal-menu-position').show();
     $('#vertical-menu-position').hide();
   } else {
