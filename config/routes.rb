@@ -199,6 +199,7 @@ Rails.application.routes.draw do
       resources :communities, only: :index do
         member do
           get :data
+          get :community_tours
           get :ios_data
           get :minimum_data
           post :email_favorites

@@ -67,6 +67,9 @@ class Api::V1::CommunitiesController < ActionController::Base
   def list_communities
     @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo).includes(:company)
   end
+  def community_tours
+    @tours = Tour.where(community_id: params[:id])
+  end
 
   def include_application_data
     @version = AppVersion.first.version
