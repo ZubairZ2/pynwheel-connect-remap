@@ -26,6 +26,9 @@
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                       Page Name
+                      %i.propertyDetailName.fa.fa-question-circle
+                        %span#propertyDetailNameText
+                          Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.
                     .col-sm-12.col-lg-6.col-md-6.col-xs-12
                       = text_field_tag :apartment_page_name, @community.apartment_page_name, :class=>"form-control apartment-setting-field"
 
@@ -42,6 +45,9 @@
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                       Show property map page
+                      %i.propertyDetailName.fa.fa-question-circle
+                        %span#propertyDetailNameText
+                          Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the Pynwheel app.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .TriSea-technologies-Switch
                         %span.pr-15 No
@@ -51,6 +57,9 @@
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                       Display floorplan gallery
+                      %i.propertyDetailName.fa.fa-question-circle
+                        %span#propertyDetailNameText
+                          Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .TriSea-technologies-Switch
                         %span.pr-15 No
@@ -60,6 +69,9 @@
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                       Display on home page
+                      %i.propertyDetailName.fa.fa-question-circle
+                        %span#propertyDetailNameText
+                          Switching display on home page will change whether or not there is a menu button for this page on the home page for the Pynwheel app.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .TriSea-technologies-Switch
                         %span.pr-15 No
@@ -69,6 +81,9 @@
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                       Display Price
+                      %i.propertyDetailName.fa.fa-question-circle
+                        %span#propertyDetailNameText
+                          Switching price will change whether or not the pricing is displayed for each unit in the interactive map and floor plan gallery.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .TriSea-technologies-Switch
                         %span.pr-15 No
@@ -113,7 +128,11 @@
                         %th Image
                         %th Units
                         %th Amenities
-                        %th Actions
+                        %th
+                          Actions
+                          %i.propertyDetailName.fa.fa-question-circle
+                            %span#propertyDetailNameText
+                              Click the edit icon to view or change the details associated with each floorplate such as name, image, building number, and floors.
                     %tbody
                       - @floorplates.each_with_index  do |f,index|
                         %tr{:style => "color: #{f.manual_override ? "#dd4a39": ""}"}
@@ -135,9 +154,14 @@
                               .drop-img.drop-img-left
                           %td
                             = link_to "Plot Units",community_floorplate_plotexp_path(current_community,f), :class=>"btn btn-default black-button"
+                            %i.propertyDetailName.fa.fa-question-circle
+                              %span#propertyDetailNameText
+                                Add or change where unit markers appear on each floorplate. Each marker will represent the position of the unit marker on every floor. (For example, if the floorplate is for floors 2-4, units 201, 301, and 401 will be plotted at once, with one marker, and then appear on floors 2, 3, and 4 respectively.)
                           %td
                             = link_to "Plot Amenities",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn btn-default black-button"
-
+                            %i.propertyDetailName.fa.fa-question-circle
+                              %span#propertyDetailNameText
+                                Add or change where amenity markers appear on each floorplate.
                           %td
                             = link_to edit_community_floorplate_path(current_community,f), :class=>"text-success" do
                               %i.fa.fa-edit.icon_size

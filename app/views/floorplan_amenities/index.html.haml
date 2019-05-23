@@ -28,7 +28,10 @@
               %span.btn.btn-success.btn-file
                 %i.fa.fa-plus-circle
                 ADD IMAGE
-                %input#floorplan-amenity-images{:multiple => "multiple", :type => "file"}/ 
+                %input#floorplan-amenity-images{:multiple => "multiple", :type => "file"}/
+              %i.propertyDetailName.fa.fa-question-circle
+                %span#propertyDetailNameText
+                  Use this area to easily upload multiple floor plan images.
             .divLoading.hidden
         #images-index
           = render :partial=>'index'

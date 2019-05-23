@@ -3028,3 +3028,130 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     font-size: 13px !important;
 }
+
+.propertyDetailName {
+    position: relative;
+    display: inline-block;
+}
+
+.propertyDetailName #propertyDetailNameText {
+    visibility: hidden;
+    width: 350px;
+    background-color: #e0e0e0;
+    color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -60px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+.propertyDetailName #propertyDetailNameText::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -120px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.propertyDetailName:hover #propertyDetailNameText {
+    visibility: visible;
+}
+
+
+.select_amenity {
+    position: relative;
+    display: inline-block;
+}
+
+.select_amenity #select_amenityText {
+    visibility: hidden;
+    width: 350px;
+    background-color: #e0e0e0;
+    color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -220px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+.select_amenity #select_amenityText::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: 40px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.select_amenity:hover #select_amenityText {
+    visibility: visible;
+}
+
+.additionalPageAction {
+    position: relative;
+    display: inline-block;
+}
+
+.additionalPageAction #additionalPageActionText {
+    visibility: hidden;
+    width: 350px;
+    background-color: #e0e0e0;
+    color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -320px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+.additionalPageAction #additionalPageActionText::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 78%;
+    margin-left: 40px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.additionalPageAction:hover #additionalPageActionText {
+    visibility: visible;
+}
+
+.bs-example{
+   
+}
+/* Styles for custom popover template */
+.popover-footer{
+    padding: 6px 14px;
+    background-color: #f7f7f7;
+    border-top: 1px solid #ebebeb;
+    text-align: right;
+}
+.popover-padding
+{
+    padding: 10px 15px;
+}

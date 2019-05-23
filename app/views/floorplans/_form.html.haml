@@ -14,18 +14,30 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floor Plan Name
+    %i.tooltip1.fa.fa-question-circle
+      %span#tooltiptext1
+        When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property's property management software data feed (if the property is using a third party data feed).
+
     %span Specify name here (Manual Override Required)
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Floor Plan Name",:maxlength=>"30"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Provider Floor Plan ID
+    %i.tooltip1.fa.fa-question-circle
+      %span#tooltiptext1
+        The provider floor plan ID is the code assigned to this floor plan in the property management software.
+
     %span Provider Floor Plan ID (Manual Override Required)
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :provider_floorplan_id, :class=>"form-control validate[required]", :placeholder=>"From 3rd Party Vendor",:maxlength=>"30"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floor Plan Info
+    %i.tooltip1.fa.fa-question-circle
+      %span#tooltiptext1
+        Changing the number of bedrooms and number of bathrooms will change how they appear in the app. Changing square footage will change how it appears in the Pynwheel app only if there is not square footage associated with each unit in you data. Changing the price here will not affect the price that is displayed for each unit.
+
     %span Specify floor plan info here (Manual Override Required)
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
@@ -44,6 +56,10 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Virtual Tour URL
+    %i.tooltip1.fa.fa-question-circle
+      %span#tooltiptext1
+        Add a URL to add a virtual tour specific to this floor plan which will appear on the interactive map and in the floor plan gallery.
+
     %span Specify URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
@@ -51,12 +67,20 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Additional Details
+    %i.tooltip1.fa.fa-question-circle
+      %span#tooltiptext1
+        Add details such as finishes and floor-plan specific features and they will appear in the "Additional Details" tab for this floor plan.
+
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Primary Image
+    %i.tooltip1.fa.fa-question-circle
+      %span#tooltiptext1
+        This is the image that will appear of this floor plan.
+
     %span
       Upload primary image of this floor plan.
       -#%br/
@@ -73,6 +97,10 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Secondary Image
+    %i.tooltip1.fa.fa-question-circle
+      %span#tooltiptext1
+        Add a secondary image (such as a 3D image or photo) that will appear alongside the primary image for this floor plan.
+
     %span
       Upload secondary image of this floor plan.
       -#%br/

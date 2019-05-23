@@ -12,6 +12,9 @@
       %a.btn.btn-success.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
         %i.fa.fa-plus-circle
         ADD DETAILS TO MULTIPLE
+      %i.propertyDetailName.fa.fa-question-circle
+        %span#propertyDetailNameText
+          Add or change details to multiple floor plans that will appear in the "Additional Details" tab.
   .row{ style: "margin-left: 0px;"}
     -#.box.box-widget.panel-box.ml-15
     %h4{style: "color: grey;  "}
@@ -42,9 +45,17 @@
                 %th BR
                 %th BA
                 -#%th Description
-                %th Interior Images
+                %th
+                  Interior Images
+                  %i.propertyDetailName.fa.fa-question-circle
+                    %span#propertyDetailNameText
+                      Add or change images (such as interior photography or renderings) associated with each floor plan.
                 %th Floor Plan Image
-                %th Actions
+                %th
+                  Actions
+                  %i.propertyDetailName.fa.fa-question-circle
+                    %span#propertyDetailNameText
+                      Click the edit icon to view or change the details associated with each floor plan such as name, images, virtual tour, and details.
             %tbody
               - @floorplans.map{|x| x.name = '' if x.name.nil? }
               - @floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@floorplans).sort.map{|x,y| y}.each_with_index  do |f,index|

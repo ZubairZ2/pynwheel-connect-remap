@@ -19,11 +19,17 @@
               = link_to community_favorite_setting_favorite_images_path(@community,@favorite),style: "width: 142px;", class: "btn btn-success" do
                 %i.fa.fa-plus-circle
                 ADD IMAGES
+              %i.propertyDetailName.fa.fa-question-circle
+                %span#propertyDetailNameText
+                  Click "Add Images" to add images that will always appear at the top of the eBrochure.
           .col-lg-12.mt-5
             .btn-btn-danger
               = link_to  community_favorite_setting_ebrochure_menu_buttons_path(@community,@community.favorite_setting), class: "btn btn-success" do
                 %i.fa.fa-plus-circle
                 ADD WEBLINKS
+              %i.propertyDetailName.fa.fa-question-circle
+                %span#propertyDetailNameText
+                  Click "Add Weblinks" to add weblink buttons that will always appear at the top of the eBrochure.
 
       = form_for [@community,@favorite],:html=>{:class=>"form-horizontal",:id=>"favorite-settings-form"} do |f|
         .box-body

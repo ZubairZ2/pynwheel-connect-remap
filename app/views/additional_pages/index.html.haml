@@ -28,7 +28,11 @@
                     %th Type
                     %th Position
                     %th Add to Home Page Menu
-                    %th{:width => "100"} Actions
+                    %th{:width => "100"}
+                      Actions
+                      %i.additionalPageAction.fa.fa-question-circle
+                        %span#additionalPageActionText
+                          Click the edit icon to view or change the details associated with each page including its name; whether or not it will appear in the Pynwheel app; whether or not it will appear in the home page menu; and in what position it will appear on the home page menu.
                 %tbody
                   - @pages.each_with_index do |page,index|
                     %tr
@@ -56,9 +60,19 @@
             = link_to new_community_contentpage_path(@community), remote: true, class: "btn btn-success mb-10" do
               %i.fa.fa-plus-circle
               ADD WEBPAGE
+              %i.propertyDetailName.fa.fa-question-circle
+                %span#propertyDetailNameText{:style => "width: 400px"}
+                  Click "Add Webpage" to add a webpage such as a 3D
+                  %br
+                  tour or integration such as TransitScreen or BuildingLink.
             = link_to new_community_imagepage_path(@community), remote: true, class: "btn btn-primary mb-10 ml-10" do
               %i.fa.fa-plus-circle
               ADD IMAGE PAGE
+              %i.propertyDetailName.fa.fa-question-circle
+                %span#propertyDetailNameText{:style => "width: 400px"}
+                  Click "Add Image Page" to add an image page such as an
+                  %br
+                  "About Page" static image, sliding image, or slide show.
       / End Panel left Side
 / /.content
 #show_modal

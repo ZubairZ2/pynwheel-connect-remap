@@ -25,12 +25,18 @@
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Page Name
+                    %i.propertyDetailName.fa.fa-question-circle
+                      %span#propertyDetailNameText
+                        Changing the Page Name will change the menu label for this page in the Pynwheel app .
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
                     = text_field_tag :gallery_page_name, @community.gallery_page_name, :class=>"form-control gallery-setting-field"
                 
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                     Show this page
+                    %i.propertyDetailName.fa.fa-question-circle
+                      %span#propertyDetailNameText
+                        Switching show this page will change whether or not this page appears in the Pynwheel app.
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -40,6 +46,9 @@
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                     Add to Home Page Menu
+                    %i.propertyDetailName.fa.fa-question-circle
+                      %span#propertyDetailNameText
+                        Switching add to home page menu will change whether or not there is a menu button for this page on the home page of the Pynwheel app.
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No

@@ -1,6 +1,9 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Page Name
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        Changing the Page Name will change the menu label for this page in the Pynwheel app .
 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -8,6 +11,9 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Show Page
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        Switching show this page will change whether or not this page appears in the Pynwheel app.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .TriSea-technologies-Switch
       %span.pr-15 No
@@ -17,6 +23,9 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Add to Home Page Menu
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        Switching add to home page menu will change whether or not there is a menu button for this page on the home page of the Pynwheel app.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .TriSea-technologies-Switch
       %span.pr-15 No
@@ -27,18 +36,27 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        Change the address to change the address of the property.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :address, :class=>"form-control validate[required]", :placeholder=>"Address", :maxlength=>"150", :value=> @neighborhood.address.present? ? @neighborhood.address : @community.make_address
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Latitude
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        The latitude and longitudinal position of the property is pre-populated by the property's address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :latitude, :class=>"form-control validate[required,custom[onlyLatitude]] neighborhood-form-field", :placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude", :value=> @neighborhood.latitude.present? ? @neighborhood.latitude : @community.latitude
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Longitude
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        The latitude and longitudinal position of the property is pre-populated by the property's address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :longitude, :class=>"form-control validate[required,custom[onlyLongitude]] neighborhood-form-field", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude", :value=> @neighborhood.longitude.present? ? @neighborhood.longitude : @community.longitude
@@ -46,24 +64,36 @@
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Radius
+      %i.propertyDetailName.fa.fa-question-circle
+        %span#propertyDetailNameText
+          Change the radius to change the distance of the results on the neighborhood map are from the property. The smaller the radius; the closer the results.
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_field :radius, :class=>"form-control validate[required,custom[onlyNumber&Decimal]] neighborhood-form-field", :placeholder=>"Radius", :value=> @neighborhood.radius.present? ? @neighborhood.radius : 5000,:maxlength=>"10"
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Zoom
+      %i.propertyDetailName.fa.fa-question-circle
+        %span#propertyDetailNameText
+          Change the zoom to change how close the map is zoomed around the property on the neighborhood page.
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_field :zoom, :class=>"form-control validate[required,custom[onlyNumber],custom[zoomRange]] neighborhood-form-field", :placeholder=>"Zoom", :value=> @neighborhood.zoom.present? ? @neighborhood.zoom : 14, :maxlength=>"2"
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Remove Listing
+      %i.propertyDetailName.fa.fa-question-circle
+        %span#propertyDetailNameText
+          Add a business name here to remove it from the results on the neighborhood map.
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_field :listing, :class=>"form-control neighborhood-form-field","data-role"=>"tagsinput"     
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Categories
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        Changing the categories will change the categories that can be seen on the neighborhood map.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .multiselect
       .show-categories
@@ -104,6 +134,9 @@
     = link_to community_neighborhood_locations_path(@community,@neighborhood),style: "font-family: unset;", class: "btn btn-success" do
       %i.fa.fa-plus-circle
       ADD PLACES
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        Click on "Add Places" to add businesses to the results of the neighborhood map.
 
     
 :javascript
