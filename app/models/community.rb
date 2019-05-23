@@ -58,6 +58,7 @@ class Community < ApplicationRecord
   has_many :webpages, dependent: :destroy
   has_many :imagepages, dependent: :destroy
   has_many :amenities, dependent: :destroy
+  has_many :tours, dependent: :destroy
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
