@@ -19,11 +19,17 @@
               = link_to community_favorite_setting_favorite_images_path(@community,@favorite),style: "width: 142px;", class: "btn btn-success" do
                 %i.fa.fa-plus-circle
                 ADD IMAGES
+              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteAddImagesPopover","data-content" => " "}
+                %span#propertyDetailNameText
+                  Click "Add Images" to add images that will always appear at the top of the eBrochure
           .col-lg-12.mt-5
             .btn-btn-danger
               = link_to  community_favorite_setting_ebrochure_menu_buttons_path(@community,@community.favorite_setting), class: "btn btn-success" do
                 %i.fa.fa-plus-circle
                 ADD WEBLINKS
+              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteAddWebLinksPopover","data-content" => " "}
+                %span#propertyDetailNameText
+                  Click "Add Weblinks" to add weblink buttons that will always appear at the top of the eBrochure.
 
       = form_for [@community,@favorite],:html=>{:class=>"form-horizontal",:id=>"favorite-settings-form"} do |f|
         .box-body
@@ -34,3 +40,94 @@
         -#.box-footer
           -#= link_to "Cancel" , community_favorite_settings_path(@community), :class=>"btn btn-default pull-right"
           -#= f.submit "Save", :class=>"btn btn-success pull-right mr-10"
+
+:javascript
+  if (!#{current_user.welcome_favorite_page})
+  {
+     $('[data-toggle="favoriteAddImagesPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Click "Add Images" to add images that will always appear at the top of the eBrochure</div><div class="popover-footer"><a id="favoriteAddImagesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#favoriteAddImagesPopoverClose" , function(){
+        // $('html, body').animate({scrollTop:$(document).height()}, 'slow');
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="favoriteAddWebLinksPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Click "Add Weblinks" to add weblink buttons that will always appear at the top of the eBrochure.</div><div class="popover-footer"><a id="favoriteAddWebLinksPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#favoriteAddWebLinksPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="favoritePageNamePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Page Name will change the menu label for this page in the Pynwheel app .</div><div class="popover-footer"><a id="favoritePageNamePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#favoritePageNamePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="favoriteEmailFormPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Email From address will change the "from" email address for the eBrochure.</div><div class="popover-footer"><a id="favoriteEmailFormPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#favoriteEmailFormPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="favoriteEmailBccPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Email Bcc address will change the email address that receives a copy of each eBrochure. </div><div class="popover-footer"><a id="favoriteEmailBccPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#favoriteEmailBccPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="favoriteEmailBodyPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Email Body will change the copy that appears on the top of each eBrochure. </div><div class="popover-footer"><a id="favoriteEmailBodyPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#favoriteEmailBodyPopoverClose" , function(){
+
+        // $('html, body').animate({scrollTop:$(document).height()}, 'slow')
+        // window.setTimeout( show11, 2000 );
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="favoriteEqualHousingOpportunityPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Switching the logo will change whether or not it appears at the bottom of the eBrochure. </div><div class="popover-footer"><a id="favoriteEqualHousingOpportunityPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#favoriteEqualHousingOpportunityPopoverClose" , function(){
+        // window.setTimeout($('html, body').animate({scrollTop:$(document).height()}),1000);
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="favoriteHandicapAccessiblePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Change the radius to change the distance of the results on the neighborhood map are from the property. The smaller the radius; the closer the results.</div><div class="popover-footer"><a id="favoriteHandicapAccessiblePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+      // $("#HandicapDiv").scrollTop();
+
+    });
+
+    $(document).on("click", "#favoriteHandicapAccessiblePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_favorite_page = true}
+        #{current_user.save}
+    });
+  //   var elmnt = document.getElementById("HandicapDiv");
+  // elmnt.scrollIntoView();
+  function show11(){
+
+   };

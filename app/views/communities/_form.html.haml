@@ -1,6 +1,10 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Name
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailNamePopover","data-content" => " "}
+      %span#propertyDetailNameText
+        Changing the Name will change the name of the property on the "Favorites" page.
+
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name"
@@ -13,6 +17,10 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+      %span#propertyDetailNameText
+        Changing the Address will change how it appears on the eBrochure, and will change the lat/long of the property on the "Neighborhood" page.
+
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :address, :class=>"form-control",rows:5, :placeholder=>"Address"
@@ -37,12 +45,20 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailEmailPopover","data-content" => " "}
+      %span#propertyDetailNameText
+        Changing the email address will change the "from" email address for the eBrochure.
+
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.email_field :email, :class=>"form-control", :placeholder=>"Email",:maxlength=>"50"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Website
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailWebsitePopover","data-content" => " "}
+      %span#propertyDetailNameText
+        Changing the website address will change how it appears on the eBrochure.
+
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :website, :class=>"form-control", :placeholder=>"Website URL"
@@ -117,3 +133,46 @@
 -#      = f.check_box :powered_by_btn,:value => true
 -#      %label.label-primary{:for => "community_powered_by_btn"}
 -#      %span.pl-15 Yes
+
+:javascript
+  if (!#{current_user.welcome_property_details_page})
+  {
+    $('[data-toggle="propertyDetailNamePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#propertyDetailNameId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="propertyDetailAddressPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Address will change how it appears on the eBrochure, and will change the lat/long of the property on the "Neighborhood" page.</div><div class="popover-footer"><a id="propertyDetailAddressId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#propertyDetailAddressId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="propertyDetailEmailPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the email address will change the "from" email address for the eBrochure.</div><div class="popover-footer"><a id="propertyDetailEmailId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#propertyDetailEmailId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="propertyDetailWebsitePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the website address will change how it appears on the eBrochure.</div><div class="popover-footer"><a id="propertyDetailWebsiteId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#propertyDetailWebsiteId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_property_details_page = true}
+        #{current_user.save}
+    });

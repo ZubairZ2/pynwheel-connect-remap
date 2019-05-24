@@ -18,6 +18,9 @@
           %span
     %h4.mt-30
       Select Home Page Type
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
+        %span#propertyDetailNameText
+          Changing the Home Page Type will change whether the home page shows a video or slideshow.
     .row
       .col-lg-12
         .form-group 
@@ -36,6 +39,9 @@
         .form-group        
           %label
             Animation
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "animationPopover","data-content" => " "}
+              %span#propertyDetailNameText
+                Changing Animation will change the movement of the menu buttons on the home page.
           = select_tag :animation, options_for_select(["bouncing effects","none"],@community.design.animation),{:class=>"form-control"}    
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
@@ -46,6 +52,9 @@
               .title-home
                 %h4
                   Slide Show Images
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "slideShowImagePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Adding files will add images or videos (MP4 files only) to the home page slide show. You can drag and drop the images below to rearrange them.
                   .br
                   %h4#slide_show_span
                     Images will appear at a size of 1920 x 1080 px. Please note that images that are too small may appear pixelated.
@@ -68,9 +77,13 @@
                 %h4 Video Show
                 
                 / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
-                %span.btn.btn-success.btn-file.pull-right.text-UP{:onclick=>"$('#home-page-video-upload-holder').click();"}
+                %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-video-upload-holder').click();"}
                   %i.fa.fa-plus-circle
                   Add Video
+                %div{:style => "margin-left: 125px;"}
+                  %i.propertyDetailName.fa.fa-question-circle{:style => " margin-top: 10px;"}
+                    %span#propertyDetailNameText
+                      Adding a video file (MP4 files only) will change the video that appears on the the home page.
                 /     = f.file_field :video
                     
           .slide-imgage-boxs
@@ -87,3 +100,34 @@
       $('#welcome-prompt-modal1').modal('show');
     }
   });
+  if (!#{current_user.welcome_homepage_page})
+  {
+    $('[data-toggle="selectHomepageTypePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Home Page Type will change whether the home page shows a video or slideshow.</div><div class="popover-footer"><a id="selectHomepageTypePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#selectHomepageTypePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="animationPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing Animation will change the movement of the menu buttons on the home page.</div><div class="popover-footer"><a id="animationPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#animationPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="slideShowImagePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Adding files will add images or videos (MP4 files only) to the home page slide show. You can drag and drop the images below to rearrange them.</div><div class="popover-footer"><a id="slideShowImagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    $(document).on("click", "#slideShowImagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_homepage_page = true}
+        #{current_user.save}
+    });

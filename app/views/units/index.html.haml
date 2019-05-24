@@ -92,3 +92,106 @@
   //     $('.apartment-settings-form').submit();
   //   }
   // });
+  if (!#{current_user.welcome_unit_page})
+  {
+    $('[data-toggle="unitMassOverridePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to change data for multiple units at once, such as availability, floor number, details, and images. </div><div class="popover-footer"><a id="unitMassOverridePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#unitMassOverridePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitManualOverridePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property"s property management software data feed.</div><div class="popover-footer"><a id="unitManualOverridePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#unitManualOverridePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridNamePopover"]').popover({
+        html: true,
+        template: '<div class="popover"  style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the unit name will change how the name appears in the Pynwheel app.</div><div class="popover-footer"><a id="unitGridNamePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#unitGridNamePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridFloorplanPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the floor plan will change the floor plan associated with each unit.</div><div class="popover-footer"><a id="unitGridFloorplanPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#unitGridFloorplanPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridPricePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the price will change the price associated with each unit.</div><div class="popover-footer"><a id="unitGridPricePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#unitGridPricePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridAvailableDatePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Available Date will change when the unit is displayed as available as long as Available is set to "Yes."</div><div class="popover-footer"><a id="unitGridAvailableDatePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#unitGridAvailableDatePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridAvailablePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing Available to "No" will exclude this unit from appearing as available in the app, regardless of the date that is set.</div><div class="popover-footer"><a id="unitGridAvailablePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#unitGridAvailablePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridSoldPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.</div><div class="popover-footer"><a id="unitGridSoldPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    //
+    $(document).on("click", "#unitGridSoldPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridFloorPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.</div><div class="popover-footer"><a id="unitGridFloorPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });$(document).on("click", "#unitGridFloorPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridInteriorImagesPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add or change images (such as interior photography or renderings) associated with each unit.</div><div class="popover-footer"><a id="unitGridInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });$(document).on("click", "#unitGridInteriorImagesPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="unitGridActionPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each such as building number, images, and details.</div><div class="popover-footer"><a id="unitGridActionPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    $(document).on("click", "#unitGridActionPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_unit_page = true}
+        #{current_user.save}
+    });
+

@@ -50,3 +50,26 @@
       $('#welcome-prompt-modal1').modal('show');
     }
   });
+  if (!#{current_user.welcome_logo_page})
+  {
+  $('[data-toggle="primaryLogoPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Uploading a logo will change the logo that appears on the touchscreen and on the eBrochure.</div><div class="popover-footer"><a id="primaryLogoPopoverId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#primaryLogoPopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="secondaryLogoPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Uploading a Home Page Logo will change the logo that appears on the home page.</div><div class="popover-footer"><a id="secondaryLogoPopoverId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#secondaryLogoPopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_logo_page = true}
+        #{current_user.save}
+    });

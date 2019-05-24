@@ -23,6 +23,9 @@
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Page Name
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapPageNamePopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 = text_field_tag :apartment_page_name, @community.apartment_page_name, :class=>"form-control apartment-setting-field"
 
@@ -40,6 +43,9 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
 
                 Show property map page
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "siteShowPropertyMapPagePopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the Pynwheel app.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
@@ -49,6 +55,9 @@
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                 Display floorplan gallery
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayFloorplanGalleryPopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
@@ -57,7 +66,10 @@
                   %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                Display on home page 
+                Display on home page
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitempaDisplayHomepagePopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Switching display on home page will change whether or not there is a menu button for this page on the home page for the Pynwheel app.
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
@@ -68,6 +80,9 @@
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                 Display Price
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Switching price will change whether or not the pricing is displayed for each unit in the interactive map and floor plan gallery.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
@@ -90,6 +105,9 @@
     %span.btn.btn-primary.btn-file{:onclick=>"$('#sitemap-image-upload-holder').click();"}
       %i.fa.fa-upload
       Upload File
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapUploadFilePopover","data-content" => " "}
+      %span#propertyDetailNameText
+        Use this area to easily upload multiple floor plan images.
 
     .text-center.image-upload.home-page-drag-box#sitemap-image-upload-holder
       = image_tag "upload-image.png",:class=>"drag-image-padding-top"
@@ -107,6 +125,9 @@
       .box-header
         %h3.box-title
           Plot Units on Property Map
+          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "plotUnitOnSitemapPopover","data-content" => " "}
+            %span#propertyDetailNameText
+              Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.
           %span
           %span.hidden#active_x_plot 0
 
@@ -148,8 +169,13 @@
           %span.hidden#marker_color #{marker_color}
 
         .btn-btn-danger.mt-10
-          = link_to "MANAGE AMENITIES" , community_amenities_path(@community), :class=>"btn btn-success"
-          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} GRID OVERLAY
+          = link_to "MANAGE AMENITIES <i class='propertyDetailName fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Plot Amenities' to switch from plotting units to plotting amenity images.</span></i>".html_safe , community_amenities_path(@community), :class=>"btn btn-success"
+
+          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"}
+            GRID OVERLAY
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapGridOverlayPopover","data-content" => " "}
+              %span#propertyDetailNameText{:style => "font-weight: normal;"}
+                Add a grid overlay to the map to make it easier to see if the markers are straight.
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
       / /.box-header
@@ -175,7 +201,11 @@
                       .hidden{:class=>"h-#{unit.x_plot}-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"}
             .col-lg-3.multi-select-units.select-units-on-page{:style => "float: left;"}
 
-              %h5.mt-40.mb-20 SELECT UNITS TO PLOT
+              %h5.mt-40.mb-20
+                SELECT UNITS TO PLOT
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapSelectPlotToUnitsPopover","data-content" => " "}
+                  %span#propertyDetailNameText{:style => "font-weight: normal;"}
+                    You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
               %select.amenities-list.form-control{:multiple=>"multiple"}
                 - arr = []
                 - if units.present?
@@ -265,3 +295,89 @@
   var community_id = #{params[:community_id]};
   var addmode = false;
   var sitemap_id = '#{@sitemap.id}';
+
+  $('[data-toggle="sitemapPageNamePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+    $(document).on("click", "#propertyDetailNameId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="siteShowPropertyMapPagePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the Pynwheel app.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#siteShowPropertyMapPagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="sitemapDisplayFloorplanGalleryPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="sitempaDisplayHomepagePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching display on home page will change whether or not there is a menu button for this page on the home page for the Pynwheel app.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="sitemapDisplayPricePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching price will change whether or not the pricing is displayed for each unit in the interactive map and floor plan gallery.</div><div class="popover-footer"><a id="sitemapDisplayPricePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#sitemapDisplayPricePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="sitemapUploadFilePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this area to easily upload multiple floor plan images.</div><div class="popover-footer"><a id="sitemapUploadFilePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    $(document).on("click", "#sitemapUploadFilePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="plotUnitOnSitemapPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="plotUnitOnSitemapPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#plotUnitOnSitemapPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="sitemapManageAmenitiesPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click on "Plot Amenities" to switch from plotting units to plotting amenity images.</div><div class="popover-footer"><a id="sitemapManageAmenitiesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    $(document).on("click", "#sitemapManageAmenitiesPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="sitemapGridOverlayPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapGridOverlayPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#sitemapGridOverlayPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="sitemapSelectPlotToUnitsPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitemapSelectPlotToUnitsPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    $(document).on("click", "#sitemapSelectPlotToUnitsPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+    });

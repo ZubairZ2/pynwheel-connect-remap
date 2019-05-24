@@ -47,7 +47,11 @@
             .box.box-widget.panel-box.pl-20.pr-20.pb-10
               .row
                 .col-md-12.col-lg-9.col-xs-9
-                  %h4 Mass Upload Floor Plan Images
+                  %h4
+                    Mass Upload Floor Plan Images
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplanMassUploadPopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        Use this area to easily upload multiple floor plan images.
                   %p.pt-10.mb-20 Upload files here, then drag and drop them to the floor plan image column in the table. Only jpeg, jpg and png files are accepted.
                 .col-md-12.col-lg-3.col-xs-3
                   %img{:alt => "", :src => "/assets/upload-image.jpg", :style => "max-width:100%;", :title => ""}
@@ -124,3 +128,45 @@
   $(document).ready(function(){
     $('.floor_plan_upload_image').affix({offset: {top: 205} }); 
   });
+  if (!#{current_user.welcome_floorplan_page})
+  {
+    $('[data-toggle="floorplanDetailsToMultiplePopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Add or change details to multiple floor plans that will appear in the "Additional Details" tab. </div><div class="popover-footer"><a id="floorplanDetailsToMultiplePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#floorplanDetailsToMultiplePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanMassUploadPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this area to easily upload multiple floor plan images.</div><div class="popover-footer"><a id="floorplanMassUploadPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#floorplanMassUploadPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanInteriorImagesPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add or change images (such as interior photography or renderings) associated with each floor plan.</div><div class="popover-footer"><a id="floorplanInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#floorplanInteriorImagesPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanGridActionPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each floor plan such as name, images, virtual tour, and details.</div><div class="popover-footer"><a id="floorplanGridActionPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    $(document).on("click", "#floorplanGridActionPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_floorplan_page = true}
+        #{current_user.save}
+    });
