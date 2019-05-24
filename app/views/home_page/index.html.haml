@@ -100,16 +100,20 @@
       $('#welcome-prompt-modal1').modal('show');
     }
   });
-  $('[data-toggle="selectHomepageTypePopover"]').popover({
+  if (!#{current_user.welcome_homepage_page})
+  {
+    $('[data-toggle="selectHomepageTypePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="selectHomepageTypePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Home Page Type will change whether the home page shows a video or slideshow.</div><div class="popover-footer"><a id="selectHomepageTypePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
     }).popover('show');
+  }
+
     $(document).on("click", "#selectHomepageTypePopoverClose" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="animationPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Address will change how it appears on the eBrochure, and will change the lat/long of the property on the "Neighborhood" page.</div><div class="popover-footer"><a id="animationPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing Animation will change the movement of the menu buttons on the home page.</div><div class="popover-footer"><a id="animationPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
       }).popover('show');
     });
 
@@ -118,10 +122,12 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="slideShowImagePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the email address will change the "from" email address for the eBrochure.</div><div class="popover-footer"><a id="slideShowImagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Adding files will add images or videos (MP4 files only) to the home page slide show. You can drag and drop the images below to rearrange them.</div><div class="popover-footer"><a id="slideShowImagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
       }).popover('show');
     });
     $(document).on("click", "#slideShowImagePopoverClose" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_homepage_page = true}
+        #{current_user.save}
     });

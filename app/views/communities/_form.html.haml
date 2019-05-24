@@ -135,10 +135,14 @@
 -#      %span.pl-15 Yes
 
 :javascript
-  $('[data-toggle="propertyDetailNamePopover"]').popover({
+  if (!#{current_user.welcome_property_details_page})
+  {
+    $('[data-toggle="propertyDetailNamePopover"]').popover({
         html: true,
         template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
     }).popover('show');
+  }
+
     $(document).on("click", "#propertyDetailNameId" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
@@ -169,4 +173,6 @@
     $(document).on("click", "#propertyDetailWebsiteId" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_property_details_page = true}
+        #{current_user.save}
     });

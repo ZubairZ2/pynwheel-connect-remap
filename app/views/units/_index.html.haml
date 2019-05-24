@@ -23,9 +23,9 @@
               %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
             %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Details
             %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
-        %i.propertyDetailName.fa.fa-question-circle
+        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitMassOverridePopover","data-content" => " "}
           %span#propertyDetailNameText
-            Add or change details to multiple floor plans that will appear in the "Additional Details" tab.
+            Use this button to change data for multiple units at once, such as availability, floor number, details, and images.
 
       .col-md-12
         %h4{:style => "margin-left: 3px; color: grey;"}
@@ -72,58 +72,58 @@
                   %th Sr #
                   %th
                     Manual Override
-                    %i.unit_manualoverride.fa.fa-question-circle
+                    %i.unit_manualoverride.fa.fa-question-circle{ "data-toggle" => "unitManualOverridePopover","data-content" => " "}
                       %span#unit_manualoverride_text
-                        When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property's property management software data feed (if the property is using a third party data feed).
+                        When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property's property management software data feed.
                   %th
                     Name
-                    %i.propertyDetailName.fa.fa-question-circle
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridNamePopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing the unit name will change how the name appears in the Pynwheel app.
                   %th
                     Floor Plan
-                    %i.propertyDetailName.fa.fa-question-circle
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridFloorplanPopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing the floor plan will change the floor plan associated with each unit.
                   %th
                     Price
-                    %i.propertyDetailName.fa.fa-question-circle
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridPricePopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing the price will change the price associated with each unit.
                   %th
                     Available Date
-                    %i.propertyDetailName.fa.fa-question-circle
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing the Available Date will change when the unit is displayed as available as long as Available is set to "Yes."
                   -#%th Manually Updated
                   %th
                     Available
-                    %i.propertyDetailName.fa.fa-question-circle
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailablePopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing Available to "No" will exclude this unit from appearing as available in the app, regardless of the date that is set.
                   %th
                     Sold
-                    %i.unit_sold.fa.fa-question-circle
+                    %i.unit_sold.fa.fa-question-circle{ "data-toggle" => "unitGridSoldPopover","data-content" => " "}
                       %span#unit_sold_text
                         This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.
                   -#%th Unit Space
                   - unless @community.is_sitemap
                     %th
                       Floor
-                      %i.propertyDetailName.fa.fa-question-circle
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridFloorPopover","data-content" => " "}
                         %span#propertyDetailNameText
                           Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.
                   -#%th Description
                   %th
                     Interior Images
-                    %i.propertyDetailName.fa.fa-question-circle
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridInteriorImagesPopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Add or change images (such as interior photography or renderings) associated with each unit.
                   %th Floor Plan Image
                   %th
                     Actions
-                    %i.propertyDetailName.fa.fa-question-circle
-                      %span#propertyDetailNameText
+                    %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "unitGridActionPopover","data-content" => " "}
+                      %span#additionalPageActionText
                         Click the edit icon to view or change the details associated with each such as building number, images, and details.
               %tbody
 

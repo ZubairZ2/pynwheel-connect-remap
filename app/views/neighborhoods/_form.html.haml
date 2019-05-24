@@ -1,9 +1,9 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Page Name
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodPageNamePopover","data-content" => " "}
       %span#propertyDetailNameText
-        Changing the Page Name will change the menu label for this page in the Pynwheel app .
+        Changing the Page Name will change the menu label for this page in the Pynwheel app.
 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -11,7 +11,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Show Page
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodShowPagePopover","data-content" => " "}
       %span#propertyDetailNameText
         Switching show this page will change whether or not this page appears in the Pynwheel app.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -23,7 +23,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Add to Home Page Menu
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodAddToHomePageMenuPopover","data-content" => " "}
       %span#propertyDetailNameText
         Switching add to home page menu will change whether or not there is a menu button for this page on the home page of the Pynwheel app.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -36,7 +36,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodAddressPopover","data-content" => " "}
       %span#propertyDetailNameText
         Change the address to change the address of the property.
 
@@ -45,7 +45,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Latitude
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodLatitudePopover","data-content" => " "}
       %span#propertyDetailNameText
         The latitude and longitudinal position of the property is pre-populated by the property's address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.
 
@@ -54,7 +54,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Longitude
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodLongitudePopover","data-content" => " "}
       %span#propertyDetailNameText
         The latitude and longitudinal position of the property is pre-populated by the property's address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.
 
@@ -64,7 +64,7 @@
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Radius
-      %i.propertyDetailName.fa.fa-question-circle
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodRadiusPopover","data-content" => " "}
         %span#propertyDetailNameText
           Change the radius to change the distance of the results on the neighborhood map are from the property. The smaller the radius; the closer the results.
 
@@ -73,7 +73,7 @@
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Zoom
-      %i.propertyDetailName.fa.fa-question-circle
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodZoomPopover","data-content" => " "}
         %span#propertyDetailNameText
           Change the zoom to change how close the map is zoomed around the property on the neighborhood page.
 
@@ -82,7 +82,7 @@
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Remove Listing
-      %i.propertyDetailName.fa.fa-question-circle
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodRemoveListingPopover","data-content" => " "}
         %span#propertyDetailNameText
           Add a business name here to remove it from the results on the neighborhood map.
 
@@ -91,7 +91,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Categories
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodCategoriesPopover","data-content" => " "}
       %span#propertyDetailNameText
         Changing the categories will change the categories that can be seen on the neighborhood map.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -134,7 +134,7 @@
     = link_to community_neighborhood_locations_path(@community,@neighborhood),style: "font-family: unset;", class: "btn btn-success" do
       %i.fa.fa-plus-circle
       ADD PLACES
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodAddPlacesPopover","data-content" => " "}
       %span#propertyDetailNameText
         Click on "Add Places" to add businesses to the results of the neighborhood map.
 
@@ -159,3 +159,103 @@
       $('.neighborhood-form-field').submit();
     }
   });
+  if (!#{current_user.welcome_neighbourhood_page})
+  {
+    $('[data-toggle="neighbourhoodPageNamePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for this page in the Pynwheel app </div><div class="popover-footer"><a id="neighbourhoodPageNamePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#neighbourhoodPageNamePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodShowPagePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching show this page will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="neighbourhoodShowPagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#neighbourhoodShowPagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodAddToHomePageMenuPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Switching add to home page menu will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="neighbourhoodAddToHomePageMenuPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#neighbourhoodAddToHomePageMenuPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodAddressPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Change the address to change the address of the property. </div><div class="popover-footer"><a id="neighbourhoodAddressPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#neighbourhoodAddressPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodLatitudePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">The latitude and longitudinal position of the property is pre-populated by the property"s address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.</div><div class="popover-footer"><a id="neighbourhoodLatitudePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#neighbourhoodLatitudePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodLongitudePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">The latitude and longitudinal position of the property is pre-populated by the property"s address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.</div><div class="popover-footer"><a id="neighbourhoodLongitudePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#neighbourhoodLongitudePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodRadiusPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Change the radius to change the distance of the results on the neighborhood map are from the property. The smaller the radius; the closer the results. </div><div class="popover-footer"><a id="neighbourhoodRadiusPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#neighbourhoodRadiusPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodZoomPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Change the zoom to change how close the map is zoomed around the property on the neighborhood page.</div><div class="popover-footer"><a id="neighbourhoodZoomPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#neighbourhoodZoomPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodRemoveListingPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a business name here to remove it from the results on the neighborhood map. </div><div class="popover-footer"><a id="neighbourhoodRemoveListingPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    //
+    $(document).on("click", "#neighbourhoodRemoveListingPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodCategoriesPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;"> Changing the categories will change the categories that can be seen on the neighborhood map. </div><div class="popover-footer"><a id="neighbourhoodCategoriesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });$(document).on("click", "#neighbourhoodCategoriesPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="neighbourhoodAddPlacesPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click on "Add Places" to add businesses to the results of the neighborhood map. </div><div class="popover-footer"><a id="neighbourhoodAddPlacesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });$(document).on("click", "#neighbourhoodAddPlacesPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_neighbourhood_page = true}
+        #{current_user.save}
+    });

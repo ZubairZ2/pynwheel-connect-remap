@@ -1,9 +1,9 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Page Name
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoritePageNamePopover","data-content" => " "}
       %span#propertyDetailNameText
-        Changing the Page Name will change the menu label for this page in the Pynwheel app.
+        Changing the Page Name will change the menu label for this page in the Pynwheel app
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :favorite_name, :class=>"form-control favorite_setting_field"
@@ -21,7 +21,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email From
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteEmailFormPopover","data-content" => " "}
       %span#propertyDetailNameText
         Changing the Email From address will change the "from" email address for the eBrochure.
 
@@ -30,7 +30,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email Bcc
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteEmailBccPopover","data-content" => " "}
       %span#propertyDetailNameText
         Changing the Email Bcc address will change the email address that receives a copy of each eBrochure.
 
@@ -39,7 +39,7 @@
 .form-group#email_body_div
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email Body
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteEmailBodyPopover","data-content" => " "}
       %span#propertyDetailNameText
         Changing the Email Body will change the copy that appears on the top of each eBrochure.
 
@@ -52,7 +52,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Equal housing opportunity logo
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteEqualHousingOpportunityPopover","data-content" => " "}
       %span#propertyDetailNameText
         Switching the logo will change whether or not it appears at the bottom of the eBrochure.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -62,10 +62,10 @@
       %label.label-primary{:for => "favorite_setting_equal_housing_opportunity_logo"}
       %span.pl-15 Yes
 
-.form-group
+.form-group#HandicapDiv
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Handicap accessible logo
-    %i.propertyDetailName.fa.fa-question-circle
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteHandicapAccessiblePopover","data-delay"=>'{"hide": 1000}',"data-content" => " "}
       %span#propertyDetailNameText
         Switching the logo will change whether or not it appears at the bottom of the eBrochure.
   .col-sm-12.col-lg-9.col-md-9.col-xs-12

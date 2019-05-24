@@ -1,7 +1,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Manual Override
-    %i.tooltip1.fa.fa-question-circle
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditManualoverridePopover","data-content" => " "}
       %span#tooltiptext1
         When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property's property management software data feed (if the property is using a third party data feed).
 
@@ -14,9 +14,9 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floor Plan Name
-    %i.tooltip1.fa.fa-question-circle
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditNamePopover","data-content" => " "}
       %span#tooltiptext1
-        When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property's property management software data feed (if the property is using a third party data feed).
+        Changing the floor plan name will change how the name appears.
 
     %span Specify name here (Manual Override Required)
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -24,7 +24,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Provider Floor Plan ID
-    %i.tooltip1.fa.fa-question-circle
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditProviderIdPopover","data-content" => " "}
       %span#tooltiptext1
         The provider floor plan ID is the code assigned to this floor plan in the property management software.
 
@@ -34,7 +34,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Floor Plan Info
-    %i.tooltip1.fa.fa-question-circle
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditInfoPopover","data-content" => " "}
       %span#tooltiptext1
         Changing the number of bedrooms and number of bathrooms will change how they appear in the app. Changing square footage will change how it appears in the Pynwheel app only if there is not square footage associated with each unit in you data. Changing the price here will not affect the price that is displayed for each unit.
 
@@ -56,7 +56,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Virtual Tour URL
-    %i.tooltip1.fa.fa-question-circle
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditTourUrlPopover","data-content" => " "}
       %span#tooltiptext1
         Add a URL to add a virtual tour specific to this floor plan which will appear on the interactive map and in the floor plan gallery.
 
@@ -67,7 +67,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Additional Details
-    %i.tooltip1.fa.fa-question-circle
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditAdditionalDetailsPopover","data-content" => " "}
       %span#tooltiptext1
         Add details such as finishes and floor-plan specific features and they will appear in the "Additional Details" tab for this floor plan.
 
@@ -77,7 +77,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Primary Image
-    %i.tooltip1.fa.fa-question-circle
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditPrimaryImagePopover","data-content" => " "}
       %span#tooltiptext1
         This is the image that will appear of this floor plan.
 
@@ -97,7 +97,7 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Secondary Image
-    %i.tooltip1.fa.fa-question-circle
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditSecondaryImagePopover","data-content" => " "}
       %span#tooltiptext1
         Add a secondary image (such as a 3D image or photo) that will appear alongside the primary image for this floor plan.
 
@@ -121,4 +121,88 @@
       $('.wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
-  })
+  });
+  if (!#{current_user.welcome_edit_floorplan_page})
+  {
+    $('[data-toggle="floorplanEditManualoverridePopover"]').popover({
+        html: true,
+        placement: 'left',
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property"s property management software data feed (if the property is using a third party data feed). </div><div class="popover-footer"><a id="floorplanEditManualoverridePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#floorplanEditManualoverridePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanEditNamePopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the floor plan name will change how the name appears.</div><div class="popover-footer"><a id="floorplanEditNamePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#floorplanEditNamePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanEditProviderIdPopover"]').popover({
+        html: true,
+        placement: 'left',
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">The provider floor plan ID is the code assigned to this floor plan in the property management software.</div><div class="popover-footer"><a id="floorplanEditProviderIdPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#floorplanEditProviderIdPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanEditInfoPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the number of bedrooms and number of bathrooms will change how they appear in the app. Changing square footage will change how it appears in the Pynwheel app only if there is not square footage associated with each unit in you data. Changing the price here will not affect the price that is displayed for each unit.</div><div class="popover-footer"><a id="floorplanEditInfoPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#floorplanEditInfoPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanEditTourUrlPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a URL to add a virtual tour specific to this floor plan which will appear on the interactive map and in the floor plan gallery.</div><div class="popover-footer"><a id="floorplanEditTourUrlPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#floorplanEditTourUrlPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanEditAdditionalDetailsPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add details such as finishes and floor-plan specific features and they will appear in the "Additional Details" tab for this floor plan.</div><div class="popover-footer"><a id="floorplanEditAdditionalDetailsPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#floorplanEditAdditionalDetailsPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanEditPrimaryImagePopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">This is the image that will appear of this floor plan.</div><div class="popover-footer"><a id="floorplanEditPrimaryImagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#floorplanEditPrimaryImagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplanEditSecondaryImagePopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a secondary image (such as a 3D image or photo) that will appear alongside the primary image for this floor plan. </div><div class="popover-footer"><a id="floorplanEditSecondaryImagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+      }).popover('show');
+    });
+    $(document).on("click", "#floorplanEditSecondaryImagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_edit_floorplan_page = true}
+        #{current_user.save}
+    });

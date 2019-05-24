@@ -12,7 +12,7 @@
       %a.btn.btn-success.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
         %i.fa.fa-plus-circle
         ADD DETAILS TO MULTIPLE
-      %i.propertyDetailName.fa.fa-question-circle
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplanDetailsToMultiplePopover","data-content" => " "}
         %span#propertyDetailNameText
           Add or change details to multiple floor plans that will appear in the "Additional Details" tab.
   .row{ style: "margin-left: 0px;"}
@@ -47,13 +47,13 @@
                 -#%th Description
                 %th
                   Interior Images
-                  %i.propertyDetailName.fa.fa-question-circle
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplanInteriorImagesPopover","data-content" => " "}
                     %span#propertyDetailNameText
                       Add or change images (such as interior photography or renderings) associated with each floor plan.
                 %th Floor Plan Image
                 %th
                   Actions
-                  %i.propertyDetailName.fa.fa-question-circle
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplanGridActionPopover","data-content" => " "}
                     %span#propertyDetailNameText
                       Click the edit icon to view or change the details associated with each floor plan such as name, images, virtual tour, and details.
             %tbody

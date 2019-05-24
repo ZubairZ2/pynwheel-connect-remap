@@ -169,12 +169,12 @@
           %span.hidden#marker_color #{marker_color}
 
         .btn-btn-danger.mt-10
-          = link_to "MANAGE AMENITIES <i class='propertyDetailName fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText'>Click on 'Plot Amenities' to switch from plotting units to plotting amenity images.</span></i>".html_safe , community_amenities_path(@community), :class=>"btn btn-success"
+          = link_to "MANAGE AMENITIES <i class='propertyDetailName fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Plot Amenities' to switch from plotting units to plotting amenity images.</span></i>".html_safe , community_amenities_path(@community), :class=>"btn btn-success"
 
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"}
             GRID OVERLAY
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapGridOverlayPopover","data-content" => " "}
-              %span#propertyDetailNameText
+              %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
@@ -204,7 +204,7 @@
               %h5.mt-40.mb-20
                 SELECT UNITS TO PLOT
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapSelectPlotToUnitsPopover","data-content" => " "}
-                  %span#propertyDetailNameText
+                  %span#propertyDetailNameText{:style => "font-weight: normal;"}
                     You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
               %select.amenities-list.form-control{:multiple=>"multiple"}
                 - arr = []
