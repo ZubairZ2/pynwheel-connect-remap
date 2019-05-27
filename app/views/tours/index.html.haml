@@ -1,0 +1,72 @@
+- content_for :title, "Tour Setup Page - Pynwheel"
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-image
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          TOUR SETUP PAGE
+          %span
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12
+            .box.box-widget.panel-box.add-plan.pt-30
+              = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
+                = hidden_field_tag "community_id", @community.id
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Show Tour Page
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = check_box_tag :show_tour_page, true, @community.show_tour_page, class: "show-tour-page"
+                      %label.label-primary{:for => "show_tour_page"}
+                      %span.pl-15 Yes
+                = submit_tag 'Save', class: "hidden"
+        -#.box.box-widget.panel-box.add-plan
+        .box.box-widget.panel-box
+          .row
+            .col-md-12
+              %table.table.table-bordered.table-striped.table-hover.table-responsive
+                %thead
+                  %tr
+                    %th{:width => "79"} Sr #
+                    %th Tour Stop
+                    %th{:width => "100"} Actions
+                %tbody.sortable_list
+                  - orderVar = 0
+                  - if @tour_stops.present?
+                    - sortable_fetch(@tour_stops) do |stop,index|
+                      %tr{:id=> index}
+                        - orderVar = orderVar + 1
+                        %td= orderVar
+                        %td
+                          = link_to stop.name
+                        %td
+                          -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
+                          -#  %i.fa.fa-eye
+                          = link_to edit_community_gallery_path(@community,stop), remote: true, class: "text-success ml-5" do
+                            %i.fa.fa-edit.icon_size
+                          %a.text-danger{"data-name"=>"Gallery","data-href" => "", "data-target" => "", "data-toggle" => "modal", :href => "javascrip::;"}
+                            %i.fa.fa-trash.icon_size
+        .row
+          .col-md-12
+            = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
+              %i.fa.fa-plus-circle
+              ADD STARTING POINT
+
+      / End Panel left Side
+/ /.content
+:javascript
+  $('.show-tour-page').change(function(){
+    $('.tour-settings-form').submit();
+  });

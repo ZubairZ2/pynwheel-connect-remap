@@ -6,6 +6,7 @@ class CreateTourStops < ActiveRecord::Migration[5.0]
       t.decimal :longitude
       t.integer :stop_id
       t.string :stop_type
+      t.integer :sort
 
       t.timestamps
     end
