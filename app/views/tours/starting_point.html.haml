@@ -1,5 +1,6 @@
 -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
+
 - content_for :title, "Add Starting Point - Pynwheel"
 %section.is-amenity
   .content
@@ -101,8 +102,23 @@
           .row
             .col-lg-9#container.p-0
               .map-block{:style=>"position: relative;"}
-                .plot-image#map
-                  = image_tag "https://maps.googleapis.com/maps/api/staticmap?zoom=17&size=400x300&center=#{ @community.tour.latitude},#{ @community.tour.longitude}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI", alt: "Map"
+                #map2
+
+                  -#:javascript
+                  -#  var map;
+                  -#  function initMap() {
+                  -#    map = new google.maps.Map(document.getElementById('map2'), {
+                  -#      center: {lat: #{@tours.latitude}, lng: #{@tours.longitude}},
+                  -#      zoom: 19
+                  -#    });
+                  -#  }
+                  %script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&callback=initMap",:alt => "Enter Latitude and Longitude to display Map"}
+
+
+                  -#%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&libraries=places,geometry&callback=initMap"}
+                  -#%a{:href => "https://maps.google.com/maps?f=q&source=embed&hl=en&geocode=&q=199+Chambers+Street,+New+York,+NY&aq=0&oq=199+ch&sll=31.497488,74.479681&sspn=0.720496,0.896759&ie=UTF8&hq=&hnear=199+Chambers+St,+New+York,+10007&ll=31.717367,74.412178&spn=0.011254,0.021307&t=m&z=14", :style => "color:#0000FF;text-align:left"}
+                  -#%iframe{:frameborder => "0",:width => "100%", :height => "100%", :marginheight => "0", :marginwidth => "0", :scrolling => "no", :src => "https://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=199+Chambers+Street,+New+York,+NY&aq=0&oq=199+ch&sll=31.484567,74.409473&sspn=0.720496,0.896759&ie=UTF8&hq=&hnear=199+Chambers+St,+New+York,+10007&ll=31.484567,74.409473&spn=0.011254,0.021307&t=m&z=17&output=embed"}
+                  -#= image_tag "https://maps.googleapis.com/maps/api/staticmap?zoom=17&size=400x300&center=31.411,74.4714&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI", alt: "Map"
                   -#- @sitemap.amenities.each do |amenity|
                   -#  - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
                   -#    = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
@@ -112,15 +128,15 @@
                 .show-categories
                   = "-- select amenity --"
                 %ul#imageselect{:style => "display: none;"}
-                  -#- amenity_arr = []
-                  -#- @amenities.each do |amenity|
-                  -#  - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
-                  -#    %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
-                  -#      %a
-                  -#        = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
-                  -#        %span.ml-5
-                  -#          = amenity.name
-                  -#  - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
+                  - amenity_arr = []
+                  - @amenities.each do |amenity|
+                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                      %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
+                        %a
+                          = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
+                          %span.ml-5
+                            = amenity.name
+                    - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
 
               %h5.mt-40 SELECTED AMENITIES
               .add-plan.mt-10.mb-20
@@ -134,3 +150,40 @@
     // alert("grgr");
     $('.save-starting-point-form').submit();
   });
+  // var map;
+  // function initMap() {
+  //   map = new google.maps.Map(document.getElementById('map'), {
+  //     center: {lat: -34.397, lng: 150.644},
+  //     zoom: 8
+  //   });
+  // }
+  // map = new google.maps.Map(document.getElementById('map'), {
+  //     center: {lat: -34.397, lng: 150.644},
+  //     zoom: 8
+  // });
+
+   var historicalOverlay;
+
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById('map2'), {
+          zoom: 22,
+          center: {lat: #{@tours.latitude}, lng: #{@tours.longitude}},
+
+        });
+         map.setInterval(rotate90, 3000);
+        // var imageBounds = {
+        //   north: 31.484598,
+        //   south: 31.484447,
+        //   east:  74.409449,
+        //   west: 74.409385
+        // };
+        var imageBounds = new google.maps.LatLngBounds(
+          new google.maps.LatLng(31.484447, 74.409385),
+          new google.maps.LatLng(31.484598, 74.409449),
+        );
+
+        historicalOverlay = new google.maps.GroundOverlay(
+            '#{@community.sitemap.image.url}',
+            imageBounds );
+        historicalOverlay.setMap(map);
+      }
