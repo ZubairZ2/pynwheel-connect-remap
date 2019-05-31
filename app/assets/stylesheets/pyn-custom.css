@@ -3155,3 +3155,40 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     padding: 10px 15px;
 }
+
+.floorplanMassUploadPopName {
+    position: relative;
+    display: inline-block;
+}
+
+.floorplanMassUploadPopName #floorplanMassUploadPopNameText {
+    visibility: hidden;
+    width: 350px;
+    background-color: #e0e0e0;
+    color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -170px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+.floorplanMassUploadPopName #floorplanMassUploadPopNameText::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -10px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.floorplanMassUploadPopName:hover #floorplanMassUploadPopNameText {
+    visibility: visible;
+}

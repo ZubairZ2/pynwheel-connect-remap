@@ -19,7 +19,7 @@ class UnitAmenitiesController < ApplicationController
 
   def plot_amenities
     add_breadcrumb "Units", community_units_path(current_community)
-    add_breadcrumb "Plot Amenities", plot_amenities_community_unit_amenities_path(@community,@unit)
+    add_breadcrumb "Plot Unit Images", plot_amenities_community_unit_amenities_path(@community,@unit)
     @sitemap = @unit
     @amenities = @community.amenities
     @floorplan = Floorplan.where(provider_floorplan_id: @unit.floorplan_id,community_id: @community.id).first

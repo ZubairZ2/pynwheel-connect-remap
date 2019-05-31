@@ -49,8 +49,8 @@
                 .col-md-12.col-lg-9.col-xs-9
                   %h4
                     Mass Upload Floor Plan Images
-                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplanMassUploadPopover","data-content" => " "}
-                      %span#propertyDetailNameText
+                    %i.floorplanMassUploadPopName.fa.fa-question-circle{ "data-toggle" => "floorplanMassUploadPopover","data-content" => " "}
+                      %span#floorplanMassUploadPopNameText
                         Use this area to easily upload multiple floor plan images.
                   %p.pt-10.mb-20 Upload files here, then drag and drop them to the floor plan image column in the table. Only jpeg, jpg and png files are accepted.
                   %p.pt-10.mb-20 Images will appear at a size of 270 x 170 px when fully expanded. Please note that images that are too small may appear pixelated.
@@ -133,7 +133,7 @@
   {
     $('[data-toggle="floorplanDetailsToMultiplePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Add or change details to multiple floor plans that will appear in the "Additional Details" tab. </div><div class="popover-footer"><a id="floorplanDetailsToMultiplePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Add or change details for multiple floor plans. Details will appear in the "Additional Details" tab. </div><div class="popover-footer"><a id="floorplanDetailsToMultiplePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -143,7 +143,7 @@
         $('[data-toggle="floorplanMassUploadPopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this area to easily upload multiple floor plan images.</div><div class="popover-footer"><a id="floorplanMassUploadPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this area to easily upload multiple floor plan images.</div><div class="popover-footer"><a id="floorplanMassUploadPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -152,7 +152,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplanInteriorImagesPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add or change images (such as interior photography or renderings) associated with each floor plan.</div><div class="popover-footer"><a id="floorplanInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add or change images (such as interior photography or renderings) associated with each floor plan.</div><div class="popover-footer"><a id="floorplanInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -162,7 +162,7 @@
         $('[data-toggle="floorplanGridActionPopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each floor plan such as name, images, virtual tour, and details.</div><div class="popover-footer"><a id="floorplanGridActionPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each floor plan such as name, images, virtual tour, and details.</div><div class="popover-footer"><a id="floorplanGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
     $(document).on("click", "#floorplanGridActionPopoverClose" , function(){

@@ -14,7 +14,7 @@
         ADD DETAILS TO MULTIPLE
       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplanDetailsToMultiplePopover","data-content" => " "}
         %span#propertyDetailNameText
-          Add or change details to multiple floor plans that will appear in the "Additional Details" tab.
+          Add or change details for multiple floor plans. Details will appear in the "Additional Details" tab.
   .row{ style: "margin-left: 0px;"}
     -#.box.box-widget.panel-box.ml-15
     %h4{style: "color: grey;  "}
@@ -77,9 +77,9 @@
                   %td
                     %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
 
-                      %i.fa.fa-edit.icon_size{style: "color: #{f.manual_override ? "white" : ""};"}
+                      %i.fa.fa-edit.icon_size{style: "color: #{f.manual_override ? "" : ""};"}
                     %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
-                      %i.fa.fa-trash.icon_size{style: "color: #{f.manual_override ? "white" : ""};"}
+                      %i.fa.fa-trash.icon_size{style: "color: #{f.manual_override ? "" : ""};"}
 
       
 / End Panel left Side
