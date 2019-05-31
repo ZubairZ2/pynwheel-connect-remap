@@ -449,7 +449,7 @@ class PsiSwapService < BaseService
                       end
                       rentStr = ""
                       begin
-                        if us[1]["Rent"]["TermRent"].count > 0 && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
+                        if us[1]["Rent"]["TermRent"].count > 1 #0 && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
                           us[1]["Rent"]["TermRent"].each do |tr|
                             rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
                           end
