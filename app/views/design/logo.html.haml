@@ -54,16 +54,18 @@
   {
   $('[data-toggle="primaryLogoPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Uploading a logo will change the logo that appears on the touchscreen and on the eBrochure.</div><div class="popover-footer"><a id="primaryLogoPopoverId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover" style="left: 123px !important;"><div class="arrow"></div><div class="popover-body popover-padding">Uploading a logo will change the logo that appears on the touchscreen and on the eBrochure.</div><div class="popover-footer"><a id="primaryLogoPopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
+    $('html, body').animate({ scrollTop: 200 });
   }
 
     $(document).on("click", "#primaryLogoPopoverId" , function(){
+        $('html, body').animate({ scrollTop: 400 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="secondaryLogoPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Uploading a Home Page Logo will change the logo that appears on the home page.</div><div class="popover-footer"><a id="secondaryLogoPopoverId" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Uploading a Home Page Logo will change the logo that appears on the home page.</div><div class="popover-footer"><a id="secondaryLogoPopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 

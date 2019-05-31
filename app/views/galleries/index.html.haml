@@ -27,7 +27,7 @@
                     Page Name
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "galleryPageNamePopover","data-content" => " "}
                       %span#propertyDetailNameText
-                        Changing the Page Name will change the menu label for this page in the Pynwheel app .
+                        Changing the Page Name will change the menu label for this page in the Pynwheel app.
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
                     = text_field_tag :gallery_page_name, @community.gallery_page_name, :class=>"form-control gallery-setting-field"
                 
@@ -36,7 +36,7 @@
                     Show this page
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "galleryShowThisPagePopover","data-content" => " "}
                       %span#propertyDetailNameText
-                        Switching show this page will change whether or not this page appears in the Pynwheel app.
+                        Switching this will change whether or not this page appears in the Pynwheel app.
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -48,7 +48,7 @@
                     Add to Home Page Menu
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "galleryAddToHomePagePopover","data-content" => " "}
                       %span#propertyDetailNameText
-                        Switching add to home page menu will change whether or not there is a menu button for this page on the home page of the Pynwheel app.
+                        Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
@@ -73,8 +73,16 @@
                 %thead
                   %tr
                     %th{:width => "79"} Sr #
-                    %th Gallery Name
-                    %th{:width => "100"} Actions
+                    %th
+                      Gallery Name
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "galleryGridNamePopover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          Click on the gallery name to load and reorder images in each gallery. Drag and drop the gallery name in the grid below to reorder the way the galleries appear in the Pynwheel app.
+                    %th{:width => "100"}
+                      Actions
+                      %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "galleryGridActionPopover","data-content" => " "}
+                        %span#additionalPageActionText
+                          Click the edit icon to view or change the gallery name.
                 %tbody.sortable_list
                   - orderVar = 0
                   - sortable_fetch(@galleries) do |gallery,index|
@@ -129,7 +137,7 @@
   {
     $('[data-toggle="galleryPageNamePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for this page in the Pynwheel app .</div><div class="popover-footer"><a id="galleryPageNamePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for this page in the Pynwheel app.</div><div class="popover-footer"><a id="galleryPageNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -138,7 +146,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="galleryShowThisPagePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching show this page will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="galleryShowThisPagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="galleryShowThisPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -147,11 +155,30 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="galleryAddToHomePagePopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Switching add to home page menu will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="galleryAddToHomePagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="galleryAddToHomePagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
     $(document).on("click", "#galleryAddToHomePagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="galleryGridNamePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click on the gallery name to load and reorder images in each gallery. Drag and drop the gallery name in the grid below to reorder the way the galleries appear in the Pynwheel app.</div><div class="popover-footer"><a id="galleryGridNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#galleryGridNamePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="galleryGridActionPopover"]').popover({
+        html: true,
+        placement: 'left',
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the gallery name.</div><div class="popover-footer"><a id="galleryGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#galleryGridActionPopoverClose" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         #{current_user.welcome_gallery_page = true}

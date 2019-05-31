@@ -66,7 +66,7 @@
                 %br
                 tour or integration such as TransitScreen or BuildingLink.
             = link_to new_community_imagepage_path(@community), remote: true, class: "btn btn-primary mb-10 ml-10" do
-              %i.fa.fa-plus-circleEnter URL
+              %i.fa.fa-plus-circleEnter
               ADD IMAGE PAGE
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AdditionalPageAddImagepagePopover","data-content" => " ", :style => "padding-left: 5px;"}
               %span#propertyDetailNameText{:style => "width: 400px"}
@@ -83,7 +83,7 @@
     $('[data-toggle="additionalPageGridActionsPopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Import property amenity photos or renderings here. After you import an image, you will be able to plot a marker on the Property Map. For example, add an image of the courtyard and then plot an amenity marker for the courtyard on the Property Map.</div><div class="popover-footer"><a id="additionalPageGridActionsPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each page including its name; whether or not it will appear in the Pynwheel app; whether or not it will appear in the home page menu; and in what position it will appear on the home page menu.</div><div class="popover-footer"><a id="additionalPageGridActionsPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -93,7 +93,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="AdditionalPageAddWebpagePopover"]').popover({
             html: true,
-            template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding"  style="color: black;">Import property amenity photos or renderings here. After you import an image, you will be able to plot a marker on the Property Map. For example, add an image of the courtyard and then plot an amenity marker for the courtyard on the Property Map.</div><div class="popover-footer"><a id="AdditionalPageAddWebpagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+            template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding"  style="color: black;">Click "Add Webpage" to add a webpage such as a 3D tour or integration such as TransitScreen or BuildingLink.</div><div class="popover-footer"><a id="AdditionalPageAddWebpagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
         }).popover('show');
     });
     $(document).on("click", "#AdditionalPageAddWebpagePopoverClose" , function(){
@@ -101,7 +101,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="AdditionalPageAddImagepagePopover"]').popover({
             html: true,
-            template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding"  style="color: black;">Import property amenity photos or renderings here. After you import an image, you will be able to plot a marker on the Property Map. For example, add an image of the courtyard and then plot an amenity marker for the courtyard on the Property Map.</div><div class="popover-footer"><a id="AdditionalPageAddImagepagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+            template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding"  style="color: black;">Click "Add Image Page" to add an image page such as an "About Page" static image, sliding image, or slide show.</div><div class="popover-footer"><a id="AdditionalPageAddImagepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
         }).popover('show');
     });
     $(document).on("click", "#AdditionalPageAddImagepagePopoverClose" , function(){

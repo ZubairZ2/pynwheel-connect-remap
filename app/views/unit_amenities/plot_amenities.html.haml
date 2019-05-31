@@ -1,6 +1,6 @@
 -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
-- content_for :title, "Plot Amenities - Pynwheel"
+- content_for :title, "Plot Unit Images - Pynwheel"
 %section.is-amenity
   .content
     .title-heading.mb-25
@@ -10,6 +10,9 @@
         %br
           %small.text-primary
             = @community.code
+    = link_to "<Back to All Units", community_floorplans_path(@community), class: "btn btn-primary ", style: "background: #8f4a9c; color: white;"
+    %h4{:style => "color: grey;"}
+      If no images appear in the list, there are no available images to plot.
     .box.box-info.add-plan
       .box-header
         %h3.box-title
@@ -51,7 +54,7 @@
       %form.form-horizontal
         .box-body.map-body-top
           .row
-            .col-lg-9#container.p-0
+            .col-lg-9#container.p-0{:style => "float: right;"}
               .map-block{:style=>"position: relative;"}
                 .plot-image#map
                   = image_tag @unit.standard_image_url.present? ? @unit.standard_image_url : (@floorplan.present? && @floorplan.standard_image_url.present? ? @floorplan.standard_image_url : "/assets/default.jpeg")

@@ -36,7 +36,7 @@
     Floor Plan Info
     %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditInfoPopover","data-content" => " "}
       %span#tooltiptext1
-        Changing the number of bedrooms and number of bathrooms will change how they appear in the app. Changing square footage will change how it appears in the Pynwheel app only if there is not square footage associated with each unit in you data. Changing the price here will not affect the price that is displayed for each unit.
+        Changing the number of bedrooms and number of bathrooms will change how they appear in the app. Changing square footage will change how it appears in the Pynwheel app only if there is not square footage associated with each unit in your data. Changing the price here will not affect the price that is displayed for each unit.
 
     %span Specify floor plan info here (Manual Override Required)
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -129,7 +129,7 @@
     $('[data-toggle="floorplanEditManualoverridePopover"]').popover({
         html: true,
         placement: 'left',
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property"s property management software data feed (if the property is using a third party data feed). </div><div class="popover-footer"><a id="floorplanEditManualoverridePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property"s property management software data feed (if the property is using a third party data feed). </div><div class="popover-footer"><a id="floorplanEditManualoverridePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -139,67 +139,73 @@
         $('[data-toggle="floorplanEditNamePopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the floor plan name will change how the name appears.</div><div class="popover-footer"><a id="floorplanEditNamePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the floor plan name will change how the name appears.</div><div class="popover-footer"><a id="floorplanEditNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
     $(document).on("click", "#floorplanEditNamePopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 200 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplanEditProviderIdPopover"]').popover({
         html: true,
         placement: 'left',
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">The provider floor plan ID is the code assigned to this floor plan in the property management software.</div><div class="popover-footer"><a id="floorplanEditProviderIdPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">The provider floor plan ID is the code assigned to this floor plan in the property management software.</div><div class="popover-footer"><a id="floorplanEditProviderIdPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
     $(document).on("click", "#floorplanEditProviderIdPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 400 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplanEditInfoPopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the number of bedrooms and number of bathrooms will change how they appear in the app. Changing square footage will change how it appears in the Pynwheel app only if there is not square footage associated with each unit in you data. Changing the price here will not affect the price that is displayed for each unit.</div><div class="popover-footer"><a id="floorplanEditInfoPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the number of bedrooms and number of bathrooms will change how they appear in the app. Changing square footage will change how it appears in the Pynwheel app only if there is not square footage associated with each unit in your data. Changing the price here will not affect the price that is displayed for each unit.</div><div class="popover-footer"><a id="floorplanEditInfoPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
     $(document).on("click", "#floorplanEditInfoPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 600 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplanEditTourUrlPopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a URL to add a virtual tour specific to this floor plan which will appear on the interactive map and in the floor plan gallery.</div><div class="popover-footer"><a id="floorplanEditTourUrlPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a URL to add a virtual tour specific to this floor plan which will appear on the interactive map and in the floor plan gallery.</div><div class="popover-footer"><a id="floorplanEditTourUrlPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
     $(document).on("click", "#floorplanEditTourUrlPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 800 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplanEditAdditionalDetailsPopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add details such as finishes and floor-plan specific features and they will appear in the "Additional Details" tab for this floor plan.</div><div class="popover-footer"><a id="floorplanEditAdditionalDetailsPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add details such as finishes and floor-plan specific features and they will appear in the "Additional Details" tab for this floor plan.</div><div class="popover-footer"><a id="floorplanEditAdditionalDetailsPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
     $(document).on("click", "#floorplanEditAdditionalDetailsPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 1000 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplanEditPrimaryImagePopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">This is the image that will appear of this floor plan.</div><div class="popover-footer"><a id="floorplanEditPrimaryImagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">This is the image that will appear of this floor plan.</div><div class="popover-footer"><a id="floorplanEditPrimaryImagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
     $(document).on("click", "#floorplanEditPrimaryImagePopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 1200 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplanEditSecondaryImagePopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a secondary image (such as a 3D image or photo) that will appear alongside the primary image for this floor plan. </div><div class="popover-footer"><a id="floorplanEditSecondaryImagePopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a secondary image (such as a 3D image or photo) that will appear alongside the primary image for this floor plan. </div><div class="popover-footer"><a id="floorplanEditSecondaryImagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
     $(document).on("click", "#floorplanEditSecondaryImagePopoverClose" , function(){
