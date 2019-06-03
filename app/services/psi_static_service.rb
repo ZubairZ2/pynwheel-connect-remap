@@ -265,7 +265,7 @@ class PsiStaticService < BaseService
                   end
                   rentStr = ""
                   begin
-                    if us[1]["Rent"]["TermRent"].count > 0 && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
+                    if us[1]["Rent"]["TermRent"].count > 1# && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
                       us[1]["Rent"]["TermRent"].each do |tr|
                         spaceOption = tr["@attributes"]["SpaceOption"].present? ? tr["@attributes"]["SpaceOption"] : "" rescue ""
                         startDate = tr["@attributes"]["StartDate"].present? ? tr["@attributes"]["StartDate"] : "" rescue ""
