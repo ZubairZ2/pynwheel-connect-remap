@@ -46,7 +46,7 @@
   {
      $('[data-toggle="favoriteAddImagesPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Click "Add Images" to add images that will always appear at the top of the eBrochure</div><div class="popover-footer"><a id="favoriteAddImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Click "Add Images" to add images that will always appear at the top of the eBrochure.</div><div class="popover-footer"><a id="favoriteAddImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -64,7 +64,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="favoritePageNamePopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Page Name will change the menu label for this page in the Pynwheel app .</div><div class="popover-footer"><a id="favoritePageNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Page Name will change the menu label for this page in the Pynwheel app.</div><div class="popover-footer"><a id="favoritePageNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -126,7 +126,7 @@
     $(document).on("click", "#favoriteHandicapAccessiblePopoverClose" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        #{current_user.welcome_favorite_page = false}
+        #{current_user.welcome_favorite_page = true}
         #{current_user.save}
     });
   //   var elmnt = document.getElementById("HandicapDiv");
