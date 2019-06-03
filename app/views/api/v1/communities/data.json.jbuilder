@@ -452,7 +452,7 @@ json.ui_settigs do
 
 
 
-        json.global_navigation_btn_off_for_all @community.design.expressionist.global_navigation_btn_off_for_all
+        json.global_navigation_btn_off_for_all @community.design.expressionist.present? ? @community.design.expressionist.global_navigation_btn_off_for_all : false
         if @community.theme_name == "expressionist"
           if @community.design.expressionist.global_navigation_btn_off_for_all
             json.apartment_btn_off_image @community.design.expressionist.apartment_btn_off_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.apartment_btn_off_image.url : @community.design.expressionist.apartment_btn_off_image.url) : "No Image"
@@ -945,7 +945,7 @@ json.ui_settigs do
           else
             json.display_home_page_nav_background true
           end
-          json.display_home_page_nav_background_image @community.design.expressionist.display_home_page_nav_background_image
+          json.display_home_page_nav_background_image @community.design.expressionist.present? ? @community.design.expressionist.display_home_page_nav_background_image : false
           json.home_page_background_image "No Image"
 
           json.home_page_logo_visible false
