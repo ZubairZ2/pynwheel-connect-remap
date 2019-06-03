@@ -3,4 +3,6 @@ class TourStop < ApplicationRecord
   include StandardUrl
   include RailsSortable::Model
   set_sortable :sort
+  has_many :stop_details
+  has_many :stop_galleries
 end

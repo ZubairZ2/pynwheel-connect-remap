@@ -14,13 +14,18 @@ json.tours @tours do |tour|
     json.type stop.stop_type
     if stop.stop_type == "unit"
       unit = Unit.find stop.stop_id
-      json.stop_data ["marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability]
-      json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
+      json.stop_data ["marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"image"=> unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"]
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
     end
-    
+    stop.stop_details.each do |sd|
+      json.stop_description sd.description
+    end
+    stop.stop_galleries.each do |sg|
+      json.stop_gallery_name sg.name
+      json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
+    end
   end
 
 end
