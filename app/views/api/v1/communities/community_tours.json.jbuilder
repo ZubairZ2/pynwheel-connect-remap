@@ -5,7 +5,7 @@ json.tours @tours do |tour|
   json.name tour.name
   json.latitude tour.latitude
   json.longitude tour.longitude
-  json.image tour.image
+  json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
   json.tour_stop tour.tour_stops do |stop|
     json.id stop.id
