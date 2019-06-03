@@ -68,6 +68,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo).includes(:company)
   end
   def community_tours
+    @community = Community.find params[:id]
     @tours = Tour.where(community_id: params[:id])
   end
 
