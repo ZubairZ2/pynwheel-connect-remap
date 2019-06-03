@@ -327,6 +327,7 @@
     });
 
     $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 200 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitempaDisplayHomepagePopover"]').popover({
@@ -335,6 +336,7 @@
       }).popover('show');
     });
     $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 400 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapDisplayPricePopover"]').popover({
@@ -344,6 +346,7 @@
     });
 
     $(document).on("click", "#sitemapDisplayPricePopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 650 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapUploadFilePopover"]').popover({
@@ -352,6 +355,7 @@
       }).popover('show');
     });
     $(document).on("click", "#sitemapUploadFilePopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 950 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="plotUnitOnSitemapPopover"]').popover({
@@ -361,6 +365,7 @@
     });
 
     $(document).on("click", "#plotUnitOnSitemapPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 1000 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapManageAmenitiesPopover"]').popover({
@@ -369,6 +374,7 @@
       }).popover('show');
     });
     $(document).on("click", "#sitemapManageAmenitiesPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 1100 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapGridOverlayPopover"]').popover({
@@ -378,6 +384,7 @@
     });
 
     $(document).on("click", "#sitemapGridOverlayPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 1200 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapSelectPlotToUnitsPopover"]').popover({
