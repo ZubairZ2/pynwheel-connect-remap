@@ -159,8 +159,8 @@
                                 Add or change where unit markers appear on each floorplate. Each marker will represent the position of the unit marker on every floor. (For example, if the floorplate is for floors 2-4, units 201, 301, and 401 will be plotted at once, with one marker, and then appear on floors 2, 3, and 4 respectively.)
                           %td
                             = link_to "Plot Amenities",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn btn-default black-button"
-                            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplatePlotAmenitiesPopover","data-content" => " "}
-                              %span#propertyDetailNameText
+                            %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "floorplatePlotAmenitiesPopover","data-content" => " "}
+                              %span#additionalPageActionText
                                 Add or change where amenity markers appear on each floorplate.
                           %td
                             = link_to edit_community_floorplate_path(current_community,f), :class=>"text-success" do
@@ -204,7 +204,7 @@
   {
     $('[data-toggle="floorplatePageNamePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.</div><div class="popover-footer"><a id="floorplatePageNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.</div><div class="popover-footer"><a id="floorplatePageNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -213,7 +213,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplateShowPropertyMapPagePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="floorplateShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="floorplateShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -222,7 +222,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplateDisplayFloorplanGalleryPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.</div><div class="popover-footer"><a id="floorplateDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.</div><div class="popover-footer"><a id="floorplateDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -231,7 +231,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplateDisplayOnHomepagePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="floorplateDisplayOnHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="floorplateDisplayOnHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
     $(document).on("click", "#floorplateDisplayOnHomepagePopoverClose" , function(){
@@ -240,7 +240,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplateDisplaPricePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.</div><div class="popover-footer"><a id="floorplateDisplaPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.</div><div class="popover-footer"><a id="floorplateDisplaPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -251,7 +251,7 @@
         $('[data-toggle="floorplateGridActionPopover"]').popover({
          placement: 'left',
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each floorplate such as name, image, building number, and floors.</div><div class="popover-footer"><a id="floorplateGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each floorplate such as name, image, building number, and floors.</div><div class="popover-footer"><a id="floorplateGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
      $(document).on("click", "#floorplateGridActionPopoverClose" , function(){
