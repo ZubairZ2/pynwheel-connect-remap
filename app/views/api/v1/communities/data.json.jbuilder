@@ -402,7 +402,7 @@ json.ui_settigs do
           json.display_global_nav_background_image @community.design.expressionist.present? ? @community.design.expressionist.display_global_nav_background_image : "No Image"
           json.global_nav_background_image "No Image"
         end
-        json.global_navigation_btn_on_for_all @community.design.expressionist.global_navigation_btn_on_for_all
+        json.global_navigation_btn_on_for_all @community.design.expressionist.present? ? @community.design.expressionist.global_navigation_btn_on_for_all : false
         if @community.theme_name == "expressionist"
           if @community.design.expressionist.global_navigation_btn_on_for_all
             json.apartment_btn_on_image @community.design.expressionist.apartment_btn_on_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.apartment_btn_on_image.url : @community.design.expressionist.apartment_btn_on_image.url) : "No Image"
