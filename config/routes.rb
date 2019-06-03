@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'tours/index'
+
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
@@ -22,6 +24,7 @@ Rails.application.routes.draw do
     end
 
     post :save_gallery_settings
+    post :save_tour_settings
     post :save_apartment_settings
     post :save_floor_plan_button
     get :import_page
@@ -139,7 +142,18 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :homepage_icons, only: :index do
+    resources :tours, only: :index do
+      collection do
+        post :save_starting_point
+        post :save_tour_settings
+        get :starting_point
+      end
+      resources :tour_stops, only: :index do
+      end
+    end
+
+
+    resources :homepage_icons, only: [:index, :create, :update] do
       collection do
         get :show_image_in_modal
         post :save_homepage_icon

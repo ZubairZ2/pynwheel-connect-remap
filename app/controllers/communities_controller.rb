@@ -375,6 +375,17 @@ class CommunitiesController < ApplicationController
       redirect_back(fallback_location: root_path)
     end
   end
+  def save_tour_settings
+    @community = Community.find params[:community_id]
+    @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+    if @community.save
+      flash[:notice] = "Tour settings updated successfully."
+      redirect_to community_tours_path(@community)
+    else
+      flash[:error] = @community.errors.full_messages.join(',')
+      redirect_back(fallback_location: root_path)
+    end
+  end
   def save_floor_plan_button
     @community = Community.find params[:community_id]
     @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false

@@ -1,0 +1,189 @@
+-#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
+= render '/font_awesome_v5'
+
+- content_for :title, "Add Starting Point - Pynwheel"
+%section.is-amenity
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-map-marker
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12
+            .box.box-widget.panel-box.add-plan.pt-30
+              = form_tag save_starting_point_community_tours_path(@community) ,{:class => 'save-starting-point-form'} do
+                = hidden_field_tag "community_id", @community.id
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Name
+                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                    = text_field_tag :name, @community.tour.name,:maxlength=>"30", :class=>"form-control save-starting-point-field"
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Latitude
+                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                    = text_field_tag :latitude, @community.tour.latitude,:maxlength=>"15", :class=>"form-control save-starting-point-field"
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Longitude
+                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                    = text_field_tag :longitude, @community.tour.longitude,:maxlength=>"15", :class=>"form-control save-starting-point-field"
+
+                -#.form-group
+                -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                -#    Show Tour Page
+                -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                -#    .TriSea-technologies-Switch
+                -#      %span.pr-15 No
+                -#      = check_box_tag :show_tour_page, true, @community.show_tour_page, class: "save-starting-point-field"
+                -#      %label.label-primary{:for => "show_tour_page"}
+                -#      %span.pl-15 Yes
+                = submit_tag 'Save', class: "hidden"
+
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Plot Property
+          %span Map Amenities
+          %span.hidden#active_x_plot 0
+
+          %span.hidden#active_y_plot 0
+
+          - if @community.theme_name.include?('gables')
+            - marker_color = @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'modernist'
+            - marker_color = @community.design.modernists_amenity_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color
+          - elsif @community.theme_name == 'futurist'
+            - marker_color = @community.design.futurist_amenity_map_marker_color.present? ? @community.design.futurist_amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'expressionist'
+            - marker_color = @community.design.expressionist__amenity_map_marker_color.present? ? @community.design.expressionist__amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'panther'
+            - marker_color = @community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : "#d37474"
+          - else
+            - marker_color = 'rgba(247, 0, 0, 0.61)'
+
+          - if @community.theme_name.include?('gables')
+            - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
+          - elsif @community.theme_name == 'modernist'
+            - marker_font_size = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
+          - elsif @community.theme_name == 'futurist'
+            - marker_font_size = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : 30
+          - elsif @community.theme_name == 'expressionist'
+            - marker_font_size = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
+          - elsif @community.theme_name == 'panther'
+            - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
+          - else
+            - marker_font_size = 30
+          - marker_font_size2 = marker_font_size
+          -#- marker_font_size = @community.design.amenity_map_marker_size_integer
+          -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
+          - marker_font_size = marker_font_size -5
+          - camera_font_size = marker_font_size / 2
+          - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
+          %span.hidden#marker-font-size #{marker_font_size}
+          %span.hidden#marker-color #{marker_color}
+          %span.hidden#camera-margin #{camera_margin}
+
+        -#.btn-btn-danger.mt-10
+        -#  = link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary"
+        -#  = link_to "PLOT UNITS", plotexp_community_sitemaps_path(@community), class: "btn btn-primary"
+        -#  %a.btn.btn-danger{"data-name" => "sitemap's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => ""} RESET ALL PLOTS
+      / /.box-header
+      / form start
+      %form.form-horizontal
+        .box-body.map-body-top
+          .row
+            .col-lg-9#container.p-0
+              .map-block{:style=>"position: relative;"}
+                #map2
+
+                  -#:javascript
+                  -#  var map;
+                  -#  function initMap() {
+                  -#    map = new google.maps.Map(document.getElementById('map2'), {
+                  -#      center: {lat: #{@tours.latitude}, lng: #{@tours.longitude}},
+                  -#      zoom: 19
+                  -#    });
+                  -#  }
+                  -#%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&callback=initMap",:alt => "Enter Latitude and Longitude to display Map"}
+
+
+                  -#%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&libraries=places,geometry&callback=initMap"}
+                  -#%a{:href => "https://maps.google.com/maps?f=q&source=embed&hl=en&geocode=&q=199+Chambers+Street,+New+York,+NY&aq=0&oq=199+ch&sll=31.497488,74.479681&sspn=0.720496,0.896759&ie=UTF8&hq=&hnear=199+Chambers+St,+New+York,+10007&ll=31.717367,74.412178&spn=0.011254,0.021307&t=m&z=14", :style => "color:#0000FF;text-align:left"}
+                  -#%iframe{:frameborder => "0",:width => "100%", :height => "100%", :marginheight => "0", :marginwidth => "0", :scrolling => "no", :src => "https://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=199+Chambers+Street,+New+York,+NY&aq=0&oq=199+ch&sll=31.484567,74.409473&sspn=0.720496,0.896759&ie=UTF8&hq=&hnear=199+Chambers+St,+New+York,+10007&ll=31.484567,74.409473&spn=0.011254,0.021307&t=m&z=17&output=embed"}
+                  = image_tag "https://maps.googleapis.com/maps/api/staticmap?zoom=17&size=400x300&center=31.411,74.4714&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI", alt: "Map"
+                  - @sitemap.amenities.each do |amenity|
+                    - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
+            .col-lg-3
+              %h5.mt-40.mb-20 SELECT AMENITIES TO PLOT
+              .imageselect
+                .show-categories
+                  = "-- select amenity --"
+                %ul#imageselect{:style => "display: none;"}
+                  - amenity_arr = []
+                  - @amenities.each do |amenity|
+                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                      %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
+                        %a
+                          = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
+                          %span.ml-5
+                            = amenity.name
+                    - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
+
+              %h5.mt-40 SELECTED AMENITIES
+              .add-plan.mt-10.mb-20
+                %ul#selected-units
+              / %button.btn.btn-success#new{:type => "button"} PLOT NOW
+              %label#newmsg Place marker for selected amenities on Map
+        #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
+          %i.icon-screenshot
+:javascript
+  $('.save-starting-point-field').change(function(){
+    // alert("grgr");
+    $('.save-starting-point-form').submit();
+  });
+  // var map;
+  // function initMap() {
+  //   map = new google.maps.Map(document.getElementById('map'), {
+  //     center: {lat: -34.397, lng: 150.644},
+  //     zoom: 8
+  //   });
+  // }
+  // map = new google.maps.Map(document.getElementById('map'), {
+  //     center: {lat: -34.397, lng: 150.644},
+  //     zoom: 8
+  // });
+
+   // var historicalOverlay;
+   //
+   //    function initMap() {
+   //      var map = new google.maps.Map(document.getElementById('map2'), {
+   //        zoom: 22,
+   //        center: {lat: 0}, lng: 0},
+   //
+   //      });
+   //       map.setInterval(rotate90, 3000);
+   //      // var imageBounds = {
+   //      //   north: 31.484598,
+   //      //   south: 31.484447,
+   //      //   east:  74.409449,
+   //      //   west: 74.409385
+   //      // };
+   //      var imageBounds = new google.maps.LatLngBounds(
+   //        new google.maps.LatLng(31.484447, 74.409385),
+   //        new google.maps.LatLng(31.484598, 74.409449),
+   //      );
+   //
+   //      historicalOverlay = new google.maps.GroundOverlay(
+   //          'abc.png',
+   //          imageBounds );
+   //      historicalOverlay.setMap(map);
+   //    }

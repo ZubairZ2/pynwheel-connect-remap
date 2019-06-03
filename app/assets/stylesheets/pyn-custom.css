@@ -3192,3 +3192,6 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .floorplanMassUploadPopName:hover #floorplanMassUploadPopNameText {
     visibility: visible;
 }
+#map2 {
+    height: 100%;
+}

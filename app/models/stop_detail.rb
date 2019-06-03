@@ -1,0 +1,2 @@
+class StopDetail < ApplicationRecord
+end

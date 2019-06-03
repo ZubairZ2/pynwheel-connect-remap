@@ -1,0 +1,2 @@
+class StopGallery < ApplicationRecord
+end
