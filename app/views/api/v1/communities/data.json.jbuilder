@@ -399,7 +399,7 @@ json.ui_settigs do
           json.gallery_nav_bg_color "#ffffff"
           json.favourities_nav_bg_color "#ffffff"
           json.additional_pages_nav_bg_color "#ffffff"
-          json.display_global_nav_background_image @community.design.expressionist.display_global_nav_background_image
+          json.display_global_nav_background_image @community.design.expressionist.present? ? @community.design.expressionist.display_global_nav_background_image : "No Image"
           json.global_nav_background_image "No Image"
         end
         json.global_navigation_btn_on_for_all @community.design.expressionist.global_navigation_btn_on_for_all
