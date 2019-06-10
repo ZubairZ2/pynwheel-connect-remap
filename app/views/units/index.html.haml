@@ -169,9 +169,9 @@
         $('[data-toggle="unitGridFloorPopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.</div><div class="popover-footer"><a id="unitGridFloorPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.</div><div class="popover-footer"><a id="unitGridInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
-    });$(document).on("click", "#unitGridFloorPopoverClose" , function(){
+    });$(document).on("click", "#unitGridSoldPopoverClose" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="unitGridInteriorImagesPopover"]').popover({
