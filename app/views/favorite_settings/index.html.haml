@@ -126,7 +126,7 @@
     $(document).on("click", "#favoriteHandicapAccessiblePopoverClose" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        #{current_user.welcome_favorite_page = false}
+        #{current_user.welcome_favorite_page = true}
         #{current_user.save}
     });
   //   var elmnt = document.getElementById("HandicapDiv");
