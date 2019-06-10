@@ -146,6 +146,11 @@ Rails.application.routes.draw do
         post :save_starting_point
         post :save_tour_settings
         get :starting_point
+        get :select_stops
+      end
+      member do
+        post :ajaxplotstartingpoint
+        delete :resetStartingPoint
       end
       resources :tour_stops, only: :index do
       end
