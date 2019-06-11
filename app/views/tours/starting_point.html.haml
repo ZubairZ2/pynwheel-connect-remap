@@ -50,8 +50,8 @@
     .box.box-info.add-plan
       .box-header
         %h3.box-title
-          Plot Property
-          %span Map Amenities
+          Plot Starting Point
+          %span
           %span.hidden#active_x_plot 0
 
           %span.hidden#active_y_plot 0
@@ -102,7 +102,7 @@
           .row
             .col-lg-9#container.p-0
               .map-block{:style=>"position: relative;"}
-                #map2
+                #map
 
                   -#:javascript
                   -#  var map;
@@ -118,31 +118,33 @@
                   -#%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&libraries=places,geometry&callback=initMap"}
                   -#%a{:href => "https://maps.google.com/maps?f=q&source=embed&hl=en&geocode=&q=199+Chambers+Street,+New+York,+NY&aq=0&oq=199+ch&sll=31.497488,74.479681&sspn=0.720496,0.896759&ie=UTF8&hq=&hnear=199+Chambers+St,+New+York,+10007&ll=31.717367,74.412178&spn=0.011254,0.021307&t=m&z=14", :style => "color:#0000FF;text-align:left"}
                   -#%iframe{:frameborder => "0",:width => "100%", :height => "100%", :marginheight => "0", :marginwidth => "0", :scrolling => "no", :src => "https://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=199+Chambers+Street,+New+York,+NY&aq=0&oq=199+ch&sll=31.484567,74.409473&sspn=0.720496,0.896759&ie=UTF8&hq=&hnear=199+Chambers+St,+New+York,+10007&ll=31.484567,74.409473&spn=0.011254,0.021307&t=m&z=17&output=embed"}
-                  = image_tag "https://maps.googleapis.com/maps/api/staticmap?zoom=17&size=400x300&center=31.411,74.4714&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI", alt: "Map"
-                  - @sitemap.amenities.each do |amenity|
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
+                  -#= image_tag "https://maps.googleapis.com/maps/api/staticmap?zoom=17&size=400x300&center=31.411,74.4714&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI", alt: "Map"
+                  = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  - if @tours.x_plot.to_i + @tours.y_plot.to_i > 0
+                    = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fa fa-star' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
             .col-lg-3
-              %h5.mt-40.mb-20 SELECT AMENITIES TO PLOT
-              .imageselect
-                .show-categories
-                  = "-- select amenity --"
-                %ul#imageselect{:style => "display: none;"}
-                  - amenity_arr = []
-                  - @amenities.each do |amenity|
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
-                      %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
-                        %a
-                          = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
-                          %span.ml-5
-                            = amenity.name
-                    - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
+              %h5.mt-40.mb-20 SELECT STARTING POINT TO PLOT
+              -#.imageselect
+              -#  .show-categories
+              -#    = "-- select amenity --"
+              -#  %ul#imageselect{:style => "display: none;"}
+              - arr1 = []
+              -#- @amenities.each do |amenity|
+              - arr1.push([@tours.id.to_s, @tours.x_plot.to_i, @tours.y_plot.to_i, true,"starting point"])
+              -#- if @tours.x_plot.to_i + @tours.y_plot.to_i == 0
+              %button.plot_starting_point#m_7{:type => "button",:disable => true} Plot Stating Point
+              -#%li{"data-id" => "#{@tours.id}","data-name" => "starting point"}
+              -#  %a
+              -#    = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
+              -#    %span.ml-5
+              -#      = amenity.name
 
-              %h5.mt-40 SELECTED AMENITIES
+
+              %h5.mt-40
               .add-plan.mt-10.mb-20
                 %ul#selected-units
               / %button.btn.btn-success#new{:type => "button"} PLOT NOW
-              %label#newmsg Place marker for selected amenities on Map
+              %label#newmsg Place marker for selected point on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 :javascript
@@ -150,6 +152,23 @@
     // alert("grgr");
     $('.save-starting-point-form').submit();
   });
+  if (#{@tours.x_plot.to_i + @tours.y_plot.to_i == 0})
+  {
+    document.getElementById("m_7").disabled = false;
+  }
+  else
+  {
+    document.getElementById("m_7").disabled = true;
+  }
+  $('#m_7').click(function() {
+    document.getElementById("m_7").disabled = true;
+   });
+  var tour_id = #{@tours.id};
+  var arr = #{raw arr1};
+  var lmargin = 0;
+  var rmargin = 0;
+  var addmode = false;
+  var community_id = #{params[:community_id]}
   // var map;
   // function initMap() {
   //   map = new google.maps.Map(document.getElementById('map'), {

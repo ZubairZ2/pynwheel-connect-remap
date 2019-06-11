@@ -14,7 +14,10 @@
     } 
     else if ( typeof unit_id_for_amenity !== 'undefined'){
       saveAmenityPlotForUnit(id, dx, dy);
-    } 
+    }
+    else if ( typeof tour_id !== 'undefined'){
+      saveTourStaringPoint(tour_id, dx, dy);
+    }
     else{
     	saveSiteMapUnit(id, dx, dy);
     }
@@ -47,6 +50,17 @@
 
      });
   }
+  function saveTourStaringPoint(id, dx, dy){
+    $.post( "/communities/"+community_id+"/tours/" + id + "/ajaxplotstartingpoint",
+        { "x_plot": dx,
+            "y_plot": dy,
+            "tour_id": tour_id
+        },
+        function(data,status,xhr) {
+        // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
+        doDraggable();
+    });
+}
 
   function saveFloorplanPlot(id,dx,dy){
     $.post( "/communities/"+community_id+"/floorplans/"+floorplan_id+"/amenities/" + id + "/plot_amenity",
