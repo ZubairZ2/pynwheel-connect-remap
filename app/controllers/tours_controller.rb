@@ -58,5 +58,7 @@ class ToursController < ApplicationController
     @floorplate = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
     @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
     @amenities = @community.amenities
+    @units = @community.units
+    @tour_stops = @community.tour.tour_stops
   end
 end
