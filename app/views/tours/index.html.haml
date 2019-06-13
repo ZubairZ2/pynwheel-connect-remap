@@ -42,20 +42,25 @@
                     %th{:width => "79"} Sr #
                     %th Tour Stop
                     %th{:width => "100"} Actions
-                %tbody.sortable_list
+                %tbody.tour_sortable
                   - orderVar = 0
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops) do |stop,index|
                       %tr{:id=> index}
                         - orderVar = orderVar + 1
-                        %td= orderVar
+                        %td= stop.sort
                         %td
                           = link_to stop.name
                         %td
                           -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
                           -#  %i.fa.fa-eye
-                          = link_to edit_community_gallery_path(@community,stop), remote: true, class: "text-success ml-5" do
-                            %i.fa.fa-edit.icon_size
+                          - if stop.stop_type == "unit"
+                            - u = Unit.find stop.stop_id
+                            = link_to edit_community_unit_path(@community,u), remote: true, class: "text-success ml-5" do
+                              %i.fa.fa-edit.icon_size
+                          - else
+                            = link_to edit_community_unit_path(@community,stop), remote: true, class: "text-success ml-5" do
+                              %i.fa.fa-edit.icon_size
                           %a.text-danger{"data-name"=>"Gallery","data-href" => "", "data-target" => "", "data-toggle" => "modal", :href => "javascrip::;"}
                             %i.fa.fa-trash.icon_size
         .row
@@ -73,3 +78,4 @@
   $('.show-tour-page').change(function(){
     $('.tour-settings-form').submit();
   });
+  $('.tour_sortable').railsSortable();

@@ -8,6 +8,17 @@
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
         %a.btn.btn-danger.btn-ok#delete_button{"data-method"=>"delete"} Delete
+#confirm-delete_amenity.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#record-name-amenity
+
+      .modal-body#record-message-amenity
+
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        -#%button.btn.btn-default.add_description_amenity{"data-name" => "plot", "data-target" => "#add_amenity_description", "data-toggle" => "modal", :type => "button"} Add Description
+        %a.btn.btn-danger.btn-ok-amenity#delete_button_amenity{"data-method"=>"delete"} Delete
 #confirm-delete-replace-data.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content

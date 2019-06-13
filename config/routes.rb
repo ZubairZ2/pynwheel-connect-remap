@@ -150,6 +150,7 @@ Rails.application.routes.draw do
       end
       member do
         post :ajaxplotstartingpoint
+        post :ajaxplottourstoppoint
         delete :resetStartingPoint
       end
       resources :tour_stops, only: :index do

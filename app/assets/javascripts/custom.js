@@ -14,6 +14,14 @@ $(document).ready(function(e){
     $("#imageselect").toggle();
     e.stopPropagation();
   })
+    $('body').on("click", ".amenity-imageselect", function(e){
+        $("#imageselect1").toggle();
+        e.stopPropagation();
+    })
+    $('body').on("click", ".unit-imageselect", function(e){
+        $("#imageselect2").toggle();
+        e.stopPropagation();
+    })
 
   $("#multiselect li").click(function(e){
     if ($(this).hasClass("active")){
@@ -187,7 +195,16 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
     $(this).find('#record-name').html('Delete '+$(e.relatedTarget).data('name'));
     $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
 });
-
+$('#confirm-delete_amenity').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok-amenity').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find('.add_description_amenity').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find('#record-name-amenity').html('Delete '+$(e.relatedTarget).data('name'));
+    $(this).find('#record-message-amenity').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
+});
+$('#add_amenity_description').on('show.bs.modal', function(e) {
+    alert($(e.relatedTarget).data('name'));
+    // $(this).find('#tee').html( $('.add_description_amenity').data('href'));
+});
 $('#confirm-delete-replace-data').on('show.bs.modal', function(e) {
     $(this).find('.replace-btn-ok').attr('href', $(e.relatedTarget).data('href'));
     $(this).find('#replace-record-name').html('Delete '+$(e.relatedTarget).data('name'));
