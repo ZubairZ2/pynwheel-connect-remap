@@ -9,7 +9,7 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
-  json.tour_stop tour.tour_stops do |stop|
+  json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
     json.latitude stop.latitude
     json.longitude stop.longitude
@@ -17,16 +17,18 @@ json.tours @tours do |tour|
     if stop.stop_type == "unit"
       unit = Unit.find stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.stop_data ["marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability]
+      json.stop_data ["marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description]
       @unit_amenities = Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       json.unit_amenities @unit_amenities do |unit_amenity|
         json.amenity_image unit_amenity.image.present? ? unit_amenity.image : "no image"
         json.amenity_x_plot unit_amenity.x_plot
         json.amenity_y_plot unit_amenity.y_plot
+        json.stop_description unit_amenity.stop_description
       end
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
+      json.stop_description amenity.stop_description
     end
     stop.stop_details.each do |sd|
       json.stop_description sd.description
