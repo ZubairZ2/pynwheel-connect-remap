@@ -56,7 +56,12 @@ Rails.application.routes.draw do
         post :add_description
       end
     end
-    resources :amenities
+    resources :amenities do
+      resources :amenity_galleries
+      collection do
+        post :saveAmenityGallery
+      end
+    end
     resources :floorplates do
       resources :amenities,controller: "floorplate_amenities" do
         post :plot_amenity
@@ -147,6 +152,7 @@ Rails.application.routes.draw do
         post :save_tour_settings
         get :starting_point
         get :select_stops
+        get :edit_amenity
       end
       member do
         post :ajaxplotstartingpoint

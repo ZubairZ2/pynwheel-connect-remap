@@ -96,4 +96,8 @@ class ToursController < ApplicationController
     #   render json: {}, status: 404
     # end
   end
+  def edit_amenity
+    @community = Community.find params[:community_id]
+    @amenity = Amenity.find params[:format]
+  end
 end

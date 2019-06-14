@@ -1,0 +1,6 @@
+$('#images-index1').html("<%= escape_javascript render 'edit_amenity' %>");
+var message = '<div class="alert alert-success">Image uploaded successfully.</div>'
+$('#flash-message').html(message);
+setTimeout(function() {
+    $('.alert').fadeOut('slow');
+}, 10000);

@@ -9,8 +9,15 @@ class AmenitiesController < ApplicationController
   end
 
   def create
-    current_community.amenities.create(image: params[:src],name: params[:name])
-    @amenities = current_community.amenities.order(id: :desc)
+    if params[:amenityId].present?
+      @amenity = Amenity.find params[:amenityId]
+      @amenity.image = params[:src]
+      @amenity.save
+      redirect_to edit_community_amenity_path(current_community,@amenity)
+    else
+      current_community.amenities.create(image: params[:src],name: params[:name])
+      @amenities = current_community.amenities.order(id: :desc)
+    end
   end
 
   def edit
@@ -20,10 +27,19 @@ class AmenitiesController < ApplicationController
   def update
     @amenity = current_community.amenities.find(params[:id])
     if @amenity.update_attributes(amenity_params)
-      redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+      if params[:amenity][:access_code].present?
+        redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully"
+      else
+        redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+      end
     else
       redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
     end
+  end
+  def saveAmenityGallery
+    @community = Community.find params[:community_id]
+    @amenity = Amenity.find params[:amenityId]
+    AmenityGallery.create(name: params[:name],image: params[:src], amenity_id: @amenity.id)
   end
 
   def destroy

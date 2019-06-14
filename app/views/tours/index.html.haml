@@ -59,7 +59,8 @@
                             = link_to edit_community_unit_path(@community,u), remote: true, class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
                           - else
-                            = link_to edit_community_unit_path(@community,stop), remote: true, class: "text-success ml-5" do
+                            - amenity = Amenity.find stop.stop_id
+                            = link_to edit_community_amenity_path(@community,amenity), remote: true, class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
                           %a.text-danger{"data-name"=>"Gallery","data-href" => "", "data-target" => "", "data-toggle" => "modal", :href => "javascrip::;"}
                             %i.fa.fa-trash.icon_size
