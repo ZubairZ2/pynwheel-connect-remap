@@ -71,7 +71,9 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community = Community.find params[:id]
     @tours = Tour.where(community_id: params[:id])
   end
-
+  def community_user_tour
+    tour_user = TourUser.find params[:id]
+  end
   def include_application_data
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])

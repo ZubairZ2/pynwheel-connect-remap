@@ -10,18 +10,11 @@
         %br
           %small.text-primary
             = @community.code
-    %h4{:style => "color: grey;"}
-      %p
-        Select amenity images to add a marker to the map. If nothing appears in the list, then there are no additional amenity images to add.
-      %p
-        Drag and drop markers to reposition them on the property map.
-      %p
-        Click "Plot Units" to switch to plot units on the map.
     .box.box-info.add-plan
       .box-header
         %h3.box-title
-          Plot
-          %span= " Amenities"
+          Plot Tour Stop
+          %span
           %span.hidden#active_x_plot 0
 
           %span.hidden#active_y_plot 0
@@ -65,8 +58,8 @@
 
         .btn-btn-danger.mt-10
           -#= link_to "Back",community_floorplate_amenities_path(@community,@sitemap), :class=>"btn btn-primary mr-5 hidden"
-          = link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary"
-          %a.btn.btn-danger{"data-name" => "floorplate's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/remove_amenities_plot"} RESET ALL PLOTS
+          -#= link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary"
+          -#%a.btn.btn-danger{"data-name" => "floorplate's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/remove_amenities_plot"} RESET ALL PLOTS
       / /.box-header
       / form start
       %form.form-horizontal
@@ -78,13 +71,13 @@
                   = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
                   - @tour_stops.each do |stop|
                     - if stop.latitude.to_i + stop.longitude.to_i > 0
-                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px; ' ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => stop.name, :id => "m_#{stop.id}", :style => "left:#{stop.latitude}px; top:#{stop.longitude}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/#{stop.id}/remove_amenity"
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fa fa-star' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px; ' ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => stop.name, :id => "m_#{stop.id}", :style => "left:#{stop.latitude}px; top:#{stop.longitude}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.id}/tour_stops/#{stop.id}/resetTourStopPoint"
             .row.col-lg-3
               .col-lg-6
                 %h5.mt-40.mb-20 SELECT IMAGES TO PLOT
                 .imageselect.amenity-imageselect
                   .show-categories
-                    = "-- select image --"
+                    = "- select amenity -"
                   %ul#imageselect1{:style => "display: none;"}
                     - amenity_arr = []
                     - @amenities.each do |amenity|
@@ -105,10 +98,10 @@
               /////////////////////////
               - units = @units.sort_by{|u| u.marketing_name}
               .col-lg-6
-                %h5.mt-40.mb-20 SELECT IMAGES TO PLOT
+                %h5.mt-40.mb-20 SELECT UNIT TO PLOT
                 .imageselect.unit-imageselect
                   .show-categories
-                    = "-- select image --"
+                    = "- select unit -"
                   %ul#imageselect2{:style => "display: none;"}
                     -#- amenity_arr = []
                     - units.each do |unit|
@@ -120,11 +113,11 @@
                       - ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
                       - amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
 
-                %h5.mt-40 SELECTED IMAGES
+                %h5.mt-40 SELECTED UNITS
                 .add-plan.mt-10.mb-20
                   %ul#selected-units
                 / %button.btn.btn-success#new{:type => "button"} PLOT NOW
-                %label#newmsg Place marker for selected amenities on Map
+                %label#newmsg Place marker for selected unit on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 :javascript
@@ -134,3 +127,4 @@
   var community_id = #{params[:community_id]}
   var addmode = false;
   var tour_id_for_stop = #{@community.tour.id}
+  var community_tour_id = #{@community.tour.id}

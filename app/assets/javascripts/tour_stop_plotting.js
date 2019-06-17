@@ -128,10 +128,13 @@ $(document).ready(function(){
                 else if (typeof tour_id !== 'undefined'){
                     url = '/communities/'+community_id+'/tours/'+tour_id+'/resetStartingPoint'
                 }
+                else if (typeof tour_id_for_stop !== 'undefined'){
+                    url = '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
+                }
                 else{
                     url = '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
                 }
-                if (typeof tour_id !== 'undefined')
+                if (typeof tour_id_for_stop !== 'undefined')
                 {
                     tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
                     tag += "<i class='custom-icon' style='width: "+ marker_font_size +"px; height: "+ marker_font_size +"px; border: 2px solid "+ marker_color+"; '><i class='fa fa-star' style='color: "+marker_color+"; font-size: "+(parseInt(marker_font_size) /2)+"px; margin-top:"+ camera_margin +"px;'></i></i>";

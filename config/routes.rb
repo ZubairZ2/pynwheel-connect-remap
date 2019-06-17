@@ -151,6 +151,11 @@ Rails.application.routes.draw do
     end
 
     resources :tours, only: :index do
+      resources :tour_stops do
+        member do
+          delete :resetTourStopPoint
+        end
+      end
       collection do
         post :save_starting_point
         post :save_tour_settings
