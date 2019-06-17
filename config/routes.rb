@@ -60,6 +60,10 @@ Rails.application.routes.draw do
       resources :amenity_galleries
       collection do
         post :saveAmenityGallery
+
+      end
+      member do
+        get :edit_amenity_gallery_image
       end
     end
     resources :floorplates do

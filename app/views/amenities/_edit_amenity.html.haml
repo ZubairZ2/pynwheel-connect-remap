@@ -10,27 +10,8 @@
               %a.preview-image{:href=>amenity_gallery_image.image? ? amenity_gallery_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
                 = image_tag amenity_gallery_image.image.url
           .icons
-            = link_to edit_community_amenity_amenity_gallery_path(@amenity,amenity_gallery_image), remote: true do
+            = link_to edit_community_amenity_amenity_gallery_path(@community,@amenity,amenity_gallery_image), remote: true do
               %i.fa.fa-pencil{"data-target" => "#edit-gallery-image", "data-toggle" => "modal"}
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/amenities/#{@amenity.id}/amenity_galleries/#{amenity_gallery_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip:;"}
               %i.fa.fa-close
           %h4= amenity_gallery_image.name
-#edit-gallery-image.modal.fade.edit-image
-  .modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
-    .modal-content
-      = form_for @amenity_gallery_image,url: community_amenity_amenity_gallery_path(:id => @amenity_gallery_image,:amenity_id=>@amenity),method: :put do |f|
-        .modal-body
-          .image-crop{:style=>"overflow-y: auto;"}
-            = image_tag @amenity_gallery_image.image.url, id: "cropbox"
-          %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
-            %span{"aria-hidden" => "true"}
-              %i.fa.fa-close
-          .form-group
-            %label{:for => "exampleInputEmail1"} Image Title
-            = f.text_field :name , class: "form-control", placeholder: "Name"
-          .form-group
-            %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
-              Apply Changes
-              %i.fa.fa-check
-          .clearfix
-  }

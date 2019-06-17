@@ -11,8 +11,8 @@ json.tours @tours do |tour|
 
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
-    json.latitude stop.latitude
-    json.longitude stop.longitude
+    json.x_plot stop.latitude
+    json.y_plot stop.longitude
     json.type stop.stop_type
     if stop.stop_type == "unit"
       unit = Unit.find stop.stop_id
@@ -20,9 +20,9 @@ json.tours @tours do |tour|
       json.stop_data ["marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description]
       @unit_amenities = Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       json.unit_amenities @unit_amenities do |unit_amenity|
-        json.amenity_image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
-        json.amenity_x_plot unit_amenity.x_plot
-        json.amenity_y_plot unit_amenity.y_plot
+        json.x_plot unit_amenity.x_plot
+        json.y_plot unit_amenity.y_plot
+        json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
         json.stop_description unit_amenity.stop_description
         json.amenity_gallery unit_amenity.amenity_galleries do |ag|
           json.name ag.name
@@ -36,6 +36,7 @@ json.tours @tours do |tour|
       json.stop_description amenity.stop_description
       json.amenity_gallery amenity.amenity_galleries do |ag|
         json.name ag.name
+        json.type "unit_stop"
         json.image ag.image.url
         json.description ag.description
       end
