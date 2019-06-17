@@ -72,7 +72,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @tours = Tour.where(community_id: params[:id])
   end
   def community_user_tour
-    tour_user = TourUser.find params[:id]
+    @tour_user = TourUser.find params[:id]
   end
   def include_application_data
     @version = AppVersion.first.version
