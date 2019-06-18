@@ -10,7 +10,7 @@ class Api::V1::ToursController < ActionController::Base
     unless params[:tour_user_id].present? && params[:tour_stop_id].present?
       render :json=> {:success=>false, :message => "Please enter tour user id or tour stop id"}
     else
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id],tour_stop_id: params[:tour_stop_id],image: tempFile.open, description: params[:description])
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id],tour_stop_id: params[:tour_stop_id],image: tempFile, description: params[:description])
       if vs.present?
         render :json=> {:success=>true, :message => "success"}
       else
