@@ -66,7 +66,21 @@ class UnitAmenitiesController < ApplicationController
     end
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "Amenity plot have been deleted successfully."
   end
-
+  def add_description
+    @amenity = Amenity.find params[:id]
+    redirect_to plot_amenities_community_unit_amenities_path(@community,@unit)
+  end
+  def save_description
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:unit_id]
+    @amenity = Amenity.find params[:id]
+    @amenity.description = params[:description]
+    if @amenity.save
+      redirect_to plot_amenities_community_unit_amenities_path(@community,@unit),notice: "Amenity description updated successfully."
+    else
+      redirect_to plot_amenities_community_unit_amenities_path(@community,@unit)
+    end
+  end
   private
 
   def set_community_and_unit

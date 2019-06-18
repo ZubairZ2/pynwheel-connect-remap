@@ -45,7 +45,7 @@
                 %tbody.tour_sortable
                   - orderVar = 0
                   - if @tour_stops.present?
-                    - sortable_fetch(@tour_stops) do |stop,index|
+                    - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       %tr{:id=> index}
                         - orderVar = orderVar + 1
                         %td= orderVar
@@ -56,13 +56,13 @@
                           -#  %i.fa.fa-eye
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
-                            = link_to edit_community_unit_path(@community,u), remote: true, class: "text-success ml-5" do
+                            = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
                           - else
                             - amenity = Amenity.find stop.stop_id
-                            = link_to edit_community_amenity_path(@community,amenity), remote: true, class: "text-success ml-5" do
+                            = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
-                          %a.text-danger{"data-name"=>"Gallery","data-href" => "", "data-target" => "", "data-toggle" => "modal", :href => "javascrip::;"}
+                          %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                             %i.fa.fa-trash.icon_size
         .row
           .col-md-12

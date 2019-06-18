@@ -59,7 +59,7 @@
                   = image_tag @unit.standard_image_url.present? ? @unit.standard_image_url : (@floorplan.present? && @floorplan.standard_image_url.present? ? @floorplan.standard_image_url : "/assets/default.jpeg")
                   - @sitemap.amenities.each do |amenity|
                     - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot",@ids =>"#{amenity.id}" ,"data-amenityId" => "#{amenity.id}", "data-target" => "#confirm-delete_amenity", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "#{amenity.description}", "data-target" => "#confirm-delete_amenity", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/#{amenity.id}"
             .col-lg-3
               %h5.mt-40.mb-20 SELECT IMAGES TO PLOT
               .imageselect
@@ -102,29 +102,30 @@
                       %td= orderVar
                       %td
                         = link_to amenity.name
-#add_amenity_description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
-    .modal-content
-      .modal-header#tee
-        Add Description
-      - url = root_path
-      .modal-body
-        = form_for [@sitemap.amenities.first], url: url, remote: true do |f|
-          .modal-dialog.modal-lg
-            .modal-content
-              .modal-header
-
-                %button.close{"data-dismiss" => "modal", :type => "button"} ×
-                %h4.modal-title Add Imagepage
-              .modal-body
-                .row
-                  .col-md-12
-                    .mt-25.mb-40
-                      %label Enter Name
-                      = f.text_field :stop_description, class: "form-control"
-
-              .modal-footer
-                = f.submit "Save", :class=>"btn btn-primary"
+#add-description.modal.fade.edit-image
+-##add_amenity_description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+-#  .modal-dialog
+-#    .modal-content
+-#      .modal-header#tee
+-#        Add Description
+-#      - url = root_path
+-#      .modal-body
+-#        = form_for [@sitemap.amenities.first], url: url, remote: true do |f|
+-#          .modal-dialog.modal-lg
+-#            .modal-content
+-#              .modal-header
+-#
+-#                %button.close{"data-dismiss" => "modal", :type => "button"} ×
+-#                %h4.modal-title Add Imagepage
+-#              .modal-body
+-#                .row
+-#                  .col-md-12
+-#                    .mt-25.mb-40
+-#                      %label Enter Name
+-#                      = f.text_field :stop_description, class: "form-control"
+-#
+-#              .modal-footer
+-#                = f.submit "Save", :class=>"btn btn-primary"
 
 :javascript
   var arr = #{raw amenity_arr}

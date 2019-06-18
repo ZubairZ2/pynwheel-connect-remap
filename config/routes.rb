@@ -90,6 +90,8 @@ Rails.application.routes.draw do
         end
         member do
           delete :remove_amenity
+          post :add_description
+          post :save_description
         end
       end
       member do
@@ -243,6 +245,11 @@ Rails.application.routes.draw do
           post :login
           get :list_communities
           post :update_version
+        end
+      end
+      resources :tours,only: :index do
+        member do
+          post :save_user_data
         end
       end
     end

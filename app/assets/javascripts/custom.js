@@ -196,13 +196,15 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
     $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
 });
 $('#confirm-delete_amenity').on('show.bs.modal', function(e) {
-    $(this).find('.btn-ok-amenity').attr('href', $(e.relatedTarget).data('href'));
-    $(this).find('.add_description_amenity').attr('href', $(e.relatedTarget).data('href'));
-    $(this).find('#record-name-amenity').html('Delete '+$(e.relatedTarget).data('name'));
+    $(this).find('.btn-ok-amenity').attr('href', $(e.relatedTarget).data('href')+'/remove_amenity');
+    $(this).find('.add_description_amenity').attr('href', $(e.relatedTarget).data('href')+'/save_description');
+    $(this).find('#description_amenity').val($(e.relatedTarget).data('name'));
+    $(this).find('#record-name-amenity').html('Update Amenity');
     $(this).find('#record-message-amenity').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
 });
-$('#add_amenity_description').on('show.bs.modal', function(e) {
-    alert($(e.relatedTarget).data('name'));
+$('.add_description_amenity').on('click', function(e) {
+    $('.add_description_amenity').attr('href', $('.add_description_amenity').attr('href')+'?description='+$('#description_amenity').val());
+    // alert($('.add_description_amenity').attr('href')+'?description='+$('#description_amenity').val());
     // $(this).find('#tee').html( $('.add_description_amenity').data('href'));
 });
 $('#confirm-delete-replace-data').on('show.bs.modal', function(e) {

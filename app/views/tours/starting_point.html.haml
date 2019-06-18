@@ -24,17 +24,17 @@
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Name
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = text_field_tag :name, @community.tour.name,:maxlength=>"30", :class=>"form-control save-starting-point-field"
+                    = text_field_tag :name, @community.tour.name,:maxlength=>"30", :class=>"form-control save-starting-point-field", :placeholder => "Name"
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Latitude
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = text_field_tag :latitude, @community.tour.latitude,:maxlength=>"15", :class=>"form-control save-starting-point-field"
+                    = text_field_tag :latitude, @community.tour.latitude,:maxlength=>"15", :class=>"form-control save-starting-point-field", :placeholder => "Latitude"
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Longitude
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = text_field_tag :longitude, @community.tour.longitude,:maxlength=>"15", :class=>"form-control save-starting-point-field"
+                    = text_field_tag :longitude, @community.tour.longitude,:maxlength=>"15", :class=>"form-control save-starting-point-field", :placeholder => "Longitude"
 
                 -#.form-group
                 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
