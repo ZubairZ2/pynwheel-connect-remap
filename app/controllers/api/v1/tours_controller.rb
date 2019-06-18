@@ -4,7 +4,7 @@ class Api::V1::ToursController < ActionController::Base
   def save_user_data
 
     tempFile = params[:image]
-    tempFile = tempFile.path
+    # tempFile = tempFile.path
     # image_base = Base64.encode64(File.read(tempFile.path))
 
     unless params[:tour_user_id].present? && params[:tour_stop_id].present?
