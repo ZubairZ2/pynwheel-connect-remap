@@ -131,6 +131,9 @@ $(document).ready(function(){
                 else if (typeof tour_id_for_stop !== 'undefined'){
                     url = '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
                 }
+                else if (typeof unit_id_for_amenity !== 'undefined'){
+                    url = '/communities/'+community_id+'/units/'+unit_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
+                }
                 else{
                     url = '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
                 }

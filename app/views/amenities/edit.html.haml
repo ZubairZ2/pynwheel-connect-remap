@@ -49,7 +49,7 @@
     .form-group.logo-upload-bg.pt-15
       .select-logo.center-img.mb-20.mt-30.logo-upload-bg
         .select-logo-logo.logo-container.logo-upload-container
-          %a.preview-image{:href=>@amenity.image.present? ? @amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Logo"}
+          %a.preview-image{:href=>@amenity.image.present? ? @amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
             = image_tag @amenity.image.present? ? @amenity.image.url : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"preview-image"
     //////////////////////// Amenity Gallery
     .box.box-info.add-plan

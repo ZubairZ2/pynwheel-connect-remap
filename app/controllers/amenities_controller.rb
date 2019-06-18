@@ -27,7 +27,7 @@ class AmenitiesController < ApplicationController
   def update
     @amenity = current_community.amenities.find(params[:id])
     if @amenity.update_attributes(amenity_params)
-      if params[:amenity][:access_code].present?
+      if params[:amenity][:access_code].present? || params[:amenity][:stop_description].present?
         redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully"
       else
         redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"

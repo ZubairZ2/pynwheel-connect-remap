@@ -5,11 +5,11 @@ class Api::V1::ToursController < ActionController::Base
 
     puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     puts params
-    puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", params[:image]
     tempFile = params[:image]
-    puts tempFile.path
-    # image_base = Base64.encode64(File.read(tempFile))
-    vs = VisitedStop.create(tour_user_id: "1",tour_stop_id: "4",image: tempFile, description: "ffef")
+    tempFile = tempFile.path
+    # image_base = Base64.encode64(File.read(tempFile.path))
+    vs = VisitedStop.create(tour_user_id: "1",tour_stop_id: "4",image: tempFile.open, description: "ffef")
 
     puts "*"*200
     puts params
