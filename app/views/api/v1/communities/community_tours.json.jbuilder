@@ -17,7 +17,8 @@ json.tours @tours do |tour|
     if stop.stop_type == "unit"
       unit = Unit.find stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.stop_data ["marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description]
+      stop_dat = {"marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description}
+      json.stop_data stop_dat
       @unit_amenities = Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
         json.x_plot unit_amenity.x_plot
