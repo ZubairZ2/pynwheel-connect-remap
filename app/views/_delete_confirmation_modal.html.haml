@@ -17,7 +17,7 @@
         .form-group
           %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15{:for => "exampleInputEmail1"} Description
           .col-sm-12.col-lg-12.col-md-12.col-xs-12
-            = text_area :description,"", :class=>"form-control",:id => "description_amenity", :rows => "5"
+            = text_area :description,"", :class=>"form-control",:id => "description_amenity", :rows => "5", :maxlength=>"70"
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
         %a.btn.btn-default.add_description_amenity{"data-method"=>"post"} Add Description

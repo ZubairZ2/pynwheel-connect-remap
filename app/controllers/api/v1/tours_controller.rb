@@ -19,6 +19,23 @@ class Api::V1::ToursController < ActionController::Base
     end
 
   end
+  def save_user_tour
+    unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
+      render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
+    else
+      arr = []
+      params[:tour_stop_id].each do |stop_id|
+        vs = VisitedStop.create(tour_user_id: params[:tour_user_id],tour_stop_id: stop_id,tour_id: params[:tour_id])
+        if vs.present?
+          arr << true
+        else
+          arr << false
+        end
+      end
+      render :json=> {:success=>true, :message => "success", :data => arr}
+
+    end
+  end
   private
 
   def set_community
