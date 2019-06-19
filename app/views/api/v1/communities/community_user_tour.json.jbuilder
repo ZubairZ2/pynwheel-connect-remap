@@ -51,6 +51,10 @@ json.tours @tours do |tour|
       end
     end
     user_data = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id)
+    json.user_data user_data do |ud|
+      json.image ud.image.url
+      json.description ud.description
+    end
   end
 
 end
