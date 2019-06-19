@@ -14,18 +14,19 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
-  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id)
+  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id).group('tour_stop_id').count
 
   json.visited_tour visited_stops do |visited_stop|
-    @tour = TourStop.find visited_stop.tour_stop_id
+    @tour = TourStop.find visited_stop[0]
 
-    json.id visited_stop.id
-
+    json.id @tour.id
+    # @tour = TourStop.find visited_stop[0]
     json.type @tour.stop_type
     if @tour.stop_type == "unit"
       unit = Unit.find @tour.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.stop_data ["marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description]
+      stop_dat = {"marketing_name" => unit.marketing_name,"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description}
+      json.stop_data stop_dat
       @unit_amenities = Amenity.where(community_id: (Tour.find @tour.tour_id).community_id, amenityable_type: "Unit", amenityable_id: @tour.stop_id)
       json.unit_amenities @unit_amenities do |unit_amenity|
         json.x_plot unit_amenity.x_plot
@@ -49,6 +50,7 @@ json.tours @tours do |tour|
         json.description ag.description
       end
     end
+    user_data = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id)
   end
 
 end
