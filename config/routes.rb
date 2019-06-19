@@ -152,7 +152,7 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :save_user_data, only: :index do
+    resources :tours, only: :index do
       resources :tour_stops do
         member do
           delete :resetTourStopPoint
