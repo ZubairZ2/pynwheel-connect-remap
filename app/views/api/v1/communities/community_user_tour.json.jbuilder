@@ -50,10 +50,14 @@ json.tours @tours do |tour|
         json.description ag.description
       end
     end
-    user_data = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id)
-    json.user_data user_data do |ud|
+    # user_data = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id)
+    user_gallery = VisitedStop.where(tour_user_id: 1, tour_id: 2,tour_stop_id: 5).where.not(image: nil)
+    json.user_gallery user_gallery do |ud|
       json.image ud.image.url
-      json.description ud.description
+    end
+    user_notes = VisitedStop.where(tour_user_id: 1, tour_id: 2,tour_stop_id: 5).where.not(description: nil)
+    json.user_notes user_notes do |un|
+      json.image un.description
     end
   end
 
