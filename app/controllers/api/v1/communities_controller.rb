@@ -73,7 +73,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def community_user_tour
     @tour_user = TourUser.find params[:id]
-    @tours = VisitedStop.where(tour_user_id: 2).group('tour_id').count
+    @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').count
   end
   def include_application_data
     @version = AppVersion.first.version

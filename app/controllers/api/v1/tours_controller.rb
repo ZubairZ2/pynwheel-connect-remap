@@ -10,7 +10,11 @@ class Api::V1::ToursController < ActionController::Base
     unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id],tour_stop_id: params[:tour_stop_id],tour_id: params[:tour_id],image: tempFile, description: params[:description])
+      begin
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description])
+      rescue => ex
+        render :json=> {:success=>false, :message => "failed"}
+      end
       if vs.present?
         render :json=> {:success=>true, :message => "success"}
       else
@@ -24,8 +28,20 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       arr = []
-      params[:tour_stop_id].each do |stop_id|
-        vs = VisitedStop.create(tour_user_id: params[:tour_user_id],tour_stop_id: stop_id,tour_id: params[:tour_id])
+      stops = params[:tour_stop_id].split(',')
+      begin
+        a1 = TourUser.find params[:tour_user_id].to_i
+        a2 = Tour.find params[:tour_id].to_i
+      rescue => ex
+      end
+      stops.each do |stop_id|
+        begin
+          a3 = TourStop.find stop_id.to_i
+        rescue => ex
+        end
+        if a1.present? && a2.present? && a3.present?
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i)
+        end
         if vs.present?
           arr << true
         else
