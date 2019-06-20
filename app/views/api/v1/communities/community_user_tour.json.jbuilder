@@ -52,13 +52,19 @@ json.tours @tours do |tour|
     end
     # user_data = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id)
     user_gallery = VisitedStop.where(tour_user_id: 1, tour_id: 2,tour_stop_id: 5).where.not(image: nil)
-    json.user_gallery user_gallery do |ud|
-      json.image ud.image.url
+    gallery_arr = []
+    user_gallery.each do |ud|
+      gallery_arr << ud.image.url
+      # json.image ud.image.url
     end
+    json.user_gallery gallery_arr
     user_notes = VisitedStop.where(tour_user_id: 1, tour_id: 2,tour_stop_id: 5).where.not(description: nil)
-    json.user_notes user_notes do |un|
-      json.image un.description
+    description_arr = []
+    user_notes.each do |un|
+      description_arr << un.description
+      # json.description un.description
     end
+    json.notes description_arr
   end
 
 end
