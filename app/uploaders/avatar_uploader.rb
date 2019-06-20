@@ -1,47 +1,18 @@
 class AvatarUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
-  include CarrierWave::RMagick
-  # Include the Sprockets helpers
-  include Sprockets::Rails::Helper
+  # include CarrierWave::RMagick
+  # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
   #storage :file
-  process :set_file_dimensions
-  #resize_to_fill(1412, 932)
-  #process convert: 'png' ,:if => :svg?
+
   storage Rails.env.development? ? :file : :fog
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
-  version :svg_for_metro , :if => :svg? do
-    process convert: 'jpg'
-    resize_to_fit(800, 600)
-    def full_filename (for_file = model.image.file)
-      #{}"#{timestamp}-#{model.id.to_s + '.png'}"
-      super.chomp(File.extname(super)) + '.jpg'
-    end
-  end
-
-  def set_file_dimensions
-    if image?(file)
-      # manipulate! do |source|
-      #   overlay_path = Rails.root.join("app/assets/images/bg.png")
-      #   overlay = Magick::Image.read(overlay_path).first
-      #   source = source.resize_to_fit(1412, 932)
-      #   overlay.composite!(source, Magick::CenterGravity, Magick::OverCompositeOp)
-      # end
-      resize_to_fit(800, 600)
-    end
-  end
-
-  def filename
-    #if svg?(file)
-    #@name ||= "#{timestamp}-#{super.chomp(File.extname(super)) + '.png'}" if original_filename.present?
-    #else
-    #@name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
-    #end
-    @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+   def filename
+    @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
   end
 
   def timestamp
@@ -51,15 +22,6 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
   def store_dir
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
-  end
-  protected
-
-  def svg?(file)
-    file.content_type == 'image/svg+xml'
-  end
-
-  def image?(file)
-    file.content_type.include?('png') || file.content_type.include?('jpg') || file.content_type.include?('jpeg')
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
