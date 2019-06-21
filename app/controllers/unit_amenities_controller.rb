@@ -23,6 +23,8 @@ class UnitAmenitiesController < ApplicationController
     @sitemap = @unit
     @amenities = @community.amenities
     @floorplan = Floorplan.where(provider_floorplan_id: @unit.floorplan_id,community_id: @community.id).first
+
+    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
   end
 
   def remove_amenities_plot

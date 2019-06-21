@@ -18,7 +18,6 @@
 #  community_id        :integer
 #  standard_image_url  :string
 #  sort                :integer
-#  stop_description    :string
 #  access_code         :string
 #
 
