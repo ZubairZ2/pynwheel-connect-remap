@@ -25,7 +25,7 @@ json.tours @tours do |tour|
         json.y_plot unit_amenity.y_plot
         json.name unit_amenity.name
         json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
-        json.stop_description unit_amenity.stop_description
+        json.stop_description unit_amenity.description
         json.amenity_gallery unit_amenity.amenity_galleries do |ag|
           json.name ag.name
           json.image ag.image.url
@@ -35,7 +35,7 @@ json.tours @tours do |tour|
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
-      json.stop_description amenity.stop_description
+      json.stop_description amenity.description
       json.name amenity.name
       json.amenity_gallery amenity.amenity_galleries do |ag|
         json.name ag.name

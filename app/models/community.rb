@@ -35,6 +35,12 @@
 #  display_floorplan_gallery      :boolean          default(TRUE)
 #  display_unit_on_homepage       :boolean          default(TRUE)
 #  display_gallery_on_homepage    :boolean          default(TRUE)
+#  realpage_pricing_data          :string
+#  realpage_pricing_data_uploaded :boolean          default(TRUE)
+#  powered_by_btn                 :boolean          default(TRUE)
+#  is_vertical_app                :boolean          default(FALSE)
+#  entrata_exception_logs         :string
+#  show_tour_page                 :boolean
 #
 
 class Community < ApplicationRecord

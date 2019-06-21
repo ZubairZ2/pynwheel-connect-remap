@@ -71,7 +71,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community = Community.find params[:id]
     @tours = Tour.where(community_id: params[:id])
   end
-  def community_user_tour
+  def user_saved_tour
     @tour_user = TourUser.find params[:id]
     @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').count
   end
