@@ -197,6 +197,10 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
 });
 $('#confirm-delete_amenity').on('show.bs.modal', function(e) {
     $(this).find('.btn-ok-amenity').attr('href', $(e.relatedTarget).data('href')+'/remove_amenity');
+
+    var community = $(e.relatedTarget).data('href').split("/")[2];
+    var amenity = $(e.relatedTarget).data('href').split("/")[6];
+    $(this).find('.edit_unit_amenity').attr('href', '/communities/'+community+'/amenities/'+amenity+'/edit');
     $(this).find('.add_description_amenity').attr('href', $(e.relatedTarget).data('href')+'/save_description');
     $(this).find('#description_amenity').val($(e.relatedTarget).data('name'));
     $(this).find('#record-name-amenity').html('Update Amenity');

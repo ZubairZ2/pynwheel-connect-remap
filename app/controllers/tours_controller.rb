@@ -11,7 +11,7 @@ class ToursController < ApplicationController
   def starting_point
     @community = Community.find params[:community_id]
     @tours = @community.tour
-    @sitemap = @community.sitemap
+    @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
     @amenities = @community.amenities
   end
   def save_starting_point
