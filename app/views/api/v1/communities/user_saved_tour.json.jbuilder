@@ -1,7 +1,8 @@
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
-
+@tours = { [@tours.keys.last[0],@tours.keys.last[1]] => @tours.values.last}
+# @tours = @tours.last
 json.tours @tours do |tour|
   tour_key = tour[0][1]
   tour = Tour.find tour[0][0]
