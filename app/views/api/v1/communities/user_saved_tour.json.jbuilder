@@ -15,7 +15,7 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
-  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
+  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
 
   json.visited_tour visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop[0]
@@ -60,14 +60,14 @@ json.tours @tours do |tour|
       end
     end
     # user_data = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id)
-    user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(image: nil)
+    user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,device_id: @device_id).where.not(image: nil)
     gallery_arr = []
     user_gallery.each do |ud|
       gallery_arr << ud.image.url
       # json.image ud.image.url
     end
     json.user_gallery gallery_arr
-    user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(description: nil)
+    user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,device_id: @device_id).where.not(description: nil)
     description_arr = []
     user_notes.each do |un|
       description_arr << un.description
