@@ -47,7 +47,7 @@ json.tours @tours do |tour|
       json.stop_description amenity.description
       json.name amenity.name
       if amenity.amenity_galleries.count == 0
-        json.amenity_gallery ["name" => amenity.name, "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
+        json.amenity_gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
       else
         json.amenity_gallery amenity.amenity_galleries do |ag|
           json.name ag.name
@@ -56,7 +56,7 @@ json.tours @tours do |tour|
           json.description ag.description
         end
       end
-     
+
     end
     stop.stop_details.each do |sd|
       json.stop_description sd.description
