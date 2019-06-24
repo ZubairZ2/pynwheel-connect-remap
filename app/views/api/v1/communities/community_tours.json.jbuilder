@@ -30,8 +30,8 @@ json.tours @tours do |tour|
         json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
         json.stop_description unit_amenity.description
         if unit_amenity.amenity_galleries.count == 0
-          temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
-          json.amenity_gallery temp_data
+          # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
+          json.amenity_gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description]
         else
           json.amenity_gallery unit_amenity.amenity_galleries do |ag|
             json.name ag.name
