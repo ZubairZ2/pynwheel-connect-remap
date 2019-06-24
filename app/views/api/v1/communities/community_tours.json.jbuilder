@@ -22,18 +22,24 @@ json.tours @tours do |tour|
       json.name  "Unit "+unit.marketing_name
       stop_dat = {"floorplan" => Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description}
       json.stop_data stop_dat
-      @unit_amenities = Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
+      @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
         json.x_plot unit_amenity.x_plot
         json.y_plot unit_amenity.y_plot
         json.name unit_amenity.name
         json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
         json.stop_description unit_amenity.description
-        json.amenity_gallery unit_amenity.amenity_galleries do |ag|
-          json.name ag.name
-          json.image ag.image.url
-          json.description ag.description
+        if unit_amenity.amenity_galleries.count == 0
+          temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
+          json.amenity_gallery temp_data
+        else
+          json.amenity_gallery unit_amenity.amenity_galleries do |ag|
+            json.name ag.name
+            json.image ag.image.url
+            json.description ag.description
+          end
         end
+
       end
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
