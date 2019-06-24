@@ -38,6 +38,7 @@ json.tours @tours do |tour|
       json.stop_data stop_dat
       @unit_amenities = unit.amenities # Amenity.where(community_id: (Tour.find @tour.tour_id).community_id, amenityable_type: "Unit", amenityable_id: @tour.stop_id)
       json.unit_amenities @unit_amenities do |unit_amenity|
+        if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot > 0)
         json.x_plot unit_amenity.x_plot
         json.y_plot unit_amenity.y_plot
         json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
@@ -48,6 +49,7 @@ json.tours @tours do |tour|
           # json.name ag.name
           # json.image ag.image.url
           # json.description ag.description
+        end
         end
       end
       json.amenity_gallery @unit_gallery_arr do |ag|

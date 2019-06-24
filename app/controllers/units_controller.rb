@@ -152,6 +152,12 @@ class UnitsController < ApplicationController
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]
       unit.save(validate: false)
+      ts = TourStop.find_by(stop_id: unit.id)
+      if ts.present?
+        ts.latitude  = unit.x_plot
+        ts.longitude = unit.y_plot
+        ts.save
+      end
       render json: {unit: unit}, status: 200
     else
       render json: {}, status: 404
@@ -167,6 +173,12 @@ class UnitsController < ApplicationController
       unit.y_plot = params[:y_plot]
       unit.floorplate_id = params[:floorplate_id]
       unit.save(validate: false)
+      ts = TourStop.find_by(stop_id: unit.id)
+      if ts.present?
+        ts.latitude  = unit.x_plot
+        ts.longitude = unit.y_plot
+        ts.save
+      end
       render json: {unit: unit}, status: 200
     else
       render json: {}, status: 404
@@ -177,6 +189,10 @@ class UnitsController < ApplicationController
     @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id)
     @unit.x_plot = 0
     @unit.y_plot = 0
+    ts = TourStop.find_by(stop_id: @unit.id)
+    if ts.present?
+      ts.destroy
+    end
     if @unit.save(validate: false)
       redirect_to plotexp_community_sitemaps_path(@community), notice: "The plot has been deleted successfully."
     else
