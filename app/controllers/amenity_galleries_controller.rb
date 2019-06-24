@@ -15,7 +15,7 @@ class AmenityGalleriesController < ApplicationController
     end
   end
   def destroy
-    @amenity = current_community.amenities.find (params[:amenity_id])
+    @amenity = Amenity.find (params[:amenity_id])
     @amenity_gallery = @amenity.amenity_galleries.find (params[:id])
     if @amenity_gallery.destroy
       redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity Gallery Image deleted successfully"
