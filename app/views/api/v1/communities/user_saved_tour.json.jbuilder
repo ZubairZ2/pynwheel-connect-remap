@@ -3,7 +3,7 @@ json.phone_number @tour_user.phone_number
 json.email @tour_user.email
 last_vs = VisitedStop.where(device_id: @device_id).last
 @tours.each do |tour|
-  if tour[0][1] == last_vs.device_id
+  if tour[0][1] == last_vs.tour_key
     @tours = { [tour[0][0],tour[0][1]] => tour[1]}
   end
 end
