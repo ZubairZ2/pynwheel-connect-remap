@@ -64,15 +64,15 @@
         doDraggable();
     });
   }
-    function saveTourStopPoint(id, dx, dy){
+    function saveTourStopPoint(id){
         $.post( "/communities/"+community_id+"/tours/" + id + "/ajaxplottourstoppoint",
-            { "x_plot": dx,
-                "y_plot": dy,
+            {
+
                 "tour_stop_id": id
             },
             function(data,status,xhr) {
                 // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
-                doDraggable();
+                // doDraggable();
             });
     }
 

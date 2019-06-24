@@ -3,6 +3,11 @@ class ToursController < ApplicationController
     @community = Community.find params[:community_id]
     @tours = @community.tour || @community.create_tour
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
+
+    @amenities = @community.amenities
+    @units = @community.units
+    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
+    @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
   end
   def save_tour_settings
     @community = Community.find params[:community_id]
@@ -68,23 +73,23 @@ class ToursController < ApplicationController
     splitText = params[:tour_stop_id].split(':')
     tour_stop = splitText[0].to_i
     stop_type = splitText[1]
-    ts = TourStop.find_by(stop_type: stop_type, stop_id: tour_stop)
-    if ts.present?
-      ts.latitude = params[:x_plot]
-      ts.longitude = params[:y_plot]
-      ts.save
-      render json: {tour: ts}, status: 200
+    # ts = TourStop.find_by(stop_type: stop_type, stop_id: tour_stop)
+    # if ts.present?
+    #   ts.latitude = params[:x_plot]
+    #   ts.longitude = params[:y_plot]
+    #   ts.save
+    #   render json: {tour: ts}, status: 200
+    # else
+    if stop_type == "amenity"
+      st = Amenity.find tour_stop
+      stName = st.name
     else
-      if stop_type == "amenity"
-        st = Amenity.find tour_stop
-        stName = st.name
-      else
-        st = Unit.find tour_stop
-        stName = st.marketing_name
-      end
-      ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: params[:x_plot],longitude: params[:y_plot],tour_id: current_community.tour.id,name: stName)
-      render json: {tour: ts}, status: 200
+      st = Unit.find tour_stop
+      stName = st.marketing_name
     end
+    ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
+    render json: {tour: ts}, status: 200
+    # end
     # tour_stop = Tour.find params[:tour_stop_id]
     # if tour.present?
     #   #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])

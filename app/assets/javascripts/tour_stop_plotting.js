@@ -9,12 +9,15 @@ $(document).ready(function(){
 
     $("#imageselect1 li").click(function(e){
         if ($(this).data("id")!=""){
+            // alert($(this).data("id")+" ===> "+ $(this).data("name"))
             console.log($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1);
             if (selected.length == 0){
-                selected.push([ $(this).data("id"), $(this).data("name") ]);
+                saveTourStopPoint($(this).data("id"));
+                // selected.push([ $(this).data("id"), $(this).data("name") ]);
             }
             else if ($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1){
-                selected.push([ $(this).data("id"), $(this).data("name") ]);
+                saveTourStopPoint($(this).data("id"));
+                // selected.push([ $(this).data("id"), $(this).data("name") ]);
             }
         }
         // add to selected list
@@ -26,7 +29,7 @@ $(document).ready(function(){
 
         // hide from unused list
         $(this).css({"display": "none"});
-        plotMode();
+        // plotMode();
         $("#imageselect1").toggle();
         e.stopPropagation()
     });
@@ -34,10 +37,12 @@ $(document).ready(function(){
         if ($(this).data("id")!=""){
             console.log($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1);
             if (selected.length == 0){
-                selected.push([ $(this).data("id"), $(this).data("name") ]);
+                saveTourStopPoint($(this).data("id"));
+                // selected.push([ $(this).data("id"), $(this).data("name") ]);
             }
             else if ($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1){
-                selected.push([ $(this).data("id"), $(this).data("name") ]);
+                saveTourStopPoint($(this).data("id"));
+                // selected.push([ $(this).data("id"), $(this).data("name") ]);
             }
         }
         // add to selected list

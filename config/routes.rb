@@ -236,7 +236,7 @@ Rails.application.routes.draw do
         member do
           get :data
           get :community_tours
-          get :user_saved_tour
+          post :user_saved_tour
           get :ios_data
           get :minimum_data
           post :email_favorites

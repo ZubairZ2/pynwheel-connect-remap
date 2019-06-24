@@ -94,6 +94,21 @@ $(document).ready(function(){
       }
       $(this).val(''); 
     });
+    $("#unit-amenity-images").change(function(){
+        var files = $(this).prop("files")
+        for (var i = 0; i < files.length; i++) {
+            if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                readAmenityImageSrc(files[i],'unit');
+
+            }
+        }
+        if(files.length == 1){
+            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){
+                $('#image-upload-warning').modal('show');
+            }
+        }
+        $(this).val('');
+    });
 
     $("#sitemap-amenity-images").change(function(){
       var files = $(this).prop("files")
@@ -329,6 +344,8 @@ function saveAnimation(value){
       var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/amenities"
     else if (type == "floorplan")
       var url = "/communities/"+community_id+"/floorplans/"+floorplan_id+"/amenities"
+    else if (type == "unit")
+      var url = "/communities/"+community_id+"/units/"+unit_id+"/amenities"
     else if (type == "community")
     {amenityId = amenity_id;var url = "/communities/"+community_id+"/amenities"}
     else

@@ -11,7 +11,7 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       begin
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description])
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description], device_id: params[:device_id], tour_key: params[:tour_key])
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
@@ -40,7 +40,7 @@ class Api::V1::ToursController < ActionController::Base
         rescue => ex
         end
         if a1.present? && a2.present? && a3.present?
-          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i)
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key])
         end
         if vs.present?
           arr << true

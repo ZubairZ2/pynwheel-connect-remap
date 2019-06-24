@@ -111,7 +111,7 @@
                       %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor },:style => u.floor_is_updated? ? "color: #dd4a39;" : ""
                     -#%td= raw(u.description)
                     %td
-                      = link_to 'Manage Images' , plot_amenities_community_unit_amenities_path(@community,u),:class=>"btn btn-default black-button"
+                      = link_to 'Manage Images' , community_unit_amenities_path(@community,u),:class=>"btn btn-default black-button"
                     %td
                       .drop-img
                         = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")

@@ -1,0 +1,50 @@
+- content_for :title, "Images - Pynwheel"
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-columns
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-lg-12
+            = link_to "<Back to All Unit", community_units_path(@community), class: "btn btn-primary mt-20", style: "background: #8f4a9c; color: white;"
+          .col-md-12
+            %h4.title
+              = @unit.marketing_name + " Unit Images"
+            %h4{:style => "color: grey;"}
+              %p
+                Use the “Add Image” button or drag & drop area below to import images associated with the unit.
+              %p
+                Once images have been added, a button will appear to allow you to plot them on the unit.
+            = link_to "PLOT IMAGES ON UNIT", plot_amenities_community_unit_amenities_path(@community,@unit), class: "btn btn-primary mb-20", id: "amenity_image"
+          .col-md-6
+            .mt-35
+              %span.btn.btn-success.btn-file
+                %i.fa.fa-plus-circle
+                ADD IMAGE
+                %input#unit-amenity-images{:multiple => "multiple", :type => "file"}/
+            .divLoading.hidden
+        #images-index-unit
+          = render :partial=>'index'
+#edit-image.modal.fade.edit-image
+:javascript
+  var community_id = #{params[:community_id]}
+  var unit_id = #{@unit.id}
+
+  if(#{@unit.amenities.count} == 0)
+  {
+    $('#amenity_image').hide();
+  }
+  if(#{@unit.amenities.count.to_i} > 0)
+  {
+    $('#amenity_image').show();
+  }
+  $('.row').bind("DOMSubtreeModified",function(){
+     location.reload();
+  });

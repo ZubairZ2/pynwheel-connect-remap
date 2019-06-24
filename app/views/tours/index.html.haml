@@ -69,10 +69,51 @@
             = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
-          .col-md-12
-            = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do
-              %i.fa.fa-plus-circle
-              SELECT STOPS
+
+          .col-lg-6{:style => "margin-bottom: 300px;"}
+            %h5.mt-40.mb-20 Add Amenities
+            .imageselect.amenity-imageselect
+              .show-categories
+                = "- select amenity -"
+              %ul#imageselect1{:style => "display: none;"}
+                - amenity_arr = []
+                - @amenities.each do |amenity|
+                  -#- byebug
+                  - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && amenity.amenityable_type == "Sitemap"
+                    %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
+                      %a
+                        = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
+                        %span.ml-5
+                          = amenity.name
+                  -#- ts = TourStop.find_by(stop_type: "amenity",stop_id: amenity.id)
+                  -#- amenity_arr.push([amenity.id.to_s+":amenity", ts.present? ? ts.latitude.to_i : 0, ts.present? ? ts.longitude.to_i : 0, true, amenity.name])
+
+            -#%h5.mt-40 SELECTED IMAGES
+            -#.add-plan.mt-10.mb-20
+            -#
+            -#%label#newmsg Place marker for selected amenities on Map
+          - units = @units.sort_by{|u| u.marketing_name}
+          .col-lg-6
+            %h5.mt-40.mb-20 Add Units
+            .imageselect.unit-imageselect
+              .show-categories
+                = "- select unit -"
+              %ul#imageselect2{:style => "display: none;"}
+                - amenity_arr = []
+                - units.each do |unit|
+                  - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
+                    %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
+
+                      %span.ml-5
+                        = unit.marketing_name
+                  -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
+                  -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
+
+
+          -#.col-md-12
+          -#  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do
+          -#    %i.fa.fa-plus-circle
+          -#    SELECT STOPS
 
       / End Panel left Side
 / /.content
@@ -81,3 +122,4 @@
     $('.tour-settings-form').submit();
   });
   $('.tour_sortable').railsSortable();
+  var community_id = #{params[:community_id]}

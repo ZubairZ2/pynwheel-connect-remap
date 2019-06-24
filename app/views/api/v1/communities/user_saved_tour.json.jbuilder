@@ -3,7 +3,8 @@ json.phone_number @tour_user.phone_number
 json.email @tour_user.email
 
 json.tours @tours do |tour|
-  tour = Tour.find tour[0]
+  tour_key = tour[0][1]
+  tour = Tour.find tour[0][0]
   @community = Community.find tour.community_id
   json.id tour.id
   json.community_id tour.community_id
@@ -14,7 +15,7 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
-  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id).group('tour_stop_id').count
+  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
 
   json.visited_tour visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop[0]
