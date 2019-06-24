@@ -50,6 +50,14 @@ class UnitsController < ApplicationController
       end
       if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name )
         @unit.name_is_updated = true
+        begin
+          ts = TourStop.find_by(stop_id: @unit.id)
+          if ts.present?
+            ts.name = params[:unit][:marketing_name]
+            ts.save
+          end
+        rescue => ex
+        end
       end
       if (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id)
         @unit.floorplan_id_is_updated = true

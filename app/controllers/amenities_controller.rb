@@ -27,6 +27,14 @@ class AmenitiesController < ApplicationController
 
   def update
     @amenity = Amenity.find(params[:id])
+    begin
+      ts = TourStop.find_by(stop_id: @amenity.id)
+      if ts.present? && params[:amenity][:name].present?
+        ts.name = params[:amenity][:name]
+        ts.save
+      end
+    rescue => ex
+    end
     if @amenity.update_attributes(amenity_params)
       if params[:amenity][:access_code].present? || params[:amenity][:description].present? || params[:amenity][:name].present?
         redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully"
