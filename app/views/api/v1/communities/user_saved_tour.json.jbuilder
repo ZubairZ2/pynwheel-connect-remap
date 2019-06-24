@@ -36,6 +36,7 @@ json.tours @tours do |tour|
       json.name "Unit "+unit.marketing_name
       stop_dat = {"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description}
       json.stop_data stop_dat
+      @unit_gallery_arr = []
       @unit_amenities = unit.amenities # Amenity.where(community_id: (Tour.find @tour.tour_id).community_id, amenityable_type: "Unit", amenityable_id: @tour.stop_id)
       json.unit_amenities @unit_amenities do |unit_amenity|
         if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot > 0)
@@ -43,7 +44,7 @@ json.tours @tours do |tour|
         json.y_plot unit_amenity.y_plot
         json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
         json.stop_description unit_amenity.description
-        @unit_gallery_arr = []
+
         unit_amenity.amenity_galleries.each do |ag|
           @unit_gallery_arr << ag
           # json.name ag.name
