@@ -36,7 +36,7 @@ json.tours @tours do |tour|
       json.name "Unit "+unit.marketing_name
       stop_dat = {"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description}
       json.stop_data stop_dat
-      @unit_amenities = Amenity.where(community_id: (Tour.find @tour.tour_id).community_id, amenityable_type: "Unit", amenityable_id: @tour.stop_id)
+      @unit_amenities = unit.amenities # Amenity.where(community_id: (Tour.find @tour.tour_id).community_id, amenityable_type: "Unit", amenityable_id: @tour.stop_id)
       json.unit_amenities @unit_amenities do |unit_amenity|
         json.x_plot unit_amenity.x_plot
         json.y_plot unit_amenity.y_plot
@@ -59,6 +59,7 @@ json.tours @tours do |tour|
       amenity = Amenity.find @tour.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
       json.stop_description amenity.description
+      json.name amenity.name
       json.amenity_gallery amenity.amenity_galleries do |ag|
         json.name ag.name
         json.type "unit_stop"
