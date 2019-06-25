@@ -20,7 +20,7 @@ json.tours @tours do |tour|
       unit = Unit.find stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
       json.name  "Apartment "+unit.marketing_name
-      stop_dat = {"floorplan" => Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description}
+      stop_dat = {"floorplan" => Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
