@@ -19,7 +19,7 @@ json.tours @tours do |tour|
     if stop.stop_type == "unit"
       unit = Unit.find stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.name  "Unit "+unit.marketing_name
+      json.name  "Apartment "+unit.marketing_name
       stop_dat = {"floorplan" => Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
@@ -34,7 +34,16 @@ json.tours @tours do |tour|
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
             json.amenity_gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description]
           else
-            json.amenity_gallery unit_amenity.amenity_galleries do |ag|
+            am = AmenityGallery.new
+            am.name = amenity.name
+            am.image =  amenity.image.present? ? amenity.image.url : "no image"
+            am.description = amenity.description
+            amenityGalleryArr = []
+            amenityGalleryArr << am
+            amenity.amenity_galleries.each do |amen|
+              amenityGalleryArr << amen
+            end
+            json.amenity_gallery amenityGalleryArr do |ag|
               json.name ag.name
               json.image ag.image.url
               json.description ag.description
@@ -51,7 +60,17 @@ json.tours @tours do |tour|
       if amenity.amenity_galleries.count == 0
         json.amenity_gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
       else
-        json.amenity_gallery amenity.amenity_galleries do |ag|
+        # json.amenity_gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
+        am = AmenityGallery.new
+        am.name = amenity.name
+        am.image =  amenity.image.present? ? amenity.image.url : "no image"
+        am.description = amenity.description
+        amenityGalleryArr = []
+        amenityGalleryArr << am
+        amenity.amenity_galleries.each do |amen|
+          amenityGalleryArr << amen
+        end
+        json.amenity_gallery amenityGalleryArr do |ag|
           json.name ag.name
           json.type "unit_stop"
           json.image ag.image.url

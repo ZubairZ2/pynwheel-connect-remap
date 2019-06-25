@@ -33,7 +33,7 @@ json.tours @tours do |tour|
     if @tour.stop_type == "unit"
       unit = Unit.find @tour.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.name "Unit "+unit.marketing_name
+      json.name "Apartment "+unit.marketing_name
       stop_dat = {"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description}
       json.stop_data stop_dat
       @unit_gallery_arr = []
