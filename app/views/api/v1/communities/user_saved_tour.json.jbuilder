@@ -45,6 +45,12 @@ json.tours @tours do |tour|
         json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
         json.stop_description unit_amenity.description
 
+        am = AmenityGallery.new
+        am.name = unit_amenity.name
+        am.image =  unit_amenity.image.present? ? unit_amenity.image.url : "no image"
+        am.description = unit_amenity.description
+        @unit_gallery_arr << am
+
         unit_amenity.amenity_galleries.each do |ag|
           @unit_gallery_arr << ag
           # json.name ag.name
@@ -63,7 +69,18 @@ json.tours @tours do |tour|
       json.image amenity.image.present? ? amenity.image.url : "no image"
       json.stop_description amenity.description
       json.name amenity.name
-      json.amenity_gallery amenity.amenity_galleries do |ag|
+
+      am = AmenityGallery.new
+      am.name = amenity.name
+      am.image =  amenity.image.present? ? amenity.image.url : "no image"
+      am.description = amenity.description
+      amenityGalleryArr = []
+      amenityGalleryArr << am
+      amenity.amenity_galleries.each do |amen|
+        amenityGalleryArr << amen
+      end
+
+      json.amenity_gallery amenityGalleryArr do |ag|
         json.name ag.name
         json.type "unit_stop"
         json.image ag.image.url
