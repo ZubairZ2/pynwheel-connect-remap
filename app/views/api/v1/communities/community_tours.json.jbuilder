@@ -40,7 +40,7 @@ json.tours @tours do |tour|
             am.description = amenity.description
             amenityGalleryArr = []
             amenityGalleryArr << am
-            amenity.amenity_galleries.each do |amen|
+            unit_amenity.amenity_galleries.each do |amen|
               amenityGalleryArr << amen
             end
             json.amenity_gallery amenityGalleryArr do |ag|
