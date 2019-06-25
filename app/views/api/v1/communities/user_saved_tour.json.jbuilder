@@ -47,7 +47,7 @@ json.tours @tours do |tour|
 
         am = AmenityGallery.new
         am.name = unit_amenity.name
-        am.image =  unit_amenity.image.present? ? unit_amenity.image.url : "no image"
+        am.image =  unit_amenity.image.present? ? unit_amenity.image : "no image"
         am.description = unit_amenity.description
         @unit_gallery_arr << am
 
@@ -66,7 +66,7 @@ json.tours @tours do |tour|
       end
     elsif @tour.stop_type == "amenity"
       amenity = Amenity.find @tour.stop_id
-      json.image amenity.image.present? ? amenity.image.url : "no image"
+      json.image amenity.image.present? ? amenity.image : "no image"
       json.stop_description amenity.description
       json.name amenity.name
 

@@ -36,7 +36,7 @@ json.tours @tours do |tour|
           else
             am = AmenityGallery.new
             am.name = unit_amenity.name
-            am.image =  unit_amenity.image.present? ? unit_amenity.image.url : "no image"
+            am.image =  unit_amenity.image.present? ? unit_amenity.image : "no image"
             am.description = unit_amenity.description
             amenityGalleryArr = []
             amenityGalleryArr << am
@@ -63,7 +63,7 @@ json.tours @tours do |tour|
         # json.amenity_gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
         am = AmenityGallery.new
         am.name = amenity.name
-        am.image =  amenity.image.present? ? amenity.image.url : "no image"
+        am.image =  amenity.image.present? ? amenity.image : "no image"
         am.description = amenity.description
         amenityGalleryArr = []
         amenityGalleryArr << am
