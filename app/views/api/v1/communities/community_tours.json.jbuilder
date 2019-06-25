@@ -36,6 +36,7 @@ json.tours @tours do |tour|
           else
 
             amenityGalleryArr = []
+            unit_amenity.description = nil
             amenityGalleryArr << unit_amenity
             unit_amenity.amenity_galleries.each do |amen|
               amenityGalleryArr << amen
@@ -60,6 +61,7 @@ json.tours @tours do |tour|
         # json.amenity_gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
 
         amenityGalleryArr = []
+        amenity.description = nil
         amenityGalleryArr << amenity
         amenity.amenity_galleries.each do |amen|
           amenityGalleryArr << amen
