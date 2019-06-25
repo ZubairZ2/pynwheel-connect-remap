@@ -16,7 +16,8 @@
           Plot
           %span= @unit.marketing_name + " Amenities"
         .col-md-12
-          = link_to "Back to Tour Stops", community_tours_path(@community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+          - if (current_user.is_super_admin?)
+            = link_to "Back to Tour Stops", community_tours_path(@community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
           %span.hidden#active_x_plot 0
           
           %span.hidden#active_y_plot 0
