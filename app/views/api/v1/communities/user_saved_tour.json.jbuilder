@@ -46,7 +46,7 @@ json.tours @tours do |tour|
         json.stop_description unit_amenity.description
         json.directional_text unit_amenity.directional_text
 
-        unit_amenity.description = nil
+        # unit_amenity.description = nil
         @unit_gallery_arr << unit_amenity
 
         unit_amenity.amenity_galleries.each do |ag|
@@ -65,12 +65,12 @@ json.tours @tours do |tour|
       end
     elsif @tour.stop_type == "amenity"
       amenity = Amenity.find @tour.stop_id
-      json.image amenity.image.present? ? amenity.image : "no image"
+      json.image amenity.image.present? ? amenity.image.url : "no image"
       json.stop_description amenity.description
       json.name amenity.name
       json.directional_text amenity.directional_text
 
-      amenity.description = nil
+      # amenity.description = nil
       amenityGalleryArr = []
       amenityGalleryArr << amenity
       amenity.amenity_galleries.each do |amen|
