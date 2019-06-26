@@ -14,6 +14,9 @@
           %label{:for => "exampleInputEmail1"} Image Description
           = f.text_area :description , class: "form-control", placeholder: "Description", :maxlength=>"70"
         .form-group
+          %label{:for => "exampleInputEmail1"} Directional Text
+          = f.text_area :directional_text , class: "form-control", placeholder: "Directional Text", :maxlength=>"70"
+        .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
             Apply Changes
             %i.fa.fa-check

@@ -44,6 +44,7 @@ json.tours @tours do |tour|
         json.y_plot unit_amenity.y_plot
         json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
         json.stop_description unit_amenity.description
+        json.directional_text unit_amenity.directional_text
 
         unit_amenity.description = nil
         @unit_gallery_arr << unit_amenity
@@ -60,12 +61,14 @@ json.tours @tours do |tour|
         json.name ag.name
         json.image ag.image.url
         json.description ag.description
+        json.directional_text ag.directional_text
       end
     elsif @tour.stop_type == "amenity"
       amenity = Amenity.find @tour.stop_id
       json.image amenity.image.present? ? amenity.image : "no image"
       json.stop_description amenity.description
       json.name amenity.name
+      json.directional_text amenity.directional_text
 
       amenity.description = nil
       amenityGalleryArr = []
@@ -79,6 +82,7 @@ json.tours @tours do |tour|
         json.type "unit_stop"
         json.image ag.image.url
         json.description ag.description
+        json.directional_text ag.directional_text
       end
     end
     # user_data = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id)

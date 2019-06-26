@@ -30,9 +30,10 @@ json.tours @tours do |tour|
           json.name unit_amenity.name
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
           json.stop_description unit_amenity.description
+          json.directional_text unit_amenity.directional_text
           if unit_amenity.amenity_galleries.count == 0
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
-            json.amenity_gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => ""]
+            json.amenity_gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description, "directional_text" => unit_amenity.directional_text]
           else
 
             amenityGalleryArr = []
@@ -45,6 +46,7 @@ json.tours @tours do |tour|
               json.name ag.name
               json.image ag.image.url
               json.description ag.description
+              json.directional_text ag.directional_text
             end
           end
 
@@ -55,6 +57,7 @@ json.tours @tours do |tour|
       json.image amenity.image.present? ? amenity.image.url : "no image"
       json.stop_description amenity.description
       json.name amenity.name
+      json.directional_text amenity.directional_text
       if amenity.amenity_galleries.count == 0
         json.amenity_gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => ""]
       else
@@ -71,6 +74,7 @@ json.tours @tours do |tour|
           json.type "unit_stop"
           json.image ag.image.url
           json.description ag.description
+          json.directional_text ag.directional_text
         end
       end
 

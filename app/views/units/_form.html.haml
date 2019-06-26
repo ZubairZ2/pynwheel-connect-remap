@@ -63,6 +63,13 @@
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Directional Text
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_area :stop_description,:class=>"form-control mb-20 ",:placeholder=>"Enter Directional Description", :rows => "8"
 -#.form-group
 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 -#    Available
