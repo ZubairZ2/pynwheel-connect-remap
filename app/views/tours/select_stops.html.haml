@@ -1,0 +1,130 @@
+%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
+= render '/font_awesome_v5'
+- content_for :title, "Plot Amenities - Pynwheel"
+%section.is-amenity
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-database
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Plot Tour Stop
+          %span
+          %span.hidden#active_x_plot 0
+
+          %span.hidden#active_y_plot 0
+
+          - if @community.theme_name.include?('gables')
+            - marker_color = @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'modernist'
+            - marker_color = @community.design.modernists_amenity_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color
+          - elsif @community.theme_name == 'futurist'
+            - marker_color = @community.design.futurist_amenity_map_marker_color.present? ? @community.design.futurist_amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'expressionist'
+            - marker_color = @community.design.expressionist__amenity_map_marker_color.present? ? @community.design.expressionist__amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'panther'
+            - marker_color = @community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : "#d37474"
+          - else
+            - marker_color = 'rgba(247, 0, 0, 0.61)'
+
+          - if @community.theme_name.include?('gables')
+            - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
+          - elsif @community.theme_name == 'modernist'
+            - marker_font_size = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
+          - elsif @community.theme_name == 'futurist'
+            - marker_font_size = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : 30
+          - elsif @community.theme_name == 'expressionist'
+            - marker_font_size = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
+          - elsif @community.theme_name == 'panther'
+            - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
+          - else
+            - marker_font_size = 30
+
+          -#- marker_font_size = @community.design.amenity_map_marker_size_integer
+          -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
+          - marker_font_size = marker_font_size -5
+          - camera_font_size = marker_font_size / 2
+
+          - marker_font_size2 = marker_font_size
+          - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
+          %span.hidden#marker-font-size #{marker_font_size}
+          %span.hidden#marker-color #{marker_color}
+          %span.hidden#camera-margin #{camera_margin}
+
+        .btn-btn-danger.mt-10
+          -#= link_to "Back",community_floorplate_amenities_path(@community,@sitemap), :class=>"btn btn-primary mr-5 hidden"
+          -#= link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary"
+          -#%a.btn.btn-danger{"data-name" => "floorplate's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/remove_amenities_plot"} RESET ALL PLOTS
+      / /.box-header
+      / form start
+      %form.form-horizontal
+        .box-body.map-body-top
+          .row
+            .col-lg-9#container.p-0
+              .map-block{:style=>"position: relative;"}
+                .plot-image#map
+                  = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  - @tour_stops.each do |stop|
+                    - if stop.latitude.to_i + stop.longitude.to_i > 0
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fa fa-star' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px; ' ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => stop.name, :id => "m_#{stop.id}", :style => "left:#{stop.latitude}px; top:#{stop.longitude}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.id}/tour_stops/#{stop.id}/resetTourStopPoint"
+            .row.col-lg-3
+              .col-lg-6
+                %h5.mt-40.mb-20 SELECT IMAGES TO PLOT
+                .imageselect.amenity-imageselect
+                  .show-categories
+                    = "- select amenity -"
+                  %ul#imageselect1{:style => "display: none;"}
+                    - amenity_arr = []
+                    - @amenities.each do |amenity|
+                      - unless @tour_amenity_array.include?(amenity.id)
+                        %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
+                          %a
+                            = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
+                            %span.ml-5
+                              = amenity.name
+                      - ts = TourStop.find_by(stop_type: "amenity",stop_id: amenity.id)
+                      - amenity_arr.push([amenity.id.to_s+":amenity", ts.present? ? ts.latitude.to_i : 0, ts.present? ? ts.longitude.to_i : 0, true, amenity.name])
+
+                %h5.mt-40 SELECTED IMAGES
+                .add-plan.mt-10.mb-20
+                  %ul#selected-units
+                / %button.btn.btn-success#new{:type => "button"} PLOT NOW
+                %label#newmsg Place marker for selected amenities on Map
+              /////////////////////////
+              - units = @units.sort_by{|u| u.marketing_name}
+              .col-lg-6
+                %h5.mt-40.mb-20 SELECT UNIT TO PLOT
+                .imageselect.unit-imageselect
+                  .show-categories
+                    = "- select unit -"
+                  %ul#imageselect2{:style => "display: none;"}
+                    -#- amenity_arr = []
+                    - units.each do |unit|
+                      - unless @tour_unit_array.include?(unit.id)
+                        %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
+
+                          %span.ml-5
+                            = unit.marketing_name
+                      - ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
+                      - amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
+
+                %h5.mt-40 SELECTED UNITS
+                .add-plan.mt-10.mb-20
+                  %ul#selected-units
+                / %button.btn.btn-success#new{:type => "button"} PLOT NOW
+                %label#newmsg Place marker for selected unit on Map
+        #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
+          %i.icon-screenshot
+:javascript
+  var arr = #{raw amenity_arr}
+  var lmargin = 0
+  var rmargin = 0
+  var community_id = #{params[:community_id]}
+  var addmode = false;
+  var tour_id_for_stop = #{@community.tour.id}
+  var community_tour_id = #{@community.tour.id}

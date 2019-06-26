@@ -17,13 +17,18 @@
 #  amenityable_id      :integer
 #  community_id        :integer
 #  standard_image_url  :string
+#  sort                :integer
+#  access_code         :string
 #
 
 class Amenity < ApplicationRecord
+  include RailsSortable::Model
+  set_sortable :sort
   include StandardUrl
   mount_base64_uploader :image, AvatarUploader
   belongs_to :amenityable, polymorphic: true
   belongs_to :community
+  has_many :amenity_galleries, dependent: :destroy
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]

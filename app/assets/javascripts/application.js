@@ -35,6 +35,8 @@
 //= require maps
 //= require unit-plotting
 //= require sitemap
+//= require tour
+//= require tour_stop_plotting
 //= require floorplate
 //= require amenity
 //= require ekko-lightbox

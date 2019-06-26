@@ -1,0 +1,14 @@
+$('#images-index-unit').html("<%= escape_javascript render 'index' %>");
+var message = '<div class="alert alert-success">Image uploaded successfully.</div>'
+$('#flash-message').html(message);
+setTimeout(function() {
+    $('.alert').fadeOut('slow');
+}, 10000);
+imageUnitAmenityDragNdrop();
+
+$('.preview-image').click(function(event){
+    event.preventDefault();
+    $(this).ekkoLightbox({
+        alwaysShowClose: true
+    });
+});

@@ -18,6 +18,9 @@
         %h3.box-title
           Plot
           %span= @unit.marketing_name + " Amenities"
+        .col-md-12
+          - if (current_user.is_super_admin?)
+            = link_to "Back to Tour Stops", community_tours_path(@community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
           %span.hidden#active_x_plot 0
           
           %span.hidden#active_y_plot 0
@@ -60,7 +63,7 @@
                   = image_tag @unit.standard_image_url.present? ? @unit.standard_image_url : (@floorplan.present? && @floorplan.standard_image_url.present? ? @floorplan.standard_image_url : "/assets/default.jpeg")
                   - @sitemap.amenities.each do |amenity|
                     - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "#{amenity.description}", "data-target" => "#confirm-delete_amenity", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/#{amenity.id}"
             .col-lg-3
               %h5.mt-40.mb-20 SELECT IMAGES TO PLOT
               .imageselect
@@ -69,7 +72,7 @@
                 %ul#imageselect{:style => "display: none;"}
                   - amenity_arr = []
                   - @amenities.each do |amenity|
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0 && !(@tour_amenity_array.include?(amenity.id))
                       %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
                         %a
                           = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
@@ -84,6 +87,50 @@
               %label#newmsg Place marker for selected amenities on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
+    ////////////// Amenity Grid
+    .box.box-widget.panel-box
+      .row
+        .col-md-12
+          %table.table.table-bordered.table-striped.table-hover.table-responsive
+            %thead
+              %tr
+                %th{:width => "79"} Sr #
+                %th Tour Stop
+            %tbody.amenity_sortable_list
+              - orderVar = 0
+              - if @sitemap.amenities.present?
+                - sortable_fetch(@sitemap.amenities.order(:sort)) do |amenity,index|
+                  - unless amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                    %tr{:id=> index}
+                      - orderVar = orderVar + 1
+                      %td= orderVar
+                      %td
+                        = amenity.name
+#add-description.modal.fade.edit-image
+-##add_amenity_description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+-#  .modal-dialog
+-#    .modal-content
+-#      .modal-header#tee
+-#        Add Description
+-#      - url = root_path
+-#      .modal-body
+-#        = form_for [@sitemap.amenities.first], url: url, remote: true do |f|
+-#          .modal-dialog.modal-lg
+-#            .modal-content
+-#              .modal-header
+-#
+-#                %button.close{"data-dismiss" => "modal", :type => "button"} ×
+-#                %h4.modal-title Add Imagepage
+-#              .modal-body
+-#                .row
+-#                  .col-md-12
+-#                    .mt-25.mb-40
+-#                      %label Enter Name
+-#                      = f.text_field :stop_description, class: "form-control"
+-#
+-#              .modal-footer
+-#                = f.submit "Save", :class=>"btn btn-primary"
+
 :javascript
   var arr = #{raw amenity_arr}
   var lmargin = 0
@@ -92,3 +139,4 @@
   var addmode = false;
   var unit_id_for_amenity = #{@sitemap.id}
   var amenity_type = "unit"
+  $('.amenity_sortable_list').railsSortable();

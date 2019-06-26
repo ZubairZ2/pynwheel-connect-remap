@@ -1,0 +1,18 @@
+.modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
+  .modal-content
+    = form_for @amenity,url: community_unit_amenity_path(@community,@unit,@amenity),method: :put do |f|
+      .modal-body
+        .image-crop{:style=>"overflow-y: auto;"}
+          = image_tag @amenity.image.url, id: "cropbox" 
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+        .form-group
+          %label{:for => "exampleInputEmail1"} Image Title
+          = f.text_field :name , class: "form-control", placeholder: "Name"    
+        .form-group
+          %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
+            Apply Changes
+            %i.fa.fa-check
+        .clearfix
+}

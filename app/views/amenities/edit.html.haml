@@ -1,0 +1,93 @@
+-#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
+= render '/font_awesome_v5'
+- content_for :title, "Property Map - Pynwheel"
+.divLoading.hidden
+%section.is-sitemap
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-map-marker
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Edit Amenity
+    .row
+      .col-md-12
+        .box.box-widget.panel-box.add-plan.pt-30
+          = form_for @amenity,url: community_amenity_path(current_community,@amenity),method: :put do |f|
+            = hidden_field_tag "community_id", @community.id
+
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Name
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.text_field :name, :class=>"form-control amenity_edit_field", :placeholder=>"Name",:maxlength=>"30"
+
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Description
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.text_field :description, :class=>"form-control amenity_edit_field", :placeholder=>"Description",:maxlength=>"70"
+
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Directional Text
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.text_field :directional_text, :class=>"form-control amenity_edit_field", :placeholder=>"Directional Text",:maxlength=>"70"
+
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Access Code
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.text_field :access_code, :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
+
+            = submit_tag 'Save', class: "hidden"
+
+    %span.btn.btn-primary.btn-file
+      %i.fa.fa-upload
+      Upload File
+      %input#amenity-images{:type => "file"}/
+
+    .text-center.image-upload.home-page-drag-box#amenity-image-upload-holder
+      = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+      %p Drag &amp; Drop images to Upload
+
+.row
+  .col-lg-12
+    .form-group.logo-upload-bg.pt-15
+      .select-logo.center-img.mb-20.mt-30.logo-upload-bg
+        .select-logo-logo.logo-container.logo-upload-container
+          %a.preview-image{:href=>@amenity.image.present? ? @amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+            = image_tag @amenity.image.present? ? @amenity.image.url : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"preview-image"
+    //////////////////////// Amenity Gallery
+    .box.box-info.add-plan
+
+      .col-lg-12
+        %h4{:style => "color: grey;"}
+          Upload Amenity Gallery
+      .col-lg-12.mt-35
+        /%span.btn.btn-primary.btn-file.pull-right.mb-20
+        %span.btn.btn-success.btn-file.some{ :style => "margin-right: 5px; width: 135px" }
+          %i.fa.fa-plus-circle
+          ADD FILES
+          %input#amenity-gallery-images{:multiple => "multiple", :type => "file"}/
+        .mt-10
+          - if @community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? )
+            = link_to "PLOT AMENITIES", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
+        .divLoading.hidden
+        #images-index1
+          = render :partial=>'edit_amenity'
+#edit-gallery-image.modal.fade.edit-gallery-image
+:javascript
+  $('.amenity_edit_field').change(function(){
+    $('.edit_amenity').submit();
+  });
+  var community_id = #{params[:community_id]}
+  var amenity_id = #{@amenity.id}

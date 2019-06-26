@@ -30,6 +30,9 @@
 #  zaremba_password    :string
 #  zaremba_filename    :string
 #  zaremba_property_id :string
+#  entrata_url         :string
+#  xml_filename        :string
+#  xml_domain          :string
 #
 
 class Credential < ApplicationRecord
