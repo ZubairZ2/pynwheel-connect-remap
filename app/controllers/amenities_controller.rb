@@ -15,14 +15,8 @@ class AmenitiesController < ApplicationController
       @amenity.save
       redirect_to edit_community_amenity_path(current_community,@amenity)
     else
-      require 'mini_magick'
-
-      obj = current_community.amenities.create(image: params[:src],name: params[:name])
+      current_community.amenities.create(image: params[:src],name: params[:name])
       @amenities = current_community.amenities.order(id: :desc)
-      image = MiniMagick::Image.open(obj.image.url)
-      image.resize "25%"
-      obj.image = image
-      obj.save
     end
   end
 
