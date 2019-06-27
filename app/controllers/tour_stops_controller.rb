@@ -14,6 +14,7 @@ class TourStopsController < ApplicationController
   end
   def destroy
     @tour_stop = TourStop.find params[:id]
+    VisitedStop.where(tour_stop_id: @tour_stop.id).destroy_all
     if @tour_stop.destroy
       redirect_to community_tours_path(current_community), :notice => "Tour Stop deleted"
     else
