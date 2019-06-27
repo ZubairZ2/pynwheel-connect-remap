@@ -139,6 +139,11 @@ class UnitsController < ApplicationController
   end
 
   def destroy
+    ts = TourStop.find_by(stop_id: @unit.id)
+    if ts.present?
+      VisitedStop.where(tour_stop_id: ts.id).destroy_all
+      ts.destroy
+    end
     @unit.destroy
     flash[:notice] = "Unit deleted successfully."
     redirect_to community_units_path(:community_id=>@community.id)
@@ -191,6 +196,7 @@ class UnitsController < ApplicationController
     @unit.y_plot = 0
     ts = TourStop.find_by(stop_id: @unit.id)
     if ts.present?
+      VisitedStop.where(tour_stop_id: ts.id).destroy_all
       ts.destroy
     end
     if @unit.save(validate: false)
@@ -206,6 +212,11 @@ class UnitsController < ApplicationController
     @unit.x_plot = 0
     @unit.y_plot = 0
     @unit.floorplate_id = nil
+    ts = TourStop.find_by(stop_id: @unit.id)
+    if ts.present?
+      VisitedStop.where(tour_stop_id: ts.id).destroy_all
+      ts.destroy
+    end
     if @unit.save(validate: false)
       redirect_to community_floorplate_plotexp_path(@community,@floorplate), notice: "The plot has been deleted successfully."
     else

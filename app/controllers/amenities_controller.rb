@@ -58,6 +58,11 @@ class AmenitiesController < ApplicationController
 
   def destroy
     @amenity = current_community.amenities.find (params[:id])
+    ts = TourStop.find_by(stop_id: @amenity.id)
+    if ts.present?
+      VisitedStop.where(tour_stop_id: ts.id).destroy_all
+      ts.destroy
+    end
     if @amenity.destroy
       redirect_to community_amenities_path(current_community), notice: "Amenity deleted successfully"
     else
