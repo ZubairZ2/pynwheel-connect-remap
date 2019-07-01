@@ -2,10 +2,10 @@ $(window).bind('load', function () {
   if ($('.is-webpage')[0]) {
 
 
-    $(".panzoom").addClass("transform-none");
-    $(document).on("click touchstart", ".zoom-controls", function () {
-      $(".panzoom").removeClass("transform-none");
-    });
+    // $(".panzoom").addClass("transform-none");
+    // $(document).on("click touchstart", ".zoom-controls", function () {
+    //   $(".panzoom").removeClass("transform-none");
+    // });
     $('[data-toggle="tooltip"]').tooltip({trigger: "hover"}); // initialize bootstrap tooltip
     ////////////// Disable browser zoom for webpage  starts here ////////////////
     $(document).keydown(function (event) {
@@ -20,7 +20,7 @@ $(window).bind('load', function () {
 
     $(window).bind('mousewheel DOMMouseScroll', function (event) {
       if (event.ctrlKey == true) {
-        event.preventDefault();
+        // event.preventDefault();
       }
     });
     ////////////// Disable browser zoom for webpage  ends here ////////////////
@@ -106,10 +106,10 @@ $(window).bind('load', function () {
     });
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function () {
-      $(".panzoom").addClass("transform-none");
+      // $(".panzoom").addClass("transform-none");
       // console.log('clicking on anchor tag');
-      var $section = $('#panzomm-container');
-      $panzoom = $section.find('.panzoom').panzoom("reset");
+      // var $section = $('#panzomm-container');
+      // $panzoom = $section.find('.panzoom').panzoom("reset");
       var floor_for_showing_image = $(this).attr('id');
       if (floor_for_showing_image != current_floor) { // && !$(this).hasClass('no-units')
         $('.floorplate-image').addClass('hidden');
@@ -132,16 +132,131 @@ $(window).bind('load', function () {
       $(this).parent().find('input').click();
     });
     ////////////////////////////////////////////
-    /*panzoom functionality*/
-    var $section = $('#panzomm-container');
-    $panzoom = $section.find('.panzoom').panzoom({
-      $zoomIn: $section.find(".zoom-in"),
-      $zoomOut: $section.find(".zoom-out"),
-      $reset: $section.find(".reset"),
-      $set: $section.find(".parent"),
-      contain: 'automatic',
-      minScale: 0.7,
+
+    // var tapped=false;
+    // $("#panzomm-container").on("touchstart",function(e){
+    //     if(!tapped){
+    //       tapped=setTimeout(function(){
+    //           console.log("singler");
+    //           tapped=null
+    //       },300); //wait 300ms
+    //     } else {
+    //       clearTimeout(tapped);
+    //       tapped=null
+    //       console.log("dobl");
+    //     }
+    //     e.preventDefault()
+    // });
+    
+
+    // var elem = $("#zoomable").panzoom({
+    //   increment: 0.4,
+    //   minScale: 0.1,
+    //   maxScale: 2,
+    //   duration: 500,
+    //   $reset: $(".reset"),
+    //  $zoomIn: $(".zoom-in"),
+    //  $zoomOut: $(".zoom-out"),
+    //  contain: 'invert'
+    // });
+    
+    $('#zoomable a').on('mousedown touchstart', function (e) {
+      e.stopImmediatePropagation();
     });
+
+    var $area = document.getElementById('zoomable');
+    window.pz = panzoom($area, 
+      {
+        bounds: true, contain: 'invert', smoothScroll: false,
+        maxZoom: 10,
+        minZoom: 0.1,
+        zoomDoubleClickSpeed: 1,
+       
+        onTouch: function(e) {
+          
+          
+          // `e` - is current touch event.
+          e.preventDefault();
+          $(e.path[1]).click();
+          return false; // tells the library to not preventDefault.
+        }
+      });
+    var zoomInCount = 0
+    var zoomOutCount = 0
+    $(".reset").on('click', function (e) {
+      // window.pz.transformToScreen($('#zoomable').height(), $('#zoomable').width())
+      // if(zoomInCount > 0){
+      //   do{
+      //     window.pz.zoomInOut(189)
+      //     zoomInCount--
+      //   }while(zoomInCount != 0)
+      // }
+
+      // if(zoomOutCount > 0){
+      //   do{
+      //     window.pz.zoomInOut(187)
+      //     zoomOutCount--
+      //   }while(zoomOutCount != 0)
+      // }
+      window.location.reload()
+    });
+    
+    $(".zoom-in").on('click', function (e) {
+      zoomInCount++
+      window.pz.zoomInOut(187);
+    });
+
+
+    $(".zoom-out").on('click', function (e) {
+      zoomOutCount++
+      window.pz.zoomInOut(189);
+    });
+
+
+
+    // $($area.nextElementSibling).find(".zoom-in").on("click", function( e ) { e.preventDefault(); $area.panzoom("zoom"); });
+    
+    // var elem = document.getElementById('easypz');
+    // debugger
+    // var a = new EasyPZ(elem);
+
+    // var area = document.querySelector('#easypz')
+    // // debugger
+    // panzoom(area)
+
+    // var zm = new Zoom(elem, {
+    //     rotate: true,
+    //     pan:true
+    // });
+    // var el = document.querySelector('#torotate');
+    // var pz = new PinchZoom(el, {tapZoomFactor: 2, maxZoom: 30, minZoom: 0.5});
+    // pz.enable();
+    /*panzoom functionality*/
+    // var $section = $('#panzomm-container');
+  
+    // $panzoom = $section.find('.panzoom').panzoom({
+    //   // $zoomIn: $section.find(".zoom-in"),
+    //   // $zoomOut: $section.find(".zoom-out"),
+    //   $reset: $section.find(".reset"),
+    //   $set: $section.find(".parent"),
+    //   contain: 'automatic',
+    //   minScale: 0.7,
+    //   which: 1,
+    //   increment: 0.4,
+    //   onTouch: function(e) {
+    //     // `e` - is current touch event.
+    //     debugger
+    //     return false; // tells the library to not preventDefault.
+    //   }
+    // });
+
+    // $section.on('mousewheel.focal', function (e) {
+    //   e.preventDefault();
+    //   $panzoom.panzoom('zoom', e.originalEvent.wheelDelta < 0, {
+    //       increment: 0.1,
+    //       focal: e
+    //   });
+    // });
     /////////////////////////////////////////////
     /*popover*/
     if (!hasTouch()) {
