@@ -45,7 +45,7 @@ class User < ApplicationRecord
   has_many :communities ,through: :community_users
 
   def all_companies
-    Company.all.map(&:name)
+    Company.all.map(&:name).sort
   end
   def name
   	if first_name.nil? and last_name.nil?
