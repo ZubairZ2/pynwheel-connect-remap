@@ -2,21 +2,24 @@
 #
 # Table name: floorplates
 #
-#  id                 :integer          not null, primary key
-#  name               :string
-#  number             :integer
-#  building           :string
-#  range              :string
-#  image              :string
-#  community_id       :integer
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
-#  standard_image_url :string
-#  svg_image_url      :string
-#  height             :float
-#  width              :float
-#  floor_name         :string
-#  floor_name_added   :boolean          default(FALSE)
+#  id                  :integer          not null, primary key
+#  name                :string
+#  number              :integer
+#  building            :string
+#  range               :string
+#  image               :string
+#  community_id        :integer
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  standard_image_url  :string
+#  svg_image_url       :string
+#  height              :float
+#  width               :float
+#  floor_name          :string
+#  floor_name_added    :boolean          default(FALSE)
+#  name_is_updated     :boolean
+#  building_is_updated :boolean
+#  manual_override     :boolean          default(FALSE)
 #
 
 class Floorplate < ApplicationRecord

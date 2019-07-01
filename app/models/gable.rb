@@ -2,24 +2,36 @@
 #
 # Table name: gables
 #
-#  id                                    :integer          not null, primary key
-#  hide_tagline                          :boolean          default(TRUE)
-#  appartment_button_color               :string
-#  gallery_button_color                  :string
-#  neighborhood_button_color             :string
-#  favorite_button_color                 :string
-#  filter_panel_color                    :string
-#  design_id                             :integer
-#  created_at                            :datetime         not null
-#  updated_at                            :datetime         not null
-#  webpages_button_color                 :string
-#  imagepages_button_color               :string
-#  home_page_nav_bg_image                :string
-#  display_home_page_nav_bg_image_button :boolean          default(FALSE)
-#  global_nav_bg_image                   :string
-#  display_global_nav_bg_image_button    :boolean          default(FALSE)
-#  filter_panel_bg_image                 :string
-#  display_filter_panel_bg_image_button  :boolean          default(FALSE)
+#  id                                       :integer          not null, primary key
+#  hide_tagline                             :boolean          default(TRUE)
+#  appartment_button_color                  :string
+#  gallery_button_color                     :string
+#  neighborhood_button_color                :string
+#  favorite_button_color                    :string
+#  filter_panel_color                       :string
+#  design_id                                :integer
+#  created_at                               :datetime         not null
+#  updated_at                               :datetime         not null
+#  webpages_button_color                    :string
+#  imagepages_button_color                  :string
+#  home_page_nav_bg_image                   :string
+#  display_home_page_nav_bg_image_button    :boolean          default(FALSE)
+#  global_nav_bg_image                      :string
+#  display_global_nav_bg_image_button       :boolean          default(FALSE)
+#  filter_panel_bg_image                    :string
+#  display_filter_panel_bg_image_button     :boolean          default(FALSE)
+#  filter_panel_text_color                  :string
+#  filter_panel_opacity                     :string
+#  application_bg_image_gables              :string
+#  apartment_bg_image_gables                :string
+#  gallery_bg_image_gables                  :string
+#  favourite_bg_image_gables                :string
+#  additional_pages_bg_image_gables         :string
+#  display_application_bg_image_gables      :boolean
+#  display_apartment_bg_image_gables        :boolean
+#  display_gallery_bg_image_gables          :boolean
+#  display_favourite_bg_image_gables        :boolean
+#  display_additional_pages_bg_image_gables :boolean
 #
 
 class Gable < ApplicationRecord

@@ -1,0 +1,115 @@
+-#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
+= render '/font_awesome_v5'
+- content_for :title, "Property Map - Pynwheel"
+.divLoading.hidden
+%section.is-sitemap
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-map-marker
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          PROPERTY MAP PAGE (Garden Style Property)
+    .row
+      .col-md-12
+        .box.box-widget.panel-box.add-plan.pt-30
+          = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
+            = hidden_field_tag "community_id", @community.id
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Page Name
+              .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                = text_field_tag :apartment_page_name, @community.apartment_page_name, :class=>"form-control apartment-setting-field"
+
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+
+                Show property map page
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :display_sitemap, true, @community.display_sitemap, class: "apartment-setting-field"
+                  %label.label-primary{:for => "display_sitemap"}
+                  %span.pl-15 Yes
+
+            = submit_tag 'Save', class: "hidden"
+
+    %span.btn.btn-primary.btn-file{:onclick=>"$('#sitemap-image-upload-holder').click();"}
+      %i.fa.fa-upload
+      Upload File
+
+    .text-center.image-upload.home-page-drag-box#sitemap-image-upload-holder
+      = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+      %p Drag &amp; Drop images to Upload
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Plot Units on Property Map
+        .btn-btn-danger.mt-10
+          = link_to "MANAGE AMENITIES" , community_amenities_path(@community), :class=>"btn btn-success"
+          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} GRID OVERLAY
+          - if current_user.is_super_admin?
+            %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
+      / /.box-header
+      / form start
+      %form.form-horizontal
+        .box-body.map-body-top
+          .row
+            .col-lg-9#container.p-0{:style => "float: right;"}
+              .map-block{:style=>"position: relative;"}
+                #map.plot-image
+                  .grid-graph.hidden
+                  = image_tag @amenity.present? && @amenity.image.present? ? @amenity.image.url : "default.jpeg"
+
+
+        #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
+          %i.icon-screenshot
+#markers-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#u-name
+
+      = form_tag "" do
+        .modal-body
+          = hidden_field_tag 'redirect_path' , plotexp_community_sitemaps_path(@community)
+          .form-group.row
+            %label.col-sm-2.col-form-label X Position
+            .col-sm-10
+              = text_field_tag "horizontal_position",0,:class=>"form-control"
+          .form-group.row
+            %label.col-sm-2.col-form-label Y Position
+            .col-sm-10
+              = text_field_tag "vertical_position", 0,:class=>"form-control"
+          .unit-buttons
+        .modal-footer
+          = submit_tag "Update",:class=>"btn btn-primary"
+          %a.btn.btn-danger.delete-marker-ok{"data-method"=>"delete"} Delete Marker
+          %a.btn.btn-primary{:onclick=>"addMarker()"} Add Marker
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+
+#add-marker-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#add-marker-heading
+        Add Marker
+      = form_tag "/communities/#{@community.id}/add_plots" do
+        .modal-body
+          = hidden_field_tag 'redirect_path' , plotexp_community_sitemaps_path(@community)
+          = hidden_field_tag 'add_horizontal_position'
+          = hidden_field_tag 'add_vertical_position'
+          = hidden_field_tag 'unit_provider_ids',"[]"
+
+
+        .modal-footer
+          = submit_tag "Add",:class=>"btn btn-primary"
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+
+:javascript
+  $('.apartment-setting-field').change(function(){
+    $('.apartment-settings-form').submit();
+  });

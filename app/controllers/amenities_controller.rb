@@ -9,25 +9,60 @@ class AmenitiesController < ApplicationController
   end
 
   def create
-    current_community.amenities.create(image: params[:src],name: params[:name])
-    @amenities = current_community.amenities.order(id: :desc)
+    if params[:amenityId].present?
+      @amenity = Amenity.find params[:amenityId]
+      @amenity.image = params[:src]
+      @amenity.save
+      redirect_to edit_community_amenity_path(current_community,@amenity)
+    else
+      current_community.amenities.create(image: params[:src],name: params[:name])
+      @amenities = current_community.amenities.order(id: :desc)
+    end
   end
 
   def edit
-    @amenity = current_community.amenities.find (params[:id])
+    @community = Community.find params[:community_id]
+    @amenity = Amenity.find (params[:id])
   end
 
   def update
-    @amenity = current_community.amenities.find(params[:id])
+    @amenity = Amenity.find(params[:id])
+    begin
+      ts = TourStop.find_by(stop_id: @amenity.id)
+      if ts.present? && params[:amenity][:name].present?
+        ts.name = params[:amenity][:name]
+        ts.save
+      end
+    rescue => ex
+    end
     if @amenity.update_attributes(amenity_params)
-      redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+      if params[:amenity][:access_code].present? || params[:amenity][:description].present? || params[:amenity][:name].present?
+        redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully"
+      else
+        redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+      end
     else
       redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
     end
   end
+  def saveAmenityGallery
+    @community = Community.find params[:community_id]
+    @amenity = Amenity.find params[:amenityId]
+    AmenityGallery.create(name: params[:name],image: params[:src], amenity_id: @amenity.id)
+  end
+  def edit_amenity_gallery_image
+    @community = current_community
+    @amenity = Amenity.find params[:community_id]
+    @amenity_gallery_image = AmenityGallery.find (params[:format])
+  end
 
   def destroy
     @amenity = current_community.amenities.find (params[:id])
+    ts = TourStop.find_by(stop_id: @amenity.id)
+    if ts.present?
+      VisitedStop.where(tour_stop_id: ts.id).destroy_all
+      ts.destroy
+    end
     if @amenity.destroy
       redirect_to community_amenities_path(current_community), notice: "Amenity deleted successfully"
     else

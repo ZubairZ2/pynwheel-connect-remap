@@ -24,17 +24,17 @@
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Name
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = text_field_tag :name, @community.tour.name,:maxlength=>"30", :class=>"form-control save-starting-point-field"
+                    = text_field_tag :name, @community.tour.name,:maxlength=>"30", :class=>"form-control save-starting-point-field", :placeholder => "Name"
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Latitude
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = text_field_tag :latitude, @community.tour.latitude,:maxlength=>"15", :class=>"form-control save-starting-point-field"
+                    = text_field_tag :latitude, @community.tour.latitude,:maxlength=>"15", :class=>"form-control save-starting-point-field", :placeholder => "Latitude"
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Longitude
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = text_field_tag :longitude, @community.tour.longitude,:maxlength=>"15", :class=>"form-control save-starting-point-field"
+                    = text_field_tag :longitude, @community.tour.longitude,:maxlength=>"15", :class=>"form-control save-starting-point-field", :placeholder => "Longitude"
 
                 -#.form-group
                 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -121,7 +121,7 @@
                   -#= image_tag "https://maps.googleapis.com/maps/api/staticmap?zoom=17&size=400x300&center=31.411,74.4714&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI", alt: "Map"
                   = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
                   - if @tours.x_plot.to_i + @tours.y_plot.to_i > 0
-                    = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fa fa-star' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
+                    = link_to image_tag("/assets/star.png"), "#", :class => "marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
             .col-lg-3
               %h5.mt-40.mb-20 SELECT STARTING POINT TO PLOT
               -#.imageselect

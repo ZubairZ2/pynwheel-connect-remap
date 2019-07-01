@@ -1,0 +1,60 @@
+class Api::V1::ToursController < ActionController::Base
+  #before_action :set_community, only: [:data,:ios_data,:email_favorites]
+  # before_action :set_community, only: :email_favorites
+  def save_user_data
+
+    tempFile = params[:image]
+    # tempFile = tempFile.path
+    # image_base = Base64.encode64(File.read(tempFile.path))
+
+    unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
+      render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
+    else
+      begin
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key])
+      rescue => ex
+        render :json=> {:success=>false, :message => "failed"}
+      end
+      if vs.present?
+        render :json=> {:success=>true, :message => "success"}
+      else
+        render :json=> {:success=>false, :message => "failed"}
+      end
+    end
+
+  end
+  def save_user_tour
+    unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
+      render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
+    else
+      arr = []
+      stops = params[:tour_stop_id].split(',')
+      begin
+        a1 = TourUser.find params[:tour_user_id].to_i
+        a2 = Tour.find params[:tour_id].to_i
+      rescue => ex
+      end
+      stops.each do |stop_id|
+        begin
+          a3 = TourStop.find stop_id.to_i
+        rescue => ex
+        end
+        if a1.present? && a2.present? && a3.present?
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key])
+        end
+        if vs.present?
+          arr << true
+        else
+          arr << false
+        end
+      end
+      render :json=> {:success=>true, :message => "success", :data => arr}
+
+    end
+  end
+  private
+
+  def set_community
+    @community = Community.find(params[:id])
+  end
+end

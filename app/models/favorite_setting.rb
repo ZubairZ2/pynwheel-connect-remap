@@ -2,15 +2,17 @@
 #
 # Table name: favorite_settings
 #
-#  id            :integer          not null, primary key
-#  community_id  :integer
-#  email_from    :string
-#  email_bcc     :string
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
-#  email_body    :text
-#  show_favorite :boolean          default(TRUE)
-#  favorite_name :string           default("Favorites")
+#  id                             :integer          not null, primary key
+#  community_id                   :integer
+#  email_from                     :string
+#  email_bcc                      :string
+#  created_at                     :datetime         not null
+#  updated_at                     :datetime         not null
+#  email_body                     :string           default("Thank you for visiting <community_name>! Here are your favorites. Click on the images below to expand them.\n\nWe look forward to seeing you again soon.")
+#  show_favorite                  :boolean          default(TRUE)
+#  favorite_name                  :string           default("Favorites")
+#  equal_housing_opportunity_logo :boolean          default(TRUE)
+#  handicap_accessible_logo       :boolean          default(TRUE)
 #
 
 class FavoriteSetting < ApplicationRecord

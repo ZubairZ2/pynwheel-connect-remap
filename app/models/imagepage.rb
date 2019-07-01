@@ -11,6 +11,7 @@
 #  hide_page           :boolean          default(FALSE)
 #  display_on_homepage :boolean          default(FALSE)
 #  position            :integer
+#  sort                :integer
 #
 
 class Imagepage < ApplicationRecord

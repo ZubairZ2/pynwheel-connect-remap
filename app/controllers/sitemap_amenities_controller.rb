@@ -61,6 +61,12 @@ class SitemapAmenitiesController < ApplicationController
 		@amenity.amenityable_id = params[:sitemap_id]
 		@amenity.x_plot = params[:x_plot]
 		@amenity.y_plot = params[:y_plot]
+		ts = TourStop.find_by(stop_id: @amenity.id)
+		if ts.present?
+			ts.latitude  = @amenity.x_plot
+			ts.longitude = @amenity.y_plot
+			ts.save
+		end
 		if @amenity.save(validate: false)
 			render json: {amenity: @amenity}, status: 200
 	    else
@@ -93,6 +99,11 @@ class SitemapAmenitiesController < ApplicationController
 			amenity.amenityable_type = nil
 		  amenity.amenityable_id = nil
 			amenity.save(validate: false)
+			ts = TourStop.find_by(stop_id: amenity.id)
+			if ts.present?
+				VisitedStop.where(tour_stop_id: ts.id).destroy_all
+				ts.destroy
+			end
 		end
 		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap), notice: "All plots have been deleted successfully."
 	end
@@ -106,6 +117,11 @@ class SitemapAmenitiesController < ApplicationController
 			amenity.amenityable_type = nil
 		  amenity.amenityable_id = nil
 			amenity.save(validate: false)
+			ts = TourStop.find_by(stop_id: amenity.id)
+			if ts.present?
+				VisitedStop.where(tour_stop_id: ts.id).destroy_all
+				ts.destroy
+			end
 		end
 		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap),notice: "Amenity plot have been deleted successfully."
 	end

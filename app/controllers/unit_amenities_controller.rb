@@ -4,6 +4,31 @@ class UnitAmenitiesController < ApplicationController
   before_action :check_community
   before_action :set_community_and_unit
 
+  def index
+    @amenities = @unit.amenities.order(id: :desc)
+    # add_breadcrumb "Units", community_unit_path(current_community)
+    # add_breadcrumb "Manage Images", community_unit_amenities_path(current_community,@unit)
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:unit_id]
+  end
+  def edit
+    @amenity = @unit.amenities.find(params[:id])
+    add_breadcrumb "Floor plans", community_unit_path(current_community)
+    add_breadcrumb "Amenities", community_unit_amenities_path(current_community,@unit)
+    add_breadcrumb "Edit Amenity",edit_community_unit_amenity_path(current_community,@unit,@amenity)
+  end
+  def update
+    @amenity = @unit.amenities.find(params[:id])
+    if @amenity.update_attributes(amenity_params)
+      redirect_to community_unit_amenities_path(@community,@unit), notice: "Amenity updated successfully"
+    else
+      add_breadcrumb "Units", community_unit_path(current_community)
+      add_breadcrumb "Amenities", community_unit_amenities_path(current_community,@unit)
+      add_breadcrumb "Edit Amenity",edit_community_unit_amenity_path(current_community,@unit,@amenity)
+      flash[:error] = @amenity.errors.full_messages.join(',')
+      render :edit
+    end
+  end
   def plot_amenity
     @amenity = Amenity.find (params[:amenity_id])
     @amenity.amenityable_type = "Unit"
@@ -16,13 +41,18 @@ class UnitAmenitiesController < ApplicationController
       render json: {}, status: 404
     end
   end
-
+  def create
+    @unit.amenities.create(image: params[:src],name: params[:name])
+    @amenities = @unit.amenities.order(id: :desc)
+  end
   def plot_amenities
     add_breadcrumb "Units", community_units_path(current_community)
     add_breadcrumb "Plot Unit Images", plot_amenities_community_unit_amenities_path(@community,@unit)
     @sitemap = @unit
-    @amenities = @community.amenities
+    @amenities = @unit.amenities
     @floorplan = Floorplan.where(provider_floorplan_id: @unit.floorplan_id,community_id: @community.id).first
+
+    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
   end
 
   def remove_amenities_plot
@@ -66,7 +96,29 @@ class UnitAmenitiesController < ApplicationController
     end
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "Amenity plot have been deleted successfully."
   end
-
+  def add_description
+    @amenity = Amenity.find params[:id]
+    redirect_to plot_amenities_community_unit_amenities_path(@community,@unit)
+  end
+  def save_description
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:unit_id]
+    @amenity = Amenity.find params[:id]
+    @amenity.description = params[:description]
+    if @amenity.save
+      redirect_to plot_amenities_community_unit_amenities_path(@community,@unit),notice: "Amenity description updated successfully."
+    else
+      redirect_to plot_amenities_community_unit_amenities_path(@community,@unit)
+    end
+  end
+  def destroy
+    @amenity = @unit.amenities.find (params[:id])
+    if @amenity.destroy
+      redirect_to community_unit_amenities_path(@community,@unit), notice: "Amenity deleted successfully"
+    else
+      redirect_to community_unit_amenities_path(@community,@unit), error: @amenity.errors.full_messages.join(',')
+    end
+  end
   private
 
   def set_community_and_unit

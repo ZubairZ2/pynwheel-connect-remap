@@ -57,7 +57,16 @@ Rails.application.routes.draw do
         post :add_description
       end
     end
-    resources :amenities
+    resources :amenities do
+      resources :amenity_galleries
+      collection do
+        post :saveAmenityGallery
+
+      end
+      member do
+        get :edit_amenity_gallery_image
+      end
+    end
     resources :floorplates do
       resources :amenities,controller: "floorplate_amenities" do
         post :plot_amenity
@@ -82,6 +91,8 @@ Rails.application.routes.draw do
         end
         member do
           delete :remove_amenity
+          post :add_description
+          post :save_description
         end
       end
       member do
@@ -143,14 +154,21 @@ Rails.application.routes.draw do
     end
 
     resources :tours, only: :index do
+      resources :tour_stops do
+        member do
+          delete :resetTourStopPoint
+        end
+      end
       collection do
         post :save_starting_point
         post :save_tour_settings
         get :starting_point
         get :select_stops
+        get :edit_amenity
       end
       member do
         post :ajaxplotstartingpoint
+        post :ajaxplottourstoppoint
         delete :resetStartingPoint
       end
       resources :tour_stops, only: :index do
@@ -219,6 +237,7 @@ Rails.application.routes.draw do
         member do
           get :data
           get :community_tours
+          post :user_saved_tour
           get :ios_data
           get :minimum_data
           post :email_favorites
@@ -227,6 +246,12 @@ Rails.application.routes.draw do
           post :login
           get :list_communities
           post :update_version
+        end
+      end
+      resources :tours,only: :index do
+        member do
+          post :save_user_data
+          post :save_user_tour
         end
       end
     end

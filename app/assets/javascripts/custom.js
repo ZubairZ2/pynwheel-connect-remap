@@ -14,6 +14,14 @@ $(document).ready(function(e){
     $("#imageselect").toggle();
     e.stopPropagation();
   })
+    $('body').on("click", ".amenity-imageselect", function(e){
+        $("#imageselect1").toggle();
+        e.stopPropagation();
+    })
+    $('body').on("click", ".unit-imageselect", function(e){
+        $("#imageselect2").toggle();
+        e.stopPropagation();
+    })
 
   $("#multiselect li").click(function(e){
     if ($(this).hasClass("active")){
@@ -187,7 +195,22 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
     $(this).find('#record-name').html('Delete '+$(e.relatedTarget).data('name'));
     $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
 });
+$('#confirm-delete_amenity').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok-amenity').attr('href', $(e.relatedTarget).data('href')+'/remove_amenity');
 
+    var community = $(e.relatedTarget).data('href').split("/")[2];
+    var amenity = $(e.relatedTarget).data('href').split("/")[6];
+    $(this).find('.edit_unit_amenity').attr('href', '/communities/'+community+'/amenities/'+amenity+'/edit');
+    $(this).find('.add_description_amenity').attr('href', $(e.relatedTarget).data('href')+'/save_description');
+    $(this).find('#description_amenity').val($(e.relatedTarget).data('name'));
+    $(this).find('#record-name-amenity').html('Update Amenity');
+    $(this).find('#record-message-amenity').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
+});
+$('.add_description_amenity').on('click', function(e) {
+    $('.add_description_amenity').attr('href', $('.add_description_amenity').attr('href')+'?description='+$('#description_amenity').val());
+    // alert($('.add_description_amenity').attr('href')+'?description='+$('#description_amenity').val());
+    // $(this).find('#tee').html( $('.add_description_amenity').data('href'));
+});
 $('#confirm-delete-replace-data').on('show.bs.modal', function(e) {
     $(this).find('.replace-btn-ok').attr('href', $(e.relatedTarget).data('href'));
     $(this).find('#replace-record-name').html('Delete '+$(e.relatedTarget).data('name'));

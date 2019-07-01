@@ -18,6 +18,9 @@
     else if ( typeof tour_id !== 'undefined'){
       saveTourStaringPoint(tour_id, dx, dy);
     }
+    else if ( typeof tour_id_for_stop !== 'undefined'){
+      saveTourStopPoint(id, dx, dy);
+    }
     else{
     	saveSiteMapUnit(id, dx, dy);
     }
@@ -60,7 +63,18 @@
         // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
         doDraggable();
     });
-}
+  }
+    function saveTourStopPoint(id){
+        $.post( "/communities/"+community_id+"/tours/" + id + "/ajaxplottourstoppoint",
+            {
+
+                "tour_stop_id": id
+            },
+            function(data,status,xhr) {
+                // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
+                // doDraggable();
+            });
+    }
 
   function saveFloorplanPlot(id,dx,dy){
     $.post( "/communities/"+community_id+"/floorplans/"+floorplan_id+"/amenities/" + id + "/plot_amenity",
@@ -182,9 +196,12 @@
         ypos = Math.round(ui.position.top);
         // temp array of just markers at same x/y
         temp=[];
+        // alert(arr);
         if (arr != null) {
           for (i=0; i<arr.length; i++) {
             if (arr[i][1] == xpos && arr[i][2] == ypos) {
+                // alert(arr[i]);
+                // alert(arr[i][0]);
               temp.push(arr[i][0])
             }
           }
@@ -211,6 +228,7 @@
                 arr[j][2] = Math.round(ui.position.top);
               }
             }
+            // alert(temp[i]);
             savePlot(temp[i], Math.round(ui.position.left ) + lmargin, Math.round(ui.position.top ) + rmargin);
           }
         }

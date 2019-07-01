@@ -8,6 +8,21 @@
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
         %a.btn.btn-danger.btn-ok#delete_button{"data-method"=>"delete"} Delete
+#confirm-delete_amenity.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#record-name-amenity
+
+      .modal-body{:style => "height: 180px;"}
+        .form-group
+          %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15{:for => "exampleInputEmail1"} Description
+          .col-sm-12.col-lg-12.col-md-12.col-xs-12
+            = text_area :description,"", :class=>"form-control",:id => "description_amenity", :rows => "5", :maxlength=>"70"
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        %a.btn.btn-default.edit_unit_amenity{"data-method"=>"get"} Add Gallery
+        %a.btn.btn-default.add_description_amenity{"data-method"=>"post"} Add Description
+        %a.btn.btn-danger.btn-ok-amenity#delete_button_amenity{"data-method"=>"delete"} Delete
 #confirm-delete-replace-data.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
