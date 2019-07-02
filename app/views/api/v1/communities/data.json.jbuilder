@@ -18,6 +18,7 @@ json.ui_settigs do
   json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
   json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
   json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
+  json.data_error_message @community.credential.data_error_message.present? ? @community.credential.data_error_message : nil
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
