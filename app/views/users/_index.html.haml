@@ -8,6 +8,7 @@
           %th Last Name
           %th Email
           %th Community
+          %th Company
           %th Role
           %th Actions
       %tbody
@@ -22,8 +23,17 @@
                   =u.email
               %td
                 %b 
-                  =u.communities.map(&:name).to_sentence
-              %td= u.role
+                  =u.communities.map(&:name).sort.to_sentence
+              - company = []
+              - if u.communities.present?
+                - u.communities.each do |com|
+                  - unless company.include?((Company.find com.company_id).name)
+                    - company << (Company.find com.company_id).name
+              %td
+                %b
+                  - if company.present?
+                    = company.sort.to_sentence
+              %td= u.role.sub("Super","Pynwheel")
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
                   %i.fa.fa-edit.icon_size
@@ -42,7 +52,16 @@
               %td
                 %b 
                   =u.communities.map(&:name).to_sentence
-              %td= u.role
+              - company = []
+              - if u.communities.present?
+                - u.communities.each do |com|
+                  - unless company.include?((Company.find com.company_id).name)
+                    - company << (Company.find com.company_id).name
+              %td
+                %b
+                  - if company.present?
+                    = company.sort.to_sentence
+              %td= u.role.sub("Super","Pynwheel")
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
                   %i.fa.fa-edit
