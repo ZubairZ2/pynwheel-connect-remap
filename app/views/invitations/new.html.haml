@@ -23,9 +23,9 @@
             = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
           .form-group
             - if current_user.is_super_admin?
-              = f.select :role, options_for_select(User::ROLES.sort,f.object.role),{},{class: "form-control validate[required]"}
+              = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control validate[required]"}
             - if current_user.is_community_admin?
-              = f.select :role, options_for_select(User::ROLES_ADMIN.sort,f.object.role),{},{class: "form-control validate[required]"}
+              = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{},{class: "form-control validate[required]"}
           .form-group
             = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true
             %i.fa.fa-envelope    
