@@ -1,6 +1,6 @@
 .row
   .col-md-12
-    %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+    %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.user_community_data
       %thead
         %tr
           %th{:width => "79"} Sr #
@@ -67,3 +67,14 @@
                   %i.fa.fa-edit
                 %a.text-danger{"data-name"=>"User","data-href" => "/companies/#{current_company.id}/employees/#{u.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                   %i.fa.fa-trash
+
+:javascript
+  $('#miyazaki.user_community_data').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [1,2,3,6,7],
+        }],
+        "ordering": true,
+        "stateSave": true,
+        "paging": false
+  });
