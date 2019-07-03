@@ -177,18 +177,18 @@
             - spanSize_size = ((9 / 25.0).to_f * (fontsize.to_f)).to_f
 
             - if @community.theme_name.include?('gables')
-              - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : "30"
+              - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
             - elsif @community.theme_name == 'modernist'
-              - marker_font_size = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : "30"
+              - marker_font_size = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
             - elsif @community.theme_name == 'futurist'
-              - marker_font_size = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : "30"
+              - marker_font_size = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : 30
             - elsif @community.theme_name == 'expressionist'
-              - marker_font_size = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : "30"
+              - marker_font_size = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
             - elsif @community.theme_name == 'panther'
-              - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : "30"
+              - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
             - else
               - fontsize = 30
-            - if fontsize > 34
+            - if fontsize.to_i > 34
               - margin_left_var = 1
             - else
               - margin_left_var = 0
