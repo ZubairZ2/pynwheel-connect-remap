@@ -144,17 +144,17 @@
                 %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
 
             - if @community.theme_name.include?('gables')
-              - fontsize = @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : "30"
+              - fontsize = @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30
             - elsif @community.theme_name == 'modernist'
-              - fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : "30"
+              - fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : 30
             - elsif @community.theme_name == 'futurist'
-              - fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : "30"
+              - fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : 30
             - elsif @community.theme_name == 'expressionist'
-              - fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : "30"
+              - fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : 30
             - elsif @community.theme_name == 'panther'
-              - fontsize = @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : "30"
+              - fontsize = @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : 30
             - else
-              - fontsize = '30'
+              - fontsize = 30
 
             - if @community.theme_name.include?('gables')
               - map_marker_color = @community.design.property_map_color.present? ? @community.design.property_map_color : "#d37474"
@@ -188,11 +188,14 @@
               - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
             - else
               - fontsize = 30
-            - if fontsize.to_i > 34
-              - margin_left_var = 1
+            -#- byebug
+            - if fontsize.to_i > 33
+              - margin_left_var = -2
+            - elsif fontsize.to_i > 32
+              - margin_left_var = -1
             - else
               - margin_left_var = 0
-            - top_margin_var = (fontsize.to_i - 30)/ 1.7
+            - top_margin_var = 0#(fontsize.to_i - 30)/ 1.7
 
             - if @community.theme_name.include?('gables')
               - amenity_marker_color = @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
