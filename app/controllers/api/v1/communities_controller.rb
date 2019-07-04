@@ -1,6 +1,7 @@
 class Api::V1::CommunitiesController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   before_action :set_community, only: :email_favorites
+  @@counter = 0
   def login
     begin
       str = params[:community_string]
@@ -79,6 +80,36 @@ class Api::V1::CommunitiesController < ActionController::Base
   def include_application_data
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])
+  end
+  def get_neighbourhood_data
+    @@counter = @@counter + 1
+    result = nil
+    if @@counter < 500
+      NeighbourhoodLog.create(from_ip: request.ip,cat: params[:cat])
+      begin
+        if @@counter == 200
+          com = Community.find params[:id]
+          com.neighbourhood_counter_mail_200
+          # NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
+        end
+        if @@counter == 400
+          com = Community.find params[:id]
+          com.neighbourhood_counter_mail_400
+          # NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 200").deliver
+        end
+      rescue => ex
+
+      end
+      # @client = GooglePlaces::Client.new(ENV['GOOGLE_API_KEY'])
+      # result = @client.spots(-33.8670522, 151.1957362, :types => ['restaurant','food', 'shopping_mall'])
+      render :json=> {:success=>true,:counter => @@counter, :message => result}, :status=>200
+    else
+      render :json=> {:success=>true,:counter => @@counter, :message => result}, :status=>200
+    end
+  end
+  def reset_counter
+    @@counter = 0
+    render :json=> {:success=>true,:counter => @@counter}, :status=>200
   end
 
   private

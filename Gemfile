@@ -10,6 +10,7 @@ gem 'bootstrap-wysihtml5-rails'
 
 gem 'write_xlsx'
 gem "mini_magick"
+gem 'google_places'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server

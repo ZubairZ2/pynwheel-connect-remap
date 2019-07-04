@@ -1,0 +1,2 @@
+class NeighbourhoodLog < ApplicationRecord
+end
