@@ -114,7 +114,7 @@
                   .form-group
                     = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control", :include_blank => "Select Min Sq Ft"}
                   %div
-                    = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "_blank"
+                    = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "pynwheel_iframe"
 
 
           - if @community_info.has_floorplates?

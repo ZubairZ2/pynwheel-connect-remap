@@ -56,7 +56,7 @@
             .need-to
               %h3 Want to add favorites?
               %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
-              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary btn-block btn-lg"
+              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary btn-block btn-lg",:target => "pynwheel_iframe"
               -#%button.btn.btn-primary.btn-block.btn-lg{:href=>community_favorite_settings_path} Take me there
           .bg-bottom
             .need-to
@@ -105,9 +105,10 @@
                             %span= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}" 
                           .available-now
                             %p= unit.availability == "Unoccupied" ? "Available" : ""
-                        - if @community.data_provider == "psi"      
+                        - if @community.data_provider == "psi"
                           .date-select
-                            %h5 Lease Start Date
+                            %h5{:style => "margin-top: 20px;"}
+                              Lease Start Date
                             .form-group
                               %input.form-control.datepicker.leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y"),:style => "box-shadow: none;"}/
                               %i.fa.fa-calendar
