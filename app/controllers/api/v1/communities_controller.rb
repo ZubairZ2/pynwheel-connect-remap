@@ -105,11 +105,23 @@ class Api::V1::CommunitiesController < ActionController::Base
       rescue => ex
 
       end
-      # @client = GooglePlaces::Client.new(ENV['GOOGLE_API_KEY'])
-      # result = @client.spots(-33.8670522, 151.1957362, :types => ['restaurant','food', 'shopping_mall'])
-      render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => result}, :status=>200
+      @client = GooglePlaces::Client.new(ENV['GOOGLE_API_KEY'])
+      results = []
+      cata = []
+      cata << params[:cat]
+      result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
+
+      if result.last.nextpagetoken.present?
+        results << result
+        begin
+        result = @client.spots_by_pagetoken(result.last.nextpagetoken)
+        rescue  => ex
+        end
+      end
+      results << result
+      render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => results}, :status=>200
     else
-      render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => result}, :status=>200
+      render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => results}, :status=>200
     end
     app_version.save
   end

@@ -241,7 +241,7 @@ Rails.application.routes.draw do
           get :ios_data
           get :minimum_data
           post :email_favorites
-          post :get_neighbourhood_data
+          get :get_neighbourhood_data
           get :reset_counter
         end
         collection do
