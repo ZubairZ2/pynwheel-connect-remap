@@ -63,7 +63,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     res = app_version.update_attribute(:version,params[:version])
     # end
     if res
-      render :json=> {:success=>true, :message => "success", :operation => "update version"}
+      render :json=> {:success=>true, :message => "success", :operation => "update version", :data => app_version.version}
     else
       render :json=> {:success=>false, :message => "success", :operation => "not update version"}
     end
