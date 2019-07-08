@@ -59,15 +59,10 @@ class Api::V1::CommunitiesController < ActionController::Base
   
   def update_version
     app_version = AppVersion.first
-    # if app_version.version != params[:version]
-    res = app_version.update_attribute(:version,params[:version])
-    # end
-    if res
-      render :json=> {:success=>true, :message => "success", :operation => "update version", :data => app_version.version}
-    else
-      render :json=> {:success=>false, :message => "success", :operation => "not update version"}
+    if app_version.version != params[:version]
+      app_version.update_attribute(:version,params[:version])
     end
-    # render :json=> {:success=>true, :message => "success", :operation => "update version"}
+    render :json=> {:success=>true, :message => "success", :operation => "update version"}
   end
 
   def list_communities
