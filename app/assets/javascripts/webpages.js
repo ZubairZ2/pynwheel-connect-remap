@@ -1,5 +1,10 @@
 $(window).bind('load', function () {
-    
+    // $(window).resize(function() {
+    //     clearTimeout(window.resizedFinished);
+    //     window.resizedFinished = setTimeout(function(){
+    //         window.location.reload();
+    //     }, 350);
+    // });
   if ($('.is-webpage')[0]) {
 
 
