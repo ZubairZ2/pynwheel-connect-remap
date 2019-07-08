@@ -1,1315 +1,1661 @@
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.panzoom = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+'use strict';
+
+/* globals SVGElement */
 /**
- * @license jquery.panzoom.js v@VERSION
- * Updated: @DATE
- * Add pan and zoom functionality to any element
- * Copyright (c) timmy willison
- * Released under the MIT license
- * https://github.com/timmywil/jquery.panzoom/blob/master/MIT-License.txt
+ * Allows to drag and zoom svg elements
+ */
+var wheel = require('wheel')
+var animate = require('amator')
+var eventify = require('ngraph.events');
+var kinetic = require('./lib/kinetic.js')
+var preventTextSelection = require('./lib/textSelectionInterceptor.js')()
+var Transform = require('./lib/transform.js');
+var makeSvgController = require('./lib/svgController.js')
+var makeDomController = require('./lib/domController.js')
+
+var defaultZoomSpeed = 0.065
+var defaultDoubleTapZoomSpeed = 1.75
+var doubleTapSpeedInMS = 300
+
+module.exports = createPanZoom
+
+/**
+ * Creates a new instance of panzoom, so that an object can be panned and zoomed
+ *
+ * @param {DOMElement} domElement where panzoom should be attached.
+ * @param {Object} options that configure behavior.
+ */
+function createPanZoom(domElement, options) {
+  options = options || {}
+
+  var panController = options.controller
+
+  if (!panController) {
+    if (domElement instanceof SVGElement) {
+      panController = makeSvgController(domElement, options)
+    }
+
+    if (domElement instanceof HTMLElement) {
+      panController = makeDomController(domElement, options)
+    }
+  }
+
+  if (!panController) {
+    throw new Error('Cannot create panzoom for the current type of dom element')
+  }
+  var owner = panController.getOwner()
+  // just to avoid GC pressure, every time we do intermediate transform
+  // we return this object. For internal use only. Never give it back to the consumer of this library
+  var storedCTMResult = {x: 0, y: 0}
+
+  var isDirty = false
+  var transform = new Transform()
+
+  if (panController.initTransform) {
+    panController.initTransform(transform)
+  }
+
+  var filterKey = typeof options.filterKey === 'function' ? options.filterKey : noop;
+  // TODO: likely need to unite pinchSpeed with zoomSpeed
+  var pinchSpeed = typeof options.pinchSpeed === 'number' ? options.pinchSpeed : 1;
+  var bounds = options.bounds
+  var maxZoom = typeof options.maxZoom === 'number' ? options.maxZoom : Number.POSITIVE_INFINITY
+  var minZoom = typeof options.minZoom === 'number' ? options.minZoom : 0
+
+  var boundsPadding = typeof options.boundsPadding === 'number' ? options.boundsPadding : 0.05
+  var zoomDoubleClickSpeed = typeof options.zoomDoubleClickSpeed === 'number' ? options.zoomDoubleClickSpeed : defaultDoubleTapZoomSpeed
+  var beforeWheel = options.beforeWheel || noop
+  var speed = typeof options.zoomSpeed === 'number' ? options.zoomSpeed : defaultZoomSpeed
+
+  validateBounds(bounds)
+
+  if (options.autocenter) {
+    autocenter()
+  }
+
+  var frameAnimation
+
+  var lastTouchEndTime = 0
+
+  var touchInProgress = false
+
+  // We only need to fire panstart when actual move happens
+  var panstartFired = false
+
+  // cache mouse coordinates here
+  var mouseX
+  var mouseY
+
+  var pinchZoomLength
+
+  var smoothScroll
+  if ('smoothScroll' in options && !options.smoothScroll) {
+    // If user explicitly asked us not to use smooth scrolling, we obey
+    smoothScroll = rigidScroll()
+  } else {
+    // otherwise we use forward smoothScroll settings to kinetic API
+    // which makes scroll smoothing.
+    smoothScroll = kinetic(getPoint, scroll, options.smoothScroll)
+  }
+
+  var moveByAnimation
+  var zoomToAnimation
+
+  var multiTouch
+  var paused = false
+
+  listenForEvents()
+
+  var api = {
+    dispose: dispose,
+    moveBy: internalMoveBy,
+    moveTo: moveTo,
+    centerOn: centerOn,
+    zoomTo: publicZoomTo,
+    zoomAbs: zoomAbs,
+    smoothZoom: smoothZoom,
+    getTransform: getTransformModel,
+    // showRectangle: showRectangle,
+
+    pause: pause,
+    resume: resume,
+    isPaused: isPaused,
+    getScaleMultiplier: getScaleMultiplier,
+    transformToScreen: transformToScreen,
+    zoomInOut: zoomInOut,
+    mousewheel: onMouseWheel
+  }
+
+  eventify(api);
+
+  return api;
+
+  function pause() {
+    releaseEvents()
+    paused = true
+  }
+
+  function resume() {
+    if (paused) {
+      listenForEvents()
+      paused = false
+    }
+  }
+
+  function isPaused() {
+    return paused;
+  }
+
+
+  function zoomInOut(keyCode){
+    var e = jQuery.Event("keydown")
+    e.keyCode = keyCode
+    onKeyDown(e)
+  }
+
+  function showRectangle(rect) {
+    // TODO: this duplicates autocenter. I think autocenter should go.
+    var clientRect = owner.getBoundingClientRect()
+    var size = transformToScreen(clientRect.width, clientRect.height)
+
+    var rectWidth = rect.right - rect.left
+    var rectHeight = rect.bottom - rect.top
+    if (!Number.isFinite(rectWidth) || !Number.isFinite(rectHeight)) {
+      throw new Error('Invalid rectangle');
+    }
+
+    var dw = size.x/rectWidth
+    var dh = size.y/rectHeight
+    var scale = Math.min(dw, dh)
+    transform.x = -(rect.left + rectWidth/2) * scale + size.x/2
+    transform.y = -(rect.top + rectHeight/2) * scale + size.y/2
+    transform.scale = scale
+  }
+
+  function transformToScreen(x, y) {
+    if (panController.getScreenCTM) {
+      var parentCTM = panController.getScreenCTM()
+      var parentScaleX = parentCTM.a
+      var parentScaleY = parentCTM.d
+      var parentOffsetX = parentCTM.e
+      var parentOffsetY = parentCTM.f
+      storedCTMResult.x = x * parentScaleX - parentOffsetX
+      storedCTMResult.y = y * parentScaleY - parentOffsetY
+    } else {
+      storedCTMResult.x = x
+      storedCTMResult.y = y
+    }
+
+    return storedCTMResult
+  }
+
+  function autocenter() {
+    var w // width of the parent
+    var h // height of the parent
+    var left = 0
+    var top = 0
+    var sceneBoundingBox = getBoundingBox()
+    if (sceneBoundingBox) {
+      // If we have bounding box - use it.
+      left = sceneBoundingBox.left
+      top = sceneBoundingBox.top
+      w = sceneBoundingBox.right - sceneBoundingBox.left
+      h = sceneBoundingBox.bottom - sceneBoundingBox.top
+    } else {
+      // otherwise just use whatever space we have
+      var ownerRect = owner.getBoundingClientRect();
+      w = ownerRect.width
+      h = ownerRect.height
+    }
+    var bbox = panController.getBBox()
+    if (bbox.width === 0 || bbox.height === 0) {
+      // we probably do not have any elements in the SVG
+      // just bail out;
+      return;
+    }
+    var dh = h/bbox.height
+    var dw = w/bbox.width
+    var scale = Math.min(dw, dh)
+    transform.x = -(bbox.left + bbox.width/2) * scale + w/2 + left
+    transform.y = -(bbox.top + bbox.height/2) * scale + h/2 + top
+    transform.scale = scale
+  }
+
+  function getTransformModel() {
+    // TODO: should this be read only?
+    return transform
+  }
+
+  function getPoint() {
+    return {
+      x: transform.x,
+      y: transform.y
+    }
+  }
+
+  function moveTo(x, y) {
+    transform.x = x
+    transform.y = y
+
+    keepTransformInsideBounds()
+
+    triggerEvent('pan')
+    makeDirty()
+  }
+
+  function moveBy(dx, dy) {
+    moveTo(transform.x + dx, transform.y + dy)
+  }
+
+  function keepTransformInsideBounds() {
+    var boundingBox = getBoundingBox()
+    if (!boundingBox) return
+
+    var adjusted = false
+    var clientRect = getClientRect()
+
+    var diff = boundingBox.left - clientRect.right
+    if (diff > 0) {
+      transform.x += diff
+      adjusted = true
+    }
+    // check the other side:
+    diff = boundingBox.right - clientRect.left
+    if (diff < 0) {
+      transform.x += diff
+      adjusted = true
+    }
+
+    // y axis:
+    diff = boundingBox.top - clientRect.bottom
+    if (diff > 0) {
+      // we adjust transform, so that it matches exactly our bounding box:
+      // transform.y = boundingBox.top - (boundingBox.height + boundingBox.y) * transform.scale =>
+      // transform.y = boundingBox.top - (clientRect.bottom - transform.y) =>
+      // transform.y = diff + transform.y =>
+      transform.y += diff
+      adjusted = true
+    }
+
+    diff = boundingBox.bottom - clientRect.top
+    if (diff < 0) {
+      transform.y += diff
+      adjusted = true
+    }
+    return adjusted
+  }
+
+  /**
+   * Returns bounding box that should be used to restrict scene movement.
+   */
+  function getBoundingBox() {
+    if (!bounds) return // client does not want to restrict movement
+
+    if (typeof bounds === 'boolean') {
+      // for boolean type we use parent container bounds
+      var ownerRect = owner.getBoundingClientRect()
+      var sceneWidth = ownerRect.width
+      var sceneHeight = ownerRect.height
+
+      return {
+        left: sceneWidth * boundsPadding,
+        top: sceneHeight * boundsPadding,
+        right: sceneWidth * (1 - boundsPadding),
+        bottom: sceneHeight * (1 - boundsPadding),
+      }
+    }
+
+    return bounds
+  }
+
+  function getClientRect() {
+    var bbox = panController.getBBox()
+    var leftTop = client(bbox.left, bbox.top)
+
+    return {
+      left: leftTop.x,
+      top: leftTop.y,
+      right: bbox.width * transform.scale + leftTop.x,
+      bottom: bbox.height * transform.scale + leftTop.y
+    }
+  }
+
+  function client(x, y) {
+    return {
+      x: (x * transform.scale) + transform.x,
+      y: (y * transform.scale) + transform.y
+    }
+  }
+
+  function makeDirty() {
+    isDirty = true
+    frameAnimation = window.requestAnimationFrame(frame)
+  }
+
+  function zoomByRatio(clientX, clientY, ratio) {
+    if (isNaN(clientX) || isNaN(clientY) || isNaN(ratio)) {
+      throw new Error('zoom requires valid numbers')
+    }
+
+    var newScale = transform.scale * ratio
+
+    if (newScale < minZoom) {
+      if (transform.scale === minZoom) return;
+
+      ratio = minZoom / transform.scale
+    }
+    if (newScale > maxZoom) {
+      if (transform.scale === maxZoom) return;
+
+      ratio = maxZoom / transform.scale
+    }
+
+    var size = transformToScreen(clientX, clientY)
+
+    transform.x = size.x - ratio * (size.x - transform.x)
+    transform.y = size.y - ratio * (size.y - transform.y)
+
+    var transformAdjusted = keepTransformInsideBounds()
+    if (!transformAdjusted) transform.scale *= ratio
+
+    triggerEvent('zoom')
+
+    makeDirty()
+  }
+
+  function zoomAbs(clientX, clientY, zoomLevel) {
+    var ratio = zoomLevel / transform.scale
+    zoomByRatio(clientX, clientY, ratio)
+  }
+
+  function centerOn(ui) {
+    var parent = ui.ownerSVGElement
+    if (!parent) throw new Error('ui element is required to be within the scene')
+
+    // TODO: should i use controller's screen CTM?
+    var clientRect = ui.getBoundingClientRect()
+    var cx = clientRect.left + clientRect.width/2
+    var cy = clientRect.top + clientRect.height/2
+
+    var container = parent.getBoundingClientRect()
+    var dx = container.width/2 - cx
+    var dy = container.height/2 - cy
+
+    internalMoveBy(dx, dy, true)
+  }
+
+  function internalMoveBy(dx, dy, smooth) {
+    if (!smooth) {
+      return moveBy(dx, dy)
+    }
+
+    if (moveByAnimation) moveByAnimation.cancel()
+
+    var from = { x: 0, y: 0 }
+    var to = { x: dx, y : dy }
+    var lastX = 0
+    var lastY = 0
+
+    moveByAnimation = animate(from, to, {
+      step: function(v) {
+        moveBy(v.x - lastX, v.y - lastY)
+
+        lastX = v.x
+        lastY = v.y
+      }
+    })
+  }
+
+  function scroll(x, y) {
+    cancelZoomAnimation()
+    moveTo(x, y)
+  }
+
+  function dispose() {
+    releaseEvents();
+  }
+
+  function listenForEvents() {
+    owner.addEventListener('mousedown', onMouseDown)
+    owner.addEventListener('dblclick', onDoubleClick)
+    owner.addEventListener('touchstart', onTouch)
+    owner.addEventListener('keydown', onKeyDown)
+
+    // Need to listen on the owner container, so that we are not limited
+    // by the size of the scrollable domElement
+    wheel.addWheelListener(owner, onMouseWheel)
+
+    makeDirty()
+  }
+
+  function releaseEvents() {
+    wheel.removeWheelListener(owner, onMouseWheel)
+    owner.removeEventListener('mousedown', onMouseDown)
+    owner.removeEventListener('keydown', onKeyDown)
+    owner.removeEventListener('dblclick', onDoubleClick)
+    owner.removeEventListener('touchstart', onTouch)
+
+    if (frameAnimation) {
+      window.cancelAnimationFrame(frameAnimation)
+      frameAnimation = 0
+    }
+
+    smoothScroll.cancel()
+
+    releaseDocumentMouse()
+    releaseTouches()
+
+    triggerPanEnd()
+  }
+
+
+  function frame() {
+    if (isDirty) applyTransform()
+  }
+
+  function applyTransform() {
+    isDirty = false
+
+    // TODO: Should I allow to cancel this?
+    panController.applyTransform(transform)
+
+    triggerEvent('transform')
+    frameAnimation = 0
+  }
+
+  function onKeyDown(e) {
+    var x = 0, y = 0, z = 0
+    if (e.keyCode === 38) {
+      y = 1 // up
+    } else if (e.keyCode === 40) {
+      y = -1 // down
+    } else if (e.keyCode === 37) {
+      x = 1 // left
+    } else if (e.keyCode === 39) {
+      x = -1 // right
+    } else if (e.keyCode === 189 || e.keyCode === 109) { // DASH or SUBTRACT
+      z = 1 // `-` -  zoom out
+    } else if (e.keyCode === 187 || e.keyCode === 107) { // EQUAL SIGN or ADD
+      z = -1 // `=` - zoom in (equal sign on US layout is under `+`)
+    }
+
+    if (filterKey(e, x, y, z)) {
+      // They don't want us to handle the key: https://github.com/anvaka/panzoom/issues/45
+      return;
+    }
+
+    if (x || y) {
+      e.preventDefault()
+      e.stopPropagation()
+
+      var clientRect = owner.getBoundingClientRect()
+      // movement speed should be the same in both X and Y direction:
+      var offset = Math.min(clientRect.width, clientRect.height)
+      var moveSpeedRatio = 0.05
+      var dx = offset * moveSpeedRatio * x
+      var dy = offset * moveSpeedRatio * y
+
+      // TODO: currently we do not animate this. It could be better to have animation
+      internalMoveBy(dx, dy)
+    }
+    if (z) {
+      var scaleMultiplier = getScaleMultiplier(z)
+      var ownerRect = owner.getBoundingClientRect()
+      console.log(scaleMultiplier)
+      publicZoomTo(ownerRect.width/2, ownerRect.height/2, scaleMultiplier)
+    }
+  }
+
+  function onTouch(e) {
+    // let the override the touch behavior
+    beforeTouch(e);
+
+    if (e.touches.length === 1) {
+      return handleSingleFingerTouch(e, e.touches[0])
+    } else if (e.touches.length === 2) {
+      // handleTouchMove() will care about pinch zoom.
+      pinchZoomLength = getPinchZoomLength(e.touches[0], e.touches[1])
+      multiTouch  = true
+      startTouchListenerIfNeeded()
+    }
+  }
+
+  function beforeTouch(e) {
+    if (options.onTouch && !options.onTouch(e)) {
+      // if they return `false` from onTouch, we don't want to stop
+      // events propagation. Fixes https://github.com/anvaka/panzoom/issues/12
+      return
+    }
+
+    e.stopPropagation()
+    e.preventDefault()
+  }
+
+  function beforeDoubleClick(e) {
+    if (options.onDoubleClick && !options.onDoubleClick(e)) {
+      // if they return `false` from onTouch, we don't want to stop
+      // events propagation. Fixes https://github.com/anvaka/panzoom/issues/46
+      return
+    }
+
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  function handleSingleFingerTouch(e) {
+    var touch = e.touches[0]
+    var offset = getOffsetXY(touch)
+    mouseX = offset.x
+    mouseY = offset.y
+
+    smoothScroll.cancel()
+    startTouchListenerIfNeeded()
+  }
+
+  function startTouchListenerIfNeeded() {
+    if (!touchInProgress) {
+      touchInProgress = true
+      document.addEventListener('touchmove', handleTouchMove)
+      document.addEventListener('touchend', handleTouchEnd)
+      document.addEventListener('touchcancel', handleTouchEnd)
+    }
+  }
+
+  function handleTouchMove(e) {
+    if (e.touches.length === 1) {
+      e.stopPropagation()
+      var touch = e.touches[0]
+
+      var offset = getOffsetXY(touch)
+
+      var dx = offset.x - mouseX
+      var dy = offset.y - mouseY
+
+      if (dx !== 0 && dy !== 0) {
+        triggerPanStart()
+      }
+      mouseX = offset.x
+      mouseY = offset.y
+      var point = transformToScreen(dx, dy)
+      internalMoveBy(point.x, point.y)
+    } else if (e.touches.length === 2) {
+      // it's a zoom, let's find direction
+      multiTouch = true
+      var t1 = e.touches[0]
+      var t2 = e.touches[1]
+      var currentPinchLength = getPinchZoomLength(t1, t2)
+
+      // since the zoom speed is always based on distance from 1, we need to apply
+      // pinch speed only on that distance from 1:
+      var scaleMultiplier = 1 + (currentPinchLength / pinchZoomLength - 1) * pinchSpeed
+
+      mouseX = (t1.clientX + t2.clientX)/2
+      mouseY = (t1.clientY + t2.clientY)/2
+
+      publicZoomTo(mouseX, mouseY, scaleMultiplier)
+
+      pinchZoomLength = currentPinchLength
+      e.stopPropagation()
+      e.preventDefault()
+    }
+  }
+
+  function handleTouchEnd(e) {
+    if (e.touches.length > 0) {
+      var offset = getOffsetXY(e.touches[0])
+      mouseX = offset.x
+      mouseY = offset.y
+    } else {
+      var now = new Date()
+      if (now - lastTouchEndTime < doubleTapSpeedInMS) {
+        smoothZoom(mouseX, mouseY, zoomDoubleClickSpeed)
+      }
+
+      lastTouchEndTime = now
+
+      touchInProgress = false
+      triggerPanEnd()
+      releaseTouches()
+    }
+  }
+
+  function getPinchZoomLength(finger1, finger2) {
+    var dx = finger1.clientX - finger2.clientX
+    var dy = finger1.clientY - finger2.clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
+
+  function onDoubleClick(e) {
+    beforeDoubleClick(e);
+    var offset = getOffsetXY(e)
+    smoothZoom(offset.x, offset.y, zoomDoubleClickSpeed)
+  }
+
+  function onMouseDown(e) {
+    if (touchInProgress) {
+      // modern browsers will fire mousedown for touch events too
+      // we do not want this: touch is handled separately.
+      e.stopPropagation()
+      return false
+    }
+    // for IE, left click == 1
+    // for Firefox, left click == 0
+    var isLeftButton = ((e.button === 1 && window.event !== null) || e.button === 0)
+    if (!isLeftButton) return
+
+    smoothScroll.cancel()
+
+    var offset = getOffsetXY(e);
+    var point = transformToScreen(offset.x, offset.y)
+    mouseX = point.x
+    mouseY = point.y
+
+    // We need to listen on document itself, since mouse can go outside of the
+    // window, and we will loose it
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+
+    preventTextSelection.capture(e.target || e.srcElement)
+
+    return false
+  }
+
+  function onMouseMove(e) {
+    // no need to worry about mouse events when touch is happening
+    if (touchInProgress) return
+
+    triggerPanStart()
+
+    var offset = getOffsetXY(e);
+    var point = transformToScreen(offset.x, offset.y)
+    var dx = point.x - mouseX
+    var dy = point.y - mouseY
+
+    mouseX = point.x
+    mouseY = point.y
+
+    internalMoveBy(dx, dy)
+  }
+
+  function onMouseUp() {
+    preventTextSelection.release()
+    triggerPanEnd()
+    releaseDocumentMouse()
+  }
+
+  function releaseDocumentMouse() {
+    document.removeEventListener('mousemove', onMouseMove)
+    document.removeEventListener('mouseup', onMouseUp)
+    panstartFired = false
+  }
+
+  function releaseTouches() {
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleTouchEnd)
+    document.removeEventListener('touchcancel', handleTouchEnd)
+    panstartFired = false
+    multiTouch = false
+  }
+
+  function onMouseWheel(e) {
+    // debugger;
+    // if client does not want to handle this event - just ignore the call
+    if (beforeWheel(e)) return
+
+    smoothScroll.cancel()
+
+    var scaleMultiplier = getScaleMultiplier(e.deltaY)
+    console.log("scale "+ scaleMultiplier)
+    console.log("Delta "+ e.deltaY)
+
+    if (scaleMultiplier !== 1) {
+      var offset = getOffsetXY(e)
+      publicZoomTo(offset.x, offset.y, scaleMultiplier)
+      e.preventDefault()
+    }
+  }
+
+  function getOffsetXY(e) {
+    var offsetX, offsetY;
+    // I tried using e.offsetX, but that gives wrong results for svg, when user clicks on a path.
+    var ownerRect = owner.getBoundingClientRect();
+    offsetX = e.clientX - ownerRect.left
+    offsetY = e.clientY - ownerRect.top
+
+    return {x: offsetX, y: offsetY};
+  }
+
+  function smoothZoom(clientX, clientY, scaleMultiplier) {
+      var fromValue = transform.scale
+      var from = {scale: fromValue}
+      var to = {scale: scaleMultiplier * fromValue}
+
+      smoothScroll.cancel()
+      cancelZoomAnimation()
+
+      zoomToAnimation = animate(from, to, {
+        step: function(v) {
+          zoomAbs(clientX, clientY, v.scale)
+        }
+      })
+  }
+
+  function publicZoomTo(clientX, clientY, scaleMultiplier) {
+      smoothScroll.cancel()
+      cancelZoomAnimation()
+      return zoomByRatio(clientX, clientY, scaleMultiplier)
+  }
+
+  function cancelZoomAnimation() {
+      if (zoomToAnimation) {
+          zoomToAnimation.cancel()
+          zoomToAnimation = null
+      }
+  }
+
+  function getScaleMultiplier(delta) {
+    var scaleMultiplier = 1
+    if (delta > 0) { // zoom out
+      scaleMultiplier = (1 - speed)
+    } else if (delta < 0) { // zoom in
+      scaleMultiplier = (1 + speed)
+    }
+
+    return scaleMultiplier
+  }
+
+  function triggerPanStart() {
+    if (!panstartFired) {
+      triggerEvent('panstart')
+      panstartFired = true
+      smoothScroll.start()
+    }
+  }
+
+  function triggerPanEnd() {
+    if (panstartFired) {
+      // we should never run smooth scrolling if it was multiTouch (pinch zoom animation):
+      if (!multiTouch) smoothScroll.stop()
+      triggerEvent('panend')
+    }
+  }
+
+  function triggerEvent(name) {
+    api.fire(name, api);
+  }
+}
+
+function noop() { }
+
+function validateBounds(bounds) {
+  var boundsType = typeof bounds
+  if (boundsType === 'undefined' || boundsType === 'boolean') return // this is okay
+  // otherwise need to be more thorough:
+  var validBounds = isNumber(bounds.left) && isNumber(bounds.top) &&
+    isNumber(bounds.bottom) && isNumber(bounds.right)
+
+  if (!validBounds) throw new Error('Bounds object is not valid. It can be: ' +
+    'undefined, boolean (true|false) or an object {left, top, right, bottom}')
+}
+
+function isNumber(x) {
+  return Number.isFinite(x)
+}
+
+// IE 11 does not support isNaN:
+function isNaN(value) {
+  if (Number.isNaN) {
+    return Number.isNaN(value)
+  }
+
+  return value !== value
+}
+
+function rigidScroll() {
+  return {
+    start: noop,
+    stop: noop,
+    cancel: noop
+  }
+}
+
+
+function autoRun() {
+  if (typeof document === 'undefined') return
+
+  var scripts = document.getElementsByTagName('script');
+  if (!scripts) return;
+  var panzoomScript;
+
+  for (var i = 0; i < scripts.length; ++i) {
+    var x = scripts[i];
+    if (x.src && x.src.match(/\bpanzoom(\.min)?\.js/)) {
+      panzoomScript = x
+      break;
+    }
+  }
+
+  if (!panzoomScript) return;
+
+  var query = panzoomScript.getAttribute('query')
+  if (!query) return;
+
+  var globalName = panzoomScript.getAttribute('name') || 'pz'
+  var started = Date.now()
+
+  tryAttach();
+
+  function tryAttach() {
+    var el = document.querySelector(query)
+    if (!el) {
+      var now = Date.now()
+      var elapsed = now - started;
+      if (elapsed < 2000) {
+        // Let's wait a bit
+        setTimeout(tryAttach, 100);
+        return;
+      }
+      // If we don't attach within 2 seconds to the target element, consider it a failure
+      console.error('Cannot find the panzoom element', globalName)
+      return
+    }
+    var options = collectOptions(panzoomScript)
+    console.log(options)
+    window[globalName] = createPanZoom(el, options);
+  }
+
+  function collectOptions(script) {
+    var attrs = script.attributes;
+    var options = {};
+    for(var i = 0; i < attrs.length; ++i) {
+      var attr = attrs[i];
+      var nameValue = getPanzoomAttributeNameValue(attr);
+      if (nameValue) {
+        options[nameValue.name] = nameValue.value
+      }
+    }
+
+    return options;
+  }
+
+  function getPanzoomAttributeNameValue(attr) {
+    if (!attr.name) return;
+    var isPanZoomAttribute = attr.name[0] === 'p' && attr.name[1] === 'z' && attr.name[2] === '-';
+
+    if (!isPanZoomAttribute) return;
+
+    var name = attr.name.substr(3)
+    var value = JSON.parse(attr.value);
+    return {name: name, value: value};
+  }
+}
+
+autoRun();
+
+},{"./lib/domController.js":2,"./lib/kinetic.js":3,"./lib/svgController.js":4,"./lib/textSelectionInterceptor.js":5,"./lib/transform.js":6,"amator":7,"ngraph.events":9,"wheel":10}],2:[function(require,module,exports){
+module.exports = makeDomController
+
+function makeDomController(domElement, options) {
+  var elementValid = (domElement instanceof HTMLElement)
+  if (!elementValid) {
+    throw new Error('svg element is required for svg.panzoom to work')
+  }
+
+  var owner = domElement.parentElement
+  if (!owner) {
+    throw new Error(
+      'Do not apply panzoom to the detached DOM element. '
+    )
+  }
+
+  domElement.scrollTop = 0;
+  
+  if (!options.disableKeyboardInteraction) {
+    owner.setAttribute('tabindex', 0);
+  }
+
+  var api = {
+    getBBox: getBBox,
+    getOwner: getOwner,
+    applyTransform: applyTransform,
+  }
+  
+  return api
+
+  function getOwner() {
+    return owner
+  }
+
+  function getBBox() {
+    // TODO: We should probably cache this?
+    return  {
+      left: 0,
+      top: 0,
+      width: domElement.clientWidth,
+      height: domElement.clientHeight
+    }
+  }
+
+  function applyTransform(transform) {
+    // TODO: Should we cache this?
+    domElement.style.transformOrigin = '0 0 0';
+    domElement.style.transform = 'matrix(' +
+      transform.scale + ', 0, 0, ' +
+      transform.scale + ', ' +
+      transform.x + ', ' + transform.y + ')'
+  }
+}
+
+},{}],3:[function(require,module,exports){
+/**
+ * Allows smooth kinetic scrolling of the surface
+ */
+module.exports = kinetic;
+
+function kinetic(getPoint, scroll, settings) {
+  if (typeof settings !== 'object') {
+    // setting could come as boolean, we should ignore it, and use an object.
+    settings = {}
+  }
+
+  var minVelocity = (typeof settings.minVelocity === 'number') ? settings.minVelocity : 5
+  var amplitude = (typeof settings.amplitude === 'number') ? settings.amplitude : 0.25
+
+  var lastPoint
+  var timestamp
+  var timeConstant = 342
+
+  var ticker
+  var vx, targetX, ax;
+  var vy, targetY, ay;
+
+  var raf
+
+  return {
+    start: start,
+    stop: stop,
+    cancel: dispose
+  }
+
+  function dispose() {
+    window.clearInterval(ticker)
+    window.cancelAnimationFrame(raf)
+  }
+
+  function start() {
+    lastPoint = getPoint()
+
+    ax = ay = vx = vy = 0
+    timestamp = new Date()
+
+    window.clearInterval(ticker)
+    window.cancelAnimationFrame(raf)
+
+    // we start polling the point position to accumulate velocity
+    // Once we stop(), we will use accumulated velocity to keep scrolling
+    // an object.
+    ticker = window.setInterval(track, 100);
+  }
+
+  function track() {
+    var now = Date.now();
+    var elapsed = now - timestamp;
+    timestamp = now;
+
+    var currentPoint = getPoint()
+
+    var dx = currentPoint.x - lastPoint.x
+    var dy = currentPoint.y - lastPoint.y
+
+    lastPoint = currentPoint
+
+    var dt = 1000 / (1 + elapsed)
+
+    // moving average
+    vx = 0.8 * dx * dt + 0.2 * vx
+    vy = 0.8 * dy * dt + 0.2 * vy
+  }
+
+  function stop() {
+    window.clearInterval(ticker);
+    window.cancelAnimationFrame(raf)
+
+    var currentPoint = getPoint()
+
+    targetX = currentPoint.x
+    targetY = currentPoint.y
+    timestamp = Date.now()
+
+    if (vx < -minVelocity || vx > minVelocity) {
+      ax = amplitude * vx
+      targetX += ax
+    }
+
+    if (vy < -minVelocity || vy > minVelocity) {
+      ay = amplitude * vy
+      targetY += ay
+    }
+
+    raf = window.requestAnimationFrame(autoScroll);
+  }
+
+  function autoScroll() {
+    var elapsed = Date.now() - timestamp
+
+    var moving = false
+    var dx = 0
+    var dy = 0
+
+    if (ax) {
+      dx = -ax * Math.exp(-elapsed / timeConstant)
+
+      if (dx > 0.5 || dx < -0.5) moving = true
+      else dx = ax = 0
+    }
+
+    if (ay) {
+      dy = -ay * Math.exp(-elapsed / timeConstant)
+
+      if (dy > 0.5 || dy < -0.5) moving = true
+      else dy = ay = 0
+    }
+
+    if (moving) {
+      scroll(targetX + dx, targetY + dy)
+      raf = window.requestAnimationFrame(autoScroll);
+    }
+  }
+
+}
+
+},{}],4:[function(require,module,exports){
+module.exports = makeSvgController
+
+function makeSvgController(svgElement, options) {
+  var elementValid = (svgElement instanceof SVGElement)
+  if (!elementValid) {
+    throw new Error('svg element is required for svg.panzoom to work')
+  }
+
+  var owner = svgElement.ownerSVGElement
+  if (!owner) {
+    throw new Error(
+      'Do not apply panzoom to the root <svg> element. ' +
+      'Use its child instead (e.g. <g></g>). ' +
+      'As of March 2016 only FireFox supported transform on the root element')
+  }
+
+  if (!options.disableKeyboardInteraction) {
+    owner.setAttribute('tabindex', 0);
+  }
+
+  var api = {
+    getBBox: getBBox,
+    getScreenCTM: getScreenCTM,
+    getOwner: getOwner,
+    applyTransform: applyTransform,
+    initTransform: initTransform
+  }
+  
+  return api
+
+  function getOwner() {
+    return owner
+  }
+
+  function getBBox() {
+    var bbox =  svgElement.getBBox()
+    return {
+      left: bbox.x,
+      top: bbox.y,
+      width: bbox.width,
+      height: bbox.height,
+    }
+  }
+
+  function getScreenCTM() {
+    return owner.getScreenCTM()
+  }
+
+  function initTransform(transform) {
+    var screenCTM = svgElement.getScreenCTM()
+    transform.x = screenCTM.e;
+    transform.y = screenCTM.f;
+    transform.scale = screenCTM.a;
+    owner.removeAttributeNS(null, 'viewBox');
+  }
+
+  function applyTransform(transform) {
+    svgElement.setAttribute('transform', 'matrix(' +
+      transform.scale + ' 0 0 ' +
+      transform.scale + ' ' +
+      transform.x + ' ' + transform.y + ')')
+  }
+}
+},{}],5:[function(require,module,exports){
+/**
+ * Disallows selecting text.
+ */
+module.exports = createTextSelectionInterceptor
+
+function createTextSelectionInterceptor() {
+  var dragObject
+  var prevSelectStart
+  var prevDragStart
+
+  return {
+    capture: capture,
+    release: release
+  }
+
+  function capture(domObject) {
+    prevSelectStart = window.document.onselectstart
+    prevDragStart = window.document.ondragstart
+
+    window.document.onselectstart = disabled
+
+    dragObject = domObject
+    dragObject.ondragstart = disabled
+  }
+
+  function release() {
+    window.document.onselectstart = prevSelectStart
+    if (dragObject) dragObject.ondragstart = prevDragStart
+  }
+}
+
+function disabled(e) {
+  e.stopPropagation()
+  return false
+}
+
+},{}],6:[function(require,module,exports){
+module.exports = Transform;
+
+function Transform() {
+  this.x = 0;
+  this.y = 0;
+  this.scale = 1;
+}
+
+},{}],7:[function(require,module,exports){
+var BezierEasing = require('bezier-easing')
+
+// Predefined set of animations. Similar to CSS easing functions
+var animations = {
+  ease:  BezierEasing(0.25, 0.1, 0.25, 1),
+  easeIn: BezierEasing(0.42, 0, 1, 1),
+  easeOut: BezierEasing(0, 0, 0.58, 1),
+  easeInOut: BezierEasing(0.42, 0, 0.58, 1),
+  linear: BezierEasing(0, 0, 1, 1)
+}
+
+
+module.exports = animate;
+module.exports.makeAggregateRaf = makeAggregateRaf;
+module.exports.sharedScheduler = makeAggregateRaf();
+
+
+function animate(source, target, options) {
+  var start = Object.create(null)
+  var diff = Object.create(null)
+  options = options || {}
+  // We let clients specify their own easing function
+  var easing = (typeof options.easing === 'function') ? options.easing : animations[options.easing]
+
+  // if nothing is specified, default to ease (similar to CSS animations)
+  if (!easing) {
+    if (options.easing) {
+      console.warn('Unknown easing function in amator: ' + options.easing);
+    }
+    easing = animations.ease
+  }
+
+  var step = typeof options.step === 'function' ? options.step : noop
+  var done = typeof options.done === 'function' ? options.done : noop
+
+  var scheduler = getScheduler(options.scheduler)
+
+  var keys = Object.keys(target)
+  keys.forEach(function(key) {
+    start[key] = source[key]
+    diff[key] = target[key] - source[key]
+  })
+
+  var durationInMs = typeof options.duration === 'number' ? options.duration : 400
+  var durationInFrames = Math.max(1, durationInMs * 0.06) // 0.06 because 60 frames pers 1,000 ms
+  var previousAnimationId
+  var frame = 0
+
+  previousAnimationId = scheduler.next(loop)
+
+  return {
+    cancel: cancel
+  }
+
+  function cancel() {
+    scheduler.cancel(previousAnimationId)
+    previousAnimationId = 0
+  }
+
+  function loop() {
+    var t = easing(frame/durationInFrames)
+    frame += 1
+    setValues(t)
+    if (frame <= durationInFrames) {
+      previousAnimationId = scheduler.next(loop)
+      step(source)
+    } else {
+      previousAnimationId = 0
+      setTimeout(function() { done(source) }, 0)
+    }
+  }
+
+  function setValues(t) {
+    keys.forEach(function(key) {
+      source[key] = diff[key] * t + start[key]
+    })
+  }
+}
+
+function noop() { }
+
+function getScheduler(scheduler) {
+  if (!scheduler) {
+    var canRaf = typeof window !== 'undefined' && window.requestAnimationFrame
+    return canRaf ? rafScheduler() : timeoutScheduler()
+  }
+  if (typeof scheduler.next !== 'function') throw new Error('Scheduler is supposed to have next(cb) function')
+  if (typeof scheduler.cancel !== 'function') throw new Error('Scheduler is supposed to have cancel(handle) function')
+
+  return scheduler
+}
+
+function rafScheduler() {
+  return {
+    next: window.requestAnimationFrame.bind(window),
+    cancel: window.cancelAnimationFrame.bind(window)
+  }
+}
+
+function timeoutScheduler() {
+  return {
+    next: function(cb) {
+      return setTimeout(cb, 1000/60)
+    },
+    cancel: function (id) {
+      return clearTimeout(id)
+    }
+  }
+}
+
+function makeAggregateRaf() {
+  var frontBuffer = new Set();
+  var backBuffer = new Set();
+  var frameToken = 0;
+
+  return {
+    next: next,
+    cancel: next,
+    clearAll: clearAll
+  }
+
+  function clearAll() {
+    frontBuffer.clear();
+    backBuffer.clear();
+    cancelAnimationFrame(frameToken);
+    frameToken = 0;
+  }
+
+  function next(callback) {
+    backBuffer.add(callback);
+    renderNextFrame();
+  }
+
+  function renderNextFrame() {
+    if (!frameToken) frameToken = requestAnimationFrame(renderFrame);
+  }
+
+  function renderFrame() {
+    frameToken = 0;
+
+    var t = backBuffer;
+    backBuffer = frontBuffer;
+    frontBuffer = t;
+
+    frontBuffer.forEach(function(callback) {
+      callback();
+    });
+    frontBuffer.clear();
+  }
+
+  function cancel(callback) {
+    backBuffer.delete(callback);
+  }
+}
+
+},{"bezier-easing":8}],8:[function(require,module,exports){
+/**
+ * https://github.com/gre/bezier-easing
+ * BezierEasing - use bezier curve for transition easing function
+ * by Gaëtan Renaudeau 2014 - 2015 – MIT License
  */
 
-(function(global, factory) {
-	// AMD
-	if (typeof define === 'function' && define.amd) {
-		define([ 'jquery' ], function(jQuery) {
-			return factory(global, jQuery);
-		});
-	// CommonJS/Browserify
-	} else if (typeof exports === 'object') {
-		factory(global, require('jquery'));
-	// Global
-	} else {
-		factory(global, global.jQuery);
-	}
-}(typeof window !== 'undefined' ? window : this, function(window, $) {
-	'use strict';
-
-	var document = window.document;
-	var datakey = '__pz__';
-	var slice = Array.prototype.slice;
-	var rIE11 = /trident\/7./i;
-	var supportsInputEvent = (function() {
-		// IE11 returns a false positive
-		if (rIE11.test(navigator.userAgent)) {
-			return false;
-		}
-		var input = document.createElement('input');
-		input.setAttribute('oninput', 'return');
-		return typeof input.oninput === 'function';
-	})();
-
-	// Regex
-	var rupper = /([A-Z])/g;
-	var rsvg = /^http:[\w\.\/]+svg$/;
-
-	var floating = '(\\-?\\d[\\d\\.e-]*)';
-	var commaSpace = '\\,?\\s*';
-	var rmatrix = new RegExp(
-		'^matrix\\(' +
-		floating + commaSpace +
-		floating + commaSpace +
-		floating + commaSpace +
-		floating + commaSpace +
-		floating + commaSpace +
-		floating + '\\)$'
-	);
-
-	/**
-	 * Utility for determining transform matrix equality
-	 * Checks backwards to test translation first
-	 * @param {Array} first
-	 * @param {Array} second
-	 */
-	function matrixEquals(first, second) {
-		var i = first.length;
-		while(--i) {
-			if (Math.round(+first[i]) !== Math.round(+second[i])) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Creates the options object for reset functions
-	 * @param {Boolean|Object} opts See reset methods
-	 * @returns {Object} Returns the newly-created options object
-	 */
-	function createResetOptions(opts) {
-		var options = { range: true, animate: true };
-		if (typeof opts === 'boolean') {
-			options.animate = opts;
-		} else {
-			$.extend(options, opts);
-		}
-		return options;
-	}
-
-	/**
-	 * Represent a transformation matrix with a 3x3 matrix for calculations
-	 * Matrix functions adapted from Louis Remi's jQuery.transform (https://github.com/louisremi/jquery.transform.js)
-	 * @param {Array|Number} a An array of six values representing a 2d transformation matrix
-	 */
-	function Matrix(a, b, c, d, e, f, g, h, i) {
-		if ($.type(a) === 'array') {
-			this.elements = [
-				+a[0], +a[2], +a[4],
-				+a[1], +a[3], +a[5],
-				    0,     0,     1
-			];
-		} else {
-			this.elements = [
-				a, b, c,
-				d, e, f,
-				g || 0, h || 0, i || 1
-			];
-		}
-	}
-
-	Matrix.prototype = {
-		/**
-		 * Multiply a 3x3 matrix by a similar matrix or a vector
-		 * @param {Matrix|Vector} matrix
-		 * @return {Matrix|Vector} Returns a vector if multiplying by a vector
-		 */
-		x: function(matrix) {
-			var isVector = matrix instanceof Vector;
-
-			var a = this.elements,
-				b = matrix.elements;
-
-			if (isVector && b.length === 3) {
-				// b is actually a vector
-				return new Vector(
-					a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
-					a[3] * b[0] + a[4] * b[1] + a[5] * b[2],
-					a[6] * b[0] + a[7] * b[1] + a[8] * b[2]
-				);
-			} else if (b.length === a.length) {
-				// b is a 3x3 matrix
-				return new Matrix(
-					a[0] * b[0] + a[1] * b[3] + a[2] * b[6],
-					a[0] * b[1] + a[1] * b[4] + a[2] * b[7],
-					a[0] * b[2] + a[1] * b[5] + a[2] * b[8],
-
-					a[3] * b[0] + a[4] * b[3] + a[5] * b[6],
-					a[3] * b[1] + a[4] * b[4] + a[5] * b[7],
-					a[3] * b[2] + a[4] * b[5] + a[5] * b[8],
-
-					a[6] * b[0] + a[7] * b[3] + a[8] * b[6],
-					a[6] * b[1] + a[7] * b[4] + a[8] * b[7],
-					a[6] * b[2] + a[7] * b[5] + a[8] * b[8]
-				);
-			}
-			return false; // fail
-		},
-		/**
-		 * Generates an inverse of the current matrix
-		 * @returns {Matrix}
-		 */
-		inverse: function() {
-			var d = 1 / this.determinant(),
-				a = this.elements;
-			return new Matrix(
-				d * ( a[8] * a[4] - a[7] * a[5]),
-				d * (-(a[8] * a[1] - a[7] * a[2])),
-				d * ( a[5] * a[1] - a[4] * a[2]),
-
-				d * (-(a[8] * a[3] - a[6] * a[5])),
-				d * ( a[8] * a[0] - a[6] * a[2]),
-				d * (-(a[5] * a[0] - a[3] * a[2])),
-
-				d * ( a[7] * a[3] - a[6] * a[4]),
-				d * (-(a[7] * a[0] - a[6] * a[1])),
-				d * ( a[4] * a[0] - a[3] * a[1])
-			);
-		},
-		/**
-		 * Calculates the determinant of the current matrix
-		 * @returns {Number}
-		 */
-		determinant: function() {
-			var a = this.elements;
-			return a[0] * (a[8] * a[4] - a[7] * a[5]) - a[3] * (a[8] * a[1] - a[7] * a[2]) + a[6] * (a[5] * a[1] - a[4] * a[2]);
-		}
-	};
-
-	/**
-	 * Create a vector containing three values
-	 */
-	function Vector(x, y, z) {
-		this.elements = [ x, y, z ];
-	}
-
-	/**
-	 * Get the element at zero-indexed index i
-	 * @param {Number} i
-	 */
-	Vector.prototype.e = Matrix.prototype.e = function(i) {
-		return this.elements[ i ];
-	};
-
-	/**
-	 * Create a Panzoom object for a given element
-	 * @constructor
-	 * @param {Element} elem - Element to use pan and zoom
-	 * @param {Object} [options] - An object literal containing options to override default options
-	 *  (See Panzoom.defaults for ones not listed below)
-	 * @param {jQuery} [options.$zoomIn] - zoom in buttons/links collection (you can also bind these yourself
-	 *  e.g. $button.on('click', function(e) { e.preventDefault(); $elem.panzoom('zoomIn'); });)
-	 * @param {jQuery} [options.$zoomOut] - zoom out buttons/links collection on which to bind zoomOut
-	 * @param {jQuery} [options.$zoomRange] - zoom in/out with this range control
-	 * @param {jQuery} [options.$reset] - Reset buttons/links collection on which to bind the reset method
-	 * @param {Function} [options.on[Start|Change|Zoom|Pan|End|Reset] - Optional callbacks for panzoom events
-	 */
-	function Panzoom(elem, options) {
-
-		// Allow instantiation without `new` keyword
-		if (!(this instanceof Panzoom)) {
-			return new Panzoom(elem, options);
-		}
-
-		// Sanity checks
-		if (elem.nodeType !== 1) {
-			$.error('Panzoom called on non-Element node');
-		}
-		if (!$.contains(document, elem)) {
-			$.error('Panzoom element must be attached to the document');
-		}
-
-		// Don't remake
-		var d = $.data(elem, datakey);
-		if (d) {
-			return d;
-		}
-
-		// Extend default with given object literal
-		// Each instance gets its own options
-		this.options = options = $.extend({}, Panzoom.defaults, options);
-		this.elem = elem;
-		var $elem = this.$elem = $(elem);
-		this.$set = options.$set && options.$set.length ? options.$set : $elem;
-		this.$doc = $(elem.ownerDocument || document);
-		this.$parent = $elem.parent();
-		this.parent = this.$parent[0];
-
-		// This is SVG if the namespace is SVG
-		// However, while <svg> elements are SVG, we want to treat those like other elements
-		this.isSVG = rsvg.test(elem.namespaceURI) && elem.nodeName.toLowerCase() !== 'svg';
-
-		this.panning = false;
-
-		// Save the original transform value
-		// Save the prefixed transform style key
-		// Set the starting transform
-		this._buildTransform();
-
-		// Build the appropriately-prefixed transform style property name
-		// De-camelcase
-		this._transform = $.cssProps.transform.replace(rupper, '-$1').toLowerCase();
-
-		// Build the transition value
-		this._buildTransition();
-
-		// Build containment dimensions
-		this.resetDimensions();
-
-		// Add zoom and reset buttons to `this`
-		var $empty = $();
-		var self = this;
-		$.each([ '$zoomIn', '$zoomOut', '$zoomRange', '$reset' ], function(i, name) {
-			self[ name ] = options[ name ] || $empty;
-		});
-
-		this.enable();
-
-		this.scale = this.getMatrix()[0];
-		this._checkPanWhenZoomed();
-
-		// Save the instance
-		$.data(elem, datakey, this);
-	}
-
-	// Attach regex for possible use (immutable)
-	Panzoom.rmatrix = rmatrix;
-
-	Panzoom.defaults = {
-		// Should always be non-empty
-		// Used to bind jQuery events without collisions
-		// A guid is not added here as different instantiations/versions of panzoom
-		// on the same element is not supported, so don't do it.
-		eventNamespace: '.panzoom',
-
-		// Whether or not to transition the scale
-		transition: true,
-
-		// Default cursor style for the element
-		cursor: 'move',
-
-		// There may be some use cases for zooming without panning or vice versa
-		disablePan: false,
-		disableZoom: false,
-
-		// Pan only on the X or Y axes
-		disableXAxis: false,
-		disableYAxis: false,
-
-		// Set whether you'd like to pan on left (1), middle (2), or right click (3)
-		which: 1,
-
-		// The increment at which to zoom
-		// Should be a number greater than 0
-		increment: 0.3,
-
-		// When no scale is passed, this option tells
-		// the `zoom` method to increment
-		// the scale *linearly* based on the increment option.
-		// This often ends up looking like very little happened at larger zoom levels.
-		// The default is to multiply/divide the scale based on the increment.
-		linearZoom: false,
-
-		// Pan only when the scale is greater than minScale
-		panOnlyWhenZoomed: false,
-
-		// min and max zoom scales
-		minScale: 0.3,
-		maxScale: 6,
-
-		// The default step for the range input
-		// Precendence: default < HTML attribute < option setting
-		rangeStep: 0.05,
-
-		// Animation duration (ms)
-		duration: 200,
-		// CSS easing used for scale transition
-		easing: 'ease-in-out',
-
-		// Indicate that the element should be contained within it's parent when panning
-		// Note: this does not affect zooming outside of the parent
-		// Set this value to 'invert' to only allow panning outside of the parent element (basically the opposite of the normal use of contain)
-		// 'invert' is useful for a large panzoom element where you don't want to show anything behind it
-		contain: false
-	};
-
-	Panzoom.prototype = {
-		constructor: Panzoom,
-
-		/**
-		 * @returns {Panzoom} Returns the instance
-		 */
-		instance: function() {
-			return this;
-		},
-
-		/**
-		 * Enable or re-enable the panzoom instance
-		 */
-		enable: function() {
-			// Unbind first
-			this._initStyle();
-			this._bind();
-			this.disabled = false;
-		},
-
-		/**
-		 * Disable panzoom
-		 */
-		disable: function() {
-			this.disabled = true;
-			this._resetStyle();
-			this._unbind();
-		},
-
-		/**
-		 * @returns {Boolean} Returns whether the current panzoom instance is disabled
-		 */
-		isDisabled: function() {
-			return this.disabled;
-		},
-
-		/**
-		 * Destroy the panzoom instance
-		 */
-		destroy: function() {
-			this.disable();
-			$.removeData(this.elem, datakey);
-		},
-
-		/**
-		 * Builds the restricing dimensions from the containment element
-		 * Also used with focal points
-		 * Call this method whenever the dimensions of the element or parent are changed
-		 */
-		resetDimensions: function() {
-			// Reset container properties
-			this.container = this.parent.getBoundingClientRect();
-
-			// Set element properties
-			var elem = this.elem;
-			// getBoundingClientRect() works with SVG, offsetWidth does not
-			var dims = elem.getBoundingClientRect();
-			var absScale = Math.abs(this.scale);
-			this.dimensions = {
-				width: dims.width,
-				height: dims.height,
-				left: $.css(elem, 'left', true) || 0,
-				top: $.css(elem, 'top', true) || 0,
-				// Borders and margins are scaled
-				border: {
-					top: $.css(elem, 'borderTopWidth', true) * absScale || 0,
-					bottom: $.css(elem, 'borderBottomWidth', true) * absScale || 0,
-					left: $.css(elem, 'borderLeftWidth', true) * absScale || 0,
-					right: $.css(elem, 'borderRightWidth', true) * absScale || 0
-				},
-				margin: {
-					top: $.css(elem, 'marginTop', true) * absScale || 0,
-					left: $.css(elem, 'marginLeft', true) * absScale || 0
-				}
-			};
-		},
-
-		/**
-		 * Return the element to it's original transform matrix
-		 * @param {Boolean} [options] If a boolean is passed, animate the reset (default: true). If an options object is passed, simply pass that along to setMatrix.
-		 * @param {Boolean} [options.silent] Silence the reset event
-		 */
-		reset: function(options) {
-			options = createResetOptions(options);
-			// Reset the transform to its original value
-			var matrix = this.setMatrix(this._origTransform, options);
-			if (!options.silent) {
-				this._trigger('reset', matrix);
-			}
-		},
-
-		/**
-		 * Only resets zoom level
-		 * @param {Boolean|Object} [options] Whether to animate the reset (default: true) or an object of options to pass to zoom()
-		 */
-		resetZoom: function(options) {
-			options = createResetOptions(options);
-			var origMatrix = this.getMatrix(this._origTransform);
-			options.dValue = origMatrix[ 3 ];
-			this.zoom(origMatrix[0], options);
-		},
-
-		/**
-		 * Only reset panning
-		 * @param {Boolean|Object} [options] Whether to animate the reset (default: true) or an object of options to pass to pan()
-		 */
-		resetPan: function(options) {
-			var origMatrix = this.getMatrix(this._origTransform);
-			this.pan(origMatrix[4], origMatrix[5], createResetOptions(options));
-		},
-
-		/**
-		 * Sets a transform on the $set
-		 * For SVG, the style attribute takes precedence
-		 * and allows us to animate
-		 * @param {String} transform
-		 */
-		setTransform: function(transform) {
-			var $set = this.$set;
-			var i = $set.length;
-			while(i--) {
-				$.style($set[i], 'transform', transform);
-
-				// Support IE9-11, Edge 13-14+
-				// Set attribute alongside style attribute
-				// since IE and Edge do not respect style settings on SVG
-				// See https://css-tricks.com/transforms-on-svg-elements/
-				if (this.isSVG) {
-					$set[i].setAttribute('transform', transform);
-				}
-			}
-		},
-
-		/**
-		 * Retrieving the transform is different for SVG
-		 *  (unless a style transform is already present)
-		 * Uses the $set collection for retrieving the transform
-		 * @param {String} [transform] Pass in an transform value (like 'scale(1.1)')
-		 *  to have it formatted into matrix format for use by Panzoom
-		 * @returns {String} Returns the current transform value of the element
-		 */
-		getTransform: function(transform) {
-			var $set = this.$set;
-			var transformElem = $set[0];
-			if (transform) {
-				this.setTransform(transform);
-			} else {
-
-				// IE and Edge still set the transform style properly
-				// They just don't render it on SVG
-				// So we get a correct value here
-				transform = $.style(transformElem, 'transform');
-
-				if (this.isSVG && (!transform || transform === 'none')) {
-					transform = $.attr(transformElem, 'transform') || 'none';
-				}
-			}
-
-			// Convert any transforms set by the user to matrix format
-			// by setting to computed
-			if (transform !== 'none' && !rmatrix.test(transform)) {
-
-				// Get computed and set for next time
-				this.setTransform(transform = $.css(transformElem, 'transform'));
-			}
-
-			return transform || 'none';
-		},
-
-		/**
-		 * Retrieve the current transform matrix for $elem (or turn a transform into it's array values)
-		 * @param {String} [transform] matrix-formatted transform value
-		 * @returns {Array} Returns the current transform matrix split up into it's parts, or a default matrix
-		 */
-		getMatrix: function(transform) {
-			var matrix = rmatrix.exec(transform || this.getTransform());
-			if (matrix) {
-				matrix.shift();
-			}
-			return matrix || [ 1, 0, 0, 1, 0, 0 ];
-		},
-
-		/**
-		 * Get the current scale.
-		 * @param {String} [transform] matrix-formatted transform value
-		 * @returns {Number} Current scale relative to the initial scale (height / width = 1)
-		 */
-		getScale: function(matrix) {
-			return Math.sqrt(Math.pow(matrix[0], 2) + Math.pow(matrix[1], 2));
-		},
-
-		/**
-		 * Given a matrix object, quickly set the current matrix of the element
-		 * @param {Array|String} matrix
-		 * @param {Object} [options]
-		 * @param {Boolean|String} [options.animate] Whether to animate the transform change, or 'skip' indicating that it is unnecessary to set
-		 * @param {Boolean} [options.contain] Override the global contain option
-		 * @param {Boolean} [options.range] If true, $zoomRange's value will be updated.
-		 * @param {Boolean} [options.silent] If true, the change event will not be triggered
-		 * @returns {Array} Returns the newly-set matrix
-		 */
-		setMatrix: function(matrix, options) {
-			if (this.disabled) { return; }
-			if (!options) { options = {}; }
-			// Convert to array
-			if (typeof matrix === 'string') {
-				matrix = this.getMatrix(matrix);
-			}
-			var scale = this.getScale(matrix);
-			var contain = typeof options.contain !== 'undefined' ? options.contain : this.options.contain;
-
-			// Apply containment
-			if (contain) {
-				var dims = options.dims;
-				if (!dims) {
-					this.resetDimensions();
-					dims = this.dimensions;
-				}
-				var spaceWLeft, spaceWRight, scaleDiff;
-				var container = this.container;
-				var width = dims.width;
-				var height = dims.height;
-				var conWidth = container.width;
-				var conHeight = container.height;
-				var zoomAspectW = conWidth / width;
-				var zoomAspectH = conHeight / height;
-
-				// If the element is not naturally centered,
-				// assume full space right
-				if (this.$parent.css('textAlign') !== 'center' || $.css(this.elem, 'display') !== 'inline') {
-					// offsetWidth gets us the width without the transform
-					scaleDiff = (width - this.elem.offsetWidth) / 2;
-					spaceWLeft = scaleDiff - dims.border.left;
-					spaceWRight = width - conWidth - scaleDiff + dims.border.right;
-				} else {
-					spaceWLeft = spaceWRight = ((width - conWidth) / 2);
-				}
-				var spaceHTop = ((height - conHeight) / 2) + dims.border.top;
-				var spaceHBottom = ((height - conHeight) / 2) - dims.border.top - dims.border.bottom;
-
-				if (contain === 'invert' || contain === 'automatic' && zoomAspectW < 1.01) {
-					matrix[4] = Math.max(Math.min(matrix[4], spaceWLeft - dims.border.left), -spaceWRight);
-				} else {
-					matrix[4] = Math.min(Math.max(matrix[4], spaceWLeft), -spaceWRight);
-				}
-
-				if (contain === 'invert' || (contain === 'automatic' && zoomAspectH < 1.01)) {
-					matrix[5] = Math.max(Math.min(matrix[5], spaceHTop - dims.border.top), -spaceHBottom);
-				} else {
-					matrix[5] = Math.min(Math.max(matrix[5], spaceHTop), -spaceHBottom);
-				}
-			}
-
-			// Animate
-			if (options.animate !== 'skip') {
-				// Set transition
-				this.transition(!options.animate);
-			}
-
-			// Update range element
-			if (options.range) {
-				this.$zoomRange.val(scale);
-			}
-
-			// Set the matrix on this.$set
-			if (this.options.disableXAxis || this.options.disableYAxis) {
-				var originalMatrix = this.getMatrix();
-				if (this.options.disableXAxis) {
-					matrix[4] = originalMatrix[4];
-				}
-				if (this.options.disableYAxis) {
-					matrix[5] = originalMatrix[5];
-				}
-			}
-			this.setTransform('matrix(' + matrix.join(',') + ')');
-
-			this.scale = scale;
-
-			// Disable/enable panning if zooming is at minimum and panOnlyWhenZoomed is true
-			this._checkPanWhenZoomed(scale);
-
-			if (!options.silent) {
-				this._trigger('change', matrix);
-			}
-
-			return matrix;
-		},
-
-		/**
-		 * @returns {Boolean} Returns whether the panzoom element is currently being dragged
-		 */
-		isPanning: function() {
-			return this.panning;
-		},
-
-		/**
-		 * Apply the current transition to the element, if allowed
-		 * @param {Boolean} [off] Indicates that the transition should be turned off
-		 */
-		transition: function(off) {
-			if (!this._transition) { return; }
-			var transition = off || !this.options.transition ? 'none' : this._transition;
-			var $set = this.$set;
-			var i = $set.length;
-			while(i--) {
-				// Avoid reflows when zooming
-				if ($.style($set[i], 'transition') !== transition) {
-					$.style($set[i], 'transition', transition);
-				}
-			}
-		},
-
-		/**
-		 * Pan the element to the specified translation X and Y
-		 * Note: this is not the same as setting jQuery#offset() or jQuery#position()
-		 * @param {Number} x
-		 * @param {Number} y
-		 * @param {Object} [options] These options are passed along to setMatrix
-		 * @param {Array} [options.matrix] The matrix being manipulated (if already known so it doesn't have to be retrieved again)
-		 * @param {Boolean} [options.silent] Silence the pan event. Note that this will also silence the setMatrix change event.
-		 * @param {Boolean} [options.relative] Make the x and y values relative to the existing matrix
-		 */
-		pan: function(x, y, options) {
-			if (this.options.disablePan) { return; }
-			if (!options) { options = {}; }
-			var matrix = options.matrix;
-			if (!matrix) {
-				matrix = this.getMatrix();
-			}
-			// Cast existing matrix values to numbers
-			if (options.relative) {
-				x += +matrix[4];
-				y += +matrix[5];
-			}
-			matrix[4] = x;
-			matrix[5] = y;
-			this.setMatrix(matrix, options);
-			if (!options.silent) {
-				this._trigger('pan', matrix[4], matrix[5]);
-			}
-		},
-
-		/**
-		 * Zoom in/out the element using the scale properties of a transform matrix
-		 * @param {Number|Boolean} [scale] The scale to which to zoom or a boolean indicating to transition a zoom out
-		 * @param {Object} [opts] All global options can be overwritten by this options object. For example, override the default increment.
-		 * @param {Boolean} [opts.noSetRange] Specify that the method should not set the $zoomRange value (as is the case when $zoomRange is calling zoom on change)
-		 * @param {jQuery.Event|Object} [opts.focal] A focal point on the panzoom element on which to zoom.
-		 *  If an object, set the clientX and clientY properties to the position relative to the parent
-		 * @param {Boolean} [opts.animate] Whether to animate the zoom (defaults to true if scale is not a number, false otherwise)
-		 * @param {Boolean} [opts.silent] Silence the zoom event
-		 * @param {Array} [opts.matrix] Optionally pass the current matrix so it doesn't need to be retrieved
-		 * @param {Number} [opts.dValue] Think of a transform matrix as four values a, b, c, d
-		 *  where a/d are the horizontal/vertical scale values and b/c are the skew values
-		 *  (5 and 6 of matrix array are the tx/ty transform values).
-		 *  Normally, the scale is set to both the a and d values of the matrix.
-		 *  This option allows you to specify a different d value for the zoom.
-		 *  For instance, to flip vertically, you could set -1 as the dValue.
-		 */
-		zoom: function(scale, opts) {
-			// Shuffle arguments
-			if (typeof scale === 'object') {
-				opts = scale;
-				scale = null;
-			} else if (!opts) {
-				opts = {};
-			}
-			var options = $.extend({}, this.options, opts);
-			// Check if disabled
-			if (options.disableZoom) { return; }
-			var animate = false;
-			var matrix = options.matrix || this.getMatrix();
-			var surfaceM = new Matrix(matrix);
-			var startScale = this.getScale(matrix);
-
-			// Calculate zoom based on increment
-			if (typeof scale !== 'number') {
-				if (options.linearZoom) {
-					scale = 1 + (options.increment * (scale ? -1 : 1)) / startScale;
-				} else {
-					scale = scale ? (1 / (1 + options.increment)) : (1 + options.increment);
-				}
-				animate = true;
-			} else {
-				scale = 1 / startScale;
-			}
-
-			// Constrain scale
-			scale = Math.max(Math.min(scale, options.maxScale / startScale), options.minScale / startScale);
-			var m = surfaceM.x(new Matrix(scale, 0, 0, 0, (typeof options.dValue === 'number' ? options.dValue / startScale : scale), 0));
-
-			// Calculate focal point based on scale
-			var focal = options.focal;
-			if (focal && !options.disablePan) {
-				// Adapted from code by Florian Günther
-				// https://github.com/florianguenther/zui53
-				this.resetDimensions();
-				var dims = options.dims = this.dimensions;
-				var clientX = focal.clientX;
-				var clientY = focal.clientY;
-
-				// Adjust the focal point for transform-origin 50% 50%
-				// SVG elements have a transform origin of 0 0
-				if (!this.isSVG) {
-					clientX -= (dims.width / startScale) / 2;
-					clientY -= (dims.height / startScale) / 2;
-				}
-
-				var clientV = new Vector(clientX, clientY, 1);
-				// Supply an offset manually if necessary
-				var o = this.parentOffset || this.$parent.offset();
-				var offsetM = new Matrix(1, 0, o.left - this.$doc.scrollLeft(), 0, 1, o.top - this.$doc.scrollTop());
-				var surfaceV = surfaceM.inverse().x(offsetM.inverse().x(clientV));
-				surfaceM = surfaceM.x(new Matrix([scale, 0, 0, scale, 0, 0]));
-				clientV = offsetM.x(surfaceM.x(surfaceV));
-				matrix[4] = +matrix[4] + (clientX - clientV.e(0));
-				matrix[5] = +matrix[5] + (clientY - clientV.e(1));
-			}
-
-			// Set the scale
-			matrix[0] = m.e(0);
-			matrix[1] = m.e(3);
-			matrix[2] = m.e(1);
-			matrix[3] = m.e(4);
-
-			// Calling zoom may still pan the element
-			this.setMatrix(matrix, {
-				animate: typeof options.animate !== 'undefined' ? options.animate : animate,
-				// Set the zoomRange value
-				range: !options.noSetRange
-			});
-
-			// Trigger zoom event
-			if (!options.silent) {
-				this._trigger('zoom', scale, options);
-			}
-		},
-
-		/**
-		 * Get/set option on an existing instance
-		 * @returns {Array|undefined} If getting, returns an array of all values
-		 *   on each instance for a given key. If setting, continue chaining by returning undefined.
-		 */
-		option: function(key, value) {
-			var options;
-			if (!key) {
-				// Avoids returning direct reference
-				return $.extend({}, this.options);
-			}
-
-			if (typeof key === 'string') {
-				if (arguments.length === 1) {
-					return this.options[ key ] !== undefined ?
-						this.options[ key ] :
-						null;
-				}
-				options = {};
-				options[ key ] = value;
-			} else {
-				options = key;
-			}
-
-			this._setOptions(options);
-		},
-
-		/**
-		 * Internally sets options
-		 * @param {Object} options - An object literal of options to set
-		 * @private
-		 */
-		_setOptions: function(options) {
-			$.each(options, $.proxy(function(key, value) {
-				switch(key) {
-					case 'disablePan':
-						this._resetStyle();
-						/* falls through */
-					case '$zoomIn':
-					case '$zoomOut':
-					case '$zoomRange':
-					case '$reset':
-					case 'disableZoom':
-					case 'onStart':
-					case 'onChange':
-					case 'onZoom':
-					case 'onPan':
-					case 'onEnd':
-					case 'onReset':
-					case 'eventNamespace':
-						this._unbind();
-				}
-				this.options[ key ] = value;
-				switch(key) {
-					case 'disablePan':
-						this._initStyle();
-						/* falls through */
-					case '$zoomIn':
-					case '$zoomOut':
-					case '$zoomRange':
-					case '$reset':
-						// Set these on the instance
-						this[ key ] = value;
-						/* falls through */
-					case 'disableZoom':
-					case 'onStart':
-					case 'onChange':
-					case 'onZoom':
-					case 'onPan':
-					case 'onEnd':
-					case 'onReset':
-					case 'eventNamespace':
-						this._bind();
-						break;
-					case 'cursor':
-						$.style(this.elem, 'cursor', value);
-						break;
-					case 'minScale':
-						this.$zoomRange.attr('min', value);
-						break;
-					case 'maxScale':
-						this.$zoomRange.attr('max', value);
-						break;
-					case 'rangeStep':
-						this.$zoomRange.attr('step', value);
-						break;
-					case 'startTransform':
-						this._buildTransform();
-						break;
-					case 'duration':
-					case 'easing':
-						this._buildTransition();
-						/* falls through */
-					case 'transition':
-						this.transition();
-						break;
-					case 'panOnlyWhenZoomed':
-						this._checkPanWhenZoomed();
-						break;
-					case '$set':
-						if (value instanceof $ && value.length) {
-							this.$set = value;
-							// Reset styles
-							this._initStyle();
-							this._buildTransform();
-						}
-				}
-			}, this));
-		},
-
-		/**
-		 * Disable/enable panning depending on whether the current scale
-		 * matches the minimum
-		 * @param {Number} [scale]
-		 * @private
-		 */
-		_checkPanWhenZoomed: function(scale) {
-			var options = this.options;
-			if (options.panOnlyWhenZoomed) {
-				if (!scale) {
-					scale = this.getMatrix()[0];
-				}
-				var toDisable = scale <= options.minScale;
-				if (options.disablePan !== toDisable) {
-					this.option('disablePan', toDisable);
-				}
-			}
-		},
-
-		/**
-		 * Initialize base styles for the element and its parent
-		 * @private
-		 */
-		_initStyle: function() {
-			var styles = {
-				// Set the same default whether SVG or HTML
-				// transform-origin cannot be changed to 50% 50% in IE9-11 or Edge 13-14+
-				'transform-origin': this.isSVG ? '0 0' : '50% 50%'
-			};
-			// Set elem styles
-			if (!this.options.disablePan) {
-				styles.cursor = this.options.cursor;
-			}
-			this.$set.css(styles);
-
-			// Set parent to relative if set to static
-			var $parent = this.$parent;
-			// No need to add styles to the body
-			if ($parent.length && !$.nodeName(this.parent, 'body')) {
-				styles = {
-					overflow: 'hidden'
-				};
-				if ($parent.css('position') === 'static') {
-					styles.position = 'relative';
-				}
-				$parent.css(styles);
-			}
-		},
-
-		/**
-		 * Undo any styles attached in this plugin
-		 * @private
-		 */
-		_resetStyle: function() {
-			this.$elem.css({
-				'cursor': '',
-				'transition': ''
-			});
-			this.$parent.css({
-				'overflow': '',
-				'position': ''
-			});
-		},
-
-		/**
-		 * Binds all necessary events
-		 * @private
-		 */
-		_bind: function() {
-			var self = this;
-			var options = this.options;
-			var ns = options.eventNamespace;
-			var str_down = 'mousedown' + ns + ' pointerdown' + ns + ' MSPointerDown' + ns;
-			var str_start = 'touchstart' + ns + ' ' + str_down;
-			var str_click = 'touchend' + ns + ' click' + ns + ' pointerup' + ns + ' MSPointerUp' + ns;
-			var events = {};
-			var $reset = this.$reset;
-			var $zoomRange = this.$zoomRange;
-
-			// Bind panzoom events from options
-			$.each([ 'Start', 'Change', 'Zoom', 'Pan', 'End', 'Reset' ], function() {
-				var m = options[ 'on' + this ];
-				if ($.isFunction(m)) {
-					events[ 'panzoom' + this.toLowerCase() + ns ] = m;
-				}
-			});
-
-			// Bind $elem drag and click/touchdown events
-			// Bind touchstart if either panning or zooming is enabled
-			if (!options.disablePan || !options.disableZoom) {
-				events[ str_start ] = function(e) {
-					var touches;
-					if (e.type === 'touchstart' ?
-						// Touch
-						(touches = e.touches || e.originalEvent.touches) &&
-							((touches.length === 1 && !options.disablePan) || touches.length === 2) :
-						// Mouse/Pointer: Ignore unexpected click types
-						// Support: IE10 only
-						// IE10 does not support e.button for MSPointerDown, but does have e.which
-						!options.disablePan && (e.which || e.originalEvent.which) === options.which) {
-
-						e.preventDefault();
-						e.stopPropagation();
-						self._startMove(e, touches);
-					}
-				};
-				// Prevent the contextmenu event
-				// if we're binding to right-click
-				if (options.which === 3) {
-					events.contextmenu = false;
-				}
-			}
-			this.$elem.on(events);
-
-			// Bind reset
-			if ($reset.length) {
-				$reset.on(str_click, function(e) {
-					e.preventDefault();
-					self.reset();
-				});
-			}
-
-			// Set default attributes for the range input
-			if ($zoomRange.length) {
-				$zoomRange.attr({
-					// Only set the range step if explicit or
-					// set the default if there is no attribute present
-					step: options.rangeStep === Panzoom.defaults.rangeStep &&
-						$zoomRange.attr('step') ||
-						options.rangeStep,
-					min: options.minScale,
-					max: options.maxScale
-				}).prop({
-					value: this.getMatrix()[0]
-				});
-			}
-
-			// No bindings if zooming is disabled
-			if (options.disableZoom) {
-				return;
-			}
-
-			var $zoomIn = this.$zoomIn;
-			var $zoomOut = this.$zoomOut;
-
-			// Bind zoom in/out
-			// Don't bind one without the other
-			if ($zoomIn.length && $zoomOut.length) {
-				// preventDefault cancels future mouse events on touch events
-				$zoomIn.on(str_click, function(e) {
-					e.preventDefault();
-					self.zoom();
-				});
-				$zoomOut.on(str_click, function(e) {
-					e.preventDefault();
-					self.zoom(true);
-				});
-			}
-
-			if ($zoomRange.length) {
-				events = {};
-				// Cannot prevent default action here
-				events[ str_down ] = function() {
-					self.transition(true);
-				};
-				// Zoom on input events if available and change events
-				// See https://github.com/timmywil/jquery.panzoom/issues/90
-				events[ (supportsInputEvent ? 'input' : 'change') + ns ] = function() {
-					self.zoom(+this.value, { noSetRange: true });
-				};
-				$zoomRange.on(events);
-			}
-		},
-
-		/**
-		 * Unbind all events
-		 * @private
-		 */
-		_unbind: function() {
-			this.$elem
-				.add(this.$zoomIn)
-				.add(this.$zoomOut)
-				.add(this.$reset)
-				.off(this.options.eventNamespace);
-		},
-
-		/**
-		 * Builds the original transform value
-		 * @private
-		 */
-		_buildTransform: function() {
-			// Save the original transform
-			// Retrieving this also adds the correct prefixed style name
-			// to jQuery's internal $.cssProps
-			return this._origTransform = this.getTransform(this.options.startTransform);
-		},
-
-		/**
-		 * Set transition property for later use when zooming
-		 * @private
-		 */
-		_buildTransition: function() {
-			if (this._transform) {
-				var options = this.options;
-				this._transition = this._transform + ' ' + options.duration + 'ms ' + options.easing;
-			}
-		},
-
-		/**
-		 * Calculates the distance between two touch points
-		 * Remember pythagorean?
-		 * @param {Array} touches
-		 * @returns {Number} Returns the distance
-		 * @private
-		 */
-		_getDistance: function(touches) {
-			var touch1 = touches[0];
-			var touch2 = touches[1];
-			return Math.sqrt(Math.pow(Math.abs(touch2.clientX - touch1.clientX), 2) + Math.pow(Math.abs(touch2.clientY - touch1.clientY), 2));
-		},
-
-		/**
-		 * Constructs an approximated point in the middle of two touch points
-		 * @returns {Object} Returns an object containing pageX and pageY
-		 * @private
-		 */
-		_getMiddle: function(touches) {
-			var touch1 = touches[0];
-			var touch2 = touches[1];
-			return {
-				clientX: ((touch2.clientX - touch1.clientX) / 2) + touch1.clientX,
-				clientY: ((touch2.clientY - touch1.clientY) / 2) + touch1.clientY
-			};
-		},
-
-		/**
-		 * Trigger a panzoom event on our element
-		 * The event is passed the Panzoom instance
-		 * @param {String|jQuery.Event} event
-		 * @param {Mixed} arg1[, arg2, arg3, ...] Arguments to append to the trigger
-		 * @private
-		 */
-		_trigger: function (event) {
-			if (typeof event === 'string') {
-				event = 'panzoom' + event;
-			}
-			this.$elem.triggerHandler(event, [this].concat(slice.call(arguments, 1)));
-		},
-
-		/**
-		 * Starts the pan
-		 * This is bound to mouse/touchmove on the element
-		 * @param {jQuery.Event} event An event with pageX, pageY, and possibly the touches list
-		 * @param {TouchList} [touches] The touches list if present
-		 * @private
-		 */
-		_startMove: function(event, touches) {
-			if (this.panning) {
-				return;
-			}
-			var moveEvent, endEvent,
-				startDistance, startScale, startMiddle,
-				startPageX, startPageY, touch;
-			var self = this;
-			var options = this.options;
-			var ns = options.eventNamespace;
-			var matrix = this.getMatrix();
-			var original = matrix.slice(0);
-			var origPageX = +original[4];
-			var origPageY = +original[5];
-			var panOptions = { matrix: matrix, animate: 'skip' };
-			var type = event.type;
-
-			// Use proper events
-			if (type === 'pointerdown') {
-				moveEvent = 'pointermove';
-				endEvent = 'pointerup';
-			} else if (type === 'touchstart') {
-				moveEvent = 'touchmove';
-				endEvent = 'touchend';
-			} else if (type === 'MSPointerDown') {
-				moveEvent = 'MSPointerMove';
-				endEvent = 'MSPointerUp';
-			} else {
-				moveEvent = 'mousemove';
-				endEvent = 'mouseup';
-			}
-
-			// Add namespace
-			moveEvent += ns;
-			endEvent += ns;
-
-			// Remove any transitions happening
-			this.transition(true);
-
-			// Indicate that we are currently panning
-			this.panning = true;
-
-			// Trigger start event
-			this._trigger('start', event, touches);
-
-			var setStart = function(event, touches) {
-				if (touches) {
-					if (touches.length === 2) {
-						if (startDistance != null) {
-							return;
-						}
-						startDistance = self._getDistance(touches);
-						startScale = self.getScale(matrix);
-						startMiddle = self._getMiddle(touches);
-						return;
-					}
-					if (startPageX != null) {
-						return;
-					}
-					if ((touch = touches[0])) {
-						startPageX = touch.pageX;
-						startPageY = touch.pageY;
-					}
-				}
-				if (startPageX != null) {
-					return;
-				}
-				startPageX = event.pageX;
-				startPageY = event.pageY;
-			};
-
-			setStart(event, touches);
-
-			var move = function(e) {
-				var coords;
-				e.preventDefault();
-				touches = e.touches || e.originalEvent.touches;
-				setStart(e, touches);
-
-				if (touches) {
-					if (touches.length === 2) {
-
-						// Calculate move on middle point
-						var middle = self._getMiddle(touches);
-						var diff = self._getDistance(touches) - startDistance;
-
-						// Set zoom
-						self.zoom(diff * (options.increment / 100) + startScale, {
-							focal: middle,
-							matrix: matrix,
-							animate: 'skip'
-						});
-
-						// Set pan
-						self.pan(
-							+matrix[4] + middle.clientX - startMiddle.clientX,
-							+matrix[5] + middle.clientY - startMiddle.clientY,
-							panOptions
-						);
-						startMiddle = middle;
-						return;
-					}
-					coords = touches[0] || { pageX: 0, pageY: 0 };
-				}
-
-				if (!coords) {
-					coords = e;
-				}
-
-				self.pan(
-					origPageX + coords.pageX - startPageX,
-					origPageY + coords.pageY - startPageY,
-					panOptions
-				);
-			};
-
-			// Bind the handlers
-			$(document)
-				.off(ns)
-				.on(moveEvent, move)
-				.on(endEvent, function(e) {
-					e.preventDefault();
-					// Unbind all document events
-					$(this).off(ns);
-					self.panning = false;
-					// Trigger our end event
-					// Simply set the type to "panzoomend" to pass through all end properties
-					// jQuery's `not` is used here to compare Array equality
-					e.type = 'panzoomend';
-					self._trigger(e, matrix, !matrixEquals(matrix, original));
-				});
-		}
-	};
-
-	// Add Panzoom as a static property
-	$.Panzoom = Panzoom;
-
-	/**
-	 * Extend jQuery
-	 * @param {Object|String} options - The name of a method to call on the prototype
-	 *  or an object literal of options
-	 * @returns {jQuery|Mixed} jQuery instance for regular chaining or the return value(s) of a panzoom method call
-	 */
-	$.fn.panzoom = function(options) {
-		var instance, args, m, ret;
-
-		// Call methods widget-style
-		if (typeof options === 'string') {
-			ret = [];
-			args = slice.call(arguments, 1);
-			this.each(function() {
-				instance = $.data(this, datakey);
-
-				if (!instance) {
-					ret.push(undefined);
-
-				// Ignore methods beginning with `_`
-				} else if (options.charAt(0) !== '_' &&
-					typeof (m = instance[ options ]) === 'function' &&
-					// If nothing is returned, do not add to return values
-					(m = m.apply(instance, args)) !== undefined) {
-
-					ret.push(m);
-				}
-			});
-
-			// Return an array of values for the jQuery instances
-			// Or the value itself if there is only one
-			// Or keep chaining
-			return ret.length ?
-				(ret.length === 1 ? ret[0] : ret) :
-				this;
-		}
-
-		return this.each(function() { new Panzoom(this, options); });
-	};
-
-	return Panzoom;
-}));
+// These values are established by empiricism with tests (tradeoff: performance VS precision)
+var NEWTON_ITERATIONS = 4;
+var NEWTON_MIN_SLOPE = 0.001;
+var SUBDIVISION_PRECISION = 0.0000001;
+var SUBDIVISION_MAX_ITERATIONS = 10;
+
+var kSplineTableSize = 11;
+var kSampleStepSize = 1.0 / (kSplineTableSize - 1.0);
+
+var float32ArraySupported = typeof Float32Array === 'function';
+
+function A (aA1, aA2) { return 1.0 - 3.0 * aA2 + 3.0 * aA1; }
+function B (aA1, aA2) { return 3.0 * aA2 - 6.0 * aA1; }
+function C (aA1)      { return 3.0 * aA1; }
+
+// Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
+function calcBezier (aT, aA1, aA2) { return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT; }
+
+// Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
+function getSlope (aT, aA1, aA2) { return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1); }
+
+function binarySubdivide (aX, aA, aB, mX1, mX2) {
+  var currentX, currentT, i = 0;
+  do {
+    currentT = aA + (aB - aA) / 2.0;
+    currentX = calcBezier(currentT, mX1, mX2) - aX;
+    if (currentX > 0.0) {
+      aB = currentT;
+    } else {
+      aA = currentT;
+    }
+  } while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
+  return currentT;
+}
+
+function newtonRaphsonIterate (aX, aGuessT, mX1, mX2) {
+ for (var i = 0; i < NEWTON_ITERATIONS; ++i) {
+   var currentSlope = getSlope(aGuessT, mX1, mX2);
+   if (currentSlope === 0.0) {
+     return aGuessT;
+   }
+   var currentX = calcBezier(aGuessT, mX1, mX2) - aX;
+   aGuessT -= currentX / currentSlope;
+ }
+ return aGuessT;
+}
+
+function LinearEasing (x) {
+  return x;
+}
+
+module.exports = function bezier (mX1, mY1, mX2, mY2) {
+  if (!(0 <= mX1 && mX1 <= 1 && 0 <= mX2 && mX2 <= 1)) {
+    throw new Error('bezier x values must be in [0, 1] range');
+  }
+
+  if (mX1 === mY1 && mX2 === mY2) {
+    return LinearEasing;
+  }
+
+  // Precompute samples table
+  var sampleValues = float32ArraySupported ? new Float32Array(kSplineTableSize) : new Array(kSplineTableSize);
+  for (var i = 0; i < kSplineTableSize; ++i) {
+    sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
+  }
+
+  function getTForX (aX) {
+    var intervalStart = 0.0;
+    var currentSample = 1;
+    var lastSample = kSplineTableSize - 1;
+
+    for (; currentSample !== lastSample && sampleValues[currentSample] <= aX; ++currentSample) {
+      intervalStart += kSampleStepSize;
+    }
+    --currentSample;
+
+    // Interpolate to provide an initial guess for t
+    var dist = (aX - sampleValues[currentSample]) / (sampleValues[currentSample + 1] - sampleValues[currentSample]);
+    var guessForT = intervalStart + dist * kSampleStepSize;
+
+    var initialSlope = getSlope(guessForT, mX1, mX2);
+    if (initialSlope >= NEWTON_MIN_SLOPE) {
+      return newtonRaphsonIterate(aX, guessForT, mX1, mX2);
+    } else if (initialSlope === 0.0) {
+      return guessForT;
+    } else {
+      return binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2);
+    }
+  }
+
+  return function BezierEasing (x) {
+    // Because JavaScript number are imprecise, we should guarantee the extremes are right.
+    if (x === 0) {
+      return 0;
+    }
+    if (x === 1) {
+      return 1;
+    }
+    return calcBezier(getTForX(x), mY1, mY2);
+  };
+};
+
+},{}],9:[function(require,module,exports){
+module.exports = function(subject) {
+  validateSubject(subject);
+
+  var eventsStorage = createEventsStorage(subject);
+  subject.on = eventsStorage.on;
+  subject.off = eventsStorage.off;
+  subject.fire = eventsStorage.fire;
+  return subject;
+};
+
+function createEventsStorage(subject) {
+  // Store all event listeners to this hash. Key is event name, value is array
+  // of callback records.
+  //
+  // A callback record consists of callback function and its optional context:
+  // { 'eventName' => [{callback: function, ctx: object}] }
+  var registeredEvents = Object.create(null);
+
+  return {
+    on: function (eventName, callback, ctx) {
+      if (typeof callback !== 'function') {
+        throw new Error('callback is expected to be a function');
+      }
+      var handlers = registeredEvents[eventName];
+      if (!handlers) {
+        handlers = registeredEvents[eventName] = [];
+      }
+      handlers.push({callback: callback, ctx: ctx});
+
+      return subject;
+    },
+
+    off: function (eventName, callback) {
+      var wantToRemoveAll = (typeof eventName === 'undefined');
+      if (wantToRemoveAll) {
+        // Killing old events storage should be enough in this case:
+        registeredEvents = Object.create(null);
+        return subject;
+      }
+
+      if (registeredEvents[eventName]) {
+        var deleteAllCallbacksForEvent = (typeof callback !== 'function');
+        if (deleteAllCallbacksForEvent) {
+          delete registeredEvents[eventName];
+        } else {
+          var callbacks = registeredEvents[eventName];
+          for (var i = 0; i < callbacks.length; ++i) {
+            if (callbacks[i].callback === callback) {
+              callbacks.splice(i, 1);
+            }
+          }
+        }
+      }
+
+      return subject;
+    },
+
+    fire: function (eventName) {
+      var callbacks = registeredEvents[eventName];
+      if (!callbacks) {
+        return subject;
+      }
+
+      var fireArguments;
+      if (arguments.length > 1) {
+        fireArguments = Array.prototype.splice.call(arguments, 1);
+      }
+      for(var i = 0; i < callbacks.length; ++i) {
+        var callbackInfo = callbacks[i];
+        callbackInfo.callback.apply(callbackInfo.ctx, fireArguments);
+      }
+
+      return subject;
+    }
+  };
+}
+
+function validateSubject(subject) {
+  if (!subject) {
+    throw new Error('Eventify cannot use falsy object as events subject');
+  }
+  var reservedWords = ['on', 'fire', 'off'];
+  for (var i = 0; i < reservedWords.length; ++i) {
+    if (subject.hasOwnProperty(reservedWords[i])) {
+      throw new Error("Subject cannot be eventified, since it already has property '" + reservedWords[i] + "'");
+    }
+  }
+}
+
+},{}],10:[function(require,module,exports){
+/**
+ * This module unifies handling of mouse whee event across different browsers
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel?redirectlocale=en-US&redirectslug=DOM%2FMozilla_event_reference%2Fwheel
+ * for more details
+ *
+ * Usage:
+ *  var addWheelListener = require('wheel').addWheelListener;
+ *  var removeWheelListener = require('wheel').removeWheelListener;
+ *  addWheelListener(domElement, function (e) {
+ *    // mouse wheel event
+ *  });
+ *  removeWheelListener(domElement, function);
+ */
+// by default we shortcut to 'addEventListener':
+
+module.exports = addWheelListener;
+
+// But also expose "advanced" api with unsubscribe:
+module.exports.addWheelListener = addWheelListener;
+module.exports.removeWheelListener = removeWheelListener;
+
+
+var prefix = "", _addEventListener, _removeEventListener,  support;
+
+detectEventModel(typeof window !== 'undefined' && window,
+                typeof document !== 'undefined' && document);
+
+function addWheelListener( elem, callback, useCapture ) {
+    _addWheelListener( elem, support, callback, useCapture );
+
+    // handle MozMousePixelScroll in older Firefox
+    if( support == "DOMMouseScroll" ) {
+        _addWheelListener( elem, "MozMousePixelScroll", callback, useCapture );
+    }
+}
+
+function removeWheelListener( elem, callback, useCapture ) {
+    _removeWheelListener( elem, support, callback, useCapture );
+
+    // handle MozMousePixelScroll in older Firefox
+    if( support == "DOMMouseScroll" ) {
+        _removeWheelListener( elem, "MozMousePixelScroll", callback, useCapture );
+    }
+}
+
+  // TODO: in theory this anonymous function may result in incorrect
+  // unsubscription in some browsers. But in practice, I don't think we should
+  // worry too much about it (those browsers are on the way out)
+function _addWheelListener( elem, eventName, callback, useCapture ) {
+  elem[ _addEventListener ]( prefix + eventName, support == "wheel" ? callback : function(originalEvent ) {
+    !originalEvent && ( originalEvent = window.event );
+
+    // create a normalized event object
+    var event = {
+      // keep a ref to the original event object
+      originalEvent: originalEvent,
+      target: originalEvent.target || originalEvent.srcElement,
+      type: "wheel",
+      deltaMode: originalEvent.type == "MozMousePixelScroll" ? 0 : 1,
+      deltaX: 0,
+      deltaY: 0,
+      deltaZ: 0,
+      clientX: originalEvent.clientX,
+      clientY: originalEvent.clientY,
+      preventDefault: function() {
+        originalEvent.preventDefault ?
+            originalEvent.preventDefault() :
+            originalEvent.returnValue = false;
+      },
+      stopPropagation: function() {
+        if(originalEvent.stopPropagation)
+          originalEvent.stopPropagation();
+      },
+      stopImmediatePropagation: function() {
+        if(originalEvent.stopImmediatePropagation)
+          originalEvent.stopImmediatePropagation();
+      }
+    };
+
+    // calculate deltaY (and deltaX) according to the event
+    if ( support == "mousewheel" ) {
+      event.deltaY = - 1/40 * originalEvent.wheelDelta;
+      // Webkit also support wheelDeltaX
+      originalEvent.wheelDeltaX && ( event.deltaX = - 1/40 * originalEvent.wheelDeltaX );
+    } else {
+      event.deltaY = originalEvent.detail;
+    }
+
+    // it's time to fire the callback
+    return callback( event );
+
+  }, {
+    capture: useCapture || false ,
+    passive: false
+  });
+}
+
+function _removeWheelListener( elem, eventName, callback, useCapture ) {
+  elem[ _removeEventListener ]( prefix + eventName, callback, useCapture || false );
+}
+
+function detectEventModel(window, document) {
+  if ( window && window.addEventListener ) {
+      _addEventListener = "addEventListener";
+      _removeEventListener = "removeEventListener";
+  } else {
+      _addEventListener = "attachEvent";
+      _removeEventListener = "detachEvent";
+      prefix = "on";
+  }
+
+  if (document) {
+    // detect available wheel event
+    support = "onwheel" in document.createElement("div") ? "wheel" : // Modern browsers support "wheel"
+              document.onmousewheel !== undefined ? "mousewheel" : // Webkit and IE support at least "mousewheel"
+              "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
+  } else {
+    support = "wheel";
+  }
+}
+
+},{}]},{},[1])(1)
+});
