@@ -131,6 +131,13 @@
                             = link_to (floorplate.floor_name_added ? floorplate.floor_name : floor),'javascript:;;', :class=>"floorplate-anchor #{floor == @floors.first ? 'selected' : ''}",:id=>floor, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"top"
 
 
+        .buttons{:style=>"position: absolute; right: 10px; top: 5px;z-index:9999;"}
+          %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls{:href => "#"}
+            %i.fa.fa-plus
+          %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls{:href => "#"}
+            %i.fa.fa-minus
+          %a.btn.btn-sm.btn-primary.reset.zoom-controls{:href => "#"}
+            %i.fa.fa-refresh
         .right-side.parent#panzomm-container
           / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
           .image-map#map#zoomable
@@ -245,14 +252,9 @@
               - else
                 - @amenities.each do |amenity|
                   - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                    = link_to "<span class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>""#amenity.name
-          .buttons{:style=>"position: absolute; right: 10px; top: 5px;"}
-            %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls{:href => "#"}
-              %i.fa.fa-plus
-            %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls{:href => "#"}
-              %i.fa.fa-minus
-            %a.btn.btn-sm.btn-primary.reset.zoom-controls{:href => "#"}
-              %i.fa.fa-refresh
+
+                    = link_to "<span class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
+          
           .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:1px;width:100%;"}
             %strong Oops!
             There is nothing available on this floor that matches the parameters that you have selected.

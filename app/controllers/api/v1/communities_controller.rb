@@ -2,6 +2,14 @@ class Api::V1::CommunitiesController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   before_action :set_community, only: :email_favorites
   @@counter = 0
+
+  def test_panzoom
+    puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'
+    puts params["keyCode"]
+    puts '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
+    render :json=> {:success=>true, :message => "#{params['id']}", :operation => "zoom"}
+  end
+
   def login
     begin
       str = params[:community_string]

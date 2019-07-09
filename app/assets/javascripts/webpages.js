@@ -139,34 +139,8 @@ $(window).bind('load', function () {
     });
     ////////////////////////////////////////////
 
-    // var tapped=false;
-    // $("#panzomm-container").on("touchstart",function(e){
-    //     if(!tapped){
-    //       tapped=setTimeout(function(){
-    //           console.log("singler");
-    //           tapped=null
-    //       },300); //wait 300ms
-    //     } else {
-    //       clearTimeout(tapped);
-    //       tapped=null
-    //       console.log("dobl");
-    //     }
-    //     e.preventDefault()
-    // });
     
-
-    // var elem = $("#zoomable").panzoom({
-    //   increment: 0.4,
-    //   minScale: 0.1,
-    //   maxScale: 2,
-    //   duration: 500,
-    //   $reset: $(".reset"),
-    //  $zoomIn: $(".zoom-in"),
-    //  $zoomOut: $(".zoom-out"),
-    //  contain: 'invert'
-    // });
-    
-    $('#zoomable a').on('mousedown touchstart', function (e) {
+    $('#zoomable a').on('touchstart', function (e) {
       e.stopImmediatePropagation();
     });
 
@@ -181,9 +155,11 @@ $(window).bind('load', function () {
         onTouch: function(e) {
           
           
-          // `e` - is current touch event.
+        //   // `e` - is current touch event.
+          // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
+          
           e.preventDefault();
-          $(e.path[1]).click();
+         // $(e.path[1]).click();
           return false; // tells the library to not preventDefault.
         }
       });
