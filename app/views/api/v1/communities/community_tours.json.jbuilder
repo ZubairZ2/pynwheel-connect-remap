@@ -31,6 +31,9 @@ json.tours @tours do |tour|
           lease_pricing << h
 
         end
+      else
+        h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
+        lease_pricing << h
       end
       stop_dat = {"floorplan" => Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
