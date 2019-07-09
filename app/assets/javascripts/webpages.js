@@ -1,7 +1,6 @@
 $(window).bind('load', function () {
   if ($('.is-webpage')[0]) {
 
-
     // $(".panzoom").addClass("transform-none");
     // $(document).on("click touchstart", ".zoom-controls", function () {
     //   $(".panzoom").removeClass("transform-none");
@@ -46,6 +45,16 @@ $(window).bind('load', function () {
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function (e) {
+      
+      document.querySelector('meta[name="viewport"]').content = 'width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0';
+      if(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream){
+        document.querySelector('meta[name=viewport]')
+          .setAttribute(
+            'content',
+            'initial-scale=1.0001, minimum-scale=1.0001, maximum-scale=1.0001, user-scalable=no'
+          );
+      }
+
       $('.unit-buttons').empty();
       $('.unit-buttons').addClass('hidden');
       if ($('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).length > 1) {
@@ -141,9 +150,9 @@ $(window).bind('load', function () {
     var $area = document.getElementById('zoomable');
     window.pz = panzoom($area, 
       {
-        bounds: true, contain: 'invert', smoothScroll: false,
-        maxZoom: 10,
-        minZoom: 0.1,
+        bounds: true, contain: 'automatic', smoothScroll: false,
+        maxZoom: 5,
+        minZoom: 1,
         zoomDoubleClickSpeed: 1,
        
         onTouch: function(e) {
@@ -151,7 +160,7 @@ $(window).bind('load', function () {
           
         //   // `e` - is current touch event.
           // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
-          
+
           e.preventDefault();
          // $(e.path[1]).click();
           return false; // tells the library to not preventDefault.
