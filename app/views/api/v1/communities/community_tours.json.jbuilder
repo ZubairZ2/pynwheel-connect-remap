@@ -27,11 +27,12 @@ json.tours @tours do |tour|
           str = ss.split(':')
 
           pricing_str = str[0]+" Month - $"+str[1]
-          h = {"pricing option" => pricing_str}
+          h = {"pricing_option" => pricing_str}
           lease_pricing << h
 
         end
       end
+      byebug
       stop_dat = {"floorplan" => Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
