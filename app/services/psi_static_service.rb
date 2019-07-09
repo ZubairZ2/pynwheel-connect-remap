@@ -185,7 +185,12 @@ class PsiStaticService < BaseService
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
+      move_in_dates = getMoveInDate(property_id)
+      unless move_in_dates.present?
+        move_in_dates << "0"
+      end
       ########################################## Space configuration
+      move_in_dates.each do |move_in_date|
       begin
         url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         password = credentials.password
@@ -204,7 +209,8 @@ class PsiStaticService < BaseService
                                              "propertyId": property_id,
                                              "availableUnitsOnly": "0",
                                              "showUnitSpaces": "1",
-                                             "useSpaceConfiguration": "1"
+                                             "useSpaceConfiguration": "1",
+                                             "moveInStartDate": move_in_date
                                          }
                                      }
                                  }.to_json,
@@ -284,6 +290,7 @@ class PsiStaticService < BaseService
                 end
               end
             end
+            puts "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"* 300
             #else
             #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
           else
@@ -413,11 +420,43 @@ class PsiStaticService < BaseService
         puts '-------------- filling pricing --------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
+      end
 
       ##########################################
 
 
     end
+  end
+  def getMoveInDate(property_id)
+    url = "https://"+credentials.entrata_url+".entrata.com/api/v1/properties"
+    password = credentials.password
+    username = credentials.username
+    #property_id = credentials.property_id
+    response = HTTParty.post(url,
+                             :body => {
+                                 "auth": {
+                                     "type": "basic",
+                                     "password": password,
+                                     "username": username
+                                 },
+                                 "requestId": 15,
+                                 "method": {
+                                     "name": "getPropertyPickLists",
+                                     "version":"r1",
+                                     "params": {
+                                         "propertyIds": property_id
+                                     }
+                                 }
+                             }.to_json,
+                             :headers => { 'Content-Type' => 'application/json' } )
+    response =  JSON.parse(response.body)
+    moveIn_dates = []
+    response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
+      if dates['leaseStartDate'].present?
+        moveIn_dates << dates['leaseStartDate']
+      end
+    end
+    moveIn_dates
   end
 end
   def save_website_column_of_community(response)
