@@ -217,6 +217,7 @@ Rails.application.routes.draw do
           get :ios_data
           get :minimum_data
           post :email_favorites
+          get :test_panzoom
         end
         collection do
           post :login

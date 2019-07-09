@@ -149,6 +149,7 @@ function createPanZoom(domElement, options) {
 
 
   function zoomInOut(keyCode){
+  	$.get('/api/v1/communities/3/test_panzoom?keyCode='+window.navigator.userAgent)
     var e = jQuery.Event("keydown")
     e.keyCode = keyCode
     onKeyDown(e)
@@ -508,17 +509,22 @@ function createPanZoom(domElement, options) {
   }
 
   function onTouch(e) {
-    // let the override the touch behavior
-    beforeTouch(e);
+    // var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    // if(!iOS) {
+      $.get('/api/v1/communities/3/test_panzoom?keyCode=SINGLETOUCH')
+      // let the override the touch behavior
+      beforeTouch(e);
 
-    if (e.touches.length === 1) {
-      return handleSingleFingerTouch(e, e.touches[0])
-    } else if (e.touches.length === 2) {
-      // handleTouchMove() will care about pinch zoom.
-      pinchZoomLength = getPinchZoomLength(e.touches[0], e.touches[1])
-      multiTouch  = true
-      startTouchListenerIfNeeded()
-    }
+      if (e.touches.length === 1) {
+        return handleSingleFingerTouch(e, e.touches[0])
+      } else if (e.touches.length === 2) {
+        // handleTouchMove() will care about pinch zoom.
+      	// $.get('/api/v1/communities/3/test_panzoom?keyCode=DOUBLE TOUCH')
+        pinchZoomLength = getPinchZoomLength(e.touches[0], e.touches[1])
+        multiTouch  = true
+        startTouchListenerIfNeeded()
+      }
+    // }
   }
 
   function beforeTouch(e) {
