@@ -131,7 +131,7 @@
                             = link_to (floorplate.floor_name_added ? floorplate.floor_name : floor),'javascript:;;', :class=>"floorplate-anchor #{floor == @floors.first ? 'selected' : ''}",:id=>floor, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"top"
 
 
-        .buttons{:style=>"position: absolute; right: 10px; top: 5px;z-index:9999;"}
+        .buttons{:style=>"position: absolute; right: 10px; top: 5px;z-index:999;"}
           %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls{:href => "#"}
             %i.fa.fa-plus
           %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls{:href => "#"}
