@@ -27,10 +27,16 @@ json.tours @tours do |tour|
           str = ss.split(':')
 
           pricing_str = str[0]+" Month - $"+str[1]
-          h = {"pricing_option" => pricing_str}
-          lease_pricing << h
+          # h = {"pricing_option" => pricing_str}
+          lease_pricing << pricing_str
 
         end
+        lease_pricing = lease_pricing.sort_by {|x| x[0..1].to_i}
+        lease_pricing2 = []
+        lease_pricing.each do |lp|
+          lease_pricing2 << {"pricing_option" => lp}
+        end
+        lease_pricing = lease_pricing2
       else
         h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
         lease_pricing << h
