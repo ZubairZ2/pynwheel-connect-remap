@@ -201,8 +201,8 @@
             - elsif fontsize.to_i > 32
               - margin_left_var = -1
             - else
-              - margin_left_var = 0
-            - top_margin_var = 0#(fontsize.to_i - 30)/ 1.7
+              - margin_left_var = -3
+            - top_margin_var = -2#(fontsize.to_i - 30)/ 1.7
 
             - if @community.theme_name.include?('gables')
               - amenity_marker_color = @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
@@ -351,8 +351,8 @@
 :javascript
 
   var window_height = window.innerHeight;
-  var diff = (8000/($(window).width()) * -1);
-  var diffL = (2000/($(window).width()) * -1);
+  var diff = (7500/($(window).width()) * -1);
+  var diffL = (4000/($(window).height()) * -1);
   // alert($(window).width());
   if ($(window).width() < 1500)
   {
