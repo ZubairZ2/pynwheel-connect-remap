@@ -1,10 +1,8 @@
 $(window).bind('load', function () {
-    $(window).resize(function() {
-        clearTimeout(window.resizedFinished);
-        window.resizedFinished = setTimeout(function(){
-            window.location.reload();
-        }, 350);
+    $( window ).on( "orientationchange", function( event ) {
+      window.location.reload();
     });
+     
   if ($('.is-webpage')[0]) {
 
     // $(".panzoom").addClass("transform-none");
@@ -45,22 +43,12 @@ $(window).bind('load', function () {
       $('#leasing-start-date').focus();
     });
     ////////////////////////////////////////////////
-    $('.panzoom a').on('mousedown touchstart', function (e) {
-      e.stopImmediatePropagation();
-    });
+    // $('.panzoom a').on('mousedown touchstart', function (e) {
+    //   e.stopImmediatePropagation();
+    // });
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function (e) {
-      
-      document.querySelector('meta[name="viewport"]').content = 'width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0';
-      if(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream){
-        document.querySelector('meta[name=viewport]')
-          .setAttribute(
-            'content',
-            'initial-scale=1.0001, minimum-scale=1.0001, maximum-scale=1.0001, user-scalable=no'
-          );
-      }
-
       $('.unit-buttons').empty();
       $('.unit-buttons').addClass('hidden');
       if ($('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).length > 1) {
@@ -147,12 +135,10 @@ $(window).bind('load', function () {
       $(this).parent().find('input').click();
     });
     ////////////////////////////////////////////
-
     
     $('#zoomable a').on('touchstart', function (e) {
       e.stopImmediatePropagation();
     });
-
     var $area = document.getElementById('zoomable');
     window.pz = panzoom($area, 
       {
@@ -162,92 +148,27 @@ $(window).bind('load', function () {
         zoomDoubleClickSpeed: 1,
        
         onTouch: function(e) {
-          
-          
-        //   // `e` - is current touch event.
+          // `e` - is current touch event.
           // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
-
           e.preventDefault();
-         // $(e.path[1]).click();
+          // $(e.path[1]).click();
           return false; // tells the library to not preventDefault.
         }
       });
-    var zoomInCount = 0
-    var zoomOutCount = 0
+    
     $(".reset").on('click', function (e) {
-      // window.pz.transformToScreen($('#zoomable').height(), $('#zoomable').width())
-      // if(zoomInCount > 0){
-      //   do{
-      //     window.pz.zoomInOut(189)
-      //     zoomInCount--
-      //   }while(zoomInCount != 0)
-      // }
-
-      // if(zoomOutCount > 0){
-      //   do{
-      //     window.pz.zoomInOut(187)
-      //     zoomOutCount--
-      //   }while(zoomOutCount != 0)
-      // }
       window.location.reload()
     });
     
     $(".zoom-in").on('click', function (e) {
-      zoomInCount++
       window.pz.zoomInOut(187);
     });
 
 
     $(".zoom-out").on('click', function (e) {
-      zoomOutCount++
       window.pz.zoomInOut(189);
     });
 
-
-
-    // $($area.nextElementSibling).find(".zoom-in").on("click", function( e ) { e.preventDefault(); $area.panzoom("zoom"); });
-    
-    // var elem = document.getElementById('easypz');
-    // debugger
-    // var a = new EasyPZ(elem);
-
-    // var area = document.querySelector('#easypz')
-    // // debugger
-    // panzoom(area)
-
-    // var zm = new Zoom(elem, {
-    //     rotate: true,
-    //     pan:true
-    // });
-    // var el = document.querySelector('#torotate');
-    // var pz = new PinchZoom(el, {tapZoomFactor: 2, maxZoom: 30, minZoom: 0.5});
-    // pz.enable();
-    /*panzoom functionality*/
-    // var $section = $('#panzomm-container');
-  
-    // $panzoom = $section.find('.panzoom').panzoom({
-    //   // $zoomIn: $section.find(".zoom-in"),
-    //   // $zoomOut: $section.find(".zoom-out"),
-    //   $reset: $section.find(".reset"),
-    //   $set: $section.find(".parent"),
-    //   contain: 'automatic',
-    //   minScale: 0.7,
-    //   which: 1,
-    //   increment: 0.4,
-    //   onTouch: function(e) {
-    //     // `e` - is current touch event.
-    //     debugger
-    //     return false; // tells the library to not preventDefault.
-    //   }
-    // });
-
-    // $section.on('mousewheel.focal', function (e) {
-    //   e.preventDefault();
-    //   $panzoom.panzoom('zoom', e.originalEvent.wheelDelta < 0, {
-    //       increment: 0.1,
-    //       focal: e
-    //   });
-    // });
     /////////////////////////////////////////////
     /*popover*/
     if (!hasTouch()) {

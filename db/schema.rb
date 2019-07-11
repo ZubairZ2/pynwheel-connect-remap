@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190619063444) do
+ActiveRecord::Schema.define(version: 20190705063340) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "pg_stat_statements"
 
   create_table "additional_images", force: :cascade do |t|
     t.string   "image"
@@ -41,8 +42,8 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.integer  "community_id"
     t.string   "standard_image_url"
     t.integer  "sort"
-    t.string   "stop_description"
     t.string   "access_code"
+    t.string   "directional_text"
     t.index ["amenityable_type", "amenityable_id"], name: "index_amenities_on_amenityable_type_and_amenityable_id", using: :btree
   end
 
@@ -51,15 +52,17 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.string   "image"
     t.string   "description"
     t.string   "name"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.string   "directional_text"
     t.index ["amenity_id"], name: "index_amenity_galleries_on_amenity_id", using: :btree
   end
 
   create_table "app_versions", force: :cascade do |t|
     t.string   "version"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.integer  "neighborhood_counter"
   end
 
   create_table "communities", force: :cascade do |t|
@@ -98,8 +101,8 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.string   "realpage_pricing_data"
     t.boolean  "realpage_pricing_data_uploaded", default: true
     t.boolean  "powered_by_btn",                 default: true
-    t.boolean  "is_vertical_app",                default: false
     t.string   "entrata_exception_logs"
+    t.boolean  "is_vertical_app",                default: false
     t.boolean  "show_tour_page"
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
@@ -159,6 +162,7 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.string   "entrata_url"
     t.string   "xml_filename"
     t.string   "xml_domain"
+    t.string   "data_error_message"
     t.index ["community_id"], name: "index_credentials_on_community_id", using: :btree
   end
 
@@ -349,8 +353,6 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.string   "application_background_image"
     t.boolean  "display_application_background_image",             default: false
     t.string   "application_background_color"
-    t.string   "button_on_bg_color_opacity"
-    t.string   "application_background_color_opacity"
     t.boolean  "display_apartment_nav_bg_image",                   default: false
     t.string   "apartment_nav_bg_image"
     t.boolean  "display_gallery_nav_bg_image",                     default: false
@@ -359,6 +361,8 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.string   "favourities_nav_bg_image"
     t.boolean  "display_additional_pages_nav_bg_image",            default: false
     t.string   "additional_pages_nav_bg_image"
+    t.string   "button_on_bg_color_opacity"
+    t.string   "application_background_color_opacity"
     t.string   "apartment_nav_bg_color"
     t.string   "gallery_nav_bg_color"
     t.string   "favourities_nav_bg_color"
@@ -706,6 +710,13 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.index ["community_id"], name: "index_neighborhoods_on_community_id", using: :btree
   end
 
+  create_table "neighbourhood_logs", force: :cascade do |t|
+    t.string   "from_ip"
+    t.string   "cat"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "sitemaps", force: :cascade do |t|
     t.string   "image"
     t.integer  "community_id"
@@ -746,10 +757,10 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.decimal  "longitude"
     t.integer  "stop_id"
     t.string   "stop_type"
-    t.integer  "sort"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string   "name"
+    t.integer  "sort"
     t.index ["tour_id"], name: "index_tour_stops_on_tour_id", using: :btree
   end
 
@@ -792,6 +803,7 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.integer  "x_plot",                    default: 0
     t.integer  "y_plot",                    default: 0
     t.integer  "floorplate_id"
+    t.integer  "lease_term",                default: 12
     t.string   "image"
     t.integer  "floor"
     t.string   "standard_image_url"
@@ -844,10 +856,10 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.integer  "invitations_count",             default: 0
     t.integer  "company_id"
     t.string   "company_name"
-    t.boolean  "welcome_prompt",                default: false
     t.string   "community_logs"
     t.string   "entrata_list_logs"
     t.string   "entrata_function_logs"
+    t.boolean  "welcome_prompt",                default: false
     t.boolean  "welcome_property_details_page", default: false
     t.boolean  "welcome_logo_page",             default: false
     t.boolean  "welcome_homepage_page",         default: false
@@ -876,6 +888,8 @@ ActiveRecord::Schema.define(version: 20190619063444) do
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
     t.integer  "tour_id"
+    t.string   "device_id"
+    t.string   "tour_key"
     t.index ["tour_user_id"], name: "index_visited_stops_on_tour_user_id", using: :btree
   end
 
