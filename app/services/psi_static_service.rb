@@ -196,26 +196,48 @@ class PsiStaticService < BaseService
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
-        response = HTTParty.post(url,
-                                 :body => {
-                                     "auth": {
-                                         "type": "basic",
-                                         "password": password,
-                                         "username": username
-                                     },
-                                     "method": {
-                                         "name": "getUnitsAvailabilityAndPricing",
-                                         "params": {
-                                             "propertyId": property_id,
-                                             "availableUnitsOnly": "0",
-                                             "showUnitSpaces": "1",
-                                             "useSpaceConfiguration": "1",
-                                             "moveInStartDate": move_in_date
-                                         }
-                                     }
-                                 }.to_json,
-                                 :headers => { 'Content-Type' => 'application/json' } )
-        response =  JSON.parse(response.body)
+        if move_in_date == "0"
+          response = HTTParty.post(url,
+                                   :body => {
+                                       "auth": {
+                                           "type": "basic",
+                                           "password": password,
+                                           "username": username
+                                       },
+                                       "method": {
+                                           "name": "getUnitsAvailabilityAndPricing",
+                                           "params": {
+                                               "propertyId": property_id,
+                                               "availableUnitsOnly": "0",
+                                               "showUnitSpaces": "1",
+                                               "useSpaceConfiguration": "1"
+                                           }
+                                       }
+                                   }.to_json,
+                                   :headers => { 'Content-Type' => 'application/json' } )
+          response =  JSON.parse(response.body)
+        else
+          response = HTTParty.post(url,
+                                   :body => {
+                                       "auth": {
+                                           "type": "basic",
+                                           "password": password,
+                                           "username": username
+                                       },
+                                       "method": {
+                                           "name": "getUnitsAvailabilityAndPricing",
+                                           "params": {
+                                               "propertyId": property_id,
+                                               "availableUnitsOnly": "0",
+                                               "showUnitSpaces": "1",
+                                               "useSpaceConfiguration": "1",
+                                               "moveInStartDate": move_in_date
+                                           }
+                                       }
+                                   }.to_json,
+                                   :headers => { 'Content-Type' => 'application/json' } )
+          response =  JSON.parse(response.body)
+        end
         sleep 5
 
         if response["response"]["code"] == 200
@@ -432,29 +454,32 @@ class PsiStaticService < BaseService
     password = credentials.password
     username = credentials.username
     #property_id = credentials.property_id
-    response = HTTParty.post(url,
-                             :body => {
-                                 "auth": {
-                                     "type": "basic",
-                                     "password": password,
-                                     "username": username
-                                 },
-                                 "requestId": 15,
-                                 "method": {
-                                     "name": "getPropertyPickLists",
-                                     "version":"r1",
-                                     "params": {
-                                         "propertyIds": property_id
-                                     }
-                                 }
-                             }.to_json,
-                             :headers => { 'Content-Type' => 'application/json' } )
-    response =  JSON.parse(response.body)
-    moveIn_dates = []
-    response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
-      if dates['leaseStartDate'].present?
-        moveIn_dates << dates['leaseStartDate']
+    begin
+      response = HTTParty.post(url,
+                               :body => {
+                                   "auth": {
+                                       "type": "basic",
+                                       "password": password,
+                                       "username": username
+                                   },
+                                   "requestId": 15,
+                                   "method": {
+                                       "name": "getPropertyPickLists",
+                                       "version":"r1",
+                                       "params": {
+                                           "propertyIds": property_id
+                                       }
+                                   }
+                               }.to_json,
+                               :headers => { 'Content-Type' => 'application/json' } )
+      response =  JSON.parse(response.body)
+      moveIn_dates = []
+      response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
+        if dates['leaseStartDate'].present?
+          moveIn_dates << dates['leaseStartDate']
+        end
       end
+    rescue
     end
     moveIn_dates
   end
