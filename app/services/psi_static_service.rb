@@ -5,7 +5,12 @@ class PsiStaticService < BaseService
     property_ids.each do |property_id|
       begin
         @@floorplanHash = {}
-        url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+          url = credentials.entrata_url
+        else
+          url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        end
+        # url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         password = credentials.password
         username = credentials.username
         ########
@@ -187,12 +192,17 @@ class PsiStaticService < BaseService
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
       unless move_in_dates.present?
+        move_in_dates = []
         move_in_dates << "0"
       end
       ########################################## Space configuration
       move_in_dates.each do |move_in_date|
       begin
-        url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+          url = credentials.entrata_url
+        else
+          url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        end
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
@@ -249,6 +259,7 @@ class PsiStaticService < BaseService
             end
             psi_units.each do |u|
               u['UnitSpace'].each do |us|
+
                 begin
                   if u['UnitSpace'].count == 1
                     unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
@@ -318,7 +329,11 @@ class PsiStaticService < BaseService
           else
             #################################### with unit space pricing
             begin
-              url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+              if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+                url = credentials.entrata_url
+              else
+                url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+              end
               password = credentials.password
               username = credentials.username
               #property_id = credentials.property_id
