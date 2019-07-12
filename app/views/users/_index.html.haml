@@ -1,6 +1,6 @@
 .row
   .col-md-12
-    %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+    %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.user_community_data
       %thead
         %tr
           %th{:width => "79"} Sr #
@@ -8,6 +8,7 @@
           %th Last Name
           %th Email
           %th Community
+          %th Company
           %th Role
           %th Actions
       %tbody
@@ -22,8 +23,17 @@
                   =u.email
               %td
                 %b 
-                  =u.communities.map(&:name).to_sentence
-              %td= u.role
+                  =u.communities.map(&:name).sort.to_sentence
+              - company = []
+              - if u.communities.present?
+                - u.communities.each do |com|
+                  - unless company.include?((Company.find com.company_id).name)
+                    - company << (Company.find com.company_id).name
+              %td
+                %b
+                  - if company.present?
+                    = company.sort.to_sentence
+              %td= u.role.sub("Super","Pynwheel")
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
                   %i.fa.fa-edit.icon_size
@@ -42,9 +52,29 @@
               %td
                 %b 
                   =u.communities.map(&:name).to_sentence
-              %td= u.role
+              - company = []
+              - if u.communities.present?
+                - u.communities.each do |com|
+                  - unless company.include?((Company.find com.company_id).name)
+                    - company << (Company.find com.company_id).name
+              %td
+                %b
+                  - if company.present?
+                    = company.sort.to_sentence
+              %td= u.role.sub("Super","Pynwheel")
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
                   %i.fa.fa-edit
                 %a.text-danger{"data-name"=>"User","data-href" => "/companies/#{current_company.id}/employees/#{u.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                   %i.fa.fa-trash
+
+:javascript
+  $('#miyazaki.user_community_data').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [1,2,3,6,7],
+        }],
+        "ordering": true,
+        "stateSave": true,
+        "paging": false
+  });

@@ -1,11 +1,14 @@
 $(window).bind('load', function () {
+    $( window ).on( "orientationchange", function( event ) {
+      window.location.reload();
+    });
+     
   if ($('.is-webpage')[0]) {
 
-
-    $(".panzoom").addClass("transform-none");
-    $(document).on("click touchstart", ".zoom-controls", function () {
-      $(".panzoom").removeClass("transform-none");
-    });
+    // $(".panzoom").addClass("transform-none");
+    // $(document).on("click touchstart", ".zoom-controls", function () {
+    //   $(".panzoom").removeClass("transform-none");
+    // });
     $('[data-toggle="tooltip"]').tooltip({trigger: "hover"}); // initialize bootstrap tooltip
     ////////////// Disable browser zoom for webpage  starts here ////////////////
     $(document).keydown(function (event) {
@@ -20,7 +23,7 @@ $(window).bind('load', function () {
 
     $(window).bind('mousewheel DOMMouseScroll', function (event) {
       if (event.ctrlKey == true) {
-        event.preventDefault();
+        // event.preventDefault();
       }
     });
     ////////////// Disable browser zoom for webpage  ends here ////////////////
@@ -40,9 +43,9 @@ $(window).bind('load', function () {
       $('#leasing-start-date').focus();
     });
     ////////////////////////////////////////////////
-    $('.panzoom a').on('mousedown touchstart', function (e) {
-      e.stopImmediatePropagation();
-    });
+    // $('.panzoom a').on('mousedown touchstart', function (e) {
+    //   e.stopImmediatePropagation();
+    // });
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function (e) {
@@ -106,10 +109,10 @@ $(window).bind('load', function () {
     });
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function () {
-      $(".panzoom").addClass("transform-none");
+      // $(".panzoom").addClass("transform-none");
       // console.log('clicking on anchor tag');
-      var $section = $('#panzomm-container');
-      $panzoom = $section.find('.panzoom').panzoom("reset");
+      // var $section = $('#panzomm-container');
+      // $panzoom = $section.find('.panzoom').panzoom("reset");
       var floor_for_showing_image = $(this).attr('id');
       if (floor_for_showing_image != current_floor) { // && !$(this).hasClass('no-units')
         $('.floorplate-image').addClass('hidden');
@@ -132,16 +135,40 @@ $(window).bind('load', function () {
       $(this).parent().find('input').click();
     });
     ////////////////////////////////////////////
-    /*panzoom functionality*/
-    var $section = $('#panzomm-container');
-    $panzoom = $section.find('.panzoom').panzoom({
-      $zoomIn: $section.find(".zoom-in"),
-      $zoomOut: $section.find(".zoom-out"),
-      $reset: $section.find(".reset"),
-      $set: $section.find(".parent"),
-      contain: 'automatic',
-      minScale: 0.7,
+    
+    $('#zoomable a').on('touchstart', function (e) {
+      e.stopImmediatePropagation();
     });
+    var $area = document.getElementById('zoomable');
+    window.pz = panzoom($area, 
+      {
+        bounds: true, contain: 'automatic', smoothScroll: false,
+        maxZoom: 5,
+        minZoom: 1,
+        zoomDoubleClickSpeed: 1,
+       
+        onTouch: function(e) {
+          // `e` - is current touch event.
+          // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
+          e.preventDefault();
+          // $(e.path[1]).click();
+          return false; // tells the library to not preventDefault.
+        }
+      });
+    
+    $(".reset").on('click', function (e) {
+      window.location.reload()
+    });
+    
+    $(".zoom-in").on('click', function (e) {
+      window.pz.zoomInOut(187);
+    });
+
+
+    $(".zoom-out").on('click', function (e) {
+      window.pz.zoomInOut(189);
+    });
+
     /////////////////////////////////////////////
     /*popover*/
     if (!hasTouch()) {

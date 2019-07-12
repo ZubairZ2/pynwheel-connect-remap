@@ -82,10 +82,28 @@ class YardiRentCafeStaticService < BaseService
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
             end
           end
+          begin
+            cred = Credential.find credentials.id
+            cred.data_error_message = nil
+            cred.save
+          rescue => err
+          end
         else
+          begin
+            cred = Credential.find credentials.id
+            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            cred.save
+          rescue => err
+          end
           puts  "Invalid credentials.Please enter correct one and try again."
         end
       rescue => e
+        begin
+          cred = Credential.find credentials.id
+          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          cred.save
+        rescue => err
+        end
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
