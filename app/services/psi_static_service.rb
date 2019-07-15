@@ -5,7 +5,12 @@ class PsiStaticService < BaseService
     property_ids.each do |property_id|
       begin
         @@floorplanHash = {}
-        url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+          url = credentials.entrata_url
+        else
+          url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        end
+        # url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         password = credentials.password
         username = credentials.username
         ########
@@ -204,31 +209,64 @@ class PsiStaticService < BaseService
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
+      move_in_dates = getMoveInDate(property_id)
+      unless move_in_dates.present?
+        move_in_dates = []
+        move_in_dates << "0"
+      end
       ########################################## Space configuration
+      move_in_dates.each do |move_in_date|
       begin
-        url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+          url = credentials.entrata_url
+        else
+          url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        end
         password = credentials.password
         username = credentials.username
         #property_id = credentials.property_id
-        response = HTTParty.post(url,
-                                 :body => {
-                                     "auth": {
-                                         "type": "basic",
-                                         "password": password,
-                                         "username": username
-                                     },
-                                     "method": {
-                                         "name": "getUnitsAvailabilityAndPricing",
-                                         "params": {
-                                             "propertyId": property_id,
-                                             "availableUnitsOnly": "0",
-                                             "showUnitSpaces": "1",
-                                             "useSpaceConfiguration": "1"
-                                         }
-                                     }
-                                 }.to_json,
-                                 :headers => { 'Content-Type' => 'application/json' } )
-        response =  JSON.parse(response.body)
+        if move_in_date == "0"
+          response = HTTParty.post(url,
+                                   :body => {
+                                       "auth": {
+                                           "type": "basic",
+                                           "password": password,
+                                           "username": username
+                                       },
+                                       "method": {
+                                           "name": "getUnitsAvailabilityAndPricing",
+                                           "params": {
+                                               "propertyId": property_id,
+                                               "availableUnitsOnly": "0",
+                                               "showUnitSpaces": "1",
+                                               "useSpaceConfiguration": "1"
+                                           }
+                                       }
+                                   }.to_json,
+                                   :headers => { 'Content-Type' => 'application/json' } )
+          response =  JSON.parse(response.body)
+        else
+          response = HTTParty.post(url,
+                                   :body => {
+                                       "auth": {
+                                           "type": "basic",
+                                           "password": password,
+                                           "username": username
+                                       },
+                                       "method": {
+                                           "name": "getUnitsAvailabilityAndPricing",
+                                           "params": {
+                                               "propertyId": property_id,
+                                               "availableUnitsOnly": "0",
+                                               "showUnitSpaces": "1",
+                                               "useSpaceConfiguration": "1",
+                                               "moveInStartDate": move_in_date
+                                           }
+                                       }
+                                   }.to_json,
+                                   :headers => { 'Content-Type' => 'application/json' } )
+          response =  JSON.parse(response.body)
+        end
         sleep 5
 
         if response["response"]["code"] == 200
@@ -240,6 +278,7 @@ class PsiStaticService < BaseService
             end
             psi_units.each do |u|
               u['UnitSpace'].each do |us|
+
                 begin
                   if u['UnitSpace'].count == 1
                     unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
@@ -303,12 +342,17 @@ class PsiStaticService < BaseService
                 end
               end
             end
+            puts "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"* 300
             #else
             #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
           else
             #################################### with unit space pricing
             begin
-              url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+              if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+                url = credentials.entrata_url
+              else
+                url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+              end
               password = credentials.password
               username = credentials.username
               #property_id = credentials.property_id
@@ -432,11 +476,46 @@ class PsiStaticService < BaseService
         puts '-------------- filling pricing --------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
+      end
 
       ##########################################
 
 
     end
+  end
+  def getMoveInDate(property_id)
+    url = "https://"+credentials.entrata_url+".entrata.com/api/v1/properties"
+    password = credentials.password
+    username = credentials.username
+    #property_id = credentials.property_id
+    begin
+      response = HTTParty.post(url,
+                               :body => {
+                                   "auth": {
+                                       "type": "basic",
+                                       "password": password,
+                                       "username": username
+                                   },
+                                   "requestId": 15,
+                                   "method": {
+                                       "name": "getPropertyPickLists",
+                                       "version":"r1",
+                                       "params": {
+                                           "propertyIds": property_id
+                                       }
+                                   }
+                               }.to_json,
+                               :headers => { 'Content-Type' => 'application/json' } )
+      response =  JSON.parse(response.body)
+      moveIn_dates = []
+      response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
+        if dates['leaseStartDate'].present?
+          moveIn_dates << dates['leaseStartDate']
+        end
+      end
+    rescue
+    end
+    moveIn_dates
   end
 end
   def save_website_column_of_community(response)
