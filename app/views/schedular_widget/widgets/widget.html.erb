@@ -1,0 +1,8 @@
+<!-- app/views/widgets/widget.html.erb -->
+<div class="widget-container">
+  Hello world, it's: <%= Time.current %>.
+  <ul>
+  <% @data.each do |d| %>
+  <li> <%= d.name%> </li>
+  <% end %>
+</div>
