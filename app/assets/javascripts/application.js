@@ -19,6 +19,8 @@
 //= require dataTables/jquery.dataTables
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 // require turbolinks
+//= require amenity
+//= require tour_stop_plotting
 //= require pyn.min
 //= require jquery.validationEngine-en
 //= require jquery.validationEngine
@@ -37,7 +39,7 @@
 //= require sitemap
 //= require tour
 //= require floorplate
-//= require amenity
+
 //= require ekko-lightbox
 //= require jquery.remotipart
 //= require jquery.mCustomScrollbar.concat.min

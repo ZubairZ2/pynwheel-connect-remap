@@ -111,6 +111,15 @@ class UnitAmenitiesController < ApplicationController
       redirect_to plot_amenities_community_unit_amenities_path(@community,@unit)
     end
   end
+  def delete_unit_plot
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:unit_id]
+    @amenity = Amenity.find params[:id]
+    @amenity.x_plot = 0
+    @amenity.y_plot = 0
+    @amenity.save
+    redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "Amenity deleted successfully"
+  end
   def destroy
     @amenity = @unit.amenities.find (params[:id])
     if @amenity.destroy
