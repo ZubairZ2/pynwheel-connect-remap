@@ -10,7 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+<<<<<<< Updated upstream
 ActiveRecord::Schema.define(version: 20190716134331) do
+=======
+ActiveRecord::Schema.define(version: 20190705063340) do
+>>>>>>> Stashed changes
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -717,6 +721,7 @@ ActiveRecord::Schema.define(version: 20190716134331) do
     t.datetime "updated_at", null: false
   end
 
+<<<<<<< Updated upstream
   create_table "schedual_tours", force: :cascade do |t|
     t.date     "tour_date"
     t.time     "tour_time"
@@ -728,6 +733,8 @@ ActiveRecord::Schema.define(version: 20190716134331) do
     t.index ["tour_user_id"], name: "index_schedual_tours_on_tour_user_id", using: :btree
   end
 
+=======
+>>>>>>> Stashed changes
   create_table "sitemaps", force: :cascade do |t|
     t.string   "image"
     t.integer  "community_id"

@@ -17,10 +17,11 @@
 !/log/.keep
 !/tmp/.keep
 .idea/
+public/uploads/
+vendor/bundle
 .ruby-gemset
 .ruby-version
-public/uploads/*
-vendor/bundle/
+
 # Ignore Byebug command history file.
 .byebug_history
 
