@@ -52,6 +52,14 @@ class Api::V1::ToursController < ActionController::Base
 
     end
   end
+  def tour_user_login
+    tu = TourUser.find_by(email: params[:email])
+    if tu.present?
+      render :json=> {:success=>true, :message => "User present"}
+    else
+      render :json=> {:success=>false, :message => "User not present"}
+    end
+  end
   private
 
   def set_community
