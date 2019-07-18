@@ -253,7 +253,11 @@ Rails.application.routes.draw do
         end
       end
       resources :tours,only: :index do
+        collection do
+          post :tour_user_login
+        end
         member do
+          post :tour_user_login
           post :save_user_data
           post :save_user_tour
         end
