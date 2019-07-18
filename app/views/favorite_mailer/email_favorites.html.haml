@@ -339,10 +339,10 @@
                                     %h1{:style => "margin-bottom:0px;text-align:center;"}
                                       %div{:style => "width: 350px;display: inline-block;overflow: hidden;"}
                                         %img{:src => "#{@community.logo.url}", width: '350', :style => "max-width: 100%;height:auto;object-fit: contain;"}/
-                                %tr
-                                  - if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
-                                    - @community.favorite_setting.favorite_images.each do |img|
-                                      = render :partial => 'favorite_image', :locals => {:img => img}
+                          - if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
+                            %tr
+                              - @community.favorite_setting.favorite_images.each do |img|
+                                = render :partial => 'favorite_image', :locals => {:img => img}
               -#- if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
               -#  - @community.favorite_setting.favorite_images.each do |img|
               -#    = render :partial => 'favorite_image', :locals => {:img => img}
