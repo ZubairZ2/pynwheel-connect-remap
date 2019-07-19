@@ -37,7 +37,7 @@ class FavoriteSettingsController < ApplicationController
 
   def save_favorite_image
     @favorite_setting = FavoriteSetting.find(params[:id])
-    @favorite_setting.favorite_images.create(image: params[:file])
+    @favorite_setting.favorite_images.create(image: params[:file],name: params["file"].original_filename)
     render :json=>{"status"=>"success"}
   end
 
