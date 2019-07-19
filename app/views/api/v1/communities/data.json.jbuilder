@@ -1290,6 +1290,8 @@ json.apartments do
       json.id unit.id
       json.floorplan_name floorplan.present? ? floorplan.name : nil
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
+      json.display_virtual_tour_button_label floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
+      json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
       json.square_feet unit.square_feet.present? ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
