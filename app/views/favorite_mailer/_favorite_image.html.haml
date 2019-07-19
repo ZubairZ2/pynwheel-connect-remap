@@ -15,8 +15,12 @@
                             %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                               %tr
                                 %td
-                                  %div{:style => "width:100%; overflow:hidden;"}
-                                    %img{:alt => "", :src => "#{img.image.url}", :width => "650", :style => "max-width:650px; height:auto; margin:auto;", :title => ""}/
+                                  - unless (img.image.url.split('.')[(img.image.url.split('.').size - 1)]) == "pdf"
+                                    %div{:style => "width:100%; overflow:hidden;"}
+                                      %img{:alt => "", :src => "#{img.image.url}", :width => "650", :style => "max-width:650px; height:auto; margin:auto;", :title => ""}/
+                                  - else
+                                    %div{:style => "width:100%; overflow:hidden; text-align: center;"}
+                                      %a{:href => "#{img.image.url}"} #{ image_tag "pdf_viewer.jpeg", :width => "650", :style => "max-width:650px; height:auto; margin:auto;", :title => ""}
     %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
       %tr
         %td{:align => "center", :valign => "top"}
