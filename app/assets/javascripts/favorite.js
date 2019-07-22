@@ -20,7 +20,7 @@ function saveFavoriteImage(){
   favoriteImageDropzone.on("addedfile", function(file) {
     console.log(file.type);
     $(".divLoading").removeClass("hidden");
-    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg" || file.type == "video/mp4" || file.type == "application/pdf")) {
+    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg" || file.type == "video/mp4")) {
       $(".divLoading").addClass("hidden");
       $('#image-and-video-upload-warning').modal('show');
       favoriteImageDropzone.removeFile(file);
