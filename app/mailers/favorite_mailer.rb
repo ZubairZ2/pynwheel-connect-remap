@@ -15,6 +15,6 @@ class FavoriteMailer < ApplicationMailer
       @community = community
       @units = units
       @to_email = email_to
-      mail(to: email_from, from: email_from, bcc: email_bcc, subject: 'My Favorites Text Version')
+      mail(to: email_bcc, from: email_from, subject: 'My Favorites Text Version')
   end
 end

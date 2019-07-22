@@ -1,7 +1,9 @@
 %h3
   = "To: #{@to_email}"
 %h3
-  = "Time #{Time.now.to_s(:time)}  #{Time.now.to_s.split(' ')[0]}"
+  = "Date: #{Time.now.to_s.split(' ')[0]}"
+%h3
+  = "Time: #{Time.now.to_s(:time)}"
 %p
   %b Favorites
 %p
