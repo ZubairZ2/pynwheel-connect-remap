@@ -346,7 +346,7 @@
                       %tr
                         -#-%td{:style => " background-color:#253339; margin-right:10px;"}
                         - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
-                          %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
+                          %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;",:class => 'clickable-row', "data-href" => "#{button.url}"}
                             %a{:href => "#{button.url}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
                               = button.name
               %tr
@@ -451,3 +451,9 @@
                                                 © 2018 -
                                                 %a{:href => "http://pynwheeltouchscreens.com/", :style => "color:#FFF; text-decoration:none;"} Pynwheel.com
                                                 All rights reserved.
+:javascript
+  jQuery(document).ready(function($) {
+    $(".clickable-row").click(function() {
+        window.location = $(this).data("href");
+      });
+  });
