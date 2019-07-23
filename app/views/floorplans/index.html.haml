@@ -23,7 +23,7 @@
     .row
       #floorplans-index
         = render 'index'
-      .col-lg-4.col-md-12
+      .col-lg-4.col-md-12.floor_plan_upload_image
         -#.row
         -#  .col-md-12
         -#    %h4{style: "color: grey;"}
@@ -127,7 +127,7 @@
     $('.apartment-settings-form').submit();
   });
   $(document).ready(function(){
-    $('.floor_plan_upload_image').affix({offset: {top: 205} }); 
+    $('.floor_plan_upload_image').affix({offset: {top: 0} });
   });
   if (!#{current_user.welcome_floorplan_page})
   {
