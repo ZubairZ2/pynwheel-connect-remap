@@ -79,6 +79,8 @@ Rails.application.routes.draw do
         end
       end
       get :plotexp
+      get :draw_path_points
+      post :save_path_points
       get :grid_overlay
       post :adjust_marker_positions
     end
@@ -254,6 +256,7 @@ Rails.application.routes.draw do
           post :save_user_tour
         end
       end
+      get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
     end
   end
 end
