@@ -266,7 +266,7 @@ function drag(ev) {
 
 function drop(ev) {
     ev.preventDefault();
-    if ($(ev.target).hasClass('drop-img')) { 
+    if (ev.dataTransfer.getData("text") != "") {
         var data = ev.dataTransfer.getData("text");
         ev.target.appendChild(document.getElementById(data));
         var img_object = $(ev.target).find('img');
@@ -276,7 +276,18 @@ function drop(ev) {
         saveFloorPlanImage($(img_object).attr("src"),ev.target.id,id[1]);
    }
    else{
-     return;
+        var reader = new FileReader();
+
+
+        reader.onload = function (e) {
+            // var img_object = $(ev.target).find('img');
+            var img = new Image();
+            img.src = e.target.result;
+            ev.target.appendChild(img);
+            saveFloorPlanImage(e.target.result,ev.target.id, null);
+
+        };
+        reader.readAsDataURL(ev.dataTransfer.files[0]);
    }
 }
 
