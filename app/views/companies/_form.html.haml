@@ -9,7 +9,7 @@
     Email
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email" ,:maxlength=>"50"   
+    = f.email_field :email, :class=>"form-control", :placeholder=>"Email" ,:maxlength=>"50"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
@@ -21,20 +21,20 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        = f.text_field :city, :class=>"form-control validate[required,custom[onlyLetterSp]]", :placeholder=>"City",:maxlength=>"20"
+        = f.text_field :city, :class=>"form-control", :placeholder=>"City",:maxlength=>"20"
         %small City
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        = f.text_field :state, :class=>"form-control validate[required,custom[onlyLetterSp]]", :placeholder=>"State",:maxlength=>"20"
+        = f.text_field :state, :class=>"form-control", :placeholder=>"State",:maxlength=>"20"
         %small State
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        = f.text_field :zip, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Zip",:maxlength=>"10"
+        = f.text_field :zip, :class=>"form-control", :placeholder=>"Zip",:maxlength=>"10"
         %small Zip
       .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        = f.text_field :phone, :class=>"form-control validate[required,custom[onlyNumberSp]]", :placeholder=>"Phone",:maxlength=>"20"
+        = f.text_field :phone, :class=>"form-controlSend Invitation", :placeholder=>"Phone",:maxlength=>"20"
         %small Phone 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
