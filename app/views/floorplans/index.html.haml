@@ -23,7 +23,7 @@
     .row
       #floorplans-index
         = render 'index'
-      .col-lg-4.col-md-12
+      .col-lg-4.col-md-12.floor_plan_upload_image
         -#.row
         -#  .col-md-12
         -#    %h4{style: "color: grey;"}
@@ -42,9 +42,9 @@
         -#      %a.btn.btn-success.pull-right.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
         -#        ADD DETAILS TO MULTIPLE
 
-        .row{style: "margin-top: 197px;"}
+        .row{style: "margin-top: 443px;"}
           .col-md-12#holder
-            .box.box-widget.panel-box.pl-20.pr-20.pb-10
+            .box.box-widget.panel-box.pl-20.pr-20.pb-10{:style => "max-height: 675px !important; overflow: scroll;"}
               .row
                 .col-md-12.col-lg-9.col-xs-9
                   %h4
@@ -127,7 +127,7 @@
     $('.apartment-settings-form').submit();
   });
   $(document).ready(function(){
-    $('.floor_plan_upload_image').affix({offset: {top: 205} }); 
+    $('.floor_plan_upload_image').affix({offset: {top: 700} });
   });
   if (!#{current_user.welcome_floorplan_page})
   {
