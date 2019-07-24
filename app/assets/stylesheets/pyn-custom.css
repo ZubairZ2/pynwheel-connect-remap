@@ -3197,6 +3197,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 }
 .affix
 {
-    margin-left: 56%;
-    width: 29%;
+    margin-top: -693px !important;
+    margin-left: 56.5%;
+    width: 28.3%;
 }
