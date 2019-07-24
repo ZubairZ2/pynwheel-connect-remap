@@ -517,7 +517,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.global_navigation_icons_position "Above the text"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
-          json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Above the text") : "Above the text"
+          json.global_navigation_icons_position "Above the text"# @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Above the text") : "Above the text"
         else
           json.global_navigation_icons_position "Above the text"
         end

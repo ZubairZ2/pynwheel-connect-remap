@@ -275,6 +275,9 @@ function drop(ev) {
             var id = $(img_object).attr("id");
             id = id.split('-');
             $('#row'+id[1]).hide();
+            var img = new Image();
+            img.src = $(img_object).attr("src");
+            ev.target.appendChild(img);
             saveFloorPlanImage($(img_object).attr("src"),ev.target.id,id[1]);
        }
        else{
@@ -647,22 +650,22 @@ function readImageSrc(file){
     });
    }
 
-   function deleteFloorPlanImage(floorplan_id,src,position,name){
-    //var community_id = $('#communities_at_floorplans').val();
-    $.ajax({
-        url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
-        type: "PUT",
-        dataType: "script",
-        data: {
-            floorplan: {
-                remove_image: true
-            }
-        }
-    }).done(function(){
-        console.log("floorplan image is deleted successfully now going to save temporary image");
-        saveTemporaryImage(src,position,name);
-    });
-   }
+   // function deleteFloorPlanImage(floorplan_id,src,position,name){
+   //  //var community_id = $('#communities_at_floorplans').val();
+   //  $.ajax({
+   //      url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
+   //      type: "PUT",
+   //      dataType: "script",
+   //      data: {
+   //          floorplan: {
+   //              remove_image: true
+   //          }
+   //      }
+   //  }).done(function(){
+   //      console.log("floorplan image is deleted successfully now going to save temporary image");
+   //      saveTemporaryImage(src,position,name);
+   //  });
+   // }
 
 
 function trim (str) {
