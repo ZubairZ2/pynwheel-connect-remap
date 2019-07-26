@@ -148,31 +148,33 @@ var holder = document.getElementById('holder');
         //holder.ondragover = function () { this.className = 'hover'; return false; };
         //holder.ondragend = function () { this.className = ''; return false; };
         holder.ondrop = function (e) {
-            this.className = '';
-            e.preventDefault();
-            files = e.dataTransfer.files;
-                if (files.length > 0){
+            if (e.dataTransfer.files.length > 0)
+                {
+                    this.className = '';
+                e.preventDefault();
+                files = e.dataTransfer.files;
+                if (files.length > 0) {
                     for (var i = 0; i < files.length; i++) {
-                      if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
-                              readImageSrc(files[i]);
-
-                      }
-                      else{
-                        $('#image-upload-warning').modal('show');
-                      }
+                        if (files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg") {
+                            readImageSrc(files[i]);
+                        }
+                        else {
+                            $('#image-upload-warning').modal('show');
+                        }
                     }
                 }
-                else{
+                else {
                     //var img = e.dataTransfer.mozSourceNode;
                     var floorplan_id = $(draging_image).parent().attr("id");
                     var id = $(draging_image).attr("id");
                     id = id.split('-');
-                    $('#row'+id[1]).show();
+                    $('#row' + id[1]).show();
                     console.log("ok");
-                    $('#parent-'+id[1]).append($(draging_image));
-                    deleteFloorPlanImage(floorplan_id,$(draging_image).attr("src"),id[1],$('#img-name-'+id[1]).html());
+                    $('#parent-' + id[1]).append($(draging_image));
+                    deleteFloorPlanImage(floorplan_id, $(draging_image).attr("src"), id[1], $('#img-name-' + id[1]).html());
                 }
             }
+        }
     }  
 
 
@@ -621,6 +623,7 @@ function removeValidationsClass(){
 }
 
 function readImageSrc(file){
+    debugger;
       var reader = new FileReader();
       reader.onload = function (e) {
         index++
