@@ -28,6 +28,7 @@
     / WARNING: Respond.js doesn't work if you view the page via file://
     /%link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
   %body.floor-plan{:style => "background-color:#303a3c;"}
+    .divLoading.hidden
     / Main content
     - unless @community_info.locked
       %section.is-webpage
@@ -349,7 +350,7 @@
       %b#popover-price
        
 :javascript
-
+  $(".divLoading").addClass("hidden");
   var window_height = window.innerHeight;
   var diff = (8000/($(window).width()) * -1);
   var diffL = (2500/($(window).width()) * -1);

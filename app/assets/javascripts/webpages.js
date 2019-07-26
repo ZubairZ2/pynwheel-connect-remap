@@ -1,6 +1,7 @@
 $(window).bind('load', function () {
     $( window ).on( "orientationchange", function( event ) {
-      window.location.reload();
+        $(".divLoading").removeClass("hidden");
+        window.location.reload();
     });
      
   if ($('.is-webpage')[0]) {
