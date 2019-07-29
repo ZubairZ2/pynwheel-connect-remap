@@ -1315,6 +1315,8 @@ json.apartments do
         else
           json.virtual_tour unit.virtual_tour_url
         end
+      else
+        json.virtual_tour ""
       end
 
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
@@ -1411,8 +1413,10 @@ json.apartments do
           json.virtual_tour floorplan.virtual_tour_url
         else
           json.virtual_tour floorplan.virtual_tour_url
-        end
       end
+    else
+      json.virtual_tour ""
+    end
 
     json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
