@@ -57,6 +57,32 @@
         %small Square footage (Manual Override Required)
 
 = f.hidden_field :provider
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Display Virtual Tour Button Label
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
+      %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
+      %span.pl-15 Yes
+
+.form-group#virtual_tour_button_label_field
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Virtual Tour Button Label
+
+    %span Specify virtual tour button label here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label",:maxlength=>"10"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Virtual Tour URL
+    %span Specify URL here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Details

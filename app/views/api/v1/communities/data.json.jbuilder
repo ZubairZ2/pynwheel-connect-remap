@@ -1289,8 +1289,34 @@ json.apartments do
       json.id unit.id
       json.floorplan_name floorplan.present? ? floorplan.name : nil
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
-      json.display_virtual_tour_button_label floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
-      json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
+      json.display_virtual_tour_button_label unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
+      json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
+
+      if unit.virtual_tour_url.present?
+        if unit.virtual_tour_url.include? '</iframe>'
+          @iframe_url = unit.virtual_tour_url.split('height')
+          if @iframe_url[1][3] == '"'
+            @iframe_url[1][2] = '1' + '0' + '0' + '%'
+          elsif @iframe_url[1][4] == '"'
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0' + '0' + '%'
+          elsif @iframe_url[1][5] == '"'
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0'
+            @iframe_url[1][4] = '0' + '%'
+          else
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0'
+            @iframe_url[1][4] = '0'
+            @iframe_url[1][5] = '%'
+          end
+          unit.virtual_tour_url = @iframe_url[0] + 'height' + @iframe_url[1]
+          json.virtual_tour unit.virtual_tour_url
+        else
+          json.virtual_tour unit.virtual_tour_url
+        end
+      end
+
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
       json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
@@ -1359,6 +1385,8 @@ json.apartments do
     json.description floorplan.description
     json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
     json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil
+    json.display_virtual_tour_button_label floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
+    json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
 
     #json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
     if floorplan.virtual_tour_url.present?
