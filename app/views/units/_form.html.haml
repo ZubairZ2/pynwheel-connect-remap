@@ -68,7 +68,7 @@
       %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
       %span.pl-15 Yes
 
-.form-group#virtual_tour_button_label_field
+.form-group#unit_virtual_tour_button_label_field
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Virtual Tour Button Label
 
@@ -168,3 +168,20 @@
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
   })
+
+  $('#unit_display_virtual_tour_button_label').change(function(){
+    if($(this).is(':checked')){
+        $('#unit_virtual_tour_button_label_field').removeClass('hidden');
+      }
+    else{
+        $('#unit_virtual_tour_button_label_field').addClass('hidden');
+     }
+  });
+  if (#{@unit.display_virtual_tour_button_label})
+  {
+    $('#unit_virtual_tour_button_label_field').removeClass('hidden');
+  }
+  else
+  {
+    $('#unit_virtual_tour_button_label_field').addClass('hidden');
+  }
