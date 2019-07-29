@@ -3198,6 +3198,7 @@ function adjustHomepagePositionOfLogoWithVerticalApp(value){
             $('#home_page_position_of_logo').val("Top");
         }
     }
+
 }
 function adjustMenuPositionOfLogoWithVerticalApp(value){
     if (value)
