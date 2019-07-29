@@ -1276,7 +1276,7 @@ json.apartments do
       json.marketing_name unit.unit_market
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.availability unit.availability
-      json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day
+      json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
       json.available unit.available
       json.sold unit.sold
       json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
