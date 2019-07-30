@@ -137,7 +137,7 @@
                   <% path_point_coords = {} %>
 
                   <% @existing_path_points.each_with_index do |point, index|  %>
-                    <div style="position: absolute; top: <%= point.y%>px; left: <%= point.x%>px; width: 15px; height: 15px; background-color: #000; z-index: 9999" class="path_point" id="point_<%= index %>"></div>
+                    <div style="position: absolute; top: <%= point.y%>px; left: <%= point.x%>px; width: 15px; height: 15px; background-color: #000; z-index: 9999" class="path_point" id="point_<%= point.id %>"></div>
                     <!-- css('position', 'absolute')
                 .css('top', mouseY + 'px')
                 .css('left', mouseX + 'px')
@@ -265,39 +265,21 @@
   $(document).ready(function(){
     path_array = []
     radius = 50;
+    var point_color = '#000000';
+    var point_size = 15;
     
-    $("#testimg").on('click', function (ev) {
-        
-        var color = '#000000';
-        var obj_size = 15;
-        mouseX = Math.round(ev.offsetX - obj_size/2)
-        mouseY = Math.round(ev.offsetY - obj_size/2)
+    // add listner to prev points 
+    $.each($("*.path_point"), function(i, existing_point){
+      // debugger
+      id = $(existing_point).prop('id');
+      dragElement(document.getElementById(id));
+    });
 
-        var size =  obj_size.toString()+ 'px';
-        
-        id = "point_"+path_array.length.toString()
-
-        path_point = $('<div class="path_point" id="'+ id +'"></div>')
-                .css('position', 'absolute')
-                .css('top', mouseY + 'px')
-                .css('left', mouseX + 'px')
-                .css('width', size)
-                .css('height', size)
-                .css('background-color', color)
-                .css('z-index', 9999)
-
-
-        path_array.push(path_point)
-        $(".plot-image").append(path_point);
-        
-        dragElement(document.getElementById(id));
-        
-        neighbour_units =  detectNearestUnits()
-        // TO-DO Open later
-
-        console.log(mouseX)
-        console.log(mouseY)
-        savePoint(mouseX, mouseY, neighbour_units)
+    $("#testimg").on('click', function (ev) {        
+      mouseX = Math.round(ev.offsetX - point_size/2)
+      mouseY = Math.round(ev.offsetY - point_size/2)
+      neighbour_units =  detectNearestUnits()
+      savePoint(mouseX, mouseY, neighbour_units)
     });
 
     $( "#testimg" ).contextmenu(function(e) {
@@ -305,6 +287,14 @@
       elem = path_array.pop()
       console.log($("#"+$(elem).prop('id')))
       $("#"+$(elem).prop('id')).remove()
+      debugger
+      $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/delete_path_point",
+        { "point_id": elem },
+        function(data,status,xhr) {
+          debugger
+        }
+      );
+
       e.preventDefault();
     });
 
@@ -329,31 +319,82 @@
           "unit_ids": unit_ids
         },
         function(data,status,xhr) {
+          drop_point_on_screen(data)
+        }
+      );
+    }
 
+    function updatePoint(x, y, unit_ids, point_id){
+      $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/update_path_points",
+        { 
+          "x": x,
+          "y": y,
+          "point_id": point_id,
+          "unit_ids": unit_ids
+        },
+        function(data,status,xhr) {
+          // drop_point_on_screen(data)
         }
       );
     }
 
 
+    function drop_point_on_screen(db_data){
+            
+      var size =  point_size.toString()+ 'px';
+
+      id = "point_"+db_data.point.id.toString()
+
+      path_point = $('<div class="path_point" id="'+ id +'"></div>')
+              .css('position', 'absolute')
+              .css('top', mouseY + 'px')
+              .css('left', mouseX + 'px')
+              .css('width', size)
+              .css('height', size)
+              .css('background-color', point_color)
+              .css('z-index', 9999)
+
+
+      path_array.push(path_point)
+      $(".plot-image").append(path_point);
+      
+      dragElement(document.getElementById(id));
+    }
+
+
+    var pointer_drag_pos = []
+
+    $('*.path_point').on('click', function(e){
+      mouseX = this.offsetLeft
+      mouseY = this.offsetTop
+      neighbour_units =  detectNearestUnits()
+      updatePoint(mouseX, mouseY, neighbour_units, this.id.replace( /^\D+/g, ''))
+    });
+
     function dragElement(elmnt) {
       var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      
+
       elmnt.onmousedown = dragMouseDown;
 
       function dragMouseDown(e) {
+      
         e = e || window.event;
         e.preventDefault();
         // get the mouse cursor position at startup:
         pos3 = e.clientX;
         pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
+        document.onmouseup = closeDragElement
         // call a function whenever the cursor moves:
         document.onmousemove = elementDrag;
       }
 
       function elementDrag(e) {
+        // debugger
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
+        // debugger
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;
@@ -362,48 +403,20 @@
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
 
-        console.log(elmnt)
+        // console.log($('#point_396'))
+        // pointer_drag_pos.push({x: pos3, y: pos4})
+        // console.log(pointer_drag_pos)
       }
 
-      function closeDragElement() {
-        // debugger
+      function closeDragElement(e) {
+        e = e || window.event;
         // path_array = $('.path_point')
-        // debugger
         console.log(path_array)
         // stop moving when mouse button is released:
         document.onmouseup = null;
         document.onmousemove = null;
       }
-}
-
-  	// var ctx = document.getElementById("canvas").getContext("2d");
-  	// ctx.canvas.width  = window.innerWidth;
-  	// ctx.canvas.height = window.innerHeight;
-
-  	// $("#canvas").click(function(e){
-   //  	getPosition(e); 
-  	// });
-
-  	// var pointSize = 5;
-
-  	// function getPosition(event){
-  	//   var rect = canvas.getBoundingClientRect();
-  	//   console.log(rect)
-  	//   var x = event.clientX - rect.left;
-  	//   var y = event.clientY - rect.top;
-  	//   console.log(x)
-  	//   console.log(y)
-  	//   drawCoordinates(x,y);
-  	// }
-
-  	// function drawCoordinates(x,y){	
-  	// 	var ctx = document.getElementById("canvas").getContext("2d");
-  	// 	ctx.fillStyle = "#000"; // Red color
-  	//   ctx.beginPath();
-  	//   ctx.arc(x, y, pointSize, 0, Math.PI * 2, true);
-  	//   ctx.fill();
-  	//   savePoint(x,y)
-  	// }
+    }
     
   });
 
