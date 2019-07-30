@@ -282,21 +282,34 @@
       savePoint(mouseX, mouseY, neighbour_units)
     });
 
-    $( "#testimg" ).contextmenu(function(e) {
-      
-      elem = path_array.pop()
-      console.log($("#"+$(elem).prop('id')))
-      $("#"+$(elem).prop('id')).remove()
-      debugger
-      $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/delete_path_point",
-        { "point_id": elem },
-        function(data,status,xhr) {
-          debugger
-        }
-      );
-
-      e.preventDefault();
+    $('*.path_point').on('dblclick', function (e) {
+        point_id = this.id.replace( /^\D+/g, '')
+        $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/delete_path_points",
+          { "point_id": point_id },
+          function(data,status,xhr) {
+            if(data){
+              $("#"+data.point_id).remove()
+            }
+          }
+        );
+        return false;
     });
+
+    // $( "#testimg" ).contextmenu(function(e) {
+      
+    //   elem = path_array.pop()
+    //   console.log($("#"+$(elem).prop('id')))
+    //   $("#"+$(elem).prop('id')).remove()
+    //   debugger
+    //   $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/delete_path_point",
+    //     { "point_id": elem },
+    //     function(data,status,xhr) {
+    //       debugger
+    //     }
+    //   );
+
+    //   e.preventDefault();
+    // });
 
     function detectNearestUnits(){
       neighbour_unit_ids = []
