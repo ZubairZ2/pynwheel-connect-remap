@@ -53,6 +53,26 @@
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
         = f.text_field :market_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"0.00",:maxlength=>"10", :value => f.object.market_rent.to_i
         %small Base Price (Manual Override Required)
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Display Virtual Tour Button Label
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
+      %label.label-primary{:for => "floorplan_display_virtual_tour_button_label"}
+      %span.pl-15 Yes
+
+.form-group#virtual_tour_button_label_field
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Virtual Tour Button Label
+
+    %span Specify virtual tour button label here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label",:maxlength=>"10"
+
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Virtual Tour URL
@@ -124,6 +144,22 @@
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
   });
+  $('#floorplan_display_virtual_tour_button_label').change(function(){
+    if($(this).is(':checked')){
+        $('#virtual_tour_button_label_field').removeClass('hidden');
+      }
+    else{
+        $('#virtual_tour_button_label_field').addClass('hidden');
+     }
+  });
+  if (#{@floorplan.display_virtual_tour_button_label})
+  {
+    $('#virtual_tour_button_label_field').removeClass('hidden');
+  }
+  else
+  {
+    $('#virtual_tour_button_label_field').addClass('hidden');
+  }
   if (!#{current_user.welcome_edit_floorplan_page})
   {
     $('[data-toggle="floorplanEditManualoverridePopover"]').popover({

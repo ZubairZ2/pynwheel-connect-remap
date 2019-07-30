@@ -90,6 +90,18 @@
                         = check_box_tag :display_rent, true, @community.display_rent, class: "apartment-setting-field"
                         %label.label-primary{:for => "display_rent"}
                         %span.pl-15 Yes
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      Display Available date
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          Switching this will change whether or not available date is displayed on the interactive property map and in the floor plan gallery.
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = check_box_tag :display_available_date, true, @community.display_available_date, class: "apartment-setting-field"
+                        %label.label-primary{:for => "display_available_date"}
+                        %span.pl-15 Yes
 
                   = submit_tag 'Save', class: "hidden"
             -#.col-md-12

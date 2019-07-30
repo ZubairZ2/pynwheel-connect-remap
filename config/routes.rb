@@ -98,6 +98,7 @@ Rails.application.routes.draw do
           delete :remove_amenity
           post :add_description
           post :save_description
+          post :delete_unit_plot
         end
       end
       member do

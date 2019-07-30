@@ -119,10 +119,6 @@ class YardiRentCafeSwapService < BaseService
         response = JSON.parse(response.body)
         if response[0]["Error"].nil?
           response.each do |r|
-            dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])
-            if dup.present?
-              dup.destroy
-            end
             fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"]).first
             if fp.present?
               fp.provider = "yardirentcafe_new"
