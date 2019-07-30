@@ -148,12 +148,23 @@ class FloorplatesController < ApplicationController
   end
 
   def save_path_points
-    puts params
-    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
     path_point = PathPoint.create x: params[:x], y: params[:y], floorplate_id: params[:floorplate_id]
     
     NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
-    render json: {point: path_point.id}, status: 200
+    render json: {point: path_point}, status: 200
+  end
+
+   def update_path_points
+    path_point = PathPoint.find(params[:point_id])
+    path_point.update_attributes(x: params[:x], y: params[:y])
+    # NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
+    render json: {point: path_point}, status: 200
+  end
+
+  def delete_path_point
+    point = PathPoint.find(params[:point_id])
+    puts point
+    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   end
 
   def ajax_path_draw_on_floorplate
