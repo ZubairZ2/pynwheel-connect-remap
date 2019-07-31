@@ -77,10 +77,11 @@ class Unit < ApplicationRecord
   end
 
   def unit_market
-    unless self.marketing_name.present?
-      return ""
-    end
-    return unit_check_same_marketname(self)
+    return self.building.to_s + "-" + self.marketing_name
+    # unless self.marketing_name.present?
+    #   return ""
+    # end
+    # return unit_check_same_marketname(self)
     # return unit_check_like_marketname(self)
     #
     # return self.marketing_name
