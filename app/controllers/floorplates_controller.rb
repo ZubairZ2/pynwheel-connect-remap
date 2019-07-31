@@ -157,7 +157,8 @@ class FloorplatesController < ApplicationController
   def update_path_points
     path_point = PathPoint.find(params[:point_id])
     path_point.update_attributes(x: params[:x], y: params[:y])
-    # NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
+    path_point.neighbour_units.destroy_all
+    NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
     render json: {point: path_point}, status: 200
   end
 
