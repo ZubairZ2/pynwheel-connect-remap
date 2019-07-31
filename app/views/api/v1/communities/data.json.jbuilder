@@ -16,7 +16,7 @@ json.ui_settigs do
   end
   json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
-  json.show_gesture_icons @community.show_gesture_icons.present? ? @community.show_gesture_icons : true
+  json.show_gesture_icons @community.show_gesture_icons
   json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
   json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
   json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
