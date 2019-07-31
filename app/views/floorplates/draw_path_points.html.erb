@@ -282,32 +282,6 @@
       savePoint(mouseX, mouseY, neighbour_units)
     });
 
-    $('*.path_point').on('dblclick', function (e) {
-        point_id = this.id.replace( /^\D+/g, '')
-        $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/delete_path_points",
-          { "point_id": point_id },
-          function(data,status,xhr) {
-            if(data){
-              $("#"+data.point_id).remove()
-            }
-          }
-        );
-        return false;
-    });
-
-    function detectNearestUnits(){
-      neighbour_unit_ids = []
-      $.each(cords_arr, function(index, unit){
-        xp = Math.pow((unit.x - mouseX), 2)
-        yp = Math.pow((unit.y - mouseY), 2)
-
-        d = Math.sqrt(xp + yp)
-        if(d <= radius)
-          neighbour_unit_ids.push(index)
-      });
-      
-      return neighbour_unit_ids
-    }
 
     function savePoint(x, y, unit_ids){
       $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/save_path_points",
@@ -320,21 +294,6 @@
         }
       );
     }
-
-    function updatePoint(x, y, unit_ids, point_id){
-      $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/update_path_points",
-        { 
-          "x": x,
-          "y": y,
-          "point_id": point_id,
-          "unit_ids": unit_ids
-        },
-        function(data,status,xhr) {
-          // drop_point_on_screen(data)
-        }
-      );
-    }
-
 
     function drop_point_on_screen(db_data){
             
@@ -351,23 +310,58 @@
               .css('background-color', point_color)
               .css('z-index', 9999)
 
-
-      path_array.push(path_point)
       $(".plot-image").append(path_point);
       
       dragElement(document.getElementById(id));
     }
 
+    $(document).on("dblclick", "*.path_point" , function() {
+      point_id = this.id.replace( /^\D+/g, '')
+        $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/delete_path_points",
+          { "point_id": point_id },
+          function(data,status,xhr) {
+            if(data){
+              $("#"+data.point_id).remove()
+            }
+          }
+        );
+      return false;
+    });
 
-    var pointer_drag_pos = []
+    function detectNearestUnits(){
+      neighbour_unit_ids = []
+      $.each(cords_arr, function(index, unit){
+        xp = Math.pow((unit.x - mouseX), 2)
+        yp = Math.pow((unit.y - mouseY), 2)
 
-    $('*.path_point').on('click', function(e){
-      // debugger
+        d = Math.sqrt(xp + yp)
+        if(d <= radius)
+          neighbour_unit_ids.push(index)
+      });
+      
+      return neighbour_unit_ids
+    }
+
+    $(document).on("click", "*.path_point",  function(e){
       mouseX = this.offsetLeft
       mouseY = this.offsetTop
       neighbour_units =  detectNearestUnits()
       updatePoint(mouseX, mouseY, neighbour_units, this.id.replace( /^\D+/g, ''))
     });
+
+    function updatePoint(x, y, unit_ids, point_id){
+      $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/update_path_points",
+        { 
+          "x": x,
+          "y": y,
+          "point_id": point_id,
+          "unit_ids": unit_ids
+        },
+        function(data,status,xhr) {
+          // drop_point_on_screen(data)
+        }
+      );
+    }
 
     function dragElement(elmnt) {
       var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -398,10 +392,6 @@
         // set the element's new position:
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-
-        // console.log($('#point_396'))
-        // pointer_drag_pos.push({x: pos3, y: pos4})
-        // console.log(pointer_drag_pos)
       }
 
       function closeDragElement(e) {
