@@ -23,7 +23,7 @@
                   Company
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :company_id, Company.all.collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
+                  = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Property Map / Floorplates
@@ -45,6 +45,16 @@
                 .col-sm-12.col-lg-3.col-md-3.col-xs-12
                   = f.radio_button :is_vertical_app, false
                   = f.label :is_vertical_app, "Horizontal", :value => "false"
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Show Gesture Icons
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :show_gesture_icons,:value => true
+                    %label.label-primary{:for => "community_show_gesture_icons"}
+                    %span.pl-15 Yes
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

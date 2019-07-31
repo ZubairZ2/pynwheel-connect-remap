@@ -1,0 +1,419 @@
+<% if false %>
+<%= render '/font_awesome_v5' %>
+<% content_for :title, "Plot Unit - Pynwheel" %>
+<section class="">
+  <div class="content">
+    <div class="title-heading mb-25">
+      <h4>
+        <i class="fa fa-database"></i>
+        <%= @community.name.capitalize %>
+        <br/>
+        <small class="text-primary">
+          <%= @community.code %>
+        </small>
+      </h4>
+    </div>
+    <h4 style="color: grey;"></h4>
+    <p>
+      Select units to add a marker to the floorplate. If nothing appears in the list, then there are no additional units to add.
+    </p>
+    <p>
+      Drag and drop markers to reposition them on the property map.
+    </p>
+    <p>
+      Click "Grid" to add a grid overlay to the map to make positioning the plots easier.
+    </p>
+    <canvas class="canv" id="canvas" style="cursor:crosshair;background:url(<%= @floorplate.image.url %>) no-repeat; backgroud-size: cover !important;"></canvas>
+    <% community_units = @community_units %>
+    <% coordinates_array = [] %>
+    <% community_units.each do |unit| %>
+      <% if unit.x_plot.to_i + unit.y_plot.to_i > 0 %>
+        <% unless coordinates_array.include?([unit.x_plot,unit.y_plot]) %>
+          <% coordinates_array.push([unit.x_plot,unit.y_plot ]) %>
+          <% #- left = unit.x_plot - left_margin %>
+          <% #- right = unit.y_plot - right_margin %>
+          <%= link_to "<i class='fas fa-map-marker-alt' style='color: red;' ></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, :id => "m_#{unit.provider_unit_id}", :style => "left:#{unit.x_plot }px; top:#{unit.y_plot}px; position:absolute; font-size: 19px", "data-name" => "plot", "data-target" => "#markers-modal", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-horizontal"=>unit.x_plot,"data-vertical"=>unit.y_plot,"data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position" %>
+            <div class="h-<%= unit.x_plot  %>-<%= unit.y_plot %> hidden" data-href="/communities/<%= @community.id %>/units/<%= unit.provider_unit_id %>/remove_plot_from_floorplate?floorplate_id=<%= params[:floorplate_id] %>" data-name="plot" data-title="<%= (unit.building.present? ? unit.building + '-' + unit.marketing_name: unit.marketing_name) %>" data-unit-form-url="/communities/<%= current_community.id %>/units/<%= unit.id %>/adjust_position" id="h-<%= unit.provider_unit_id %>"></div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</section>
+<% end %>
+<%= render '/font_awesome_v5' %>
+<% content_for :title, "Plot Unit - Pynwheel" %>
+<section class="is-floorplate">
+  <div class="content">
+    <div class="title-heading mb-25">
+      <h4>
+        <i class="fa fa-database"></i>
+        <%= @community.name.capitalize %>
+        <br>
+          <small class="text-primary">
+            <%= @community.code %>
+          </small>
+        </br>
+      </h4>
+    </div>
+    <h4 style="color: grey;">
+      <p>
+        Select units to add a marker to the floorplate. If nothing appears in the list, then there are no additional units to add.
+      </p>
+      <p>
+        Drag and drop markers to reposition them on the property map.
+      </p>
+      <p>
+        Click "Grid" to add a grid overlay to the map to make positioning the plots easier.
+      </p>
+    </h4>
+    <div class="box box-info add-plan">
+      <div class="box-header">
+        <h3 class="box-title">
+          Plot
+          <% if @community.theme_name.include?('gables') %>
+            <% marker_color = @community.design.property_map_color.present? ? @community.design.property_map_color : "#d37474" %>
+          <% elsif @community.theme_name == 'modernist' %>
+            <% marker_color = @community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernist_map_marker_color %>
+          <% elsif @community.theme_name == 'futurist' %>
+            <% marker_color = @community.design.futurist_property_map_marker_color.present? ? @community.design.futurist_property_map_marker_color : "#d37474" %>
+          <% elsif @community.theme_name == 'expressionist' %>
+            <% marker_color = @community.design.expressionist_property_map_marker_color.present? ? @community.design.expressionist_property_map_marker_color : "#d37474" %>
+          <% elsif @community.theme_name == 'panther' %>
+            <% marker_color = @community.design.panther_property_map_marker_color.present? ? @community.design.panther_property_map_marker_color : "#d37474" %>
+          <% else %>
+            <% marker_color = 'rgba(247, 0, 0, 0.61)' %>
+          <% end %>
+          <% #- %>
+          <% if @community.theme_name.include?('gables') %>
+            <% fontsize = @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30 %>
+          <% elsif @community.theme_name == 'modernist' %>
+            <% fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : 30 %>
+          <% elsif @community.theme_name == 'futurist' %>
+            <% fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : 30 %>
+          <% elsif @community.theme_name == 'expressionist' %>
+            <% fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : 30 %>
+          <% elsif @community.theme_name == 'panther' %>
+            <% fontsize = @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : 30 %>
+          <% else %>
+            <% fontsize = 30 %>
+          <% end %>
+          <% #- fontsize = @community.design.property_map_size_integer %>
+          <% left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i %>
+          <% right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i %>
+          <% #- marker_color = @community.theme_name.include?('gables') ? @community.design.property_map_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernist_map_marker_color) : 'rgba(247, 0, 0, 0.61)') %>
+          <span class="hidden" id="font_size">#{fontsize}</span>
+          <span class="hidden" id="left_margin">#{left_margin}</span>
+          <span class="hidden" id="right_margin">#{right_margin}</span>
+          <span class="hidden" id="marker_color">#{marker_color}</span>
+          <span>
+            <%= @floorplate.name + " Units" %>
+          </span>
+          <span class="hidden" id="active_x_plot">0</span>
+          <span class="hidden" id="active_y_plot">0</span>
+        </h3>
+        <div class="btn-btn-danger mt-10">
+          <%= link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary" %>
+          <button class="btn btn-primary grid-overlay" onclick="showHideOverlayGrid();" type="button">Grid Overlay</button>
+          <% if current_user.is_super_admin? %>
+            <a class="btn btn-danger" data-href="/communities/<%= @community.id %>/remove_plots_from_floorplate?floorplate_id=<%= params[:floorplate_id] %>" data-name="floorplate's plots" data-target="#confirm-delete" data-toggle="modal">Reset all plots</a>
+          <% end %>
+        </div>
+      </div>
+      <!-- /.box-header
+      -->
+      <!-- form start
+      -->
+      <form class="form-horizontal">
+        <div class="box-body map-body-top">
+          <div class="row">
+            <div class="col-lg-12 p-0" id="container">
+              <div class="map-block" style="position: relative;">
+                <!-- id map -->
+                <div class="plot-image" id="">
+                  <div class="grid-graph hidden"></div>
+                  <%= image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg", id: "testimg" %>
+                  <% community_units = @community_units %>
+                  <% coordinates_array = [] %>
+                  <% path_point_coords = {} %>
+
+                  <% @existing_path_points.each_with_index do |point, index|  %>
+                    <div style="position: absolute; top: <%= point.y%>px; left: <%= point.x%>px; width: 15px; height: 15px; background-color: #000; z-index: 9999" class="path_point" id="point_<%= point.id %>"></div>
+                    <!-- css('position', 'absolute')
+                .css('top', mouseY + 'px')
+                .css('left', mouseX + 'px')
+                .css('width', size)
+                .css('height', size)
+                .css('background-color', color)
+                .css('z-index', 9999) -->
+                  <% end %>
+
+                  <% community_units.each do |unit| %>
+                    <% if unit.x_plot.to_i + unit.y_plot.to_i > 0 %>
+                      <% unless coordinates_array.include?([unit.x_plot,unit.y_plot]) %>
+                        
+                        <% path_point_coords[unit.id] = {x: unit.x_plot, y: unit.y_plot} %>
+
+                        <% coordinates_array.push([unit.x_plot - left_margin ,unit.y_plot - right_margin ]) %>
+                        <% #- left = unit.x_plot - left_margin %>
+                        <% #- right = unit.y_plot - right_margin %>
+                        <%= link_to "<i class='fas fa-map-marker-alt' style='color: #{marker_color};' ></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, :id => "m_#{unit.provider_unit_id}", :style => "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - right_margin}px; position:absolute; font-size: #{fontsize}px", "data-name" => "plot", "data-target" => "#markers-modal", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-horizontal"=>unit.x_plot,"data-vertical"=>unit.y_plot,"data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position" %>
+                      <% end %>
+                      <div class="h-<%= unit.x_plot  %>-<%= unit.y_plot %> hidden" data-href="/communities/<%= @community.id %>/units/<%= unit.provider_unit_id %>/remove_plot_from_floorplate?floorplate_id=<%= params[:floorplate_id] %>" data-name="plot" data-title="<%= (unit.building.present? ? unit.building + '-' + unit.marketing_name: unit.marketing_name) %>" data-unit-form-url="/communities/<%= current_community.id %>/units/<%= unit.id %>/adjust_position" id="h-<%= unit.provider_unit_id %>"></div>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div data-toggle="tooltip" id="map-marker" onclick="selMarker()" title="new marker">
+          <i class="icon-screenshot"></i>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal fade" id="markers-modal" role="dialog" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" id="u-name"></div>
+      <%= form_tag "" do %>
+        <div class="modal-body">
+          <%= hidden_field_tag 'redirect_path' , community_floorplate_plotexp_path(current_community,@floorplate) %>
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">X Position</label>
+            <div class="col-sm-10">
+              <%= text_field_tag "horizontal_position",0,:class=>"form-control" %>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Y Position</label>
+            <div class="col-sm-10">
+              <%= text_field_tag "vertical_position", 0,:class=>"form-control" %>
+            </div>
+          </div>
+          <div class="unit-buttons"></div>
+        </div>
+        <div class="modal-footer">
+          <%= submit_tag "Update",:class=>"btn btn-primary" %>
+          <a class="btn btn-danger delete-marker-ok" data-method="delete">Delete Marker</a>
+          <a class="btn btn-primary" onclick="addMarkerOnFloorplate()">Add Marker</a>
+          <button class="btn btn-default" data-dismiss="modal" type="button">Cancel</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal fade" id="add-marker-modal" role="dialog" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" id="add-marker-heading">
+        Add Marker
+      </div>
+      <%= form_tag "/communities/#{@community.id}/add_plots_on_floorplate" do %>
+        <div class="modal-body">
+          <%= hidden_field_tag 'redirect_path' , community_floorplate_plotexp_path(current_community,@floorplate) %>
+          <%= hidden_field_tag 'add_horizontal_position' %>
+          <%= hidden_field_tag 'add_vertical_position' %>
+          <%= hidden_field_tag 'unit_provider_ids',"[]" %>
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label"></label>
+            <div class="col-sm-10 unit-selects-in-popup">
+              <select class="amenities-list-on-popup form-control" multiple="multiple">
+                <% if community_units.present? %>
+                  <% community_units.each do |u| %>
+                    <% u.building = "" if u.building == nil %>
+                  <% end %>
+                  <% community_units = community_units.sort_by {|obj| obj.marketing_name.to_i} %>
+                  <% community_units = community_units.sort_by {|obj| obj.building.to_i} %>
+                <% end %>
+                <% community_units.each do |unit| %>
+                  <% if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present? %>
+                    <% if unit.building != nil && unit.building != "" %>
+                      <option value="<%= unit.provider_unit_id %>">
+                        <%= "#{unit.building}-#{unit.marketing_name}" %>
+                      </option>
+                    <% else %>
+                      <option value="<%= unit.provider_unit_id %>">
+                        <%= "#{unit.marketing_name}" %>
+                      </option>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <%= submit_tag "Add",:class=>"btn btn-primary"  %>
+          <button class="btn btn-default" data-dismiss="modal" type="button">Cancel         </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  var community_id = <%= params[:community_id] %>;
+  var floorplate_id = <%= params[:floorplate_id] %>;
+
+  var cords_arr = JSON.parse('<%= raw(path_point_coords.to_json) %>');
+
+
+
+  $(document).ready(function(){
+    path_array = []
+    radius = 50;
+    var point_color = '#000000';
+    var point_size = 15;
+    
+    // add listner to prev points 
+    $.each($("*.path_point"), function(i, existing_point){
+      // debugger
+      id = $(existing_point).prop('id');
+      dragElement(document.getElementById(id));
+    });
+
+    $("#testimg").on('click', function (ev) {
+      mouseX = Math.round(ev.offsetX - point_size/2)
+      mouseY = Math.round(ev.offsetY - point_size/2)
+      neighbour_units =  detectNearestUnits()
+      savePoint(mouseX, mouseY, neighbour_units)
+    });
+
+    $('*.path_point').on('dblclick', function (e) {
+        point_id = this.id.replace( /^\D+/g, '')
+        $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/delete_path_points",
+          { "point_id": point_id },
+          function(data,status,xhr) {
+            if(data){
+              $("#"+data.point_id).remove()
+            }
+          }
+        );
+        return false;
+    });
+
+    function detectNearestUnits(){
+      neighbour_unit_ids = []
+      $.each(cords_arr, function(index, unit){
+        xp = Math.pow((unit.x - mouseX), 2)
+        yp = Math.pow((unit.y - mouseY), 2)
+
+        d = Math.sqrt(xp + yp)
+        if(d <= radius)
+          neighbour_unit_ids.push(index)
+      });
+      
+      return neighbour_unit_ids
+    }
+
+    function savePoint(x, y, unit_ids){
+      $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/save_path_points",
+        { "x": x,
+          "y": y,
+          "unit_ids": unit_ids
+        },
+        function(data,status,xhr) {
+          drop_point_on_screen(data)
+        }
+      );
+    }
+
+    function updatePoint(x, y, unit_ids, point_id){
+      $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/update_path_points",
+        { 
+          "x": x,
+          "y": y,
+          "point_id": point_id,
+          "unit_ids": unit_ids
+        },
+        function(data,status,xhr) {
+          // drop_point_on_screen(data)
+        }
+      );
+    }
+
+
+    function drop_point_on_screen(db_data){
+            
+      var size =  point_size.toString()+ 'px';
+
+      id = "point_"+db_data.point.id.toString()
+
+      path_point = $('<div class="path_point" id="'+ id +'"></div>')
+              .css('position', 'absolute')
+              .css('top', mouseY + 'px')
+              .css('left', mouseX + 'px')
+              .css('width', size)
+              .css('height', size)
+              .css('background-color', point_color)
+              .css('z-index', 9999)
+
+
+      path_array.push(path_point)
+      $(".plot-image").append(path_point);
+      
+      dragElement(document.getElementById(id));
+    }
+
+
+    var pointer_drag_pos = []
+
+    $('*.path_point').on('click', function(e){
+      // debugger
+      mouseX = this.offsetLeft
+      mouseY = this.offsetTop
+      neighbour_units =  detectNearestUnits()
+      updatePoint(mouseX, mouseY, neighbour_units, this.id.replace( /^\D+/g, ''))
+    });
+
+    function dragElement(elmnt) {
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+      
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        // debugger
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        // debugger
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+
+        // console.log($('#point_396'))
+        // pointer_drag_pos.push({x: pos3, y: pos4})
+        // console.log(pointer_drag_pos)
+      }
+
+      function closeDragElement(e) {
+        e = e || window.event;
+        // path_array = $('.path_point')
+        console.log(path_array)
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+    
+  });
+
+</script>

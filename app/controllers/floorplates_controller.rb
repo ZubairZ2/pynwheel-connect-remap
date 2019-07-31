@@ -133,6 +133,64 @@ class FloorplatesController < ApplicationController
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)
   end
 
+  def draw_path_points
+    puts params
+    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    @floorplate = Floorplate.includes(:path_points).find_by_id(params[:floorplate_id])
+    unless current_community.units.size > 0
+      flash[:error] = "Please import unit data first"
+    end
+    @community_units = @floorplate.fetch_units
+    @existing_path_points = @floorplate.path_points
+
+    add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+    add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)
+  end
+
+  def save_path_points
+    path_point = PathPoint.create x: params[:x], y: params[:y], floorplate_id: params[:floorplate_id]
+    
+    NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
+    render json: {point: path_point}, status: 200
+  end
+
+  def update_path_points
+    path_point = PathPoint.find(params[:point_id])
+    path_point.update_attributes(x: params[:x], y: params[:y])
+    path_point.neighbour_units.destroy_all
+    NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
+    render json: {point: path_point}, status: 200
+  end
+
+  def delete_path_points
+    path_point = PathPoint.find(params[:point_id])
+    if path_point.present?
+      path_point.destroy
+    end
+    render json: {point: path_point.present? ? path_point : {}, point_id: "point_#{params[:point_id]}"}, status: 200
+  end
+
+  def ajax_path_draw_on_floorplate
+    unit = @community.units.where(provider_unit_id: params[:id])
+    if unit.present?
+      #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      unit = unit.first
+      unit.x_plot = params[:x_plot]
+      unit.y_plot = params[:y_plot]
+      unit.floorplate_id = params[:floorplate_id]
+      unit.save(validate: false)
+      ts = TourStop.find_by(stop_id: unit.id)
+      if ts.present?
+        ts.latitude  = unit.x_plot
+        ts.longitude = unit.y_plot
+        ts.save
+      end
+      render json: {unit: unit}, status: 200
+    else
+      render json: {}, status: 404
+    end
+  end
+
   private
 
   def floorplate_params

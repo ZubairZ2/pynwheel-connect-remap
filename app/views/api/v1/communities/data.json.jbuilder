@@ -18,6 +18,7 @@ json.ui_settigs do
   json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
   json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
   json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
+  json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
@@ -517,7 +518,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.global_navigation_icons_position "Above the text"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
-          json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Above the text") : "Above the text"
+          json.global_navigation_icons_position "Above the text"# @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Above the text") : "Above the text"
         else
           json.global_navigation_icons_position "Above the text"
         end

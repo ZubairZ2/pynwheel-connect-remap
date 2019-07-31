@@ -10,6 +10,7 @@ gem 'bootstrap-wysihtml5-rails'
 
 gem 'write_xlsx'
 gem "mini_magick"
+gem 'google_places'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server
@@ -83,6 +84,7 @@ gem 'puma_worker_killer'
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platform: :mri
+  gem 'pry'
 end
 
 group :development do

@@ -491,11 +491,21 @@ class Community < ApplicationRecord
     email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     ios = params[:favorites][:device_type].present? && params[:favorites][:device_type] == "iOS" ? true : false
     if favorites.present?
-      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
+      begin
+        FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
+      rescue => ex
+        FavoriteMailer.email_favorites_text(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
+      end
       return true
     else
       return false
     end
+  end
+  def neighbourhood_counter_mail_200
+    NeighbourhoodMailer.email_counter_200("umersani47@gmail.com","muhammad.umer@intagleo.com","").deliver
+  end
+  def neighbourhood_counter_mail_400
+    NeighbourhoodMailer.email_counter_400("umersani47@gmail.com","muhammad.umer@intagleo.com","").deliver
   end
 
   def image_src

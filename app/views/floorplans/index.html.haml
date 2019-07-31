@@ -23,7 +23,7 @@
     .row
       #floorplans-index
         = render 'index'
-      .col-lg-4.col-md-12
+      .col-lg-4.col-md-12.floor_plan_upload_image
         -#.row
         -#  .col-md-12
         -#    %h4{style: "color: grey;"}
@@ -41,10 +41,9 @@
         -#    .mt-35
         -#      %a.btn.btn-success.pull-right.mb-20{:href => "##","data-target" => "#modal-to-add-floorplan-description", "data-toggle" => "modal", :style => "margin-right : 5px;"}
         -#        ADD DETAILS TO MULTIPLE
-
-        .row{style: "margin-top: 197px;"}
+        .row{style: "margin-top: 405px;"}
           .col-md-12#holder
-            .box.box-widget.panel-box.pl-20.pr-20.pb-10
+            .box.box-widget.panel-box.pl-20.pr-20.pb-10{:style => "max-height: 675px !important; overflow: scroll;"}
               .row
                 .col-md-12.col-lg-9.col-xs-9
                   %h4
@@ -76,7 +75,7 @@
               .text-center.mt-10.drag-drop-section
                 %img{:alt => "", :src => "/assets/upload-image.png", :style => "max-width:100%;", :title => ""}
                 %p.mt-10
-                Drag & Drop file to Upload   
+                Drag & Drop file to Upload
 
 #modal-to-add-floorplan-description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
@@ -127,7 +126,7 @@
     $('.apartment-settings-form').submit();
   });
   $(document).ready(function(){
-    $('.floor_plan_upload_image').affix({offset: {top: 205} }); 
+    $('.floor_plan_upload_image').affix({offset: {top: 675} });
   });
   if (!#{current_user.welcome_floorplan_page})
   {

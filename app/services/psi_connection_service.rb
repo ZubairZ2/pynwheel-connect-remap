@@ -1,7 +1,11 @@
 class PsiConnectionService < BaseService
   def perform
     begin
-      url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+      if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+        url = credentials.entrata_url
+      else
+        url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+      end
       password = credentials.password
       username = credentials.username
       property_ids = credentials.property_id.split(',') rescue []

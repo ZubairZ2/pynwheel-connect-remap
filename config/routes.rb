@@ -79,6 +79,11 @@ Rails.application.routes.draw do
         end
       end
       get :plotexp
+      get :draw_path_points
+      post :save_path_points
+      post :update_path_points
+      post :delete_path_points
+
       get :grid_overlay
       post :adjust_marker_positions
     end
@@ -242,6 +247,9 @@ Rails.application.routes.draw do
           get :ios_data
           get :minimum_data
           post :email_favorites
+          get :get_neighbourhood_data
+          get :reset_counter
+          get :test_panzoom
         end
         collection do
           post :login
@@ -250,11 +258,16 @@ Rails.application.routes.draw do
         end
       end
       resources :tours,only: :index do
+        collection do
+          post :tour_user_login
+        end
         member do
+          post :tour_user_login
           post :save_user_data
           post :save_user_tour
         end
       end
+      get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
     end
   end
 end

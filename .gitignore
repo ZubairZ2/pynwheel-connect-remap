@@ -10,6 +10,9 @@
 # Ignore the default SQLite database.
 /db/*.sqlite3
 /db/*.sqlite3-journal
+.ruby-gemset
+.ruby-version
+vendor/bundle/
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -17,7 +20,9 @@
 !/log/.keep
 !/tmp/.keep
 .idea/
-
+public/uploads/*
+vendor/bundle/
+test/
 # Ignore Byebug command history file.
 .byebug_history
 
