@@ -58,15 +58,15 @@
 
 = f.hidden_field :provider
 
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Display Virtual Tour Button Label
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .TriSea-technologies-Switch
-      %span.pr-15 No
-      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
-      %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
-      %span.pl-15 Yes
+-#.form-group
+-#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+-#    Display Virtual Tour Button Label
+-#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+-#    .TriSea-technologies-Switch
+-#      %span.pr-15 No
+-#      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
+-#      %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
+-#      %span.pl-15 Yes
 
 .form-group#unit_virtual_tour_button_label_field
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -169,19 +169,3 @@
       });
   })
 
-  $('#unit_display_virtual_tour_button_label').change(function(){
-    if($(this).is(':checked')){
-        $('#unit_virtual_tour_button_label_field').removeClass('hidden');
-      }
-    else{
-        $('#unit_virtual_tour_button_label_field').addClass('hidden');
-     }
-  });
-  if (#{@unit.display_virtual_tour_button_label})
-  {
-    $('#unit_virtual_tour_button_label_field').removeClass('hidden');
-  }
-  else
-  {
-    $('#unit_virtual_tour_button_label_field').addClass('hidden');
-  }
