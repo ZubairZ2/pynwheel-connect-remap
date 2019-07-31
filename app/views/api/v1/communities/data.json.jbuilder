@@ -16,6 +16,7 @@ json.ui_settigs do
   end
   json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
+  json.show_gesture_icons @community.show_gesture_icons.present? ? @community.show_gesture_icons : true
   json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
   json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
   json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
@@ -1290,7 +1291,7 @@ json.apartments do
       json.id unit.id
       json.floorplan_name floorplan.present? ? floorplan.name : nil
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
-      json.display_virtual_tour_button_label unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
+      json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
       json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
 
       if unit.virtual_tour_url.present?
@@ -1388,7 +1389,7 @@ json.apartments do
     json.description floorplan.description
     json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
     json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil
-    json.display_virtual_tour_button_label floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
+    json.display_virtual_tour_button_label true #floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
     json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
 
     #json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
