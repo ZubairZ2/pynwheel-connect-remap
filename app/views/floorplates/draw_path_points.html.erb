@@ -275,7 +275,7 @@
       dragElement(document.getElementById(id));
     });
 
-    $("#testimg").on('click', function (ev) {        
+    $("#testimg").on('click', function (ev) {
       mouseX = Math.round(ev.offsetX - point_size/2)
       mouseY = Math.round(ev.offsetY - point_size/2)
       neighbour_units =  detectNearestUnits()
@@ -294,22 +294,6 @@
         );
         return false;
     });
-
-    // $( "#testimg" ).contextmenu(function(e) {
-      
-    //   elem = path_array.pop()
-    //   console.log($("#"+$(elem).prop('id')))
-    //   $("#"+$(elem).prop('id')).remove()
-    //   debugger
-    //   $.post( "/communities/"+community_id+"/floorplates/" + floorplate_id + "/delete_path_point",
-    //     { "point_id": elem },
-    //     function(data,status,xhr) {
-    //       debugger
-    //     }
-    //   );
-
-    //   e.preventDefault();
-    // });
 
     function detectNearestUnits(){
       neighbour_unit_ids = []
@@ -378,6 +362,7 @@
     var pointer_drag_pos = []
 
     $('*.path_point').on('click', function(e){
+      // debugger
       mouseX = this.offsetLeft
       mouseY = this.offsetTop
       neighbour_units =  detectNearestUnits()
@@ -386,8 +371,6 @@
 
     function dragElement(elmnt) {
       var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      
-
       elmnt.onmousedown = dragMouseDown;
 
       function dragMouseDown(e) {
