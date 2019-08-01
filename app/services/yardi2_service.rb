@@ -6,6 +6,7 @@ class Yardi2Service < BaseService
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
+        byebug
         external_property_id = ""
         ils_units = []
         floorplans = []
@@ -88,6 +89,7 @@ class Yardi2Service < BaseService
       begin
         unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])#.first_or_initialize
         if unit.present?
+          byebug
           puts "++++++++"*20,unit_entries
           # unit.property_id = property_id
           # unit.unit_type = unit_entries[0][:Id]
