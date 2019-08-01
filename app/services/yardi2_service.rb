@@ -121,7 +121,7 @@ class Yardi2Service < BaseService
             end
           end
 
-          unit.save
+          unit.save(validate: false)
 
         end
       rescue => e

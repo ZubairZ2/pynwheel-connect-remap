@@ -203,7 +203,7 @@ class RealPageSvcService < BaseService
                 #     unit.building = bldgResult
                 #   end
                 # end
-                unit.save
+                unit.save(validate: false)
 
 
               end
