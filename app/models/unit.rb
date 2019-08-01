@@ -77,7 +77,7 @@ class Unit < ApplicationRecord
   end
 
   def unit_market
-    return self.building.to_s + "-" + self.marketing_name
+    return self.building.present? ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
     # unless self.marketing_name.present?
     #   return ""
     # end
