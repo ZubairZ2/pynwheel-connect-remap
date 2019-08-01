@@ -27,15 +27,12 @@ class Yardi2Service < BaseService
           :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
           :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
         #result = Hash.from_xml(response.body) This method consumes a lot of memory on heroku
-        sleep 3
-        puts "1111111111"*20
         result = Ox.load(response.body, mode: :hash)
-        sleep 5
+        sleep 3
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
-            sleep 8
-            puts "222222222222"*20
+            sleep 3
             if pr[0].to_s == "PropertyID"
               external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
             end
@@ -46,7 +43,6 @@ class Yardi2Service < BaseService
               ils_units << pr[1]
             end
           end
-          puts "3333333333333333"*20
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           begin
@@ -90,7 +86,6 @@ class Yardi2Service < BaseService
       begin
         unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])#.first_or_initialize
         if unit.present?
-          puts "++++++++"*20,unit_entries
           # unit.property_id = property_id
           # unit.unit_type = unit_entries[0][:Id]
           # unit.marketing_name = unit_entries[0][:Id]
@@ -101,7 +96,6 @@ class Yardi2Service < BaseService
             # if u.key?(:Unit)
             #   unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
             # end
-            puts "++++++++"*20, u[:EffectiveRent][0][:Min]
             if u.key?(:EffectiveRent)
               unit.market_rent = u[:EffectiveRent][0][:Min]
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
@@ -109,7 +103,6 @@ class Yardi2Service < BaseService
               end
 
             end
-            puts "++++++++"*20,u[:Availability][:VacateDate]
             if u.key?(:Availability)
               if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
                 vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
@@ -128,7 +121,6 @@ class Yardi2Service < BaseService
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = is_available ? "Unoccupied" : "Occupied"
           end
-          puts "++++++++"*20,u[:Availability]
           unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
             if unit.availability == "Occupied"
               unit.available = false
@@ -137,11 +129,12 @@ class Yardi2Service < BaseService
             end
           end
 
-          unit.save(validate: false)
-
+          unit.save!(validate: false)
+        else
+          puts "Not Present "*20
         end
       rescue => e
-        puts '----------------------------------', e.message
+        puts '----------------------------------'*30, e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
     end
