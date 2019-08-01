@@ -165,11 +165,19 @@ class RealPageSvcSwapService < BaseService
               u = u[:UnitObject]
               hit = false
 
-              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber]).first
+              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber])
               unless unit.present?
-                unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber]).first
+                unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber])
+              end
+
+              if unit.count > 1
+                unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber],building: u[:BuildingNumber])unless u[:BuildingNumber] == "N/A"
+                unless unit.present?
+                  unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber],building: u[:BuildingNumber]) unless u[:BuildingNumber] == "N/A"
+                end
               end
               if unit.present?
+                unit = unit.first
                 unit.provider = "realpagesvc_new"
                 unit.provider_unit_id = u[:UnitID]
                 unit.property_id = u[:SiteID]
@@ -231,7 +239,7 @@ class RealPageSvcSwapService < BaseService
                 #     unit.building = bldgResult
                 #   end
                 # end
-                unit.save
+                unit.save(validate: false)
               else
                 dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:UnitID])
                 if dup.present?
@@ -305,7 +313,7 @@ class RealPageSvcSwapService < BaseService
                 #     unit.building = bldgResult
                 #   end
                 # end
-                unit.save
+                unit.save(validate: false)
 
               end
 

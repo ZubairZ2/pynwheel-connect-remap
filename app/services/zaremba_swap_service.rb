@@ -64,11 +64,18 @@ class ZarembaSwapService < BaseService
       flag = 0
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["MarketingName"]).last
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["MarketingName"])
       unless unit.present?
         unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["BuildingID"]+"-"+u["MarketingName"])
       end
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["MarketingName"],building: u["BuildingID"])
+        unless unit.present?
+          unit = Unit.find_by(community_id: credentials.community_id,marketing_name: u["BuildingID"]+"-"+u["MarketingName"],building: u["BuildingID"])
+        end
+      end
       if unit.present?
+        unit = unit.first
         # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
         # u1.each do |u2|
         #   unless u2.building == u["BuildingID"]

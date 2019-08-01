@@ -26,7 +26,10 @@ class YardiRentCafeSwapService < BaseService
         if response[0]["Error"].nil?
           response.each do |r|
             begin
-              unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"]).first
+              unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"])
+              if unit.count > 1
+                unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"],floorplan_id: Floorplan.find_by(name: r["FloorplanName"].provider_floorplan_id))
+              end
               if unit.present?
                 # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider
                 unit.provider = "yardirentcafe_new"

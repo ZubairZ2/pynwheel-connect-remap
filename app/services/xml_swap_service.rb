@@ -56,8 +56,12 @@ class XmlSwapService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MarketingName"]["__content__"]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MarketingName"]["__content__"])
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MarketingName"]["__content__"],building: u["BuildingID"].present? ? u["BuildingID"] : "")
+      end
       if unit.present?
+        unit = unit.first
         unit.provider = "xml_new"
         unit.property_id = property_id
         unit.provider_unit_id = u["Id"]

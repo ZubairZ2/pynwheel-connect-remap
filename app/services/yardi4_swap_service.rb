@@ -67,8 +67,8 @@ class Yardi4SwapService < BaseService
               ils_units << pr[:ILS_Unit]
             end
           end
-          update_yardi4_units(ils_units,external_property_id)
           update_yardi4_floorplans(floorplans)
+          update_yardi4_units(ils_units,external_property_id)
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
           puts "Invalid credentials.Please enter correct one and try again."
@@ -87,13 +87,12 @@ class Yardi4SwapService < BaseService
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
 
-      dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue])
-      if dup.present?
-        dup.destroy
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][:IDValue])
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][:IDValue],floorplan_id: Floorplan.find_by(name: u[:Units][:Unit][:FloorplanName]).provider_floorplan_id)
       end
-
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][:IDValue]).first
       if unit.present?
+        unit = unit.first
         unit.provider = "yardi_new"
         unit.provider_unit_id = u[:Units][:Unit][:Identification][0][:IDValue]
         unit.property_id = property_id

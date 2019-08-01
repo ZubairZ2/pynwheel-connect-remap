@@ -44,8 +44,15 @@ class ResmanSwapService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"])
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"], floorplan_id: Floorplan.find_by(name: u["Unit"]["MITS:Information"]["MITS:FloorplanName"]).provider_floorplan_id)
+      end
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"], building: u["Unit"]["MITS:Information"]["MITS:BuildingID"].present? ? u["Unit"]["MITS:Information"]["MITS:BuildingID"] : "")
+      end
       if unit.present?
+        unit = unit.first
         unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
