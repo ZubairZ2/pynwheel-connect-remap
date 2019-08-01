@@ -54,6 +54,9 @@ class Yardi2Service < BaseService
           #puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
         else
+          cred1 = Credential.find credentials.id
+          cred1.data_error_exp = "data_not present"
+          cred1.save
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
@@ -62,6 +65,9 @@ class Yardi2Service < BaseService
           end
         end
       rescue => e
+        cred1 = Credential.find credentials.id
+        cred1.data_error_exp = e
+        cred1.save
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
