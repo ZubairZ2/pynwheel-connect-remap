@@ -88,6 +88,7 @@ class Yardi2Service < BaseService
       begin
         unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])#.first_or_initialize
         if unit.present?
+          puts "++++++++"*20,unit_entries
           # unit.property_id = property_id
           # unit.unit_type = unit_entries[0][:Id]
           # unit.marketing_name = unit_entries[0][:Id]
@@ -98,6 +99,7 @@ class Yardi2Service < BaseService
             # if u.key?(:Unit)
             #   unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
             # end
+            puts "++++++++"*20, u[:EffectiveRent][0][:Min]
             if u.key?(:EffectiveRent)
               unit.market_rent = u[:EffectiveRent][0][:Min]
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
@@ -105,6 +107,7 @@ class Yardi2Service < BaseService
               end
 
             end
+            puts "++++++++"*20,u[:Availability][:VacateDate]
             if u.key?(:Availability)
               if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
                 vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
@@ -123,6 +126,7 @@ class Yardi2Service < BaseService
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = is_available ? "Unoccupied" : "Occupied"
           end
+          puts "++++++++"*20,u[:Availability]
           unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
             if unit.availability == "Occupied"
               unit.available = false
