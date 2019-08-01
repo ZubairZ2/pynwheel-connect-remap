@@ -26,11 +26,11 @@ class Yardi2Service < BaseService
         #result = Hash.from_xml(response.body) This method consumes a lot of memory on heroku
         sleep 3
         result = Ox.load(response.body, mode: :hash)
-        sleep 3
+        sleep 5
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
-            sleep 3
+            sleep 8
             if pr[0].to_s == "PropertyID"
               external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
             end
