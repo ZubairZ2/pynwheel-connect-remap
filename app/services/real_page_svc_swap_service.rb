@@ -271,7 +271,6 @@ class RealPageSvcSwapService < BaseService
                 end
                 unit.marketing_name = u[:UnitNumber]
 
-                unit.building = u[:BuildingID]
                 unit.floorplan_id = u[:FloorplanID]
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
