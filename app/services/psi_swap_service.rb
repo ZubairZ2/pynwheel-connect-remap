@@ -273,12 +273,7 @@ class PsiSwapService < BaseService
 
       end
     end
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      unless d.provider == "psi_new"
-        d.destroy
-      end
-    end
+
 
   end
 
@@ -600,6 +595,12 @@ class PsiSwapService < BaseService
     community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
   end
   def rename_provider
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      unless d.provider == "psi_new"
+        d.destroy
+      end
+    end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
       if d.provider == "psi_new"

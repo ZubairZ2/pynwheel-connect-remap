@@ -92,12 +92,7 @@ class YardiRentCafeSwapService < BaseService
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
             end
           end
-          unit = Unit.where(community_id: credentials.community_id)
-          unit.each do |d|
-            unless d.provider == "yardirentcafe_new" || d.provider == "manually"
-              d.destroy
-            end
-          end
+
 
 
         else
@@ -176,12 +171,7 @@ class YardiRentCafeSwapService < BaseService
             end
 
           end
-          fp = Floorplan.where(community_id: credentials.community_id)
-          fp.each do |d|
-            unless d.provider == "yardirentcafe_new"
-              d.destroy
-            end
-          end
+
 
 
 
@@ -199,6 +189,18 @@ class YardiRentCafeSwapService < BaseService
     "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
   end
   def rename_provider
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      unless d.provider == "yardirentcafe_new"
+        d.destroy
+      end
+    end
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "yardirentcafe_new" || d.provider == "manually"
+        d.destroy
+      end
+    end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
       if d.provider == "yardirentcafe_new"
