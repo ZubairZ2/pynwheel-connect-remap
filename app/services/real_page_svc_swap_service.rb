@@ -116,12 +116,7 @@ class RealPageSvcSwapService < BaseService
 
             end
           end
-          fp = Floorplan.where(community_id: credentials.community_id)
-          fp.each do |d|
-            unless d.provider == "realpagesvc_new"
-              d.destroy
-            end
-          end
+
 
 
         end
@@ -337,12 +332,7 @@ class RealPageSvcSwapService < BaseService
 
             end
           end
-          unit = Unit.where(community_id: credentials.community_id)
-          unit.each do |d|
-            unless d.provider == "realpagesvc_new" || d.provider == "manually"
-              d.destroy
-            end
-          end
+
 
 
         end
@@ -538,6 +528,18 @@ class RealPageSvcSwapService < BaseService
     end
   end
   def rename_provider
+    fp = Floorplan.where(community_id: credentials.community_id)
+    fp.each do |d|
+      unless d.provider == "realpagesvc_new"
+        d.destroy
+      end
+    end
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "realpagesvc_new" || d.provider == "manually"
+        d.destroy
+      end
+    end
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       if d.provider == "realpagesvc_new"

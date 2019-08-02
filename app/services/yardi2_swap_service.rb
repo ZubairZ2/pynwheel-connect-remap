@@ -138,12 +138,7 @@ class Yardi2SwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      unless d.provider == "yardi_new" || d.provider == "manually"
-        d.destroy
-      end
-    end
+
 
   end
 
@@ -254,16 +249,23 @@ class Yardi2SwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
+
+
+
+  end
+  def rename_provider
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       unless d.provider == "yardi_new"
         d.destroy
       end
     end
-
-
-  end
-  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "yardi_new" || d.provider == "manually"
+        d.destroy
+      end
+    end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
       if d.provider == "yardi_new"

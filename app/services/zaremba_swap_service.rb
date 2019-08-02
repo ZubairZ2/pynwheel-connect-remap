@@ -186,12 +186,7 @@ class ZarembaSwapService < BaseService
         unit.save(validate: false)
       end
     end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      unless d.provider == "zaremba_new" || d.provider == "manually"
-        d.destroy
-      end
-    end
+
 
   end
 
@@ -359,15 +354,22 @@ class ZarembaSwapService < BaseService
       floorplan.errors.full_messages.join(',')
     end
 
+
+
+  end
+  def rename_provider
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       unless d.provider == "zaremba_new"
         d.destroy
       end
     end
-
-  end
-  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "zaremba_new" || d.provider == "manually"
+        d.destroy
+      end
+    end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
       if d.provider == "zaremba_new"
