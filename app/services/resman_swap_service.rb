@@ -44,8 +44,15 @@ class ResmanSwapService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"])
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"], floorplan_id: Floorplan.find_by(name: u["Unit"]["MITS:Information"]["MITS:FloorplanName"]).provider_floorplan_id)
+      end
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Id"], building: u["Unit"]["MITS:Information"]["MITS:BuildingID"].present? ? u["Unit"]["MITS:Information"]["MITS:BuildingID"] : "")
+      end
       if unit.present?
+        unit = unit.first
         unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
@@ -65,8 +72,10 @@ class ResmanSwapService < BaseService
           month = u["Availability"]["VacateDate"]["Month"]
           day = u["Availability"]["VacateDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
+          unit.available = true
         else
           unit.availability = "Occupied"
+          unit.available = false
         end
         unit.available_date = vacateDate
         building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
@@ -123,8 +132,12 @@ class ResmanSwapService < BaseService
   def save_resman_floorplans(floorplans,property_id)
     floorplans.each do |f|
 
-      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
+      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"])
+      if floorplan.count > 1
+        floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"],square_feet: f["SquareFeet"]["Min"])
+      end
       if floorplan.present?
+        floorplan = floorplan.first
         floorplan.property_id = property_id
         # floorplan.name = f["Name"]
         floorplan.provider_floorplan_id = f["Id"]

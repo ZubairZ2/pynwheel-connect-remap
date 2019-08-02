@@ -62,9 +62,15 @@ class PsiSwapService < BaseService
       vacateDate = ""
       puts '+++++++++++++++++++++++++++ update outer  +++++++++++++++++++++++++++++'
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"])
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],floorplan_id: Floorplan.find_by(name: u["Units"]["Unit"]["UnitType"]).provider_floorplan_id)
+      end
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"].gsub("Building ", "") : "")
+      end
       if unit.present?
-
+        unit = unit.first
         puts '+++++++++++++++++++++++++++ update inner  +++++++++++++++++++++++++++++'
         unit.provider = "psi_new"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
@@ -170,8 +176,12 @@ class PsiSwapService < BaseService
     floorplans.each do |f|
 
       puts '+++++++++++++++++++++++++ add new floor plans innerrrrr +++++++++++++++++++++++++++++'
-      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
+      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"])
+      if floorplan.count > 1
+        floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"],square_feet: f["SquareFeet"]["@attributes"]["Min"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"])
+      end
       if floorplan.present?
+        floorplan = floorplan.first
         floorplan.provider = "psi_new"
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.property_id = property_id

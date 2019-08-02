@@ -26,8 +26,12 @@ class YardiRentCafeSwapService < BaseService
         if response[0]["Error"].nil?
           response.each do |r|
             begin
-              unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"]).first
+              unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"])
+              if unit.count > 1
+                unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"],floorplan_id: Floorplan.find_by(name: r["FloorplanName"].provider_floorplan_id))
+              end
               if unit.present?
+                unit = unit.first
                 # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider
                 unit.provider = "yardirentcafe_new"
                 unit.provider_unit_id = r["ApartmentId"]
@@ -39,9 +43,11 @@ class YardiRentCafeSwapService < BaseService
                 unit.effective_rent = r["MinimumRent"]
                 unit.availability = "Unoccupied"
                 if r["AvailableDate"] != ""
+                  unit.available = true
                   unit.availability = "Unoccupied"
                   unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
                 else
+                  unit.available = false
                   unit.availability = "Occupied"
                   unit.available_date = ""
                 end
@@ -66,11 +72,12 @@ class YardiRentCafeSwapService < BaseService
                 unit.floorplan_id = r["FloorplanId"]
                 unit.market_rent = r["MinimumRent"]
                 unit.effective_rent = r["MinimumRent"]
-                unit.availability = "Unoccupied"
                 if r["AvailableDate"] != ""
+                  unit.available = true
                   unit.availability = "Unoccupied"
                   unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
                 else
+                  unit.available = false
                   unit.availability = "Occupied"
                   unit.available_date = ""
                 end
@@ -119,8 +126,12 @@ class YardiRentCafeSwapService < BaseService
         response = JSON.parse(response.body)
         if response[0]["Error"].nil?
           response.each do |r|
-            fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"]).first
+            fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"])
+            if fp.count > 1
+              fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"],square_feet: r["MinimumSQFT"],bedrooms: r["Beds"],bathrooms: r["Baths"])
+            end
             if fp.present?
+              fp = fp.first
               fp.provider = "yardirentcafe_new"
               fp.provider_floorplan_id = r["FloorplanId"]
               fp.property_id = r["PropertyId"]
