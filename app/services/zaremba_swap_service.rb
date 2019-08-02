@@ -108,7 +108,10 @@ class ZarembaSwapService < BaseService
         unit.floor = u["FloorLevel"]
         if u["Availability"]["VacancyClass"] == "Vacant"
           unit.availability = "Unoccupied"
-          unit.available = true;
+          unit.available = true
+        else
+          unit.availability = "Occupied"
+          unit.available = false
         end
         if u["Availability"]["VacancyClass"] == "Vacant"
           year = u["Availability"]["VacateDate"]["Year"]
@@ -164,7 +167,10 @@ class ZarembaSwapService < BaseService
         unit.floor = u["FloorLevel"]
         if u["Availability"]["VacancyClass"] == "Vacant"
           unit.availability = "Unoccupied"
-          unit.available = true;
+          unit.available = true
+        else
+          unit.availability = "Occupied"
+          unit.available = false
         end
         if u["Availability"]["VacancyClass"] == "Vacant"
           year = u["Availability"]["VacateDate"]["Year"]
@@ -191,9 +197,12 @@ class ZarembaSwapService < BaseService
 
   def save_zaremba_floorplans(floorplans,property_id)
     floorplans.each do |f|
-      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
+      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"])
+      if floorplan.count > 1
+        floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"],square_feet: f["SquareFeet"]["Min"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"])
+      end
       if floorplan.present?
-
+        floorplan = floorplan.first
         floorplan.property_id = property_id
         floorplan.provider = "zaremba_new"
         floorplan.provider_floorplan_id = f["IDValue"]

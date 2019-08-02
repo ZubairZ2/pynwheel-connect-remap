@@ -51,8 +51,24 @@ class RealPageSvcSwapService < BaseService
 
             if fp.key?(:FloorPlanObject)
               fp = fp[:FloorPlanObject]
-              floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanNameMarketing]).first
+              floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanNameMarketing])
+              unless floorplan.present?
+                floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanCode] + " - " + fp[:FloorPlanName])
+              end
+              unless floorplan.present?
+                floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing])
+              end
+              if floorplan.count > 1
+                floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanNameMarketing],bathrooms: fp[:Bathrooms],bathrooms: fp[:Bedrooms],square_feet: fp[:GrossSquareFootage])
+                unless floorplan.present?
+                  floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanCode] + " - " + fp[:FloorPlanName],bathrooms: fp[:Bathrooms],bathrooms: fp[:Bedrooms],square_feet: fp[:GrossSquareFootage])
+                end
+                unless floorplan.present?
+                  floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing],bathrooms: fp[:Bathrooms],bathrooms: fp[:Bedrooms],square_feet: fp[:GrossSquareFootage])
+                end
+              end
               if floorplan.present?
+                floorplan = floorplan.first
                 floorplan.provider = "realpagesvc_new"
                 floorplan.provider_floorplan_id = fp[:FloorPlanID]
                 floorplan.name = fp[:FloorPlanNameMarketing]
@@ -78,6 +94,7 @@ class RealPageSvcSwapService < BaseService
                 # floorplan = Floorplan.where(community_id: community_id).first
                 floorplan = Floorplan.new
                 floorplan.community_id = community_id
+                floorplan.provider_floorplan_id = fp[:FloorPlanID]
                 floorplan.provider = "realpagesvc_new"
                 if fp[:FloorPlanNameMarketing].present?
                   floorplan.name = fp[:FloorPlanNameMarketing]
@@ -189,6 +206,7 @@ class RealPageSvcSwapService < BaseService
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                unit.available = u[:AvailableBit] == "true" ? true : false
                 if u[:RentSqFtCount].present?
                   unit.square_feet = u[:RentSqFtCount]
                 end

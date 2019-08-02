@@ -150,8 +150,12 @@ class XmlSwapService < BaseService
   def save_xml_floorplans(floorplans,property_id)
     floorplans.each do |f|
 
-      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
+      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"])
+      if floorplan.count > 1
+        floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"],square_feet: f["SquareFeet"]["Min"])
+      end
       if floorplan.present?
+        floorplan = floorplan.first
         floorplan.property_id = property_id
         # floorplan.name = f["Name"]
         floorplan.unit_count = f["UnitCount"]

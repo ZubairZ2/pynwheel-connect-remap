@@ -85,8 +85,10 @@ class Yardi2SwapService < BaseService
             end
           end
           unit.availability = is_available ? "Unoccupied" : "Occupied"
+          unit.available = is_available ? true : false
           unit.available_date = vacate_date
-          unit.save
+          unit.save(validate: false)
+
         else
           dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])
           if dup.present?
@@ -125,7 +127,8 @@ class Yardi2SwapService < BaseService
           end
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           unit.available_date = vacate_date
-          unit.save!
+          unit.available = is_available ? true : false
+          unit.save(validate: false)
           puts '+++++++++++++++++++++=', unit.errors.messages.join(',')
 
         end
@@ -149,8 +152,12 @@ class Yardi2SwapService < BaseService
       begin
 
 
-        fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name]).first
+        fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name])
+        if fp.count > 1
+          fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name],bedrooms: floorplan[3][:Room][1][:Count],bathrooms: floorplan[4][:Room][1][:Count],square_feet: floorplan[5][:SquareFeet][0][:Min])
+        end
         if fp.present?
+          fp = fp.first
           rooms = []
           floorplan.each do |f|
             fp.provider = "yardi_new"
@@ -261,7 +268,7 @@ class Yardi2SwapService < BaseService
     unit.each do |d|
       if d.provider == "yardi_new"
         d.provider = "yardi"
-        d.save
+        d.save(validate: false)
       end
     end
 
@@ -269,7 +276,7 @@ class Yardi2SwapService < BaseService
     fp.each do |d|
       if d.provider == "yardi_new"
         d.provider = "yardi"
-        d.save
+        d.save(validate: false)
       end
     end
   end

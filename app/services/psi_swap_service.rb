@@ -176,8 +176,12 @@ class PsiSwapService < BaseService
     floorplans.each do |f|
 
       puts '+++++++++++++++++++++++++ add new floor plans innerrrrr +++++++++++++++++++++++++++++'
-      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
+      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"])
+      if floorplan.count > 1
+        floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"],square_feet: f["SquareFeet"]["@attributes"]["Min"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"])
+      end
       if floorplan.present?
+        floorplan = floorplan.first
         floorplan.provider = "psi_new"
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.property_id = property_id
