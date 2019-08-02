@@ -100,6 +100,8 @@ json.tours @tours do |tour|
       end
 
     end
+    # binding.pry
+    
     stop.stop_details.each do |sd|
       json.stop_description sd.description
     end
@@ -107,6 +109,8 @@ json.tours @tours do |tour|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
+
+    json.path_points = stop.path_data
   end
 
 end
