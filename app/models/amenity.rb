@@ -43,4 +43,8 @@ class Amenity < ApplicationRecord
       set_standard_url('Amenity',id)
     end
   end
+
+  def self.path_data
+    [{x: 120, y: 455}, {x: 125, y: 455}, {x: 128, y: 455}]
+  end
 end
