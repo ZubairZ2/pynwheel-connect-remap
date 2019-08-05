@@ -90,8 +90,20 @@
    tinyMCE.init({
     selector: 'textarea',
      init_instance_callback: function (editor) {
-    editor.on('Change', function (e) {
-      $('#favorite-settings-form').submit();
+    editor.on('keyup', function (e) {
+
+    // alert(editor.getContent());
+
+    $.ajax({
+        url: "/communities/#{@community.id}/favorite_settings/#{@favorite.id}",
+        type: "PUT",
+        dataType: "script",
+        data: {
+            ajax_call: true,
+            email_body: editor.getContent()
+        }
+    });
+      // $('#favorite-settings-form').submit();
     });
   }
   });
