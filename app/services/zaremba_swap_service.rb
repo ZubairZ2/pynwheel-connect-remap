@@ -270,12 +270,6 @@ class ZarembaSwapService < BaseService
       end
     end
 
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      unless d.provider == "zaremba_new" || d.provider == "manually"
-        d.destroy
-      end
-    end
 
   end
 
