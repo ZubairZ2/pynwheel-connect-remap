@@ -125,4 +125,9 @@ class Unit < ApplicationRecord
   def show_integer_rent
     self.effective_rent.to_i
   end
+
+
+  def self.path_data
+    [{x: 1025, y: 503}, {x: 1020, y: 503}, {x: 1015, y: 503}]
+  end
 end
