@@ -55,7 +55,7 @@ class Unit < ApplicationRecord
 
   validates :effective_rent, :numericality => { :greater_than => 0, :less_than => 100000001 }, :length => { :maximum => 11}
   validates_uniqueness_of :provider_unit_id, scope: :community_id
-  validates_uniqueness_of :marketing_name, scope: :community_id
+  # validates_uniqueness_of :marketing_name, scope: :community_id
   has_many :amenities, as: :amenityable
 
   has_many :paths, as: :map_path
@@ -131,6 +131,6 @@ class Unit < ApplicationRecord
 
 
   def self.path_data
-    [{x: 1025, y: 503}, {x: 1020, y: 503}, {x: 1015, y: 503}]
+    [{x: 1025, y: 503}, {x: 1000, y: 603}, {x: 980, y: 300}]
   end
 end

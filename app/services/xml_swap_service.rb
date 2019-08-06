@@ -56,8 +56,12 @@ class XmlSwapService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MarketingName"]["__content__"]).first
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MarketingName"]["__content__"])
+      if unit.count > 1
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MarketingName"]["__content__"],building: u["BuildingID"].present? ? u["BuildingID"] : "")
+      end
       if unit.present?
+        unit = unit.first
         unit.provider = "xml_new"
         unit.property_id = property_id
         unit.provider_unit_id = u["Id"]
@@ -133,12 +137,7 @@ class XmlSwapService < BaseService
         unit.save(validate: false)
       end
     end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      unless d.provider == "xml_new" || d.provider == "manually"
-        d.destroy
-      end
-    end
+
 
 
   end
@@ -146,8 +145,12 @@ class XmlSwapService < BaseService
   def save_xml_floorplans(floorplans,property_id)
     floorplans.each do |f|
 
-      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"]).first
+      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"])
+      if floorplan.count > 1
+        floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"],square_feet: f["SquareFeet"]["Min"])
+      end
       if floorplan.present?
+        floorplan = floorplan.first
         floorplan.property_id = property_id
         # floorplan.name = f["Name"]
         floorplan.unit_count = f["UnitCount"]
@@ -213,17 +216,24 @@ class XmlSwapService < BaseService
         puts '==================================='
       end
     end
+
+
+
+  end
+
+  def rename_provider
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       unless d.provider == "xml_new"
         d.destroy
       end
     end
-
-
-  end
-
-  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "xml_new" || d.provider == "manually"
+        d.destroy
+      end
+    end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
       if d.provider == "xml_new"
