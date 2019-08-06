@@ -111,8 +111,9 @@ json.tours @tours do |tour|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
-
-    json.path_points stop.path_data
+    @existing_path_points = []
+    stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
+    json.path_points @existing_path_points.flatten
   end
 
 end
