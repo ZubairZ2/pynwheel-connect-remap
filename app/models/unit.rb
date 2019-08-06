@@ -128,6 +128,6 @@ class Unit < ApplicationRecord
 
 
   def self.path_data
-    [{x: 1025, y: 503}, {x: 1020, y: 503}, {x: 1015, y: 503}]
+    [{x: 1025, y: 503}, {x: 1000, y: 603}, {x: 980, y: 300}]
   end
 end

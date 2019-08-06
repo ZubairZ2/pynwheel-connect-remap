@@ -45,6 +45,6 @@ class Amenity < ApplicationRecord
   end
 
   def self.path_data
-    [{x: 120, y: 455}, {x: 125, y: 455}, {x: 128, y: 455}]
+    [{x: 120, y: 455}, {x: 165, y: 655}, {x: 400, y: 155}]
   end
 end
