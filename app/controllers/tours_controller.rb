@@ -15,7 +15,7 @@ class ToursController < ApplicationController
     @existing_stops << Amenity.where(id: @tour_amenity_array)
 
     @existing_path_points = []
-    @community.tour.tour_stops.each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? }  }
+    @community.tour.tour_stops.each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
     @existing_path_points.flatten!
 
     # binding.pry
