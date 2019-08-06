@@ -54,16 +54,26 @@
                         %td
                           -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
                           -#  %i.fa.fa-eye
+
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
+                            = link_to draw_line_path(u), id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
+                              %i.fa.fa-road.icon_size
+
                           - else
                             - amenity = Amenity.find stop.stop_id
+                            = link_to draw_line_path(amenity), id: "create_path",  class: "text-warning ml-5" do
+                              %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
+
                           %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                             %i.fa.fa-trash.icon_size
+        
+        %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
+        
         .row
           .col-md-12
             = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
@@ -79,7 +89,7 @@
                 - amenity_arr = []
                 - @amenities.each do |amenity|
                   -#- byebug
-                  - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && amenity.amenityable_type == "Sitemap"
+                  - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 )
                     %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
                       %a
                         = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
@@ -115,11 +125,248 @@
           -#    %i.fa.fa-plus-circle
           -#    SELECT STOPS
 
-      / End Panel left Side
-/ /.content
+%section.is-floorplate
+  .content                  
+    %form.form-horizontal
+      .box-body.map-body-top
+        .row
+          #container.col-lg-12.p-0
+            .map-block{:style => "position: relative;"}
+              / id map
+              .plot-image
+                .grid-graph.hidden
+                = image_tag @sitemap.image? ? @sitemap.image.url : "default.jpeg", id: "testimg"
+                - community_units = @community_units
+                - coordinates_array = []
+                - path_point_coords = {}
+                - @existing_stops.flatten.each_with_index do |stop, index|
+                  .stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; width: 15px; height: 15px; background-color: green; z-index: 9999"}
+                - @existing_path_points.each_with_index do |point, index|
+                  .path_point{:id => "point_#{point.id}", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px; width: 15px; height: 15px; background-color: #000; z-index: 9999"}
+
+
+
+              / End Panel left Side
+        / /.content
 :javascript
   $('.show-tour-page').change(function(){
     $('.tour-settings-form').submit();
   });
   $('.tour_sortable').railsSortable();
-  var community_id = #{params[:community_id]}
+  
+  community_id = #{params[:community_id]}
+  
+
+  cords_arr = JSON.parse('#{raw(path_point_coords.to_json)}');
+
+
+
+  $(document).ready(function(){
+    var path_id;
+    
+    radius = 50;
+    var point_color = '#000000';
+    var point_size = 15;
+    
+    path_array = $(".path_point")
+    for(i=0; i < path_array.length-1; i++){
+      $(".plot-image").append(createLine(path_array[i], path_array[i+1]))
+    }
+    
+    // add listner to prev points 
+    $.each($("*.path_point"), function(i, existing_point){
+      // debugger
+      id = $(existing_point).prop('id');
+      dragElement(document.getElementById(id));
+    });
+
+    $("#testimg").on('click', function (ev) {
+      mouseX = Math.round(ev.offsetX - point_size/2)
+      mouseY = Math.round(ev.offsetY - point_size/2)
+      neighbour_units =  detectNearestUnits()
+      savePoint(mouseX, mouseY, neighbour_units)
+    });
+
+
+    function savePoint(x, y, unit_ids){
+      //debugger
+      if($("#drawing_path_for").val() == ""){
+        alert("Please select a Stop from table for which you want to draw path")
+        return false
+      }
+      $.post( "/save_path_point/",
+        { "x_plot": x,
+          "y_plot": y,
+          "path_id": $("#drawing_path_for").val(),
+          "unit_ids": unit_ids
+        },
+        function(data,status,xhr) {
+          drop_point_on_screen(data)
+        }
+      );
+    }
+
+    function drop_point_on_screen(db_data){
+            
+      var size =  point_size.toString()+ 'px';
+
+      id = "point_"+db_data.point.id.toString()
+
+      path_point = $('<div class="path_point" id="'+ id +'"></div>')
+              .css('position', 'absolute')
+              .css('top', mouseY + 'px')
+              .css('left', mouseX + 'px')
+              .css('width', size)
+              .css('height', size)
+              .css('background-color', point_color)
+              .css('z-index', 9999)
+
+      $(".plot-image").append(path_point);
+      path_array.push(path_point)
+      console.log(path_array)
+      if(path_array.length > 1){
+        line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
+        $(".plot-image").append(line)
+      }
+
+      dragElement(document.getElementById(id));
+    }
+
+    $(document).on("dblclick", "*.path_point" , function() {
+      point_id = this.id.replace( /^\D+/g, '')
+        $.post( "/delete_path_point",
+          { "point_id": point_id },
+          function(data,status,xhr) {
+            if(data){
+              $("#"+data.point_id).remove()
+            }
+          }
+        );
+      return false;
+    });
+
+    function detectNearestUnits(){
+      neighbour_unit_ids = []
+      $.each(cords_arr, function(index, unit){
+        xp = Math.pow((unit.x - mouseX), 2)
+        yp = Math.pow((unit.y - mouseY), 2)
+
+        d = Math.sqrt(xp + yp)
+        if(d <= radius)
+          neighbour_unit_ids.push(index)
+      });
+      
+      return neighbour_unit_ids
+    }
+
+    $(document).on("click", "*.path_point",  function(e){
+      mouseX = this.offsetLeft
+      mouseY = this.offsetTop
+      neighbour_units =  detectNearestUnits()
+      updatePoint(mouseX, mouseY, neighbour_units, this.id.replace( /^\D+/g, ''))
+    });
+
+    function updatePoint(x, y, unit_ids, point_id){
+      $.post( "/update_path_point",
+        { 
+          "x_plot": x,
+          "y_plot": y,
+          "point_id": point_id,
+          "unit_ids": unit_ids
+        },
+        function(data,status,xhr) {
+          // drop_point_on_screen(data)
+        }
+      );
+    }
+
+    function dragElement(elmnt) {
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+      
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        // debugger
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        // debugger
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement(e) {
+        e = e || window.event;
+        // path_array = $('.path_point')
+        console.log(path_array)
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+    
+    $("*#create_path").on("click", function(event){
+
+      $.ajax({
+        type: "POST",
+        url: this.href,
+        data: $(this).serialize(),
+        success: function(response) {
+          //update drawing path for so we can use that path id to save point
+          $("#drawing_path_for").val(response.path.id)
+          $('html, body').animate({
+            scrollTop: $(".plot-image").offset().top
+          }, 500);
+        }
+      });
+      event.preventDefault();
+    });
+
+    function getElementProperty(el){
+      var dx = 0;
+      var dy = 0;
+      var width = $(el).width()|0;
+      var height = $(el).height()|0;  
+      dx += $(el).position().left;
+      dy += $(el).position().top;
+      
+      return { top: dy, left: dx, width: width, height: height };
+    }
+
+    function createLine(el1, el2){
+      var off1 =getElementProperty(el1);
+      var off2 =getElementProperty(el2);
+      // center of first point
+      var dx1 = off1.left + off1.width/2;
+      var dy1 = off1.top + off1.height/2;
+      // center of second point 
+      var dx2 = off2.left + off2.width/2;
+      var dy2 = off2.top + off1.height/2;
+      // distance
+      var length = Math.sqrt(((dx2-dx1) * (dx2-dx1)) + ((dy2-dy1) * (dy2-dy1)));
+      // center
+      var cx = ((dx1 + dx2) / 2) - (length / 2);
+      var cy = ((dy1 + dy2) / 2) - (2  / 2);
+      // angle
+      var angle = Math.atan2((dy1-dy2),(dx1-dx2))*(180/Math.PI);
+      // draw line
+      return  "<section class='connectingLines' style='left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -webkit-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg); z-index: 99999; background-color: red; position: absolute; height: 2px; '></section>";
+    };
+
+  });

@@ -134,8 +134,6 @@ class FloorplatesController < ApplicationController
   end
 
   def draw_path_points
-    puts params
-    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
     @floorplate = Floorplate.includes(:path_points).find_by_id(params[:floorplate_id])
     unless current_community.units.size > 0
       flash[:error] = "Please import unit data first"
@@ -145,29 +143,6 @@ class FloorplatesController < ApplicationController
 
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)
-  end
-
-  def save_path_points
-    path_point = PathPoint.create x: params[:x], y: params[:y], floorplate_id: params[:floorplate_id]
-    
-    NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
-    render json: {point: path_point}, status: 200
-  end
-
-  def update_path_points
-    path_point = PathPoint.find(params[:point_id])
-    path_point.update_attributes(x: params[:x], y: params[:y])
-    path_point.neighbour_units.destroy_all
-    NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
-    render json: {point: path_point}, status: 200
-  end
-
-  def delete_path_points
-    path_point = PathPoint.find(params[:point_id])
-    if path_point.present?
-      path_point.destroy
-    end
-    render json: {point: path_point.present? ? path_point : {}, point_id: "point_#{params[:point_id]}"}, status: 200
   end
 
   def ajax_path_draw_on_floorplate

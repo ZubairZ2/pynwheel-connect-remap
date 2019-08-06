@@ -55,9 +55,12 @@ class Unit < ApplicationRecord
 
   validates :effective_rent, :numericality => { :greater_than => 0, :less_than => 100000001 }, :length => { :maximum => 11}
   validates_uniqueness_of :provider_unit_id, scope: :community_id
-  validates_uniqueness_of :marketing_name, scope: :community_id
+  # validates_uniqueness_of :marketing_name, scope: :community_id
   has_many :amenities, as: :amenityable
 
+  has_many :paths, as: :map_path
+  has_many :path_points, through: :paths
+  
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
   scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
@@ -77,10 +80,11 @@ class Unit < ApplicationRecord
   end
 
   def unit_market
-    unless self.marketing_name.present?
-      return ""
-    end
-    return unit_check_same_marketname(self)
+    return self.building.present? ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
+    # unless self.marketing_name.present?
+    #   return ""
+    # end
+    # return unit_check_same_marketname(self)
     # return unit_check_like_marketname(self)
     #
     # return self.marketing_name
@@ -123,5 +127,10 @@ class Unit < ApplicationRecord
   end
   def show_integer_rent
     self.effective_rent.to_i
+  end
+
+
+  def self.path_data
+    [{x: 1025, y: 503}, {x: 1000, y: 603}, {x: 980, y: 300}]
   end
 end

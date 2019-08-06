@@ -21,4 +21,11 @@ class TourStop < ApplicationRecord
   set_sortable :sort
   has_many :stop_details, dependent: :destroy
   has_many :stop_galleries, dependent: :destroy
+
+  has_one :path, as: :map_path
+  has_many :path_points, through: :paths
+
+  def path_data
+  	self.stop_type.classify.constantize.path_data
+  end
 end

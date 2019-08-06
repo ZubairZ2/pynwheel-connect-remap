@@ -34,8 +34,7 @@ class Floorplate < ApplicationRecord
   validates_with FloorValidator
   before_destroy :reset_units_plots
   after_commit :populate_image_urls, on: [:create,:update]
-
-  has_many :path_points
+  
   def reset_units_plots
     self.units.update_all(x_plot: 0,y_plot: 0, floorplate_id: nil)
   end

@@ -52,9 +52,12 @@ class Yardi2SwapService < BaseService
   def save_yardi2_units(ils_units,property_id)
     ils_units[0].lazy.each do |unit_entries|
       begin
-
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: unit_entries[0][:Id]).first
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: unit_entries[0][:Id])
+        if unit.count > 1
+          unit = Unit.where(community_id: credentials.community_id,marketing_name: unit_entries[0][:Id],floorplan_id: Floorplan.find_by(name: unit_entries[1][:Unit][:"MITS:Information"][:"MITS:FloorplanName"]).provider_floorplan_id)
+        end
         if unit.present?
+          unit = unit.first
           unit.provider = "yardi_new"
           unit.provider_unit_id = unit_entries[0][:Id]
           unit.property_id = property_id
@@ -82,8 +85,10 @@ class Yardi2SwapService < BaseService
             end
           end
           unit.availability = is_available ? "Unoccupied" : "Occupied"
+          unit.available = is_available ? true : false
           unit.available_date = vacate_date
-          unit.save
+          unit.save(validate: false)
+
         else
           dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])
           if dup.present?
@@ -122,7 +127,8 @@ class Yardi2SwapService < BaseService
           end
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           unit.available_date = vacate_date
-          unit.save!
+          unit.available = is_available ? true : false
+          unit.save(validate: false)
           puts '+++++++++++++++++++++=', unit.errors.messages.join(',')
 
         end
@@ -132,12 +138,7 @@ class Yardi2SwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      unless d.provider == "yardi_new" || d.provider == "manually"
-        d.destroy
-      end
-    end
+
 
   end
 
@@ -146,8 +147,12 @@ class Yardi2SwapService < BaseService
       begin
 
 
-        fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name]).first
+        fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name])
+        if fp.count > 1
+          fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name],bedrooms: floorplan[3][:Room][1][:Count],bathrooms: floorplan[4][:Room][1][:Count],square_feet: floorplan[5][:SquareFeet][0][:Min])
+        end
         if fp.present?
+          fp = fp.first
           rooms = []
           floorplan.each do |f|
             fp.provider = "yardi_new"
@@ -244,21 +249,28 @@ class Yardi2SwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
+
+
+
+  end
+  def rename_provider
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
       unless d.provider == "yardi_new"
         d.destroy
       end
     end
-
-
-  end
-  def rename_provider
+    unit = Unit.where(community_id: credentials.community_id)
+    unit.each do |d|
+      unless d.provider == "yardi_new" || d.provider == "manually"
+        d.destroy
+      end
+    end
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
       if d.provider == "yardi_new"
         d.provider = "yardi"
-        d.save
+        d.save(validate: false)
       end
     end
 
@@ -266,7 +278,7 @@ class Yardi2SwapService < BaseService
     fp.each do |d|
       if d.provider == "yardi_new"
         d.provider = "yardi"
-        d.save
+        d.save(validate: false)
       end
     end
   end

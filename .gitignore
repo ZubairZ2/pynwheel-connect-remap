@@ -28,3 +28,4 @@ test/
 
 config/database.yml
 config/application.yml
+db/schema.rb

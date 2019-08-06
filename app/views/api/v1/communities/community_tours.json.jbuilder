@@ -11,6 +11,8 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
+  json.path_points [{x: 608, y: 641}, {x: 550, y: 641}, {x: 587, y: 641}]
+
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
     json.x_plot stop.latitude
@@ -100,6 +102,8 @@ json.tours @tours do |tour|
       end
 
     end
+    # binding.pry
+    
     stop.stop_details.each do |sd|
       json.stop_description sd.description
     end
@@ -107,6 +111,9 @@ json.tours @tours do |tour|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
+    @existing_path_points = []
+    stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
+    json.path_points @existing_path_points.flatten
   end
 
 end
