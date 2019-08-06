@@ -223,7 +223,7 @@
 
       $(".plot-image").append(path_point);
       path_array.push(path_point)
-      console.log(path_array)
+      / console.log(path_array)
       if(path_array.length > 1){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
         $(".plot-image").append(line)
@@ -330,10 +330,13 @@
         success: function(response) {
           //update drawing path for so we can use that path id to save point
           $("#drawing_path_for").val(response.path.id)
+          $('.stops').removeClass('animate-element')
+          $('#stop_'+response.path.map_path_id).addClass('animate-element')
           $('html, body').animate({
             scrollTop: $(".plot-image").offset().top
           }, 500);
         }
+
       });
       event.preventDefault();
     });
@@ -343,8 +346,9 @@
       var dy = 0;
       var width = $(el).width()|0;
       var height = $(el).height()|0;  
-      dx += $(el).position().left;
-      dy += $(el).position().top;
+      dx += parseInt($(el).css('left'), 10);
+      dy += parseInt($(el).css('top'), 10);
+      
       
       return { top: dy, left: dx, width: width, height: height };
     }
