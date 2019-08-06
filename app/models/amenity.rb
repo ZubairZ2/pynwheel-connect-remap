@@ -29,6 +29,10 @@ class Amenity < ApplicationRecord
   belongs_to :amenityable, polymorphic: true
   belongs_to :community
   has_many :amenity_galleries, dependent: :destroy
+  
+  has_many :paths, as: :map_path
+  has_many :path_points, through: :paths
+
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]

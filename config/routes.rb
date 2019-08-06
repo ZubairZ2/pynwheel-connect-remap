@@ -80,7 +80,6 @@ Rails.application.routes.draw do
       end
       get :plotexp
       get :draw_path_points
-      post :save_path_points
       post :update_path_points
       post :delete_path_points
 
@@ -237,6 +236,12 @@ Rails.application.routes.draw do
       end
     end
   end
+  post '/draw_map_line/:unit_or_amenity', to: 'tours#draw_map_line', as: :draw_line
+  
+  post :save_path_point, to: 'tours#point_save'
+  post :update_path_point, to: 'tours#point_update'
+  post :delete_path_point, to: 'tours#point_delete'
+
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
       resources :communities, only: :index do
