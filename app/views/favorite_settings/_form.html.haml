@@ -37,12 +37,12 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :email_bcc, :class=>"form-control favorite_setting_field", :placeholder=>"Email Bcc" ,:maxlength=>"150", :onchange => "function1()"
 .form-group#email_body_div
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.auto_save
     Email Body
     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteEmailBodyPopover","data-content" => " "}
       %span#propertyDetailNameText
         Changing the Email Body will change the copy that appears on the top of each eBrochure.
-
+    %span#saved_text
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :email_body, :rows => 20, :cols => 80,:value=>f.object.email_body.present? ? f.object.email_body.gsub("<community_name>",@community.name).gsub("\n","<br>") : ""
     = tinymce
@@ -91,8 +91,10 @@
     selector: 'textarea',
      init_instance_callback: function (editor) {
     editor.on('keyup', function (e) {
+    var yourUl = document.getElementById("saved_text");
+    yourUl.style.display = yourUl.style.display === 'none' ? '' : 'none';
+    $(".auto_save span").text("Saved");
 
-    // alert(editor.getContent());
 
     $.ajax({
         url: "/communities/#{@community.id}/favorite_settings/#{@favorite.id}",
@@ -102,7 +104,11 @@
             ajax_call: true,
             email_body: editor.getContent()
         }
-    });
+    }).done(function(){
+          $(".auto_save span").fadeOut(1000, function () {
+                  });
+
+      });
       // $('#favorite-settings-form').submit();
     });
   }
