@@ -113,7 +113,7 @@ json.tours @tours do |tour|
     end
     @existing_path_points = []
     stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
-    json.path_points @existing_path_points.flatten
+    json.path_points @existing_path_points.flatten 
   end
 
 end
