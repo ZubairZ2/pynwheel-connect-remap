@@ -58,6 +58,9 @@ class Unit < ApplicationRecord
   validates_uniqueness_of :marketing_name, scope: :community_id
   has_many :amenities, as: :amenityable
 
+  has_many :paths, as: :map_path
+  has_many :path_points, through: :paths
+  
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
   scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190729062622) do
+ActiveRecord::Schema.define(version: 20190805130215) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -105,6 +105,7 @@ ActiveRecord::Schema.define(version: 20190729062622) do
     t.boolean  "is_vertical_app",                default: false
     t.boolean  "show_tour_page"
     t.boolean  "display_available_date",         default: true
+    t.boolean  "show_gesture_icons"
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
 
@@ -729,12 +730,20 @@ ActiveRecord::Schema.define(version: 20190729062622) do
   end
 
   create_table "path_points", force: :cascade do |t|
-    t.integer  "x"
-    t.integer  "y"
-    t.integer  "floorplate_id"
+    t.integer  "x_plot"
+    t.integer  "y_plot"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer  "path_id"
+    t.index ["path_id"], name: "index_path_points_on_path_id", using: :btree
+  end
+
+  create_table "paths", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "map_path_id"
+    t.string   "map_path_type"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
-    t.index ["floorplate_id"], name: "index_path_points_on_floorplate_id", using: :btree
   end
 
   create_table "schedual_tours", force: :cascade do |t|
@@ -955,7 +964,6 @@ ActiveRecord::Schema.define(version: 20190729062622) do
   add_foreign_key "locations", "neighborhoods"
   add_foreign_key "neighborhoods", "communities"
   add_foreign_key "neighbour_units", "path_points"
-  add_foreign_key "path_points", "floorplates"
   add_foreign_key "schedual_tours", "tour_users"
   add_foreign_key "schedual_tours", "tours"
   add_foreign_key "sitemaps", "communities"
