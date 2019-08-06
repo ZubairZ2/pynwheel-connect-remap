@@ -1,5 +1,6 @@
 class ToursController < ApplicationController
   def index
+    begin
     @community = Community.find params[:community_id]
     @tours = @community.tour || @community.create_tour
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
@@ -17,7 +18,8 @@ class ToursController < ApplicationController
     @existing_path_points = []
     @community.tour.tour_stops.each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
     @existing_path_points.flatten!
-
+    rescue => ex
+    end
     # binding.pry
   end
   def save_tour_settings
