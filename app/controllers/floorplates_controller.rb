@@ -132,19 +132,7 @@ class FloorplatesController < ApplicationController
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)
   end
-
-  def draw_path_points
-    @floorplate = Floorplate.includes(:path_points).find_by_id(params[:floorplate_id])
-    unless current_community.units.size > 0
-      flash[:error] = "Please import unit data first"
-    end
-    @community_units = @floorplate.fetch_units
-    @existing_path_points = @floorplate.path_points
-
-    add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-    add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)
-  end
-
+  
   def ajax_path_draw_on_floorplate
     unit = @community.units.where(provider_unit_id: params[:id])
     if unit.present?
