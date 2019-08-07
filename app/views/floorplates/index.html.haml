@@ -138,7 +138,6 @@
                         %th Building
                         %th Range
                         %th Image
-                        %th Draw Path
                         %th Units
                         %th Amenities
                         %th
@@ -165,11 +164,6 @@
                                 = image_tag f.image.url
                             - else  
                               .drop-img.drop-img-left
-                          %td
-                            = link_to "Draw Path",community_floorplate_draw_path_points_path(current_community,f), :class=>"btn btn-info"
-                            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplatePlotUnitsPopover","data-content" => " "}
-                              %span#propertyDetailNameText
-                                Click mouse on possible path from point A 
                           %td
                             = link_to "Plot Units",community_floorplate_plotexp_path(current_community,f), :class=>"btn btn-default black-button"
                             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplatePlotUnitsPopover","data-content" => " "}

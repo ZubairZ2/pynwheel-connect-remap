@@ -79,10 +79,6 @@ Rails.application.routes.draw do
         end
       end
       get :plotexp
-      get :draw_path_points
-      post :update_path_points
-      post :delete_path_points
-
       get :grid_overlay
       post :adjust_marker_positions
     end
