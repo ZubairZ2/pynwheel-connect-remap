@@ -101,7 +101,7 @@ class ToursController < ApplicationController
       stName = st.marketing_name
     end
     ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
-    render json: {tour: ts}, status: 200
+    render json: {tour: ts,community: @community}, status: 200
     # end
     # tour_stop = Tour.find params[:tour_stop_id]
     # if tour.present?
