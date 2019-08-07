@@ -135,16 +135,22 @@
               / id map
               .plot-image
                 .grid-graph.hidden
-                = link_to image_tag("/assets/star.png"), "#", :class => "marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "start-point", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
+                = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "start-point", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
+
 
                 = image_tag @sitemap.image? ? @sitemap.image.url : "default.jpeg", id: "testimg"
                 - community_units = @community_units
                 - coordinates_array = []
                 - path_point_coords = {}
                 - @existing_stops.flatten.each_with_index do |stop, index|
-                  .stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; width: 15px; height: 15px; background-color: green; z-index: 9999"}
+                  - if stop.class.to_s == "Amenity"
+                    %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
+                      %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
+                  - else
+                    %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+
                 - @existing_path_points.each_with_index do |point, index|
-                  .path_point{:id => "point_#{point.id}", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px; width: 15px; height: 15px; background-color: #000; z-index: 9999"}
+                  .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px; width: 15px; height: 15px; background-color: #000; z-index: 9999"}
 
 
 
@@ -215,7 +221,7 @@
 
       id = "point_"+db_data.point.id.toString()
 
-      path_point = $('<div class="path_point" id="'+ id +'"></div>')
+      path_point = $('<div title="Drag to change, double click to remove" class="path_point" id="'+ id +'"></div>')
               .css('position', 'absolute')
               .css('top', mouseY + 'px')
               .css('left', mouseX + 'px')
