@@ -44,8 +44,7 @@
         Changing the Email Body will change the copy that appears on the top of each eBrochure.
     %span#saved_text
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :email_body, :rows => 20, :cols => 80,:value=>f.object.email_body.present? ? f.object.email_body.gsub("<community_name>",@community.name).gsub("\n","<br>") : ""
-    = tinymce
+    = f.text_area :email_body, :rows => 20, :cols => 100,:id => "email_body_class",:class=>"email_body_class wysihtml5",:value=>f.object.email_body.present? ? f.object.email_body.gsub("<community_name>",@community.name).gsub("\n","<br>") : ""
 
 
 
@@ -87,29 +86,27 @@
   // $('#tinymce_ifr').bind("DOMSubtreeModified",function() {
   //   alert("fefef");
   // });
-   tinyMCE.init({
-    selector: 'textarea',
-     init_instance_callback: function (editor) {
-    editor.on('keyup', function (e) {
-    var yourUl = document.getElementById("saved_text");
-    yourUl.style.display = yourUl.style.display === 'none' ? '' : 'none';
-    $(".auto_save span").text("Saved");
+  $(document).ready(function(){
+      $('.wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
+        events: {
+        change: function() {
+            $('#favorite-settings-form').submit();
+        }
+        }
+        });
+      });
 
-
+  });
+  $("#email_body_div").change(function() {
+  alert("vdvd");
     $.ajax({
         url: "/communities/#{@community.id}/favorite_settings/#{@favorite.id}",
         type: "PUT",
         dataType: "script",
         data: {
             ajax_call: true,
-            email_body: editor.getContent()
+            email_body: "ththt"
         }
-    }).done(function(){
-          $(".auto_save span").fadeOut(1000, function () {
-                  });
-
-      });
-      // $('#favorite-settings-form').submit();
-    });
-  }
-  });
+    })
+        });
