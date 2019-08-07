@@ -89,7 +89,7 @@
                 - amenity_arr = []
                 - @amenities.each do |amenity|
                   -#- byebug
-                  - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 )
+                  - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
                     %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
                       %a
                         = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
@@ -111,7 +111,7 @@
               %ul#imageselect2{:style => "display: none;"}
                 - amenity_arr = []
                 - units.each do |unit|
-                  - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
+                  - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
                     %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
 
                       %span.ml-5
