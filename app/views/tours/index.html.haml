@@ -111,7 +111,7 @@
               %ul#imageselect2{:style => "display: none;"}
                 - amenity_arr = []
                 - units.each do |unit|
-                  - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
+                  - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) && (unit.amenityable_type == "Sitemap" || unit.amenityable_type == "Floorplate" )
                     %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
 
                       %span.ml-5
