@@ -64,16 +64,16 @@
 
                           - else
                             - amenity = Amenity.find stop.stop_id
-                            -#= link_to draw_line_path(amenity), id: "create_path",  class: "text-warning ml-5" do
-                            -#  %i.fa.fa-road.icon_size
+                            = link_to draw_line_path(amenity), id: "create_path",  class: "text-warning ml-5" do
+                              %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
                           %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                             %i.fa.fa-trash.icon_size
-        
+
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
-        
+
         .row
           .col-md-12
             = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
@@ -125,7 +125,6 @@
           -#    %i.fa.fa-plus-circle
           -#    SELECT STOPS
 
-- path_point_coords = {}
 %section.is-floorplate
   .content
     %form.form-horizontal
