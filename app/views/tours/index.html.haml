@@ -71,9 +71,9 @@
 
                           %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                             %i.fa.fa-trash.icon_size
-        
+
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
-        
+
         .row
           .col-md-12
             = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
@@ -126,7 +126,7 @@
           -#    SELECT STOPS
 
 %section.is-floorplate
-  .content                  
+  .content
     %form.form-horizontal
       .box-body.map-body-top
         .row
