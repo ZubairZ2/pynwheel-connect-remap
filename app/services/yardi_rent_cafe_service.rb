@@ -69,7 +69,7 @@ class YardiRentCafeService < BaseService
                   unit.effective_rent = 1.0
                 end
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"]
-                unit.save
+                unit.save(validate: false)
 
               end
             rescue => e

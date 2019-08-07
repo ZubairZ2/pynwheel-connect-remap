@@ -188,7 +188,7 @@ class Yardi4Service < BaseService
             unit.available = false
           end
         end
-        unit.save
+        unit.save(validate: false)
       end
     end
   end

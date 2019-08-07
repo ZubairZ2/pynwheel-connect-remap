@@ -190,7 +190,7 @@ class PsiService < BaseService
           end
         end
 
-        floorplan.save
+        floorplan.save(validate: false)
 
       end
     end
