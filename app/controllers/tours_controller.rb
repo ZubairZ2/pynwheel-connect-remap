@@ -17,6 +17,7 @@ class ToursController < ApplicationController
 
     @existing_path_points = []
     @community.tour.tour_stops.each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
+    @existing_path_points << @tours.path_points if @tours.path.present?
     @existing_path_points.flatten!
     rescue => ex
     end
@@ -120,8 +121,14 @@ class ToursController < ApplicationController
   end
 
   def draw_map_line
-    amenity_or_unit = Amenity.find_by_id(params[:unit_or_amenity]) || Unit.find_by_id(params[:unit_or_amenity])
-    path_name = amenity_or_unit.class.to_s == "Unit" ? amenity_or_unit.marketing_name : amenity_or_unit.name
+    
+    unless params[:map_path_for].present?
+      amenity_or_unit = Amenity.find_by_id(params[:unit_or_amenity]) || Unit.find_by_id(params[:unit_or_amenity])
+      path_name = amenity_or_unit.class.to_s == "Unit" ? amenity_or_unit.marketing_name : amenity_or_unit.name
+    else
+      # for starting point
+      amenity_or_unit = Tour.find_by_id(params[:unit_or_amenity])
+    end
 
     path = Path.where(map_path_id: amenity_or_unit.id, map_path_type: amenity_or_unit.class.to_s).first
     unless path.present?
