@@ -152,6 +152,7 @@
                       %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
                   - else
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                
 
                 - @existing_path_points.each_with_index do |point, index|
                   .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px; width: 15px; height: 15px; background-color: #000; z-index: 9999"}
