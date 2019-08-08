@@ -350,7 +350,12 @@
       %b#popover-price
        
 :javascript
-  $(".divLoading").addClass("hidden");
+  $(".divLoading").removeClass("hidden");
+
+  setTimeout(function(){
+    $(".divLoading").addClass("hidden");
+  }, 1000);
+
   var window_height = window.innerHeight;
   var diff = (8000/($(window).width()) * -1);
   var diffL = (2500/($(window).width()) * -1);

@@ -158,6 +158,7 @@ $(window).bind('load', function () {
       });
     
     $(".reset").on('click', function (e) {
+      $(".divLoading").removeClass("hidden");
       window.location.reload()
     });
     
