@@ -125,11 +125,11 @@
                 .showcase
                   #content-3.content
                     .select-floor
-                      %ul#slider
+                      %ul.slider_class#slider
                         - @floors.each do |floor|
                           - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                           %li
-                            = link_to (floorplate.floor_name_added ? floorplate.floor_name : floor),'javascript:;;', :class=>"floorplate-anchor #{floor == @floors.first ? 'selected' : ''}",:id=>floor, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"top"
+                            = link_to (floorplate.floor_name_added ? floorplate.floor_name : floor),'javascript:;;',"data-interest" => "1245", :class=>"floorplate-anchor #{floor == @floors.first ? 'selected' : ''}",:id=>floor, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"top"
 
 
         .buttons{:style=>"position: absolute; right: 10px; top: 5px;z-index:999;"}
@@ -253,7 +253,7 @@
                   - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
 
                     = link_to "<span class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
-          
+
           .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:1px;width:100%;"}
             %strong Oops!
             There is nothing available on this floor that matches the parameters that you have selected.
@@ -323,7 +323,7 @@
                         %i.fa.fa-heart
     - else
       .alert.alert-danger Community is Inactivated.
-%button.btn.btn-sm.btn-primary.top-arrow                              
+%button.btn.btn-sm.btn-primary.top-arrow
 #marker-popover.media.hidden
   %b#popover-marketing-name
   %i.fa.fa-heart.fav-heart.hidden
@@ -348,13 +348,32 @@
       %b#popover-available-date
     %p
       %b#popover-price
-       
+
 :javascript
   $(".divLoading").removeClass("hidden");
 
   setTimeout(function(){
     $(".divLoading").addClass("hidden");
   }, 1000);
+
+  $('.mydiv').change(function() {
+
+    localStorage.setItem("oneBedroom", document.getElementById('one-bedroom-checkbox').checked);
+    localStorage.setItem("twoBedroom", Boolean(document.getElementById('two-bedroom-checkbox').checked));
+    localStorage.setItem("threeBedroom", Boolean(document.getElementById('three-bedroom-checkbox').checked));
+    localStorage.setItem("fourBedroom", Boolean(document.getElementById('four-bedroom-checkbox').checked));
+    localStorage.setItem("fiveBedroom", Boolean(document.getElementById('five-bedroom-checkbox').checked));
+
+
+    localStorage.setItem("now", Boolean(document.getElementById('now-checkbox').checked));
+    localStorage.setItem("inNext30", Boolean(document.getElementById('thirty-days-checkbox').checked));
+    localStorage.setItem("31-60", Boolean(document.getElementById('thirty-tosixty-days-checkbox').checked));
+    localStorage.setItem("61-90", Boolean(document.getElementById('sixty-to-ninty-days-checkbox').checked));
+    localStorage.setItem("91-120", Boolean(document.getElementById('ninty-to-one-twenty-days-checkbox').checked));
+    localStorage.setItem("120+", Boolean(document.getElementById('one-twenty-plus-days-checkbox').checked));
+
+    localStorage.setItem("selectAll", Boolean(document.getElementById('select-all-filters-checkbox').checked));
+  });
 
   var window_height = window.innerHeight;
   var diff = (8000/($(window).width()) * -1);
@@ -370,12 +389,12 @@
       ele[i].children[0].style.marginTop = diff
       ele[i].children[0].style.marginLeft = diffL
     }
-
   }
   var slides_to_show = 14;
     if (window_height < 900){
       slides_to_show = 6;
-  }
+    }
+
   if ($("#slider")[0]){
     const $slider = $("#slider");
     $slider
@@ -393,7 +412,7 @@
         nextArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-down"></i></button>'
       })
     function mouseWheel($slider) {
-      $(window).on('wheel', { $slider: $slider }, mouseWheelHandler)
+      $('#slider').on('wheel', { $slider: $slider }, mouseWheelHandler)
     }
     function mouseWheelHandler(event) {
       event.preventDefault()
@@ -407,11 +426,18 @@
       }
     }
   }
+  $(".slider_class").click(function(){
+
+    localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
+
+  });
+
+
 
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
-  $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' }); 
-  
+  $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' });
+
   var has_floorplate = "#{@community_info.has_floorplates?}";
   var current_floor = "#{@floors.present? and @floors.size > 0 ? @floors.first : 0}";
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
@@ -422,4 +448,115 @@
   var units = "#{@units_with_floorplan_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
-  console.log(units)
+  console.log(units);
+  if (localStorage.getItem("oneBedroom") == "false")
+  {
+    $('#one-bedroom-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#one-bedroom-checkbox').prop('checked',true);
+  }
+  if (localStorage.getItem("twoBedroom") == "false")
+  {
+    $('#two-bedroom-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#two-bedroom-checkbox').prop('checked',true);
+  }if (localStorage.getItem("threeBedroom") == "false")
+  {
+    $('#three-bedroom-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#three-bedroom-checkbox').prop('checked',true);
+  }if (localStorage.getItem("fourBedroom") == "false")
+  {
+    $('#four-bedroom-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#four-bedroom-checkbox').prop('checked',true);
+  }if (localStorage.getItem("fiveBedroom") == "false")
+  {
+    $('#five-bedroom-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#five-bedroom-checkbox').prop('checked',true);
+  }
+
+  if (localStorage.getItem("now") == "false")
+  {
+    $('#now-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#now-checkbox').prop('checked',true);
+  }
+
+  if (localStorage.getItem("inNext30") == "false")
+  {
+    $('#thirty-days-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#thirty-days-checkbox').prop('checked',true);
+  }
+
+  if (localStorage.getItem("31-60") == "false")
+  {
+    $('#thirty-tosixty-days-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#thirty-tosixty-days-checkbox').prop('checked',true);
+  }
+
+  if (localStorage.getItem("61-90") == "false")
+  {
+    $('#sixty-to-ninty-days-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#sixty-to-ninty-days-checkbox').prop('checked',true);
+  }
+
+  if (localStorage.getItem("91-120") == "false")
+  {
+    $('#ninty-to-one-twenty-days-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#ninty-to-one-twenty-days-checkbox').prop('checked',true);
+  }
+
+  if (localStorage.getItem("120+") == "false")
+  {
+    $('#one-twenty-plus-days-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#one-twenty-plus-days-checkbox').prop('checked',true);
+  }
+
+  if (localStorage.getItem("selectAll") == "false")
+  {
+    $('#select-all-filters-checkbox').prop('checked',false);
+  }
+  else
+  {
+     $('#select-all-filters-checkbox').prop('checked',true);
+  }
+  if (localStorage.getItem("floorNo") > 0)
+  {
+  $($("#slider li")[0]).children().removeClass("selected");
+    $($("#slider li")[localStorage.getItem("floorNo")]).children().addClass("selected");
+    setTimeout(function(){
+    $($("#slider li")[localStorage.getItem("floorNo")]).children().click();
+    }, 1000);
+
+  }
+
+
