@@ -671,19 +671,27 @@ function saveHomePageVideo(){
   homePageVideoDropzone.on("addedfile", function(file) {
       if (file.size < 500000001)
       {
-      // {
-          $(".divLoading").removeClass("hidden");
-      $.ajax({
-          type: "POST",
-          url: "/communities/" + community_id + "/home_page/save_home_page_video",
-          file: file,
-          success: function () {
-          },
-          error: function () {
+          if (!(file.type == "video/mp4")) {
+                $(".divLoading").addClass("hidden");
+                $('#video-upload-warning').modal('show');
+                homePageVideoDropzone.removeFile(file);
           }
-      })
+          else
+          {
+              $(".divLoading").removeClass("hidden");
+              $.ajax({
+                  type: "POST",
+                  url: "/communities/" + community_id + "/home_page/save_home_page_video",
+                  file: file,
+                  success: function () {
+                  },
+                  error: function () {
+                  }
+              });
+          }
+
         }
-      else 
+      else
       {
           // var message = '<div class="alert alert-success">Video uploaded successfully.</div>'
           // $('#flash-message').html(message);
