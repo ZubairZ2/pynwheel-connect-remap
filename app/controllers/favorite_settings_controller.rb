@@ -20,14 +20,22 @@ class FavoriteSettingsController < ApplicationController
 	end
 
 	def update
-		@favorite = @community.favorite_setting
-    if @favorite.update(favorite_params)
-      flash[:notice] = "Favorite settings updated successfully."
-      redirect_to community_favorite_settings_path(@community)
+
+    if params[:ajax_call].present?
+      @favorite = FavoriteSetting.find params[:id]
+      @favorite.email_body = params[:email_body]
+      @favorite.save
     else
-      flash[:error] = @favorite.errors.full_messages.join(',')
-      render :index
+      @favorite = @community.favorite_setting
+      if @favorite.update(favorite_params)
+        flash[:notice] = "Favorite settings updated successfully."
+        redirect_to community_favorite_settings_path(@community)
+      else
+        flash[:error] = @favorite.errors.full_messages.join(',')
+        render :index
+      end
     end
+
 	end
 
   def show_images
