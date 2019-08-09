@@ -55,6 +55,7 @@ class HomePageController < ApplicationController
   end
 
   def save_home_page_video
+    puts "video",params[:file]
     if current_community.design.home_page_video.present?
       current_community.design.home_page_video.update_attribute(:video,params[:file])
     else

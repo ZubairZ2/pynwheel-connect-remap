@@ -684,8 +684,9 @@ function saveHomePageVideo(){
                   url: "/communities/" + community_id + "/home_page/save_home_page_video",
                   file: file,
                   success: function () {
+                      console.log("sccuess");
                   },
-                  error: function () {
+                  error: function () {console.log("error");
                   }
               });
           }
