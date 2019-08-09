@@ -655,20 +655,43 @@ function saveHomePageVideo(){
   };
 
   homePageVideoDropzone.on("complete", function(file) {
+      if (file.size > 500000001)
+      {
+          $('#video-size-warning').modal('show');
+      }
+      else{
+          location.reload();
+      }
     console.log(file);
-    location.reload();
-      $(".divLoading").addClass("hidden");
+
+    $(".divLoading").addClass("hidden");
+
   });
-  
+
   homePageVideoDropzone.on("addedfile", function(file) {
-      $(".divLoading").removeClass("hidden");
+      if (file.size < 500000001)
+      {
+      // {
+          $(".divLoading").removeClass("hidden");
       $.ajax({
           type: "POST",
-          url: "/communities/"+community_id+"/home_page/save_home_page_video",
+          url: "/communities/" + community_id + "/home_page/save_home_page_video",
           file: file,
-          success: function(){},
-          error: function(){}
+          success: function () {
+          },
+          error: function () {
+          }
       })
+        }
+      else
+      {
+          // var message = '<div class="alert alert-success">Video uploaded successfully.</div>'
+          // $('#flash-message').html(message);
+          // setTimeout(function() {
+          //     $('.alert').fadeOut('slow');
+          // }, 10000);
+          // $('#video-size-warning').modal('show');
+      }
     // console.log(file.type);
     // debugger;
     // if (file.size <  500000001)
