@@ -17,4 +17,7 @@
 class Tour < ApplicationRecord
   belongs_to :community
   has_many :tour_stops, dependent: :destroy
+
+  has_one :path, as: :map_path
+  has_many :path_points, through: :path
 end

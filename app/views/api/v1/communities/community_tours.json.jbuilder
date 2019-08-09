@@ -1,3 +1,4 @@
+i = 0
 json.tours @tours do |tour|
 
   json.id tour.id
@@ -11,7 +12,7 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
-  json.path_points [{x_plot: 1008, y_plot: 341}, {x_plot: 550, y_plot: 641}, {x_plot: 187, y_plot: 641}]
+  json.path_points tour.path.present? ? tour.path.path_points : []
 
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
@@ -112,8 +113,14 @@ json.tours @tours do |tour|
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
     @existing_path_points = []
+    @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
+
     stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
-    json.path_points @existing_path_points.flatten 
+    
+    @existing_path_points.flatten!
+    json.path_points @existing_path_points
+
+    i+=1
   end
 
 end

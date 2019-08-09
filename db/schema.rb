@@ -165,6 +165,7 @@ ActiveRecord::Schema.define(version: 20190805130215) do
     t.string   "xml_filename"
     t.string   "xml_domain"
     t.string   "data_error_message"
+    t.string   "data_error_exp"
     t.index ["community_id"], name: "index_credentials_on_community_id", using: :btree
   end
 
