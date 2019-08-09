@@ -75,14 +75,14 @@
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
 
         .row
-          .col-md-6
+          .col-md-12
             = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
-          .col-md-6
-            = link_to draw_line_path(@tours.id), class: "btn btn-success mb-20 pull-right", id: "start-point-path" do
-              %i.fa.fa-plus-circle
-              ADD PATH FOR STARTING POINT
+          -#.col-md-6
+          -#  = link_to draw_line_path(@tours.id), class: "btn btn-success mb-20 pull-right", id: "start-point-path" do
+          -#    %i.fa.fa-plus-circle
+          -#    ADD PATH FOR STARTING POINT
 
           .col-lg-6{:style => "margin-bottom: 300px;"}
             %h5.mt-40.mb-20 Add Amenities
