@@ -683,7 +683,7 @@ function saveHomePageVideo(){
           }
       })
         }
-      else
+      else 
       {
           // var message = '<div class="alert alert-success">Video uploaded successfully.</div>'
           // $('#flash-message').html(message);
