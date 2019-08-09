@@ -73,6 +73,16 @@
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok
 
+#video-size-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Warning
+      .modal-body
+        File cannot be greater than 500MB
+      .modal-footer
+        %button.btn.btn-primary#video_warning_btn{"data-dismiss" => "modal", :type => "button"} Ok
+
 
 #welcome-prompt-modal1.modal.welcome_modal.fade{"aria-hidden" => "true","data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog1
@@ -130,7 +140,6 @@
         %button.btn.btn-success{"data-dismiss" => "modal",:class =>"publish_changes_btn5 publish_changes_btn", :type => "button"} OK
 
 :javascript
-
   $(".welcome_prompt_btn2").click(function(){
     #{current_user.welcome_prompt = true}
     #{current_user.save unless (params["controller"] == "home" && params["action"] == "index") || (params["controller"] == "users" && params["action"] == "profile")}
