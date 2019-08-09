@@ -657,15 +657,32 @@ function saveHomePageVideo(){
   homePageVideoDropzone.on("complete", function(file) {
     console.log(file);
     location.reload();
+      $(".divLoading").addClass("hidden");
   });
   
   homePageVideoDropzone.on("addedfile", function(file) {
-    console.log(file.type);
-    $(".divLoading").removeClass("hidden");
-    if (!(file.type == "video/mp4")) {
-      $(".divLoading").addClass("hidden");
-      $('#video-upload-warning').modal('show');
-      homePageVideoDropzone.removeFile(file);
-    }
+      $(".divLoading").removeClass("hidden");
+      $.ajax({
+          type: "POST",
+          url: "/communities/"+community_id+"/home_page/save_home_page_video",
+          file: file,
+          success: function(){},
+          error: function(){}
+      })
+    // console.log(file.type);
+    // debugger;
+    // if (file.size <  500000001)
+    // {
+    //     $(".divLoading").removeClass("hidden");
+    //     if (!(file.type == "video/mp4")) {
+    //       $(".divLoading").addClass("hidden");
+    //       $('#video-upload-warning').modal('show');
+    //       homePageVideoDropzone.removeFile(file);
+    //     }
+    // }
+    // else
+    // {
+    //     alert("not sized");
+    // }
   });
 }
