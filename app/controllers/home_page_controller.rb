@@ -55,10 +55,12 @@ class HomePageController < ApplicationController
   end
 
   def save_home_page_video
-    @home_page_video = HomePageVideo.new
-    if @home_page_video.upload_video params,current_community
-      render :json=>{"status"=>"success"}
+    if current_community.design.home_page_video.present?
+      current_community.design.home_page_video.update_attribute(:video,params[:file])
+    else
+      current_community.design.create_home_page_video(video: params[:file])
     end
+    render :json=>{"status"=>"success"}
   end
 
   def delete_home_page_video
