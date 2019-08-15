@@ -14,4 +14,8 @@ class HomePageVideo < ApplicationRecord
 	mount_uploader :video, VideoUploader
 	process_in_background :video
 	belongs_to :design
+
+	def upload_video(para,com)
+		HomePageVideoUpload.perform_async para,com
+	end
 end
