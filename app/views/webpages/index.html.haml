@@ -351,7 +351,10 @@
 
 :javascript
   $(".divLoading").removeClass("hidden");
-
+  $(window).on( "orientationchange", function( event ) {
+        $(".divLoading").removeClass("hidden");
+        window.location.reload();
+    });
   setTimeout(function(){
     $(".divLoading").addClass("hidden");
   }, 1000);
