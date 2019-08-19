@@ -380,8 +380,8 @@
 
   var window_height = window.innerHeight;
   // alert($("pynwheel_iframe"));
-  ele = document.getElementsByName("pynwheel_iframe");
-  if (navigator.platform == "iPhone" && ele.length > 0)
+  ele = window.location.hostname
+  if ((navigator.platform == "iPhone") && (ele == "pynwheeltouchscreens.com"))
   {
     alert("frfrfr");
     var diff = (8000/(($(window).width())/3.472) * -1);
