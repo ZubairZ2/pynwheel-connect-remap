@@ -223,11 +223,15 @@
             -#- marker_font_size = @community.design.amenity_map_marker_size_integer
             - marker_font_size = (marker_font_size.to_i) -5
             - camera_font_size = (marker_font_size.to_i) / 2
-
+            - if request.env['HTTP_USER_AGENT'].downcase.match(/android|iphone/).to_s == "iphone"
+              - puts "ytttttttt"*20
             - coordinates_array = []
             - units.each do |unit|
               - coordinates_array.push([unit.x_plot,unit.y_plot])
             - units.each do |unit|
+              - if unit.x_plot > 0
+                - unit.x_plot = unit.x_plot / 3.4
+                - unit.y_plot = unit.y_plot / 2.4
               - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
                 - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
 
