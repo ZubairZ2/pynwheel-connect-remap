@@ -379,9 +379,19 @@
   });
 
   var window_height = window.innerHeight;
-  alert($(window).width());
-  var diff = (8000/($(window).width()) * -1);
-  var diffL = (2500/($(window).width()) * -1);
+  // alert($("pynwheel_iframe"));
+  ele = document.getElementsByName("pynwheel_iframe");
+  if (navigator.platform == "iPhone" && ele.length > 0)
+  {
+    var diff = (8000/(($(window).width())/3.472) * -1);
+    var diffL = (2500/(($(window).width())/3.472) * -1);
+  }
+  else
+  {
+    var diff = (8000/($(window).width()) * -1);
+    var diffL = (2500/($(window).width()) * -1);
+  }
+
   // alert($(window).width());
   if ($(window).width() < 1500)
   {
