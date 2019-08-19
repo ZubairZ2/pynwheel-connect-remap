@@ -268,6 +268,7 @@ Rails.application.routes.draw do
           post :save_user_tour
         end
       end
+      post :save_shared_tour, to: 'tours#save_shared_tour'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
     end
   end

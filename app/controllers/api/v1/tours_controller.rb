@@ -60,9 +60,22 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "User not present"}
     end
   end
+
+  def save_shared_tour
+    shared_tour = SharedTour.new shared_tour_params
+    if shared_tour.save
+      render :json=> {:success=>true, :message => "success", :data => shared_tour}
+    else
+      render :json=> {:success=>false, :message => "shared tour was not saved, please try again."}
+    end
+  end
   private
 
   def set_community
     @community = Community.find(params[:id])
+  end
+
+  def shared_tour_params
+    params.permit(:name, :phone, :email, :tour_id, :recipient_name)
   end
 end
