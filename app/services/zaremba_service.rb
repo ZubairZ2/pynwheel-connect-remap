@@ -115,6 +115,8 @@ class ZarembaService < BaseService
             month = u["Availability"]["VacateDate"]["Month"]
             day = u["Availability"]["VacateDate"]["Day"]
             vacateDate = Date.parse("#{year}-#{month}-#{day}")
+          else
+            vacateDate = ""
           end
           unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
             unit.available_date = vacateDate
