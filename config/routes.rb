@@ -1,6 +1,5 @@
 Rails.application.routes.draw do
   get 'tours/index'
-  get 'zoomiframe', to: 'home_page#iframe'
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
@@ -152,6 +151,7 @@ Rails.application.routes.draw do
         delete :delete_home_page_video
         get :show_home_page_video
         put :update_animation
+        get 'iframe'
       end
     end
 
