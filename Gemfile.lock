@@ -76,6 +76,9 @@ GEM
       carrierwave (>= 0.8.0)
     carrierwave-video-thumbnailer (0.1.4)
       carrierwave
+    carrierwave_direct (2.1.0)
+      carrierwave (>= 1.0.0)
+      fog-aws
     coderay (1.1.2)
     coffee-rails (4.2.2)
       coffee-script (>= 2.2.0)
@@ -353,6 +356,7 @@ DEPENDENCIES
   carrierwave-base64
   carrierwave-video-thumbnailer
   carrierwave_backgrounder!
+  carrierwave_direct
   coffee-rails (~> 4.2)
   delayed_job_active_record
   derailed_benchmarks

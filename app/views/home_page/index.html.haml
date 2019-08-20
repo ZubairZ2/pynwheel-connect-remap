@@ -77,7 +77,8 @@
                 %h4 Video Show
                 
                 / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
-                %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-video-upload-holder').click();"}
+                -#%input#add_video{:type => "file",:multiple=>"multiple"}
+                %span.btn.btn-success.btn-file.text-UP#file-load
                   %i.fa.fa-plus-circle
                   Add Video
                 %div{:style => "margin-left: 125px;"}
@@ -86,11 +87,109 @@
                       Adding a video file (MP4 files only) will change the video that appears on the the home page.
                 /     = f.file_field :video
                     
+
           .slide-imgage-boxs
             #videos-index
             = render 'videos_index'
+
+        = direct_upload_form_for @uploader, :id => "direct_form" do |f|
+          = f.file_field :avatar, :id => "video_field",:class => "hidden"
+          = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
+
+
 #edit-image.modal.fade.edit-image
 :javascript
+  $("#file-load").on('click', function(e) {
+    $('#video_field').click();
+  });
+  $("#video_field").on('change', function(e) {
+    if (e.currentTarget.files[0].size < 500000000)
+    {
+      if (e.currentTarget.files[0].type == "video/mp4")
+      {
+        $(".divLoading").removeClass("hidden");
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  });
+  $("#file-load-drop").on('drop', function(e) {
+    // $("#video_submit").click();
+  });
+  function dropHandler(e)
+  {
+    if (e.dataTransfer.files[0].size < 500000000)
+    {
+      if (e.dataTransfer.files[0].type == "video/mp4")
+      {
+        video_field.files = e.dataTransfer.files
+        $(".divLoading").removeClass("hidden");
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  }
+  $(".divLoading").addClass("hidden");
+  // $(function() {
+  // // $('#file_upload').change(function(e) { alert("askjd") });
+  //   $('#file_upload').fileupload({
+  //     forceIframeTransport: true,    // VERY IMPORTANT.  you will get 405 Method Not Allowed if you don't add this.
+  //     autoUpload: true,
+  //     add: function (event, data) {
+  //       $.ajax({
+  //         url: "/communities/2103/home_page/upload_video_direct",
+  //         type: 'POST',
+  //         dataType: 'json',
+  //         data: {doc: {video: data.files[0].name}},
+  //         async: false,
+  //         success: function(retdata) {
+  //         debugger;
+  //           // after we created our document in rails, it is going to send back JSON of they key,
+  //           // policy, and signature.  We will put these into our form before it gets submitted to amazon.
+  //           $('#file_upload').find('input[name=key]').val(retdata.key);
+  //           $('#file_upload').find('input[name=policy]').val(retdata.policy);
+  //           $('#file_upload').find('input[name=signature]').val(retdata.signature);
+  //         }
+  //
+  //       });
+  //
+  //       data.submit();
+  //     },
+  //     send: function(e, data) {
+  //       debugger;
+  //       // show a loading spinner because now the form will be submitted to amazon,
+  //       // and the file will be directly uploaded there, via an iframe in the background.
+  //       // $('#loading').show();
+  //     },
+  //     fail: function(e, data) {
+  //       debugger;
+  //       console.log('fail');
+  //       console.log(data);
+  //     },
+  //     done: function (event, data) {
+  //     debugger;
+  //       // here you can perform an ajax call to get your documents to display on the screen.
+  //       // $('#your_documents').load("/documents?for_item=1234");
+  //
+  //       // hide the loading spinner that we turned on earlier.
+  //       // $('#loading').hide();
+  //     },
+  //   });
+  // });
+
   var community_id = #{params[:community_id]}
   var design_id = #{current_community.design.id}
 

@@ -7,6 +7,7 @@ gem 'rack-cors', require: 'rack/cors'
 gem 'rails', '~> 5.0.0'
 gem 'annotate'
 gem 'bootstrap-wysihtml5-rails'
+gem 'carrierwave_direct'
 
 gem 'write_xlsx'
 gem "mini_magick"
