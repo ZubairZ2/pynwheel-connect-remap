@@ -1,0 +1,2 @@
+class SharedTour < ApplicationRecord
+end

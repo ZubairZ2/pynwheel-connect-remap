@@ -57,28 +57,32 @@
 
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
-                            = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
-                              %i.fa.fa-edit.icon_size
                             = link_to draw_line_path(u), id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
+                            = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
+                              %i.fa.fa-edit.icon_size
 
                           - else
                             - amenity = Amenity.find stop.stop_id
-                            -#= link_to draw_line_path(amenity), id: "create_path",  class: "text-warning ml-5" do
-                            -#  %i.fa.fa-road.icon_size
+                            = link_to draw_line_path(amenity), id: "create_path",  class: "text-warning ml-5" do
+                              %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
                           %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                             %i.fa.fa-trash.icon_size
-        
+
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
-        
+
         .row
           .col-md-12
             = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
+          -#.col-md-6
+          -#  = link_to draw_line_path(@tours.id), class: "btn btn-success mb-20 pull-right", id: "start-point-path" do
+          -#    %i.fa.fa-plus-circle
+          -#    ADD PATH FOR STARTING POINT
 
           .col-lg-6{:style => "margin-bottom: 300px;"}
             %h5.mt-40.mb-20 Add Amenities
@@ -89,7 +93,7 @@
                 - amenity_arr = []
                 - @amenities.each do |amenity|
                   -#- byebug
-                  - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 )
+                  - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
                     %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
                       %a
                         = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
@@ -125,25 +129,33 @@
           -#    %i.fa.fa-plus-circle
           -#    SELECT STOPS
 
-- path_point_coords = {}
--#%section.is-floorplate
--#  .content
--#    %form.form-horizontal
--#      .box-body.map-body-top
--#        .row
--#          #container.col-lg-12.p-0
--#            .map-block{:style => "position: relative;"}
--#              / id map
--#              .plot-image
--#                .grid-graph.hidden
--#                = image_tag @sitemap.image? ? @sitemap.image.url : "default.jpeg", id: "testimg"
--#                - community_units = @community_units
--#                - coordinates_array = []
--#                - path_point_coords = {}
--#                - @existing_stops.flatten.each_with_index do |stop, index|
--#                  .stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; width: 15px; height: 15px; background-color: green; z-index: 9999"}
--#                - @existing_path_points.each_with_index do |point, index|
--#                  .path_point{:id => "point_#{point.id}", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px; width: 15px; height: 15px; background-color: #000; z-index: 9999"}
+%section.is-floorplate
+  .content
+    %form.form-horizontal
+      .box-body.map-body-top
+        .row
+          #container.col-lg-12.p-0
+            .map-block{:style => "position: relative;"}
+              / id map
+              .plot-image
+                .grid-graph.hidden
+                = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
+
+
+                = image_tag @sitemap.image? ? @sitemap.image.url : "default.jpeg", id: "testimg"
+                - community_units = @community_units
+                - coordinates_array = []
+                - path_point_coords = {}
+                - @existing_stops.flatten.each_with_index do |stop, index|
+                  - if stop.class.to_s == "Amenity"
+                    %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
+                      %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
+                  - else
+                    %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                
+
+                - @existing_path_points.each_with_index do |point, index|
+                  .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px; width: 15px; height: 15px; background-color: #000; z-index: 9999"}
 
 
 
@@ -170,6 +182,7 @@
     var point_size = 15;
     
     path_array = $(".path_point")
+    $(".plot-image").append(createLine($('.start-point'), path_array[0]))
     for(i=0; i < path_array.length-1; i++){
       $(".plot-image").append(createLine(path_array[i], path_array[i+1]))
     }
@@ -213,7 +226,7 @@
 
       id = "point_"+db_data.point.id.toString()
 
-      path_point = $('<div class="path_point" id="'+ id +'"></div>')
+      path_point = $('<div title="Drag to change, double click to remove" class="path_point" id="'+ id +'"></div>')
               .css('position', 'absolute')
               .css('top', mouseY + 'px')
               .css('left', mouseX + 'px')
@@ -224,7 +237,12 @@
 
       $(".plot-image").append(path_point);
       path_array.push(path_point)
-      console.log(path_array)
+      if(path_array.length == 1){
+        //debugger
+        line = createLine($(".start-point"), path_array[path_array.length-1])
+        $(".plot-image").append(line)
+      }
+
       if(path_array.length > 1){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
         $(".plot-image").append(line)
@@ -321,6 +339,27 @@
         document.onmousemove = null;
       }
     }
+
+
+    $('#start-point-path').on("click", function(event){
+      $.ajax({
+        type: "POST",
+        url: this.href,
+        data: {map_path_for: 'starting_point'},
+        success: function(response) {
+          //update drawing path for so we can use that path id to save point
+          $("#drawing_path_for").val(response.path.id)
+          $('.stops').removeClass('animate-element')
+          $('#stop_'+response.path.map_path_id).addClass('animate-element')
+          $('html, body').animate({
+            scrollTop: $(".plot-image").offset().top
+          }, 500);
+        }
+
+      });
+      event.preventDefault();
+    });
+
     
     $("*#create_path").on("click", function(event){
 
@@ -331,10 +370,13 @@
         success: function(response) {
           //update drawing path for so we can use that path id to save point
           $("#drawing_path_for").val(response.path.id)
+          $('.stops').removeClass('animate-element')
+          $('#stop_'+response.path.map_path_id).addClass('animate-element')
           $('html, body').animate({
             scrollTop: $(".plot-image").offset().top
           }, 500);
         }
+
       });
       event.preventDefault();
     });
@@ -344,8 +386,9 @@
       var dy = 0;
       var width = $(el).width()|0;
       var height = $(el).height()|0;  
-      dx += $(el).position().left;
-      dy += $(el).position().top;
+      dx += parseInt($(el).css('left'), 10);
+      dy += parseInt($(el).css('top'), 10);
+      
       
       return { top: dy, left: dx, width: width, height: height };
     }
