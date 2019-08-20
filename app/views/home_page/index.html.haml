@@ -77,7 +77,8 @@
                 %h4 Video Show
                 
                 / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
-                %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-video-upload-holder').click();"}
+                -#%input#add_video{:type => "file",:multiple=>"multiple"}
+                %span.btn.btn-success.btn-file.text-UP#file-load
                   %i.fa.fa-plus-circle
                   Add Video
                 %div{:style => "margin-left: 125px;"}
@@ -91,30 +92,45 @@
             #videos-index
             = render 'videos_index'
 
-        = direct_upload_form_for @uploader do |f|
-          = f.file_field :avatar
-          = f.submit "Upload Directly!"
-
-        -#%form#file_upload(action="https://images-pynwheel-cms-v2.s3.amazonaws.com" method="post" enctype="multipart/form-data")
-        -#  -# order is important!
-        -#  -# also, the things that are not filled in right now *will* be filled in soon.  See below.
-        -#  %input{:type => :hidden, :name => :key}
-        -#  %input{:type => :hidden, :name => "#{ENV['AWS_ACCESS_KEY_ID']}", :value => "#{ENV['AWS_SECRET_ACCESS_KEY']}"}
-        -#  %input{:type => :hidden, :name => :acl,  :value => :private}
-        -#  %input{:type => :hidden, :name => :success_action_status, :value => "200"}
-        -#  %input{:type => :hidden, :name => :policy}
-        -#  %input{:type => :hidden, :name => :signature}
-        -#
-        -#  .fileupload-content
-        -#    .fileupload-progress
-        -#  .file-upload
-        -#    %label.fileinput-button
-        -#      %span Upload Document
-        -#      %input{:type => :file, :name => :file}
+        = direct_upload_form_for @uploader, :id => "direct_form" do |f|
+          = f.file_field :avatar, :id => "video_field",:class => "hidden"
+          = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
 
 
 #edit-image.modal.fade.edit-image
 :javascript
+  $("#file-load").on('click', function(e) {
+    $('#video_field').click();
+  });
+  // $("#video_field").on('change', function(e) {
+  //   if (e.currentTarget.files[0].size < 500000000)
+  //   {
+  //     if (e.currentTarget.files[0].type == "video/mp4")
+  //     {
+  //       $(".divLoading").removeClass("hidden");
+  //       $("#video_submit").click();
+  //     }
+  //     else
+  //     {
+  //       $('#video-upload-warning').modal('show');
+  //     }
+  //   }
+  //   else
+  //   {
+  //     $('#video-size-warning').modal('show');
+  //   }
+  // });
+  // $("#file-load-drop").on('drop', function(e) {
+  //   debugger;
+  //   // $("#video_submit").click();
+  // });
+  function dropHandler(e)
+  {
+    $("video_field").prevObject[0] = e
+    debugger;
+    $("#video_submit").click();
+  }
+  $(".divLoading").addClass("hidden");
   // $(function() {
   // // $('#file_upload').change(function(e) { alert("askjd") });
   //   $('#file_upload').fileupload({
