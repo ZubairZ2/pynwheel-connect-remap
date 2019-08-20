@@ -102,33 +102,45 @@
   $("#file-load").on('click', function(e) {
     $('#video_field').click();
   });
-  // $("#video_field").on('change', function(e) {
-  //   if (e.currentTarget.files[0].size < 500000000)
-  //   {
-  //     if (e.currentTarget.files[0].type == "video/mp4")
-  //     {
-  //       $(".divLoading").removeClass("hidden");
-  //       $("#video_submit").click();
-  //     }
-  //     else
-  //     {
-  //       $('#video-upload-warning').modal('show');
-  //     }
-  //   }
-  //   else
-  //   {
-  //     $('#video-size-warning').modal('show');
-  //   }
-  // });
-  // $("#file-load-drop").on('drop', function(e) {
-  //   debugger;
-  //   // $("#video_submit").click();
-  // });
+  $("#video_field").on('change', function(e) {
+    if (e.currentTarget.files[0].size < 500000000)
+    {
+      if (e.currentTarget.files[0].type == "video/mp4")
+      {
+        $(".divLoading").removeClass("hidden");
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  });
+  $("#file-load-drop").on('drop', function(e) {
+    // $("#video_submit").click();
+  });
   function dropHandler(e)
   {
-    $("video_field").prevObject[0] = e
-    debugger;
-    $("#video_submit").click();
+    if (e.dataTransfer.files[0].size < 500000000)
+    {
+      if (e.dataTransfer.files[0].type == "video/mp4")
+      {
+        video_field.files = e.dataTransfer.files
+        $(".divLoading").removeClass("hidden");
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
   }
   $(".divLoading").addClass("hidden");
   // $(function() {
