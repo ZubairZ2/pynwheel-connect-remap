@@ -1,3 +1,13 @@
+style: 
+  div.mydiv {
+    width: 331px;
+    position: absolute;
+    height: 100%;
+    background: #303a3c;
+    z-index: 90;
+    overflow-y: auto;
+  }
+
 %html
   %head
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
@@ -32,7 +42,7 @@
     / Main content
     - unless @community_info.locked
       %section.is-webpage
-        %a#clickme{:href => "#"} Select Filter
+        %a#clickme{:href => "#", :style => "position: sticky;"} Select Filter
         .left-side.mydiv
           .select-list{:class => @community.has_floorplates? ? "" : "adjust-width"}
             .select-title
