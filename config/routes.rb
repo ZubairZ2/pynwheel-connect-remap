@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get 'tours/index'
+  get 'zoomiframe', to: 'home_page#iframe'
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

@@ -91,4 +91,8 @@ class HomePageController < ApplicationController
   def home_page_video_params
     params.require(:home_page_video).permit!
   end
+
+  def iframe
+
+  end
 end
