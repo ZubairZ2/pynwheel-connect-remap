@@ -43,7 +43,7 @@ class HomePageController < ApplicationController
       @uploader.design_id = current_community.design.id
 
       @uploader.save
-      redirect_to community_home_page_index_path, notice: 'User was successfully created. Waiting for Avatar to be processed. Refresh at will'
+      redirect_to community_home_page_index_path, notice: 'Video has been uploaded'
     else
       render action: "index"
     end
