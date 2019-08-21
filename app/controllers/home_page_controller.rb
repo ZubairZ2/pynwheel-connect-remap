@@ -13,11 +13,11 @@ class HomePageController < ApplicationController
       @home_page_images = @design.home_page_images.order(:sort).all
   end
 
-  # def save_home_page_image
-  #   current_community.design.home_page_images.create(image: params[:file])
-  #   #@home_page_images = current_community.design.home_page_images.order(:sort).all
-  #   render :json=>{"status"=>"sucdess"}
-  # end
+  def save_home_page_image
+    current_community.design.home_page_images.create(image: params[:file])
+    #@home_page_images = current_community.design.home_page_images.order(:sort).all
+    render :json=>{"status"=>"sucdess"}
+  end
 
   def upload_video_direct
 
