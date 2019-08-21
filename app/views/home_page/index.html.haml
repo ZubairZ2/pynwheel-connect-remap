@@ -75,7 +75,9 @@
             .col-lg-12
               .title-home
                 %h4 Video Show
-                
+                %h4#slide_show_span
+                  Home Page video size limit is 500MB.
+
                 / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
                 -#%input#add_video{:type => "file",:multiple=>"multiple"}
                 %span.btn.btn-success.btn-file.text-UP#file-load
