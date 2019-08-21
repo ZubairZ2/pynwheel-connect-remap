@@ -93,8 +93,8 @@
             = render 'videos_index'
 
         = direct_upload_form_for @uploader, :id => "direct_form" do |f|
-          = f.file_field :avatar, :id => "video_field",:class => ""
-          = f.submit "Upload Directly!", :id => "video_submit",:class => ""
+          = f.file_field :avatar, :id => "video_field",:class => "hidden"
+          = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
 
 
 #edit-image.modal.fade.edit-image
@@ -107,38 +107,26 @@
     // $("#video_submit").click();
   });
   function dropHandler(e)
-  {e.preventDefault();
-  console.log(e.dataTransfer);
-    video_field.files = e.dataTransfer.files;
-    $("#video_submit").click();
-    // if (e.dataTransfer.files[0].size < 500000000)
-    // {
-    //   if (e.dataTransfer.files[0].type == "video/mp4")
-    //   {
-    //
-    //     $(".divLoading").removeClass("hidden");
-    //     setTimeout(function(){
-    //
-    //         setTimeout(function(){
-    //         debugger;
-    //
-    //         },3000);
-    //
-    //         // setTimeout(function(){
-    //         //     console.log(video_field.files);
-    //         //     $("#video_submit").click();
-    //         // },5000);
-    //     },2000);
-    //   }
-    //   else
-    //   {
-    //     $('#video-upload-warning').modal('show');
-    //   }
-    // }
-    // else
-    // {
-    //   $('#video-size-warning').modal('show');
-    // }
+  {
+    if (e.dataTransfer.files[0].size < 500000000)
+    {
+      if (e.dataTransfer.files[0].type == "video/mp4")
+      {
+        $(".divLoading").removeClass("hidden");
+        e.preventDefault();
+        console.log(e.dataTransfer);
+        video_field.files = e.dataTransfer.files;
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
   }
   $("#video_field").on('change', function(e) {
     if (e.currentTarget.files[0].size < 500000000)
