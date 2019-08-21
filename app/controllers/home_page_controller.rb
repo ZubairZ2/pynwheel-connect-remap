@@ -93,6 +93,6 @@ class HomePageController < ApplicationController
   end
 
   def iframe
-
+    render :layout => false
   end
 end

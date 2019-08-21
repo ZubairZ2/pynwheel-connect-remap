@@ -1,14 +1,12 @@
-
 <!DOCTYPE html>
 <html>
-<head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-</head>
-<body>
-<iframe id="frameID" height="1000" src="https://localhost:3000/communities/229/webpages" width="100%"></iframe>
-<script type="text/javascript">
-
-    $(window).on( "orientationchange", function( event ) {window.location.reload();});
-</script>
-</body>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	</head>
+	<body>
+		<embed  onload="window.parent.$('body').animate({scrollTop:0}, 'slow');" style="margin-top: 0px;" src="https://pynwheel-staging.herokuapp.com/communities/440/webpages" width="100%" height="750px" />
+		<script type="text/javascript">
+			$(window).on( "orientationchange", function( event ) {window.location.reload();});
+		</script>
+	</body>
 </html>
