@@ -77,6 +77,7 @@ class Community < ApplicationRecord
   validate :validate_page_position
 
 
+  scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
 
   def is_futurist?
     theme_name == "futurist"

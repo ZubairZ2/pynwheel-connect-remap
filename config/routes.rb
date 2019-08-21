@@ -79,10 +79,6 @@ Rails.application.routes.draw do
         end
       end
       get :plotexp
-      get :draw_path_points
-      post :update_path_points
-      post :delete_path_points
-
       get :grid_overlay
       post :adjust_marker_positions
     end
@@ -156,6 +152,7 @@ Rails.application.routes.draw do
         delete :delete_home_page_video
         get :show_home_page_video
         put :update_animation
+        get 'iframe'
       end
     end
 
@@ -273,6 +270,7 @@ Rails.application.routes.draw do
           post :save_user_tour
         end
       end
+      post :save_shared_tour, to: 'tours#save_shared_tour'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
     end
   end
