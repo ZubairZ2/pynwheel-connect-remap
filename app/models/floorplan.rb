@@ -42,6 +42,7 @@ class Floorplan < ApplicationRecord
   validates_uniqueness_of :name, scope: :community, on: :create
   validates_uniqueness_of :provider_floorplan_id, scope: :community
   after_commit :populate_image_urls, on: [:create,:update]
+  validates :market_rent, :numericality => { greater_than_or_equal_to: -1 }
 
   def populate_image_urls
     if image.present?

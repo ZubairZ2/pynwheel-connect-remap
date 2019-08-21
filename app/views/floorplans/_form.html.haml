@@ -51,7 +51,7 @@
         = f.text_field :bathrooms, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"No of bathrooms",:maxlength=>"10"
         %small Bathrooms (Manual Override Required)
       .col-sm-6.col-lg-3.col-md-3.col-xs-12
-        = f.text_field :market_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"0.00",:maxlength=>"10", :value => f.object.market_rent.to_i
+        = f.text_field :market_rent, :class=>"form-control validate[required]", :placeholder=>"0.00",:maxlength=>"10", :value => f.object.market_rent.to_i
         %small Base Price (Manual Override Required)
 
 -#.form-group
@@ -93,7 +93,7 @@
 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+    = f.text_area :description,:class=>"form-control mb-20  wysihtml5",:placeholder=>"Enter Description"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Primary Image
