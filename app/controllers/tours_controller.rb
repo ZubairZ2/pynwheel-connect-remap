@@ -24,7 +24,6 @@ class ToursController < ApplicationController
     @existing_path_points.flatten!
     rescue => ex
     end
-    # binding.pry
   end
   
   def point_json

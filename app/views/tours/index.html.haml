@@ -1,4 +1,6 @@
 - content_for :title, "Tour Setup Page - Pynwheel"
+- left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
+- right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
 / Main content
 %section
   .content
@@ -153,7 +155,7 @@
                     %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
                       %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
                   - else
-                    %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                    %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin}px; left: #{stop.x_plot - left_margin}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                 
 
                 - @existing_path_points.each_with_index do |point, index|
