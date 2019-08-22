@@ -15,23 +15,63 @@
           TOUR SETUP PAGE
           %span
     .row
+      .col-md-12
+        .box.box-widget.panel-box.add-plan.pt-30
+          = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
+            = hidden_field_tag "community_id", @community.id
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Show Tour Page
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :show_tour_page, true, @community.show_tour_page, class: "show-tour-page"
+                  %label.label-primary{:for => "show_tour_page"}
+                  %span.pl-15 Yes
+            = submit_tag 'Save', class: "hidden"
+    .row
       / Start Panel left Side
+      .col-lg-6{:style => "margin-bottom: 200px;"}
+        %h5.mt-40.mb-20 Add Amenities
+        .imageselect.amenity-imageselect
+          .show-categories
+            = "- select amenity -"
+          %ul#imageselect1{:style => "display: none;"}
+            - amenity_arr = []
+            - @amenities.each do |amenity|
+              -#- byebug
+              - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
+                %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
+                  %a
+                    = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
+                    %span.ml-5
+                      = amenity.name
+              -#- ts = TourStop.find_by(stop_type: "amenity",stop_id: amenity.id)
+              -#- amenity_arr.push([amenity.id.to_s+":amenity", ts.present? ? ts.latitude.to_i : 0, ts.present? ? ts.longitude.to_i : 0, true, amenity.name])
+
+        -#%h5.mt-40 SELECTED IMAGES
+        -#.add-plan.mt-10.mb-20
+        -#
+        -#%label#newmsg Place marker for selected amenities on Map
+      - units = @units.sort_by{|u| u.marketing_name}
+      .col-lg-6
+        %h5.mt-40.mb-20 Add Units
+        .imageselect.unit-imageselect
+          .show-categories
+            = "- select unit -"
+          %ul#imageselect2{:style => "display: none;"}
+            - amenity_arr = []
+            - units.each do |unit|
+              - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
+                %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
+
+                  %span.ml-5
+                    = unit.marketing_name
+              -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
+              -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
+
       .col-lg-12.col-md-12
-        .row
-          .col-md-12
-            .box.box-widget.panel-box.add-plan.pt-30
-              = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
-                = hidden_field_tag "community_id", @community.id
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Show Tour Page
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = check_box_tag :show_tour_page, true, @community.show_tour_page, class: "show-tour-page"
-                      %label.label-primary{:for => "show_tour_page"}
-                      %span.pl-15 Yes
-                = submit_tag 'Save', class: "hidden"
+        
         -#.box.box-widget.panel-box.add-plan
         .box.box-widget.panel-box
           .row
@@ -84,45 +124,7 @@
           -#    %i.fa.fa-plus-circle
           -#    ADD PATH FOR STARTING POINT
 
-          .col-lg-6{:style => "margin-bottom: 300px;"}
-            %h5.mt-40.mb-20 Add Amenities
-            .imageselect.amenity-imageselect
-              .show-categories
-                = "- select amenity -"
-              %ul#imageselect1{:style => "display: none;"}
-                - amenity_arr = []
-                - @amenities.each do |amenity|
-                  -#- byebug
-                  - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
-                    %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
-                      %a
-                        = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
-                        %span.ml-5
-                          = amenity.name
-                  -#- ts = TourStop.find_by(stop_type: "amenity",stop_id: amenity.id)
-                  -#- amenity_arr.push([amenity.id.to_s+":amenity", ts.present? ? ts.latitude.to_i : 0, ts.present? ? ts.longitude.to_i : 0, true, amenity.name])
-
-            -#%h5.mt-40 SELECTED IMAGES
-            -#.add-plan.mt-10.mb-20
-            -#
-            -#%label#newmsg Place marker for selected amenities on Map
-          - units = @units.sort_by{|u| u.marketing_name}
-          .col-lg-6
-            %h5.mt-40.mb-20 Add Units
-            .imageselect.unit-imageselect
-              .show-categories
-                = "- select unit -"
-              %ul#imageselect2{:style => "display: none;"}
-                - amenity_arr = []
-                - units.each do |unit|
-                  - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
-                    %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
-
-                      %span.ml-5
-                        = unit.marketing_name
-                  -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
-                  -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
-
+          
 
           -#.col-md-12
           -#  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do
@@ -139,7 +141,7 @@
               / id map
               .plot-image
                 .grid-graph.hidden
-                = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
+                = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
 
 
                 = image_tag @sitemap.image? ? @sitemap.image.url : "default.jpeg", id: "testimg"
@@ -154,7 +156,7 @@
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
                 - @existing_path_points.each_with_index do |point, index|
-                  .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px; width: 15px; height: 15px; background-color: #000; z-index: 9999"}
+                  .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px;"}
 
 
 
@@ -177,8 +179,8 @@
     var path_id;
     
     radius = 50;
-    var point_color = '#000000';
-    var point_size = 15;
+    var point_color = 'rgb(85, 88, 85)';
+    var point_size = 20;
     
     path_array = $(".path_point")
     $(".plot-image").append(createLine($('.start-point'), path_array[0]))
@@ -226,13 +228,10 @@
       id = "point_"+db_data.point.id.toString()
 
       path_point = $('<div title="Drag to change, double click to remove" class="path_point" id="'+ id +'"></div>')
-              .css('position', 'absolute')
               .css('top', mouseY + 'px')
               .css('left', mouseX + 'px')
               .css('width', size)
               .css('height', size)
-              .css('background-color', point_color)
-              .css('z-index', 9999)
 
       $(".plot-image").append(path_point);
       path_array.push(path_point)
@@ -409,7 +408,7 @@
       // angle
       var angle = Math.atan2((dy1-dy2),(dx1-dx2))*(180/Math.PI);
       // draw line
-      return  "<section class='connectingLines' style='left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -webkit-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg); z-index: 99999; background-color: red; position: absolute; height: 2px; '></section>";
+      return  "<section class='connectingLines' style='left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -webkit-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg); z-index: 99999; background-color: #1c1c1d; position: absolute; height: 2px; '></section>";
     };
 
   });
