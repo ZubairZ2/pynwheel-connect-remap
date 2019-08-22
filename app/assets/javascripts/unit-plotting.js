@@ -232,7 +232,6 @@
         // alert(arr);
         if (arr != null) {
           for (i=0; i<arr.length; i++) {
-            debugger;
             if (arr[i][1] == xpos && arr[i][2] == ypos) {
                 // alert(arr[i]);
                 // alert(arr[i][0]);

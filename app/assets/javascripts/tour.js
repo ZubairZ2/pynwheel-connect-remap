@@ -36,6 +36,7 @@ $(document).ready(function () {
         console.log(unit_provider_id);
         selected.push([unit_provider_id, $(this).children('span').text()]);
         plotMode();
+        debugger;
     });
 
 });

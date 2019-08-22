@@ -31,12 +31,12 @@
             = submit_tag 'Save', class: "hidden"
     .row
       / Start Panel left Side
-      .col-lg-6{:style => "margin-bottom: 200px;"}
+      .col-lg-6{:style => "margin-bottom: 10px;"}
         %h5.mt-40.mb-20 Add Amenities
         .imageselect.amenity-imageselect
           .show-categories
             = "- select amenity -"
-          %ul#imageselect1{:style => "display: none;"}
+          %ul#imageselect1{:style => "display: none; z-index: 999;"}
             - amenity_arr = []
             - @amenities.each do |amenity|
               -#- byebug
@@ -59,7 +59,7 @@
         .imageselect.unit-imageselect
           .show-categories
             = "- select unit -"
-          %ul#imageselect2{:style => "display: none;"}
+          %ul#imageselect2{:style => "display: none; z-index: 999;"}
             - amenity_arr = []
             - units.each do |unit|
               - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
@@ -141,7 +141,7 @@
               / id map
               .plot-image
                 .grid-graph.hidden
-                = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
+                = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", :onclick => "return false;"
 
 
                 = image_tag @sitemap.image? ? @sitemap.image.url : "default.jpeg", id: "testimg"
