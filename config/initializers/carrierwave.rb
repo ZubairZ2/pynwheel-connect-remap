@@ -32,6 +32,7 @@
 #  end
 
 CarrierWave.configure do |config|
+  config.max_file_size     = 500.megabytes
   config.fog_provider = 'fog/aws'                        # required
   config.fog_credentials = {
     provider:              'AWS',                        # required

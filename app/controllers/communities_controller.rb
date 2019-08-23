@@ -463,7 +463,7 @@ class CommunitiesController < ApplicationController
         :filter_buttons_icons_position,:global_navigation_show_background_color,:global_navigation_home_icon,:global_navigation_text_outside_the_button_border,:gables_home_page_images,:home_page_logo_visible,:global_navigation_border_thickness,:spacing_between_buttons_for_homepage, :button_on_bg_color, :display_button_on_bg_color,:display_global_navigation_button_color,:global_navigation_button_on_font_color,
         :application_background_image,:display_home_page_nav_background_image,:display_application_background_image,:application_background_color,:button_on_bg_color_opacity,
         :application_background_color_opacity,:display_apartment_nav_bg_image,:display_gallery_nav_bg_image, 
-        :display_favourities_nav_bg_image,:display_additional_pages_nav_bg_image,:apartment_nav_bg_image,:gallery_nav_bg_image,
+        :display_favourities_nav_bg_image,:display_additional_pages_nav_bg_image,:display_neighborhood_bg_image,:neighborhood_bg_image,:apartment_nav_bg_image,:gallery_nav_bg_image,
         :favourities_nav_bg_image,:additional_pages_nav_bg_image,:display_apartment_btn_on_image,:apartment_btn_on_image,:display_gallery_btn_on_image, 
         :gallery_btn_on_image,:display_neighborhood_btn_on_image,:neighborhood_btn_on_image, :display_imagepage_btn_on_image,:imagepage_btn_on_image,
         :display_webpage_btn_on_image,:webpage_btn_on_image,:display_favourite_btn_on_image,:favourite_btn_on_image,:display_apartment_btn_off_image,

@@ -309,7 +309,7 @@ $(document).ready(function () {
     //upload additional pages nav bg image through drag and drop
     
     var additional_pages_navigation_bg_image_upload_holder = document.getElementById('additional-pages-navigation-bg-image-upload-holder');
-    if (favourities_navigation_bg_image_upload_holder) {
+    if (additional_pages_navigation_bg_image_upload_holder) {
       additional_pages_navigation_bg_image_upload_holder.ondrop = function (e) {
         e.preventDefault();
         files = e.dataTransfer.files;
@@ -322,6 +322,20 @@ $(document).ready(function () {
         }
       }
     }
+      var neighborhood_bg_image_upload_holder = document.getElementById('neighborhood-bg-image-upload-holder');
+      if (neighborhood_bg_image_upload_holder) {
+          neighborhood_bg_image_upload_holder.ondrop = function (e) {
+              e.preventDefault();
+              files = e.dataTransfer.files;
+              if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+                  readNeighborhoodBgImageSrc(files[0]);
+
+              } else {
+                  console.log('file type is not allowed');
+                  $('#image-upload-warning').modal('show');
+              }
+          }
+      }
 
 
     var filter_button_image_upload_holder = document.getElementById('filter-button-image-upload-holder');
@@ -720,6 +734,9 @@ $(document).ready(function () {
   $("#additional_pages_nav_bg_image").change(function () {
     readAdditionalPagesNavBgImageFromInput(this);
   });
+    $("#neighborhood_bg_image").change(function () {
+        readNeighborhoodBgImageFromInput(this);
+    });
 
   $("#filter_button").change(function () {
     readFilterButtonFromInput(this);
@@ -1127,6 +1144,16 @@ function readAdditionalPagesNavigationBgImageSrc(file) {
     apartmentAdditionalPagesBgImage(e.target.result);
   }
   reader.readAsDataURL(file);
+}
+function readNeighborhoodBgImageSrc(file) {
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#neighborhood-bg-image-preview').attr('src', e.target.result);
+        $('#neighborhood-bg-image-preview').parent().attr('href', e.target.result);
+        neighborhoodBgImage(e.target.result);
+    }
+    reader.readAsDataURL(file);
 }
 
 function filterButtonSrc(file) {
@@ -1613,20 +1640,36 @@ function apartmentFavouritiesBgImage(src) {
 }
 
 function apartmentAdditionalPagesBgImage(src) {
-  $(".divLoading").removeClass("hidden");
-  var url = "/communities/" + community_id;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    dataType: "script",
-    data: {
-      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, additional_pages_nav_bg_image: src}}}
-    }
-  }).done(function () {
-    $(".divLoading").addClass("hidden");
-    console.log("success");
-  });
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, additional_pages_nav_bg_image: src}}}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
 }
+function neighborhoodBgImage(src) {
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, neighborhood_bg_image: src}}}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+}
+
 
 function filterButtonImage(src) {
   $(".divLoading").removeClass("hidden");
@@ -2363,8 +2406,8 @@ function readFavouritiesNavBgImageFromInput(input) {
 }
 
 function readAdditionalPagesNavBgImageFromInput(input) {
-  if (input.files && input.files[0]) {
-    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2375,12 +2418,32 @@ function readAdditionalPagesNavBgImageFromInput(input) {
 
             reader.readAsDataURL(input.files[0]);
 
-    } else {
-      $(input).val('');
-      $('#image-upload-warning').modal('show');
-      //console.log($(input).val());
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
     }
-  }
+}
+function readNeighborhoodBgImageFromInput(input) {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#neighborhood-bg-image-preview').attr('src', e.target.result);
+                $('#neighborhood-bg-image-preview').parent().attr('href', e.target.result);
+                neighborhoodBgImage(e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
+    }
 }
 
 

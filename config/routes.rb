@@ -141,8 +141,9 @@ Rails.application.routes.draw do
         get :map_marker_design
       end
     end
-    resources :home_page, only: :index do
+    resources :home_page do
       collection do
+        get :upload_video_direct
         get :show_image_in_modal
         post :save_home_page_image
         put :update_home_page_image
