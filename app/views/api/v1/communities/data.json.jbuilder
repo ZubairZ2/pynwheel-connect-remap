@@ -239,12 +239,14 @@ json.ui_settigs do
           json.display_gallery_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_gallery_nav_bg_image : false
           json.display_favourities_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_favourities_nav_bg_image : false
           json.display_additional_pages_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_additional_pages_nav_bg_image : false
+          json.display_neighborhood_background_image @community.design.expressionist.present? ? (@community.design.expressionist.display_neighborhood_bg_image.present? ? @community.design.expressionist.display_neighborhood_bg_image : false) : false
           json.display_global_navigation_button_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_bg_color : true
         else
           json.display_apartment_nav_bg_image false
           json.display_gallery_nav_bg_image false
           json.display_favourities_nav_bg_image false
           json.display_additional_pages_nav_bg_image false
+          json.display_neighborhood_bg_image false
           json.display_global_navigation_button_bg_color true
         end
         if @community.theme_name == "futurist"
@@ -382,6 +384,7 @@ json.ui_settigs do
           json.gallery_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.gallery_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.gallery_nav_bg_image.url : @community.design.expressionist.gallery_nav_bg_image.url) : "No Image"
           json.favourities_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.favourities_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.favourities_nav_bg_image.url : @community.design.expressionist.favourities_nav_bg_image.url) : "No Image"
           json.additional_pages_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.additional_pages_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.additional_pages_nav_bg_image.url : @community.design.expressionist.additional_pages_nav_bg_image.url) : "No Image"
+          json.neighborhood_background_image (@community.design.expressionist.present? and @community.design.expressionist.neighborhood_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.neighborhood_bg_image.url : @community.design.expressionist.neighborhood_bg_image.url) : "No Image"
           json.apartment_nav_bg_color @community.design.expressionist.apartment_nav_bg_color.present? ? @community.design.expressionist.apartment_nav_bg_color : "#ffffff"
           json.gallery_nav_bg_color @community.design.expressionist.gallery_nav_bg_color.present? ? @community.design.expressionist.gallery_nav_bg_color : "#ffffff"
           json.favourities_nav_bg_color @community.design.expressionist.favourities_nav_bg_color.present? ? @community.expressionist.design.favourities_nav_bg_color : "#ffffff"
@@ -398,6 +401,7 @@ json.ui_settigs do
           json.gallery_nav_bg_image "No Image"
           json.favourities_nav_bg_image  "No Image"
           json.additional_pages_nav_bg_image  "No Image"
+          json.neighborhood_background_image  "No Image"
           json.apartment_nav_bg_color  "#ffffff"
           json.gallery_nav_bg_color "#ffffff"
           json.favourities_nav_bg_color "#ffffff"
