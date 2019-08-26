@@ -1168,11 +1168,11 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "modernist1"
-          json.floorplan_name_font_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
         elsif @community.theme_name == "panther"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
+        elsif @community.theme_name == "expressionist"
           json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
         else
           json.floorplan_name_font_color "#ffff"
