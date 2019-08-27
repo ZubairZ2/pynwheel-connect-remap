@@ -84,7 +84,7 @@
                     %th{:width => "79"} Sr #
                     %th Tour Stop
                     %th{:width => "100"} Actions
-                %tbody.tour_sortable
+                %tbody.tour_sortable_disabled
                   - orderVar = 0
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
@@ -117,14 +117,14 @@
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
 
         .row
-          .col-md-12
+          .col-md-6
             = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
-          -#.col-md-6
-          -#  = link_to draw_line_path(@tours.id), class: "btn btn-success mb-20 pull-right", id: "start-point-path" do
-          -#    %i.fa.fa-plus-circle
-          -#    ADD PATH FOR STARTING POINT
+          .col-md-6
+            = link_to draw_line_path(@tours.id), class: "btn btn-success mb-20 pull-right", id: "start-point-path" do
+              %i.fa.fa-plus-circle
+              ADD PATH FOR STARTING POINT
 
           
 
@@ -157,6 +157,7 @@
                   - else
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin}px; left: #{stop.x_plot - left_margin}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                 
+                /- binding.pry
 
                 - @existing_path_points.each_with_index do |point, index|
                   .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
@@ -166,6 +167,22 @@
               / End Panel left Side
         / /.content
 :javascript
+  
+  $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
+    tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
+    
+    /*$.post( "/delete_path_on_sort_change",
+      { "tour_stop_id": tour_stop_id },
+      function(data,status,xhr) {
+        if(data){
+          debugger
+          
+        }
+      }
+    );*/
+
+  });
+
   $('.show-tour-page').change(function(){
     $('.tour-settings-form').submit();
   });

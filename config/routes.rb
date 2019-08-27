@@ -239,6 +239,7 @@ Rails.application.routes.draw do
   post :save_path_point, to: 'tours#point_save'
   post :update_path_point, to: 'tours#point_update'
   post :delete_path_point, to: 'tours#point_delete'
+  post :delete_path_on_sort_change, to: 'tours#delete_path_on_sort_change'
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
