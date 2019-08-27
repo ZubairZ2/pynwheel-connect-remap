@@ -258,6 +258,7 @@ Rails.application.routes.draw do
         collection do
           post :login
           get :list_communities
+          get :portico_list_communities
           post :update_version
         end
       end

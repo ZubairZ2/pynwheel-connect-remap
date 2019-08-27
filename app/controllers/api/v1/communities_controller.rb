@@ -76,6 +76,9 @@ class Api::V1::CommunitiesController < ActionController::Base
   def list_communities
     @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo).includes(:company)
   end
+  def portico_list_communities
+    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo).includes(:company).self_tour_enabled_only
+  end
   def community_tours
     @community = Community.find params[:id]
     @tours = Tour.where(community_id: params[:id])
