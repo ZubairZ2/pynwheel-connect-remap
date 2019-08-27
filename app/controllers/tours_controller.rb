@@ -16,12 +16,14 @@ class ToursController < ApplicationController
     @existing_stops << Amenity.where(id: @tour_amenity_array)
 
     @existing_path_points = []
-    
-    @community.tour.tour_stops.each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
+    # binding.pry
+    @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
     
 
     @existing_path_points << @tours.path_points if @tours.path.present?
     @existing_path_points.flatten!
+    # binding.pry
+    @existing_path_points
     rescue => ex
     end
   end
@@ -178,5 +180,21 @@ class ToursController < ApplicationController
       path_point.destroy
     end
     render json: {point: path_point.present? ? path_point : {}, point_id: "point_#{params[:point_id]}"}, status: 200
+  end
+
+  def delete_path_on_sort_change
+    tour_stop = TourStop.find(params[:tour_stop_id])
+    status = "failed"
+    if tour_stop.present?
+      # binding.pry
+      path = tour_stop.stop_type.classify.constantize.find(tour_stop.stop_id).paths.last
+      if path.present?
+        path.destroy
+        status = "successfully destroyed"
+      else
+        status = "failed"
+      end
+    end
+    render json: {tour_stop: tour_stop.present? ? tour_stop : {}}, status: 200, message: status
   end
 end
