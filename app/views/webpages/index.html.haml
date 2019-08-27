@@ -368,7 +368,10 @@
   
   
   $(".divLoading").removeClass("hidden");
-
+  $(window).on( "orientationchange", function( event ) {
+        $(".divLoading").removeClass("hidden");
+        window.location.reload();
+    });
   setTimeout(function(){
     $(".divLoading").addClass("hidden");
   }, 1000);
@@ -395,6 +398,8 @@
   var window_height = window.innerHeight;
   var diff = (8000/($(window).width()) * -1);
   var diffL = (2500/($(window).width()) * -1);
+  // diff = diff * 3.47;
+  // diffL = diffL * 3.47;
   // alert($(window).width());
   if ($(window).width() < 1500)
   {

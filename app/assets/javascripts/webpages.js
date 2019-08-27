@@ -1,8 +1,8 @@
 $(window).bind('load', function () {
-    $( window ).on( "orientationchange", function( event ) {
-        $(".divLoading").removeClass("hidden");
-        window.location.reload();
-    });
+    // $( window ).on( "orientationchange", function( event ) {
+    //     $(".divLoading").removeClass("hidden");
+    //     window.location.reload();
+    // });
      
   if ($('.is-webpage')[0]) {
 

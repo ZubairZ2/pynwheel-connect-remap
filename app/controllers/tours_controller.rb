@@ -52,6 +52,8 @@ class ToursController < ApplicationController
     @tours = @community.tour
     @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
     @amenities = @community.amenities
+    @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
+    @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
   end
   def save_starting_point
 
