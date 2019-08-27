@@ -75,7 +75,7 @@
                 // doDraggable();
                 if (data.tour.stop_type == "unit")
                 {
-                    $('.tour_sortable').append("<tr id=\"TourStop_"+data.tour.id+"\" class=\"ui-sortable-handle\">\n" +
+                    $('.tour_sortable_disabled').append("<tr id=\"TourStop_"+data.tour.id+"\" class=\"ui-sortable-handle\">\n" +
                         "<td>"+$(".table").find("tr").length+"</td>\n" +
                         "<td>\n" +
                         data.tour.name+
@@ -91,7 +91,7 @@
                 }
                 else
                 {
-                    $('.tour_sortable').append("<tr id=\"TourStop_"+data.tour.id+"\" class=\"ui-sortable-handle\">\n" +
+                    $('.tour_sortable_disabled').append("<tr id=\"TourStop_"+data.tour.id+"\" class=\"ui-sortable-handle\">\n" +
                         "<td>"+$(".table").find("tr").length+"</td>\n" +
                         "<td>\n" +
                         data.tour.name+
