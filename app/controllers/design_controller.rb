@@ -22,6 +22,24 @@ class DesignController < ApplicationController
     @design = current_community.design || current_community.create_design
   end
 
+  def show_logo_in_modal
+    @community = Community.find(params[:community_id])
+  end
+  def show_secondary_logo_in_modal
+    @community = Community.find(params[:community_id])
+  end
+
+  def crop_logo
+    @community = Community.find params["community_id"]
+    @community.crop_x = params[:community][:crop_x]
+    @community.crop_y = params[:community][:crop_y]
+    @community.crop_w = params[:community][:crop_w]
+    @community.crop_h = params[:community][:crop_h]
+    @community.save
+    redirect_to logo_community_design_index_path(@community)
+    # render :json=> {:success=>false}
+  end
+
   def secondary_logo
     add_breadcrumb "Logo",logo_community_design_index_path(@community)
     add_breadcrumb "Home Page Logo"

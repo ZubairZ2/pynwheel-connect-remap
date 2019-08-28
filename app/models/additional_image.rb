@@ -17,7 +17,12 @@ class AdditionalImage < ApplicationRecord
   set_sortable :sort  
 	mount_uploader :image, AvatarUploader
 	before_create :set_image_name
+	after_update :crop_image
 
+
+	def crop_image
+		image.recreate_versions! if crop_x.present?
+	end
 	def set_image_name
   	self.name = image.file.filename
   end

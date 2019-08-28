@@ -95,8 +95,16 @@ class GalleriesController < ApplicationController
 	end
 
 	def update_gallery_image
+		puts params
 		@gallery_image = GalleryImage.find(params[:gallery_image_id])
-		@gallery_image.update(gallery_image_params)
+		@gallery_image.name = params[:gallery_image][:name]
+		@gallery_image.crop_x = params[:gallery_image][:crop_x].to_f
+		@gallery_image.crop_y = params[:gallery_image][:crop_y].to_f
+		@gallery_image.crop_w = params[:gallery_image][:crop_w].to_f
+		@gallery_image.crop_h = params[:gallery_image][:crop_h].to_f
+		@gallery_image.save
+
+		# @gallery_image.update(gallery_image_params)
 		flash[:notice] = "Image is edited successfully."
 		redirect_back(fallback_location: root_path)
 	end

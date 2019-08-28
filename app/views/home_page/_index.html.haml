@@ -6,8 +6,8 @@
     .col-lg-3{:id=> id_tag}
       .slide-image
         .image-box
-          .images.galleryimage-home{:style=>"background: url(#{home_page_image.thumb_image_url}); background-repeat: no-repeat;height: 210px;background-position: center center;background-size: cover;"}
-            %a.preview-image{:href=>home_page_image.standard_image_url.present? ? home_page_image.large_image_url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"#{home_page_image.name}"}
+          .images.galleryimage-home{:style=>"background: url(#{ (home_page_image.crop_x.present? ? home_page_image.image.url(:thumb) : home_page_image.image.url(:thumb))}); background-repeat: no-repeat;height: 210px;background-position: center center;background-size: cover;"}
+            %a.preview-image{:href=>home_page_image.standard_image_url.present? ? (home_page_image.crop_x.present? ? home_page_image.image.url(:thumb) : home_page_image.large_image_url) : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"#{home_page_image.name}"}
               
           .icons
             = link_to show_image_in_modal_community_home_page_index_path(current_community,home_page_image_id: home_page_image.id), remote: true do 

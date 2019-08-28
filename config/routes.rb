@@ -53,6 +53,12 @@ Rails.application.routes.draw do
           delete :remove_amenity
         end
       end
+      member do
+        get :show_floorplan_image_in_modal
+        put :crop_image
+        get :show_floorplan_secondary_image_in_modal
+        put :crop_secondary_image
+      end
       collection do
         post :add_description
       end
@@ -139,6 +145,9 @@ Rails.application.routes.draw do
         get :logo
         get :secondary_logo
         get :map_marker_design
+        put :crop_logo
+        get :show_logo_in_modal
+        get :show_secondary_logo_in_modal
       end
     end
     resources :home_page do

@@ -1,24 +1,23 @@
 .modal-dialog{:style=>"overflow-y: initial width: 700px !important; width: 700px;"}
   .modal-content
-    = form_for @additional_image,url: update_additional_image_community_imagepage_path(@community,@imagepage,additional_image_id: @additional_image.id),method: :put do |f|
+    = form_for @floorplan,url: "/communities/#{@community.id}/floorplans/#{@floorplan.id}/crop_image",method: :put do |f|
       .modal-body
-        .image-crop{:style=>"overflow-y: auto; width: 700px; height: 500px;"}
-          = image_tag @additional_image.image.url, id: "cropbox",:class => "clas1"
+        .image-crop{:style=>"overflow-y: auto; max-width: 700px; max-height: 500px;"}
+          = image_tag @floorplan.crop_x.present? ? @floorplan.image.url : @floorplan.image.url, id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
         .form-group
-          %label Image Title
-          = f.text_field :name , class: "form-control", placeholder: "Name"    
+          %label{:for => "exampleInputEmail1"} Image Title
+          = f.text_field :name , class: "form-control", placeholder: "Name"
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
             Apply Changes
             %i.fa.fa-check
         .clearfix
-
-
+}
 :javascript
   $("#crop_image").on("click",function(e){
     $(".divLoading").removeClass("hidden")
@@ -37,13 +36,13 @@
     var ratioH = $('#cropbox')[0].naturalHeight / $('#cropbox').height();
     var currentRatio = Math.min(ratioW, ratioH);
     //$('#home_page_image_crop_x').val(Math.round(coords.x * currentRatio));
-    $('#additional_image_crop_x').val(coords.x);
+    $('#floorplan_crop_x').val(coords.x);
     //$('#home_page_image_crop_y').val(Math.round(coords.y * currentRatio));
-    $('#additional_image_crop_y').val(coords.y);
+    $('#floorplan_crop_y').val(coords.y);
     //$('#home_page_image_crop_w').val(Math.round(coords.w * currentRatio));
-    $('#additional_image_crop_w').val(coords.w);
+    $('#floorplan_crop_w').val(coords.w);
     //$('#home_page_image_crop_h').val(Math.round(coords.h * currentRatio));
-    $('#additional_image_crop_h').val(coords.h);
+    $('#floorplan_crop_h').val(coords.h);
     //update_preview(coords);
   }
 

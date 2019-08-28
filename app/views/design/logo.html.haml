@@ -40,8 +40,10 @@
             / Start L>ogo Upload section
             #home.tab-pane.fade.active.in{:role => "tabpanel"}
               = render 'secondary_logo'
+#crop-image.modal.fade.edit-image
+#crop-secondary-logo.modal.fade.edit-image
+:javascript
 
-:javascript 
   var community_id = #{params[:community_id]};
   var selected_theme = '#{@community.theme_name}';
   $(document).ready(function(e){

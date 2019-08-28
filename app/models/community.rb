@@ -44,7 +44,7 @@
 #
 
 class Community < ApplicationRecord
-  #mount_uploader :logo, AvatarUploader
+  # mount_uploader :logo, AvatarUploader
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
@@ -75,9 +75,19 @@ class Community < ApplicationRecord
   after_create :set_default_theme
   after_create :create_default_gallery
   validate :validate_page_position
+  after_update :crop_image
+  before_create :set_image_name
 
 
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
+
+  def crop_image
+    logo.recreate_versions! if crop_x.present?
+  end
+  def set_image_name
+    self.name = image.file.filename
+  end
+
 
   def is_futurist?
     theme_name == "futurist"

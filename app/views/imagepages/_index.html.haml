@@ -7,8 +7,8 @@
       .slide-image
         .image-box.video-box
           .images.height-200
-            %a.preview-image{:href=>additional_image.image? ? additional_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>additional_image.name}
-              = image_tag additional_image.image.url
+            %a.preview-image{:href=>additional_image.image? ?  additional_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>additional_image.name}
+              = image_tag additional_image.image.url, :style => "min-height: 100%; min-width: 100%;"
         .icons
           = link_to show_image_in_modal_community_imagepage_path(@community,@imagepage,additional_image_id: additional_image.id), remote: true do 
             %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
