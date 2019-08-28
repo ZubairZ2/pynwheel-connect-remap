@@ -383,6 +383,20 @@ $(document).ready(function () {
       }
     }
 
+      var filter_label_image_upload_holder = document.getElementById('filter-label-image-upload-holder');
+      if (filter_label_image_upload_holder) {
+          filter_label_image_upload_holder.ondrop = function (e) {
+              e.preventDefault();
+              files = e.dataTransfer.files;
+              if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+                  filterLabelImageSrc(files[0]);
+              } else {
+                  console.log('file type is not allowed');
+                  $('#image-upload-warning').modal('show');
+              }
+          }
+      }
+
     var home_page_button_image_upload_holder = document.getElementById('home-page-button-image-upload-holder');
     if (home_page_button_image_upload_holder) {
 
@@ -749,6 +763,10 @@ $(document).ready(function () {
   $("#filter_panel_background_image").change(function () {
     readFilterPanelBackgroundImageFromInput(this);
   });
+
+    $("#filter_label_image").change(function () {
+        readFilterlabelImageFromInput(this);
+    });
 
   $("#home_page_button_image").change(function () {
     readHomePageButtonImageFromInput(this);
@@ -1180,14 +1198,24 @@ function galleryButtonSrc(file) {
 
 
 function filterPanelBackgroundImageSrc(file) {
-  $(".divLoading").removeClass("hidden");
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    $('#filter-panel-background-preview-image').attr('src', e.target.result);
-    $('#filter-panel-background-preview-image').parent().attr('href', e.target.result);
-    filterPanelBackgroundImage(e.target.result);
-  }
-  reader.readAsDataURL(file);
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#filter-panel-background-preview-image').attr('src', e.target.result);
+        $('#filter-panel-background-preview-image').parent().attr('href', e.target.result);
+        filterPanelBackgroundImage(e.target.result);
+    }
+    reader.readAsDataURL(file);
+}
+function filterLabelImageSrc(file) {
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#filter-label-image-preview').attr('src', e.target.result);
+        $('#filter-label-image-preview').parent().attr('href', e.target.result);
+        filterLabelImage(e.target.result);
+    }
+    reader.readAsDataURL(file);
 }
 
 function homePageButtonImageSrc(file) {
@@ -1706,19 +1734,34 @@ function galleryButtonImage(src) {
 
 
 function filterPanelBackgroundImage(src) {
-  $(".divLoading").removeClass("hidden");
-  var url = "/communities/" + community_id;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    dataType: "script",
-    data: {
-      community: {design_attributes: {id: design_id, filter_panel_background_image: src}}
-    }
-  }).done(function () {
-    $(".divLoading").addClass("hidden");
-    console.log("success");
-  });
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id, filter_panel_background_image: src}}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+}
+function filterLabelImage(src) {
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id, filter_label_image: src}}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
 }
 
 function homePageButtonImage(src) {
@@ -2492,8 +2535,8 @@ function readGalleryButtonFromInput(input) {
 
 
 function readFilterPanelBackgroundImageFromInput(input) {
-  if (input.files && input.files[0]) {
-    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2504,12 +2547,32 @@ function readFilterPanelBackgroundImageFromInput(input) {
 
             reader.readAsDataURL(input.files[0]);
 
-    } else {
-      $(input).val('');
-      $('#image-upload-warning').modal('show');
-      //console.log($(input).val());
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
     }
-  }
+}
+function readFilterlabelImageFromInput(input) {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#filter-label-image-preview').attr('src', e.target.result);
+                $('#filter-label-image-preview').parent().attr('href', e.target.result);
+                filterLabelImage(e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
+    }
 }
 
 function readHomePageButtonImageFromInput(input) {
