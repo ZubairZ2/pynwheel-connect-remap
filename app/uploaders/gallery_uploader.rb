@@ -48,7 +48,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
   process :crop
   resize_to_limit(1920, 1080)
   version :large, :if => :image? do
-    process :crop
+    # process :crop
     resize_to_limit(1920, 1080)
   end
 
@@ -59,13 +59,16 @@ class GalleryUploader < CarrierWave::Uploader::Base
 
   def crop
     if model.crop_x.present?
-      manipulate! do |img|
-        x = model.crop_x
-        y = model.crop_y
-        w = model.crop_w
-        h = model.crop_h
-        img.crop!(x, y, w, h)
-        img
+      begin
+        manipulate! do |img|
+          x = model.crop_x
+          y = model.crop_y
+          w = model.crop_w
+          h = model.crop_h
+          img.crop!(x, y, w, h)
+          img
+        end
+      rescue => ex
       end
     end
   end

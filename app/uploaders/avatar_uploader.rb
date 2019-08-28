@@ -50,7 +50,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
   def crop
     if model.is_a? Floorplan
-      if model.image_bit && model.crop_x.present?
+      if !model.image_bit.nil? && model.crop_x.present?
         manipulate! do |img|
           xx = model.crop_x
           yy = model.crop_y
@@ -60,7 +60,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
           img
         end
       else
-        if model.crop_x_secondary.present?
+        if !model.image_bit.nil? && model.crop_x_secondary.present?
           manipulate! do |img|
             xx = model.crop_x_secondary
             yy = model.crop_y_secondary

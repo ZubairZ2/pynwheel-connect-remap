@@ -76,16 +76,12 @@ class Community < ApplicationRecord
   after_create :create_default_gallery
   validate :validate_page_position
   after_update :crop_image
-  before_create :set_image_name
 
 
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
 
   def crop_image
     logo.recreate_versions! if crop_x.present?
-  end
-  def set_image_name
-    self.name = image.file.filename
   end
 
 

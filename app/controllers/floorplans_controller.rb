@@ -38,8 +38,18 @@ class FloorplansController < ApplicationController
     @floorplan = Floorplan.find params[:id]
   end
   def crop_image
+    # com = Community.find 2140
+    #
     @community = Community.find params["community_id"]
     @floorplan = Floorplan.find params["id"]
+    # byebug
+    # com.logo = @floorplan.image
+    # @floorplan.image = Amenity.last.image
+    # @floorplan.save
+    # @floorplan.image = com.logo
+    # @floorplan.save
+    # @community = Community.find params["community_id"]
+    # @floorplan = Floorplan.find params["id"]
     @floorplan.crop_x = params[:floorplan][:crop_x]
     @floorplan.crop_y = params[:floorplan][:crop_y]
     @floorplan.crop_w = params[:floorplan][:crop_w]
