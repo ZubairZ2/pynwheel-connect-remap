@@ -12,7 +12,7 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
-  json.path_points tour.path.present? ? tour.path.path_points : []
+  json.path_points tour.path.present? ? tour.path.path_points.reorder('id ASC') : []
 
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
