@@ -146,7 +146,7 @@
                 = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", :onclick => "return false;"
 
 
-                = image_tag @sitemap.image? ? @sitemap.image.url : "default.jpeg", id: "testimg"
+                = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg"
                 - community_units = @community_units
                 - coordinates_array = []
                 - path_point_coords = {}
