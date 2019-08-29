@@ -1,1 +1,40 @@
-Zyhtnhyn3hyfnjkdsnfjkdfj;dsffd
+To: <%= @to_email %>
+Date: <%= Time.now.to_s.split(' ')[0] %>
+Time: <%= Time.now.to_s(:time) %>
+<% (0..(@favorites.count-1)).each_with_index do |f,index | %>
+  <% if @favorites[index].is_a?(Unit) %>
+    Unit:
+  <% end %>
+<% end %>
+
+<% (0..(@favorites.count-1)).each_with_index do |f,index | %>
+  <% if @favorites[index].is_a?(Unit) %>
+    <%= @favorites[index].marketing_name %>
+  <% end %>
+<% end %>
+
+
+<% (0..(@favorites.count-1)).each_with_index do |f,index | %>
+  <%  if @favorites[index].is_a?(Floorplan) %>
+    Floorplan:
+  <% end %>
+<% end %>
+
+<% (0..(@favorites.count-1)).each_with_index do |f,index | %>
+  <%  if @favorites[index].is_a?(Floorplan) %>
+    <%= @favorites[index].name %>
+  <% end %>
+<% end %>
+
+
+<% (0..(@favorites.count-1)).each_with_index do |f,index | %>
+  <% if @favorites[index].is_a?(GalleryImage) || @favorites[index].is_a?(Amenity) || @favorites[index].is_a?(AdditionalImage) %>
+    Image:
+  <% end %>
+<% end %>
+
+<% (0..(@favorites.count-1)).each_with_index do |f,index | %>
+  <% if @favorites[index].is_a?(GalleryImage) || @favorites[index].is_a?(Amenity) || @favorites[index].is_a?(AdditionalImage) %>
+    <%=  @favorites[index].name %>
+  <% end %>
+<% end %>
