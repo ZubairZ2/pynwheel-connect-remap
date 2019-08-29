@@ -642,9 +642,12 @@ json.ui_settigs do
         json.gallery_button_as_image @community.design.gallery_button_as_image
         if @community.theme_name == "modernist1"
           json.filter_panel_background_as_image false
+          json.display_filter_label_image false
         elsif @community.theme_name == "panther"
           json.filter_panel_background_as_image false
+          json.display_filter_label_image false
         else
+          json.display_filter_label_image @community.design.display_filter_label_image.present? ? @community.design.display_filter_label_image : false
           json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
         end
         if @community.theme_name == "futurist"
@@ -662,11 +665,15 @@ json.ui_settigs do
           json.gallery_button_on_image "No Image"
         end
         if @community.theme_name == "futurist"
+          json.filter_label_image "No Image"
           json.filter_panel_background_image image_url("filter_panel_bg.png")
         elsif @community.theme_name == "expressionist"
           json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
+          json.filter_label_image @community.design.filter_label_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_label_image.url : @community.design.filter_label_image.url) : "No Image"
+
         else
           json.filter_panel_background_image "No Image"
+          json.filter_label_image "No Image"
         end
         json.gallery_button_on_as_image @community.design.gallery_button_on_as_image
         if @community.theme_name == "panther"
@@ -1168,11 +1175,11 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "modernist1"
-          json.floorplan_name_font_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.floorplan_name_font_color @community.design.secondary_font_color.present? ? @community.design.secondary_font_color : "#ffff"
         elsif @community.theme_name == "panther"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
+        elsif @community.theme_name == "expressionist"
           json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
         else
           json.floorplan_name_font_color "#ffff"

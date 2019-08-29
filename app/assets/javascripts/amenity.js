@@ -111,9 +111,15 @@ $(document).ready(function(){
             }
             if (typeof tour_id !== 'undefined')
             {
-                tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+
+                dx = dx - 3;
+                dy = dy - 3;
+                tag = "<a class='start-point marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
                 tag += "<img src='/assets/star.png'>";
                 tag += "</a>"
+                arr[0][1] = dx;
+                arr[0][2] = dy;
+
             }
             else
             {

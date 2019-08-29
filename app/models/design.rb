@@ -138,6 +138,7 @@ class Design < ApplicationRecord
 	mount_base64_uploader :filter_button, AvatarUploader
 	mount_base64_uploader :gallery_button, AvatarUploader
 	mount_base64_uploader :filter_panel_background_image, AvatarUploader
+	mount_base64_uploader :filter_label_image, AvatarUploader
 	mount_base64_uploader :gallery_button_on_image, AvatarUploader
 	has_one :menu , dependent: :destroy
 	has_one :gable , dependent: :destroy
