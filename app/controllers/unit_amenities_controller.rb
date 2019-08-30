@@ -52,7 +52,7 @@ class UnitAmenitiesController < ApplicationController
     @amenities = @unit.amenities
     @floorplan = Floorplan.where(provider_floorplan_id: @unit.floorplan_id,community_id: @community.id).first
 
-    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
+    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id if x.present?} if @community.tour.present?
   end
 
   def remove_amenities_plot
