@@ -376,6 +376,14 @@
                                   %tr
                                     %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                       %p
+                                        - zone = ActiveSupport::TimeZone['Central Time (US & Canada)']
+                                        %h3
+                                          = "To: #{@to_email}"
+                                        %h3
+                                          = "Date: #{Time.now.to_s.split(' ')[0]}"
+                                        %h3
+                                          = "Time: #{Time.zone.now.to_s(:time)}"
+                                        %br
                                         = raw(@email_body.gsub("<community_name>",@community.name).gsub("\n","<br>"))
               -#- if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
               -#  - @community.favorite_setting.favorite_images.each do |img|
