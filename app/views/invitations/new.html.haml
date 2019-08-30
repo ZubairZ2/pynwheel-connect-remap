@@ -9,7 +9,7 @@
     %i.fa.fa-caret-down
     .row
       .col-md-3.col-lg-4
-      .col-md-6.col-lg-4.col-sm-12.col-xs-12
+      .col-md-8.col-lg-5.col-sm-12.col-xs-12
         .text-center
           %h3 Send Invitation
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
@@ -17,13 +17,16 @@
             = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
           .row
             .form-group
-              %p.pull-left.col-lg-6 Listed Communities
-              %p.pull-right.col-lg-6 Selected Communities
+              .row
+                .col-lg-6.col-sm-6.col-xs-6.col-md-6
+                  %p{:style => "float: right;     padding-right: 39px;"} Listed Communities
+                .col-lg-6.col-sm-6.col-xs-6.col-md-6
+                  %p{:style => "padding-left: 25px;"} Selected Communities
               -#= f.select :community_ids, options_for_select(current_user.is_super_admin? ? Community.pluck(:name,:id) : current_user.communities.pluck(:name,:id)),{},{class: "form-control validate[required]",:multiple=>true}
               .col-sm-12.col-xs-12.col-lg-12.col-md-12
-                .col-sm-2.col-xs-2.col-lg-12.col-md-12
-                .col-sm-10.col-xs-10.col-lg-12.col-md-12
-                  = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
+              .col-sm-1.col-xs-1.col-lg-12.col-md-12
+              .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
+                = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
           .col-xs-2
           .form-group
             - if current_user.is_super_admin?
