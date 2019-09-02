@@ -1,0 +1,2 @@
+class AlertContact < ApplicationRecord
+end
