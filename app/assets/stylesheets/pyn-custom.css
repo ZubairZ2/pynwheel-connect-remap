@@ -3201,3 +3201,6 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     margin-left: 56.5%;
     width: 28.25%;
 }
+.alert-contact input[type="radio"]{
+  margin: 0 10px 0 10px;
+}

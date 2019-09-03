@@ -77,6 +77,8 @@ class Community < ApplicationRecord
   validate :validate_page_position
 
 
+  enum alert_contact: [:email, :phone, :both]
+  
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
 
   def is_futurist?

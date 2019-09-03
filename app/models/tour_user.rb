@@ -12,4 +12,5 @@
 
 class TourUser < ApplicationRecord
   has_many :visited_stops, dependent: :destroy
+  has_many :tour_histories, dependent: :destroy
 end

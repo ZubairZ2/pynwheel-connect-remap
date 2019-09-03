@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190902094029) do
+ActiveRecord::Schema.define(version: 20190903065128) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -26,12 +26,11 @@ ActiveRecord::Schema.define(version: 20190902094029) do
     t.index ["imagepage_id"], name: "index_additional_images_on_imagepage_id", using: :btree
   end
 
-  create_table "alert_contacts", force: :cascade do |t|
-    t.string   "email"
-    t.string   "phone"
-    t.boolean  "active"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+  create_table "alert_messages", force: :cascade do |t|
+    t.string   "message_key"
+    t.string   "message_body"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "amenities", force: :cascade do |t|
@@ -115,6 +114,7 @@ ActiveRecord::Schema.define(version: 20190902094029) do
     t.boolean  "display_available_date",         default: true
     t.boolean  "show_gesture_icons"
     t.boolean  "self_tour",                      default: false
+    t.integer  "alert_contact",                  default: 2
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
 
@@ -818,6 +818,18 @@ ActiveRecord::Schema.define(version: 20190902094029) do
     t.datetime "updated_at",   null: false
   end
 
+  create_table "tour_histories", force: :cascade do |t|
+    t.datetime "arrived"
+    t.datetime "left"
+    t.string   "lengthy_stay"
+    t.boolean  "id_mismatch"
+    t.integer  "abandoned_tour_at_stop"
+    t.integer  "tour_user_id"
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+    t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id", using: :btree
+  end
+
   create_table "tour_stops", force: :cascade do |t|
     t.integer  "tour_id"
     t.decimal  "latitude"
@@ -998,6 +1010,7 @@ ActiveRecord::Schema.define(version: 20190902094029) do
   add_foreign_key "sitemaps", "communities"
   add_foreign_key "stop_details", "tour_stops"
   add_foreign_key "stop_galleries", "tour_stops"
+  add_foreign_key "tour_histories", "tour_users"
   add_foreign_key "tour_stops", "tours"
   add_foreign_key "tours", "communities"
   add_foreign_key "visited_stops", "tour_users"
