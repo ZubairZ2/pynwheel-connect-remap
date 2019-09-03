@@ -1,6 +1,6 @@
 class Api::V1::TourHistoriesController < ActionController::Base
 	def save_tour_history
-    tour_history = TourHistory.new
+    params[:id].present? ? tour_history = TourHistory.find_by_id(params[:id]) : tour_history = TourHistory.new
 
     tour_history.arrived = convert_epoch_to_datetime params[:arrived]
     tour_history.left = convert_epoch_to_datetime params[:left]
