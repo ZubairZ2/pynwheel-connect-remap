@@ -2,35 +2,46 @@
 #
 # Table name: floorplans
 #
-#  id                     :integer          not null, primary key
-#  community_id           :integer
-#  provider               :string
-#  property_id            :string
-#  provider_floorplan_id  :string
-#  name                   :string
-#  unit_count             :integer
-#  units_available        :integer
-#  bedrooms               :string
-#  bathrooms              :float
-#  market_rent            :float
-#  square_feet            :float
-#  deposit                :float
-#  comment                :text
-#  description            :text
-#  availability_url       :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  image                  :string
-#  virtual_tour_url       :string
-#  standard_image_url     :string
-#  updated_by_admin       :boolean          default(FALSE)
-#  manual_override        :boolean          default(FALSE)
-#  secondary_image        :string
-#  name_is_updated        :boolean
-#  square_feet_is_updated :boolean
-#  bedroom_is_updated     :boolean
-#  bathroom_is_updated    :boolean
-#  market_rent_is_updated :boolean
+#  id                                :integer          not null, primary key
+#  community_id                      :integer
+#  provider                          :string
+#  property_id                       :string
+#  provider_floorplan_id             :string
+#  name                              :string
+#  unit_count                        :integer
+#  units_available                   :integer
+#  bedrooms                          :string
+#  bathrooms                         :float
+#  market_rent                       :float
+#  square_feet                       :float
+#  deposit                           :float
+#  comment                           :text
+#  description                       :text
+#  availability_url                  :string
+#  created_at                        :datetime         not null
+#  updated_at                        :datetime         not null
+#  image                             :string
+#  virtual_tour_url                  :string
+#  standard_image_url                :string
+#  updated_by_admin                  :boolean          default(FALSE)
+#  manual_override                   :boolean          default(FALSE)
+#  secondary_image                   :string
+#  name_is_updated                   :boolean
+#  square_feet_is_updated            :boolean
+#  bedroom_is_updated                :boolean
+#  bathroom_is_updated               :boolean
+#  market_rent_is_updated            :boolean
+#  display_virtual_tour_button_label :boolean          default(FALSE)
+#  virtual_tour_button_label         :string           default("3D Tour")
+#  crop_x                            :float
+#  crop_y                            :float
+#  crop_w                            :float
+#  crop_h                            :float
+#  crop_x_secondary                  :float
+#  crop_y_secondary                  :float
+#  crop_w_secondary                  :float
+#  crop_h_secondary                  :float
+#  image_bit                         :boolean
 #
 
 class Floorplan < ApplicationRecord

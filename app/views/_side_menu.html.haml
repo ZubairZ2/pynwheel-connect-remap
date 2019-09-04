@@ -14,6 +14,8 @@
           - if current_user.is_super_admin?
             %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
               %a{:href => "/companies"} Companies
+          %li{:class=>"#{controller_name =='community_group' ? 'active' : ''}"}
+            %a{:href => "/companies/#{current_company.id}/community_groups"} Community Group
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             = link_to "Communities", root_path
       %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
