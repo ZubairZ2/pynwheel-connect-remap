@@ -85,7 +85,6 @@ class GalleriesController < ApplicationController
 	end
 	def upload_video_direct
 		@uploader =  GalleryImage.new(params[:gallery_image])
-		byebug
 		if @uploader.save
 			@uploader.remote_image_url = @uploader.image.direct_fog_url + params[:key]
 			@uploader.gallery_id = params[:id]
