@@ -68,6 +68,10 @@ class GalleriesController < ApplicationController
 	end
 
 	def show_images
+		@uploader = GalleryImage.new.gallery
+		byebug
+		@uploader.success_action_redirect = upload_video_direct_community_home_page_index_url
+
 		@gallery = @community.galleries.find(params[:id])
 		@gallery_images = @gallery.gallery_images.order(:sort).all
 		add_breadcrumb "Galleries", community_galleries_path(@community)

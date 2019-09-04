@@ -40,6 +40,9 @@
           /           = file_field_tag :gallery_page_video
           #images-index
             = render 'index'
+        = direct_upload_form_for @uploader, :id => "direct_form" do |f|
+          = f.file_field :avatar, :id => "video_field",:class => "hidden"
+          = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
         / End image-slide section
     / End Tabs Secttions
 / /.content
