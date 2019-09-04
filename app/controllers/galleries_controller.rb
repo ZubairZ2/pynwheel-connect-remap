@@ -68,6 +68,9 @@ class GalleriesController < ApplicationController
 	end
 
 	def show_images
+		@uploader = GalleryImage.new.image
+		@uploader.success_action_redirect = upload_video_direct_community_gallery_url
+
 		@gallery = @community.galleries.find(params[:id])
 		@gallery_images = @gallery.gallery_images.order(:sort).all
 		add_breadcrumb "Galleries", community_galleries_path(@community)
@@ -80,7 +83,19 @@ class GalleriesController < ApplicationController
 		#@gallery_images = @gallery.gallery_images.order(:sort).all
 		render :json=>{"status"=>"success"}
 	end
-
+	def upload_video_direct
+		@uploader =  GalleryImage.new(params[:gallery_image])
+		byebug
+		if @uploader.save
+			@uploader.remote_image_url = @uploader.image.direct_fog_url + params[:key]
+			@uploader.gallery_id = params[:id]
+			@uploader.name = params[:key].split('/').last
+			@uploader.save
+			redirect_to show_images_community_gallery_path, notice: 'Video has been uploaded'
+		else
+			render action: "index"
+		end
+	end
 	def delete_gallery_image
 		@gallery_image = GalleryImage.find(params[:gallery_image_id])
 		file_type = @gallery_image.is_video? ? 'Video' : 'Image'

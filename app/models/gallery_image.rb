@@ -25,7 +25,8 @@ class GalleryImage < ApplicationRecord
   set_sortable :sort  
 	#mount_base64_uploader :image, GalleryUploader
 	mount_uploader :image, GalleryUploader
-	before_create :set_image_name
+	process_in_background :image
+	# before_create :set_image_name
 	# before_save :populate_image_urls
 	after_update :crop_image
   after_commit :populate_image_urls, on: :create
