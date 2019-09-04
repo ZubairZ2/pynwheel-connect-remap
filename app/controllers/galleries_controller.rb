@@ -88,6 +88,7 @@ class GalleriesController < ApplicationController
 		if @uploader.save
 			@uploader.remote_image_url = @uploader.image.direct_fog_url + params[:key]
 			@uploader.gallery_id = params[:id]
+			@uploader.community_id = params[:community_id]
 			@uploader.name = params[:key].split('/').last
 			@uploader.save
 			redirect_to show_images_community_gallery_path, notice: 'Video has been uploaded'
