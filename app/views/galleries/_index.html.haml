@@ -33,7 +33,7 @@
             - @gallery_images.each_with_index do |gallery_image,index|
               .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
                 - unless gallery_image.is_video?
-                  = image_tag gallery_image.image.url(:thumb)
+                  = image_tag gallery_image.image.url
                   .carousel-caption
                     image  
             
