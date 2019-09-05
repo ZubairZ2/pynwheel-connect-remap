@@ -88,7 +88,7 @@ class GalleriesController < ApplicationController
 		if @uploader.save
 			@uploader.remote_video_url = @uploader.video.direct_fog_url + params[:key]
 			@uploader.gallery_id = params[:id]
-			@uploader.gallery_id = params[:community_id]
+			@uploader.community_id = params[:community_id]
 			@uploader.standard_image_url = @uploader.remote_video_url
 			@uploader.name = params[:key].split('/').last
 			@uploader.save
