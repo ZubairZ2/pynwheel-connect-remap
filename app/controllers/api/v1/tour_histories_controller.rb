@@ -1,6 +1,6 @@
 class Api::V1::TourHistoriesController < ActionController::Base
-	def save_tour_history
-    params[:id].present? ? tour_history = TourHistory.find_by_id(params[:id]) : tour_history = TourHistory.new
+  def save_tour_history
+    params[:id].present? ? tour_history = TourHistory.find_or_create_by(id: params[:id]) : tour_history = TourHistory.new
 
     tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
     tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
@@ -19,7 +19,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
   private
 
   def convert_epoch_to_datetime epoch_str
-  	Time.strptime(epoch_str, '%s')
+    Time.strptime(epoch_str, '%s')
   end
   def tour_history_params
     params.permit(:arrived, :left, :lengthy_stay, :id_mismatch, :abandoned_tour_at_stop, :tour_user_id)
