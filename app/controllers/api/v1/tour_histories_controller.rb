@@ -2,12 +2,12 @@ class Api::V1::TourHistoriesController < ActionController::Base
 	def save_tour_history
     params[:id].present? ? tour_history = TourHistory.find_by_id(params[:id]) : tour_history = TourHistory.new
 
-    tour_history.arrived = convert_epoch_to_datetime params[:arrived]
-    tour_history.left = convert_epoch_to_datetime params[:left]
-    tour_history.lengthy_stay = params[:lengthy_stay]
+    tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
+    tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
+    tour_history.lengthy_stay = params[:lengthy_stay] if params[:lengthy_stay].present?
     tour_history.id_mismatch = false
-    tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop]
-    tour_history.tour_user_id = params[:tour_user_id]
+    tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
+    tour_history.tour_user_id = params[:tour_user_id] if params[:tour_user_id].present?
     
     if tour_history.save
       render :json=> {:success=>true, :message => "success", :data => tour_history}
