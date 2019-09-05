@@ -605,9 +605,9 @@ function dropHandler1(e)
             $(".divLoading").removeClass("hidden");
             // e.preventDefault();
             // console.log(e.dataTransfer);
-            setTimeout(function(){
-                video_field.files = new FileListItem(e)
-            }, 5000);
+            // setTimeout(function(){
+            video_field.files = new FileListItem(e)
+            // }, 5000);
 
             // video_field.files = e;
             $("#video_submit").click();
