@@ -588,10 +588,7 @@ function saveGalleryImage(){
         // f = video_field.files;
         // f.add(file)
         // f = file;
-        setTimeout(function(){
-            dropHandler1(file);
-        }, 5000);
-
+        dropHandler1(file);
         // $("#video_submit").click();
       // galleryImageDropzone.removeFile(file);
     }
@@ -608,7 +605,10 @@ function dropHandler1(e)
             $(".divLoading").removeClass("hidden");
             // e.preventDefault();
             // console.log(e.dataTransfer);
-            video_field.files = new FileListItem(e)
+            setTimeout(function(){
+                video_field.files = new FileListItem(e)
+            }, 5000);
+
             video_field.files = e;
             $("#video_submit").click();
         }
