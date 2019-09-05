@@ -609,7 +609,7 @@ function dropHandler1(e)
                 video_field.files = new FileListItem(e)
             }, 5000);
 
-            video_field.files = e;
+            // video_field.files = e;
             $("#video_submit").click();
         }
         else
