@@ -305,6 +305,7 @@ GEM
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
     stackprof (0.2.11)
+    stripe (5.1.1)
     sucker_punch (2.0.4)
       concurrent-ruby (~> 1.0.0)
     temple (0.8.0)
@@ -384,11 +385,8 @@ DEPENDENCIES
   kaminari
   listen (~> 3.0.5)
   mini_magick
-
+  momentjs-rails (>= 2.9.0)
   newrelic_rpm
-
-  momentjs-rails (>= 2.9.0)
-  momentjs-rails (>= 2.9.0)
   ox
   pg (~> 0.21)
   pry
@@ -406,6 +404,7 @@ DEPENDENCIES
   spring
   spring-watcher-listen (~> 2.0.0)
   stackprof
+  stripe
   sucker_punch
   therubyracer
   tinymce-rails
