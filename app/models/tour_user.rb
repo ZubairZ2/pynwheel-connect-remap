@@ -12,4 +12,5 @@
 
 class TourUser < ApplicationRecord
   has_many :visited_stops, dependent: :destroy
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 end
