@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  tour_date: 2019-07-16
+  tour_time: 2019-07-16 18:43:31
+  tour_user: one
+  tour: one
+
+two:
+  tour_date: 2019-07-16
+  tour_time: 2019-07-16 18:43:31
+  tour_user: two
+  tour: two

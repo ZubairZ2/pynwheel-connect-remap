@@ -10,7 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+<<<<<<< HEAD
 ActiveRecord::Schema.define(version: 20190903065128) do
+=======
+ActiveRecord::Schema.define(version: 20190829130041) do
+>>>>>>> scheduler_widget
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -114,7 +118,10 @@ ActiveRecord::Schema.define(version: 20190903065128) do
     t.boolean  "display_available_date",         default: true
     t.boolean  "show_gesture_icons"
     t.boolean  "self_tour",                      default: false
+<<<<<<< HEAD
     t.integer  "alert_contact",                  default: 2
+=======
+>>>>>>> scheduler_widget
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
 
@@ -326,8 +333,11 @@ ActiveRecord::Schema.define(version: 20190903065128) do
     t.string   "panther_unit_floorplan_map_marker_color"
     t.string   "gables_unit_floorplan_map_marker_color"
     t.string   "modernist_unit_floorplan_map_marker_color"
+<<<<<<< HEAD
     t.boolean  "display_filter_label_image"
     t.string   "filter_label_image"
+=======
+>>>>>>> scheduler_widget
   end
 
   create_table "ebrochure_menu_buttons", force: :cascade do |t|
@@ -426,8 +436,11 @@ ActiveRecord::Schema.define(version: 20190903065128) do
     t.boolean  "global_navigation_home_icon",                      default: false
     t.string   "homepage_button_border"
     t.string   "global_nav_button_icon_size"
+<<<<<<< HEAD
     t.boolean  "display_neighborhood_bg_image"
     t.string   "neighborhood_bg_image"
+=======
+>>>>>>> scheduler_widget
   end
 
   create_table "favorite_images", force: :cascade do |t|
@@ -818,6 +831,7 @@ ActiveRecord::Schema.define(version: 20190903065128) do
     t.datetime "updated_at",   null: false
   end
 
+<<<<<<< HEAD
   create_table "tour_histories", force: :cascade do |t|
     t.datetime "arrived"
     t.datetime "left"
@@ -830,6 +844,8 @@ ActiveRecord::Schema.define(version: 20190903065128) do
     t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id", using: :btree
   end
 
+=======
+>>>>>>> scheduler_widget
   create_table "tour_stops", force: :cascade do |t|
     t.integer  "tour_id"
     t.decimal  "latitude"
@@ -1010,7 +1026,10 @@ ActiveRecord::Schema.define(version: 20190903065128) do
   add_foreign_key "sitemaps", "communities"
   add_foreign_key "stop_details", "tour_stops"
   add_foreign_key "stop_galleries", "tour_stops"
+<<<<<<< HEAD
   add_foreign_key "tour_histories", "tour_users"
+=======
+>>>>>>> scheduler_widget
   add_foreign_key "tour_stops", "tours"
   add_foreign_key "tours", "communities"
   add_foreign_key "visited_stops", "tour_users"

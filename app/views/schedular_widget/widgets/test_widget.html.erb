@@ -1,0 +1,227 @@
+<style type="text/css">
+  .Pyn_Modal{
+    background: #fff;
+    width: 520px;
+    box-shadow: 0px 19px 30px -15px #888888;
+    margin: 0 auto;
+    padding: 20px;
+    border-top: 4px solid #ef4d88;
+  }
+  .Pyn_Modal p{
+    padding: 15px;
+    font-size: 20px;
+    text-align: center;
+    font-weight: 300;
+  }
+  .Pyn_Modal label{
+    font-size: 15px;
+    font-weight: 300;
+    color: #000;
+  }
+  .Pyn_Modal .form-control{
+    font-size: 18px;
+    height: 49px;
+    font-weight: 300;
+    border-radius: 0;
+    line-height: normal;
+    box-shadow: none;
+  }
+  .select_number{
+    width: 36%;
+    float: left;
+  }
+  .phoneNumber{
+    width: 60%;
+    float: right;
+  }
+  .cardNumber{
+    width: 70%;
+    float: left;
+  }
+  .expiry{
+    width: 26%;
+    float: right;
+  }
+  .btn_popup{
+    width: 100%;
+    border: none;
+    background: #89c766;
+    text-align: center;
+    color: #fff;
+    font-size: 19px;
+    padding: 12px 0;
+  }
+  .inner_phn_wrap{
+    float: left;
+    margin-bottom: 15px;
+    width: 100%;
+  }
+  @media only screen and (max-width: 560px) {
+    .Pyn_Modal{
+        background: #fff;
+        width: 100%;
+        box-shadow: 0px 19px 30px -15px #888888;
+        margin: 0 auto;
+        padding: 20px;
+        border-top: 4px solid #ef4d88;
+    }
+  }
+</style>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta charset="utf-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <title>Pynwheel | Dashboard</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag 'jquery.mCustomScrollbar.css' %>
+    <%= stylesheet_link_tag 'slick.css' %>
+    <%= stylesheet_link_tag 'bootstrap-datetimepicker' %>
+    <%= stylesheet_link_tag    'application', media: 'all' %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_include_tag 'jquery.arrayUtilities' %>
+    <%= javascript_include_tag 'slick' %>
+    <%= javascript_include_tag 'moment' %>
+    <%= javascript_include_tag 'bootstrap-datetimepicker' %>
+    <%= favicon_link_tag 'logo-small.png' %>
+    <%= render '/font_awesome_v5' %>
+    <body>
+			<%= link_to("Schedule a Visit", "url" , class: "btn btn-success btn-lg", data: { toggle: "modal", target: "#scheduleMyTour" }) %>
+
+		  <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <section>
+            <div class="Pyn_Modal">
+              <p>Great! We are looking forward to having you at our property. Please complete the following fields to confirm your reservation:</p>
+              
+              <%= form_for TourUser.new, url: "", :as => :tour_user, class: "form_popup", id: "tour_user_form" do |f| %>
+                <div class="form-group">
+                  <label>Name *</label>
+                  <%= f.text_field :name, class: "form-control", placeholder: "Name" %>
+                </div>
+                <div class="form-group">
+                  <label>Email Address *</label>
+                  <%= f.email_field :email, class: "form-control", placeholder: "Email Address" %>
+                </div>
+                <div class="form-group">
+                  <div class="inner_phn_wrap">
+                    <label>Phone Number *</label> 
+                    <div class="clearfix"></div>
+                    <select name="numbers" class="form-control select_number">
+                      <option>US+1</option>
+                      <option>US+2</option>
+                      <option>US+3</option>
+                    </select>
+                    <%= f.text_field :phone_number, class: "form-control phoneNumber", placeholder: "Phone Number" %>
+                  </div>
+                </div>
+                <div class="clearfix"></div>
+                <div class="form-group cardNumber">
+                  <label>Credit Card Number</label>
+                    <%= f.text_field  :credit_card_number, class: "form-control", placeholder: "Credit Card" %>
+                </div>
+                <div class="form-group expiry">
+                  <label>Expiration Date</label>
+                  <%= f.text_field :card_expiry, class: "form-control", placeholder: "MM/YY" %>
+                </div>
+                <div class="clearfix"></div>
+                <button class="btn_popup">Confirm My Reservation!</button>
+              <% end %>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="modal fade" id="scheduleMyTour" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <section>
+            <div class="Pyn_Modal">
+              <p>Schedule a self-guided tour. Come at your convenience and tour the property, using your phone as a guide! </p>
+              <form class="form_popup" id="scheduleMyTourForm">
+                <label>Date *</label>
+                <%= text_field_tag :tour_date,"", :class=>"form-control datepicker", :placeholder=>"Date",:maxlength=>"15",:autocomplete=>"off"%>
+
+                <div class="clearfix"></div>
+                <div class="form-group">
+                  <label>Time *</label>
+                  <%= text_field_tag :tour_time,"", :class=>"form-control datepickertime", :placeholder=>"Time",:maxlength=>"15",:autocomplete=>"off" %>
+                </div>
+                <div class="clearfix"></div>
+                <button class="btn_popup">Schedule My Tour!</button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="modal fade" id="scheduleMyTourSuccess" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <section>
+            <div class="Pyn_Modal">
+              <p></p>
+              <div class="clearfix"></div>
+              <button class="btn_popup" id="close">Ok</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+
+      <script type="text/javascript">
+        var tour_id;
+        $(document).ready(function(){
+
+          $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
+          $('.datepickertime').datetimepicker({minDate: new Date(), format: 'LT' });
+
+          $("#scheduleMyTourForm").on('submit', function(e){
+            $.ajax({
+              type: "POST",
+              url: "/schedual_tours.json",
+              data: $(this).serialize(),
+              cache: false,
+              success: function(data){
+                tour_id = data.id;
+                $("#scheduleMyTour").modal('hide');
+                $("#modalLoginForm").modal();
+              },
+              fail: function(error){
+                console.log(error)
+              }
+            });
+            e.preventDefault();
+          });
+
+          $("#new_tour_user").on('submit', function(e){
+            $.ajax({
+              type: "POST",
+              url: "/schedual_tours/"+ tour_id +"/create_tour_user_from.json",
+              data: $(this).serialize(),
+              cache: false,
+              success: function(data){
+                debugger
+                $("#scheduleMyTourSuccess .Pyn_Modal p").html(data.message)
+                $("#modalLoginForm").modal('hide');
+                $("#scheduleMyTourSuccess").modal()
+                $("html, body").animate({ scrollTop: 0 }, 600);
+              },
+              fail: function(error){
+                console.log(error)
+              }
+            });
+            e.preventDefault();
+          });
+
+          $("#close").on('click', function(){
+            $("#scheduleMyTourSuccess").modal('hide')
+          })
+
+        });
+      </script>
+
+    </body>
+  </head>
+</html>
