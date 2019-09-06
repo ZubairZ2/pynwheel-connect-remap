@@ -27,7 +27,7 @@ class GalleryImage < ApplicationRecord
 	mount_uploader :image, GalleryUploader
 	mount_uploader :video, VideoUploader
 	process_in_background :video
-	# before_create :set_image_name
+	before_create :set_image_name
 	# before_save :populate_image_urls
 	after_update :crop_image
   after_commit :populate_image_urls, on: :create
@@ -45,7 +45,7 @@ class GalleryImage < ApplicationRecord
 	end
 
 	def set_image_name
-  	self.name = image.file.filename
+  	self.name = image.file.filename if image.present?
   end
 
   def populate_image_urls

@@ -590,7 +590,7 @@ function saveGalleryImage(){
         // f = file;
         dropHandler1(file);
         // $("#video_submit").click();
-      // galleryImageDropzone.removeFile(file);
+      galleryImageDropzone.removeFile(file);
     }
 
 
