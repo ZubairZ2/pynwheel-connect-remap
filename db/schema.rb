@@ -10,11 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-<<<<<<< Updated upstream
-ActiveRecord::Schema.define(version: 20190716134331) do
-=======
-ActiveRecord::Schema.define(version: 20190705063340) do
->>>>>>> Stashed changes
+ActiveRecord::Schema.define(version: 20190829130041) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -108,6 +104,9 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.string   "entrata_exception_logs"
     t.boolean  "is_vertical_app",                default: false
     t.boolean  "show_tour_page"
+    t.boolean  "display_available_date",         default: true
+    t.boolean  "show_gesture_icons"
+    t.boolean  "self_tour",                      default: false
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
 
@@ -167,6 +166,7 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.string   "xml_filename"
     t.string   "xml_domain"
     t.string   "data_error_message"
+    t.string   "data_error_exp"
     t.index ["community_id"], name: "index_credentials_on_community_id", using: :btree
   end
 
@@ -485,19 +485,21 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.text     "comment"
     t.text     "description"
     t.string   "availability_url"
-    t.datetime "created_at",                             null: false
-    t.datetime "updated_at",                             null: false
+    t.datetime "created_at",                                            null: false
+    t.datetime "updated_at",                                            null: false
     t.string   "image"
     t.string   "virtual_tour_url"
     t.string   "standard_image_url"
-    t.boolean  "updated_by_admin",       default: false
-    t.boolean  "manual_override",        default: false
+    t.boolean  "updated_by_admin",                  default: false
+    t.boolean  "manual_override",                   default: false
     t.string   "secondary_image"
     t.boolean  "name_is_updated"
     t.boolean  "square_feet_is_updated"
     t.boolean  "bedroom_is_updated"
     t.boolean  "bathroom_is_updated"
     t.boolean  "market_rent_is_updated"
+    t.boolean  "display_virtual_tour_button_label", default: false
+    t.string   "virtual_tour_button_label",         default: "3D Tour"
   end
 
   create_table "floorplates", force: :cascade do |t|
@@ -714,6 +716,14 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.index ["community_id"], name: "index_neighborhoods_on_community_id", using: :btree
   end
 
+  create_table "neighbour_units", force: :cascade do |t|
+    t.integer  "path_point_id"
+    t.integer  "unit_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.index ["path_point_id"], name: "index_neighbour_units_on_path_point_id", using: :btree
+  end
+
   create_table "neighbourhood_logs", force: :cascade do |t|
     t.string   "from_ip"
     t.string   "cat"
@@ -721,7 +731,25 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.datetime "updated_at", null: false
   end
 
-<<<<<<< Updated upstream
+  create_table "path_points", force: :cascade do |t|
+    t.integer  "x_plot"
+    t.integer  "y_plot"
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+    t.integer  "path_id"
+    t.integer  "order"
+    t.boolean  "reordered",  default: false
+    t.index ["path_id"], name: "index_path_points_on_path_id", using: :btree
+  end
+
+  create_table "paths", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "map_path_id"
+    t.string   "map_path_type"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+  end
+
   create_table "schedual_tours", force: :cascade do |t|
     t.date     "tour_date"
     t.time     "tour_time"
@@ -733,8 +761,17 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.index ["tour_user_id"], name: "index_schedual_tours_on_tour_user_id", using: :btree
   end
 
-=======
->>>>>>> Stashed changes
+  create_table "shared_tours", force: :cascade do |t|
+    t.string   "name"
+    t.string   "recipient_name"
+    t.string   "phone"
+    t.string   "email"
+    t.integer  "tour_id"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+    t.index ["tour_id"], name: "index_shared_tours_on_tour_id", using: :btree
+  end
+
   create_table "sitemaps", force: :cascade do |t|
     t.string   "image"
     t.integer  "community_id"
@@ -786,8 +823,10 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.string   "name"
     t.integer  "phone_number"
     t.string   "email"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+    t.string   "credit_card_number"
+    t.string   "card_expiry"
   end
 
   create_table "tours", force: :cascade do |t|
@@ -816,20 +855,20 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.string   "availability"
     t.date     "available_date"
     t.string   "building"
-    t.datetime "created_at",                                null: false
-    t.datetime "updated_at",                                null: false
-    t.integer  "x_plot",                    default: 0
-    t.integer  "y_plot",                    default: 0
+    t.datetime "created_at",                                            null: false
+    t.datetime "updated_at",                                            null: false
+    t.integer  "x_plot",                            default: 0
+    t.integer  "y_plot",                            default: 0
     t.integer  "floorplate_id"
-    t.integer  "lease_term",                default: 12
+    t.integer  "lease_term",                        default: 12
     t.string   "image"
     t.integer  "floor"
     t.string   "standard_image_url"
-    t.boolean  "updated_by_admin",          default: false
+    t.boolean  "updated_by_admin",                  default: false
     t.boolean  "available"
-    t.boolean  "sold",                      default: false
-    t.boolean  "manually_updated",          default: false
-    t.boolean  "manual_override",           default: false
+    t.boolean  "sold",                              default: false
+    t.boolean  "manually_updated",                  default: false
+    t.boolean  "manual_override",                   default: false
     t.float    "square_feet"
     t.text     "description"
     t.string   "secondary_image"
@@ -845,6 +884,9 @@ ActiveRecord::Schema.define(version: 20190705063340) do
     t.boolean  "building_is_updated"
     t.boolean  "availability_is_updated"
     t.string   "stop_description"
+    t.boolean  "display_virtual_tour_button_label", default: false
+    t.string   "virtual_tour_button_label",         default: "3D Tour"
+    t.string   "virtual_tour_url"
   end
 
   create_table "users", force: :cascade do |t|
@@ -938,6 +980,7 @@ ActiveRecord::Schema.define(version: 20190705063340) do
   add_foreign_key "imagepages", "communities"
   add_foreign_key "locations", "neighborhoods"
   add_foreign_key "neighborhoods", "communities"
+  add_foreign_key "neighbour_units", "path_points"
   add_foreign_key "schedual_tours", "tour_users"
   add_foreign_key "schedual_tours", "tours"
   add_foreign_key "sitemaps", "communities"

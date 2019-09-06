@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
-  resources :schedual_tours
+  resources :schedual_tours do
+    member do
+      post :create_tour_user_from
+    end
+  end
   get 'tours/index'
 
   namespace :schedular_widget do

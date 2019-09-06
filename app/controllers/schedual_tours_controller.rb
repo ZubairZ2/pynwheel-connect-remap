@@ -21,11 +21,18 @@ class SchedualToursController < ApplicationController
   def edit
   end
 
+
+  def create_tour_user_from
+    
+    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: "#{params[:numbers]} #{params[:tour_user][:phone_number]}", credit_card_number: params[:tour_user][:credit_card_number], card_expiry: params[:tour_user][:card_expiry]
+
+    schedual_tour = SchedualTour.find(params[:id])
+    tu.save ? (render json: {message: "Thank you, #{tu.name} Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions."}, status: 200) : (render json: {}, status: 'failed')
+  end
   # POST /schedual_tours
   # POST /schedual_tours.json
   def create
-    @schedual_tour = SchedualTour.new(schedual_tour_params)
-
+    @schedual_tour = SchedualTour.new(tour_date: Date.strptime(params["tour_date"], '%m/%d/%Y').to_date, tour_time:  Time.parse(params["tour_time"]).strftime("%I:%M %P").to_time)
     respond_to do |format|
       if @schedual_tour.save
         format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
@@ -41,7 +48,9 @@ class SchedualToursController < ApplicationController
   # PATCH/PUT /schedual_tours/1.json
   def update
     respond_to do |format|
-      if @schedual_tour.update(schedual_tour_params)
+      ajax_schedual_tour_params["tour_date"] = Date.strptime(ajax_schedual_tour_params["tour_date"], '%m/%d/%Y').to_date
+
+      if @schedual_tour.update(ajax_schedual_tour_params)
         format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully updated.' }
         format.json { render :show, status: :ok, location: @schedual_tour }
       else
@@ -70,5 +79,8 @@ class SchedualToursController < ApplicationController
     # Never trust parameters from the scary internet, only allow the white list through.
     def schedual_tour_params
       params.require(:schedual_tour).permit(:tour_date, :tour_time, :tour_user_id, :tour_id)
+    end
+    def ajax_schedual_tour_params
+      params.permit(:tour_date, :tour_time)
     end
 end
