@@ -11,7 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 
-ActiveRecord::Schema.define(version: 20190903065128) do
+ActiveRecord::Schema.define(version: 20190906144615) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -824,12 +824,12 @@ ActiveRecord::Schema.define(version: 20190903065128) do
   create_table "tour_histories", force: :cascade do |t|
     t.datetime "arrived"
     t.datetime "left"
-    t.string   "lengthy_stay"
     t.boolean  "id_mismatch"
     t.integer  "abandoned_tour_at_stop"
     t.integer  "tour_user_id"
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
+    t.datetime "lengthy_stay"
     t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id", using: :btree
   end
 

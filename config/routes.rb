@@ -302,6 +302,7 @@ Rails.application.routes.draw do
 
       # 
       post :save_tour_history, to: 'tour_histories#save_tour_history'
+      get :get_tour_history, to: 'tour_histories#get_tour_history'
     end
   end
 end
