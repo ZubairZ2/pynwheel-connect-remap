@@ -21,7 +21,7 @@ class CommunityGroup < ApplicationRecord
 
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
-
+  validates_uniqueness_of :name
 
   mount_base64_uploader :logo, AvatarUploader
 
