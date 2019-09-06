@@ -1,7 +1,17 @@
 Rails.application.routes.draw do
   get 'community_groups/index'
 
+  resources :schedual_tours do
+    member do
+      post :create_tour_user_from
+    end
+  end
   get 'tours/index'
+
+  namespace :schedular_widget do
+    get 'widget', to: 'widgets#widget'
+    get 'test_widget', to: 'widgets#test_widget'
+  end 
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
