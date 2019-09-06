@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+
   get 'community_groups/index'
 
   resources :schedual_tours do
