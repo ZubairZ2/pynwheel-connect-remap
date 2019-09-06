@@ -299,6 +299,7 @@ GEM
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
     stackprof (0.2.11)
+    stripe (5.1.1)
     sucker_punch (2.0.4)
       concurrent-ruby (~> 1.0.0)
     temple (0.8.0)
@@ -394,6 +395,7 @@ DEPENDENCIES
   spring
   spring-watcher-listen (~> 2.0.0)
   stackprof
+  stripe
   sucker_punch
   therubyracer
   tinymce-rails
