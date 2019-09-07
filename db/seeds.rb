@@ -19,9 +19,9 @@
 
 def create_messages_alerts
 	AlertMessage.create message_key: 'arrived', message_body: 'Visitor has arrived (tour has begun)' 
-	AlertMessage.create message_key: 'lengthy_stay', message_body: 'Visitor is on site for more than one hour.' 
-	AlertMessage.create message_key: 'selfie_mismatch', message_body: 'The photo ID/selfie were flagged as a mis-match' 
-	AlertMessage.create message_key: 'tour_abandoned', message_body: 'A tour was abandoned before it was completed at xyz' 
+	AlertMessage.create message_key: 'lengthy_stay', message_body: 'Visitor is on site for more than' 
+	AlertMessage.create message_key: 'id_mismatch', message_body: 'The photo ID/selfie were flagged as a mis-match' 
+	AlertMessage.create message_key: 'abandoned_tour_at_stop', message_body: 'A tour was abandoned before it was completed at ' 
 	AlertMessage.create message_key: 'left', message_body: 'Visitor has left' 
 end
 

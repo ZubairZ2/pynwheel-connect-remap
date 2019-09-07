@@ -1,8 +1,9 @@
 class NotificationMailer < ApplicationMailer
 	default from: 'info@pynwheel.com'
- #  layout 'mailer'
+  layout 'mailer'
 
 	def tour_history_mail subject, msg
-		mail(to: 'nasir.shamshad@intagleo.com', subject: subject, body: msg).deliver_now
+		mail(to: 'nasir.shamshad@intagleo.com', subject: subject, body: msg)
 	end
+	
 end
