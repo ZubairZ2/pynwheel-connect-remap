@@ -35,7 +35,11 @@ class GalleryImage < ApplicationRecord
   end
 
   def is_video?
-		image.file.extension.downcase == 'mp4' 
+		begin
+			image.file.extension.downcase == 'mp4'
+		rescue => ex
+			true
+		end
 	end
 
 	def set_image_name

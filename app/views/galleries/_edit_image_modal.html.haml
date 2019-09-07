@@ -20,7 +20,8 @@
 }
 :javascript 
   $("#crop_image").on("click",function(e){
-    $(".divLoading").removeClass("hidden")
+    $(".divLoading").removeClass("hidden");
+    localStorage.setItem("galleryCropped", "1");
   });
   
   $('#cropbox').Jcrop({

@@ -8,10 +8,10 @@
         .image-box.video-box
           .images.height-200
             - if gallery_image.is_video?
-              = video_tag gallery_image.image.url, :controls => true, :autobuffer => true
+              = video_tag gallery_image.video.present? ? gallery_image.standard_image_url : gallery_image.standard_image_url, :controls => true, :autobuffer => true
             - else 
-              %a.preview-image{:href=>gallery_image.image? ? (gallery_image.crop_x.present? ? gallery_image.image.url(:thumb) : gallery_image.image.url) : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>gallery_image.name}
-                = image_tag (gallery_image.crop_x.present? ? gallery_image.image.url(:thumb) : gallery_image.image.url)
+              %a.preview-image{:href=>gallery_image.image? ? (gallery_image.crop_x.present? ? gallery_image.image.url : gallery_image.image.url) : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>gallery_image.name}
+                = image_tag (gallery_image.crop_x.present? ? gallery_image.image.url : gallery_image.image.url)
         .icons
           - unless gallery_image.is_video?
             = link_to  show_image_in_modal_community_gallery_path(@community,@gallery,gallery_image_id: gallery_image.id), remote: true do 
@@ -33,7 +33,7 @@
             - @gallery_images.each_with_index do |gallery_image,index|
               .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
                 - unless gallery_image.is_video?
-                  = image_tag (gallery_image.crop_x.present? ? gallery_image.image.url(:thumb) : gallery_image.image.url)
+                  = image_tag (gallery_image.crop_x.present? ? gallery_image.image.url: gallery_image.image.url)
                   .carousel-caption
                     image  
             
@@ -44,6 +44,17 @@
             %span.glyphicon.glyphicon-chevron-right
 
 :javascript
+
   $('.image_slide_view').bind("DOMSubtreeModified",function(){
     $('#image_count').text('#{@gallery.name.capitalize} Gallery - #{@gallery_images.count} #{@gallery_images.count > 1 ? "images" : "image"}');
   });
+
+  if (localStorage.getItem("galleryCropped") == "1")
+  {
+
+
+    localStorage.setItem("galleryCropped", "0");
+    location.reload(forcedReload);
+    // window.location.href = window.location.href;
+    // location.reload(true);
+  }

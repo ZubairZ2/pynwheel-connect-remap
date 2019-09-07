@@ -32,7 +32,8 @@ class GalleryUploader < CarrierWave::Uploader::Base
   end
 
   version :thumb , from_version: :large, :if => :image? do
-    # resize_to_fit(640, 360)
+    process :crop
+    resize_to_fit(640, 360)
   end
 
   version :video_thumbnail, :if => :video? do
@@ -48,7 +49,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
   process :crop
   resize_to_limit(1920, 1080)
   version :large, :if => :image? do
-    # process :crop
+    process :crop
     resize_to_limit(1920, 1080)
   end
 

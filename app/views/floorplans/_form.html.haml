@@ -159,7 +159,11 @@
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
   });
-
+  if (localStorage.getItem("floorplanCropped") == "1")
+  {
+    localStorage.setItem("floorplanCropped", "0");
+    location.reload(true);
+  }
   if (!#{current_user.welcome_edit_floorplan_page})
   {
     $('[data-toggle="floorplanEditManualoverridePopover"]').popover({
