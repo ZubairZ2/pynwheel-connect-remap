@@ -94,7 +94,13 @@ class FloorplansController < ApplicationController
 
   def save_floorplan_name_order
     @community = Community.find params[:community_id]
-    @community.floorplan_name_order = params[:desc]
+    if params[:desc] == "sorting_desc"
+      @community.floorplan_name_order = true
+    elsif params[:desc] == "sorting_asc"
+      @community.floorplan_name_order = false
+    else
+      @community.floorplan_name_order = nil
+    end
     @community.save
   end
   def destroy
