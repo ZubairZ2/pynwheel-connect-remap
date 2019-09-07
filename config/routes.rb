@@ -55,6 +55,7 @@ Rails.application.routes.draw do
       end
       collection do
         post :add_description
+        post :save_floorplan_name_order
       end
     end
     resources :amenities do

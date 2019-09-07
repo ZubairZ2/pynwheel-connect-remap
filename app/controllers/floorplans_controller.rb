@@ -92,7 +92,11 @@ class FloorplansController < ApplicationController
     end
   end
 
-
+  def save_floorplan_name_order
+    @community = Community.find params[:community_id]
+    @community.floorplan_name_order = params[:desc]
+    @community.save
+  end
   def destroy
     @floorplan.destroy
     flash[:notice] = "Floor plan deleted successfully."

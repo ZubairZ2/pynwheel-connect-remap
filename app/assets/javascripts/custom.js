@@ -561,7 +561,18 @@ function showCredentialsForm(){
 function readyJsOnAjaxCall(){
     showDataTables();
 }
+function floorplan_names_order() {
+    debugger;
+    $.ajax({
+        type: "POST",
+        url: '/communities/'+community_id+'/floorplans/save_floorplan_name_order',
+        data: {desc: $('.floorplan_name_col')[0].classList[1] == "sorting_desc"},
+        success: function(response) {
 
+        }
+
+    });
+}
 function showDataTables(){
     // $('#miyazaki.unit_data_table').DataTable({
     //     'aoColumnDefs': [{
@@ -581,6 +592,10 @@ function showDataTables(){
         "stateSave": true,
         "paging": false
     });
+    $(".floorplan_name_col" ).click(function() {
+        floorplan_names_order();
+    });
+
     $("#miyazaki_info").detach().prependTo('#miyazaki_wrapper');
     $('#communities.table').DataTable({
         initComplete : function() {

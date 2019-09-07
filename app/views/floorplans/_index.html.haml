@@ -40,7 +40,7 @@
             %thead
               %tr
                 %th Sr #
-                %th Name
+                %th.floorplan_name_col Name
                 %th SF
                 %th BR
                 %th BA
@@ -89,3 +89,6 @@
   var index = #{current_community.has_temporary_images? ? current_community.temporary_images.size : 0}
   var draging_image;
   var community_id = #{params[:community_id]}
+  setTimeout(function(){
+      floorplan_names_order();
+  }, 2000);
