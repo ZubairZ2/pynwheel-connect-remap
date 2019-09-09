@@ -1,6 +1,8 @@
 json.community_group @communities do |co|
   @community = co
 
+  json.community_name  @community.name
+  json.company_name  Company.find_by(id: @community.company_id).name
 
   local_assets_base_url = "http://192.168.101.77:3000"
   random_numbers = []
