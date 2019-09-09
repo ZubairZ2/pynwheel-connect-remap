@@ -499,7 +499,7 @@ module ApplicationHelper
                   ["Lucida Bright Math","Lucida Bright Math"],
                   ["Lucida Calligraphy","Lucida Calligraphy"],
                   ["Lucida Console","Lucida Console"],
-                  ["Lucida Fax","Lucida Fax"],
+                  ["Lucida Fax","ms-appx:/DesignTemplates/Expressionist/CutomFonts/LFAX.ttf#Lucida Fax"],
                   ["Lucida Handwriting","Lucida Handwriting"],
                   ["Lucida Sans","Lucida Sans"],
                   ["Lucida Sans Typewriter","Lucida Sans Typewriter"],

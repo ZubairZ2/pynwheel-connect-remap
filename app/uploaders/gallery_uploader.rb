@@ -4,8 +4,6 @@ class GalleryUploader < CarrierWave::Uploader::Base
   include CarrierWave::RMagick
   include CarrierWave::Video  # for your video processing
   include CarrierWave::Video::Thumbnailer
-  include ::CarrierWave::Backgrounder::Delay
-  include CarrierWaveDirect::Uploader
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:

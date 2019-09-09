@@ -92,7 +92,17 @@ class FloorplansController < ApplicationController
     end
   end
 
-
+  def save_floorplan_name_order
+    @community = Community.find params[:community_id]
+    if params[:desc] == "sorting_desc"
+      @community.floorplan_name_order = true
+    elsif params[:desc] == "sorting_asc"
+      @community.floorplan_name_order = false
+    else
+      @community.floorplan_name_order = nil
+    end
+    @community.save
+  end
   def destroy
     @floorplan.destroy
     flash[:notice] = "Floor plan deleted successfully."
