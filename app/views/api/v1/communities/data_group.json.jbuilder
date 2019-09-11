@@ -1,7 +1,15 @@
+json.group_name @community_group.name
+json.group_address @community_group.address
+json.page_type @community_group.page_type ? "map" : "menu"
+json.page_name @community_group.page_name
+json.logo @community_group.logo.present? ? @community_group.logo.url : "No image"
+json.inactivate !@community_group.inactivate
+
 json.community_group @communities do |co|
   @community = co
 
   json.community_name  @community.name
+  json.community_id  @community.id
   json.company_name  Company.find_by(id: @community.company_id).name
 
   local_assets_base_url = "http://192.168.101.77:3000"
