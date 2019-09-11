@@ -11,6 +11,7 @@ gem 'carrierwave_direct'
 gem 'newrelic_rpm'
 
 gem 'twilio-ruby'
+gem 'phony_rails'
 
 gem 'write_xlsx'
 gem "mini_magick"

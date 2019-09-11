@@ -219,6 +219,10 @@ GEM
     orm_adapter (0.5.0)
     ox (2.9.3)
     pg (0.21.0)
+    phony (2.18.8)
+    phony_rails (0.14.13)
+      activesupport (>= 3.0)
+      phony (> 2.15)
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
@@ -390,6 +394,7 @@ DEPENDENCIES
   newrelic_rpm
   ox
   pg (~> 0.21)
+  phony_rails
   pry
   puma
   puma_worker_killer
