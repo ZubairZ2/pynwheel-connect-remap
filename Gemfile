@@ -10,6 +10,8 @@ gem 'bootstrap-wysihtml5-rails'
 gem 'carrierwave_direct'
 gem 'newrelic_rpm'
 
+gem 'twilio-ruby'
+
 gem 'write_xlsx'
 gem "mini_magick"
 gem 'google_places'

@@ -3,7 +3,7 @@ class NotificationMailer < ApplicationMailer
   layout 'mailer'
 
 	def tour_history_mail subject, msg
-		mail(to: 'nasir.shamshad@intagleo.com', subject: subject, body: msg)
+		mail(to: 'arslan.mirza@intagleo.com', subject: subject, body: msg)
 	end
 	
 end
