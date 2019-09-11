@@ -10,10 +10,10 @@ gem 'annotate'
 gem 'bootstrap-wysihtml5-rails'
 gem 'carrierwave_direct'
 gem 'newrelic_rpm'
-
 gem 'momentjs-rails', '>= 2.9.0'
 gem 'bootstrap3-datetimepicker-rails', '~> 4.17.47'
 gem 'pry'
+gem 'twilio-ruby'
 gem 'write_xlsx'
 gem "mini_magick"
 gem 'google_places'

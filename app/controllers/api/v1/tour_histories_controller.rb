@@ -12,6 +12,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
     tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
     tour_history.tour_user_id = params[:tour_user_id] if params[:tour_user_id].present?
     
+    tour_history.community = set_community
     # binding.pry
     # Time.at(params[:lengthy_stay])
     if tour_history.save
@@ -40,5 +41,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
   def tour_history_params
     params.permit(:arrived, :left, :lengthy_stay, :id_mismatch, :abandoned_tour_at_stop, :tour_user_id)
+  end
+
+  def set_community
+    @community ||= Community.find_by_id params[:community_id] if params[:community_id].present?
   end
 end
