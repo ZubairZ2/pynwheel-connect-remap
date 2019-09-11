@@ -16,9 +16,9 @@ class TourHistory < ApplicationRecord
 
   def send_update_notifications
   	
-  	if time_difference >= 1
+  	if time_difference >= 10
   		@mail_content = get_alert_message('lengthy_stay')
-  		@mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'hour')}"
+  		@mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
 
   		send_email_sms_or_both @mail_content
   	end
@@ -56,6 +56,7 @@ class TourHistory < ApplicationRecord
   def send_sms message_body
 		# DANGER! This is insecure. See http://twil.io/secure
 		# binding.pry
+		# to: '+923236808910'
 		account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
 		auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
 		@client = Twilio::REST::Client.new(account_sid, auth_token)
@@ -64,17 +65,17 @@ class TourHistory < ApplicationRecord
 		  .create( 
 		  	body: message_body,
 		    from: '+12017012957',
-		    to: '+923236808910'
+		    to: community.phone
 		  )
   end
 
   def send_email subj, body
-  	NotificationMailer.tour_history_mail(subj.humanize, body.humanize).deliver
+  	NotificationMailer.tour_history_mail(subj.humanize, body.humanize, community.email).deliver
   end
 
   
   def time_difference
-  	((Time.zone.now - self.arrived) / 1.hour).round
+  	((Time.zone.now - self.arrived) / 1.minute).round
   end
 
   def get_alert_message key

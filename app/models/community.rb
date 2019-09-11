@@ -91,6 +91,11 @@ class Community < ApplicationRecord
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
 
+
+  phony_normalize :phone
+  # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
+  validates :phone, phony_plausible: true
+
   enum alert_contact: [:email, :phone, :both]
   
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
