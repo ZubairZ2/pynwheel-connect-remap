@@ -57,16 +57,17 @@ class TourHistory < ApplicationRecord
 		# DANGER! This is insecure. See http://twil.io/secure
 		# binding.pry
 		# to: '+923236808910'
-		account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
-		auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
-		@client = Twilio::REST::Client.new(account_sid, auth_token)
+		
+		# account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
+		# auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
+		# @client = Twilio::REST::Client.new(account_sid, auth_token)
 
-		message = @client.messages
-		  .create( 
-		  	body: message_body,
-		    from: '+12017012957',
-		    to: community.phone
-		  )
+		# message = @client.messages
+		#   .create( 
+		#   	body: message_body,
+		#     from: '+12017012957',
+		#     to: community.phone
+		#   )
   end
 
   def send_email subj, body
