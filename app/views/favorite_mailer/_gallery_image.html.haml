@@ -9,7 +9,7 @@
                 %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                   %tr
                     %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                      %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                      -#%h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
                         -#%b Image: #{img.name}
     %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
       %tr
@@ -28,7 +28,7 @@
                                 %tr
                                   %td
                                     %div{:style => "max-width:100%; overflow:hidden;"}
-                                      %img{:alt => "", :src => "#{img.image.url(:large)}", :width => "580", :style => "max-width:100%; height:auto; margin:auto;", :title => ""}/
+                                      %img{:alt => "", :src => "#{img.large_image_url}", :width => "580", :style => "max-width:100%; height:auto; margin:auto;", :title => ""}/
                             - else
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                                 %tr
