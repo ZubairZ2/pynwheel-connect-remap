@@ -29,10 +29,10 @@
             %tr
               %td
                 %h4.h4
-                  = link_to com_grp.name, company_community_group_path(current_company.id,com_grp.id)
+                  = link_to com_grp.name, company_community_group_path((Company.find com_grp.company_id).id,com_grp.id)
               %td
                 %a.text-success{:href => "/community_groups/#{com_grp.id}/edit"}
                   %i.fa.fa-edit.icon_size
-                %a.text-danger{"data-name"=>"Community Group","data-href" => "/companies/#{current_company.id}/community_groups/#{com_grp.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                %a.text-danger{"data-name"=>"Community Group","data-href" => "/companies/#{(Company.find com_grp.company_id).id}/community_groups/#{com_grp.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                   %i.fa.fa-trash.icon_size
 
