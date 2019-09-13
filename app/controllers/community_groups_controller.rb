@@ -49,7 +49,6 @@ class CommunityGroupsController < ApplicationController
       @company = Company.find @community_group.company_id
       redirect_to company_community_group_path(@company.id,@community_group)
     end
-
   end
 
   def show
