@@ -8,7 +8,8 @@ class CommunityGroupsController < ApplicationController
   def create
     @community_group = CommunityGroup.new(community_group_params)
     if @community_group.save
-      redirect_to company_community_groups_path(current_company)
+      @company = Company.find @community_group.company_id
+      redirect_to company_community_groups_path(@company)
     else
       flash[:error] = @community_group.errors.full_messages.join(',')
       render "new"
@@ -21,7 +22,8 @@ class CommunityGroupsController < ApplicationController
     if params[:community_group][:name].present?
       @community_group = CommunityGroup.find params[:id]
       if @community_group.update(community_group_params)
-        redirect_to company_community_groups_path(current_company), :notice => "Community group updated successfully."
+        @company = Company.find @community_group.company_id
+        redirect_to company_community_groups_path(@company), :notice => "Community group updated successfully."
       else
         flash[:error] = @community_group.errors.full_messages.join(',')
         render "edit"
@@ -44,7 +46,8 @@ class CommunityGroupsController < ApplicationController
           community.save
         end
       end
-      redirect_to company_community_group_path(current_company.id,@community_group)
+      @company = Company.find @community_group.company_id
+      redirect_to company_community_group_path(@company.id,@community_group)
     end
 
   end
@@ -55,7 +58,8 @@ class CommunityGroupsController < ApplicationController
   def destroy
     @community_group = CommunityGroup.find params[:id]
     @community_group.destroy
-    redirect_to company_community_groups_path(current_company), notice: 'Community group deleted successfully.'
+    @company = Company.find @community_group.company_id
+    redirect_to company_community_groups_path(@company), notice: 'Community group deleted successfully.'
   end
   def add_community
     @community_group = CommunityGroup.find params[:format]
@@ -66,7 +70,8 @@ class CommunityGroupsController < ApplicationController
     community = Community.find params[:community]
     community.community_group_id = nil
     community.save
-    redirect_to company_community_group_path(current_company.id,@community_group)
+    @company = Company.find @community_group.company_id
+    redirect_to company_community_group_path(@company.id,@community_group)
 
   end
   private
