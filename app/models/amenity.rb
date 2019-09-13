@@ -19,6 +19,7 @@
 #  standard_image_url  :string
 #  sort                :integer
 #  access_code         :string
+#  directional_text    :string
 #
 
 class Amenity < ApplicationRecord
@@ -29,6 +30,10 @@ class Amenity < ApplicationRecord
   belongs_to :amenityable, polymorphic: true
   belongs_to :community
   has_many :amenity_galleries, dependent: :destroy
+  
+  has_many :paths, as: :map_path
+  has_many :path_points, through: :paths
+
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]
@@ -42,5 +47,9 @@ class Amenity < ApplicationRecord
     if image.present?
       set_standard_url('Amenity',id)
     end
+  end
+
+  def self.path_data
+    [{x: 120, y: 455}, {x: 165, y: 655}, {x: 400, y: 155}]
   end
 end

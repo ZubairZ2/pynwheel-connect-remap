@@ -9,6 +9,10 @@
 #  imagepage_id :integer
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
+#  crop_x       :float
+#  crop_y       :float
+#  crop_w       :float
+#  crop_h       :float
 #
 
 class AdditionalImage < ApplicationRecord

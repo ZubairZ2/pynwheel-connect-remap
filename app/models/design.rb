@@ -129,6 +129,8 @@
 #  panther_unit_floorplan_map_marker_color         :string
 #  gables_unit_floorplan_map_marker_color          :string
 #  modernist_unit_floorplan_map_marker_color       :string
+#  display_filter_label_image                      :boolean
+#  filter_label_image                              :string
 #
 
 class Design < ApplicationRecord
@@ -138,6 +140,7 @@ class Design < ApplicationRecord
 	mount_base64_uploader :filter_button, AvatarUploader
 	mount_base64_uploader :gallery_button, AvatarUploader
 	mount_base64_uploader :filter_panel_background_image, AvatarUploader
+	mount_base64_uploader :filter_label_image, AvatarUploader
 	mount_base64_uploader :gallery_button_on_image, AvatarUploader
 	has_one :menu , dependent: :destroy
 	has_one :gable , dependent: :destroy

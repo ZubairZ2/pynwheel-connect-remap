@@ -148,31 +148,33 @@ var holder = document.getElementById('holder');
         //holder.ondragover = function () { this.className = 'hover'; return false; };
         //holder.ondragend = function () { this.className = ''; return false; };
         holder.ondrop = function (e) {
-            this.className = '';
-            e.preventDefault();
-            files = e.dataTransfer.files;
-                if (files.length > 0){
+            if (e.dataTransfer.files.length > 0)
+                {
+                    this.className = '';
+                e.preventDefault();
+                files = e.dataTransfer.files;
+                if (files.length > 0) {
                     for (var i = 0; i < files.length; i++) {
-                      if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
-                              readImageSrc(files[i]);
-
-                      }
-                      else{
-                        $('#image-upload-warning').modal('show');
-                      }
+                        if (files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg") {
+                            readImageSrc(files[i]);
+                        }
+                        else {
+                            $('#image-upload-warning').modal('show');
+                        }
                     }
                 }
-                else{
+                else {
                     //var img = e.dataTransfer.mozSourceNode;
                     var floorplan_id = $(draging_image).parent().attr("id");
                     var id = $(draging_image).attr("id");
                     id = id.split('-');
-                    $('#row'+id[1]).show();
+                    $('#row' + id[1]).show();
                     console.log("ok");
-                    $('#parent-'+id[1]).append($(draging_image));
-                    deleteFloorPlanImage(floorplan_id,$(draging_image).attr("src"),id[1],$('#img-name-'+id[1]).html());
+                    $('#parent-' + id[1]).append($(draging_image));
+                    deleteFloorPlanImage(floorplan_id, $(draging_image).attr("src"), id[1], $('#img-name-' + id[1]).html());
                 }
             }
+        }
     }  
 
 
@@ -202,6 +204,7 @@ $('#confirm-delete_amenity').on('show.bs.modal', function(e) {
     var amenity = $(e.relatedTarget).data('href').split("/")[6];
     $(this).find('.edit_unit_amenity').attr('href', '/communities/'+community+'/amenities/'+amenity+'/edit');
     $(this).find('.add_description_amenity').attr('href', $(e.relatedTarget).data('href')+'/save_description');
+    $(this).find('#delete_button_amenity').attr('href', $(e.relatedTarget).data('href')+'/delete_unit_plot');
     $(this).find('#description_amenity').val($(e.relatedTarget).data('name'));
     $(this).find('#record-name-amenity').html('Update Amenity');
     $(this).find('#record-message-amenity').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
@@ -264,19 +267,36 @@ function drag(ev) {
 }
 
 function drop(ev) {
-    ev.preventDefault();
-    if ($(ev.target).hasClass('drop-img')) { 
-        var data = ev.dataTransfer.getData("text");
-        ev.target.appendChild(document.getElementById(data));
-        var img_object = $(ev.target).find('img');
-        var id = $(img_object).attr("id");
-        id = id.split('-');
-        $('#row'+id[1]).hide();
-        saveFloorPlanImage($(img_object).attr("src"),ev.target.id,id[1]);
-   }
-   else{
-     return;
-   }
+    if (ev.currentTarget.childElementCount == 0)
+    {
+        ev.preventDefault();
+        if (ev.dataTransfer.getData("text") != "") {
+            var data = ev.dataTransfer.getData("text");
+            ev.target.appendChild(document.getElementById(data));
+            var img_object = $(ev.target).find('img');
+            var id = $(img_object).attr("id");
+            id = id.split('-');
+            $('#row'+id[1]).hide();
+            var img = new Image();
+            img.src = $(img_object).attr("src");
+            ev.target.appendChild(img);
+            saveFloorPlanImage($(img_object).attr("src"),ev.target.id,id[1]);
+       }
+       else{
+            var reader = new FileReader();
+
+
+            reader.onload = function (e) {
+                // var img_object = $(ev.target).find('img');
+                var img = new Image();
+                img.src = e.target.result;
+                ev.target.appendChild(img);
+                saveFloorPlanImage(e.target.result,ev.target.id, null);
+
+            };
+            reader.readAsDataURL(ev.dataTransfer.files[0]);
+       }
+    }
 }
 
 // preview image function
@@ -323,6 +343,28 @@ function readSecondaryURL(input) {
         $('#image-upload-warning').modal('show');
         //console.log($(input).val());
       }
+    }
+}
+function readCommunityGroupLogoURL(input) {
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
+
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#preview-community-group-logo').attr('src', e.target.result);
+                $('#preview-community-group-logo').parent().attr('href', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+
+
+        }
+        else{
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
     }
 }
 
@@ -603,6 +645,7 @@ function removeValidationsClass(){
 }
 
 function readImageSrc(file){
+    debugger;
       var reader = new FileReader();
       reader.onload = function (e) {
         index++
@@ -632,22 +675,22 @@ function readImageSrc(file){
     });
    }
 
-   function deleteFloorPlanImage(floorplan_id,src,position,name){
-    //var community_id = $('#communities_at_floorplans').val();
-    $.ajax({
-        url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
-        type: "PUT",
-        dataType: "script",
-        data: {
-            floorplan: {
-                remove_image: true
-            }
-        }
-    }).done(function(){
-        console.log("floorplan image is deleted successfully now going to save temporary image");
-        saveTemporaryImage(src,position,name);
-    });
-   }
+   // function deleteFloorPlanImage(floorplan_id,src,position,name){
+   //  //var community_id = $('#communities_at_floorplans').val();
+   //  $.ajax({
+   //      url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
+   //      type: "PUT",
+   //      dataType: "script",
+   //      data: {
+   //          floorplan: {
+   //              remove_image: true
+   //          }
+   //      }
+   //  }).done(function(){
+   //      console.log("floorplan image is deleted successfully now going to save temporary image");
+   //      saveTemporaryImage(src,position,name);
+   //  });
+   // }
 
 
 function trim (str) {

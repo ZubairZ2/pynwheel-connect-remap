@@ -92,6 +92,8 @@
 #  global_navigation_home_icon                      :boolean          default(FALSE)
 #  homepage_button_border                           :string
 #  global_nav_button_icon_size                      :string
+#  display_neighborhood_bg_image                    :boolean
+#  neighborhood_bg_image                            :string
 #
 
 class Expressionist < ApplicationRecord
@@ -118,5 +120,6 @@ class Expressionist < ApplicationRecord
 
   mount_base64_uploader :home_page_background_image, AvatarUploader
   mount_base64_uploader :global_nav_background_image, AvatarUploader
+  mount_base64_uploader :neighborhood_bg_image, AvatarUploader
   belongs_to :design
 end

@@ -111,9 +111,11 @@ $(document).ready(function(){
             e.preventDefault();
             dx = parseInt($('#active_x_plot').html())-8;
             dy = parseInt($('#active_y_plot').html()-10);
-            marker_color = $('#marker-color').html();
+            marker_color = $('#marker_color').html();
             camera_margin = $('#camera-margin').html();
-            marker_font_size = ($('#marker-font-size').html());
+            marker_font_size = ($('#font_size').html());
+            left_margin = parseInt($('#left_margin').html());
+            right_margin = parseInt($('#right_margin').html());
 
             if (addmode) {
                 // save plotting for each selected unit
@@ -153,6 +155,13 @@ $(document).ready(function(){
                     tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
                     tag += "<img src='/assets/star.png'>";
                     tag += "</a>"
+                }
+                else if (typeof floorplate_id !== 'undefined' || sitemap_id !== 'undefined')
+                {
+                    tag = "<a class='marker ' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - left_margin)  + "px; top:" + (dy - right_margin) +"px; position:absolute; font-size: "+ marker_font_size+"px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+                    tag += "<i class='fas fa-map-marker-alt' style='color: "+marker_color+";'></i>";
+                    tag += "</a>"
+
                 }
                 else
                 {

@@ -655,17 +655,66 @@ function saveHomePageVideo(){
   };
 
   homePageVideoDropzone.on("complete", function(file) {
+      if (file.size > 500000001)
+      {
+          $('#video-size-warning').modal('show');
+      }
+      else{
+          location.reload();
+      }
     console.log(file);
-    location.reload();
+
+    $(".divLoading").addClass("hidden");
+
   });
-  
+
   homePageVideoDropzone.on("addedfile", function(file) {
-    console.log(file.type);
-    $(".divLoading").removeClass("hidden");
-    if (!(file.type == "video/mp4")) {
-      $(".divLoading").addClass("hidden");
-      $('#video-upload-warning').modal('show');
-      homePageVideoDropzone.removeFile(file);
-    }
+      if (file.size < 500000001)
+      {
+          if (!(file.type == "video/mp4")) {
+                $(".divLoading").addClass("hidden");
+                $('#video-upload-warning').modal('show');
+                homePageVideoDropzone.removeFile(file);
+          }
+          else
+          {
+              $(".divLoading").removeClass("hidden");
+              $.ajax({
+                  type: "POST",
+                  url: "/communities/" + community_id + "/home_page/save_home_page_video",
+                  file: file,
+                  success: function () {
+                      console.log("sccuess");
+                  },
+                  error: function () {console.log("error");
+                  }
+              });
+          }
+
+        }
+      else
+      {
+          // var message = '<div class="alert alert-success">Video uploaded successfully.</div>'
+          // $('#flash-message').html(message);
+          // setTimeout(function() {
+          //     $('.alert').fadeOut('slow');
+          // }, 10000);
+          // $('#video-size-warning').modal('show');
+      }
+    // console.log(file.type);
+    // debugger;
+    // if (file.size <  500000001)
+    // {
+    //     $(".divLoading").removeClass("hidden");
+    //     if (!(file.type == "video/mp4")) {
+    //       $(".divLoading").addClass("hidden");
+    //       $('#video-upload-warning').modal('show');
+    //       homePageVideoDropzone.removeFile(file);
+    //     }
+    // }
+    // else
+    // {
+    //     alert("not sized");
+    // }
   });
 }

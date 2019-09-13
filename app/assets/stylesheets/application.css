@@ -26,3 +26,33 @@
  *= require bootstrap-select
  *= require bootstrap-wysihtml5
  */
+@keyframes shadow-pulse
+{
+	0% {
+		box-shadow: 0 0 0 0px rgba(0,128,16, 1);
+	}
+	100% {
+		box-shadow: 0 0 0 17px rgba(0,128,16, 0);
+	}
+}
+
+.animate-element {
+	 animation: shadow-pulse 0.5s infinite;
+}
+
+.path_point{
+	width: 20px; height: 20px; background-color: #555855; border: 2px solid #1c1c1d; border-radius: 10px; box-shadow: inset 0 0 0 3px whitesmoke; z-index: 100000; position: absolute;
+}
+.start-point{
+	width: 25px; 
+	height: 25px; 
+	background-color: #ad100a; 
+	border: 2px solid #c11616; 
+	border-radius: 16px; box-shadow: inset 0 0 0 3px whitesmoke; z-index: 100000; 
+	position: absolute;
+}
+.start-point img {
+	width: 20px;
+	border-radius: 10px;
+	display: none;
+}

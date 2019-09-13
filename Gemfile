@@ -8,12 +8,16 @@ gem 'rails', '~> 5.0.0'
 gem 'stripe'
 gem 'annotate'
 gem 'bootstrap-wysihtml5-rails'
-
+gem 'carrierwave_direct'
+gem 'newrelic_rpm'
 gem 'momentjs-rails', '>= 2.9.0'
 gem 'bootstrap3-datetimepicker-rails', '~> 4.17.47'
 gem 'pry'
+gem 'twilio-ruby'
+gem 'phony_rails'
 gem 'write_xlsx'
 gem "mini_magick"
+gem 'google_places'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server
@@ -87,6 +91,7 @@ gem 'puma_worker_killer'
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platform: :mri
+  gem 'pry'
 end
 
 group :development do

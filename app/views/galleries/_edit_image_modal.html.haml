@@ -3,7 +3,7 @@
     = form_for @gallery_image,url: update_gallery_image_community_gallery_path(@community,@gallery,gallery_image_id: @gallery_image.id),method: :put do |f|
       .modal-body
         .image-crop{:style=>"overflow-y: auto;"}
-          = image_tag @gallery_image.image.url(:large), id: "cropbox"
+          = image_tag @gallery_image.image.url, id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"  
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}

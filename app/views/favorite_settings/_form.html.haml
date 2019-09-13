@@ -26,7 +26,7 @@
         Changing the Email From address will change the "from" email address for the eBrochure.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.email_field :email_from, :class=>"form-control validate[required,custom[email]] favorite_setting_field", :placeholder=>"Email From",:maxlength=>"50"
+    = f.email_field :email_from, :class=>"form-control validate[required,custom[email]] favorite_setting_field", :placeholder=>"Email From"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email Bcc
@@ -35,17 +35,16 @@
         Changing the Email Bcc address will change the email address that receives a copy of each eBrochure.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :email_bcc, :class=>"form-control validate[required,custom[email_list]] favorite_setting_field", :placeholder=>"Email Bcc" ,:maxlength=>"150", :onchange => "function1()"
+    = f.text_field :email_bcc, :class=>"form-control favorite_setting_field", :placeholder=>"Email Bcc" ,:maxlength=>"150", :onchange => "function1()"
 .form-group#email_body_div
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.auto_save
     Email Body
     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "favoriteEmailBodyPopover","data-content" => " "}
       %span#propertyDetailNameText
         Changing the Email Body will change the copy that appears on the top of each eBrochure.
-
+    %span#saved_text
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :email_body, :rows => 20, :cols => 80,:value=>f.object.email_body.present? ? f.object.email_body.gsub("<community_name>",@community.name).gsub("\n","<br>") : ""
-    = tinymce
+    = f.text_area :email_body, :rows => 20, :cols => 100,:id => "email_body_class",:class=>"email_body_class wysihtml5",:value=>f.object.email_body.present? ? f.object.email_body.gsub("<community_name>",@community.name).gsub("\n","<br>") : ""
 
 
 
@@ -87,11 +86,27 @@
   // $('#tinymce_ifr').bind("DOMSubtreeModified",function() {
   //   alert("fefef");
   // });
-   tinyMCE.init({
-    selector: 'textarea',
-     init_instance_callback: function (editor) {
-    editor.on('Change', function (e) {
-      $('#favorite-settings-form').submit();
-    });
-  }
+  $(document).ready(function(){
+      $('.wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
+        events: {
+        change: function() {
+            $('#favorite-settings-form').submit();
+        }
+        }
+        });
+      });
+
   });
+  $("#email_body_div").change(function() {
+  alert("vdvd");
+    $.ajax({
+        url: "/communities/#{@community.id}/favorite_settings/#{@favorite.id}",
+        type: "PUT",
+        dataType: "script",
+        data: {
+            ajax_call: true,
+            email_body: "ththt"
+        }
+    })
+        });

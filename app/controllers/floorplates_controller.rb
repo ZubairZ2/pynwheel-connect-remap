@@ -132,6 +132,27 @@ class FloorplatesController < ApplicationController
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)
   end
+  
+  def ajax_path_draw_on_floorplate
+    unit = @community.units.where(provider_unit_id: params[:id])
+    if unit.present?
+      #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      unit = unit.first
+      unit.x_plot = params[:x_plot]
+      unit.y_plot = params[:y_plot]
+      unit.floorplate_id = params[:floorplate_id]
+      unit.save(validate: false)
+      ts = TourStop.find_by(stop_id: unit.id)
+      if ts.present?
+        ts.latitude  = unit.x_plot
+        ts.longitude = unit.y_plot
+        ts.save
+      end
+      render json: {unit: unit}, status: 200
+    else
+      render json: {}, status: 404
+    end
+  end
 
   private
 

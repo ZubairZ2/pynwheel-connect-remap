@@ -10,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190829130041) do
+
+ActiveRecord::Schema.define(version: 20190906144615) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -24,6 +25,13 @@ ActiveRecord::Schema.define(version: 20190829130041) do
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
     t.index ["imagepage_id"], name: "index_additional_images_on_imagepage_id", using: :btree
+  end
+
+  create_table "alert_messages", force: :cascade do |t|
+    t.string   "message_key"
+    t.string   "message_body"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "amenities", force: :cascade do |t|
@@ -107,6 +115,9 @@ ActiveRecord::Schema.define(version: 20190829130041) do
     t.boolean  "display_available_date",         default: true
     t.boolean  "show_gesture_icons"
     t.boolean  "self_tour",                      default: false
+
+    t.integer  "alert_contact",                  default: 2
+
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
 
@@ -318,6 +329,8 @@ ActiveRecord::Schema.define(version: 20190829130041) do
     t.string   "panther_unit_floorplan_map_marker_color"
     t.string   "gables_unit_floorplan_map_marker_color"
     t.string   "modernist_unit_floorplan_map_marker_color"
+    t.boolean  "display_filter_label_image"
+    t.string   "filter_label_image"
   end
 
   create_table "ebrochure_menu_buttons", force: :cascade do |t|
@@ -416,6 +429,8 @@ ActiveRecord::Schema.define(version: 20190829130041) do
     t.boolean  "global_navigation_home_icon",                      default: false
     t.string   "homepage_button_border"
     t.string   "global_nav_button_icon_size"
+    t.boolean  "display_neighborhood_bg_image"
+    t.string   "neighborhood_bg_image"
   end
 
   create_table "favorite_images", force: :cascade do |t|
@@ -806,6 +821,18 @@ ActiveRecord::Schema.define(version: 20190829130041) do
     t.datetime "updated_at",   null: false
   end
 
+  create_table "tour_histories", force: :cascade do |t|
+    t.datetime "arrived"
+    t.datetime "left"
+    t.boolean  "id_mismatch"
+    t.integer  "abandoned_tour_at_stop"
+    t.integer  "tour_user_id"
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+    t.datetime "lengthy_stay"
+    t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id", using: :btree
+  end
+
   create_table "tour_stops", force: :cascade do |t|
     t.integer  "tour_id"
     t.decimal  "latitude"
@@ -986,6 +1013,7 @@ ActiveRecord::Schema.define(version: 20190829130041) do
   add_foreign_key "sitemaps", "communities"
   add_foreign_key "stop_details", "tour_stops"
   add_foreign_key "stop_galleries", "tour_stops"
+  add_foreign_key "tour_histories", "tour_users"
   add_foreign_key "tour_stops", "tours"
   add_foreign_key "tours", "communities"
   add_foreign_key "visited_stops", "tour_users"

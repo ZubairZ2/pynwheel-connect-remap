@@ -9,23 +9,31 @@
     %i.fa.fa-caret-down
     .row
       .col-md-3.col-lg-4
-      .col-md-6.col-lg-4
+      .col-md-8.col-lg-5.col-sm-12.col-xs-12
         .text-center
           %h3 Send Invitation
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
           .form-group
             = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
-
-          .form-group
-            %p.pull-left Listed Communities
-            %p.pull-right.mr-10 Selected Communities
-            -#= f.select :community_ids, options_for_select(current_user.is_super_admin? ? Community.pluck(:name,:id) : current_user.communities.pluck(:name,:id)),{},{class: "form-control validate[required]",:multiple=>true}
-            = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
+          .row
+            .form-group
+              .row
+                .col-lg-6.col-sm-6.col-xs-6.col-md-6
+                  %p{:style => "float: right;     padding-right: 39px;"} Listed Communities
+                .col-lg-6.col-sm-6.col-xs-6.col-md-6
+                  %p{:style => "padding-left: 25px;"} Selected Communities
+              -#= f.select :community_ids, options_for_select(current_user.is_super_admin? ? Community.pluck(:name,:id) : current_user.communities.pluck(:name,:id)),{},{class: "form-control validate[required]",:multiple=>true}
+              .col-sm-12.col-xs-12.col-lg-12.col-md-12
+              .col-sm-1.col-xs-1.col-lg-12.col-md-12
+              .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
+                = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
+          .col-xs-2
+            %br
           .form-group
             - if current_user.is_super_admin?
-              = f.select :role, options_for_select(User::ROLES,f.object.role),{:include_blank => 'Select Admin'},{class: "form-control validate[required]"}
+              = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
             - if current_user.is_community_admin?
-              = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{:include_blank => 'Select Admin'},{class: "form-control validate[required]"} 
+              = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{},{class: "form-control validate[required]"}
           .form-group
             = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true
             %i.fa.fa-envelope    
@@ -36,7 +44,7 @@
 :javascript
   $('#user_community_ids').multiSelect();
 
-
+  // $(".ms-container").addClass("col-sm-12 col-xs-12");
   $(".company_list").change(function(){
     var selected_company =  $(".company_list").val()
 

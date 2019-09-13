@@ -16,8 +16,10 @@ json.ui_settigs do
   end
   json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
   json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
+  json.show_gesture_icons @community.show_gesture_icons
   json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
   json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
+  json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
@@ -237,12 +239,14 @@ json.ui_settigs do
           json.display_gallery_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_gallery_nav_bg_image : false
           json.display_favourities_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_favourities_nav_bg_image : false
           json.display_additional_pages_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_additional_pages_nav_bg_image : false
+          json.display_neighborhood_background_image @community.design.expressionist.present? ? (@community.design.expressionist.display_neighborhood_bg_image.present? ? @community.design.expressionist.display_neighborhood_bg_image : false) : false
           json.display_global_navigation_button_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_bg_color : true
         else
           json.display_apartment_nav_bg_image false
           json.display_gallery_nav_bg_image false
           json.display_favourities_nav_bg_image false
           json.display_additional_pages_nav_bg_image false
+          json.display_neighborhood_bg_image false
           json.display_global_navigation_button_bg_color true
         end
         if @community.theme_name == "futurist"
@@ -380,6 +384,7 @@ json.ui_settigs do
           json.gallery_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.gallery_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.gallery_nav_bg_image.url : @community.design.expressionist.gallery_nav_bg_image.url) : "No Image"
           json.favourities_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.favourities_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.favourities_nav_bg_image.url : @community.design.expressionist.favourities_nav_bg_image.url) : "No Image"
           json.additional_pages_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.additional_pages_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.additional_pages_nav_bg_image.url : @community.design.expressionist.additional_pages_nav_bg_image.url) : "No Image"
+          json.neighborhood_background_image (@community.design.expressionist.present? and @community.design.expressionist.neighborhood_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.neighborhood_bg_image.url : @community.design.expressionist.neighborhood_bg_image.url) : "No Image"
           json.apartment_nav_bg_color @community.design.expressionist.apartment_nav_bg_color.present? ? @community.design.expressionist.apartment_nav_bg_color : "#ffffff"
           json.gallery_nav_bg_color @community.design.expressionist.gallery_nav_bg_color.present? ? @community.design.expressionist.gallery_nav_bg_color : "#ffffff"
           json.favourities_nav_bg_color @community.design.expressionist.favourities_nav_bg_color.present? ? @community.expressionist.design.favourities_nav_bg_color : "#ffffff"
@@ -396,6 +401,7 @@ json.ui_settigs do
           json.gallery_nav_bg_image "No Image"
           json.favourities_nav_bg_image  "No Image"
           json.additional_pages_nav_bg_image  "No Image"
+          json.neighborhood_background_image  "No Image"
           json.apartment_nav_bg_color  "#ffffff"
           json.gallery_nav_bg_color "#ffffff"
           json.favourities_nav_bg_color "#ffffff"
@@ -517,7 +523,7 @@ json.ui_settigs do
         elsif @community.theme_name == "modernist1"
           json.global_navigation_icons_position "Above the text"
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
-          json.global_navigation_icons_position @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Above the text") : "Above the text"
+          json.global_navigation_icons_position "Above the text"# @community.design.expressionist.global_navigation_icons_position.present? ? (@community.design.expressionist.global_navigation_icons_position.present? ? @community.design.expressionist.global_navigation_icons_position : "Above the text") : "Above the text"
         else
           json.global_navigation_icons_position "Above the text"
         end
@@ -636,9 +642,12 @@ json.ui_settigs do
         json.gallery_button_as_image @community.design.gallery_button_as_image
         if @community.theme_name == "modernist1"
           json.filter_panel_background_as_image false
+          json.display_filter_label_image false
         elsif @community.theme_name == "panther"
           json.filter_panel_background_as_image false
+          json.display_filter_label_image false
         else
+          json.display_filter_label_image @community.design.display_filter_label_image.present? ? @community.design.display_filter_label_image : false
           json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
         end
         if @community.theme_name == "futurist"
@@ -656,11 +665,15 @@ json.ui_settigs do
           json.gallery_button_on_image "No Image"
         end
         if @community.theme_name == "futurist"
+          json.filter_label_image "No Image"
           json.filter_panel_background_image image_url("filter_panel_bg.png")
         elsif @community.theme_name == "expressionist"
           json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
+          json.filter_label_image @community.design.filter_label_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_label_image.url : @community.design.filter_label_image.url) : "No Image"
+
         else
           json.filter_panel_background_image "No Image"
+          json.filter_label_image "No Image"
         end
         json.gallery_button_on_as_image @community.design.gallery_button_on_as_image
         if @community.theme_name == "panther"
@@ -1162,11 +1175,11 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "modernist1"
-          json.floorplan_name_font_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+          json.floorplan_name_font_color @community.design.secondary_font_color.present? ? @community.design.secondary_font_color : "#ffff"
         elsif @community.theme_name == "panther"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
+        elsif @community.theme_name == "expressionist"
           json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
         else
           json.floorplan_name_font_color "#ffff"
@@ -1241,6 +1254,7 @@ json.apartments do
   json.display_rent @community.display_rent
   json.display_sitemap @community.display_sitemap
   json.display_floorplan_gallery @community.display_floorplan_gallery
+  json.display_available_date @community.display_available_date
   if @community.sitemap.present? and !@community.has_floorplates?
     image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
     begin
@@ -1275,7 +1289,7 @@ json.apartments do
       json.marketing_name unit.unit_market
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.availability unit.availability
-      json.available_date unit.available_date.present? ? unit.available_date.strftime('%m/%d/%Y') : Date.today - 1.day
+      json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
       json.available unit.available
       json.sold unit.sold
       json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
@@ -1288,10 +1302,44 @@ json.apartments do
       json.id unit.id
       json.floorplan_name floorplan.present? ? floorplan.name : nil
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
+      json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
+      json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
+
+      if unit.virtual_tour_url.present?
+        if unit.virtual_tour_url.include? '</iframe>'
+          @iframe_url = unit.virtual_tour_url.split('height')
+          if @iframe_url[1][3] == '"'
+            @iframe_url[1][2] = '1' + '0' + '0' + '%'
+          elsif @iframe_url[1][4] == '"'
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0' + '0' + '%'
+          elsif @iframe_url[1][5] == '"'
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0'
+            @iframe_url[1][4] = '0' + '%'
+          else
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0'
+            @iframe_url[1][4] = '0'
+            @iframe_url[1][5] = '%'
+          end
+          unit.virtual_tour_url = @iframe_url[0] + 'height' + @iframe_url[1]
+          json.virtual_tour unit.virtual_tour_url
+        else
+          json.virtual_tour unit.virtual_tour_url
+        end
+      else
+        json.virtual_tour ""
+      end
+
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
-      json.square_feet unit.square_feet.present? ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
-      json.lease_pricing unit.lease_pricing.present? ? unit.lease_pricing.gsub('=>', ':') : nil
+      json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
+      if @community.display_rent
+        json.lease_pricing unit.lease_pricing.present? ? unit.lease_pricing.gsub('=>', ':') : nil
+      else
+        json.lease_pricing nil
+      end
       if unit.standard_image_url.present? || unit.secondary_image.present?
         json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : nil
         json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : nil
@@ -1356,6 +1404,8 @@ json.apartments do
     json.description floorplan.description
     json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
     json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil
+    json.display_virtual_tour_button_label true #floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
+    json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
 
     #json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
     if floorplan.virtual_tour_url.present?
@@ -1380,8 +1430,10 @@ json.apartments do
           json.virtual_tour floorplan.virtual_tour_url
         else
           json.virtual_tour floorplan.virtual_tour_url
-        end
       end
+    else
+      json.virtual_tour ""
+    end
 
     json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil

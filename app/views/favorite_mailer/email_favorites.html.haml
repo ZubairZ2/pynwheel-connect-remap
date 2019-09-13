@@ -323,7 +323,7 @@
                                       %tr
                                         %td.textContent{:align => "left"}
                                           %div{:style => "font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#828282;text-align:center;line-height:120%;"}
-                                            
+
             %table#emailBody{:bgcolor => "#FFFFFF", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
               %tr
                 %td{:align => "center", :valign => "top"}
@@ -339,14 +339,21 @@
                                     %h1{:style => "margin-bottom:0px;text-align:center;"}
                                       %div{:style => "width: 350px;display: inline-block;overflow: hidden;"}
                                         %img{:src => "#{@community.logo.url}", width: '350', :style => "max-width: 100%;height:auto;object-fit: contain;"}/
-              - if @community.favorite_setting.present? and @community.favorite_setting.ebrochure_menu_buttons.size > 0                          
+                          - if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
+                            %tr
+                              - @community.favorite_setting.favorite_images.each do |img|
+                                = render :partial => 'favorite_image', :locals => {:img => img}
+              -#- if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
+              -#  - @community.favorite_setting.favorite_images.each do |img|
+              -#    = render :partial => 'favorite_image', :locals => {:img => img}
+              - if @community.favorite_setting.present? and @community.favorite_setting.ebrochure_menu_buttons.size > 0
                 %tr
                   %td{:style=>"padding: 13px 15px 0 15px;"}
                     %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :width => "100%"}
                       %tr
                         -#-%td{:style => " background-color:#253339; margin-right:10px;"}
                         - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
-                          %td{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;"}
+                          %td.clickable_row{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;",:onclick => "table_row_onclick()", "data-href" => "#{button.url}"}
                             %a{:href => "#{button.url}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
                               = button.name
               %tr
@@ -369,10 +376,18 @@
                                   %tr
                                     %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                       %p
+                                        - zone = ActiveSupport::TimeZone['Central Time (US & Canada)']
+                                        %h3
+                                          = "To: #{@to_email}"
+                                        %h3
+                                          = "Date: #{Time.now.to_s.split(' ')[0]}"
+                                        %h3
+                                          = "Time: #{Time.zone.now.to_s(:time)}"
+                                        %br
                                         = raw(@email_body.gsub("<community_name>",@community.name).gsub("\n","<br>"))
-              - if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
-                - @community.favorite_setting.favorite_images.each do |img|
-                  = render :partial => 'favorite_image', :locals => {:img => img}                           
+              -#- if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
+              -#  - @community.favorite_setting.favorite_images.each do |img|
+              -#    = render :partial => 'favorite_image', :locals => {:img => img}
               - (0..(@favorites.count-1)).each_with_index do |f,index |
                 - puts "@favorites cout loop"*50
                 - puts @favorites[index].class
@@ -403,13 +418,13 @@
                   - puts 'Its Imagepage' *50
                   = render :partial => 'additional_image', :locals => {:img => @favorites[index]}
                   
-            %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "640"}
+            %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "650"}
               %tr
                 %td
-                  %table#templateBody{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#253339 ; ", :width => "100%"}
+                  %table#templateBody{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#{@community.design.display_ebrochure_header_background_color  ? ( @community.theme_name == "futurist" ? (@community.design.futurist_ebrochure_header_background_color) : (@community.theme_name == "panther" ? (@community.design.panther_ebrochure_header_background_color ) : (@community.theme_name.include?('gables') ? (@community.design.gables_ebrochure_header_background_color) : (@community.theme_name == "modernist" ? (@community.design.modernist_ebrochure_header_background_color == "No color" ? (@community.design.primary_color.present? ? @community.design.primary_color : "#CF492E" ) : @community.design.modernist_ebrochure_header_background_color ) : (@community.theme_name == "expressionist" ? (@community.design.expressionist_ebrochure_header_background_color == "No color" ? "#808080" : @community.design.expressionist_ebrochure_header_background_color) : "#808080")) ))) : "@FF0000"}; ", :width => "100%"}
                     %tr
                       %td{:align => "center", :valign => "top"}
-                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#253339 ; ", :width => ""}
+                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#{@community.design.display_ebrochure_header_background_color  ? ( @community.theme_name == "futurist" ? (@community.design.futurist_ebrochure_header_background_color) : (@community.theme_name == "panther" ? (@community.design.panther_ebrochure_header_background_color ) : (@community.theme_name.include?('gables') ? (@community.design.gables_ebrochure_header_background_color) : (@community.theme_name == "modernist" ? (@community.design.modernist_ebrochure_header_background_color == "No color" ? (@community.design.primary_color.present? ? @community.design.primary_color : "#CF492E" ) : @community.design.modernist_ebrochure_header_background_color ) : (@community.theme_name == "expressionist" ? (@community.design.expressionist_ebrochure_header_background_color == "No color" ? "#808080" : @community.design.expressionist_ebrochure_header_background_color) : "#808080")) ))) : "@FF0000"};", :width => ""}
                           %tr
                             %td.bodyContainer{:style => "padding-top:10px;", :valign => "top"}
                               %table.mcnTextBlock{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
@@ -426,8 +441,13 @@
                                             %tr
                                               %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 5px; padding-left: 18px; color:#FFFFFF; text-align:center;", :valign => "top"}
                                                 %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
-                                                  = "#{@community.address} #{@community.city}, #{@community.state} #{@community.zip}"
-                                          - if @community.phone.present?      
+                                                  = "#{@community.address}"
+                                          - if @community.address.present?
+                                            %tr
+                                              %td.mcnTextContent{:style => "padding-top:0px; padding-right: 18px; padding-bottom: 5px; padding-left: 18px; color:#FFFFFF; text-align:center;", :valign => "top"}
+                                                %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
+                                                  = "#{@community.city}, #{@community.state} #{@community.zip}"
+                                          - if @community.phone.present?
                                             %tr
                                               %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 5px; padding-left: 18px; color:#FFFFFF; text-align:center;", :valign => "top"}
                                                 %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
@@ -451,3 +471,7 @@
                                                 © 2018 -
                                                 %a{:href => "http://pynwheeltouchscreens.com/", :style => "color:#FFF; text-decoration:none;"} Pynwheel.com
                                                 All rights reserved.
+:javascript
+  function table_row_onclick(ev) {
+   window.open($(this).getAttribute("data-href"),'_blank');
+  }

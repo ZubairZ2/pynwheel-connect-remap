@@ -148,6 +148,9 @@ class RealPageSvcService < BaseService
                 unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                   unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
                 end
+                if u[:BuildingNumber] == "N/A"
+                  unit.building = ""
+                end
 
                 # if u[:RentSqFtCount].present?
                 #   unit.square_feet = u[:RentSqFtCount]
@@ -203,15 +206,28 @@ class RealPageSvcService < BaseService
                 #     unit.building = bldgResult
                 #   end
                 # end
-                unit.save
+                unit.save(validate: false)
 
 
               end
             end
           end
+        else
+          begin
+            cred = Credential.find credentials.id
+            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            cred.save
+          rescue => err
+          end
         end
       
       rescue => e
+        begin
+          cred = Credential.find credentials.id
+          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          cred.save
+        rescue => err
+        end
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
     end

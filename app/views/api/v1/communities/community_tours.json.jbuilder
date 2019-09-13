@@ -1,3 +1,4 @@
+i = 0
 json.tours @tours do |tour|
 
   json.id tour.id
@@ -11,6 +12,8 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
+  json.path_points tour.path.present? ? tour.path.path_points.reorder('id ASC') : []
+
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
     json.x_plot stop.latitude
@@ -20,7 +23,28 @@ json.tours @tours do |tour|
       unit = Unit.find stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
       json.name  "Apartment "+unit.marketing_name
-      stop_dat = {"floorplan" => Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
+      lease_pricing = []
+      if unit.lease_pricing.present?
+        str_split = unit.lease_pricing.split(';')
+        str_split.each do |ss|
+          str = ss.split(':')
+
+          pricing_str = str[0]+" Month - $"+str[1]
+          # h = {"pricing_option" => pricing_str}
+          lease_pricing << pricing_str
+
+        end
+        lease_pricing = lease_pricing.sort_by {|x| x[0..1].to_i}
+        lease_pricing2 = []
+        lease_pricing.each do |lp|
+          lease_pricing2 << {"pricing_option" => lp}
+        end
+        lease_pricing = lease_pricing2
+      else
+        h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
+        lease_pricing << h
+      end
+      stop_dat = {"floorplan" => Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
@@ -79,6 +103,8 @@ json.tours @tours do |tour|
       end
 
     end
+    # binding.pry
+    
     stop.stop_details.each do |sd|
       json.stop_description sd.description
     end
@@ -86,6 +112,15 @@ json.tours @tours do |tour|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
+    @existing_path_points = []
+    @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
+
+    stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
+    
+    @existing_path_points.flatten!
+    json.path_points @existing_path_points
+
+    i+=1
   end
 
 end

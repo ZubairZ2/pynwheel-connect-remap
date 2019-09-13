@@ -1,0 +1,36 @@
+%h3
+  = "To: #{@to_email}"
+%h3
+  = "Date: #{Time.now.to_s.split(' ')[0]}"
+%h3
+  = "Time: #{Time.now.to_s(:time)}"
+%p
+  %b Favorites
+%p
+  - (0..(@favorites.count-1)).each_with_index do |f,index |
+    - if @favorites[index].is_a?(Unit)
+      %br
+      %label Unit:
+      - break
+  - (0..(@favorites.count-1)).each_with_index do |f,index |
+    - if @favorites[index].is_a?(Unit)
+      %li
+        = @favorites[index].marketing_name
+  - (0..(@favorites.count-1)).each_with_index do |f,index |
+    - if @favorites[index].is_a?(Floorplan)
+      %br
+      %label Floorplan:
+      - break
+  - (0..(@favorites.count-1)).each_with_index do |f,index |
+    - if @favorites[index].is_a?(Floorplan)
+      %li
+        = @favorites[index].name
+  - (0..(@favorites.count-1)).each_with_index do |f,index |
+    - if @favorites[index].is_a?(GalleryImage) || @favorites[index].is_a?(Amenity) || @favorites[index].is_a?(AdditionalImage)
+      %br
+      %label Image:
+      - break
+  - (0..(@favorites.count-1)).each_with_index do |f,index |
+    - if @favorites[index].is_a?(GalleryImage) || @favorites[index].is_a?(Amenity) || @favorites[index].is_a?(AdditionalImage)
+      %li
+        = @favorites[index].name

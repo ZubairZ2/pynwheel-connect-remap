@@ -222,7 +222,9 @@
             %li
               %a{"data-toggle" => "tab", :href => "#s-gallery-image-on"} Gallery image on  
             %li
-              %a{"data-toggle" => "tab", :href => "#s-filter-panel-background-image"} Filter panel background image  
+              %a{"data-toggle" => "tab", :href => "#s-filter-panel-background-image"} Filter panel background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#s-filter-label-image"} Filter Label image
           .tab-content
             #s-filter-button.tab-pane.fade.in.active
               .row
@@ -351,7 +353,40 @@
               .text-center.drag-box.mt-15.image-upload#gallery-image-on-upload-holder.gallery-button-on-as-image-upload-fields.hidden
                 %span.icon-upload
                   = image_tag "upload-image.png"
-                  %p Drag &amp; Drop file to Upload 
+                  %p Drag &amp; Drop file to Upload
+                  /-------------------------------------------------
+            #s-filter-label-image.tab-pane.fade
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      Upload filter label image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = d.check_box :display_filter_label_image, {class: "filter-panel-field"}
+                        %label.label-primary{:for => "community_design_attributes_display_filter_label_image"}
+                        %span.pl-15 Yes
+              .row.filter-label-image-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Filter label image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.filter_label_image.present? ? current_community.design.filter_label_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter label image"}
+                            = image_tag current_community.design.filter_label_image.present? ? current_community.design.filter_label_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-label-image-preview"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :filter_label_image
+              .text-center.drag-box.mt-15.image-upload#filter-label-image-upload-holder.filter-label-image-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
 :javascript 
   var filter_button_as_image = "#{current_community.design.filter_button_as_image}" 
   var gallery_button_as_image = "#{current_community.design.gallery_button_as_image}"       
@@ -359,6 +394,10 @@
   var gallery_button_on_as_image = "#{current_community.design.gallery_button_on_as_image}"       
   var display_gallery_button_on_background_color = "#{current_community.design.filter_panel.display_gallery_button_on_background_color}"       
 
+  var filter_label_image = "#{current_community.design.display_filter_label_image}"
+
+  if(filter_label_image == "true")
+    $('.filter-label-image-upload-fields').removeClass('hidden');
   if(filter_button_as_image == "true")
     $('.filter-button-upload-fields').removeClass('hidden');
   if(gallery_button_as_image == "true")
@@ -369,6 +408,15 @@
     $('.gallery-button-on-as-image-upload-fields').removeClass('hidden');    
   if(display_gallery_button_on_background_color == "true")
     $('.gallery-button-on-background-color-field').removeClass('hidden');    
+
+  $('#community_design_attributes_display_filter_label_image').change(function(){
+    if($(this).is(':checked')){
+        $('.filter-label-image-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.filter-label-image-upload-fields').addClass('hidden');
+     }
+  });
 
   $('#community_design_attributes_filter_button_as_image').change(function(){
     if($(this).is(':checked')){

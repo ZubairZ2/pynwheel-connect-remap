@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+
+  get 'community_groups/index'
+
   resources :schedual_tours do
     member do
       post :create_tour_user_from
@@ -17,8 +20,18 @@ Rails.application.routes.draw do
   
   resources :companies do
     resources :communities
+    resources :community_groups
     resources :employees, :controller => 'users' do
       get :profile
+    end
+  end
+  resources :community_groups do
+    member do
+      delete :remove_community
+    end
+    collection do
+      get :add_community
+      post :save_community
     end
   end
   resources :communities do
@@ -103,6 +116,7 @@ Rails.application.routes.draw do
           delete :remove_amenity
           post :add_description
           post :save_description
+          post :delete_unit_plot
         end
       end
       member do
@@ -150,8 +164,9 @@ Rails.application.routes.draw do
         get :map_marker_design
       end
     end
-    resources :home_page, only: :index do
+    resources :home_page do
       collection do
+        get :upload_video_direct
         get :show_image_in_modal
         post :save_home_page_image
         put :update_home_page_image
@@ -160,6 +175,7 @@ Rails.application.routes.draw do
         delete :delete_home_page_video
         get :show_home_page_video
         put :update_animation
+        get 'iframe'
       end
     end
 
@@ -213,6 +229,7 @@ Rails.application.routes.draw do
       member do
         get :show_image_in_modal
         post :save_gallery_image
+        get :upload_video_direct
         put :update_gallery_image
         delete :delete_gallery_image
         get :show_images
@@ -241,29 +258,51 @@ Rails.application.routes.draw do
       end
     end
   end
+  post '/draw_map_line/:unit_or_amenity', to: 'tours#draw_map_line', as: :draw_line
+  
+  post :save_path_point, to: 'tours#point_save'
+  post :update_path_point, to: 'tours#point_update'
+  post :delete_path_point, to: 'tours#point_delete'
+  post :delete_path_on_sort_change, to: 'tours#delete_path_on_sort_change'
+
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
       resources :communities, only: :index do
         member do
           get :data
+          get :data_group
           get :community_tours
           post :user_saved_tour
           get :ios_data
           get :minimum_data
           post :email_favorites
+          get :get_neighbourhood_data
+          get :reset_counter
+          get :test_panzoom
         end
         collection do
           post :login
           get :list_communities
+          get :portico_list_communities
           post :update_version
         end
       end
       resources :tours,only: :index do
+        collection do
+          post :tour_user_login
+        end
         member do
+          post :tour_user_login
           post :save_user_data
           post :save_user_tour
         end
       end
+      post :save_shared_tour, to: 'tours#save_shared_tour'
+      get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
+
+      # 
+      post :save_tour_history, to: 'tour_histories#save_tour_history'
+      get :get_tour_history, to: 'tour_histories#get_tour_history'
     end
   end
 end

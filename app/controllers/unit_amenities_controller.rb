@@ -52,7 +52,7 @@ class UnitAmenitiesController < ApplicationController
     @amenities = @unit.amenities
     @floorplan = Floorplan.where(provider_floorplan_id: @unit.floorplan_id,community_id: @community.id).first
 
-    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
+    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id if x.present?} if @community.tour.present?
   end
 
   def remove_amenities_plot
@@ -110,6 +110,15 @@ class UnitAmenitiesController < ApplicationController
     else
       redirect_to plot_amenities_community_unit_amenities_path(@community,@unit)
     end
+  end
+  def delete_unit_plot
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:unit_id]
+    @amenity = Amenity.find params[:id]
+    @amenity.x_plot = 0
+    @amenity.y_plot = 0
+    @amenity.save
+    redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "Amenity deleted successfully"
   end
   def destroy
     @amenity = @unit.amenities.find (params[:id])

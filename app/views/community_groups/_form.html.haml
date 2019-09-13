@@ -1,0 +1,66 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Name
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Address
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_area :address, :class=>"form-control", :placeholder=>"Address"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Code
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :code, :class=>"form-control", :placeholder=>"Code"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Page Type
+
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :page_type, true
+    = f.label :page_type, "Map", :value => "true"
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :page_type, false
+    = f.label :page_type, "Menu", :value => "false"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Page Name
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :page_name, :class=>"form-control", :placeholder=>"Page Name"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Logo
+
+    -#%span
+    -#  Upload logo for this community group.
+    -#  %br/
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .image-box.video-box
+      .images.height-200
+        %a.preview-image{:href=>f.object.logo.present? ? f.object.logo.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Community Group Logo"}
+          = image_tag f.object.logo.present? ? f.object.logo.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-community-group-logo", :style => "max-height: 190px; max-width: 270px;"
+    %span.btn.btn-default.black-button.btn-sm.btn-file
+      Select Image
+      = f.file_field :logo
+
+
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Inactivated
+
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :inactivate, true
+    = f.label :inactivate, "False", :value => "true"
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :inactivate, false
+    = f.label :inactivate, "True", :value => "false"
+  = f.hidden_field :company_id, :class=>"form-control", :value=>"#{current_company.id}"
+:javascript
+  $("#community_group_logo").change(function(){
+      readCommunityGroupLogoURL(this);
+  });

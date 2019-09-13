@@ -41,6 +41,18 @@
 #  is_vertical_app                :boolean          default(FALSE)
 #  entrata_exception_logs         :string
 #  show_tour_page                 :boolean
+#  display_available_date         :boolean          default(TRUE)
+#  show_gesture_icons             :boolean          default(TRUE)
+#  self_tour                      :boolean          default(FALSE)
+#  crop_x                         :float
+#  crop_y                         :float
+#  crop_w                         :float
+#  crop_h                         :float
+#  crop_x_secondary               :float
+#  crop_y_secondary               :float
+#  crop_w_secondary               :float
+#  crop_h_secondary               :float
+#  community_group_id             :integer
 #
 
 class Community < ApplicationRecord
@@ -48,6 +60,7 @@ class Community < ApplicationRecord
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
+  belongs_to :community_group
   has_many :community_users, dependent: :destroy
   has_many :users ,through: :community_users, dependent: :destroy
   has_many :units, dependent: :destroy
@@ -70,13 +83,22 @@ class Community < ApplicationRecord
   validates_uniqueness_of :name, scope: :company_id
   validate :apartment_page_name_length_validate
   validate :gallery_page_name_length_validate
-  validate :unique_community_code_on_create, on: [:create]
-  validate :unique_community_code_on_update, on: [:update]
+  # validate :unique_community_code_on_create, on: [:create]
+  # validate :unique_community_code_on_update, on: [:update]
   after_create :set_default_theme
   after_create :create_default_gallery
   validate :validate_page_position
+  validates_with CodeValidatorOnUpdate , on: [:update]
+  validates_with CodeValidatorOnCreate , on: [:create]
 
 
+  phony_normalize :phone
+  # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
+  validates :phone, phony_plausible: true
+
+  enum alert_contact: [:email, :phone, :both]
+  
+  scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
 
   def is_futurist?
     theme_name == "futurist"
@@ -491,11 +513,21 @@ class Community < ApplicationRecord
     email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     ios = params[:favorites][:device_type].present? && params[:favorites][:device_type] == "iOS" ? true : false
     if favorites.present?
-      FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
+      begin
+        FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
+      rescue => ex
+        FavoriteMailer.email_favorites_text(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
+      end
       return true
     else
       return false
     end
+  end
+  def neighbourhood_counter_mail_200
+    NeighbourhoodMailer.email_counter_200("umersani47@gmail.com","muhammad.umer@intagleo.com","").deliver
+  end
+  def neighbourhood_counter_mail_400
+    NeighbourhoodMailer.email_counter_400("umersani47@gmail.com","muhammad.umer@intagleo.com","").deliver
   end
 
   def image_src

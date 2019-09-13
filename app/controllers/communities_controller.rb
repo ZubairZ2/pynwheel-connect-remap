@@ -378,6 +378,7 @@ class CommunitiesController < ApplicationController
   def save_tour_settings
     @community = Community.find params[:community_id]
     @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+    @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
@@ -402,6 +403,7 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
     @community.display_rent = params[:display_rent].present? ? params[:display_rent] : false
+    @community.display_available_date = params[:display_available_date].present? ? params[:display_available_date] : false
     @community.display_sitemap = params[:display_sitemap].present? ? params[:display_sitemap] : false
     @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
     @community.display_unit_on_homepage = params[:display_unit_on_homepage].present? ? params[:display_unit_on_homepage] : false
@@ -423,7 +425,7 @@ class CommunitiesController < ApplicationController
 
   def community_params
     params.require(:community).permit(:name,:address,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
-      :data_provider,:theme_name,:code,:is_sitemap,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:is_vertical_app,
+      :data_provider,:theme_name,:code,:is_sitemap,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn, :self_tour, :show_gesture_icons,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
         :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
@@ -437,7 +439,7 @@ class CommunitiesController < ApplicationController
         :secondary_page_menu_border,:global_nav_button_on,:global_nav_button_off,:buttons_as_image,:filter_panel_color,
         :filter_panel_font_style,:filter_panel_font_color,:filter_button_color,:filter_button_font_style,:filter_button_font_color,:filter_panel_opacity,
         :filter_buttons_opacity,:gallery_buttons_opacity,:filter_menu_buttons_border,:gallery_buttons_border,:filter_button,:gallery_button,
-        :filter_panel_background_image,:filter_button_as_image,:gallery_button_as_image,:gallery_button_on_as_image,:filter_panel_background_as_image,:gallery_button_on_image,:home_page_button_shape,
+        :filter_panel_background_image,:filter_label_image,:display_filter_label_image,:filter_button_as_image,:gallery_button_as_image,:gallery_button_on_as_image,:filter_panel_background_as_image,:gallery_button_on_image,:home_page_button_shape,
         :home_page_buttons_border,:home_page_navigation_background_height,:home_page_navigation_background_color,:home_page_buttons_height,
         :home_page_buttons_width,:home_page_buttons_opacity,:home_page_navigation_background_opacity,:home_page_navigation_button_color,
         :home_page_navigation_font_color,:marker_background_color,:marker_style,:header_bg_color,:header_font_color,:details_bg_color,:details_font_color,
@@ -462,7 +464,7 @@ class CommunitiesController < ApplicationController
         :filter_buttons_icons_position,:global_navigation_show_background_color,:global_navigation_home_icon,:global_navigation_text_outside_the_button_border,:gables_home_page_images,:home_page_logo_visible,:global_navigation_border_thickness,:spacing_between_buttons_for_homepage, :button_on_bg_color, :display_button_on_bg_color,:display_global_navigation_button_color,:global_navigation_button_on_font_color,
         :application_background_image,:display_home_page_nav_background_image,:display_application_background_image,:application_background_color,:button_on_bg_color_opacity,
         :application_background_color_opacity,:display_apartment_nav_bg_image,:display_gallery_nav_bg_image, 
-        :display_favourities_nav_bg_image,:display_additional_pages_nav_bg_image,:apartment_nav_bg_image,:gallery_nav_bg_image,
+        :display_favourities_nav_bg_image,:display_additional_pages_nav_bg_image,:display_neighborhood_bg_image,:neighborhood_bg_image,:apartment_nav_bg_image,:gallery_nav_bg_image,
         :favourities_nav_bg_image,:additional_pages_nav_bg_image,:display_apartment_btn_on_image,:apartment_btn_on_image,:display_gallery_btn_on_image, 
         :gallery_btn_on_image,:display_neighborhood_btn_on_image,:neighborhood_btn_on_image, :display_imagepage_btn_on_image,:imagepage_btn_on_image,
         :display_webpage_btn_on_image,:webpage_btn_on_image,:display_favourite_btn_on_image,:favourite_btn_on_image,:display_apartment_btn_off_image,

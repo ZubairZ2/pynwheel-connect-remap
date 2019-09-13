@@ -309,7 +309,7 @@ $(document).ready(function () {
     //upload additional pages nav bg image through drag and drop
     
     var additional_pages_navigation_bg_image_upload_holder = document.getElementById('additional-pages-navigation-bg-image-upload-holder');
-    if (favourities_navigation_bg_image_upload_holder) {
+    if (additional_pages_navigation_bg_image_upload_holder) {
       additional_pages_navigation_bg_image_upload_holder.ondrop = function (e) {
         e.preventDefault();
         files = e.dataTransfer.files;
@@ -322,6 +322,20 @@ $(document).ready(function () {
         }
       }
     }
+      var neighborhood_bg_image_upload_holder = document.getElementById('neighborhood-bg-image-upload-holder');
+      if (neighborhood_bg_image_upload_holder) {
+          neighborhood_bg_image_upload_holder.ondrop = function (e) {
+              e.preventDefault();
+              files = e.dataTransfer.files;
+              if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+                  readNeighborhoodBgImageSrc(files[0]);
+
+              } else {
+                  console.log('file type is not allowed');
+                  $('#image-upload-warning').modal('show');
+              }
+          }
+      }
 
 
     var filter_button_image_upload_holder = document.getElementById('filter-button-image-upload-holder');
@@ -368,6 +382,20 @@ $(document).ready(function () {
         }
       }
     }
+
+      var filter_label_image_upload_holder = document.getElementById('filter-label-image-upload-holder');
+      if (filter_label_image_upload_holder) {
+          filter_label_image_upload_holder.ondrop = function (e) {
+              e.preventDefault();
+              files = e.dataTransfer.files;
+              if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+                  filterLabelImageSrc(files[0]);
+              } else {
+                  console.log('file type is not allowed');
+                  $('#image-upload-warning').modal('show');
+              }
+          }
+      }
 
     var home_page_button_image_upload_holder = document.getElementById('home-page-button-image-upload-holder');
     if (home_page_button_image_upload_holder) {
@@ -720,6 +748,9 @@ $(document).ready(function () {
   $("#additional_pages_nav_bg_image").change(function () {
     readAdditionalPagesNavBgImageFromInput(this);
   });
+    $("#neighborhood_bg_image").change(function () {
+        readNeighborhoodBgImageFromInput(this);
+    });
 
   $("#filter_button").change(function () {
     readFilterButtonFromInput(this);
@@ -732,6 +763,10 @@ $(document).ready(function () {
   $("#filter_panel_background_image").change(function () {
     readFilterPanelBackgroundImageFromInput(this);
   });
+
+    $("#filter_label_image").change(function () {
+        readFilterlabelImageFromInput(this);
+    });
 
   $("#home_page_button_image").change(function () {
     readHomePageButtonImageFromInput(this);
@@ -1128,6 +1163,16 @@ function readAdditionalPagesNavigationBgImageSrc(file) {
   }
   reader.readAsDataURL(file);
 }
+function readNeighborhoodBgImageSrc(file) {
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#neighborhood-bg-image-preview').attr('src', e.target.result);
+        $('#neighborhood-bg-image-preview').parent().attr('href', e.target.result);
+        neighborhoodBgImage(e.target.result);
+    }
+    reader.readAsDataURL(file);
+}
 
 function filterButtonSrc(file) {
   $(".divLoading").removeClass("hidden");
@@ -1153,14 +1198,24 @@ function galleryButtonSrc(file) {
 
 
 function filterPanelBackgroundImageSrc(file) {
-  $(".divLoading").removeClass("hidden");
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    $('#filter-panel-background-preview-image').attr('src', e.target.result);
-    $('#filter-panel-background-preview-image').parent().attr('href', e.target.result);
-    filterPanelBackgroundImage(e.target.result);
-  }
-  reader.readAsDataURL(file);
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#filter-panel-background-preview-image').attr('src', e.target.result);
+        $('#filter-panel-background-preview-image').parent().attr('href', e.target.result);
+        filterPanelBackgroundImage(e.target.result);
+    }
+    reader.readAsDataURL(file);
+}
+function filterLabelImageSrc(file) {
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#filter-label-image-preview').attr('src', e.target.result);
+        $('#filter-label-image-preview').parent().attr('href', e.target.result);
+        filterLabelImage(e.target.result);
+    }
+    reader.readAsDataURL(file);
 }
 
 function homePageButtonImageSrc(file) {
@@ -1613,20 +1668,36 @@ function apartmentFavouritiesBgImage(src) {
 }
 
 function apartmentAdditionalPagesBgImage(src) {
-  $(".divLoading").removeClass("hidden");
-  var url = "/communities/" + community_id;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    dataType: "script",
-    data: {
-      community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, additional_pages_nav_bg_image: src}}}
-    }
-  }).done(function () {
-    $(".divLoading").addClass("hidden");
-    console.log("success");
-  });
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, additional_pages_nav_bg_image: src}}}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
 }
+function neighborhoodBgImage(src) {
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id, expressionist_attributes: {id: expressionist_id, neighborhood_bg_image: src}}}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+}
+
 
 function filterButtonImage(src) {
   $(".divLoading").removeClass("hidden");
@@ -1663,19 +1734,34 @@ function galleryButtonImage(src) {
 
 
 function filterPanelBackgroundImage(src) {
-  $(".divLoading").removeClass("hidden");
-  var url = "/communities/" + community_id;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    dataType: "script",
-    data: {
-      community: {design_attributes: {id: design_id, filter_panel_background_image: src}}
-    }
-  }).done(function () {
-    $(".divLoading").addClass("hidden");
-    console.log("success");
-  });
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id, filter_panel_background_image: src}}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+}
+function filterLabelImage(src) {
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {design_attributes: {id: design_id, filter_label_image: src}}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
 }
 
 function homePageButtonImage(src) {
@@ -2363,8 +2449,8 @@ function readFavouritiesNavBgImageFromInput(input) {
 }
 
 function readAdditionalPagesNavBgImageFromInput(input) {
-  if (input.files && input.files[0]) {
-    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2375,12 +2461,32 @@ function readAdditionalPagesNavBgImageFromInput(input) {
 
             reader.readAsDataURL(input.files[0]);
 
-    } else {
-      $(input).val('');
-      $('#image-upload-warning').modal('show');
-      //console.log($(input).val());
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
     }
-  }
+}
+function readNeighborhoodBgImageFromInput(input) {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#neighborhood-bg-image-preview').attr('src', e.target.result);
+                $('#neighborhood-bg-image-preview').parent().attr('href', e.target.result);
+                neighborhoodBgImage(e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
+    }
 }
 
 
@@ -2429,8 +2535,8 @@ function readGalleryButtonFromInput(input) {
 
 
 function readFilterPanelBackgroundImageFromInput(input) {
-  if (input.files && input.files[0]) {
-    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
 
             reader.onload = function (e) {
@@ -2441,12 +2547,32 @@ function readFilterPanelBackgroundImageFromInput(input) {
 
             reader.readAsDataURL(input.files[0]);
 
-    } else {
-      $(input).val('');
-      $('#image-upload-warning').modal('show');
-      //console.log($(input).val());
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
     }
-  }
+}
+function readFilterlabelImageFromInput(input) {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#filter-label-image-preview').attr('src', e.target.result);
+                $('#filter-label-image-preview').parent().attr('href', e.target.result);
+                filterLabelImage(e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
+    }
 }
 
 function readHomePageButtonImageFromInput(input) {
@@ -3189,15 +3315,16 @@ function adjustHomepagePositionOfLogoWithVerticalApp(value){
         $('#home_page_position_of_logo').children("option[value^=Left]").hide();
         $('#home_page_position_of_logo').children("option[value^=Bottom]").hide();
 
+        if ($('#home_page_menu_position').val() == "Top" || $('#home_page_menu_position').val() == "Middle" || $('#home_page_menu_position').val() == "Bottom")
+        {
+            $('#home_page_menu_position').val("Vertical_Middle");
+        }
+        if ($('#home_page_position_of_logo').val() == "Right" || $('#home_page_position_of_logo').val() == "Left")
+        {
+            $('#home_page_position_of_logo').val("Top");
+        }
     }
-    if ($('#home_page_menu_position').val() == "Top" || $('#home_page_menu_position').val() == "Middle" || $('#home_page_menu_position').val() == "Bottom")
-    {
-        $('#home_page_menu_position').val("Vertical_Middle");
-    }
-    if ($('#home_page_position_of_logo').val() == "Right" || $('#home_page_position_of_logo').val() == "Left")
-    {
-        $('#home_page_position_of_logo').val("Top");
-    }
+
 }
 function adjustMenuPositionOfLogoWithVerticalApp(value){
     if (value)

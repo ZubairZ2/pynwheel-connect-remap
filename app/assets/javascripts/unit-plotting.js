@@ -73,6 +73,39 @@
             function(data,status,xhr) {
                 // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
                 // doDraggable();
+                if (data.tour.stop_type == "unit")
+                {
+                    $('.tour_sortable_disabled').append("<tr id=\"TourStop_"+data.tour.id+"\" class=\"ui-sortable-handle\">\n" +
+                        "<td>"+$(".table").find("tr").length+"</td>\n" +
+                        "<td>\n" +
+                        data.tour.name+
+                        "</td>\n" +
+                        "<td>\n" +
+                        "</a><a id=\"create_path\" data-idattr="+data.tour.stop_id+"\" class=\"text-warning ml-5\" href=''><i class=\"fa fa-refresh icon_size\"></i>\n" +
+                        "<a class=\"text-success ml-5\" href=\"/communities/"+data.community.id+"/units/"+data.tour.stop_id+"/edit\"><i class=\"fa fa-edit icon_size\"></i>\n" +
+                        "</a><a class=\"text-danger\" data-href=\"/communities/"+data.community.id+"/tours/"+data.tour.tour_id+"/tour_stops/"+data.tour.id+"\" data-name=\"Tour Stop\" data-target=\"#confirm-delete\" data-toggle=\"modal\">\n" +
+                        "<i class=\"fa fa-trash icon_size\"></i>\n" +
+                        "</a>\n" +
+                        "</td>\n" +
+                        "</tr>")
+                }
+                else
+                {
+                    $('.tour_sortable_disabled').append("<tr id=\"TourStop_"+data.tour.id+"\" class=\"ui-sortable-handle\">\n" +
+                        "<td>"+$(".table").find("tr").length+"</td>\n" +
+                        "<td>\n" +
+                        data.tour.name+
+                        "</td>\n" +
+                        "<td>\n" +
+                        "</a><a id=\"create_path\" data-idattr="+data.tour.stop_id+"\" class=\"text-warning ml-5\" href=''><i class=\"fa fa-refresh icon_size\"></i>\n" +
+                        "<a class=\"text-success ml-5\" href=\"/communities/"+data.community.id+"/amenities/"+data.tour.stop_id+"/edit\"><i class=\"fa fa-edit icon_size\"></i>\n" +
+                        "</a><a class=\"text-danger\" data-href=\"/communities/"+data.community.id+"/tours/"+data.tour.tour_id+"/tour_stops/"+data.tour.id+"\" data-name=\"Tour Stop\" data-target=\"#confirm-delete\" data-toggle=\"modal\">\n" +
+                        "<i class=\"fa fa-trash icon_size\"></i>\n" +
+                        "</a>\n" +
+                        "</td>\n" +
+                        "</tr>")
+                }
+
             });
     }
 
