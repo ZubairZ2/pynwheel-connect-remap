@@ -1,5 +1,6 @@
 class SchedualToursController < ApplicationController
   before_action :set_schedual_tour, only: [:show, :edit, :update, :destroy]
+  skip_before_action :authenticate_user!
 
   # GET /schedual_tours
   # GET /schedual_tours.json
@@ -27,7 +28,15 @@ class SchedualToursController < ApplicationController
     tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: "#{params[:numbers]} #{params[:tour_user][:phone_number]}", credit_card_number: params[:tour_user][:credit_card_number], card_expiry: params[:tour_user][:card_expiry]
 
     schedual_tour = SchedualTour.find(params[:id])
-    tu.save ? (render json: {message: "Thank you, #{tu.name} Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions."}, status: 200) : (render json: {}, status: 'failed')
+    if tu.save
+      email_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions."
+
+      render json: {message: email_content}, status: 200
+      NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver
+    else
+      render json: {message: "some errors occured"}, status: 'failed'
+    end
+
   end
   # POST /schedual_tours
   # POST /schedual_tours.json
