@@ -1,11 +1,11 @@
-- content_for :title, "Add Community - Pynwheel"
+- content_for :title, "Add Community Group - Pynwheel"
 %section.is-community-page
   .content
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
           Add
-          %span Community
+          %span Community Group
 
       = form_for @community_group,:url=>community_group_path(@community_group),:html=>{:class=>"form-horizontal"} do |f|
         .box-body
