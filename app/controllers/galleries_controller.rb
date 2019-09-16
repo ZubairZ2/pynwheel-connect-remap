@@ -68,7 +68,7 @@ class GalleriesController < ApplicationController
 	end
 
 	def show_images
-		@uploader = GalleryImage.new.image
+		@uploader = GalleryImage.new.video
 		@uploader.success_action_redirect = upload_video_direct_community_gallery_url
 
 		@gallery = @community.galleries.find(params[:id])
@@ -86,8 +86,10 @@ class GalleriesController < ApplicationController
 	def upload_video_direct
 		@uploader =  GalleryImage.new(params[:gallery_image])
 		if @uploader.save
-			@uploader.remote_image_url = @uploader.image.direct_fog_url + params[:key]
+			@uploader.remote_video_url = @uploader.video.direct_fog_url + params[:key]
 			@uploader.gallery_id = params[:id]
+			@uploader.community_id = params[:community_id]
+			@uploader.standard_image_url = @uploader.remote_video_url
 			@uploader.name = params[:key].split('/').last
 			@uploader.save
 			redirect_to show_images_community_gallery_path, notice: 'Video has been uploaded'

@@ -23,6 +23,46 @@ class Api::V1::ToursController < ActionController::Base
     end
 
   end
+  def save_user_selfie
+
+    tempFile = params[:image]
+    unless params[:tour_user_id].present? && params[:image].present?
+      render :json=> {:success=>false, :message => "Please enter tour user id, image"}
+    else
+      begin
+        vs = TourUser.find_by(id: params[:tour_user_id].to_i)
+        vs.image = tempFile
+        vs.save
+      rescue => ex
+        render :json=> {:success=>false, :message => "failed"}
+      end
+      if vs.present?
+        render :json=> {:success=>true, :message => "success"}
+      else
+        render :json=> {:success=>false, :message => "failed"}
+      end
+    end
+  end
+  def save_user_id_card
+
+    tempFile = params[:image]
+    unless params[:tour_user_id].present? && params[:image].present?
+      render :json=> {:success=>false, :message => "Please enter tour user id, selfie"}
+    else
+      begin
+        vs = TourUser.find_by(id: params[:tour_user_id].to_i)
+        vs.id_card = tempFile
+        vs.save
+      rescue => ex
+        render :json=> {:success=>false, :message => "failed"}
+      end
+      if vs.present?
+        render :json=> {:success=>true, :message => "success"}
+      else
+        render :json=> {:success=>false, :message => "failed"}
+      end
+    end
+  end
   def save_user_tour
     unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
