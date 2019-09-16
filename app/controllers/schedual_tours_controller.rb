@@ -28,11 +28,16 @@ class SchedualToursController < ApplicationController
     tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: "#{params[:numbers]} #{params[:tour_user][:phone_number]}", credit_card_number: params[:tour_user][:credit_card_number], card_expiry: params[:tour_user][:card_expiry]
 
     schedual_tour = SchedualTour.find(params[:id])
+    
     if tu.save
-      email_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions."
+      email_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions."
+
+      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions."
 
       render json: {message: email_content}, status: 200
+
       NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver
+      sms_notifire sms_content, params[:phone_number]
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
@@ -41,7 +46,12 @@ class SchedualToursController < ApplicationController
   # POST /schedual_tours
   # POST /schedual_tours.json
   def create
-    @schedual_tour = SchedualTour.new(tour_date: Date.strptime(params["tour_date"], '%m/%d/%Y').to_date, tour_time:  Time.parse(params["tour_time"]).strftime("%I:%M %P").to_time)
+    
+    date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
+    tour_date = date.strftime("%m/%d/%Y")
+    tour_time = date.strftime("%l:%M %p")
+
+    @schedual_tour = SchedualTour.new(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time)
     respond_to do |format|
       if @schedual_tour.save
         format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
@@ -92,4 +102,22 @@ class SchedualToursController < ApplicationController
     def ajax_schedual_tour_params
       params.permit(:tour_date, :tour_time)
     end
+
+
+    def sms_notifire msg, to
+    to = to.delete(' ')
+    puts "#{to} >>>>>>>>>>>>>>>>>>>>"
+    account_sid = 'ACcd5341bccaa0000972f42fded7122d87'
+    auth_token = 'b3bdde4cf7d6d4b61a7065580920bd53'
+    @client = Twilio::REST::Client.new(account_sid, auth_token)
+    
+    
+    message = @client.messages
+      .create( 
+        body: msg,
+        from: '+12017012957',
+        to: to
+      )
+  end
+
 end
