@@ -37,7 +37,7 @@ class SchedualToursController < ApplicationController
       render json: {message: email_content}, status: 200
 
       NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver
-      sms_notifire sms_content, params[:phone_number]
+      # sms_notifire sms_content, params[:tour_user][:phone_number]
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
@@ -105,19 +105,18 @@ class SchedualToursController < ApplicationController
 
 
     def sms_notifire msg, to
-    to = to.delete(' ')
-    puts "#{to} >>>>>>>>>>>>>>>>>>>>"
-    account_sid = 'ACcd5341bccaa0000972f42fded7122d87'
-    auth_token = 'b3bdde4cf7d6d4b61a7065580920bd53'
-    @client = Twilio::REST::Client.new(account_sid, auth_token)
-    
-    
-    message = @client.messages
-      .create( 
-        body: msg,
-        from: '+12017012957',
-        to: to
-      )
+      to = to.delete(' ')
+      account_sid = 'ACcd5341bccaa0000972f42fded7122d87'
+      auth_token = 'b3bdde4cf7d6d4b61a7065580920bd53'
+      @client = Twilio::REST::Client.new(account_sid, auth_token)
+      
+      
+      message = @client.messages
+        .create( 
+          body: msg,
+          from: '+12017012957',
+          to: to
+        )
   end
 
 end
