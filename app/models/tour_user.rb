@@ -12,4 +12,7 @@
 
 class TourUser < ApplicationRecord
   has_many :visited_stops, dependent: :destroy
+
+  mount_base64_uploader :image, AvatarUploader
+  mount_base64_uploader :id_card, AvatarUploader
 end

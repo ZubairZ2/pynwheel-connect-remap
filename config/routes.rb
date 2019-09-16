@@ -272,6 +272,8 @@ Rails.application.routes.draw do
           post :tour_user_login
           post :save_user_data
           post :save_user_tour
+          post :save_user_selfie
+          post :save_user_id_card
         end
       end
       post :save_shared_tour, to: 'tours#save_shared_tour'
