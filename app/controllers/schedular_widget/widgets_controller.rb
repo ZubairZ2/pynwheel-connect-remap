@@ -18,24 +18,9 @@ class SchedularWidget::WidgetsController < ApplicationController
   end
 
   def test_widget
+    flash[:success] = params[:message] if params[:message].present?
+
     render :test_widget, layout: false
-  end
-
-  def payment
-    begin
-      customer = Stripe::Customer.create email: params[:tour_user][:email],
-                                         card: params[:tour_user][:card_token]
-      # binding.pry
-      Stripe::Charge.create customer: customer.id,
-                            amount: 20 * 100,
-                            description: "Escrow Payment",
-                            currency: 'usd'
-    rescue Exception => e
-      flash[:error] = e.message
-      # render json: {message: e.message}, status: 'failed' and return
-    end
-
-    render json: {message: "Tour Scheduled"}, status: 200
   end
 
   private
