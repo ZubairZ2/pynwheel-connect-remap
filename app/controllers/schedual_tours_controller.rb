@@ -53,13 +53,13 @@ class SchedualToursController < ApplicationController
           flash[:error] = e.message
         end
 
-      email_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> https://apps.apple.com/us/app/pynwheel/id876032030"
+      web_notification = "Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel App </a>"
 
-      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions."
+      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: https://apps.apple.com/us/app/pynwheel/id876032030."
 
       # render json: {message: notification_content}, status: 200
       begin
-        NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver
+        NotificationMailer.tour_history_mail("Tour has been scheduled", sms_content, tu.email).deliver
       rescue Exception => e
         puts e.message
       end
@@ -68,7 +68,7 @@ class SchedualToursController < ApplicationController
       render json: {message: "some errors occured"}, status: 'failed'
     end
 
-    redirect_to schedular_widget_test_widget_path(message: email_content) and return
+    redirect_to schedular_widget_test_widget_path(message: web_notification) and return
 
   end
   # POST /schedual_tours
