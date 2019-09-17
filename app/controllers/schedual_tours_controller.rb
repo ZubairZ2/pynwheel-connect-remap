@@ -53,13 +53,16 @@ class SchedualToursController < ApplicationController
           flash[:error] = e.message
         end
 
-      email_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions."
+      email_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> https://apps.apple.com/us/app/pynwheel/id876032030"
 
       sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions."
 
       # render json: {message: notification_content}, status: 200
-
-      NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver
+      begin
+        NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver
+      rescue Exception => e
+        puts e.message
+      end
       # sms_notifire notification_content, params[:tour_user][:phone_number]
     else
       render json: {message: "some errors occured"}, status: 'failed'
