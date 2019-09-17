@@ -1,23 +1,20 @@
 Rails.application.routes.draw do
 
-  resources :payments, only: [:new, :create]
-  get 'payment-thanks', to: 'payments#thanks', as: 'payment_thanks'
-  resources :charges, only: [:new, :create]
-  get 'thanks', to: 'charges#thanks', as: 'thanks'
+  post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
 
   get 'community_groups/index'
 
   resources :schedual_tours do
-    member do
-      post :create_tour_user_from
-    end
+    # post :create_tour_user_from
+    # member do
+    # end
   end
   get 'tours/index'
 
   namespace :schedular_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
-    post 'test_widget',to: 'widgets#payment'
+    # post 'test_widget',to: 'widgets#test_widget'
   end 
 
   devise_for :users, :controllers => { :invitations => 'invitations' }

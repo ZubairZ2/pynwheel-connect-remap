@@ -23,45 +23,49 @@ class SchedualToursController < ApplicationController
   end
 
 
-  def payment
-    begin
-      tu.process_payment
-    rescue Exception => e
-      # binding.pry
-      flash[:error] = e.message
-      # render json: {message: e.message}, status: 'failed' and return
-    end
-
-    render json: {message: "Tour Scheduled"}, status: 200
-  end
-
   def create_tour_user_from
     
-    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: "#{params[:numbers]} #{params[:tour_user][:phone_number]}", credit_card_number: params[:tour_user][:credit_card_number], card_expiry: params[:tour_user][:card_expiry]
+    phone_number = make_phone
 
-    schedual_tour = SchedualTour.find(params[:id])
+    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, credit_card_number: params[:tour_user][:credit_card_number], card_expiry: params[:tour_user][:card_expiry]
+
+    # binding.pry
+    schedual_tour = SchedualTour.find(params[:sched_tour_id])
     
     if tu.save
-
+      # binding.pry
       notification_content = "Thank you, #{tu.name}! for scheduling your self-guided tour! We look forward to having you at the property on <#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}> and <#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}>. When you go to the property, you will need 
         *A photo ID
         *This phone
-
         Please download the Pynwheel self-guided tour app before you arrive:
         Download Pynwheel Self Tour 
         https://apps.apple.com/us/app/pynwheel/id876032030"
 
-      # email_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions."
+        begin
+          customer = Stripe::Customer.create email: params[:tour_user][:email],
+                                             card: params[:tour_user][:card_token]
+          Stripe::Charge.create customer: customer.id,
+                                amount: 20 * 100,
+                                description: "Escrow Payment",
+                                currency: 'usd'
+        rescue Exception => e
+          # binding.pry
+          flash[:error] = e.message
+        end
 
-      # sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions."
+      email_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. <br/> Please keep an eye out for texts and emails with further instructions."
 
-      render json: {message: notification_content}, status: 200
+      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed for #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions."
+
+      # render json: {message: notification_content}, status: 200
 
       NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver
       # sms_notifire notification_content, params[:tour_user][:phone_number]
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
+
+    redirect_to schedular_widget_test_widget_path(message: email_content) and return
 
   end
   # POST /schedual_tours
@@ -140,6 +144,23 @@ class SchedualToursController < ApplicationController
           from: prod_from,
           to: to
         )
-  end
+    end
+
+    def make_phone
+      user_phone = params[:tour_user][:phone_number].sub(/^[0]+/,'')
+      user_phone = trim_leading('\+', user_phone) if user_phone.starts_with? '+'
+
+      c = ISO3166::Country.new(params[:country_code])
+      if user_phone.starts_with? c.country_code
+        user_phone = "+#{user_phone}"
+      else
+        user_phone = "+#{c.country_code}#{user_phone}"
+      end
+      user_phone
+    end
+
+    def trim_leading chr, str
+      str.gsub(/^#{chr}+/,'')
+    end
 
 end
