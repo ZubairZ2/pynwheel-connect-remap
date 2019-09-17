@@ -1,5 +1,10 @@
 Rails.application.routes.draw do
 
+  resources :payments, only: [:new, :create]
+  get 'payment-thanks', to: 'payments#thanks', as: 'payment_thanks'
+  resources :charges, only: [:new, :create]
+  get 'thanks', to: 'charges#thanks', as: 'thanks'
+
   get 'community_groups/index'
 
   resources :schedual_tours do
@@ -12,6 +17,7 @@ Rails.application.routes.draw do
   namespace :schedular_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
+    post 'test_widget',to: 'widgets#payment'
   end 
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
