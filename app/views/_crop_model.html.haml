@@ -2,8 +2,9 @@
   .modal-content
     = form_for @community,url: "/communities/#{@community.id}/design/crop_logo",method: :put do |f|
       .modal-body
-        .image-crop{:style=>"overflow-y: auto;  width: 700px; height: 500px;"}
-          = image_tag @community.crop_x.present? ? @community.logo.url: @community.logo.url, id: "cropbox"
+        - rn =  rand(9999999999999999999999999)
+        .image-crop{:style=>"overflow-y: auto; width: 700px; height: 500px;"}
+          = image_tag @community.crop_x.present? ? @community.logo.url  + "?timestamp=#{rn}": @community.logo.url  + "?timestamp=#{rn}", id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}

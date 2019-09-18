@@ -3,7 +3,8 @@
     = form_for @home_page_image,url: update_home_page_image_community_home_page_index_path(current_community,home_page_image_id: @home_page_image.id),method: :put do |f|
       .modal-body
         .image-crop{:style=>"overflow-y: auto;"}
-          = image_tag  (@home_page_image.crop_x.present? ? @home_page_image.image.url(:large): @home_page_image.image.url(:large)), id: "cropbox"
+          - rn =  rand(9999999999999999999999999)
+          = image_tag  (@home_page_image.crop_x.present? ? @home_page_image.image.url(:large) + "?timestamp=#{rn}": @home_page_image.image.url(:large) + "?timestamp=#{rn}"), id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"  
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}

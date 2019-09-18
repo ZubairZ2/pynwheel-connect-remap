@@ -2,8 +2,9 @@
   .modal-content
     = form_for @floorplan,url: "/communities/#{@community.id}/floorplans/#{@floorplan.id}/crop_secondary_image",method: :put do |f|
       .modal-body
+        - rn =  rand(9999999999999999999999999)
         .image-crop{:style=>"overflow-y: auto;  width: 700px; height: 500px;"}
-          = image_tag @floorplan.secondary_image.url, id: "cropbox",:style => "width: 500px; height: 370px;"
+          = image_tag @floorplan.secondary_image.url  + "?timestamp=#{rn}", id: "cropbox",:style => "width: 500px; height: 370px;"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}

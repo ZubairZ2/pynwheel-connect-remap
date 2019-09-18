@@ -110,18 +110,20 @@
 
     .image-box.video-box
       .images.height-200
-        %a.preview-image{:href=>f.object.image.present? ? (f.object.image.url) : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floor Plan Image"}
-          = image_tag f.object.image.present? ? (f.object.image.url) : "default.jpeg",:height=>"",:width=>"100%",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;  min-height: 190px; min-width: 270px;"
+        - rn =  rand(9999999999999999999999999)
+        %a.preview-image{:href=>f.object.image.present? ? (f.object.image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floor Plan Image"}
+          = image_tag f.object.image.present? ? (f.object.image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"100%",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;  min-height: 190px; min-width: 270px;"
     .row
       .col-lg-2
         %span.btn.btn-default.black-button.btn-sm.btn-file
           Select Image
           = f.file_field :image
       .col-lg-1
-        .icon
-          = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
-            %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-              Crop
+        - if  f.object.image.present?
+          .icon
+            = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
+              %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                Crop
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Secondary Image
@@ -139,20 +141,21 @@
     -#  .select-img-img
     .image-box.video-box
       .images.height-200
-        %a.preview-image{:href=>f.object.secondary_image.present? ? (f.object.secondary_image.url) : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
-          = image_tag f.object.secondary_image.present? ? (f.object.secondary_image.url) : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px; min-height: 190px; min-width: 270px;"
+        - rn =  rand(9999999999999999999999999)
+        %a.preview-image{:href=>f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
+          = image_tag f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px; min-height: 190px; min-width: 270px;"
     .row
       .col-lg-2
         %span.btn.btn-default.black-button.btn-sm.btn-file
           Select Image
           = f.file_field :secondary_image
-      .col-lg-1
-        .icon
-          = link_to show_floorplan_secondary_image_in_modal_community_floorplan_path(), remote: true do
-            %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-              Crop
-#crop-floorplan-image.modal.fade.edit-image
-#crop-floorplan-secondary-image.modal.fade.edit-image
+      - if  f.object.secondary_image.present?
+        .col-lg-1
+          .icon
+            = link_to show_floorplan_secondary_image_in_modal_community_floorplan_path(), remote: true do
+              %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                Crop
+
 :javascript
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {

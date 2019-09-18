@@ -49,7 +49,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
   process :crop
   resize_to_limit(1920, 1080)
   version :large, :if => :image? do
-    process :crop
+    # process :crop
     resize_to_limit(1920, 1080)
   end
 
