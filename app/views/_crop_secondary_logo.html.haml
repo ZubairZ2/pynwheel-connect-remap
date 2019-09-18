@@ -1,12 +1,11 @@
-.modal-dialog{:style=>"overflow-y: initial width: 700px !important; width: 700px;"}
+.modal-dialog
   .modal-content
-    = form_for @home_page_image,url: update_home_page_image_community_home_page_index_path(current_community,home_page_image_id: @home_page_image.id),method: :put do |f|
+    = form_for @community,url: "/communities/#{@community.id}/design/crop_logo",method: :put do |f|
       .modal-body
         .image-crop{:style=>"overflow-y: auto;"}
-          - rn =  rand(9999999999999999999999999)
-          = image_tag  (@home_page_image.crop_x.present? ? @home_page_image.image.url(:large) + "?timestamp=#{rn}": @home_page_image.image.url(:large) + "?timestamp=#{rn}"), id: "cropbox"
+          = image_tag @community.crop_x.present? ? @community.secondary_logo.url(:thumb) : @community.secondary_logo.url, id: "cropbox"
           - %w[x y w h].each do |attribute|
-            = f.hidden_field "crop_#{attribute}"  
+            = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
@@ -19,18 +18,16 @@
             %i.fa.fa-check
         .clearfix
 }
-:javascript 
+:javascript
   $("#crop_image").on("click",function(e){
-    $(".divLoading").removeClass("hidden");
-    localStorage.setItem("homepageCropped", "1");
+    $(".divLoading").removeClass("hidden")
   });
-  
+
   $('#cropbox').Jcrop({
-  boxWidth: 660, boxHeight: 600,
     onSelect: update_crop,
     onChange: update_crop,
   });
-  
+
 
   function update_crop(coords){
     console.log(coords);
@@ -38,15 +35,15 @@
     var ratioH = $('#cropbox')[0].naturalHeight / $('#cropbox').height();
     var currentRatio = Math.min(ratioW, ratioH);
     //$('#home_page_image_crop_x').val(Math.round(coords.x * currentRatio));
-    $('#home_page_image_crop_x').val(coords.x);
+    $('#community_crop_x').val(coords.x);
     //$('#home_page_image_crop_y').val(Math.round(coords.y * currentRatio));
-    $('#home_page_image_crop_y').val(coords.y);
+    $('#community_crop_y').val(coords.y);
     //$('#home_page_image_crop_w').val(Math.round(coords.w * currentRatio));
-    $('#home_page_image_crop_w').val(coords.w);
+    $('#community_crop_w').val(coords.w);
     //$('#home_page_image_crop_h').val(Math.round(coords.h * currentRatio));
-    $('#home_page_image_crop_h').val(coords.h);
+    $('#community_crop_h').val(coords.h);
     //update_preview(coords);
-  } 
+  }
 
   function update_preview(coords){
   var width = Math.round(100/coords.w * $('#cropbox').width()) + 'px';
@@ -54,4 +51,4 @@
   var margin_left = '-' + Math.round(100/coords.w * coords.x) + 'px';
   var margin_top = '-' + Math.round(100/coords.h * coords.y) + 'px';
   $('#preview').css({"width": width,"height": height,"marginLeft": margin_left,"marginTop": margin_top});
-  }      
+  }

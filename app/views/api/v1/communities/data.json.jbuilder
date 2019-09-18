@@ -1178,6 +1178,7 @@ json.ui_settigs do
           json.floorplan_name_font_color "#ffffff"
         elsif @community.theme_name == "modernist"
           json.floorplan_name_font_color @community.design.secondary_font_color.present? ? @community.design.secondary_font_color : "#ffff"
+
         elsif @community.theme_name == "panther"
           json.floorplan_name_font_color "#ffffff"
         elsif @community.theme_name == "expressionist"

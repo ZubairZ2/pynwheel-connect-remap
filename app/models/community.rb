@@ -56,7 +56,7 @@
 #
 
 class Community < ApplicationRecord
-  #mount_uploader :logo, AvatarUploader
+  # mount_uploader :logo, AvatarUploader
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
@@ -90,6 +90,7 @@ class Community < ApplicationRecord
   validate :validate_page_position
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
+  after_update :crop_image
 
   #
   # phony_normalize :phone
@@ -99,6 +100,11 @@ class Community < ApplicationRecord
   enum alert_contact: [:email, :phone, :both]
   
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
+
+  def crop_image
+    logo.recreate_versions! if crop_x.present?
+  end
+
 
   def is_futurist?
     theme_name == "futurist"
