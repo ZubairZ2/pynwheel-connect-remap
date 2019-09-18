@@ -18,6 +18,8 @@ class SchedularWidget::WidgetsController < ApplicationController
   end
 
   def test_widget
+    flash[:success] = params[:message] if params[:message].present?
+
     render :test_widget, layout: false
   end
 
