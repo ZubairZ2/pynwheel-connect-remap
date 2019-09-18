@@ -74,14 +74,16 @@ class AvatarUploader < CarrierWave::Uploader::Base
         end
       end
     else
-      if model.crop_x.present?
-        manipulate! do |img|
-          xx = model.crop_x
-          yy = model.crop_y
-          ww = model.crop_w
-          hh = model.crop_h
-          img.crop!(xx, yy, ww, hh)
-          img
+      if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage)
+        if model.crop_x.present?
+          manipulate! do |img|
+            xx = model.crop_x
+            yy = model.crop_y
+            ww = model.crop_w
+            hh = model.crop_h
+            img.crop!(xx, yy, ww, hh)
+            img
+          end
         end
       end
     end
