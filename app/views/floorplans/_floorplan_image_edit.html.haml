@@ -1,9 +1,9 @@
-.modal-dialog{:style=>"overflow-y: initial width: 700px !important; width: 700px;"}
+.modal-dialog{:style=>"overflow-y: initial; min-width: 250px !important; width: fit-content;"}
   .modal-content
     = form_for @floorplan,url: "/communities/#{@community.id}/floorplans/#{@floorplan.id}/crop_image",method: :put do |f|
       .modal-body
         - rn =  rand(9999999999999999999999999)
-        .image-crop{:style=>"overflow-y: auto; width: 700px; height: 500px;"}
+        .image-crop{:style=>"overflow-y: auto;"}
           = image_tag @floorplan.crop_x.present? ? @floorplan.image.url  + "?timestamp=#{rn}" : @floorplan.image.url  + "?timestamp=#{rn}", id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"

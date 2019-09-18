@@ -1,8 +1,8 @@
-.modal-dialog{:style=>"overflow-y: initial width: 700px !important; width: 700px;"}
+.modal-dialog{:style=>"overflow-y: initial; min-width: 250px !important; width: fit-content;"}
   .modal-content
     = form_for @additional_image,url: update_additional_image_community_imagepage_path(@community,@imagepage,additional_image_id: @additional_image.id),method: :put do |f|
       .modal-body
-        .image-crop{:style=>"overflow-y: auto; width: 700px; height: 500px;"}
+        .image-crop{:style=>"overflow-y: auto;"}
           - rn =  rand(9999999999999999999999999)
           = image_tag @additional_image.image.url  + "?timestamp=#{rn}", id: "cropbox",:class => "clas1"
           - %w[x y w h].each do |attribute|

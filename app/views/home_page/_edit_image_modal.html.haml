@@ -1,4 +1,4 @@
-.modal-dialog{:style=>"overflow-y: initial width: 700px !important; width: 700px;"}
+.modal-dialog{:style=>"overflow-y: initial; min-width: 250px !important; width: fit-content;"}
   .modal-content
     = form_for @home_page_image,url: update_home_page_image_community_home_page_index_path(current_community,home_page_image_id: @home_page_image.id),method: :put do |f|
       .modal-body
