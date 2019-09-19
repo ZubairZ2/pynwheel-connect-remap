@@ -68,6 +68,7 @@ class TourHistory < ApplicationRecord
 		#     from: '+12017012957',
 		#     to: community.phone
 		#   )
+    
   end
 
   def send_email subj, body
