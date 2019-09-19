@@ -1,9 +1,10 @@
-.modal-dialog
+.modal-dialog{:style=>"overflow-y: initial; min-width: 250px !important; width: fit-content;"}
   .modal-content
-    = form_for @community,url: "/communities/#{@community.id}/design/crop_logo",method: :put do |f|
+    = form_for @community,url: "/communities/#{@community.id}/design/crop_secondary_logo",method: :put do |f|
       .modal-body
         .image-crop{:style=>"overflow-y: auto;"}
-          = image_tag @community.crop_x.present? ? @community.secondary_logo.url(:thumb) : @community.secondary_logo.url, id: "cropbox"
+          - rn =  rand(9999999999999999999999999)
+          = image_tag @community.crop_x_secondary.present? ? @community.secondary_logo.url  + "?timestamp=#{rn}" : @community.secondary_logo.url  + "?timestamp=#{rn}", id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
@@ -24,6 +25,7 @@
   });
 
   $('#cropbox').Jcrop({
+  boxWidth: 660, boxHeight: 600,
     onSelect: update_crop,
     onChange: update_crop,
   });

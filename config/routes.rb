@@ -173,6 +173,7 @@ Rails.application.routes.draw do
         get :secondary_logo
         get :map_marker_design
         put :crop_logo
+        put :crop_secondary_logo
         get :show_logo_in_modal
         get :show_secondary_logo_in_modal
       end

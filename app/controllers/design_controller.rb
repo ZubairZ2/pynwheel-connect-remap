@@ -35,9 +35,22 @@ class DesignController < ApplicationController
     @community.crop_y = params[:community][:crop_y]
     @community.crop_w = params[:community][:crop_w]
     @community.crop_h = params[:community][:crop_h]
+
+    @community.image_bit = true
     @community.save
     redirect_to logo_community_design_index_path(@community)
     # render :json=> {:success=>false}
+  end
+  def crop_secondary_logo
+    @community = Community.find params["community_id"]
+    @community.crop_x_secondary = params[:community][:crop_x]
+    @community.crop_y_secondary = params[:community][:crop_y]
+    @community.crop_w_secondary = params[:community][:crop_w]
+    @community.crop_h_secondary = params[:community][:crop_h]
+
+    @community.image_bit = false
+    @community.save
+    redirect_to logo_community_design_index_path(@community)
   end
 
   def secondary_logo
