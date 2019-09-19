@@ -76,14 +76,17 @@ class Community < ApplicationRecord
   after_create :create_default_gallery
   validate :validate_page_position
   after_update :crop_image
+  after_update :crop_secondary_image
 
 
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
 
   def crop_image
-    logo.recreate_versions! if crop_x.present?
+    logo.recreate_versions! if (crop_x.present? && image_bit)
   end
-
+  def crop_secondary_image
+    secondary_logo.recreate_versions! if (crop_x_secondary.present? && !image_bit)
+  end
 
   def is_futurist?
     theme_name == "futurist"
