@@ -44,7 +44,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
     Time.strptime(epoch_str, '%s')
   end
   def tour_history_params
-    params.permit(:arrived, :left, :lengthy_stay, :id_mismatch, :abandoned_tour_at_stop, :tour_user_id)
+    params.permit(:arrived, :left, :lengthy_stay, :id_mismatch, :abandoned_tour_at_stop, :tour_user_id, :community_id)
   end
 
   def set_community
