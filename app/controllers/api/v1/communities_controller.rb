@@ -28,8 +28,10 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         if community.present?
           company = community.first.company
+          group = CommunityGroup.find_by id: community.first.community_group_id if community.first.community_group_id.present?
           if company.inactivate == false && !(community.first.locked == true)
-            render :json=> {:success=>true, :community => community.first.id,:name => community.first.name,:community_name => company.name,:type => "community",:link => "/api/v1/communities/#{community.first.id}/data.json", :message => "success", :operation => "login"}
+            group_link = group.present? ? "/api/v1/communities/#{group.id}/data_group.json" : nil
+            render :json=> {:success=>true, :community => community.first.id,:name => community.first.name,:community_name => company.name,:type => "community",:link => "/api/v1/communities/#{community.first.id}/data.json",:is_group => group.present?,:group_link => group_link, :message => "success", :operation => "login"}
           else
             render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
           end
