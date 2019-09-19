@@ -58,16 +58,16 @@ class TourHistory < ApplicationRecord
 		# binding.pry
 		# to: '+923236808910'
 		
-		account_sid = 'ACcd5341bccaa0000972f42fded7122d87'
-		auth_token = 'b3bdde4cf7d6d4b61a7065580920bd53'
-		@client = Twilio::REST::Client.new(account_sid, auth_token)
+		# account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
+		# auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
+		# @client = Twilio::REST::Client.new(account_sid, auth_token)
 
-		message = @client.messages
-		  .create( 
-		  	body: message_body,
-		    from: '+12017012957',
-		    to: community.phone
-		  )
+		# message = @client.messages
+		#   .create( 
+		#   	body: message_body,
+		#     from: '+12017012957',
+		#     to: community.phone
+		#   )
   end
 
   def send_email subj, body
