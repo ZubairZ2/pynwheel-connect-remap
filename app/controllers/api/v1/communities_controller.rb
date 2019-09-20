@@ -114,7 +114,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
     @community_group.communities.each do |com|
       community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(com.id)
-      @communities << community
+      @communities << community unless community.locked
     end
   end
   def get_neighbourhood_data

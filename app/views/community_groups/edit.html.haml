@@ -4,7 +4,7 @@
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
-          Add
+          Edit
           %span Community Group
 
       = form_for @community_group,:url=>community_group_path(@community_group),:html=>{:class=>"form-horizontal"} do |f|
@@ -15,5 +15,5 @@
         / /.box-body
         .box-footer
           = link_to "CANCEL" , company_community_groups_path(current_company), :class=>"btn btn-default pull-right"
-          = f.submit "ADD COMMUNITY GROUP", :class=>"btn btn-success pull-right mr-10"
+          = f.submit "SUBMIT", :class=>"btn btn-success pull-right mr-10"
 

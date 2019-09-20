@@ -17,6 +17,7 @@ class CommunityGroupsController < ApplicationController
   end
   def edit
     @community_group = CommunityGroup.find params[:id]
+    @company = Company.find @community_group.company_id
   end
   def update
     if params[:community_group][:name].present?
@@ -54,6 +55,7 @@ class CommunityGroupsController < ApplicationController
 
   def show
     @community_group = CommunityGroup.find params[:id]
+    @company = Company.find @community_group.company_id
   end
   def destroy
     @community_group = CommunityGroup.find params[:id]
