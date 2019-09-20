@@ -35,7 +35,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
           end
         else
-          render :json=> {:success=>false, :message => "Community not found"}
+          render :json=> {:success=>false, :message => "Invalid code"}
         end
       end
 
