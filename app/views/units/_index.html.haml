@@ -476,6 +476,10 @@
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_floor').css("color","#dd4a39");
       });
+      if ($('#best_in_place_unit_'+id[4]+'_sold').html() == 'Yes')
+        {
+          $('#best_in_place_unit_'+id[4]+'_available').html('No');
+        }
       $('#best_in_place_unit_'+id[4]+'_available_date').change(function(){
         //alert($('#best_in_place_unit_'+id[4]+'_available_date').html());
         $('#best_in_place_unit_'+id[4]+'_available_date').css("color","#dd4a39");
