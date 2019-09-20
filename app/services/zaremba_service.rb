@@ -101,8 +101,8 @@ class ZarembaService < BaseService
           # unit.floor = u["FloorLevel"]
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             if u["Availability"]["VacancyClass"] == "Vacant"
-              unit.availability = "Unoccupied"
-              unit.available = true
+              unit.availability = "Unoccupied" if !unit.sold
+              unit.available = true if !unit.sold
             else
               unit.availability = "Occupied"
               unit.available = false

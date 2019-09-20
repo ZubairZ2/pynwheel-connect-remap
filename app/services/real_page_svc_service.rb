@@ -146,7 +146,7 @@ class RealPageSvcService < BaseService
                   unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 end
                 unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-                  unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                  unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied" if !unit.sold
                 end
                 if u[:BuildingNumber] == "N/A"
                   unit.building = ""
@@ -171,7 +171,7 @@ class RealPageSvcService < BaseService
                     unit.available_date = ""
                     unit.available = false
                   else
-                    unit.available = true
+                    unit.available = true if !unit.sold
                   end
                 end
 
