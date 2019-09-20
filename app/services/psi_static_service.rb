@@ -147,6 +147,7 @@ class PsiStaticService < BaseService
       unless unit.building_is_updated.present? && unit.building_is_updated
         unit.building = building.present? ? building.gsub("Building ", "") : ""
       end
+      unit.availability_url = u['UnitAvailabilityURL'] if u['UnitAvailabilityURL'].present?
       unit.manually_updated = false
       unit.save(validate: false)
 

@@ -139,7 +139,7 @@ class PsiService < BaseService
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
         end
-
+        unit.availability_url = u['UnitAvailabilityURL'] if u['UnitAvailabilityURL'].present?
         # building = u["Units"]["Unit"]["BuildingName"]
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
@@ -156,7 +156,7 @@ class PsiService < BaseService
         # floorplan.unit_count = f["UnitsAvailable"]
         # floorplan.units_available = f["DisplayedUnitsAvailable"]
         # floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
-        # floorplan.availability_url = f["FloorplanAvailabilityURL"]
+        floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
 
 
           # room_types = f["Room"]
