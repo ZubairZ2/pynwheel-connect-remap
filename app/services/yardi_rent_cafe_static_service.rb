@@ -75,6 +75,7 @@ class YardiRentCafeStaticService < BaseService
                   unit.effective_rent = 1.0
                 end
                 unit.manually_updated = false
+                unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present
                 unit.save(validate: false)
               end
 
