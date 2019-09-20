@@ -7,13 +7,13 @@
           Add
           %span Community Group
 
-      = form_for @community_group,:url=>company_community_groups_path(Company.find @community_group.company_id),:html=>{:class=>"form-horizontal"} do |f|
+      = form_for @community_group,:url=>company_community_groups_path(current_company),:html=>{:class=>"form-horizontal"} do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
         .box-footer
-          = link_to "CANCEL" , company_communities_path(Company.find @community_group.company_id), :class=>"btn btn-default pull-right"
+          = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
           = f.submit "ADD COMMUNITY GROUP", :class=>"btn btn-success pull-right mr-10"
 
