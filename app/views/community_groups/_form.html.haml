@@ -59,7 +59,7 @@
   .col-sm-12.col-lg-3.col-md-3.col-xs-12
     = f.radio_button :inactivate, false
     = f.label :inactivate, "True", :value => "false"
-  = f.hidden_field :company_id, :class=>"form-control", :value=>"#{@community_group.company_id}"
+  = f.hidden_field :company_id, :class=>"form-control", :value=>"#{@community_group.company_id.present? ? @community_group.company_id : current_company.id}"
 :javascript
   $("#community_group_logo").change(function(){
       readCommunityGroupLogoURL(this);
