@@ -64,7 +64,7 @@ class Unit < ApplicationRecord
   has_many :paths, as: :map_path
   has_many :path_points, through: :paths
   
-  scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
+  scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", false, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
   scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
   scope :has_x_plot, -> { where("x_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+2.year) }
