@@ -1491,8 +1491,10 @@ json.community_group @communities do |co|
     if @community.neighborhood.present?
       json.show_neighborhood_page @community.neighborhood.show_neighborhood
       json.neighborhood_page_name @community.neighborhood.neighborhood_name
-      json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
-      json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+      # json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
+      # json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+      json.latitude @community.latitude.present? ? @community.latitude : 0.0
+      json.longitude @community.longitude.present? ? @community.longitude : 0.0
       json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
       json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
       json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
