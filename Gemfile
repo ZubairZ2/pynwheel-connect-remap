@@ -18,6 +18,7 @@ gem 'phony_rails'
 gem 'write_xlsx'
 gem "mini_magick"
 gem 'google_places'
+gem 'time_difference'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server
