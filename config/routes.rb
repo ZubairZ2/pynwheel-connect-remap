@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   get 'community_groups/index'
 
   post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
+  post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
   resources :schedual_tours do
     # post :create_tour_user_from
     # member do
