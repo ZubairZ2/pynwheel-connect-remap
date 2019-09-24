@@ -104,6 +104,6 @@ class ImagepagesController < ApplicationController
 	end
 
 	def additional_image_params
-		params.require(:additional_image).permit(:name)
+		params.require(:additional_image).permit(:name,:crop_x,:crop_y,:crop_w,:crop_h)
 	end
 end

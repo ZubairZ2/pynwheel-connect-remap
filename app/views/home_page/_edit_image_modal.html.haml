@@ -1,9 +1,10 @@
-.modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
+.modal-dialog{:style=>"overflow-y: initial; min-width: 250px !important; width: fit-content;"}
   .modal-content
     = form_for @home_page_image,url: update_home_page_image_community_home_page_index_path(current_community,home_page_image_id: @home_page_image.id),method: :put do |f|
       .modal-body
         .image-crop{:style=>"overflow-y: auto;"}
-          = image_tag @home_page_image.large_image_url, id: "cropbox"
+          - rn =  rand(9999999999999999999999999)
+          = image_tag  (@home_page_image.crop_x.present? ? @home_page_image.image.url(:large) + "?timestamp=#{rn}": @home_page_image.image.url(:large) + "?timestamp=#{rn}"), id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"  
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
@@ -20,10 +21,12 @@
 }
 :javascript 
   $("#crop_image").on("click",function(e){
-    $(".divLoading").removeClass("hidden")
+    $(".divLoading").removeClass("hidden");
+    localStorage.setItem("homepageCropped", "1");
   });
   
   $('#cropbox').Jcrop({
+  boxWidth: 660, boxHeight: 600,
     onSelect: update_crop,
     onChange: update_crop,
   });

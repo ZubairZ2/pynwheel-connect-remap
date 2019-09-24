@@ -42,9 +42,15 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
   end
   def update
+    if params[:community][:image]
+      @community.crop_x = nil
+    end
+    if params[:community][:secondary_image]
+      @community.crop_x_secondary = nil
+    end
+    @community.image_bit = nil
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
     respond_to do |format|
-
       if params[:spreadsheet_method] == '2'
         if @community.update(community_params)
           @community.credential.swap_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?

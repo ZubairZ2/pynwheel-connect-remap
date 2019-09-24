@@ -1,7 +1,7 @@
 class AvatarUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
-  # include CarrierWave::RMagick
+  include CarrierWave::RMagick
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
@@ -12,7 +12,34 @@ class AvatarUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
    def filename
-    @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
+     if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage)
+       if model.is_a? Floorplan
+         if !model.image_bit.nil? && model.crop_x.present?
+           @name = original_filename
+         elsif !model.image_bit.nil? && model.crop_x_secondary.present?
+           @name = original_filename
+         else
+           @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
+         end
+       elsif model.is_a? Community
+         if !model.image_bit.nil? && model.crop_x.present?
+           @name = original_filename
+         elsif !model.image_bit.nil? && model.crop_x_secondary.present?
+           @name = original_filename
+         else
+           @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
+         end
+       else
+         if model.crop_x.present?
+           @name = original_filename
+         else
+           @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
+         end
+       end
+     else
+       @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
+     end
+
   end
 
   def timestamp
@@ -23,7 +50,77 @@ class AvatarUploader < CarrierWave::Uploader::Base
   def store_dir
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
   end
+  # version :orignal do
+  process :crop
+  #   resize_to_limit(1920, 1080)
+  #   #process resize_and_crop: 200
+  # end
 
+  def crop
+    if model.is_a? Floorplan
+      if (model.image_bit.nil? ? false : model.image_bit) && model.crop_x.present?
+        manipulate! do |img|
+
+          xx = model.crop_x
+          yy = model.crop_y
+          ww = model.crop_w
+          hh = model.crop_h
+          img.crop!(xx, yy, ww, hh)
+          img
+        end
+      else
+        if (model.image_bit.nil? ? false : !model.image_bit) && model.crop_x_secondary.present?
+          manipulate! do |img|
+
+            xx = model.crop_x_secondary
+            yy = model.crop_y_secondary
+            ww = model.crop_w_secondary
+            hh = model.crop_h_secondary
+            img.crop!(xx, yy, ww, hh)
+            img
+          end
+        end
+      end
+    elsif  model.is_a? Community
+      if (model.image_bit.nil? ? false : model.image_bit) && model.crop_x.present?
+        manipulate! do |img|
+
+          xx = model.crop_x
+          yy = model.crop_y
+          ww = model.crop_w
+          hh = model.crop_h
+          img.crop!(xx, yy, ww, hh)
+          img
+        end
+      else
+        if (model.image_bit.nil? ? false : !model.image_bit) && model.crop_x_secondary.present?
+          manipulate! do |img|
+
+            xx = model.crop_x_secondary
+            yy = model.crop_y_secondary
+            ww = model.crop_w_secondary
+            hh = model.crop_h_secondary
+            img.crop!(xx, yy, ww, hh)
+            img
+          end
+        end
+      end
+    else
+      if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage)
+        if model.crop_x.present?
+          manipulate! do |img|
+            xx = model.crop_x
+            yy = model.crop_y
+            ww = model.crop_w
+            hh = model.crop_h
+            img.crop!(xx, yy, ww, hh)
+            img
+          end
+        end
+      end
+    end
+
+  end
   # Provide a default URL as a default if there hasn't been a file uploaded:
   # def default_url(*args)
   #   # For Rails 3.1+ asset pipeline compatibility:

@@ -1,33 +1,30 @@
 .modal-dialog{:style=>"overflow-y: initial; min-width: 250px !important; width: fit-content;"}
   .modal-content
-    = form_for @gallery_image,url: update_gallery_image_community_gallery_path(@community,@gallery,gallery_image_id: @gallery_image.id),method: :put do |f|
+    = form_for @floorplan,url: "/communities/#{@community.id}/floorplans/#{@floorplan.id}/crop_secondary_image",method: :put do |f|
       .modal-body
+        - rn =  rand(9999999999999999999999999)
         .image-crop{:style=>"overflow-y: auto;"}
-
-          - rn =  rand(9999999999999999999999999)
-          = image_tag (@gallery_image.crop_x.present? ?  @gallery_image.image.url(:large) + "?timestamp=#{rn}" :  @gallery_image.image.url(:large) + "?timestamp=#{rn}"), id: "cropbox"
+          = image_tag @floorplan.secondary_image.url  + "?timestamp=#{rn}", id: "cropbox",:style => "width: 500px; height: 370px;"
           - %w[x y w h].each do |attribute|
-            = f.hidden_field "crop_#{attribute}"  
+            = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
         .form-group
           %label{:for => "exampleInputEmail1"} Image Title
-          = f.text_field :name , class: "form-control", placeholder: "Name"    
+          = f.text_field :name , class: "form-control", placeholder: "Name"
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
             Apply Changes
             %i.fa.fa-check
         .clearfix
 }
-:javascript 
+:javascript
   $("#crop_image").on("click",function(e){
     $(".divLoading").removeClass("hidden");
-    localStorage.setItem("galleryCropped", "1");
+    localStorage.setItem("floorplanCropped", "1");
   });
-  
   $('#cropbox').Jcrop({
-
   boxWidth: 660, boxHeight: 600,
     onSelect: update_crop,
     onChange: update_crop,
@@ -36,24 +33,19 @@
 
   function update_crop(coords){
     console.log(coords);
-    var ratioW = $('#cropbox')[0].naturalWidth / $('#cropbox').width();
-    var ratioH = $('#cropbox')[0].naturalHeight / $('#cropbox').height();
+    var ratioW = $('#cropbox')[0].naturalWidth / 500;
+    var ratioH = $('#cropbox')[0].naturalHeight / 281.25;
     var currentRatio = Math.min(ratioW, ratioH);
-    //$('#gallery_image_crop_x').val(Math.round(coords.x * currentRatio));
-    $('#gallery_image_crop_x').val(coords.x);
-    //$('#gallery_image_crop_y').val(Math.round(coords.y * currentRatio));
-    $('#gallery_image_crop_y').val(coords.y);
-    //$('#gallery_image_crop_w').val(Math.round(coords.w * currentRatio));
-    $('#gallery_image_crop_w').val(coords.w);
-    //$('#gallery_image_crop_h').val(Math.round(coords.h * currentRatio));
-    $('#gallery_image_crop_h').val(coords.h);
-    console.log(coords.x);
-    console.log(coords.y);
-    console.log(coords.w);
-    console.log(coords.h);
-
+    // $('#floorplan_crop_x').val(Math.round(coords.x * ratioH));
+    $('#floorplan_crop_x').val(coords.x);
+    // $('#floorplan_crop_y').val(Math.round(coords.y * ratioW));
+    $('#floorplan_crop_y').val(coords.y);
+    // $('#floorplan_crop_w').val(Math.round(coords.w * ratioH));
+    $('#floorplan_crop_w').val(coords.w);
+    // $('#floorplan_crop_h').val(Math.round(coords.h * ratioW));
+    $('#floorplan_crop_h').val(coords.h);
     //update_preview(coords);
-  } 
+  }
 
   function update_preview(coords){
   var width = Math.round(100/coords.w * $('#cropbox').width()) + 'px';
@@ -61,4 +53,4 @@
   var margin_left = '-' + Math.round(100/coords.w * coords.x) + 'px';
   var margin_top = '-' + Math.round(100/coords.h * coords.y) + 'px';
   $('#preview').css({"width": width,"height": height,"marginLeft": margin_left,"marginTop": margin_top});
-  }      
+  }
