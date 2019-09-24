@@ -1277,7 +1277,7 @@ json.apartments do
   end
   units_floorplans = []
   floorplans = @community.floorplans
-  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
+  available_units_and_sold_units = @community.units.available_units #+ @community.units.are_sold
   json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
     if @community.data_provider == "psi"
@@ -1306,6 +1306,7 @@ json.apartments do
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
       json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
       json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
+      json.availability_url unit.availability_url.present? ? unit.availability_url : (floorplan.availability_url.present? ? floorplan.availability_url : nil)
 
       if unit.virtual_tour_url.present?
         if unit.virtual_tour_url.include? '</iframe>'
@@ -1479,11 +1480,14 @@ json.neighborhood do
   if @community.neighborhood.present?
     json.show_neighborhood_page @community.neighborhood.show_neighborhood
     json.neighborhood_page_name @community.neighborhood.neighborhood_name
-    json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
-    json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+    # json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
+    # json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+    json.latitude @community.latitude.present? ? @community.latitude : 0.0
+    json.longitude @community.longitude.present? ? @community.longitude : 0.0
     json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
     json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
-    json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
+    json.address (@community.address.present? ? @community.address + " , "  : "") + (@community.city.present? ? @community.city+ " , " : "") + (@community.state.present? ? @community.state+ " , " : "") + (@community.zip.present? ? @community.zip : "")
+    # json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
     json.display_neighborhood_on_homepage @community.neighborhood.display_neighborhood_on_homepage
     if @community.neighborhood.listing.present?
       json.listing @community.neighborhood.listing

@@ -18,9 +18,10 @@ class Api::V1::CommunitiesController < ActionController::Base
         community_group = CommunityGroup.where(code: str)
       end
       if community_group.present?
-        
+
         community_group = community_group.first
-        if community_group.inactivate == true
+
+        if community_group.inactivate == false
           render :json=> {:success=>true, :community => community_group.id,:name => community_group.name,:community_name => (Company.find community_group.company_id).name,:type => "community_group",:link => "/api/v1/communities/#{community_group.id}/data_group.json",:is_group => true, :message => "success", :operation => "login"}
         else
           render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
@@ -36,7 +37,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
           end
         else
-          render :json=> {:success=>false, :message => "Community not found"}
+          render :json=> {:success=>false, :message => "Invalid code"}
         end
       end
 
@@ -115,7 +116,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
     @community_group.communities.each do |com|
       community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(com.id)
-      @communities << community
+      @communities << community unless community.locked
     end
   end
   def get_neighbourhood_data

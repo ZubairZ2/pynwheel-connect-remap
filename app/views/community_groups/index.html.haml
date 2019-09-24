@@ -23,6 +23,7 @@
         %thead
           %tr
             %th Community Groups
+            %th{:width => "250"} Company
             %th{:width => "250"} Actions
         %tbody
           - @community_groups.each do |com_grp|
@@ -30,6 +31,9 @@
               %td
                 %h4.h4
                   = link_to com_grp.name, company_community_group_path((Company.find com_grp.company_id).id,com_grp.id)
+              %td
+                %h5.h5
+                  = com_grp.company.name rescue ""
               %td
                 %a.text-success{:href => "/community_groups/#{com_grp.id}/edit"}
                   %i.fa.fa-edit.icon_size

@@ -52,14 +52,19 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Inactivated
-
-  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-    = f.radio_button :inactivate, true
-    = f.label :inactivate, "False", :value => "true"
-  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-    = f.radio_button :inactivate, false
-    = f.label :inactivate, "True", :value => "false"
-  = f.hidden_field :company_id, :class=>"form-control", :value=>"#{current_company.id}"
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :inactivate
+          %label Inactivate
+  -#.col-sm-12.col-lg-3.col-md-3.col-xs-12
+  -#  = f.radio_button :inactivate, true
+  -#  = f.label :inactivate, "False", :value => "true"
+  -#.col-sm-12.col-lg-3.col-md-3.col-xs-12
+  -#  = f.radio_button :inactivate, false
+  -#  = f.label :inactivate, "True", :value => "false"
+  = f.hidden_field :company_id, :class=>"form-control", :value=>"#{@community_group.company_id.present? ? @community_group.company_id : current_company.id}"
 :javascript
   $("#community_group_logo").change(function(){
       readCommunityGroupLogoURL(this);

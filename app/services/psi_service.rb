@@ -125,12 +125,12 @@ class PsiService < BaseService
         # end
         # unit.floor = u["FloorLevel"]
         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-          unit.availability = u["Availability"]["VacancyClass"]
-          unit.available = false
+          unit.availability = u["Availability"]["VacancyClass"] if !unit.sold
+          unit.available = false if !unit.sold
         end
 
         if u["Availability"]["VacancyClass"] == "Unoccupied"
-          unit.available = true
+          unit.available = true if !unit.sold
           year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
           month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
           day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
@@ -139,7 +139,7 @@ class PsiService < BaseService
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
         end
-
+        unit.availability_url = u['UnitAvailabilityURL'] if u['UnitAvailabilityURL'].present?
         # building = u["Units"]["Unit"]["BuildingName"]
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
@@ -156,7 +156,7 @@ class PsiService < BaseService
         # floorplan.unit_count = f["UnitsAvailable"]
         # floorplan.units_available = f["DisplayedUnitsAvailable"]
         # floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
-        # floorplan.availability_url = f["FloorplanAvailabilityURL"]
+        floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
 
 
           # room_types = f["Room"]
@@ -290,8 +290,8 @@ class PsiService < BaseService
                     end
 
                     if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                      unit.availability = 'Unoccupied'
-                      unit.available = true
+                      unit.availability = 'Unoccupied' if !unit.sold
+                      unit.available = true if !unit.sold
                     else
                       unit.availability = 'Occupied'
                       unit.available = false
@@ -393,8 +393,8 @@ class PsiService < BaseService
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                         end
                         if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                          unit.availability = 'Unoccupied'
-                          unit.available = true
+                          unit.availability = 'Unoccupied' if !unit.sold
+                          unit.available = true if !unit.sold
                         else
                           unit.availability = 'Occupied'
                           unit.available = false

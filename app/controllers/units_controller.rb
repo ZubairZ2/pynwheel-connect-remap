@@ -82,6 +82,10 @@ class UnitsController < ApplicationController
         @unit.availability_is_updated = true
       end
 
+      if params[:unit][:sold].present? && params[:unit][:sold] == "true"
+        @unit.availability = "Occupied"
+        @unit.available = false
+      end
       ########
       if @unit.manual_override
         if params[:unit][:description].present?
@@ -267,7 +271,11 @@ class UnitsController < ApplicationController
   end
   
   def set_sold
-    @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true)
+    if params[:sold] == "true"
+      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true,availability: "Occupied",available: false)
+    else
+      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true)
+    end
     flash[:notice] = "Sold is updated for units successfully."
     redirect_to :back
   end

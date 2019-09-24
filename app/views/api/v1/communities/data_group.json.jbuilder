@@ -1290,7 +1290,7 @@ json.community_group @communities do |co|
     end
     units_floorplans = []
     floorplans = @community.floorplans
-    available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
+    available_units_and_sold_units = @community.units.available_units #+ @community.units.are_sold
     json.display_unit_on_homepage @community.display_unit_on_homepage
     json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
       if @community.data_provider == "psi"
@@ -1492,8 +1492,10 @@ json.community_group @communities do |co|
     if @community.neighborhood.present?
       json.show_neighborhood_page @community.neighborhood.show_neighborhood
       json.neighborhood_page_name @community.neighborhood.neighborhood_name
-      json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
-      json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+      # json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : (@community.latitude.present? ? @community.latitude : 0.0)
+      # json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : (@community.longitude.present? ? @community.longitude.present? : 0.0)
+      json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : 0.0
+      json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : 0.0
       json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
       json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
       json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
