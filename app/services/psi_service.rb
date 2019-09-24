@@ -4,7 +4,7 @@ class PsiService < BaseService
     com_test = Community.find credentials.community_id
     if com_test.id == 458 || com_test.id == 819
 
-      com_test.entrata_exception_logs = ""
+      com_test.entrata_exception_logs = Time.now
       com_test.entrata_exception_logs = com_test.entrata_exception_logs + "1 "
       com_test.save
     end
