@@ -1,9 +1,10 @@
 class PsiService < BaseService
   # @@floorplanHash = Hash.new
   def perform
+    tt = nil
     com_test = Community.find credentials.community_id
-    if com_test.id == 458 || com_test.id == 819
-
+    if com_test.id == 458
+      tt = TempTable.first
       com_test.entrata_exception_logs = Time.now
       com_test.entrata_exception_logs = com_test.entrata_exception_logs + "1 "
       com_test.save
@@ -17,7 +18,7 @@ class PsiService < BaseService
         else
           url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         end
-        if com_test.id == 458 || com_test.id == 819
+        if com_test.id == 458
           com_test.entrata_exception_logs = com_test.entrata_exception_logs + "2 "
           com_test.save
         end
@@ -44,7 +45,8 @@ class PsiService < BaseService
           }.to_json,
           :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
-        if com_test.id == 458 || com_test.id == 819
+        if com_test.id == 458
+          tt = Time.now.to_s + response.to_s
           com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
           com_test.save
         end
@@ -53,6 +55,11 @@ class PsiService < BaseService
           units = []
           floorplans = []
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
+            if com_test.id == 458
+              # tt = Time.now.to_s + response.to_s
+              com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3.1 "
+              com_test.save
+            end
             pro["ILS_Unit"].each do |ils|
               units << ils
             end
@@ -60,7 +67,7 @@ class PsiService < BaseService
               floorplans << f
             end
           end
-          if com_test.id == 458 || com_test.id == 819
+          if com_test.id == 458
             com_test.entrata_exception_logs = com_test.entrata_exception_logs + "4 "
             com_test.save
           end
