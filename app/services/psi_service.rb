@@ -1,7 +1,11 @@
 class PsiService < BaseService
   # @@floorplanHash = Hash.new
   def perform
-
+    byebug
+    com_test = Community.find credentials.community_id
+    if com_test.id == 458
+      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "1 "
+    end
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -10,6 +14,9 @@ class PsiService < BaseService
           url = credentials.entrata_url
         else
           url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        end
+        if com_test.id == 458
+          com_test.entrata_exception_logs = com_test.entrata_exception_logs + "2 "
         end
 
         password = credentials.password
@@ -34,6 +41,9 @@ class PsiService < BaseService
           }.to_json,
           :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
+        if com_test.id == 458
+          com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
+        end
         sleep 5
         if response["response"]["code"] == 200
           units = []
@@ -46,8 +56,17 @@ class PsiService < BaseService
               floorplans << f
             end
           end
+          if com_test.id == 458
+            com_test.entrata_exception_logs = com_test.entrata_exception_logs + "4 "
+          end
           save_psi_floorplans(floorplans,property_id)
+          if com_test.id == 458
+            com_test.entrata_exception_logs = com_test.entrata_exception_logs + "5 "
+          end
           save_psi_units(units,property_id)
+          if com_test.id == 458
+            com_test.entrata_exception_logs = com_test.entrata_exception_logs + "6 "
+          end
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
@@ -85,6 +104,9 @@ class PsiService < BaseService
         puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
+    end
+    if com_test.id == 458
+      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "7 "
     end
     fill_psi_pricing_details
   end
