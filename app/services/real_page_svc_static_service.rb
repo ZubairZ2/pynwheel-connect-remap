@@ -365,7 +365,7 @@ class RealPageSvcStaticService < BaseService
                 if u[:RentMatrix].present?
                   best_price = nil
                   begin
-
+                    byebug
                     u[:RentMatrix][1][:Rows][:Row].each_with_index do |opts,index|
                       next if index == 0
                       startdate = u[:RentMatrix][1][:Rows][:Row][index][:Options][0][:LeaseStartDate]
