@@ -1289,7 +1289,7 @@ json.community_group @communities do |co|
     end
     units_floorplans = []
     floorplans = @community.floorplans
-    available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
+    available_units_and_sold_units = @community.units.available_units# + @community.units.are_sold
     json.display_unit_on_homepage @community.display_unit_on_homepage
     json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
       if @community.data_provider == "psi"
