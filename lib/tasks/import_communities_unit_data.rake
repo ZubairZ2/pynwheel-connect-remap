@@ -48,7 +48,7 @@ namespace :import do
       end
 
       puts 'Now waiting for 2 min for 3 background jobs to complete.'
-      sleep 60
+      sleep 40
     end
     community_logs = {Time.now => community_logs_str}
     entrata_list_logs = {Time.now => entrata_list_logs_str}
