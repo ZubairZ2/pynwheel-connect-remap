@@ -1,95 +1,108 @@
-local_assets_base_url = "http://192.168.101.77:3000"
-random_numbers = []
-json.version @version
-json.ui_settigs do
-  json.selected_theme @community.temporary_theme_name
-  if @community.temporary_theme_name.include?('gables') || @community.temporary_theme_name == 'modernist'
-    json.theme @community.temporary_theme_name
-  else
-    json.theme "expressionist"
-  end
-  json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
-  if @community.theme_name == "futurist" || @community.theme_name == "modernist"
-    json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
-  else
-    json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
-  end
-  json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
-  json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
-  json.show_gesture_icons @community.show_gesture_icons
-  json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
-  json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
-  json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
-  json.floorplan_name_order @community.floorplan_name_order
-  if @community.theme_name.include?('gables')
-    json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
-  elsif @community.temporary_theme_name == 'modernist'
-    json.property_map_color @community.design.present? ? (@community.design.modernist_map_marker_color.present? ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#d37474'
-  elsif @community.temporary_theme_name == 'futurist'
-    json.property_map_color @community.design.present? ? (@community.design.futurist_property_map_marker_color.present? ?  @community.design.futurist_property_map_marker_color : "#d37474") : "#d37474"
-  elsif @community.temporary_theme_name == 'panther'
-    json.property_map_color @community.design.present? ? (@community.design.panther_property_map_marker_color.present? ?  @community.design.panther_property_map_marker_color : "#d37474") : "#d37474"
-  elsif @community.temporary_theme_name == 'expressionist'
-    json.property_map_color @community.design.present? ? (@community.design.expressionist_property_map_marker_color.present? ?  @community.design.expressionist_property_map_marker_color : "#d37474") : "#d37474"
-  else
-    json.property_map_color '#d37474'
-  end
+json.group_name @community_group.name
+json.group_address @community_group.address
+json.page_type @community_group.page_type ? "map" : "menu"
+json.page_name @community_group.page_name
+json.logo @community_group.logo.present? ? @community_group.logo.url : "No image"
+json.inactivate !@community_group.inactivate
 
-  if @community.theme_name.include?('gables')
-    json.property_map_size @community.design.present? ? (@community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer.to_s + "px" : '30px') : '30px'
-  elsif @community.temporary_theme_name == 'modernist'
-    json.property_map_size @community.design.present? ? (@community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size.to_s + "px" : '30px') : '30px'
-  elsif @community.temporary_theme_name == 'futurist'
-    json.property_map_size @community.design.present? ? (@community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size.to_s + "px" : '30px') : '30px'
-  elsif @community.temporary_theme_name == 'panther'
-    json.property_map_size @community.design.present? ? (@community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size.to_s + "px" : '30px') : '30px'
-  elsif @community.temporary_theme_name == 'expressionist'
-    json.property_map_size @community.design.present? ? (@community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size.to_s + "px" : '30px') : '30px'
-  else
-    json.property_map_color '30px'
-  end
-  if @community.theme_name.include?('gables')
-    json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#FF0000'
-  elsif @community.temporary_theme_name == 'modernist'
-    json.amenity_map_marker_color @community.design.present? ? (@community.design.modernists_amenity_map_marker_color.present? ? (@community.design.modernists_amenity_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernists_amenity_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
-  elsif @community.temporary_theme_name == 'futurist'
-    json.amenity_map_marker_color @community.design.present? ? (@community.design.futurist_amenity_map_marker_color.present? ? @community.design.futurist_amenity_map_marker_color : '#d37474' ) : '#d37474'
-  elsif @community.temporary_theme_name == 'expressionist'
-    json.amenity_map_marker_color @community.design.present? ? (@community.design.expressionist__amenity_map_marker_color.present? ? @community.design.expressionist__amenity_map_marker_color : '#d37474' ) : '#d37474'
-  elsif @community.temporary_theme_name == 'panther'
-    json.amenity_map_marker_color @community.design.present? ? (@community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : '#d37474' ) : '#d37474'
-  else
-    json.amenity_map_marker_color '#ff0000'
-  end
+json.community_group @communities do |co|
+  @community = co
 
-  if @community.theme_name.include?('gables')
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer.to_s + "px" : '30px') : '30px'
-  elsif @community.temporary_theme_name == 'modernist'
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
-  elsif @community.temporary_theme_name == 'futurist'
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
-  elsif @community.temporary_theme_name == 'expressionist'
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
-  elsif @community.temporary_theme_name == 'panther'
-    json.amenity_map_marker_size @community.design.present? ? (@community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size.to_s + "px" : '30px' ) : '30px'
-  else
-    json.amenity_map_marker_size '30px'
-  end
+  json.community_name  @community.name
+  json.community_id  @community.id
+  json.company_name  Company.find_by(id: @community.company_id).name
 
-  if @community.theme_name.include?('gables')
-    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.gables_unit_floorplan_map_marker_color.present? ? @community.design.gables_unit_floorplan_map_marker_color : '#d37474') : '#d37474'
-  elsif @community.temporary_theme_name == 'modernist'
-    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.modernist_unit_floorplan_map_marker_color.present? ? (@community.design.modernist_unit_floorplan_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_unit_floorplan_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
-  elsif @community.temporary_theme_name == 'futurist'
-    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.futurist_unit_floorplan_map_marker_color.present? ? @community.design.futurist_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
-  elsif @community.temporary_theme_name == 'expressionist'
-    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.expressionist_unit_floorplan_map_marker_color.present? ? @community.design.expressionist_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
-  elsif @community.temporary_theme_name == 'panther'
-    json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.panther_unit_floorplan_map_marker_color.present? ? @community.design.panther_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
-  else
-    json.unit_floorplan_map_marker_color '#ff0000'
-  end
-  #if (style_themes.include? @community.theme_name) && @community.design.present?
+  local_assets_base_url = "http://192.168.101.77:3000"
+  random_numbers = []
+  json.version @version
+  json.ui_settigs do
+    json.selected_theme @community.temporary_theme_name
+    if @community.temporary_theme_name.include?('gables') || @community.temporary_theme_name == 'modernist'
+      json.theme @community.temporary_theme_name
+    else
+      json.theme "expressionist"
+    end
+    json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
+    if @community.theme_name == "futurist" || @community.theme_name == "modernist"
+      json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+    else
+      json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
+    end
+    json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+    json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
+    json.show_gesture_icons @community.show_gesture_icons
+    json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
+    json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
+    json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
+    if @community.theme_name.include?('gables')
+      json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
+    elsif @community.temporary_theme_name == 'modernist'
+      json.property_map_color @community.design.present? ? (@community.design.modernist_map_marker_color.present? ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#d37474'
+    elsif @community.temporary_theme_name == 'futurist'
+      json.property_map_color @community.design.present? ? (@community.design.futurist_property_map_marker_color.present? ?  @community.design.futurist_property_map_marker_color : "#d37474") : "#d37474"
+    elsif @community.temporary_theme_name == 'panther'
+      json.property_map_color @community.design.present? ? (@community.design.panther_property_map_marker_color.present? ?  @community.design.panther_property_map_marker_color : "#d37474") : "#d37474"
+    elsif @community.temporary_theme_name == 'expressionist'
+      json.property_map_color @community.design.present? ? (@community.design.expressionist_property_map_marker_color.present? ?  @community.design.expressionist_property_map_marker_color : "#d37474") : "#d37474"
+    else
+      json.property_map_color '#d37474'
+    end
+
+    if @community.theme_name.include?('gables')
+      json.property_map_size @community.design.present? ? (@community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer.to_s + "px" : '30px') : '30px'
+    elsif @community.temporary_theme_name == 'modernist'
+      json.property_map_size @community.design.present? ? (@community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size.to_s + "px" : '30px') : '30px'
+    elsif @community.temporary_theme_name == 'futurist'
+      json.property_map_size @community.design.present? ? (@community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size.to_s + "px" : '30px') : '30px'
+    elsif @community.temporary_theme_name == 'panther'
+      json.property_map_size @community.design.present? ? (@community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size.to_s + "px" : '30px') : '30px'
+    elsif @community.temporary_theme_name == 'expressionist'
+      json.property_map_size @community.design.present? ? (@community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size.to_s + "px" : '30px') : '30px'
+    else
+      json.property_map_color '30px'
+    end
+    if @community.theme_name.include?('gables')
+      json.amenity_map_marker_color @community.design.present? ? (@community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : '#d37474') : '#FF0000'
+    elsif @community.temporary_theme_name == 'modernist'
+      json.amenity_map_marker_color @community.design.present? ? (@community.design.modernists_amenity_map_marker_color.present? ? (@community.design.modernists_amenity_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernists_amenity_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
+    elsif @community.temporary_theme_name == 'futurist'
+      json.amenity_map_marker_color @community.design.present? ? (@community.design.futurist_amenity_map_marker_color.present? ? @community.design.futurist_amenity_map_marker_color : '#d37474' ) : '#d37474'
+    elsif @community.temporary_theme_name == 'expressionist'
+      json.amenity_map_marker_color @community.design.present? ? (@community.design.expressionist__amenity_map_marker_color.present? ? @community.design.expressionist__amenity_map_marker_color : '#d37474' ) : '#d37474'
+    elsif @community.temporary_theme_name == 'panther'
+      json.amenity_map_marker_color @community.design.present? ? (@community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : '#d37474' ) : '#d37474'
+    else
+      json.amenity_map_marker_color '#ff0000'
+    end
+
+    if @community.theme_name.include?('gables')
+      json.amenity_map_marker_size @community.design.present? ? (@community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer.to_s + "px" : '30px') : '30px'
+    elsif @community.temporary_theme_name == 'modernist'
+      json.amenity_map_marker_size @community.design.present? ? (@community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
+    elsif @community.temporary_theme_name == 'futurist'
+      json.amenity_map_marker_size @community.design.present? ? (@community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
+    elsif @community.temporary_theme_name == 'expressionist'
+      json.amenity_map_marker_size @community.design.present? ? (@community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size.to_s + "px" : '30px' ) : '30px'
+    elsif @community.temporary_theme_name == 'panther'
+      json.amenity_map_marker_size @community.design.present? ? (@community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size.to_s + "px" : '30px' ) : '30px'
+    else
+      json.amenity_map_marker_size '30px'
+    end
+
+    if @community.theme_name.include?('gables')
+      json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.gables_unit_floorplan_map_marker_color.present? ? @community.design.gables_unit_floorplan_map_marker_color : '#d37474') : '#d37474'
+    elsif @community.temporary_theme_name == 'modernist'
+      json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.modernist_unit_floorplan_map_marker_color.present? ? (@community.design.modernist_unit_floorplan_map_marker_color == 'no color' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F') : @community.design.modernist_unit_floorplan_map_marker_color) : (@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F' )) : '#FF0000'
+    elsif @community.temporary_theme_name == 'futurist'
+      json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.futurist_unit_floorplan_map_marker_color.present? ? @community.design.futurist_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
+    elsif @community.temporary_theme_name == 'expressionist'
+      json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.expressionist_unit_floorplan_map_marker_color.present? ? @community.design.expressionist_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
+    elsif @community.temporary_theme_name == 'panther'
+      json.unit_floorplan_map_marker_color @community.design.present? ? (@community.design.panther_unit_floorplan_map_marker_color.present? ? @community.design.panther_unit_floorplan_map_marker_color : '#d37474' ) : '#d37474'
+    else
+      json.unit_floorplan_map_marker_color '#ff0000'
+    end
+    #if (style_themes.include? @community.theme_name) && @community.design.present?
     json.fonts do
       json.primary_font_family @community.design.primary_font_family
       json.primary_font_size @community.design.primary_font_size
@@ -359,8 +372,8 @@ json.ui_settigs do
           json.secondary_page_menu_border "All sides"
         end
         if @community.theme_name == "futurist"
-        json.global_nav_button_on_as_image true
-        json.global_nav_button_off_as_image true
+          json.global_nav_button_on_as_image true
+          json.global_nav_button_off_as_image true
         else
           json.global_nav_button_on_as_image @community.design.global_nav_button_on_as_image
           json.global_nav_button_off_as_image @community.design.global_nav_button_off_as_image
@@ -803,7 +816,7 @@ json.ui_settigs do
           json.home_page_position_of_logo "Right"
         end
         if @community.theme_name == "expressionist"
-        json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487x160"
+          json.home_page_logo_size (@community.design.expressionist.present? and @community.design.expressionist.home_page_logo_size.present?) ? @community.design.expressionist.home_page_logo_size : "487x160"
         else
           json.home_page_logo_size "487x160"
         end
@@ -1204,214 +1217,213 @@ json.ui_settigs do
       end
     end
 
-  #end
-end
+    #end
+  end
 
-json.homescreen do
-  if @community.design.present?
-    if @community.design.home_page_images.present?
-      #json.images @community.design.home_page_images.order(:sort) do |img|
-      json.images @community.design.home_page_images do |img|
-        json.filename img.name
-        json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
+  json.homescreen do
+    if @community.design.present?
+      if @community.design.home_page_images.present?
+        #json.images @community.design.home_page_images.order(:sort) do |img|
+        json.images @community.design.home_page_images do |img|
+          json.filename img.name
+          json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
+        end
+      else
+        json.images DefaultImage.find_each do |img|
+          json.filename img.name
+          json.url Rails.env.development? ? local_assets_base_url+img.image : asset_url(img.image)
+        end
+      end
+      vid = @community.design.home_page_video.present? ? ( Rails.env.development? ? local_assets_base_url+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil
+      json.video vid
+      json.loop_type vid.present? ? @community.design.loop_type : "images"
+      if gables_theme(@community) && @community.design.secondary_images.present?
+        json.secondary_images @community.design.secondary_images.each do |img|
+          json.filename img.name
+          json.url img.is_a?(DefaultImage) ? asset_url(img.image) : (Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large))
+        end
       end
     else
       json.images DefaultImage.find_each do |img|
         json.filename img.name
         json.url Rails.env.development? ? local_assets_base_url+img.image : asset_url(img.image)
       end
+      json.video nil
+      json.loop_type "images"
     end
-    vid = @community.design.home_page_video.present? ? ( Rails.env.development? ? local_assets_base_url+@community.design.home_page_video.video.url : @community.design.home_page_video.video.url ) : nil
-    json.video vid
-    json.loop_type vid.present? ? @community.design.loop_type : "images"
-    if gables_theme(@community) && @community.design.secondary_images.present?
-      json.secondary_images @community.design.secondary_images.each do |img|
-        json.filename img.name
-        json.url img.is_a?(DefaultImage) ? asset_url(img.image) : (Rails.env.development? ? local_assets_base_url+img.image.url(:large) : img.image.url(:large))
-      end
-    end
-  else
-    json.images DefaultImage.find_each do |img|
-      json.filename img.name
-      json.url Rails.env.development? ? local_assets_base_url+img.image : asset_url(img.image)
-    end
-    json.video nil
-    json.loop_type "images"
   end
-end
 
-json.apartments do
-  if @community.has_floorplates?
-    json.map_type "floorplates"
-  else
-    json.map_type "sitemap"
-  end
-  if (@community.display_sitemap || @community.display_floorplan_gallery)
-    json.show_apartment_page  true
-  else
-    json.show_apartment_page false
-  end
-  json.apartment_page_name @community.apartment_page_name
-  json.display_rent @community.display_rent
-  json.display_sitemap @community.display_sitemap
-  json.display_floorplan_gallery @community.display_floorplan_gallery
-  json.display_available_date @community.display_available_date
-  if @community.sitemap.present? and !@community.has_floorplates?
-    image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
-    begin
-      json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
-    rescue
-
-    end
-    json.sitemap_amenities @community.sitemap.amenities do |amenity|
-      json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
-      json.name amenity.name
-      json.x_plot amenity.x_plot
-      json.y_plot amenity.y_plot
-      json.sitemap_id @community.id
-      json.id amenity.id
-    end
-  else
-    json.sitemap nil
-  end
-  units_floorplans = []
-  floorplans = @community.floorplans
-  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
-  json.display_unit_on_homepage @community.display_unit_on_homepage
-  json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
-    if @community.data_provider == "psi"
-      conditionAvailable = unit.available
+  json.apartments do
+    if @community.has_floorplates?
+      json.map_type "floorplates"
     else
-      conditionAvailable = 1
-    end  
-    if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && conditionAvailable
-      floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
-      units_floorplans << floorplan
-      json.marketing_name unit.unit_market
-      json.rent unit.effective_rent.present? ? unit.effective_rent : 0
-      json.availability unit.availability
-      json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
-      json.available unit.available
-      json.sold unit.sold
-      json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
-      json.x_plot unit.x_plot
-      json.y_plot unit.y_plot
-      json.building unit.building
-      json.floorplan_id floorplan.id
-      json.unit_type unit.unit_type
-      json.provider_unit_id unit.provider_unit_id
-      json.id unit.id
-      json.floorplan_name floorplan.present? ? floorplan.name : nil
-      json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
-      json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
-      json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
-      json.availability_url unit.availability_url.present? ? unit.availability_url : (floorplan.availability_url.present? ? floorplan.availability_url : nil)
+      json.map_type "sitemap"
+    end
+    if (@community.display_sitemap || @community.display_floorplan_gallery)
+      json.show_apartment_page  true
+    else
+      json.show_apartment_page false
+    end
+    json.apartment_page_name @community.apartment_page_name
+    json.display_rent @community.display_rent
+    json.display_sitemap @community.display_sitemap
+    json.display_floorplan_gallery @community.display_floorplan_gallery
+    json.display_available_date @community.display_available_date
+    if @community.sitemap.present? and !@community.has_floorplates?
+      image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
+      begin
+        json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
+      rescue
 
-      if unit.virtual_tour_url.present?
-        if unit.virtual_tour_url.include? '</iframe>'
-          @iframe_url = unit.virtual_tour_url.split('height')
-          if @iframe_url[1][3] == '"'
-            @iframe_url[1][2] = '1' + '0' + '0' + '%'
-          elsif @iframe_url[1][4] == '"'
-            @iframe_url[1][2] = '1'
-            @iframe_url[1][3] = '0' + '0' + '%'
-          elsif @iframe_url[1][5] == '"'
-            @iframe_url[1][2] = '1'
-            @iframe_url[1][3] = '0'
-            @iframe_url[1][4] = '0' + '%'
+      end
+      json.sitemap_amenities @community.sitemap.amenities do |amenity|
+        json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
+        json.name amenity.name
+        json.x_plot amenity.x_plot
+        json.y_plot amenity.y_plot
+        json.sitemap_id @community.id
+        json.id amenity.id
+      end
+    else
+      json.sitemap nil
+    end
+    units_floorplans = []
+    floorplans = @community.floorplans
+    available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
+    json.display_unit_on_homepage @community.display_unit_on_homepage
+    json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
+      if @community.data_provider == "psi"
+        conditionAvailable = unit.available
+      else
+        conditionAvailable = 1
+      end
+      if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && conditionAvailable
+        floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+        units_floorplans << floorplan
+        json.marketing_name unit.unit_market
+        json.rent unit.effective_rent.present? ? unit.effective_rent : 0
+        json.availability unit.availability
+        json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
+        json.available unit.available
+        json.sold unit.sold
+        json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+        json.x_plot unit.x_plot
+        json.y_plot unit.y_plot
+        json.building unit.building
+        json.floorplan_id floorplan.id
+        json.unit_type unit.unit_type
+        json.provider_unit_id unit.provider_unit_id
+        json.id unit.id
+        json.floorplan_name floorplan.present? ? floorplan.name : nil
+        json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
+        json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
+        json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
+
+        if unit.virtual_tour_url.present?
+          if unit.virtual_tour_url.include? '</iframe>'
+            @iframe_url = unit.virtual_tour_url.split('height')
+            if @iframe_url[1][3] == '"'
+              @iframe_url[1][2] = '1' + '0' + '0' + '%'
+            elsif @iframe_url[1][4] == '"'
+              @iframe_url[1][2] = '1'
+              @iframe_url[1][3] = '0' + '0' + '%'
+            elsif @iframe_url[1][5] == '"'
+              @iframe_url[1][2] = '1'
+              @iframe_url[1][3] = '0'
+              @iframe_url[1][4] = '0' + '%'
+            else
+              @iframe_url[1][2] = '1'
+              @iframe_url[1][3] = '0'
+              @iframe_url[1][4] = '0'
+              @iframe_url[1][5] = '%'
+            end
+            unit.virtual_tour_url = @iframe_url[0] + 'height' + @iframe_url[1]
+            json.virtual_tour unit.virtual_tour_url
           else
-            @iframe_url[1][2] = '1'
-            @iframe_url[1][3] = '0'
-            @iframe_url[1][4] = '0'
-            @iframe_url[1][5] = '%'
+            json.virtual_tour unit.virtual_tour_url
           end
-          unit.virtual_tour_url = @iframe_url[0] + 'height' + @iframe_url[1]
-          json.virtual_tour unit.virtual_tour_url
         else
-          json.virtual_tour unit.virtual_tour_url
+          json.virtual_tour ""
         end
-      else
-        json.virtual_tour ""
-      end
 
-      json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
-      json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
-      json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
-      if @community.display_rent
-        json.lease_pricing unit.lease_pricing.present? ? unit.lease_pricing.gsub('=>', ':') : nil
-      else
-        json.lease_pricing nil
-      end
-      if unit.standard_image_url.present? || unit.secondary_image.present?
-        json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : nil
-        json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : nil
-      else
-        json.image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-        json.secondary_image floorplan.present? ? (floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil) : nil
-      end
-      json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-      # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
-      json.floorplate_number unit.floor.present? ? unit.floor : 0
-      if unit.amenities.plotted_amenities.size > 0
-        json.unit_amenities unit.amenities.plotted_amenities do |amenity|
-          json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-          json.name amenity.name
-          json.x_plot amenity.x_plot
-          json.y_plot amenity.y_plot
-          json.unit_id unit.id
-          #json.id amenity.id
-          random_number = SecureRandom.random_number(59999)
-          unless random_numbers.include?(random_number)
-            random_numbers << random_number
-            json.id random_number
-          else
-            random_number = SecureRandom.random_number(69999)
-            random_numbers << random_number
-            json.id random_number
-          end
+        json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
+        json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
+        json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
+        if @community.display_rent
+          json.lease_pricing unit.lease_pricing.present? ? unit.lease_pricing.gsub('=>', ':') : nil
+        else
+          json.lease_pricing nil
         end
-      elsif !unit.standard_image_url.present?
-        #If unit amenities are not present then send floorplan amenities
-        json.unit_amenities floorplan.amenities.plotted_amenities do |amenity|
-          json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-          json.name amenity.name
-          json.x_plot amenity.x_plot
-          json.y_plot amenity.y_plot
-          json.unit_id unit.id
-          random_number = SecureRandom.random_number(59999)
-          unless random_numbers.include?(random_number)
-            random_numbers << random_number
-            json.id random_number
-          else
-            random_number = SecureRandom.random_number(69999)
-            random_numbers << random_number
-            json.id random_number
-          end
+        if unit.standard_image_url.present? || unit.secondary_image.present?
+          json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : nil
+          json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : nil
+        else
+          json.image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
+          json.secondary_image floorplan.present? ? (floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil) : nil
         end
-      else
-        json.unit_amenities []
+        json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
+        # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
+        json.floorplate_number unit.floor.present? ? unit.floor : 0
+        if unit.amenities.plotted_amenities.size > 0
+          json.unit_amenities unit.amenities.plotted_amenities do |amenity|
+            json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+            json.name amenity.name
+            json.x_plot amenity.x_plot
+            json.y_plot amenity.y_plot
+            json.unit_id unit.id
+            #json.id amenity.id
+            random_number = SecureRandom.random_number(59999)
+            unless random_numbers.include?(random_number)
+              random_numbers << random_number
+              json.id random_number
+            else
+              random_number = SecureRandom.random_number(69999)
+              random_numbers << random_number
+              json.id random_number
+            end
+          end
+        elsif !unit.standard_image_url.present?
+          #If unit amenities are not present then send floorplan amenities
+          json.unit_amenities floorplan.amenities.plotted_amenities do |amenity|
+            json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+            json.name amenity.name
+            json.x_plot amenity.x_plot
+            json.y_plot amenity.y_plot
+            json.unit_id unit.id
+            random_number = SecureRandom.random_number(59999)
+            unless random_numbers.include?(random_number)
+              random_numbers << random_number
+              json.id random_number
+            else
+              random_number = SecureRandom.random_number(69999)
+              random_numbers << random_number
+              json.id random_number
+            end
+          end
+        else
+          json.unit_amenities []
+        end
       end
     end
-  end
-  json.floorplans units_floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
-    json.id floorplan.id
-    json.provider_floorplan_id floorplan.provider_floorplan_id
-    json.name floorplan.name
-    json.rent floorplan.market_rent
-    json.units_available floorplan.units_available
-    json.unit_count floorplan.unit_count
-    json.bedrooms floorplan.bedrooms
-    json.bathrooms floorplan.bathrooms
-    json.square_feet floorplan.square_feet
-    json.description floorplan.description
-    json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
-    json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil
-    json.display_virtual_tour_button_label true #floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
-    json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
+    json.floorplans units_floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
+      json.id floorplan.id
+      json.provider_floorplan_id floorplan.provider_floorplan_id
+      json.name floorplan.name
+      json.rent floorplan.market_rent
+      json.units_available floorplan.units_available
+      json.unit_count floorplan.unit_count
+      json.bedrooms floorplan.bedrooms
+      json.bathrooms floorplan.bathrooms
+      json.square_feet floorplan.square_feet
+      json.description floorplan.description
+      json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
+      json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil
+      json.display_virtual_tour_button_label true #floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
+      json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
 
-    #json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
-    if floorplan.virtual_tour_url.present?
-      if floorplan.virtual_tour_url.include? '</iframe>'
+      #json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
+      if floorplan.virtual_tour_url.present?
+        if floorplan.virtual_tour_url.include? '</iframe>'
           @iframe_url = floorplan.virtual_tour_url.split('height')
           if @iframe_url[1][3] == '"'
             @iframe_url[1][2] = '1' + '0' + '0' + '%'
@@ -1432,183 +1444,182 @@ json.apartments do
           json.virtual_tour floorplan.virtual_tour_url
         else
           json.virtual_tour floorplan.virtual_tour_url
+        end
+      else
+        json.virtual_tour ""
+      end
+
+      json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
+        json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+        json.name amenity.name
+        json.x_plot amenity.x_plot
+        json.y_plot amenity.y_plot
+        json.floorplan_id floorplan.id
+        json.id amenity.id
+      end
+    end
+    #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
+    if @community.has_floorplates?
+      floorplates = @community.floorplates
+      floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
+      # floorplates = floorplates.sort_by { |f| -f.number }
+      json.floorplates floors do |floor|
+        floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
+        image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
+        json.id floor
+        json.number floor
+        json.name floorplate.name
+        json.floor_name floorplate.floor_name_added ? floorplate.floor_name : floor
+        json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
+        json.floorplate_amenities floorplate.amenities do |amenity|
+          if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
+            json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+            json.name amenity.name
+            json.x_plot amenity.x_plot
+            json.y_plot amenity.y_plot
+            json.floorplate_id floor
+            json.id amenity.id
+          end
+        end
       end
     else
-      json.virtual_tour ""
-    end
-
-    json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
-      json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-      json.name amenity.name
-      json.x_plot amenity.x_plot
-      json.y_plot amenity.y_plot
-      json.floorplan_id floorplan.id
-      json.id amenity.id
+      json.floorplates nil
     end
   end
-  #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
-  if @community.has_floorplates?
-    floorplates = @community.floorplates
-    floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
-    # floorplates = floorplates.sort_by { |f| -f.number }
-    json.floorplates floors do |floor|
-      floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
-      image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
-      json.id floor
-      json.number floor
-      json.name floorplate.name
-      json.floor_name floorplate.floor_name_added ? floorplate.floor_name : floor
-      json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
-      json.floorplate_amenities floorplate.amenities do |amenity|
-        if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
-          json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-          json.name amenity.name
-          json.x_plot amenity.x_plot
-          json.y_plot amenity.y_plot
-          json.floorplate_id floor
-          json.id amenity.id
+
+  json.neighborhood do
+    if @community.neighborhood.present?
+      json.show_neighborhood_page @community.neighborhood.show_neighborhood
+      json.neighborhood_page_name @community.neighborhood.neighborhood_name
+      json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
+      json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+      json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
+      json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
+      json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
+      json.display_neighborhood_on_homepage @community.neighborhood.display_neighborhood_on_homepage
+      if @community.neighborhood.listing.present?
+        json.listing @community.neighborhood.listing
+      end
+      arr = @community.neighborhood.category.split(',')
+      arr.insert(0,'All')
+      json.categories arr.each do |val|
+        json.title val
+      end
+      if @community.neighborhood.locations.present?
+        json.locations @community.neighborhood.locations.each do |location|
+          json.title location.title
+          json.address location.address
+          json.latitude location.latitude
+          json.longitude location.longitude
+          json.category location.category
+          json.image location.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+location.standard_image_url : location.standard_image_url) : asset_url("no_img.png")
+          json.distance location.distance
+          json.time location.time
+          json.rating location.rating.present? ? location.rating : 0
         end
       end
+    else
+      json.show_neighborhood_page true
+      json.neighborhood_page_name "Neighborhood"
+      json.display_neighborhood_on_homepage true
     end
-  else
-    json.floorplates nil  
   end
-end
 
-json.neighborhood do
-  if @community.neighborhood.present?
-    json.show_neighborhood_page @community.neighborhood.show_neighborhood
-    json.neighborhood_page_name @community.neighborhood.neighborhood_name
-    # json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
-    # json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
-    json.latitude @community.latitude.present? ? @community.latitude : 0.0
-    json.longitude @community.longitude.present? ? @community.longitude : 0.0
-    json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
-    json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
-    json.address (@community.address.present? ? @community.address + " , "  : "") + (@community.city.present? ? @community.city+ " , " : "") + (@community.state.present? ? @community.state+ " , " : "") + (@community.zip.present? ? @community.zip : "")
-    # json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
-    json.display_neighborhood_on_homepage @community.neighborhood.display_neighborhood_on_homepage
-    if @community.neighborhood.listing.present?
-      json.listing @community.neighborhood.listing
+  json.favorite do
+    if @community.favorite_setting.present?
+      json.show_favorite_page @community.favorite_setting.show_favorite
+      json.favorite_page_name @community.favorite_setting.favorite_name
+      json.email_from @community.favorite_setting.email_from
+      json.email_bcc @community.favorite_setting.email_bcc
+    else
+      json.show_favorite_page true
+      json.favorite_page_name "Favorites"
     end
-    arr = @community.neighborhood.category.split(',')
-    arr.insert(0,'All')
-    json.categories arr.each do |val|
-      json.title val
-    end
-    if @community.neighborhood.locations.present?
-      json.locations @community.neighborhood.locations.each do |location|
-        json.title location.title
-        json.address location.address
-        json.latitude location.latitude
-        json.longitude location.longitude
-        json.category location.category
-        json.image location.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+location.standard_image_url : location.standard_image_url) : asset_url("no_img.png")
-        json.distance location.distance
-        json.time location.time
-        json.rating location.rating.present? ? location.rating : 0
+  end
+
+  json.gallery do
+    json.show_gallery_page @community.show_gallery
+    json.gallery_page_name @community.gallery_page_name
+    json.display_gallery_on_homepage @community.display_gallery_on_homepage
+    if @community.gallery_images.present?
+      json.categories @community.galleries.order(:sort).pluck(:name).each do |name|
+        json.title name
       end
-    end
-  else
-    json.show_neighborhood_page true
-    json.neighborhood_page_name "Neighborhood"
-    json.display_neighborhood_on_homepage true
-  end
-end
-
-json.favorite do
-  if @community.favorite_setting.present?
-    json.show_favorite_page @community.favorite_setting.show_favorite
-    json.favorite_page_name @community.favorite_setting.favorite_name
-    json.email_from @community.favorite_setting.email_from
-    json.email_bcc @community.favorite_setting.email_bcc
-  else
-    json.show_favorite_page true
-    json.favorite_page_name "Favorites"
-  end
-end
-
-json.gallery do
-  json.show_gallery_page @community.show_gallery
-  json.gallery_page_name @community.gallery_page_name
-  json.display_gallery_on_homepage @community.display_gallery_on_homepage
-  if @community.gallery_images.present?
-    json.categories @community.galleries.order(:sort).pluck(:name).each do |name|
-      json.title name
-    end
-    #json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
-    json.images @community.gallery_images.each do |img|
-      unless params[:action] == "ios_data"
-        if img.standard_image_url.include?(".mp4") || img.standard_image_url.include?(".MP4")
-          json.url Rails.env.development? ? local_assets_base_url+img.standard_image_url : img.standard_image_url
-          json.video true
-          json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
-        else
-          json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
-          json.video false
-        end
-        json.type img.gallery.name
-        json.id img.id
-      else
-        if !img.standard_image_url.include?(".mp4") and !img.standard_image_url.include?(".MP4")
-          json.url Rails.env.development? ? local_assets_base_url+img.ios_image_url : img.ios_image_url
-          json.video false
+      #json.images @community.gallery_images.order(:sort).each_with_index.to_a do |(img,index)|
+      json.images @community.gallery_images.each do |img|
+        unless params[:action] == "ios_data"
+          if img.standard_image_url.include?(".mp4") || img.standard_image_url.include?(".MP4")
+            json.url Rails.env.development? ? local_assets_base_url+img.standard_image_url : img.standard_image_url
+            json.video true
+            json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
+          else
+            json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
+            json.video false
+          end
           json.type img.gallery.name
           json.id img.id
-        end
-      end
-    end
-  end
-end
-
-json.additional_pages do
-  if @community.webpages.present?
-    json.webpages @community.webpages.active.each do |webpage|
-      json.id webpage.id
-      json.title webpage.name
-      if webpage.url.include? '</iframe>'
-        @iframe_url = webpage.url.split('height')
-        if @iframe_url[1][3] == '"'
-          @iframe_url[1][2] = '1' + '0' + '0' + '%'
-        elsif @iframe_url[1][4] == '"'
-          @iframe_url[1][2] = '1'
-          @iframe_url[1][3] = '0' + '0' + '%'
-        elsif @iframe_url[1][5] == '"'
-          @iframe_url[1][2] = '1'
-          @iframe_url[1][3] = '0'
-          @iframe_url[1][4] = '0' + '%'
         else
-          @iframe_url[1][2] = '1'
-          @iframe_url[1][3] = '0'
-          @iframe_url[1][4] = '0'
-          @iframe_url[1][5] = '%'
-        end
-        webpage.url = @iframe_url[0] + 'height' + @iframe_url[1]
-        json.url webpage.url
-      else
-        json.url webpage.url
-      end
-      json.position webpage.position.present? ? webpage.position : 0
-      json.display_on_homepage webpage.display_on_homepage.present? ? webpage.display_on_homepage : false
-    end
-  end
-  if @community.imagepages.present?
-    json.imagepages @community.imagepages.active.each do |imagepage|
-      json.id imagepage.id
-      json.title imagepage.name
-      json.position imagepage.position.present? ? imagepage.position : 0
-      json.display_on_homepage imagepage.display_on_homepage.present?  ? imagepage.display_on_homepage : false
-      json.slideshow imagepage.is_slideshow
-      if imagepage.additional_images.present?
-        json.images imagepage.additional_images.order(:sort)  do |image|
-          json.id image.id
-          json.title image.name
-          json.image Rails.env.development? ? local_assets_base_url+image.image.url : image.image.url
+          if !img.standard_image_url.include?(".mp4") and !img.standard_image_url.include?(".MP4")
+            json.url Rails.env.development? ? local_assets_base_url+img.ios_image_url : img.ios_image_url
+            json.video false
+            json.type img.gallery.name
+            json.id img.id
+          end
         end
       end
     end
   end
+
+  json.additional_pages do
+    if @community.webpages.present?
+      json.webpages @community.webpages.active.each do |webpage|
+        json.id webpage.id
+        json.title webpage.name
+        if webpage.url.include? '</iframe>'
+          @iframe_url = webpage.url.split('height')
+          if @iframe_url[1][3] == '"'
+            @iframe_url[1][2] = '1' + '0' + '0' + '%'
+          elsif @iframe_url[1][4] == '"'
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0' + '0' + '%'
+          elsif @iframe_url[1][5] == '"'
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0'
+            @iframe_url[1][4] = '0' + '%'
+          else
+            @iframe_url[1][2] = '1'
+            @iframe_url[1][3] = '0'
+            @iframe_url[1][4] = '0'
+            @iframe_url[1][5] = '%'
+          end
+          webpage.url = @iframe_url[0] + 'height' + @iframe_url[1]
+          json.url webpage.url
+        else
+          json.url webpage.url
+        end
+        json.position webpage.position.present? ? webpage.position : 0
+        json.display_on_homepage webpage.display_on_homepage.present? ? webpage.display_on_homepage : false
+      end
+    end
+    if @community.imagepages.present?
+      json.imagepages @community.imagepages.active.each do |imagepage|
+        json.id imagepage.id
+        json.title imagepage.name
+        json.position imagepage.position.present? ? imagepage.position : 0
+        json.display_on_homepage imagepage.display_on_homepage.present?  ? imagepage.display_on_homepage : false
+        json.slideshow imagepage.is_slideshow
+        if imagepage.additional_images.present?
+          json.images imagepage.additional_images.order(:sort)  do |image|
+            json.id image.id
+            json.title image.name
+            json.image Rails.env.development? ? local_assets_base_url+image.image.url : image.image.url
+          end
+        end
+      end
+    end
+  end
+  puts '--------------------------' , random_numbers
+  json.message "success"
+  json.operation "data"
+
 end
-puts '--------------------------' , random_numbers
-json.message "success"
-json.operation "data"

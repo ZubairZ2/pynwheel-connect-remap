@@ -1,0 +1,32 @@
+- content_for :title, "Add Community - Pynwheel"
+%section.is-community-page
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Add
+          %span Community
+
+      = form_for @community_group,:url=>save_community_community_groups_path(@community_group),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Communities
+                  %span Select communities
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+
+
+                  -if current_user.is_super_admin?
+                    = f.select :communities, options_for_select(@company.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control",:multiple=>true}
+
+
+
+        / /.box-body
+        .box-footer
+          = link_to "CANCEL" , company_community_group_path((Company.find @community_group.company_id).id,@community_group.id), :class=>"btn btn-default pull-right"
+          = f.submit "ADD COMMUNITY", :class=>"btn btn-success pull-right mr-10"
+
+:javascript
+  $('#community_group_communities').multiSelect();

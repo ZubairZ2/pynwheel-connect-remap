@@ -92,6 +92,8 @@
 #  global_navigation_home_icon                      :boolean          default(FALSE)
 #  homepage_button_border                           :string
 #  global_nav_button_icon_size                      :string
+#  display_neighborhood_bg_image                    :boolean
+#  neighborhood_bg_image                            :string
 #
 
 class Expressionist < ApplicationRecord

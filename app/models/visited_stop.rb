@@ -10,6 +10,8 @@
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  tour_id      :integer
+#  device_id    :string
+#  tour_key     :string
 #
 
 class VisitedStop < ApplicationRecord

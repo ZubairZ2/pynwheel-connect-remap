@@ -129,6 +129,8 @@
 #  panther_unit_floorplan_map_marker_color         :string
 #  gables_unit_floorplan_map_marker_color          :string
 #  modernist_unit_floorplan_map_marker_color       :string
+#  display_filter_label_image                      :boolean
+#  filter_label_image                              :string
 #
 
 class Design < ApplicationRecord

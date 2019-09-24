@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'community_groups/index'
+
   get 'tours/index'
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
@@ -7,8 +9,18 @@ Rails.application.routes.draw do
   
   resources :companies do
     resources :communities
+    resources :community_groups
     resources :employees, :controller => 'users' do
       get :profile
+    end
+  end
+  resources :community_groups do
+    member do
+      delete :remove_community
+    end
+    collection do
+      get :add_community
+      post :save_community
     end
   end
   resources :communities do
@@ -248,6 +260,7 @@ Rails.application.routes.draw do
       resources :communities, only: :index do
         member do
           get :data
+          get :data_group
           get :community_tours
           post :user_saved_tour
           get :ios_data

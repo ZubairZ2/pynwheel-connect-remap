@@ -14,16 +14,33 @@ class Api::V1::CommunitiesController < ActionController::Base
     begin
       str = params[:community_string]
       community = Community.where(code: str)
-      if community.present?
-        company = community.first.company
-        if company.inactivate == false && !(community.first.locked == true)
-          render :json=> {:success=>true, :community => community.first.id, :message => "success", :operation => "login"}      
+      unless community.present?
+        community_group = CommunityGroup.where(code: str)
+      end
+      if community_group.present?
+
+        community_group = community_group.first
+
+        if community_group.inactivate == false
+          render :json=> {:success=>true, :community => community_group.id,:name => community_group.name,:community_name => (Company.find community_group.company_id).name,:type => "community_group",:link => "/api/v1/communities/#{community_group.id}/data_group.json",:is_group => true , :message => "success", :operation => "login"}
         else
           render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
         end
       else
-        render :json=> {:success=>false, :message => "Community not found"}
+        if community.present?
+          company = community.first.company
+          group = CommunityGroup.find_by id: community.first.community_group_id if community.first.community_group_id.present?
+          if company.inactivate == false && !(community.first.locked == true)
+            group_link = group.present? ? "/api/v1/communities/#{group.id}/data_group.json" : nil
+            render :json=> {:success=>true, :community => community.first.id,:name => community.first.name,:community_name => company.name,:type => "community",:link =>  group.present? ? group_link : "/api/v1/communities/#{community.first.id}/data.json",:is_group => group.present?, :message => "success", :operation => "login"}
+          else
+            render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
+          end
+        else
+          render :json=> {:success=>false, :message => "Invalid code"}
+        end
       end
+
     rescue Exception => e   
       render :json=> {:success=>false, :message => e.message}, :status=>500
     end
@@ -91,6 +108,16 @@ class Api::V1::CommunitiesController < ActionController::Base
   def include_application_data
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])
+  end
+  def data_group
+    @version = AppVersion.first.version
+    @community_group = CommunityGroup.find params[:id]
+    @communities = []
+
+    @community_group.communities.each do |com|
+      community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(com.id)
+      @communities << community unless community.locked
+    end
   end
   def get_neighbourhood_data
     # @@counter = @@counter + 1
