@@ -20,7 +20,7 @@ namespace :import do
         case community.data_provider
           when "psi"
               entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
-              if community.id = 458
+              if community.id == 458
                 entrata_list_logs_str = entrata_list_logs_str + "==="
                 temp = ImportPsiDataJob.perform_async community.credential.attributes.to_json
                 entrata_list_logs_str = entrata_list_logs_str + temp.to_s + " , "
