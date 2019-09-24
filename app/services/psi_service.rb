@@ -1,10 +1,10 @@
 class PsiService < BaseService
   # @@floorplanHash = Hash.new
   def perform
-    byebug
     com_test = Community.find credentials.community_id
     if com_test.id == 458
       com_test.entrata_exception_logs = com_test.entrata_exception_logs + "1 "
+      com_test.save
     end
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
@@ -17,6 +17,7 @@ class PsiService < BaseService
         end
         if com_test.id == 458
           com_test.entrata_exception_logs = com_test.entrata_exception_logs + "2 "
+          com_test.save
         end
 
         password = credentials.password
@@ -43,6 +44,7 @@ class PsiService < BaseService
         response =  JSON.parse(response.body)
         if com_test.id == 458
           com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
+          com_test.save
         end
         sleep 5
         if response["response"]["code"] == 200
@@ -58,14 +60,17 @@ class PsiService < BaseService
           end
           if com_test.id == 458
             com_test.entrata_exception_logs = com_test.entrata_exception_logs + "4 "
+            com_test.save
           end
           save_psi_floorplans(floorplans,property_id)
           if com_test.id == 458
             com_test.entrata_exception_logs = com_test.entrata_exception_logs + "5 "
+            com_test.save
           end
           save_psi_units(units,property_id)
           if com_test.id == 458
             com_test.entrata_exception_logs = com_test.entrata_exception_logs + "6 "
+            com_test.save
           end
           begin
             cred = Credential.find credentials.id
@@ -107,6 +112,7 @@ class PsiService < BaseService
     end
     if com_test.id == 458
       com_test.entrata_exception_logs = com_test.entrata_exception_logs + "7 "
+      com_test.save
     end
     fill_psi_pricing_details
   end
