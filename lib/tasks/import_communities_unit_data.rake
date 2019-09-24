@@ -18,10 +18,17 @@ namespace :import do
         puts '****************************' , community.id
         community_logs_str = community_logs_str + community.id.to_s + " , "
         case community.data_provider
-        when "psi"
-            entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
-            #PsiService.new(community.credential.attributes).perform
-            ImportPsiDataJob.perform_async community.credential.attributes.to_json
+          when "psi"
+              entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
+              if community.id = 458
+                entrata_list_logs_str = entrata_list_logs_str + "==="
+                temp = ImportPsiDataJob.perform_async community.credential.attributes.to_json
+                entrata_list_logs_str = entrata_list_logs_str + temp.to_s + " , "
+              else
+                ImportPsiDataJob.perform_async community.credential.attributes.to_json
+              end
+              #PsiService.new(community.credential.attributes).perform
+
           when "yardirentcafe"
             #YardiRentCafeService.new(community.credential.attributes).perform
             ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
