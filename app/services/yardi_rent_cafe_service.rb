@@ -68,7 +68,7 @@ class YardiRentCafeService < BaseService
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
-                unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present
+                unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
                 unit.save(validate: false)
 
               end
