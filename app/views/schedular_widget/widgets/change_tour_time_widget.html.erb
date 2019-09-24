@@ -111,7 +111,9 @@
                 <%= text_field_tag :tour_time,"", :class=>"form-control datepickertime", :placeholder=>"Date/Time",:maxlength=>"15",:autocomplete=>"off", required: 'required' %>
               </div>
               <div class="clearfix"></div>
-              <button class="btn_popup">ReSchedule My Tour!</button>
+
+              <button class="btn_popup" style="float: left; width: 50%;">Confirm</button>
+              <button class="btn_popup" id="cancel-visit" style="border-left: 1px solid #fff;  width: 50%;">Cancel my visit</button>
             </form>
           </div>
         </section>
@@ -172,6 +174,25 @@
               $("#reschedule-content").html(data.message)
               $("#scheduleMyTourForm").modal('hide');
               $("#scheduleMyTourSuccess").modal()
+            },
+            fail: function(error){
+              console.log(error)
+            }
+          });
+          e.preventDefault();
+        });
+
+        $("#cancel-visit").on('click', function(e){
+          $.ajax({
+            type: "POST",
+            url: "/destroy_schedual_tours/<%= params[:id]%>.json",
+            data: $(this).serialize(),
+            cache: false,
+            success: function(data){
+              // $("#reschedule-content").html(data.message)
+              // $("#scheduleMyTourForm").modal('hide');
+              // $("#scheduleMyTourSuccess").modal()
+              alert("Your tour has been canceled")
             },
             fail: function(error){
               console.log(error)
