@@ -93,24 +93,7 @@ class SchedualToursController < ApplicationController
     respond_to do |format|
       if @schedual_tour.save
 
-        # email_content = "Thank you for scheduling your self-guided tour! We look forward to having you at the property on  <b>#{@schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(@schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. When you go to the property, you will need A photo ID This phone <br/> Please download the Pynwheel self-guided tour app before you arrive: <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>"
-
-        # web_notification = "Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is ReScheduled. We look forward to having you at the property on  <b>#{@schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(@schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel App </a>"
-
-        # sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is ReScheduled. We look forward to having you at the property on  #{@schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(@schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: https://apps.apple.com/us/app/pynwheel/id876032030."
-        
-        # delayed_day_before_content = "We look forward to having you visit our property at #{ Time.parse(@schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. Download Pynwheel Self Tour (https://apps.apple.com/us/app/pynwheel/id876032030). Change appointment. (#{schedular_widget_change_tour_time_path(@schedual_tour)})"
-
-        # delayed_hour_before_content = "Directions to Property <link opens Google map with address pre-populated> When you arrive at the property, open <Pynwheel Self Tour> to start your tour."
-
         begin
-
-          # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email @schedual_tour
-          # DelayedSchedulerMailerJob.perform_in(day_before, "Your Tomorrow Tour", delayed_day_before_content, tu.email) if day_before.present?
-          # DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
-
-          # NotificationMailer.tour_history_mail("Tour has been Re-scheduled", email_content, tu.email).deliver_later
-
           sent_notifications = send_email_and_other_notifications @schedual_tour
     
         rescue Exception => e
@@ -145,30 +128,38 @@ class SchedualToursController < ApplicationController
       
       tu = schedual_tour.tour_user
       community = schedual_tour.community
-      day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
+      
+      # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
+      
       email_content = "Thank you for scheduling your self-guided tour! We look forward to having you at the property on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. When you go to the property, you will need <br/> A photo ID This phone <br/> Please download the Pynwheel self-guided tour app before you arrive: <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>"
 
       web_notification = "Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel App </a>"
 
       sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions."
 
-      delayed_day_before_content = "We look forward to having you visit our property at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>. <br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
+      # delayed_day_before_content = "We look forward to having you visit our property at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>. <br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
 
-      delayed_hour_before_content = "<a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br/>When you arrive at the property, open <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel Self Tour </a> to start your tour."
+      # delayed_hour_before_content = "<a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br/>When you arrive at the property, open <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel Self Tour </a> to start your tour."
 
       
-      day_before = 5.minutes.seconds
-      hour_before = 3.minutes.seconds
+      # day_before = 5.minutes.seconds
+      # hour_before = 3.minutes.seconds
 
-      DelayedSchedulerMailerJob.perform_in(day_before, "Your Tomorrow Tour", delayed_day_before_content, tu.email) if day_before.present?
-      DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
+      # DelayedSchedulerMailerJob.perform_in(day_before, "Your Tomorrow Tour", delayed_day_before_content, tu.email) if day_before.present?
+      # DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
 
 
-      NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
       
-      {email_content: email_content, web_notification: web_notification, sms_content: sms_content, delayed_day_before_content: delayed_day_before_content, delayed_hour_before_content: delayed_hour_before_content}
+      # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
+      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email)
+      
+      {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
+      
+      # {email_content: email_content, web_notification: web_notification, sms_content: sms_content, delayed_day_before_content: delayed_day_before_content, delayed_hour_before_content: delayed_hour_before_content}
 
     end
+
+    # TODO not being used, remove it maybe
     def calculate_seconds_one_day_prior_for_delayed_email schedual_tour
       
       date = schedual_tour.tour_date
@@ -187,6 +178,7 @@ class SchedualToursController < ApplicationController
     def get_date_time_combined date, time
       DateTime.new(date.year, date.month, date.day, time.hour, time.min, time.sec, time.zone)
     end
+    
     # Use callbacks to share common setup or constraints between actions.
     def set_schedual_tour
       @schedual_tour = SchedualTour.find(params[:id])
