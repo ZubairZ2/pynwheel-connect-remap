@@ -68,7 +68,7 @@ class Floorplan < ApplicationRecord
     secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
   end
   def crop_image
-    image.recreate_versions! if (crop_x.present? && image_bit && do_crop_secondary)
+    image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
   def set_image_name
     self.name = image.file.filename
