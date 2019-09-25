@@ -82,10 +82,10 @@ class Community < ApplicationRecord
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
 
   def crop_image
-    logo.recreate_versions! if (crop_x.present? && image_bit)
+    logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
   def crop_secondary_image
-    secondary_logo.recreate_versions! if (crop_x_secondary.present? && !image_bit)
+    secondary_logo.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
   end
 
   def is_futurist?
