@@ -93,6 +93,9 @@ class ImagepagesController < ApplicationController
 		else
 			@additional_image.do_crop = true
 		end
+		if params[:additional_image][:crop_h].to_f == 0 && params[:additional_image][:crop_w].to_f == 0
+			@additional_image.do_crop = false
+		end
 		@additional_image.update(additional_image_params)
 		flash[:notice] = "Image is edited successfully."
 		redirect_back(fallback_location: root_path)
