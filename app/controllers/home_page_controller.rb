@@ -54,6 +54,11 @@ class HomePageController < ApplicationController
 
   def update_home_page_image
     @home_page_image = HomePageImage.find(params[:home_page_image_id])
+    if @home_page_image.crop_x == params[:home_page_image][:crop_x].to_f
+      @home_page_image.do_crop = false
+    else
+      @home_page_image.do_crop = true
+    end
     @home_page_image.update(home_page_image_params)
     flash[:notice] = "Image is edited successfully."
     redirect_back(fallback_location: root_path)

@@ -30,7 +30,7 @@ class HomePageImage < ApplicationRecord
   after_commit :populate_image_urls, on: [:create,:update]
 
   def crop_image
-    image.recreate_versions! if crop_x.present?
+    image.recreate_versions! if (crop_x.present? && do_crop)
   end
 
   def set_image_name
