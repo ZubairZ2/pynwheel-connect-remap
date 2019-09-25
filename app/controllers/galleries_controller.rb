@@ -119,6 +119,9 @@ class GalleriesController < ApplicationController
 		else
 			@gallery_image.do_crop = true
 		end
+		if params[:gallery_image][:crop_h].to_f == 0 && params[:gallery_image][:crop_w].to_f == 0
+			@gallery_image.do_crop = false
+		end
 		@gallery_image.crop_x = params[:gallery_image][:crop_x].to_f
 		@gallery_image.crop_y = params[:gallery_image][:crop_y].to_f
 		@gallery_image.crop_w = params[:gallery_image][:crop_w].to_f
