@@ -10,11 +10,11 @@ json.ui_settigs do
   end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
   if @community.theme_name == "futurist" || @community.theme_name == "modernist"
-    json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+    json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp="+@community.crop_x.to_s : "") : @community.logo.url + (@community.crop_x.present? ? "?temp="+@community.crop_x.to_s : "") ) : asset_url("pynwheel-default-logo.png")
   else
-    json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
+    json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp="+@community.crop_x_secondary.to_s : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp="+@community.crop_x_secondary.to_s : "") ) : asset_url("pynwheel-default-logo.png")
   end
-  json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+  json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp="+@community.crop_x.to_s : "") : @community.logo.url + (@community.crop_x.present? ? "?temp="+@community.crop_x.to_s : "") ) : asset_url("pynwheel-default-logo.png")
   json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
   json.show_gesture_icons @community.show_gesture_icons
   json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
@@ -1201,7 +1201,7 @@ json.homescreen do
       #json.images @community.design.home_page_images.order(:sort) do |img|
       json.images @community.design.home_page_images do |img|
         json.filename img.name
-        json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
+        json.url Rails.env.development? ? local_assets_base_url+img.large_image_url + (img.crop_x.present? ? "?temp="+img.crop_x.to_s : "")  : img.large_image_url + (img.crop_x.present? ? "?temp="+img.crop_x.to_s : "")
       end
     else
       json.images DefaultImage.find_each do |img|
@@ -1391,8 +1391,8 @@ json.apartments do
     json.bathrooms floorplan.bathrooms
     json.square_feet floorplan.square_feet
     json.description floorplan.description
-    json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
-    json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil
+    json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp="+floorplan.crop_x.to_s : ""): floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp="+floorplan.crop_x.to_s : "")) : nil
+    json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp="+floorplan.crop_x_secondary.to_s : ""): floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp="+floorplan.crop_x_secondary.to_s : "")) : nil
     json.display_virtual_tour_button_label true #floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
     json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
 
@@ -1528,7 +1528,7 @@ json.gallery do
           json.video true
           json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
         else
-          json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
+          json.url Rails.env.development? ? local_assets_base_url+img.large_image_url + (img.crop_x.present? ? "?temp="+img.crop_x.to_s : "") : img.large_image_url + (img.crop_x.present? ? "?temp="+img.crop_x.to_s : "")
           json.video false
         end
         json.type img.gallery.name
@@ -1587,7 +1587,7 @@ json.additional_pages do
         json.images imagepage.additional_images.order(:sort)  do |image|
           json.id image.id
           json.title image.name
-          json.image Rails.env.development? ? local_assets_base_url+image.image.url : image.image.url
+          json.image Rails.env.development? ? local_assets_base_url+image.image.url + (image.crop_x.present? ? "?temp="+image.crop_x.to_s : "") : image.image.url + (image.crop_x.present? ? "?temp="+image.crop_x.to_s : "")
         end
       end
     end
