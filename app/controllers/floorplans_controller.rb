@@ -92,7 +92,6 @@ class FloorplansController < ApplicationController
     redirect_to edit_community_floorplan_path(@community,@floorplan)
     # render :json=> {:success=>false}
   end
-
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?
