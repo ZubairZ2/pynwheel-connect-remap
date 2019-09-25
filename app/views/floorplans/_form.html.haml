@@ -155,7 +155,8 @@
             = link_to show_floorplan_secondary_image_in_modal_community_floorplan_path(), remote: true do
               %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
                 Crop
-
+#crop-floorplan-secondary-image.modal.fade.edit-image
+#crop-floorplan-image.modal.fade.edit-image
 :javascript
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {
