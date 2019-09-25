@@ -114,6 +114,11 @@ class GalleriesController < ApplicationController
 		puts params
 		@gallery_image = GalleryImage.find(params[:gallery_image_id])
 		@gallery_image.name = params[:gallery_image][:name]
+		if @gallery_image.crop_x == params[:gallery_image][:crop_x].to_f
+			@gallery_image.do_crop = false
+		else
+			@gallery_image.do_crop = true
+		end
 		@gallery_image.crop_x = params[:gallery_image][:crop_x].to_f
 		@gallery_image.crop_y = params[:gallery_image][:crop_y].to_f
 		@gallery_image.crop_w = params[:gallery_image][:crop_w].to_f

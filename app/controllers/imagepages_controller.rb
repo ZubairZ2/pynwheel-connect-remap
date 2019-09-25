@@ -88,6 +88,11 @@ class ImagepagesController < ApplicationController
 	def update_additional_image
 		@imagepage = @community.imagepages.find(params[:id])
 		@additional_image = @imagepage.additional_images.find(params[:additional_image_id])
+		if @additional_image.crop_x == params[:additional_image][:crop_x].to_f
+			@additional_image.do_crop = false
+		else
+			@additional_image.do_crop = true
+		end
 		@additional_image.update(additional_image_params)
 		flash[:notice] = "Image is edited successfully."
 		redirect_back(fallback_location: root_path)
