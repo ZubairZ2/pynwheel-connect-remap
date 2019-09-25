@@ -50,6 +50,14 @@ class FloorplansController < ApplicationController
     # @floorplan.save
     # @community = Community.find params["community_id"]
     # @floorplan = Floorplan.find params["id"]
+    if @floorplan.crop_x == params[:floorplan][:crop_x].to_f
+      @floorplan.do_crop = false
+    else
+      @floorplan.do_crop = true
+    end
+    if params[:floorplan][:crop_h].to_f == 0 && params[:floorplan][:crop_w].to_f == 0
+      @floorplan.do_crop = false
+    end
     @floorplan.crop_x = params[:floorplan][:crop_x]
     @floorplan.crop_y = params[:floorplan][:crop_y]
     @floorplan.crop_w = params[:floorplan][:crop_w]
@@ -67,6 +75,14 @@ class FloorplansController < ApplicationController
   def crop_secondary_image
     @community = Community.find params["community_id"]
     @floorplan = Floorplan.find params["id"]
+    if @floorplan.crop_x_secondary == params[:floorplan][:crop_x].to_f
+      @floorplan.do_crop_secondary = false
+    else
+      @floorplan.do_crop_secondary = true
+    end
+    if params[:floorplan][:crop_h].to_f == 0 && params[:floorplan][:crop_w].to_f == 0
+      @floorplan.do_crop_secondary = false
+    end
     @floorplan.crop_x_secondary = params[:floorplan][:crop_x]
     @floorplan.crop_y_secondary = params[:floorplan][:crop_y]
     @floorplan.crop_w_secondary = params[:floorplan][:crop_w]
