@@ -10,9 +10,9 @@
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
-        -#.form-group
-        -#  %label{:for => "exampleInputEmail1"} Image Title
-        -#  = f.text_field :name , class: "form-control", placeholder: "Name"
+        .form-group
+          %label{:for => "exampleInputEmail1"} Image Title
+          = f.text_field :name , class: "form-control", placeholder: "Name"
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
             Apply Changes
