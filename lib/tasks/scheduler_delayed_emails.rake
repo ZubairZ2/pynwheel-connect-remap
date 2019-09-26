@@ -7,7 +7,7 @@ namespace :delayed_email_notifications do
 
 	task :one_day_before => :environment do
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Today Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	  schedual_tours = SchedualTour.where('tour_date = ? AND daily_email_status = ?', Date.today+1, true)
+	  schedual_tours = SchedualTour.where('tour_date = ? AND daily_email_sent = ?', Date.today+1, false)
 	  one_day_before_emails schedual_tours
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Today #{schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
 	end
