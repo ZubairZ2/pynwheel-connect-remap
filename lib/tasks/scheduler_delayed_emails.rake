@@ -34,7 +34,7 @@ namespace :delayed_email_notifications do
 			
 			content = "We look forward to having you visit our property at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>. <br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
 
-			schedual_tour.update_columns(daily_email_sent: true, schedual_tour.day_diff-1)
+			schedual_tour.update_columns(daily_email_sent: true, day_diff: schedual_tour.day_diff-1)
 
 			DelayedSchedulerMailerJob.perform_async("Your Tomorrow Tour", content, tu.email)
 	  	puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
