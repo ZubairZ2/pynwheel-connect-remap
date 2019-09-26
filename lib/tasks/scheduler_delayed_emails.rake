@@ -15,7 +15,7 @@ namespace :delayed_email_notifications do
 	desc "This delayed email task is called every hour by the Heroku scheduler add-on"
 	task :one_hour_before => :environment do
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Hour Left Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	 	schedual_tours = SchedualTour.where('tour_date = ? AND tour_time >= ? AND hourly_email_sent = ?', Date.today, Time.current+5.hours, false)
+	 	schedual_tours = SchedualTour.where('tour_date = ? AND hourly_email_sent = ?', Date.today, false)
 
 	 	# failed_schedual_tours = SchedualTour.where('tour_date = ? AND tour_time <= ? AND hourly_email_sent = ?', Date.today, Time.current+5.hours - 10.minutes, false)
 
@@ -47,9 +47,11 @@ namespace :delayed_email_notifications do
 	def one_hour_before_emails schedual_tours
 
 		schedual_tours.each do |schedual_tour|
+
 			
-			time_left_to_email = (schedual_tour.tour_time - Time.current)/1.minute
+			time_left_to_email = (schedual_tour.tour_time - Time.current.in_time_zone(schedual_tour.user_time_zone))/1.minute
 			
+			time_left_to_email * -1 if time_left_to_email < 0
 			puts "<<<<<<<<<<<<<<<<<<<<<<<<< TIME LEFT TO EMAIL #{time_left_to_email} >>>>>>>>>>>>>>>>>>>>>>"
 			
 			if time_left_to_email <= 60
