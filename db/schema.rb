@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190924140726) do
+ActiveRecord::Schema.define(version: 20190926081647) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -783,9 +783,11 @@ ActiveRecord::Schema.define(version: 20190924140726) do
     t.time     "tour_time"
     t.integer  "tour_user_id"
     t.integer  "tour_id"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
     t.integer  "community_id"
+    t.boolean  "hourly_email_sent", default: false
+    t.boolean  "daily_email_sent",  default: false
     t.index ["tour_id"], name: "index_schedual_tours_on_tour_id", using: :btree
     t.index ["tour_user_id"], name: "index_schedual_tours_on_tour_user_id", using: :btree
   end
