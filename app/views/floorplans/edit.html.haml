@@ -1,4 +1,5 @@
 - content_for :title, "Floor plan Details - Pynwheel"
+.divLoading.hidden
 %section
   .content
     .title-heading.mb-25
@@ -25,8 +26,10 @@
         / /.box-body
         .box-footer
           = f.submit "Save Changes", :class=>"btn btn-success pull-right"
-  #crop-floorplan-image.modal.fade.edit-image
+
   #crop-floorplan-secondary-image.modal.fade.edit-image
+  #crop-floorplan-image.modal.fade.edit-image
+
 :javascript
 
   $("#floorplan_image").change(function(){

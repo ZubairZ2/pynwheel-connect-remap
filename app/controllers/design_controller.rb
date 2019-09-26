@@ -31,6 +31,14 @@ class DesignController < ApplicationController
 
   def crop_logo
     @community = Community.find params["community_id"]
+    if @community.crop_x == params[:community][:crop_x].to_f
+      @community.do_crop = false
+    else
+      @community.do_crop = true
+    end
+    if params[:community][:crop_h].to_f == 0 && params[:community][:crop_w].to_f == 0
+      @community.do_crop = false
+    end
     @community.crop_x = params[:community][:crop_x]
     @community.crop_y = params[:community][:crop_y]
     @community.crop_w = params[:community][:crop_w]
@@ -43,6 +51,14 @@ class DesignController < ApplicationController
   end
   def crop_secondary_logo
     @community = Community.find params["community_id"]
+    if @community.crop_x_secondary == params[:community][:crop_x].to_f
+      @community.do_crop_secondary = false
+    else
+      @community.do_crop_secondary = true
+    end
+    if params[:community][:crop_h].to_f == 0 && params[:community][:crop_w].to_f == 0
+      @community.do_crop_secondary = false
+    end
     @community.crop_x_secondary = params[:community][:crop_x]
     @community.crop_y_secondary = params[:community][:crop_y]
     @community.crop_w_secondary = params[:community][:crop_w]

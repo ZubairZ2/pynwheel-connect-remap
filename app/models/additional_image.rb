@@ -25,7 +25,7 @@ class AdditionalImage < ApplicationRecord
 
 
 	def crop_image
-		image.recreate_versions! if crop_x.present?
+		image.recreate_versions! if (crop_x.present? && do_crop)
 	end
 	def set_image_name
   	self.name = image.file.filename

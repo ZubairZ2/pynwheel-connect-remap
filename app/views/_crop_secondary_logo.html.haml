@@ -21,11 +21,12 @@
 }
 :javascript
   $("#crop_image").on("click",function(e){
-    $(".divLoading").removeClass("hidden")
+    $(".divLoading").removeClass("hidden");
+    localStorage.setItem("logoCropped", "1");
   });
 
   $('#cropbox').Jcrop({
-  boxWidth: 660, boxHeight: 600,
+  boxWidth: 650, boxHeight: 590,
     onSelect: update_crop,
     onChange: update_crop,
   });

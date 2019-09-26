@@ -1,0 +1,2 @@
+class TempTable < ApplicationRecord
+end

@@ -55,7 +55,6 @@ class AvatarUploader < CarrierWave::Uploader::Base
   #   resize_to_limit(1920, 1080)
   #   #process resize_and_crop: 200
   # end
-
   def crop
     if model.is_a? Floorplan
       if (model.image_bit.nil? ? false : model.image_bit) && model.crop_x.present?
