@@ -7,22 +7,19 @@ namespace :delayed_email_notifications do
 
 	task :one_day_before => :environment do
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Today Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	  schedual_tours = SchedualTour.where('tour_date = ? AND daily_email_sent = ?', Date.today+1, false)
-	  one_day_before_emails schedual_tours
+	  # schedual_tours = SchedualTour.where('tour_date = ? AND daily_email_sent = ?', Date.today+1, false)
+	  schedual_tours = SchedualTour.where('(tour_date = ? OR day_diff > 0) AND daily_email_sent = ?', Date.today+1, false)
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Today #{schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
+
+	  one_day_before_emails schedual_tours
 	end
 
-	desc "This delayed email task is called every hour by the Heroku scheduler add-on"
+	desc "This delayed email task is called every 10 mins by the Heroku scheduler add-on"
 	task :one_hour_before => :environment do
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Hour Left Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	 	schedual_tours = SchedualTour.where('hourly_email_sent = ?', false)
-
-	 	# failed_schedual_tours = SchedualTour.where('tour_date = ? AND tour_time <= ? AND hourly_email_sent = ?', Date.today, Time.current+5.hours - 10.minutes, false)
-
+	 	schedual_tours = SchedualTour.where('hourly_email_sent = ? AND day_diff = ?', false, 0)
+	 	puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Hour Left #{schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
 	 	one_hour_before_emails schedual_tours
-	 	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Trying: Failed Hour Left Emails #{failed_schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
-	 	# one_hour_before_emails failed_schedual_tours
-	  # puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Hour Left #{schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
 
 	end
 
@@ -37,7 +34,8 @@ namespace :delayed_email_notifications do
 			
 			content = "We look forward to having you visit our property at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>. <br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
 
-			schedual_tour.update_columns(daily_email_sent: true)
+			schedual_tour.update_columns(daily_email_sent: true, schedual_tour.day_diff-1)
+
 			DelayedSchedulerMailerJob.perform_async("Your Tomorrow Tour", content, tu.email)
 	  	puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		end
