@@ -111,6 +111,8 @@ class Yardi2StaticService < BaseService
             end
             if u.key?(:EffectiveRent)
               unit.market_rent = u[:EffectiveRent][0][:Min]
+              unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?
+              unit.max_effective_rent = u[:EffectiveRent][0][:Max] if u[:EffectiveRent][0][:Max].present?
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                 unit.effective_rent = u[:EffectiveRent][0][:Min]
               end
