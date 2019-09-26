@@ -49,7 +49,7 @@ namespace :delayed_email_notifications do
 		schedual_tours.each do |schedual_tour|
 
 			tour_time = Time.parse(schedual_tour.tour_time.strftime("%k:%M"))
-			server_time = Time.parse(Time.current.in_time_zone(schedual_tour.user_time_zone).to_s)
+			server_time = Time.parse(Time.current.in_time_zone(schedual_tour.user_time_zone).strftime("%k:%M"))
 
 			time_left_to_email = (tour_time - server_time)/1.minute
 			
