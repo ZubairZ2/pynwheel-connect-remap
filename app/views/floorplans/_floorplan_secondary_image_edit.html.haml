@@ -4,7 +4,7 @@
       .modal-body
         - rn =  rand(9999999999999999999999999)
         .image-crop{:style=>"overflow-y: auto;"}
-          = image_tag @floorplan.secondary_image.url  + "?timestamp=#{rn}", id: "cropbox",:style => "width: 500px; height: 370px;"
+          = image_tag @floorplan.secondary_image.url  + "?timestamp=#{rn}", id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
