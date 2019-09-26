@@ -41,8 +41,8 @@
                                           %img{:alt => "", :src => "#{unit.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
                                   - elsif unit.image.present?
                                     %td
-                                      %div{:style => "width:100%; overflow:hidden;"}
-                                        %img{:alt => "", :src => "#{ unit.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+                                      %div{:style => "width:auto; height: 350px; overflow:hidden;"}
+                                        %img{:alt => "", :src => "#{ unit.image.url}", :width => "320", :height => "270", :style => "width:auto; height:100%; margin:auto; margin-left: auto; margin-right: auto; display: block;", :title => ""}/
                                   - elsif unit.floorplan.secondary_image.present?
                                     %td{:style => "width:50%;"}
                                       %div{:style => "width:100%; overflow:hidden;"}
@@ -54,8 +54,8 @@
                                           %img{:alt => "", :src => "#{unit.floorplan.image.url}", :width => "160", :height => "140", :style => "margin:auto; max-width:175px;", :title => ""}/
                                   - elsif unit.floorplan.image.present?
                                     %td
-                                      %div{:style => "width:100%; overflow:hidden;"}
-                                        %img{:alt => "", :src => "#{ unit.floorplan.image.url}", :width => "320", :height => "270", :style => "max-width:350px; height:300px; margin:auto;", :title => ""}/
+                                      %div{:style => "width:auto; height: 280px; overflow:hidden;"}
+                                        %img{:alt => "", :src => "#{ unit.floorplan.image.url}", :width => "320", :height => "270", :style => "width:auto; height:100%; margin:auto; margin-left: auto; margin-right: auto; display: block;", :title => ""}/
 
                           %td{:valign => "top", :width => "250"}
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#878789;", :width => "100%"}
