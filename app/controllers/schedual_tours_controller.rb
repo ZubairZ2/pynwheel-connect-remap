@@ -68,7 +68,7 @@ class SchedualToursController < ApplicationController
     tour_date = date.strftime("%m/%d/%Y")
     tour_time = date.strftime("%l:%M %p")
 
-    @schedual_tour = SchedualTour.new(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time, community_id: params[:community_id])
+    @schedual_tour = SchedualTour.new(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone])
     respond_to do |format|
       if @schedual_tour.save
         format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }

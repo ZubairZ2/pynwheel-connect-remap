@@ -74,6 +74,7 @@
   }
 </style>
 
+<%= javascript_include_tag "jsTimezoneDetect" %>
 <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
 
 <script type="text/javascript">
@@ -232,6 +233,7 @@
                 <label>Date/Time *</label>
                 <%= text_field_tag :tour_time,"", :class=>"form-control datepickertime", :placeholder=>"Date/Time",:maxlength=>"15",:autocomplete=>"off", required: 'required' %>
                 <%= hidden_field_tag :community_id, 440 %>
+                <%= hidden_field_tag :user_time_zone, value: nil %>
               </div>
               <div class="clearfix"></div>
               <button class="btn_popup">Schedule My Tour!</button>
@@ -255,6 +257,11 @@
     </div>
 
     <script type="text/javascript">
+      $(document).ready(function(){
+        debugger
+        document.getElementById('user_time_zone').value = jstz.determine().name();
+        // -new Date().getTimezoneOffset()/60;
+      })
       var success = "<%= flash[:success]  %>";
       // debugger
       <% flash[:success] = "" %>
