@@ -22,7 +22,9 @@ class SchedualToursController < ApplicationController
   def edit
   end
 
-
+  def change_tour_time
+    
+  end
   def create_tour_user_from
     
     phone_number = make_phone
@@ -31,55 +33,42 @@ class SchedualToursController < ApplicationController
 
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
-    
     if tu.save
-      # binding.pry
-      notification_content = "Thank you, #{tu.name}! for scheduling your self-guided tour! We look forward to having you at the property on <#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}> and <#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}>. When you go to the property, you will need 
-        *A photo ID
-        *This phone
-        Please download the Pynwheel self-guided tour app before you arrive:
-        Download Pynwheel Self Tour 
-        https://apps.apple.com/us/app/pynwheel/id876032030"
-
-        begin
-          customer = Stripe::Customer.create email: params[:tour_user][:email],
-                                             card: params[:tour_user][:card_token]
-          Stripe::Charge.create customer: customer.id,
-                                amount: 20 * 100,
-                                description: "Escrow Payment",
-                                currency: 'usd'
-        rescue Exception => e
-          # binding.pry
-          flash[:error] = e.message
-        end
-
-      web_notification = "Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel App </a>"
-
-      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: https://apps.apple.com/us/app/pynwheel/id876032030."
-
-      # render json: {message: notification_content}, status: 200
+      schedual_tour.update_attributes(tour_user_id: tu.id)
       begin
-        NotificationMailer.tour_history_mail("Tour has been scheduled", sms_content, tu.email).deliver
+        customer = Stripe::Customer.create email: params[:tour_user][:email],
+                                           card: params[:tour_user][:card_token]
+        Stripe::Charge.create customer: customer.id,
+                              amount: 20 * 100,
+                              description: "Escrow Payment",
+                              currency: 'usd'
+      rescue Exception => e
+        # binding.pry
+        flash[:error] = e.message
+      end
+
+      begin
+        sent_notifications = send_email_and_other_notifications schedual_tour
       rescue Exception => e
         puts e.message
       end
+
       # sms_notifire notification_content, params[:tour_user][:phone_number]
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
 
-    redirect_to schedular_widget_test_widget_path(message: web_notification) and return
+    redirect_to schedular_widget_test_widget_path(message: sent_notifications[:web_notification]) and return
 
   end
   # POST /schedual_tours
   # POST /schedual_tours.json
   def create
-    
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     tour_date = date.strftime("%m/%d/%Y")
     tour_time = date.strftime("%l:%M %p")
 
-    @schedual_tour = SchedualTour.new(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time)
+    @schedual_tour = SchedualTour.new(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time, community_id: params[:community_id])
     respond_to do |format|
       if @schedual_tour.save
         format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
@@ -94,14 +83,30 @@ class SchedualToursController < ApplicationController
   # PATCH/PUT /schedual_tours/1
   # PATCH/PUT /schedual_tours/1.json
   def update
-    respond_to do |format|
-      ajax_schedual_tour_params["tour_date"] = Date.strptime(ajax_schedual_tour_params["tour_date"], '%m/%d/%Y').to_date
+    date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
+    tour_date = date.strftime("%m/%d/%Y")
+    tour_time = date.strftime("%l:%M %p")
 
-      if @schedual_tour.update(ajax_schedual_tour_params)
-        format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully updated.' }
-        format.json { render :show, status: :ok, location: @schedual_tour }
+    @schedual_tour.update_attributes(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time)
+    tu = @schedual_tour.tour_user
+    # binding.pry
+    respond_to do |format|
+      if @schedual_tour.save
+
+        begin
+          sent_notifications = send_email_and_other_notifications @schedual_tour
+    
+        rescue Exception => e
+          puts e.message
+        end
+
+        # format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
+        # format.json { render :json, status: :updated, message: web_notification }
+        # format.json { render json: @schedual_tour, status: :updated, location: @schedual_tour }
+        msg = { :status => "ok", :message => sent_notifications[:web_notification] }
+        format.json  { render :json => msg }
       else
-        format.html { render :edit }
+        format.html { render :new }
         format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
       end
     end
@@ -118,6 +123,62 @@ class SchedualToursController < ApplicationController
   end
 
   private
+
+    def send_email_and_other_notifications schedual_tour
+      
+      tu = schedual_tour.tour_user
+      community = schedual_tour.community
+      
+      # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
+      
+      email_content = "Thank you for scheduling your self-guided tour! We look forward to having you at the property on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. When you go to the property, you will need <br/> A photo ID This phone <br/> Please download the Pynwheel self-guided tour app before you arrive: <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>"
+
+      web_notification = "Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> and <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel App </a>"
+
+      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions."
+
+      # delayed_day_before_content = "We look forward to having you visit our property at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>. <br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
+
+      # delayed_hour_before_content = "<a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br/>When you arrive at the property, open <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel Self Tour </a> to start your tour."
+
+      
+      # day_before = 5.minutes.seconds
+      # hour_before = 3.minutes.seconds
+
+      # DelayedSchedulerMailerJob.perform_in(day_before, "Your Tomorrow Tour", delayed_day_before_content, tu.email) if day_before.present?
+      # DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
+
+
+      
+      # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
+      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email)
+      
+      {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
+      
+      # {email_content: email_content, web_notification: web_notification, sms_content: sms_content, delayed_day_before_content: delayed_day_before_content, delayed_hour_before_content: delayed_hour_before_content}
+
+    end
+
+    # TODO not being used, remove it maybe
+    def calculate_seconds_one_day_prior_for_delayed_email schedual_tour
+      
+      date = schedual_tour.tour_date
+      time = schedual_tour.tour_time
+
+      total_days = ((date.to_date - Time.zone.now.to_date)).to_i
+      dt = get_date_time_combined date, time
+      
+      total_minutes = TimeDifference.between(dt, DateTime.now.strftime('%a, %d %b %Y %H:%M:%S').to_datetime).in_minutes.round
+      
+      one_day_before = (total_days - 1).days.seconds if total_days > 0
+      one_hour_before = (total_minutes - 60).minutes.seconds if total_minutes >= 60
+      [one_day_before, one_hour_before]
+    end
+
+    def get_date_time_combined date, time
+      DateTime.new(date.year, date.month, date.day, time.hour, time.min, time.sec, time.zone)
+    end
+    
     # Use callbacks to share common setup or constraints between actions.
     def set_schedual_tour
       @schedual_tour = SchedualTour.find(params[:id])
@@ -125,7 +186,7 @@ class SchedualToursController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def schedual_tour_params
-      params.require(:schedual_tour).permit(:tour_date, :tour_time, :tour_user_id, :tour_id, :card_token)
+      params.require(:schedual_tour).permit(:tour_date, :tour_time, :tour_user_id, :tour_id, :card_token, :community_id)
     end
     def ajax_schedual_tour_params
       params.permit(:tour_date, :tour_time, :card_token)

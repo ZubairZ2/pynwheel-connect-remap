@@ -4,17 +4,21 @@ Rails.application.routes.draw do
 
   get 'community_groups/index'
 
+  post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
+  post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
   resources :schedual_tours do
     # post :create_tour_user_from
     # member do
     # end
   end
+  
   get 'tours/index'
 
   namespace :schedular_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
-    # post 'test_widget',to: 'widgets#test_widget'
+    get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
+    
   end 
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
