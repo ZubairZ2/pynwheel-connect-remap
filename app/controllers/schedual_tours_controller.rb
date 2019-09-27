@@ -67,8 +67,10 @@ class SchedualToursController < ApplicationController
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     tour_date = date.strftime("%m/%d/%Y")
     tour_time = date.strftime("%l:%M %p")
+    day_diff = (Date.strptime(tour_date, "%m/%d/%Y") - Date.today).to_i
+    binding.pry
 
-    @schedual_tour = SchedualTour.new(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time, community_id: params[:community_id])
+    @schedual_tour = SchedualTour.new(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
     respond_to do |format|
       if @schedual_tour.save
         format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
@@ -86,8 +88,9 @@ class SchedualToursController < ApplicationController
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     tour_date = date.strftime("%m/%d/%Y")
     tour_time = date.strftime("%l:%M %p")
+    day_diff = (Date.strptime(tour_date, "%m/%d/%Y") - Date.today).to_i
 
-    @schedual_tour.update_attributes(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time)
+    @schedual_tour.update_attributes(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time, day_diff: day_diff)
     tu = @schedual_tour.tour_user
     # binding.pry
     respond_to do |format|
