@@ -86,7 +86,7 @@ class PsiService < BaseService
             cred.save
           rescue => err
           end
-          save_website_column_of_community(response)
+          # save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
