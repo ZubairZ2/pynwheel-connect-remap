@@ -49,7 +49,7 @@ class PsiService < BaseService
         #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
         #   com_test.save
         # end
-        sleep 5
+        sleep 2
         if response["response"]["code"] == 200
           units = []
           floorplans = []
@@ -301,7 +301,7 @@ class PsiService < BaseService
                                      :headers => { 'Content-Type' => 'application/json' } )
             response =  JSON.parse(response.body)
           end
-          sleep 5
+          sleep 3
 
           if response["response"]["code"] == 200
             unless response["response"]["result"].include?('No records found')
@@ -408,7 +408,7 @@ class PsiService < BaseService
                                          }.to_json,
                                          :headers => { 'Content-Type' => 'application/json' } )
                 response =  JSON.parse(response.body)
-                sleep 5
+                sleep 3
                 if response["response"]["code"] == 200
                   psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
                   psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
