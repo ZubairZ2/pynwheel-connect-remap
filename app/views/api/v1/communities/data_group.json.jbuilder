@@ -10,6 +10,7 @@ json.community_group @communities do |co|
 
   json.community_name  @community.name
   json.community_id  @community.id
+  json.data_url "/api/v1/communities/#{@community.id}/data.json"
   json.company_name  Company.find_by(id: @community.company_id).name
 
   local_assets_base_url = "http://192.168.101.77:3000"
