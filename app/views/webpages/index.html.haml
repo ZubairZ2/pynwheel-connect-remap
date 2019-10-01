@@ -378,21 +378,68 @@
 
   $('.mydiv').change(function() {
 
-    localStorage.setItem("oneBedroom", document.getElementById('one-bedroom-checkbox').checked);
-    localStorage.setItem("twoBedroom", Boolean(document.getElementById('two-bedroom-checkbox').checked));
-    localStorage.setItem("threeBedroom", Boolean(document.getElementById('three-bedroom-checkbox').checked));
-    localStorage.setItem("fourBedroom", Boolean(document.getElementById('four-bedroom-checkbox').checked));
-    localStorage.setItem("fiveBedroom", Boolean(document.getElementById('five-bedroom-checkbox').checked));
+    try {
+      localStorage.setItem("oneBedroom", document.getElementById('one-bedroom-checkbox').checked);
+    }
+    catch(err) {
+    }
+    try {
+      localStorage.setItem("twoBedroom", Boolean(document.getElementById('two-bedroom-checkbox').checked));
+    }
+    catch(err) {
+    }
+    try {
+      localStorage.setItem("threeBedroom", Boolean(document.getElementById('three-bedroom-checkbox').checked));
+    }
+    catch(err) {
+    }
+    try {
+      localStorage.setItem("fourBedroom", Boolean(document.getElementById('four-bedroom-checkbox').checked));
+    }
+    catch(err) {
+    }
+    try {
+      localStorage.setItem("fiveBedroom", Boolean(document.getElementById('five-bedroom-checkbox').checked));
+    }
+    catch(err) {
+    }
 
-
+    try {
     localStorage.setItem("now", Boolean(document.getElementById('now-checkbox').checked));
+    }
+    catch(err) {
+    }
+    try {
     localStorage.setItem("inNext30", Boolean(document.getElementById('thirty-days-checkbox').checked));
+    }
+    catch(err) {
+    }
+    try {
     localStorage.setItem("31-60", Boolean(document.getElementById('thirty-tosixty-days-checkbox').checked));
+    }
+    catch(err) {
+    }
+    try {
     localStorage.setItem("61-90", Boolean(document.getElementById('sixty-to-ninty-days-checkbox').checked));
+    }
+    catch(err) {
+    }
+    try {
     localStorage.setItem("91-120", Boolean(document.getElementById('ninty-to-one-twenty-days-checkbox').checked));
+    }
+    catch(err) {
+    }
+    try {
     localStorage.setItem("120+", Boolean(document.getElementById('one-twenty-plus-days-checkbox').checked));
-
+    }
+    catch(err) {
+    }
+    try {
     localStorage.setItem("selectAll", Boolean(document.getElementById('select-all-filters-checkbox').checked));
+    }
+    catch(err) {
+    }
+
   });
 
   var window_height = window.innerHeight;
@@ -449,8 +496,11 @@
     }
   }
   $(".slider_class").click(function(){
-
+    try {
     localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
+    }
+    catch(err) {
+    }
 
   });
 
