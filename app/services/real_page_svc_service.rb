@@ -206,11 +206,9 @@ class RealPageSvcService < BaseService
                 #     unit.building = bldgResult
                 #   end
                 # end
-                if Rails.env.development
-                  unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
-                else
-                  unit.availability_url = "https://pynwheel-staging.herokuapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
-                end
+
+                unit.availability_url = "https://pynwheel-staging.herokuapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+
                 unit.save(validate: false)
 
 
