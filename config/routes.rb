@@ -11,6 +11,10 @@ Rails.application.routes.draw do
     # member do
     # end
   end
+
+  # selfie matching
+  get '/id_selfie_matching/:tour_user_id', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
+  post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
   
   get 'tours/index'
 
@@ -323,6 +327,9 @@ Rails.application.routes.draw do
       # 
       post :save_tour_history, to: 'tour_histories#save_tour_history'
       get :get_tour_history, to: 'tour_histories#get_tour_history'
+
+      # ID/Selfie get status
+      get :get_id_selfie_mismatch_status, to: 'tours#get_id_selfie_mismatch'
     end
   end
 end
