@@ -1,14 +1,14 @@
 class PsiService < BaseService
   # @@floorplanHash = Hash.new
   def perform
-    tt = nil
-    com_test = Community.find credentials.community_id
-    if com_test.id == 458
-      tt = TempTable.first
-      com_test.entrata_exception_logs = Time.now
-      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "1 "
+    begin
+      com_test = Community.find credentials.community_id
+      com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
+      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "Before call logs -"+Time.now.to_s + "-"
       com_test.save
+    rescue => ex
     end
+
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -18,10 +18,10 @@ class PsiService < BaseService
         else
           url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         end
-        if com_test.id == 458
-          com_test.entrata_exception_logs = com_test.entrata_exception_logs + "2 "
-          com_test.save
-        end
+        # if com_test.id == 458
+        #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "2 "
+        #   com_test.save
+        # end
 
         password = credentials.password
         username = credentials.username
@@ -45,12 +45,11 @@ class PsiService < BaseService
           }.to_json,
           :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
-        if com_test.id == 458
-          tt = Time.now.to_s + response.to_s
-          com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
-          com_test.save
-        end
-        sleep 5
+        # if com_test.id == 458
+        #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
+        #   com_test.save
+        # end
+        sleep 2
         if response["response"]["code"] == 200
           units = []
           floorplans = []
@@ -67,27 +66,27 @@ class PsiService < BaseService
               floorplans << f
             end
           end
-          if com_test.id == 458
-            com_test.entrata_exception_logs = com_test.entrata_exception_logs + "4 "
-            com_test.save
-          end
+          # if com_test.id == 458
+          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "4 "
+          #   com_test.save
+          # end
           save_psi_floorplans(floorplans,property_id)
-          if com_test.id == 458 || com_test.id == 819
-            com_test.entrata_exception_logs = com_test.entrata_exception_logs + "5 "
-            com_test.save
-          end
+          # if com_test.id == 458 || com_test.id == 819
+          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "5 "
+          #   com_test.save
+          # end
           save_psi_units(units,property_id)
-          if com_test.id == 458 || com_test.id == 819
-            com_test.entrata_exception_logs = com_test.entrata_exception_logs + "6 "
-            com_test.save
-          end
+          # if com_test.id == 458 || com_test.id == 819
+          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "6 "
+          #   com_test.save
+          # end
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
             cred.save
           rescue => err
           end
-          save_website_column_of_community(response)
+          # save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
@@ -119,10 +118,17 @@ class PsiService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    if com_test.id == 458
-      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "7 "
+    begin
+      com_test = Community.find credentials.community_id
+      com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
+      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "After call logs -"+Time.now.to_s + "-  =========================="
       com_test.save
+    rescue => ex
     end
+    # if com_test.id == 458
+    #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "7 "
+    #   com_test.save
+    # end
     fill_psi_pricing_details
   end
 
@@ -295,7 +301,7 @@ class PsiService < BaseService
                                      :headers => { 'Content-Type' => 'application/json' } )
             response =  JSON.parse(response.body)
           end
-          sleep 5
+          sleep 3
 
           if response["response"]["code"] == 200
             unless response["response"]["result"].include?('No records found')
@@ -402,7 +408,7 @@ class PsiService < BaseService
                                          }.to_json,
                                          :headers => { 'Content-Type' => 'application/json' } )
                 response =  JSON.parse(response.body)
-                sleep 5
+                sleep 3
                 if response["response"]["code"] == 200
                   psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
                   psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
