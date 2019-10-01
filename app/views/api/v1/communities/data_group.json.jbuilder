@@ -5,12 +5,12 @@ json.page_name @community_group.page_name
 json.logo @community_group.logo.present? ? @community_group.logo.url : "No image"
 json.inactivate !@community_group.inactivate
 
-
 json.community_group @communities do |co|
   @community = co
 
   json.community_name  @community.name
   json.community_id  @community.id
+  json.data_url "/api/v1/communities/#{@community.id}/data.json"
   json.company_name  Company.find_by(id: @community.company_id).name
 
   local_assets_base_url = "http://192.168.101.77:3000"
@@ -1290,7 +1290,6 @@ json.community_group @communities do |co|
     end
     units_floorplans = []
     floorplans = @community.floorplans
-
     available_units_and_sold_units = @community.units.available_units# + @community.units.are_sold
     json.display_unit_on_homepage @community.display_unit_on_homepage
     json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
@@ -1496,11 +1495,10 @@ json.community_group @communities do |co|
     if @community.neighborhood.present?
       json.show_neighborhood_page @community.neighborhood.show_neighborhood
       json.neighborhood_page_name @community.neighborhood.neighborhood_name
-      # json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : (@community.latitude.present? ? @community.latitude : 0.0)
-      # json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : (@community.longitude.present? ? @community.longitude.present? : 0.0)
-      json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : 0.0
-      json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : 0.0
-
+      # json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
+      # json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+      json.latitude @community.latitude.present? ? @community.latitude : 0.0
+      json.longitude @community.longitude.present? ? @community.longitude : 0.0
       json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
       json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
       json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
