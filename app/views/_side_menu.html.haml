@@ -134,6 +134,10 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
             %i.fa.fa-share
             %span Webpages
+        %li
+          %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
+            %i.fa.fa-share
+            %span Scheduler Widget
       - if (current_user.is_super_admin?)
         %li{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
           %a{:href => "#{community_tours_path(current_community)}"}
