@@ -65,15 +65,10 @@ class SchedualToursController < ApplicationController
   # POST /schedual_tours.json
   def create
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
-    tour_date = Date.strptime(date.in_time_zone(params[:user_time_zone]).strftime("%m/%d/%Y"), "%m/%d/%Y")
-    server_current_date = Date.strptime(DateTime.current.in_time_zone(params[:user_time_zone]).strftime("%m/%d/%Y"), "%m/%d/%Y")
     
-    tour_time = date.strftime("%l:%M %p")
-    @schedual_tour = SchedualTour.new(tour_date: tour_date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone])
-    
-    day_diff = (tour_date - server_current_date).to_i
+    tour_date, tour_time, day_diff = get_tour_datetime_and_diff date
 
-    @schedual_tour.day_diff = day_diff
+    @schedual_tour = SchedualTour.new(tour_date: tour_date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
 
     respond_to do |format|
       if @schedual_tour.save
@@ -90,13 +85,14 @@ class SchedualToursController < ApplicationController
   # PATCH/PUT /schedual_tours/1.json
   def update
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
-    tour_date = date.strftime("%m/%d/%Y")
-    tour_time = date.strftime("%l:%M %p")
-    day_diff = (Date.strptime(tour_date, "%m/%d/%Y") - Date.today).to_i
+    
+    tour_date, tour_time, day_diff = get_tour_datetime_and_diff date
 
-    @schedual_tour.update_attributes(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time, day_diff: day_diff)
+    @schedual_tour.update_attributes(tour_date: to_date, tour_time: tour_time, day_diff: day_diff)
+    
     tu = @schedual_tour.tour_user
     # binding.pry
+    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
     respond_to do |format|
       if @schedual_tour.save
 
@@ -104,7 +100,7 @@ class SchedualToursController < ApplicationController
           sent_notifications = send_email_and_other_notifications @schedual_tour
     
         rescue Exception => e
-          puts e.message
+          puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
         end
 
         # format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
@@ -122,6 +118,7 @@ class SchedualToursController < ApplicationController
   # DELETE /schedual_tours/1
   # DELETE /schedual_tours/1.json
   def destroy
+    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
     @schedual_tour.destroy
     respond_to do |format|
       format.html { redirect_to schedual_tours_url, notice: 'Schedual tour was successfully destroyed.' }
@@ -130,6 +127,14 @@ class SchedualToursController < ApplicationController
   end
 
   private
+    def get_tour_datetime_and_diff date
+      tour_date = Date.strptime(date.in_time_zone(params[:user_time_zone]).strftime("%m/%d/%Y"), "%m/%d/%Y")
+      server_current_date = Date.strptime(DateTime.current.in_time_zone(params[:user_time_zone]).strftime("%m/%d/%Y"), "%m/%d/%Y")
+      tour_time = date.strftime("%l:%M %p")
+      day_diff = (tour_date - server_current_date).to_i
+
+      [tour_date, tour_time, day_diff]
+    end
 
     def send_email_and_other_notifications schedual_tour
       
