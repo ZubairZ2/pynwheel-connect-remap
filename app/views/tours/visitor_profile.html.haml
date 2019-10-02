@@ -6,9 +6,9 @@
     .box.box-widget.panel-box{ :style => "padding: 10px" }
       .row
         .col-md-6
-          = image_tag @visitor.image.present? ? visitor.image.url : "default.jpeg",:height=>"100%", :width=>"100%"
+          = image_tag @visitor.image.present? ? @visitor.image.url : "default.jpeg",:height=>"100%", :width=>"100%"
         .col-md-6
-          = image_tag @visitor.id_card.present? ? visitor.id_card.url : "default.jpeg",:height=>"100%",:width=>"100%"
+          = image_tag @visitor.id_card.present? ? @visitor.id_card.url : "default.jpeg",:height=>"100%",:width=>"100%"
       %hr
       .row
         .col-md-6
