@@ -88,8 +88,10 @@ class SchedualToursController < ApplicationController
     
     tour_date, tour_time, day_diff = get_tour_datetime_and_diff date
 
-    @schedual_tour.update_attributes(tour_date: to_date, tour_time: tour_time, day_diff: day_diff)
+    @schedual_tour.update_attributes(tour_date: tour_date, tour_time: tour_time, day_diff: day_diff)
     
+    set_daily_email_sent = true if day_diff >= 1
+    @schedual_tour.update_attributes(hourly_email_sent: false, daily_email_sent: )
     tu = @schedual_tour.tour_user
     # binding.pry
     puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
