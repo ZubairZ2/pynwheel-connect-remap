@@ -44,12 +44,17 @@ class SchedualToursController < ApplicationController
                               currency: 'usd'
       rescue Exception => e
         flash[:error] = e.message
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+        puts e.message
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
       end
 
       begin
         sent_notifications = send_email_and_other_notifications schedual_tour
       rescue Exception => e
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
         puts e.message
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
       end
 
       # sms_notifire notification_content, params[:tour_user][:phone_number]
