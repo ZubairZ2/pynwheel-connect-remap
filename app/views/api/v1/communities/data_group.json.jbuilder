@@ -5,6 +5,7 @@ json.page_name @community_group.page_name
 json.logo @community_group.logo.present? ? @community_group.logo.url : "No image"
 json.inactivate !@community_group.inactivate
 
+
 json.community_group @communities do |co|
   @community = co
 

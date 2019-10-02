@@ -1,7 +1,25 @@
 Rails.application.routes.draw do
+
+  post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
+
   get 'community_groups/index'
 
+  post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
+  post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
+  resources :schedual_tours do
+    # post :create_tour_user_from
+    # member do
+    # end
+  end
+  
   get 'tours/index'
+
+  namespace :schedular_widget do
+    get 'widget', to: 'widgets#widget'
+    get 'test_widget', to: 'widgets#test_widget'
+    get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
+    
+  end 
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
@@ -299,6 +317,10 @@ Rails.application.routes.draw do
       end
       post :save_shared_tour, to: 'tours#save_shared_tour'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
+
+      # 
+      post :save_tour_history, to: 'tour_histories#save_tour_history'
+      get :get_tour_history, to: 'tour_histories#get_tour_history'
     end
   end
 end

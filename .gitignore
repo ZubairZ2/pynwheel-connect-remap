@@ -20,12 +20,16 @@ vendor/bundle/
 !/log/.keep
 !/tmp/.keep
 .idea/
+
 public/uploads/*
 vendor/bundle/
 test/
+
+.ruby-gemset
+.ruby-version
+
 # Ignore Byebug command history file.
 .byebug_history
 
 config/database.yml
 config/application.yml
-db/schema.rb

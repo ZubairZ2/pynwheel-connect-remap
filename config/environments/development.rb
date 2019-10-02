@@ -26,6 +26,8 @@ Rails.application.configure do
     config.cache_store = :null_store
   end
 
+  # config.time_zone = 'Eastern Time (US & Canada)'
+  # config.active_record.default_timezone = :local
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = true
 
