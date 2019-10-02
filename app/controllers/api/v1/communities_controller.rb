@@ -109,6 +109,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])
   end
+  def update_unit_floorplan_data
+    community = Community.find(params[:id])
+    if community.data_provider == "psi"
+      result = ImportPsiDataJob.perform_async community.credential.attributes.to_json
+    end
+    render :json=> {:success=>result, :message => "success", :operation => "update data"}
+  end
   def data_group
     @version = AppVersion.first.version
     @community_group = CommunityGroup.find params[:id]
