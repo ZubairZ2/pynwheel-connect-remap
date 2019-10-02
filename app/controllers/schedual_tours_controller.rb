@@ -65,14 +65,12 @@ class SchedualToursController < ApplicationController
   # POST /schedual_tours.json
   def create
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
-    
-    tour_date = date.strftime("%m/%d/%Y")
-    tour_date = Date.strptime(tour_date.in_time_zone(params[:user_time_zone]).strftime("%m/%d/%Y"), "%m/%d/%Y")
-    server_current_date = Date.strptime(Date.today.in_time_zone(a.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y")
+    tour_date = Date.strptime(date.in_time_zone(params[:user_time_zone]).strftime("%m/%d/%Y"), "%m/%d/%Y")
+    server_current_date = Date.strptime(Date.today.in_time_zone(params[:user_time_zone]).strftime("%m/%d/%Y"), "%m/%d/%Y")
     
     tour_time = date.strftime("%l:%M %p")
-    
-    @schedual_tour = SchedualTour.new(tour_date: DateTime.strptime(tour_date, "%m/%d/%Y"), tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone])
+    @schedual_tour = SchedualTour.new(tour_date: tour_date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone])
+    binding.pry
     
     day_diff = (tour_date - server_current_date).to_i
 
