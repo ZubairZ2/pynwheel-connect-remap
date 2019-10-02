@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190926205949) do
+ActiveRecord::Schema.define(version: 20191001130409) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,8 +21,13 @@ ActiveRecord::Schema.define(version: 20190926205949) do
     t.integer  "sort"
     t.string   "name"
     t.integer  "imagepage_id"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
+    t.float    "crop_x"
+    t.float    "crop_y"
+    t.float    "crop_w"
+    t.float    "crop_h"
+    t.boolean  "do_crop",      default: false
     t.index ["imagepage_id"], name: "index_additional_images_on_imagepage_id", using: :btree
   end
 
@@ -116,6 +121,18 @@ ActiveRecord::Schema.define(version: 20190926205949) do
     t.boolean  "self_tour",                      default: false
     t.integer  "alert_contact",                  default: 2
     t.integer  "community_group_id"
+    t.float    "crop_x"
+    t.float    "crop_y"
+    t.float    "crop_w"
+    t.float    "crop_h"
+    t.float    "crop_x_secondary"
+    t.float    "crop_y_secondary"
+    t.float    "crop_w_secondary"
+    t.float    "crop_h_secondary"
+    t.boolean  "floorplan_name_order"
+    t.boolean  "image_bit"
+    t.boolean  "do_crop",                        default: false
+    t.boolean  "do_crop_secondary",              default: false
     t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
@@ -127,7 +144,7 @@ ActiveRecord::Schema.define(version: 20190926205949) do
     t.boolean  "page_type",  default: false
     t.string   "page_name"
     t.string   "logo"
-    t.boolean  "inactivate", default: true
+    t.boolean  "inactivate", default: false
     t.integer  "company_id"
     t.datetime "created_at",                 null: false
     t.datetime "updated_at",                 null: false
@@ -528,6 +545,17 @@ ActiveRecord::Schema.define(version: 20190926205949) do
     t.boolean  "market_rent_is_updated"
     t.boolean  "display_virtual_tour_button_label", default: false
     t.string   "virtual_tour_button_label",         default: "3D Tour"
+    t.float    "crop_x"
+    t.float    "crop_y"
+    t.float    "crop_w"
+    t.float    "crop_h"
+    t.float    "crop_x_secondary"
+    t.float    "crop_y_secondary"
+    t.float    "crop_w_secondary"
+    t.float    "crop_h_secondary"
+    t.boolean  "image_bit"
+    t.boolean  "do_crop",                           default: false
+    t.boolean  "do_crop_secondary",                 default: false
   end
 
   create_table "floorplates", force: :cascade do |t|
@@ -599,13 +627,15 @@ ActiveRecord::Schema.define(version: 20190926205949) do
     t.float    "crop_h"
     t.integer  "sort"
     t.integer  "community_id"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
     t.integer  "gallery_id"
     t.string   "name"
     t.string   "standard_image_url"
     t.string   "ios_image_url"
     t.string   "large_image_url"
+    t.string   "video"
+    t.boolean  "do_crop",            default: false
     t.index ["community_id"], name: "index_gallery_images_on_community_id", using: :btree
     t.index ["gallery_id"], name: "index_gallery_images_on_gallery_id", using: :btree
   end
@@ -619,11 +649,12 @@ ActiveRecord::Schema.define(version: 20190926205949) do
     t.float    "crop_w"
     t.float    "crop_h"
     t.integer  "sort"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
     t.string   "standard_image_url"
     t.string   "thumb_image_url"
     t.string   "large_image_url"
+    t.boolean  "do_crop",            default: false
   end
 
   create_table "home_page_videos", force: :cascade do |t|
@@ -830,6 +861,13 @@ ActiveRecord::Schema.define(version: 20190926205949) do
     t.index ["tour_stop_id"], name: "index_stop_galleries_on_tour_stop_id", using: :btree
   end
 
+  create_table "temp_tables", force: :cascade do |t|
+    t.string   "community_log"
+    t.string   "community_log1"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+  end
+
   create_table "temporary_images", force: :cascade do |t|
     t.text     "image"
     t.integer  "position"
@@ -867,11 +905,14 @@ ActiveRecord::Schema.define(version: 20190926205949) do
   create_table "tour_users", force: :cascade do |t|
     t.string   "name"
     t.string   "email"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
     t.string   "credit_card_number"
     t.string   "card_expiry"
     t.string   "phone_number"
+    t.string   "image"
+    t.string   "id_card"
+    t.boolean  "id_selfie_mismatch", default: true
   end
 
   create_table "tours", force: :cascade do |t|
