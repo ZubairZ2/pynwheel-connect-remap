@@ -103,7 +103,7 @@ class Yardi4Service < BaseService
 
   def save_yardi4_units(ils_units,property_id)
     unit_record = []
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)", 3,  ["yardi"]).map{|x| x.provider_unit_id}
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,   ["yardi"]).map{|x| x.provider_unit_id}
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
       unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue])#.first_or_initialize

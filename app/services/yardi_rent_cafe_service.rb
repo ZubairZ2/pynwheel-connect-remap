@@ -22,7 +22,7 @@ class YardiRentCafeService < BaseService
         response = JSON.parse(response.body)
 
         unit_record = []
-        unit_present =  Unit.where("community_id = ? AND provider IN (?)", 3,  ["yardi"]).map{|x| x.provider_unit_id}
+        unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardirentcafe"]).map{|x| x.provider_unit_id}
         if response[0]["Error"].nil?
           response.each do |r|
             begin

@@ -80,7 +80,7 @@ class ZarembaService < BaseService
   end
   def save_zaremba_units(units,property_id)
     unit_record = []
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)", 3,  ["zaremba"]).map{|x| x.provider_unit_id}
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["zaremba"]).map{|x| x.provider_unit_id}
     units.each do |u|
       puts u
       vacateDate = ""
