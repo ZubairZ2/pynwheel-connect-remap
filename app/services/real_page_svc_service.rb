@@ -329,7 +329,7 @@ class RealPageSvcService < BaseService
               rentStr = ""
               unitLeaseTerm = []
               unit_no = u[:Address][:UnitID]
-              if hash[:units].include?(unit_no)
+              # if hash[:units].include?(unit_no)
                 if u[:RentMatrix].present?
                   best_price = nil
                   begin
@@ -372,7 +372,7 @@ class RealPageSvcService < BaseService
                     puts " **** price updated *** "
                   end
                 end
-              end
+              # end
             end
           end
         end  
