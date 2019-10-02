@@ -67,7 +67,6 @@ class FloorplansController < ApplicationController
     redirect_to edit_community_floorplan_path(@community,@floorplan)
     # render :json=> {:success=>false}
   end
-
   def show_floorplan_secondary_image_in_modal
     @community = Community.find params[:community_id]
     @floorplan = Floorplan.find params[:id]
@@ -93,7 +92,6 @@ class FloorplansController < ApplicationController
     redirect_to edit_community_floorplan_path(@community,@floorplan)
     # render :json=> {:success=>false}
   end
-
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?

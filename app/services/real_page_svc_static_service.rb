@@ -231,11 +231,8 @@ class RealPageSvcStaticService < BaseService
                 #   end
                 # end
                 unit.manually_updated = false
-                if Rails.env.development
-                  unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
-                else
-                  unit.availability_url = "https://pynwheel-staging.herokuapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
-                end
+                unit.availability_url = "https://pynwheel-staging.herokuapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+
                 unit.save(validate: false)
                 #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
               end
@@ -361,7 +358,7 @@ class RealPageSvcStaticService < BaseService
               rentStr = ""
               unitLeaseTerm = []
               unit_no = u[:Address][:UnitID]
-              if hash[:units].include?(unit_no)
+              # if hash[:units].include?(unit_no)
                 if u[:RentMatrix].present?
                   best_price = nil
                   begin
@@ -404,7 +401,7 @@ class RealPageSvcStaticService < BaseService
                     puts " **** price updated *** ",unit.marketing_name
                   end
                 end
-              end
+              # end
             end
           end
         end

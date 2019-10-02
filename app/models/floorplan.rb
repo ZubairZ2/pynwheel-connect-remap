@@ -54,7 +54,7 @@ class Floorplan < ApplicationRecord
   validates_uniqueness_of :provider_floorplan_id, scope: :community
   after_commit :populate_image_urls, on: [:create,:update]
   validates :market_rent, :numericality => { greater_than_or_equal_to: -1 }
-  before_create :set_image_name
+  # before_create :set_image_name
   after_update :crop_image
   after_update :crop_secondary_image
 
@@ -68,9 +68,6 @@ class Floorplan < ApplicationRecord
     secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
   end
   def crop_image
-    image.recreate_versions! if (crop_x.present? && image_bit && do_crop_secondary)
-  end
-  def set_image_name
-    self.name = image.file.filename
+    image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
 end
