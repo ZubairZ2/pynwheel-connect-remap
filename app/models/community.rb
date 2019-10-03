@@ -95,9 +95,9 @@ class Community < ApplicationRecord
 
 
 
-  phony_normalize :phone
+  # phony_normalize :phone
   # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
-  validates :phone, phony_plausible: true
+  # validates :phone, phony_plausible: true
 
   enum alert_contact: [:email, :phone, :both]
   
