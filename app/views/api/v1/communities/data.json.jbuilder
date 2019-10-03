@@ -613,7 +613,13 @@ json.ui_settigs do
           json.filter_buttons_opacity "100%"
           json.gallery_buttons_opacity "100%"
         end
-        json.filter_panel_label_opacity @community.design.filter_panel_label_opacity.present? ? @community.design.filter_panel_label_opacity : "100%"
+        if @community.theme_name == "futurist"
+          json.filter_panel_label_opacity "100%"
+        elsif @community.theme_name == "panther"
+          json.filter_panel_label_opacity "100%"
+        else
+          json.filter_panel_label_opacity @community.design.filter_panel_label_opacity.present? ? @community.design.filter_panel_label_opacity : "100%"
+        end
         if @community.theme_name == "panther"
           json.filter_panel_label_color "#cae0da"
         else
