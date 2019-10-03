@@ -614,6 +614,8 @@ json.ui_settigs do
           json.filter_buttons_opacity "100%"
           json.gallery_buttons_opacity "100%"
         end
+        json.filter_panel_label_opacity @community.design.filter_panel_label_opacity.present? ? @community.design.filter_panel_label_opacity : "100%"
+        json.filter_panel_label_color @community.design.filter_panel_label_color.present? ? @community.design.filter_panel_label_color : "#565455"
         if @community.theme_name == "futurist"
           json.filter_menu_buttons_border "No border"
         elsif @community.theme_name == "panther"
@@ -648,6 +650,8 @@ json.ui_settigs do
         elsif @community.theme_name == "panther"
           json.filter_panel_background_as_image false
           json.display_filter_label_image false
+        elsif @community.theme_name == "futurist"
+          json.display_filter_label_image true
         else
           json.display_filter_label_image @community.design.display_filter_label_image.present? ? @community.design.display_filter_label_image : false
           json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
@@ -667,7 +671,7 @@ json.ui_settigs do
           json.gallery_button_on_image "No Image"
         end
         if @community.theme_name == "futurist"
-          json.filter_label_image "No Image"
+          json.filter_label_image image_url("filetr_panel_button_bg.png")
           json.filter_panel_background_image image_url("filter_panel_bg.png")
         elsif @community.theme_name == "expressionist"
           json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
