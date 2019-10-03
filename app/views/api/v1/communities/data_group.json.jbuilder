@@ -665,6 +665,7 @@ json.community_group @communities do |co|
           json.display_filter_label_image false
         elsif @community.theme_name == "futurist"
           json.display_filter_label_image true
+          json.filter_panel_background_as_image false
         else
           json.display_filter_label_image @community.design.display_filter_label_image.present? ? @community.design.display_filter_label_image : false
           json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
