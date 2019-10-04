@@ -114,17 +114,17 @@ class Api::V1::CommunitiesController < ActionController::Base
     if community.data_provider == "psi"
       result = ImportPsiDataJob.perform_async community.credential.attributes.to_json
     elsif community.data_provider == "yardirentcafe"
-      ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
+      result = ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
     elsif community.data_provider == "yardi"
-      community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
+      result = community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
     elsif community.data_provider == "resman"
-      ImportResmanDataJob.perform_async community.credential.attributes.to_json
+      result = ImportResmanDataJob.perform_async community.credential.attributes.to_json
     elsif community.data_provider == "zaremba"
-      ImportZarembaDataJob.perform_async community.credential.attributes.to_json
+      result = ImportZarembaDataJob.perform_async community.credential.attributes.to_json
     elsif community.data_provider == "xml"
-      ImportXmlDataJob.perform_async community.credential.attributes.to_json
+      result = ImportXmlDataJob.perform_async community.credential.attributes.to_json
     elsif community.data_provider == "realpagesvc"
-      ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
+      result = ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
     end
     render :json=> {:success=>result, :message => "success", :operation => "update data"}
   end
