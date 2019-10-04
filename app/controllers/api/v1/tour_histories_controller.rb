@@ -26,6 +26,25 @@ class Api::V1::TourHistoriesController < ActionController::Base
     end
   end
 
+  def change_id_selfie_status
+    if params[:tour_user_id].present? && params[:id_selfie_mismatch_status].present?
+      
+      tour_user = TourUser.find_by_id(params[:tour_user_id])
+      if tour_user.present?
+        tour_user.id_selfie_mismatch = params[:id_selfie_mismatch_status]
+        if tour_user.save
+          render :json=> {:success=>true, :message => "status changed"}
+        else
+          render :json=> {:success=>false, :message => "tour user status was not changed."}
+        end
+      else
+        render :json=> {:success=>false, :message => "tour user was not found against this id, please try again."}
+      end
+
+    else
+      render :json=> {:success=>false, :message => "tour_user_id and id_selfie_mismatch_status are compulsory."}
+    end
+  end
 
   def get_tour_history
 

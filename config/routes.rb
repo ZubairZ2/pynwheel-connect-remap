@@ -278,6 +278,7 @@ Rails.application.routes.draw do
       # 
       post :save_tour_history, to: 'tour_histories#save_tour_history'
       get :get_tour_history, to: 'tour_histories#get_tour_history'
+      post :change_id_selfie_mismatch_status, to: 'tour_histories#change_id_selfie_status'
     end
   end
 end
