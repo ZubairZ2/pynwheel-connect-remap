@@ -11,7 +11,7 @@ class Ability
         can :read, Company, id: user.company_id	
         can :update, Company, id: user.company_id	 
         #can :manage ,User, id: user.id
-        cannot :add_settings, User, id: user.id
+        can :add_settings, User, id: user.id
         cannot :select_theme, User, id: user.id            
     end
   end
