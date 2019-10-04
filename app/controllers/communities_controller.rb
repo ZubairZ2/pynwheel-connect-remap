@@ -446,7 +446,7 @@ class CommunitiesController < ApplicationController
         :secondary_font_color,:global_navigation_font_color,:global_navigation_background_color,:global_navigation_button_color,
         :global_navigation_buttons_opacity,:global_nav_bg_opacity,:button_shape,:global_nav_buttons_height,:global_nav_buttons_width,
         :secondary_page_menu_border,:global_nav_button_on,:global_nav_button_off,:buttons_as_image,:filter_panel_color,
-        :filter_panel_font_style,:filter_panel_font_color,:filter_button_color,:filter_button_font_style,:filter_button_font_color,:filter_panel_opacity,
+        :filter_panel_font_style,:filter_panel_font_color,:filter_button_color,:filter_panel_label_color,:filter_panel_label_opacity ,:filter_button_font_style,:filter_button_font_color,:filter_panel_opacity,
         :filter_buttons_opacity,:gallery_buttons_opacity,:filter_menu_buttons_border,:gallery_buttons_border,:filter_button,:gallery_button,
         :filter_panel_background_image,:filter_label_image,:display_filter_label_image,:filter_button_as_image,:gallery_button_as_image,:gallery_button_on_as_image,:filter_panel_background_as_image,:gallery_button_on_image,:home_page_button_shape,
         :home_page_buttons_border,:home_page_navigation_background_height,:home_page_navigation_background_color,:home_page_buttons_height,

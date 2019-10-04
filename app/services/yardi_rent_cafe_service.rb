@@ -20,7 +20,9 @@ class YardiRentCafeService < BaseService
         end
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
-        
+
+        unit_record = []
+        unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardirentcafe"]).map{|x| x.provider_unit_id}
         if response[0]["Error"].nil?
           response.each do |r|
             begin
@@ -69,6 +71,7 @@ class YardiRentCafeService < BaseService
                   unit.effective_rent = 1.0
                 end
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
+                unit_record << unit.provider_unit_id
                 unit.save(validate: false)
 
               end
@@ -90,6 +93,16 @@ class YardiRentCafeService < BaseService
           rescue => err
           end
           puts  "Invalid credentials.Please enter correct one and try again." 
+        end
+        no_unit = unit_present - unit_record
+        if unit_record.nil?
+          no_unit = nil
+        end
+        no_unit.each do |un|
+          unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+          unit.availability = "Occupied"
+          unit.available = false
+          unit.save(validate: false)
         end
       rescue => e
         begin
