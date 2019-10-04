@@ -1,7 +1,7 @@
 class Api::V1::TourHistoriesController < ActionController::Base
   
   def save_tour_history
-    if params[:community_id].present?
+    if params[:community_id].present? && params[:tour_user_id].present?
       params[:id].present? ? tour_history = TourHistory.find_or_create_by(id: params[:id]) : tour_history = TourHistory.new
 
       tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
@@ -9,13 +9,13 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
       tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
 
-      tour_history.id_mismatch = false
       tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
-      tour_history.tour_user_id = params[:tour_user_id] if params[:tour_user_id].present?
+      tour_history.tour_user_id = params[:tour_user_id]
+      
+      tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
       
       tour_history.community = set_community
-      # binding.pry
-      # Time.at(params[:lengthy_stay])
+      
       if tour_history.save
         render :json=> {:success=>true, :message => "success", :data => tour_history}
       else
