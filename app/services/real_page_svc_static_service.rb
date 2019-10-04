@@ -232,6 +232,7 @@ class RealPageSvcStaticService < BaseService
                 # end
                 unit.manually_updated = false
 
+
                 unit.availability_url = "https://pynwheel-staging.herokuapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
 
                 unit.save(validate: false)
