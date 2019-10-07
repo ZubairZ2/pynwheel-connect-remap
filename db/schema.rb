@@ -905,14 +905,14 @@ ActiveRecord::Schema.define(version: 20191001130409) do
   create_table "tour_users", force: :cascade do |t|
     t.string   "name"
     t.string   "email"
-    t.datetime "created_at",                        null: false
-    t.datetime "updated_at",                        null: false
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
     t.string   "credit_card_number"
     t.string   "card_expiry"
     t.string   "phone_number"
     t.string   "image"
     t.string   "id_card"
-    t.boolean  "id_selfie_mismatch", default: true
+    t.boolean  "id_selfie_mismatch", default: false, null: false
   end
 
   create_table "tours", force: :cascade do |t|
