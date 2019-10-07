@@ -71,6 +71,8 @@ class XmlService < BaseService
               unit.effective_rent = u["EffectiveRent"]["Avg"]
             end
           end
+          unit.min_effective_rent = u["EffectiveRent"]["Min"]
+          unit.max_effective_rent = u["EffectiveRent"]["Max"]
 
           # unit.floor = u["EntryFloor"]
           if u["Availability"].present?

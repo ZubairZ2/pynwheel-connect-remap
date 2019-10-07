@@ -71,12 +71,14 @@ class ResmanStaticService < BaseService
         unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
           unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         end
+        unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
+        unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
           unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-          if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
+          if u["EffectiveRent"].present?
+          unit.effective_rent = u["EffectiveRent"]["Min"]
+          elsif u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
             unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
-          elsif u["EffectiveRent"].present?
-            unit.effective_rent = u["EffectiveRent"]["Avg"]
           end
         end
         unless unit.floor_is_updated.present? && unit.floor_is_updated

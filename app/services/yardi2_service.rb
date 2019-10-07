@@ -99,6 +99,9 @@ class Yardi2Service < BaseService
             #   unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
             # end
             if u.key?(:EffectiveRent)
+
+              unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?
+              unit.max_effective_rent = u[:EffectiveRent][0][:Max] if u[:EffectiveRent][0][:Max].present?
               unit.market_rent = u[:EffectiveRent][0][:Min]
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                 unit.effective_rent = u[:EffectiveRent][0][:Min]

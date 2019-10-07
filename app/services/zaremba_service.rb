@@ -99,7 +99,8 @@ class ZarembaService < BaseService
               unit.effective_rent = u["EffectiveRent"]["Min"]
             end
           end
-
+          unit.min_effective_rent = u["EffectiveRent"]["Min"]
+          unit.max_effective_rent = u["EffectiveRent"]["Man"]
           # unit.floor = u["FloorLevel"]
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             if u["Availability"]["VacancyClass"] == "Vacant"

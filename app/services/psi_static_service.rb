@@ -316,6 +316,8 @@ class PsiStaticService < BaseService
                     unit.available_date = Date.parse("#{month}-#{day}-#{year}")
                   end
                   if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                    unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
+                    unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
                     unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                   elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
                     unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
@@ -419,6 +421,8 @@ class PsiStaticService < BaseService
                         unit.available_date = Date.parse("#{month}-#{day}-#{year}")
                       end
                       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                        unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
+                        unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
                         unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                       elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
                         unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
