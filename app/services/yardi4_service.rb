@@ -138,6 +138,8 @@ class Yardi4Service < BaseService
             #   is_available = true
             # end
           end
+          unit.min_effective_rent = unit_with_key[:EffectiveRent][0][:Min]
+          unit.max_effective_rent = unit_with_key[:EffectiveRent][0][:Max]
           unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
             if unit_with_key.key?(:EffectiveRent)
               unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
