@@ -202,6 +202,8 @@ class ToursController < ApplicationController
 
   def id_selfie_matching
     @visitor = TourUser.find_by_id(params[:tour_user_id])
+    # binding.pry
+    puts "<<<<<<<<<<< ID MISMATCH? #{@visitor.id_selfie_mismatch} >>>>>>>>>>"
     render  'visitor_profile'
   end
 
