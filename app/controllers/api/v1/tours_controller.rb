@@ -40,12 +40,13 @@ class Api::V1::ToursController < ActionController::Base
         end
         vs.save
       rescue => ex
-        render :json=> {:success=>false, :message => "failed"}
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{ex.message}"
+        render :json=> {:success=>false, :message => "failed"} and return
       end
       if vs.present?
-        render :json=> {:success=>true, :message => "success"}
+        render :json=> {:success=>true, :message => "success"} and return 
       else
-        render :json=> {:success=>false, :message => "failed"}
+        render :json=> {:success=>false, :message => "failed"} and return
       end
     end
   end
