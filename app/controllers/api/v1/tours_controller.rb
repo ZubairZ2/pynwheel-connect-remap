@@ -33,6 +33,9 @@ class Api::V1::ToursController < ActionController::Base
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.image = tempFile
         vs.save
+        if self.id_card.present? && self.image.present?
+          vs.update_attributes(id_selfie_mismatch: false)
+        end
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
