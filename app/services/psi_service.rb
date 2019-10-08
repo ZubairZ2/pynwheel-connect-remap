@@ -129,7 +129,8 @@ class PsiService < BaseService
     #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "7 "
     #   com_test.save
     # end
-    fill_psi_pricing_details
+    fill_psi_pricing_details(1)
+    fill_psi_pricing_details(0)
   end
 
   def save_psi_units(units,property_id)
@@ -239,11 +240,15 @@ class PsiService < BaseService
     end
 
 
-  def fill_psi_pricing_details
+  def fill_psi_pricing_details(hit)
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
-      move_in_dates = getMoveInDate(property_id)
+      move_in_dates = getMoveInDateyardi(property_id)
+      if hit == 1
+        move_in_dates = []
+        move_in_dates << "0"
+      end
       unless move_in_dates.present?
         move_in_dates = []
         move_in_dates << "0"
