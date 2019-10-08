@@ -18,7 +18,7 @@
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               .TriSea-technologies-Switch
                 %span.pr-15 Matched
-                = check_box_tag :id_selfie_mismatch, true, @visitor.id_selfie_mismatch, class: "show-tour-page"
+                = check_box_tag :id_selfie_mismatch, nil, @visitor.id_selfie_mismatch, class: "show-tour-page"
                 %label.label-primary{:for => "id_selfie_mismatch"}
                 %span.pl-15 Mismatched
         .col-md-6
@@ -30,23 +30,13 @@
   $(document).ready(function() {
     var visitor_id = "#{@visitor.id}"
     $('#id_selfie_mismatch').change(function() {
-        
+      
       if(this.checked) {
-        $.post("/flag_id_mismatch",
-          { 
-            "tour_user_id": visitor_id,
-            'match_status': this.checked
-          },
-          function(data,status,xhr) {
-            console.log(data)
-          }
-        );
-      } else {
-
         user_input = prompt("Please enter the word FLAG:")
 
         if(user_input === "FLAG") {
-          $(this).prop("checked", false);
+          
+          $(this).prop("checked", true);
             
           $.post("/flag_id_mismatch", 
           { 
@@ -57,8 +47,24 @@
             console.log(data)
           });
         }else{
-          $(this).prop("checked", true);
+          $(this).prop("checked", false);
         }
+
+      } else {
+        user_input = prompt("Please enter the word FLAG:")
+
+        if(user_input === "FLAG") {
+          $.post("/flag_id_mismatch",
+            { 
+              "tour_user_id": visitor_id,
+              'match_status': this.checked
+            },
+            function(data,status,xhr) {
+              console.log(data)
+            }
+          );
+        }
+
       }
     });
 

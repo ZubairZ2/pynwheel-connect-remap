@@ -26,6 +26,8 @@ class TourUser < ApplicationRecord
 
   def send_selfie_match_link
   	if self.id_card.present? && self.image.present?
+      self.id_selfie_mismatch = false
+      self.save
   		email_content = "Please verify user on the following link <br/> <a href='#{manual_selfie_match_url self.id }' target='_blank'> Visitor's ID page </a>"
   		DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'arslan.mirza@intagleo.com')
   	end
