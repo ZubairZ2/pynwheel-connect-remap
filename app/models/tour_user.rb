@@ -21,14 +21,5 @@ class TourUser < ApplicationRecord
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
-
-  after_save :send_selfie_match_link
-
-  def send_selfie_match_link
-  	if self.id_card.present? && self.image.present?
-  		email_content = "Please verify user on the following link <br/> <a href='#{manual_selfie_match_url self.id }' target='_blank'> Visitor's ID page </a>"
-  		DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'arslan.mirza@intagleo.com')
-  	end
-
-  end
+  
 end
