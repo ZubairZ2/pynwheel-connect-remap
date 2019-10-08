@@ -244,7 +244,7 @@ class PsiService < BaseService
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
-      move_in_dates = getMoveInDateyardi(property_id)
+      move_in_dates = getMoveInDate(property_id)
       if hit == 1
         move_in_dates = []
         move_in_dates << "0"
