@@ -32,14 +32,22 @@ class Api::V1::ToursController < ActionController::Base
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.image = tempFile
-        vs.save
+        if vs.id_card.present? && vs.image.present?
+          vs.id_selfie_mismatch = false
+          email_content = "Please verify user on the following link <br/> <a href='#{manual_selfie_match_url vs.id }' target='_blank'> Visitor's ID page </a>"
+          DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'arslan.mirza@intagleo.com')
+          DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com')
+        end
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{vs.valid?}"
+        vs.save!(validate: false)
       rescue => ex
-        render :json=> {:success=>false, :message => "failed"}
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{ex.message}"
+        render :json=> {:success=>false, :message => "failed"} and return
       end
       if vs.present?
-        render :json=> {:success=>true, :message => "success"}
+        render :json=> {:success=>true, :message => "success"} and return 
       else
-        render :json=> {:success=>false, :message => "failed"}
+        render :json=> {:success=>false, :message => "failed"} and return
       end
     end
   end

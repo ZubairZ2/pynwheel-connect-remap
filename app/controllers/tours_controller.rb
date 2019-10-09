@@ -217,6 +217,7 @@ class ToursController < ApplicationController
       if tour_user.id_selfie_mismatch
         name = tour_user.name || tour_user.email.split('@').first.humanize
         DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", "The user has a mismatching ID/Selfie", 'arslan.mirza@intagleo.com')
+        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", "The user has a mismatching ID/Selfie", 'jennifer@pynwheel.com')
       end
     else
       status = 404
