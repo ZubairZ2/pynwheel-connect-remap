@@ -1,11 +1,11 @@
-- content_for :title, "Property Settings - Pynwheel"
+- content_for :title, "Property Notes - Pynwheel"
 %section.is-community-page
   .content
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
           PROPERTY
-          %span DETAILS
+          %span NOTES
 
       = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal"} do |f|
         .box-body
