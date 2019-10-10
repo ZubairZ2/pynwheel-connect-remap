@@ -252,6 +252,7 @@ class PsiStaticService < BaseService
                                    :headers => { 'Content-Type' => 'application/json' } )
           response =  JSON.parse(response.body)
         else
+          sleep 5
           response = HTTParty.post(url,
                                    :body => {
                                        "auth": {
@@ -275,7 +276,7 @@ class PsiStaticService < BaseService
           puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"* 300,move_in_date
           response =  JSON.parse(response.body)
         end
-        sleep 2
+        sleep 4
 
         if response["response"]["code"] == 200
           unless response["response"]["result"].include?('No records found')
