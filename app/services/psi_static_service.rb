@@ -272,6 +272,7 @@ class PsiStaticService < BaseService
                                    }.to_json,
                                    :headers => { 'Content-Type' => 'application/json' } )
           sleep 5
+          puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"* 300,move_in_date
           response =  JSON.parse(response.body)
         end
         sleep 2
