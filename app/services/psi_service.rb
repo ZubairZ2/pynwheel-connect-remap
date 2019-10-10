@@ -323,6 +323,7 @@ class PsiService < BaseService
                                          }
                                      }.to_json,
                                      :headers => { 'Content-Type' => 'application/json' } )
+            sleep 3
             response =  JSON.parse(response.body)
           end
           sleep 3
@@ -586,7 +587,12 @@ class PsiService < BaseService
       moveIn_dates = []
       response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
         if dates['leaseStartDate'].present?
-          moveIn_dates << dates['leaseStartDate']
+          ss = dates['leaseStartDate'].split('/')
+          date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
+          date1 = (date1.to_date + 31).to_s
+          ss = date1.split('-')
+          added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
+          moveIn_dates << added_date
         end
       end
     rescue
