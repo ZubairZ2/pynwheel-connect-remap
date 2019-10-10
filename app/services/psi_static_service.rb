@@ -529,6 +529,7 @@ class PsiStaticService < BaseService
         end
       end
     rescue
+      
     end
     moveIn_dates
   end
