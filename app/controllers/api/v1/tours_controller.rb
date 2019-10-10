@@ -64,12 +64,18 @@ class Api::V1::ToursController < ActionController::Base
   def save_shared_tour
     shared_tour = SharedTour.new shared_tour_params
     if shared_tour.save
+      visited_stops = shared_tour.visited_stops
+      
       render :json=> {:success=>true, :message => "success", :data => shared_tour}
     else
       render :json=> {:success=>false, :message => "shared tour was not saved, please try again."}
     end
   end
   private
+
+  def share_tour_data
+    st = SharedTour.joins(:tour => [:tour_stops, :community])
+  end
 
   def set_community
     @community = Community.find(params[:id])
