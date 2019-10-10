@@ -216,9 +216,13 @@ class ToursController < ApplicationController
 
       if tour_user.id_selfie_mismatch
         name = tour_user.name || tour_user.email.split('@').first.humanize
-        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", "The user has a mismatching ID/Selfie", 'arslan.mirza@intagleo.com')
-        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", "The user has a mismatching ID/Selfie", 'jennifer@pynwheel.com')
-        # DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", "The user has a mismatching ID/Selfie", 'usman.khalid@intagleo.co.uk')
+
+        email_content = "The user has a mismatching ID/Selfie. <br/> <a href='#{manual_selfie_match_url tour_user.id }' target='_blank'> Visitor's ID page </a>"
+
+        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
+        DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
+        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'arslan.mirza@intagleo.com')
+
       end
     else
       status = 404
