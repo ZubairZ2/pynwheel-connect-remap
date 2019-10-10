@@ -30,22 +30,22 @@ class ImageUploader < CarrierWave::Uploader::Base
   end
 
   version :thumb , from_version: :large do
+    # process :crop
     resize_to_fit(384, 210)
   end
 
   version :large do
-    process :crop
+    # process :crop
     resize_to_fit(1920, 1080)
   end
 
   def png_name for_file, version_name
     %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
   end
-
-
+  resize_to_fit(1920, 1080)
+  process :crop
   def crop
     if model.crop_x.present?
-      resize_to_fit(1920, 1080)
       manipulate! do |img|
         x = model.crop_x
         y = model.crop_y

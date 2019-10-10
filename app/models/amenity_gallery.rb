@@ -2,13 +2,14 @@
 #
 # Table name: amenity_galleries
 #
-#  id          :integer          not null, primary key
-#  amenity_id  :integer
-#  image       :string
-#  description :string
-#  name        :string
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
+#  id               :integer          not null, primary key
+#  amenity_id       :integer
+#  image            :string
+#  description      :string
+#  name             :string
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  directional_text :string
 #
 
 class AmenityGallery < ApplicationRecord

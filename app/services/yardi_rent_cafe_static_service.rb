@@ -71,10 +71,13 @@ class YardiRentCafeStaticService < BaseService
                   end
 
                 end
+                unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
+                unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
                 unit.manually_updated = false
+                unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
                 unit.save(validate: false)
               end
 

@@ -348,12 +348,12 @@
               -#    = render :partial => 'favorite_image', :locals => {:img => img}
               - if @community.favorite_setting.present? and @community.favorite_setting.ebrochure_menu_buttons.size > 0
                 %tr
-                  %td{:style=>"padding: 13px 15px 0 15px;"}
+                  %td{:style=>"padding: 13px 1px 0 1px;"}
                     %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :width => "100%"}
                       %tr
                         -#-%td{:style => " background-color:#253339; margin-right:10px;"}
                         - @community.favorite_setting.ebrochure_menu_buttons.each do |button|
-                          %td.clickable_row{:style => " background-color:#253339; padding: 10px 20px; border: 2px solid #ffffff; text-align: center;",:onclick => "table_row_onclick()", "data-href" => "#{button.url}"}
+                          %td.clickable_row{:style => " background-color:#253339; padding: 10px 20px; white-space: pre; word-break: normal; word-wrap: normal; border: 2px solid #ffffff; text-align: center;",:onclick => "table_row_onclick()", "data-href" => "#{button.url}"}
                             %a{:href => "#{button.url}",:style=>" text-decoration: none; text-align: center; color: #ffffff; "}
                               = button.name
               %tr
@@ -376,14 +376,7 @@
                                   %tr
                                     %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                       %p
-                                        - zone = ActiveSupport::TimeZone['Central Time (US & Canada)']
-                                        %h3
-                                          = "To: #{@to_email}"
-                                        %h3
-                                          = "Date: #{Time.now.to_s.split(' ')[0]}"
-                                        %h3
-                                          = "Time: #{Time.zone.now.to_s(:time)}"
-                                        %br
+                                        
                                         = raw(@email_body.gsub("<community_name>",@community.name).gsub("\n","<br>"))
               -#- if @community.favorite_setting.present? and @community.favorite_setting.favorite_images.size > 0
               -#  - @community.favorite_setting.favorite_images.each do |img|

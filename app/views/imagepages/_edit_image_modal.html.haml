@@ -1,7 +1,12 @@
-.modal-dialog{:style=>"overflow-y: initial width: 700px !important; width: 700px;"}
+.modal-dialog{:style=>"overflow-y: initial; min-width: 250px !important; width: fit-content;"}
   .modal-content
     = form_for @additional_image,url: update_additional_image_community_imagepage_path(@community,@imagepage,additional_image_id: @additional_image.id),method: :put do |f|
       .modal-body
+        .image-crop{:style=>"overflow-y: auto;"}
+          - rn =  rand(9999999999999999999999999)
+          = image_tag @additional_image.image.url  + "?timestamp=#{rn}", id: "cropbox",:class => "clas1"
+          - %w[x y w h].each do |attribute|
+            = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
@@ -13,3 +18,40 @@
             Apply Changes
             %i.fa.fa-check
         .clearfix
+
+
+:javascript
+  $("#crop_image").on("click",function(e){
+    $(".divLoading").removeClass("hidden")
+  });
+
+  $('#cropbox').Jcrop({
+  boxWidth: 550, boxHeight: 550,
+    onSelect: update_crop,
+    onChange: update_crop,
+  });
+
+
+  function update_crop(coords){
+    console.log(coords);
+    var ratioW = $('#cropbox')[0].naturalWidth / $('#cropbox').width();
+    var ratioH = $('#cropbox')[0].naturalHeight / $('#cropbox').height();
+    var currentRatio = Math.min(ratioW, ratioH);
+    //$('#home_page_image_crop_x').val(Math.round(coords.x * currentRatio));
+    $('#additional_image_crop_x').val(coords.x);
+    //$('#home_page_image_crop_y').val(Math.round(coords.y * currentRatio));
+    $('#additional_image_crop_y').val(coords.y);
+    //$('#home_page_image_crop_w').val(Math.round(coords.w * currentRatio));
+    $('#additional_image_crop_w').val(coords.w);
+    //$('#home_page_image_crop_h').val(Math.round(coords.h * currentRatio));
+    $('#additional_image_crop_h').val(coords.h);
+    //update_preview(coords);
+  }
+
+  function update_preview(coords){
+  var width = Math.round(100/coords.w * $('#cropbox').width()) + 'px';
+  var height = Math.round(100/coords.h * $('#cropbox').height()) + 'px';
+  var margin_left = '-' + Math.round(100/coords.w * coords.x) + 'px';
+  var margin_top = '-' + Math.round(100/coords.h * coords.y) + 'px';
+  $('#preview').css({"width": width,"height": height,"marginLeft": margin_left,"marginTop": margin_top});
+  }

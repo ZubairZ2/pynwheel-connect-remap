@@ -5,17 +5,23 @@ gem 'rest-client'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rack-cors', require: 'rack/cors'
 gem 'rails', '~> 5.0.0'
+gem 'stripe'
 gem 'annotate'
 gem 'bootstrap-wysihtml5-rails'
 gem 'carrierwave_direct'
 gem 'newrelic_rpm'
-
+gem 'momentjs-rails', '>= 2.9.0'
+gem 'bootstrap3-datetimepicker-rails', '~> 4.17.47'
+gem 'pry'
 gem 'twilio-ruby'
 gem 'phony_rails'
-
 gem 'write_xlsx'
 gem "mini_magick"
 gem 'google_places'
+gem 'time_difference'
+source 'https://rails-assets.org' do
+  gem 'rails-assets-jsTimezoneDetect'
+end
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server
@@ -103,3 +109,4 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+gem 'countries'

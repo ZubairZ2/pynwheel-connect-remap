@@ -33,6 +33,8 @@
 #  entrata_url         :string
 #  xml_filename        :string
 #  xml_domain          :string
+#  data_error_message  :string
+#  data_error_exp      :string
 #
 
 class Credential < ApplicationRecord

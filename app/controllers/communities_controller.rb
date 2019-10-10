@@ -33,7 +33,7 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
-    add_breadcrumb "Property Settings", edit_company_community_path(current_company,@community)
+    add_breadcrumb "Property Notes", edit_company_community_path(current_company,@community)
   end
   def settings_page
     add_breadcrumb "Companies", companies_path(current_company)
@@ -42,9 +42,15 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
   end
   def update
+    if params[:community][:image]
+      @community.crop_x = nil
+    end
+    if params[:community][:secondary_image]
+      @community.crop_x_secondary = nil
+    end
+    @community.image_bit = nil
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
     respond_to do |format|
-
       if params[:spreadsheet_method] == '2'
         if @community.update(community_params)
           @community.credential.swap_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
@@ -73,6 +79,9 @@ class CommunitiesController < ApplicationController
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       else
+        if @community.company_id != params[:community][:company_id].to_i
+          @community.community_group_id = nil
+        end
         if @community.update(community_params)
           @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
           if params[:community][:name].present?
@@ -424,7 +433,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
+    params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
       :data_provider,:theme_name,:code,:is_sitemap,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn, :self_tour, :show_gesture_icons,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
         :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
@@ -437,7 +446,7 @@ class CommunitiesController < ApplicationController
         :secondary_font_color,:global_navigation_font_color,:global_navigation_background_color,:global_navigation_button_color,
         :global_navigation_buttons_opacity,:global_nav_bg_opacity,:button_shape,:global_nav_buttons_height,:global_nav_buttons_width,
         :secondary_page_menu_border,:global_nav_button_on,:global_nav_button_off,:buttons_as_image,:filter_panel_color,
-        :filter_panel_font_style,:filter_panel_font_color,:filter_button_color,:filter_button_font_style,:filter_button_font_color,:filter_panel_opacity,
+        :filter_panel_font_style,:filter_panel_font_color,:filter_button_color,:filter_panel_label_color,:filter_panel_label_opacity ,:filter_button_font_style,:filter_button_font_color,:filter_panel_opacity,
         :filter_buttons_opacity,:gallery_buttons_opacity,:filter_menu_buttons_border,:gallery_buttons_border,:filter_button,:gallery_button,
         :filter_panel_background_image,:filter_label_image,:display_filter_label_image,:filter_button_as_image,:gallery_button_as_image,:gallery_button_on_as_image,:filter_panel_background_as_image,:gallery_button_on_image,:home_page_button_shape,
         :home_page_buttons_border,:home_page_navigation_background_height,:home_page_navigation_background_color,:home_page_buttons_height,

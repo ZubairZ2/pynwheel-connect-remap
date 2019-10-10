@@ -19,6 +19,7 @@
 #  standard_image_url  :string
 #  sort                :integer
 #  access_code         :string
+#  directional_text    :string
 #
 
 class Amenity < ApplicationRecord

@@ -122,7 +122,9 @@ class RealPageSvcService < BaseService
                       </soapenv:Envelope>
           ')
         result = Ox.load(response.body, mode: :hash)
-        if result[:"s:Envelope"][1][:"s:Body"][1].present?  
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          unit_record = []
+          unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["realpagesvc"]).map{|x| x.provider_unit_id}
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
           units.each do |u|
 
@@ -146,7 +148,7 @@ class RealPageSvcService < BaseService
                   unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 end
                 unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-                  unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                  unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied" if !unit.sold
                 end
                 if u[:BuildingNumber] == "N/A"
                   unit.building = ""
@@ -171,7 +173,7 @@ class RealPageSvcService < BaseService
                     unit.available_date = ""
                     unit.available = false
                   else
-                    unit.available = true
+                    unit.available = true if !unit.sold
                   end
                 end
 
@@ -206,11 +208,28 @@ class RealPageSvcService < BaseService
                 #     unit.building = bldgResult
                 #   end
                 # end
+
+                unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+                unit_record << unit.provider_unit_id
+
                 unit.save(validate: false)
 
 
               end
             end
+          end
+          puts "$$$$$"*1000, unit_present - unit_record
+          no_unit = unit_present - unit_record
+          if unit_record.nil?
+            no_unit = nil
+          end
+
+          no_unit.each do |un|
+
+            unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+            unit.availability = "Occupied"
+            unit.available = false
+            unit.save(validate: false)
           end
         else
           begin
@@ -325,11 +344,15 @@ class RealPageSvcService < BaseService
               # unitHash = Hash.new
               rentStr = ""
               unitLeaseTerm = []
+              min_rent = nil
+              max_rent = nil
               unit_no = u[:Address][:UnitID]
-              if hash[:units].include?(unit_no)
+              # if hash[:units].include?(unit_no)
                 if u[:RentMatrix].present?
                   best_price = nil
                   begin
+                    min_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent]
+                    max_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent]
 
                     u[:RentMatrix][1][:Rows][:Row].each_with_index do |opts,index|
                       next if index == 0
@@ -363,13 +386,15 @@ class RealPageSvcService < BaseService
                     unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                       unit.effective_rent = best_price
                     end
+                    unit.min_effective_rent = min_rent
+                    unit.max_effective_rent = max_rent
 
                     unit.lease_pricing = rentStr
                     unit.save(:validate => false)
                     puts " **** price updated *** "
                   end
                 end
-              end
+              # end
             end
           end
         end  

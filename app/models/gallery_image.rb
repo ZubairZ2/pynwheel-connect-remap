@@ -25,21 +25,27 @@ class GalleryImage < ApplicationRecord
   set_sortable :sort  
 	#mount_base64_uploader :image, GalleryUploader
 	mount_uploader :image, GalleryUploader
+	mount_uploader :video, VideoUploader
+	process_in_background :video
 	before_create :set_image_name
 	# before_save :populate_image_urls
 	after_update :crop_image
   after_commit :populate_image_urls, on: :create
 
 	def crop_image
-    image.recreate_versions! if crop_x.present?
+    image.recreate_versions! if (crop_x.present? && do_crop)
   end
 
   def is_video?
-		image.file.extension.downcase == 'mp4' 
+		begin
+			image.file.extension.downcase == 'mp4'
+		rescue => ex
+			true
+		end
 	end
 
 	def set_image_name
-  	self.name = image.file.filename
+  	self.name = image.file.filename if image.present?
   end
 
   def populate_image_urls

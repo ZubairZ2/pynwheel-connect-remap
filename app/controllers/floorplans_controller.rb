@@ -33,6 +33,65 @@ class FloorplansController < ApplicationController
     add_breadcrumb "Floor plan Details", edit_community_floorplan_path(@community,@floorplan)
   end
 
+  def show_floorplan_image_in_modal
+    @community = Community.find params[:community_id]
+    @floorplan = Floorplan.find params[:id]
+  end
+  def crop_image
+    # com = Community.find 2140
+    #
+    @community = Community.find params["community_id"]
+    @floorplan = Floorplan.find params["id"]
+    # byebug
+    # com.logo = @floorplan.image
+    # @floorplan.image = Amenity.last.image
+    # @floorplan.save
+    # @floorplan.image = com.logo
+    # @floorplan.save
+    # @community = Community.find params["community_id"]
+    # @floorplan = Floorplan.find params["id"]
+    if @floorplan.crop_x == params[:floorplan][:crop_x].to_f
+      @floorplan.do_crop = false
+    else
+      @floorplan.do_crop = true
+    end
+    if params[:floorplan][:crop_h].to_f == 0 && params[:floorplan][:crop_w].to_f == 0
+      @floorplan.do_crop = false
+    end
+    @floorplan.crop_x = params[:floorplan][:crop_x]
+    @floorplan.crop_y = params[:floorplan][:crop_y]
+    @floorplan.crop_w = params[:floorplan][:crop_w]
+    @floorplan.crop_h = params[:floorplan][:crop_h]
+    @floorplan.image_bit = true
+    @floorplan.save
+    redirect_to edit_community_floorplan_path(@community,@floorplan)
+    # render :json=> {:success=>false}
+  end
+  def show_floorplan_secondary_image_in_modal
+    @community = Community.find params[:community_id]
+    @floorplan = Floorplan.find params[:id]
+  end
+  def crop_secondary_image
+    @community = Community.find params["community_id"]
+    @floorplan = Floorplan.find params["id"]
+    if @floorplan.crop_x_secondary == params[:floorplan][:crop_x].to_f
+      @floorplan.do_crop_secondary = false
+    else
+      @floorplan.do_crop_secondary = true
+    end
+    if params[:floorplan][:crop_h].to_f == 0 && params[:floorplan][:crop_w].to_f == 0
+      @floorplan.do_crop_secondary = false
+    end
+    @floorplan.crop_x_secondary = params[:floorplan][:crop_x]
+    @floorplan.crop_y_secondary = params[:floorplan][:crop_y]
+    @floorplan.crop_w_secondary = params[:floorplan][:crop_w]
+    @floorplan.crop_h_secondary = params[:floorplan][:crop_h]
+    @floorplan.image_bit = false
+
+    @floorplan.save
+    redirect_to edit_community_floorplan_path(@community,@floorplan)
+    # render :json=> {:success=>false}
+  end
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?
@@ -53,6 +112,13 @@ class FloorplansController < ApplicationController
   end
 
   def update
+    if params[:floorplan][:image]
+      @floorplan.crop_x = nil
+    end
+    if params[:floorplan][:secondary_image]
+      @floorplan.crop_x_secondary = nil
+    end
+    @floorplan.image_bit = nil
     respond_to do |format|
       if params[:floorplan][:description].present?
         params[:floorplan][:description] = add_padding_description params[:floorplan][:description]
@@ -92,7 +158,17 @@ class FloorplansController < ApplicationController
     end
   end
 
-
+  def save_floorplan_name_order
+    @community = Community.find params[:community_id]
+    if params[:desc] == "sorting_desc"
+      @community.floorplan_name_order = true
+    elsif params[:desc] == "sorting_asc"
+      @community.floorplan_name_order = false
+    else
+      @community.floorplan_name_order = nil
+    end
+    @community.save
+  end
   def destroy
     @floorplan.destroy
     flash[:notice] = "Floor plan deleted successfully."

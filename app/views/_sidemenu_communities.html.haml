@@ -4,7 +4,7 @@
   %section.sidebar
     / Sidebar user panel
     %ul.sidebar-menu{"data-widget" => "tree"}
-      %li.treeview{:class=>"#{controller_name =='communities' || controller_name =='companies' ? 'active' : ''}"}
+      %li.treeview{:class=>"#{controller_name =='communities' || controller_name =='companies' || controller_name =='community_groups' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-building-o
           %span All Accounts
@@ -14,6 +14,8 @@
           - if (current_user.is_super_admin? )
             %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
               %a{:href => "/companies"} Companies
+          %li{:class=>"#{controller_name =='community_groups' ? 'active' : ''}"}
+            %a{:href => "/companies/#{current_company.id}/community_groups"} Community Group
           %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
             = link_to "Communities",root_path
       - if (current_user.is_super_admin? )

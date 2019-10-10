@@ -19,7 +19,7 @@
 
 
       -if current_user.is_super_admin?
-        = f.select :community_ids, options_for_select('',f.object.communities.map(&:id)),{},{class: "form-control validate[required]",:multiple=>true}
+        = f.select :community_ids, options_for_select('',f.object.communities.map(&:id)),{},{class: "form-control",:multiple=>true}
       -else
         = f.select :community_ids, options_for_select(current_user.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control validate[required]",:multiple=>true}
 - else 

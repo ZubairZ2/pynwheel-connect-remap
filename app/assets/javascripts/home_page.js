@@ -27,7 +27,7 @@ $(document).ready(function(){
 
   //************************* Gallery Images Upload using dropzone plugin **************//
   if ($("#gallery-image-upload-holder").length){
-    saveGalleryImage(); 
+    saveGalleryImage();
   }
 
   if ($("#additional-image-upload-holder").length){
@@ -559,6 +559,14 @@ function fetchAdditionalImages(){
     });
 }
 
+function FileListItem(a) {
+    a = [].slice.call(Array.isArray(a) ? a : arguments)
+    for (var c, b = c = a.length, d = !0; b-- && d;) d = a[b] instanceof File
+    if (!d) throw new TypeError("expected argument to FileList is File or array of File objects")
+    for (b = (new ClipboardEvent("")).clipboardData || new DataTransfer; c--;) b.items.add(a[c])
+    return b.files
+}
+
 function saveGalleryImage(){
   var galleryImageDropzone = new Dropzone("#gallery-image-upload-holder", { url: "/communities/"+community_id+"/galleries/"+gallery_id+"/save_gallery_image"});
   Dropzone.options.galleryImageDropzone = {
@@ -573,15 +581,47 @@ function saveGalleryImage(){
   galleryImageDropzone.on("addedfile", function(file) {
     console.log(file.type);
     $(".divLoading").removeClass("hidden");
-    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg" || file.type == "video/mp4")) {
+    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
       $(".divLoading").addClass("hidden");
-      $('#image-and-video-upload-warning').modal('show');
+      // $('#image-and-video-upload-warning').modal('show');
+      //   debugger;
+        // f = video_field.files;
+        // f.add(file)
+        // f = file;
+        dropHandler1(file);
+        // $("#video_submit").click();
       galleryImageDropzone.removeFile(file);
     }
 
+
   });
 }
+function dropHandler1(e)
+{
+    if (e.size < 500000000)
+    {
+        if ( e.type == "video/mp4")
+        {
+            $(".divLoading").removeClass("hidden");
+            // e.preventDefault();
+            // console.log(e.dataTransfer);
+            // setTimeout(function(){
+            video_field.files = new FileListItem(e)
+            // }, 5000);
 
+            // video_field.files = e;
+            $("#video_submit").click();
+        }
+        else
+        {
+            $('#video-upload-warning').modal('show');
+        }
+    }
+    else
+    {
+        // $('#video-size-warning').modal('show');
+    }
+};
 function saveAdditionalImage(){
   var additionalImageDropzone = new Dropzone("#additional-image-upload-holder", { url: "/communities/"+community_id+"/imagepages/"+imagepage_id+"/save_additional_image"});
   Dropzone.options.additionalImageDropzone = {

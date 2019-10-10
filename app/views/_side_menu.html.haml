@@ -14,12 +14,14 @@
           - if current_user.is_super_admin?
             %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
               %a{:href => "/companies"} Companies
+          %li{:class=>"#{controller_name =='community_group' ? 'active' : ''}"}
+            %a{:href => "/community_groups"} Community Group
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             = link_to "Communities", root_path
       %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
         = link_to edit_company_community_path(current_company,current_community) do
           %i.fa.fa-info
-          %span Property Details
+          %span Property Notes
       - if (current_user.is_super_admin?)
         %li{:class=>"#{controller_name =='communities' && params[:action] =='settings_page' ? 'active' : ''}"}
           = link_to community_settings_page_path(current_community) do
@@ -30,7 +32,7 @@
           = link_to community_design_index_path(current_community) do
             %i.fa.fa-tv
             %span Design
-      - if (current_user.is_super_admin?)
+      - if (current_user.is_super_admin? || current_user.is_community_admin? )
         %li{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
           %a{:href => "#{community_settings_path(current_community)}"}
             %i.fa.fa-gears
@@ -132,6 +134,10 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
             %i.fa.fa-share
             %span Webpages
+        %li
+          %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
+            %i.fa.fa-share
+            %span Scheduler Widget
       - if (current_user.is_super_admin?)
         %li{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
           %a{:href => "#{community_tours_path(current_community)}"}

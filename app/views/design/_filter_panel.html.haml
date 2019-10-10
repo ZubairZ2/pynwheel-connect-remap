@@ -64,6 +64,16 @@
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel label color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :filter_panel_label_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_panel_label_color.present? ? d.object.filter_panel_label_color : "#565455"
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Filter button font style 
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :filter_button_font_style , options_for_select(font_families,d.object.filter_button_font_style),{},{class: "form-control filter-panel-field"}
@@ -101,6 +111,13 @@
               Filter buttons opacity 
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :filter_buttons_opacity , options_for_select(opacity_options,d.object.filter_buttons_opacity.present? ? d.object.filter_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
+      .row
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel label opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_panel_label_opacity , options_for_select(opacity_options,d.object.filter_panel_label_opacity.present? ? d.object.filter_panel_label_opacity : "100%"),{},{class: "form-control filter-panel-field"}
       .row
         .col-lg-10
           .form-group.mt-30

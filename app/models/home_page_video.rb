@@ -2,12 +2,16 @@
 #
 # Table name: home_page_videos
 #
-#  id         :integer          not null, primary key
-#  video      :string
-#  name       :string
-#  design_id  :integer
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id               :integer          not null, primary key
+#  video            :string
+#  name             :string
+#  design_id        :integer
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  vid_file_name    :string
+#  vid_content_type :string
+#  vid_file_size    :bigint(8)
+#  vid_updated_at   :datetime
 #
 
 class HomePageVideo < ApplicationRecord
