@@ -102,7 +102,8 @@ class YardiRentCafeService < BaseService
           unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
           unit.availability = "Occupied"
           unit.available = false
-          unit.save(validate: false)
+          unit.available_date = nil
+          unit.save(validate: false) unless unit.manual_override
         end
       rescue => e
         begin
