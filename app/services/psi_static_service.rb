@@ -271,9 +271,10 @@ class PsiStaticService < BaseService
                                        }
                                    }.to_json,
                                    :headers => { 'Content-Type' => 'application/json' } )
+          sleep 5
           response =  JSON.parse(response.body)
         end
-        sleep 5
+        sleep 2
 
         if response["response"]["code"] == 200
           unless response["response"]["result"].include?('No records found')
@@ -529,7 +530,7 @@ class PsiStaticService < BaseService
         end
       end
     rescue
-      
+
     end
     moveIn_dates
   end
