@@ -297,6 +297,8 @@ Rails.application.routes.draw do
           get :get_neighbourhood_data
           get :reset_counter
           get :test_panzoom
+          get :unit_and_floorplan_data
+          get :update_unit_floorplan_data
         end
         collection do
           post :login
