@@ -14,7 +14,6 @@ class CommunitiesController < ApplicationController
       @communities = current_user.communities
     end
   end
-
   def new
     add_breadcrumb "Add Community", new_company_community_path(current_company)
     @community = current_company.communities.new
