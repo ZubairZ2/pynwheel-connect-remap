@@ -33,7 +33,7 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
-    add_breadcrumb "Property Notes", edit_company_community_path(current_company,@community)
+    add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
     add_breadcrumb "Companies", companies_path(current_company)
