@@ -124,7 +124,10 @@ class Api::V1::ToursController < ActionController::Base
       visited_stops = TourStop.where(id: VisitedStop.where(tour_user_id: tu.id).group('tour_stop_id').count.keys)
       community = visited_stops.last.tour.community
       shared_tour_stops = []
-      visited_stops.pluck(:stop_type, :stop_id).each {|x| shared_tour_stops << x.first.classify.constantize.where(id: x.last)}
+      visited_stops.pluck(:stop_type, :stop_id).each |x| do
+        puts "Visited Stop #{x}"
+        shared_tour_stops << x.first.classify.constantize.where(id: x.last) if x.present?
+      end
       shared_tour_stops.flatten!
       begin
         FavoriteMailer.email_shared_tour(['nasir031@gmail.com','usman.khalid@intagleo.com.uk', shared_tour.email],shared_tour_stops,community).deliver_now
