@@ -233,6 +233,7 @@ class RealPageSvcStaticService < BaseService
                 unit.manually_updated = false
                 unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
 
+
                 unit.save(validate: false)
                 #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
               end

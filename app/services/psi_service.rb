@@ -325,6 +325,7 @@ class PsiService < BaseService
                                      }.to_json,
                                      :headers => { 'Content-Type' => 'application/json' } )
             sleep 3
+
             response =  JSON.parse(response.body)
           end
           sleep 3

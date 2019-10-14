@@ -140,24 +140,25 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def get_neighbourhood_data
     # @@counter = @@counter + 1
+    if params[:token] == "pynwheeltoken12345"
     app_version = AppVersion.first
     unless app_version.neighborhood_counter.present?
       app_version.neighborhood_counter = 0
     end
     app_version.neighborhood_counter = app_version.neighborhood_counter + 1
     result = nil
-    if app_version.neighborhood_counter < 500
+    if app_version.neighborhood_counter < 60
       NeighbourhoodLog.create(from_ip: request.ip,cat: params[:cat])
       begin
-        if app_version.neighborhood_counter == 200
+        if app_version.neighborhood_counter == 20
           com = Community.find params[:id]
           com.neighbourhood_counter_mail_200
-          # NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
+          NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
         end
-        if app_version.neighborhood_counter == 400
+        if app_version.neighborhood_counter == 20
           com = Community.find params[:id]
           com.neighbourhood_counter_mail_400
-          # NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 200").deliver
+          NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 200").deliver
         end
       rescue => ex
 
@@ -175,12 +176,16 @@ class Api::V1::CommunitiesController < ActionController::Base
         rescue  => ex
         end
       end
+      results = []
       results << result
       render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => results}, :status=>200
     else
-      render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => results}, :status=>200
+      render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => "Limit Exceeded"}, :status=>200
     end
     app_version.save
+    else
+      render :json=> {:success=>false, :message => "You are not allowd to make this call."}, :status=>200
+    end
   end
   def reset_counter
     # @@counter = 0
