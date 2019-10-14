@@ -147,15 +147,15 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
     app_version.neighborhood_counter = app_version.neighborhood_counter + 1
     result = nil
-    if app_version.neighborhood_counter < 500
+    if app_version.neighborhood_counter < 60
       NeighbourhoodLog.create(from_ip: request.ip,cat: params[:cat])
       begin
-        if app_version.neighborhood_counter == 26
+        if app_version.neighborhood_counter == 20
           com = Community.find params[:id]
           com.neighbourhood_counter_mail_200
           NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
         end
-        if app_version.neighborhood_counter == 27
+        if app_version.neighborhood_counter == 20
           com = Community.find params[:id]
           com.neighbourhood_counter_mail_400
           NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 200").deliver
@@ -163,19 +163,19 @@ class Api::V1::CommunitiesController < ActionController::Base
       rescue => ex
 
       end
-      # @client = GooglePlaces::Client.new(ENV['GOOGLE_API_KEY'])
-      # results = []
-      # cata = []
-      # cata << params[:cat]
-      # result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
-      #
-      # if result.last.nextpagetoken.present?
-      #   results << result
-      #   begin
-      #   result = @client.spots_by_pagetoken(result.last.nextpagetoken)
-      #   rescue  => ex
-      #   end
-      # end
+      @client = GooglePlaces::Client.new(ENV['GOOGLE_API_KEY'])
+      results = []
+      cata = []
+      cata << params[:cat]
+      result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
+
+      if result.last.nextpagetoken.present?
+        results << result
+        begin
+        result = @client.spots_by_pagetoken(result.last.nextpagetoken)
+        rescue  => ex
+        end
+      end
       results = []
       results << result
       render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => results}, :status=>200
