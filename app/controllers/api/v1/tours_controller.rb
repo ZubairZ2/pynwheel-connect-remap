@@ -126,7 +126,7 @@ class Api::V1::ToursController < ActionController::Base
       shared_tour_stops = []
       visited_stops.pluck(:stop_type, :stop_id).each do |x|
         puts "Visited Stop #{x} >>>>>>>>>>>>>>>>>>>>>>>>>"
-        shared_tour_stops << x.first.classify.constantize.where(id: x.last) if x.present?
+        shared_tour_stops << x.first.classify.constantize.where(id: x.last) if x.last.present?
       end
       shared_tour_stops.flatten!
       begin
