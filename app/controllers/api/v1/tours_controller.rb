@@ -121,7 +121,7 @@ class Api::V1::ToursController < ActionController::Base
     if shared_tour.save
       tu = TourUser.find_by(id: params[:tour_user_id])
 
-      visited_stops = TourStop.where(id: VisitedStop.where(tour_user_id: tu.id).group('tour_stop_id').count.keys)
+      visited_stops = TourStop.where(id: VisitedStop.where(tour_user_id: tu.id, tour_key: params[:tour_key]).group('tour_stop_id').count.keys)
       community = visited_stops.last.tour.community
       shared_tour_stops = []
       visited_stops.pluck(:stop_type, :stop_id).each do |x|
