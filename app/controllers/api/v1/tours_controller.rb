@@ -57,20 +57,25 @@ class Api::V1::ToursController < ActionController::Base
 
     tempFile = params[:image]
     unless params[:tour_user_id].present? && params[:image].present?
-      render :json=> {:success=>false, :message => "Please enter tour user id, selfie"}
+      success = false;
+      message = "Please enter tour user id, selfie"
     else
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.id_card = tempFile
         vs.save
       rescue => ex
-        render :json=> {:success=>false, :message => "failed"}
+        success = false;
+        message = "failed#{ex.message}"
       end
       if vs.present?
-        render :json=> {:success=>true, :message => "success"}
+        success = true;
+        message = "success"
       else
-        render :json=> {:success=>false, :message => "failed"}
+        success = false;
+        message = "failed"
       end
+      render :json=> {:success=>success, :message => message}
     end
   end
   def save_user_tour
@@ -114,10 +119,26 @@ class Api::V1::ToursController < ActionController::Base
   def save_shared_tour
     shared_tour = SharedTour.new shared_tour_params
     if shared_tour.save
-      visited_stops = shared_tour.tour.tour_stops
+      tu = TourUser.find_by(id: params[:tour_user_id])
+
+      visited_stops = TourStop.where(id: VisitedStop.where(tour_user_id: tu.id).group('tour_stop_id').count.keys)
+      community = visited_stops.last.tour.community
+      shared_tour_stops = []
+      visited_stops.pluck(:stop_type, :stop_id).each do |x|
+        puts "Visited Stop #{x} >>>>>>>>>>>>>>>>>>>>>>>>>"
+        shared_tour_stops << x.first.classify.constantize.where(id: x.last) if x.present?
+      end
+      shared_tour_stops.flatten!
+      begin
+        FavoriteMailer.email_shared_tour(['nasir031@gmail.com','usman.khalid@intagleo.com.uk', shared_tour.email],shared_tour_stops,community).deliver_now
+        # FavoriteMailer.email_shared_tour(['nasir031@gmail.com'],shared_tour_stops,community).deliver_now
+      rescue => ex
+        
+      end
+
       email_content = "There are total tour stops, we need tour_user_id to get visited stops Please send that #{visited_stops.to_s}"
-      DelayedSchedulerMailerJob.perform_async("A Tour Shared With You", email_content, 'usman.khalid@intagleo.co.uk')
-      render :json=> {:success=>true, :message => "success", :data => shared_tour}
+      # DelayedSchedulerMailerJob.perform_async("A Tour Shared With You", email_content, 'usman.khalid@intagleo.co.uk')
+      render :json=> {:success=>true, :message => "success", :data => visited_stops}
     else
       render :json=> {:success=>false, :message => "shared tour was not saved, please try again."}
     end

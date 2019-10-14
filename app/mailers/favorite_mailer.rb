@@ -18,4 +18,15 @@ class FavoriteMailer < ApplicationMailer
       @to_email = email_to
       mail(to: email_bcc, from: email_from, subject: 'My Favorites Text Version')
   end
+
+  def email_shared_tour(email_to,stops,community)
+    email_from = 'info@pynwheel.com'
+    @favorites = stops
+    @email_body = ""
+    @ios = true
+    @community = community
+    @to_email = email_to
+    mail(to: email_to,from: email_from, subject: 'Share Tour Details')
+  end
+
 end

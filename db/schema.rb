@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191001130409) do
+ActiveRecord::Schema.define(version: 20191004071056) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -133,6 +133,7 @@ ActiveRecord::Schema.define(version: 20191001130409) do
     t.boolean  "image_bit"
     t.boolean  "do_crop",                        default: false
     t.boolean  "do_crop_secondary",              default: false
+    t.integer  "number_of_units"
     t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
@@ -361,6 +362,8 @@ ActiveRecord::Schema.define(version: 20191001130409) do
     t.string   "modernist_unit_floorplan_map_marker_color"
     t.boolean  "display_filter_label_image"
     t.string   "filter_label_image"
+    t.string   "filter_panel_label_color"
+    t.string   "filter_panel_label_opacity"
   end
 
   create_table "ebrochure_menu_buttons", force: :cascade do |t|
@@ -973,6 +976,9 @@ ActiveRecord::Schema.define(version: 20191001130409) do
     t.boolean  "display_virtual_tour_button_label", default: false
     t.string   "virtual_tour_button_label",         default: "3D Tour"
     t.string   "virtual_tour_url"
+    t.float    "max_effective_rent"
+    t.float    "min_effective_rent"
+    t.float    "avg_effective_rent"
   end
 
   create_table "users", force: :cascade do |t|
