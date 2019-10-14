@@ -177,17 +177,17 @@ class CommunitiesController < ApplicationController
   def import
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
-    if @community.credentials_are_present?
+    if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',') 
-        redirect_to community_import_page_path(current_community)
+        redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
-      flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_import_page_path(current_community)
+      flash[:error] = "Please enter valid credentials in settings before importing data."
+      redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
 
@@ -288,17 +288,17 @@ class CommunitiesController < ApplicationController
   def update_imported_data
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
-    if @community.credentials_are_present?
+    if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_swaped and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
-        redirect_to community_import_page_path(current_community)
+        redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
       flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_import_page_path(current_community)
+      redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
 
