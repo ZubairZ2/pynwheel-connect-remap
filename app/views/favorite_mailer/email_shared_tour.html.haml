@@ -362,7 +362,7 @@
                     %tr
                       %td{:align => "center", :valign => "top"}
                         %h2{:style => "margin-bottom:20px;text-align:left;margin-top: 20px; font-size: 24px; font-weight: bold; margin-left: 20px; color: #000" }
-                          Tour Details
+                          Shared Tour Details
               - if @email_body.present?
                 %tr
                   %td{:align => "center", :valign => "top"}
@@ -386,7 +386,7 @@
                 - puts "fp", @favorites[index].is_a?(Floorplan)
                 - puts 'gm', @favorites[index].is_a?(GalleryImage)
                 - puts 'am', @favorites[index].is_a?(Amenity)
-
+                
                 - if @favorites[index].is_a?(Unit)
                   - puts 'Its UNIT' *50
                   = render :partial => 'unit', :locals => {:unit => @favorites[index]}
