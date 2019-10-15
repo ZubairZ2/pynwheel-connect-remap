@@ -70,4 +70,5 @@ class Floorplan < ApplicationRecord
   def crop_image
     image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
+
 end

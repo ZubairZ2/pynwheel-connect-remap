@@ -134,6 +134,11 @@ class PsiService < BaseService
   end
 
   def save_psi_units(units,property_id)
+    # units_in_feed = units.map{|x| x["Units"]["Unit"]["UnitType"]}
+    # units_in_feed2 = units.map{|x| x["Units"]["Unit"]["UnitType"] + "-" + x["Units"]["Unit"]["MarketingName"]}
+    # units_in_feed = units_in_feed + units_in_feed2
+    unit_record = []
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["psi"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
 
@@ -188,8 +193,21 @@ class PsiService < BaseService
         unit.availability_url = u['UnitAvailabilityURL'] if u['UnitAvailabilityURL'].present?
         # building = u["Units"]["Unit"]["BuildingName"]
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
+        unit_record << unit.provider_unit_id
         unit.save(validate: false)
       end
+    end
+
+    no_unit = unit_present - unit_record
+    if unit_record.nil?
+      no_unit = nil
+    end
+    no_unit.each do |un|
+      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit.availability = "Occupied"
+      unit.available = false
+      unit.available_date = nil
+      unit.save(validate: false) unless unit.manual_override
     end
   end
 
