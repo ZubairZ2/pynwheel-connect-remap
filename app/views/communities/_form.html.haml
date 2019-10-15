@@ -27,7 +27,6 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 
-
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-3.col-md-4.col-xs-12
@@ -39,9 +38,26 @@
       .col-sm-6.col-lg-3.col-md-4.col-xs-12
         = f.text_field :zip, :class=>"form-control address_fields", :placeholder=>"Zip",:maxlength=>"10"
         %small Zip
-      .col-sm-6.col-lg-3.col-md-4.col-xs-12
-        = f.text_field :phone, :class=>"form-control address_fields", :placeholder=>"Phone",:maxlength=>"15"
-        %small Phone  
+      -#.col-sm-6.col-lg-3.col-md-4.col-xs-12
+      -#  = f.text_field :phone, :class=>"form-control address_fields", :placeholder=>"Phone",:maxlength=>"15"
+      -#  %small Phone
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-6.col-xs-12
+        = f.text_field :latitude, :class=>"form-control", :placeholder=>"Latitude",:maxlength=>"15", :id=>"latitude"
+        %small Latitude
+      .col-sm-6.col-lg-6.col-md-6.col-xs-12
+        = f.text_field :longitude, :class=>"form-control", :placeholder=>"Longitude",:maxlength=>"15", :id=>"longitude"
+        %small Longitude
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Phone
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :phone, :class=>"form-control", :placeholder=>"Phone",:maxlength=>"15"
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email
@@ -49,9 +65,10 @@
       %span#propertyDetailNameText
         Changing the email address will change the "from" email address for the eBrochure.
 
-
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.email_field :email, :class=>"form-control", :placeholder=>"Email",:maxlength=>"50"
+
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Website
@@ -64,22 +81,27 @@
     = f.text_field :website, :class=>"form-control", :placeholder=>"Website URL"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Description
-
+    Number of Units
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :description, :class=>"form-control", rows:5, :placeholder=>"Description"
+    = f.text_field :number_of_units, :class=>"form-control validate[custom[onlyNumber]]", :placeholder=>"Number of Units",:maxlength=>"5"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Property Map / Floorplates
 
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :is_sitemap, true
+    = f.label :is_sitemap, "Property Map", :value => "true"
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :is_sitemap, false
+    = f.label :is_sitemap, "Floorplates", :value => "false"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Notes
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .row
-      .col-sm-6.col-lg-6.col-md-6.col-xs-12
-        = f.text_field :latitude, :class=>"form-control", :placeholder=>"Latitude",:maxlength=>"15", :id=>"latitude"
-        %small Latitude
-      .col-sm-6.col-lg-6.col-md-6.col-xs-12
-        = f.text_field :longitude, :class=>"form-control", :placeholder=>"Longitude",:maxlength=>"15", :id=>"longitude"
-        %small Longitude
+    = f.text_area :description, :class=>"form-control", rows:5, :placeholder=>"Notes"
+
 
 -#.form-group
 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
