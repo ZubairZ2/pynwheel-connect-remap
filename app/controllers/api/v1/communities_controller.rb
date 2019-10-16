@@ -170,11 +170,11 @@ class Api::V1::CommunitiesController < ActionController::Base
       # cata = []
       # cata << params[:cat]
       # result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
-
       if response['next_page_token'].present?
         results << response
         begin
           @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=#{ENV['GOOGLE_API_KEY']}&pagetoken=#{response['next_page_token']}"
+          sleep 2
           response = HTTParty.get(@url)
         rescue  => ex
         end
