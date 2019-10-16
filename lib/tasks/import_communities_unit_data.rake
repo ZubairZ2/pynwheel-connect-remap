@@ -18,16 +18,16 @@ namespace :import do
         puts '****************************' , community.id
         community_logs_str = community_logs_str + community.id.to_s + " , "
         case community.data_provider
-          when "psi"
-              entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
-              if community.id == 458
-                entrata_list_logs_str = entrata_list_logs_str + "==="
-                temp = ImportPsiDataJob.perform_async community.credential.attributes.to_json
-                entrata_list_logs_str = entrata_list_logs_str + temp.to_s + " , "
-              else
-                ImportPsiDataJob.perform_async community.credential.attributes.to_json
-              end
-              #PsiService.new(community.credential.attributes).perform
+          # when "psi"
+          #     entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
+          #     if community.id == 458
+          #       entrata_list_logs_str = entrata_list_logs_str + "==="
+          #       temp = ImportPsiDataJob.perform_async community.credential.attributes.to_json
+          #       entrata_list_logs_str = entrata_list_logs_str + temp.to_s + " , "
+          #     else
+          #       ImportPsiDataJob.perform_async community.credential.attributes.to_json
+          #     end
+          #     PsiService.new(community.credential.attributes).perform
 
           when "yardirentcafe"
             #YardiRentCafeService.new(community.credential.attributes).perform
@@ -51,7 +51,7 @@ namespace :import do
       sleep 60
     end
     community_logs = {Time.now => community_logs_str}
-    entrata_list_logs = {Time.now => entrata_list_logs_str}
+    # entrata_list_logs = {Time.now => entrata_list_logs_str}
 
     current_user = User.find 10
     unless current_user.community_logs.present?
@@ -61,7 +61,7 @@ namespace :import do
       current_user.entrata_list_logs = ""
     end
     current_user.community_logs = current_user.community_logs + community_logs.to_s
-    current_user.entrata_list_logs = current_user.entrata_list_logs + entrata_list_logs.to_s
+    # current_user.entrata_list_logs = current_user.entrata_list_logs + entrata_list_logs.to_s
     current_user.save
   end
 end
