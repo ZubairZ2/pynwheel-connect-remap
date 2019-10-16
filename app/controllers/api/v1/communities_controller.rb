@@ -163,21 +163,24 @@ class Api::V1::CommunitiesController < ActionController::Base
       rescue => ex
 
       end
-      @client = GooglePlaces::Client.new(ENV['GOOGLE_API_KEY'])
+      @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=#{ENV['GOOGLE_API_KEY']}"
+      response = HTTParty.get(@url)
+      # @client = GooglePlaces::Client.new()
       results = []
-      cata = []
-      cata << params[:cat]
-      result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
+      # cata = []
+      # cata << params[:cat]
+      # result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
 
-      if result.last.nextpagetoken.present?
-        results << result
+      if response['next_page_token'].present?
+        results << response
         begin
-        result = @client.spots_by_pagetoken(result.last.nextpagetoken)
+          @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=#{ENV['GOOGLE_API_KEY']}&pagetoken=#{response['next_page_token']}"
+          response = HTTParty.get(@url)
         rescue  => ex
         end
       end
-      results = []
-      results << result
+      # results = []
+      results << response
       render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => results}, :status=>200
     else
       render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => "Limit Exceeded"}, :status=>200
