@@ -174,7 +174,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         results << response
         begin
           @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyD1mp2bOdzutabP7gpDom-HgHEyFUCc2rc}&pagetoken=#{response['next_page_token']}"
-          sleep 2
+          sleep 1
           response = HTTParty.get(@url)
         rescue  => ex
         end
