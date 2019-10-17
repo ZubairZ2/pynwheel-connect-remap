@@ -180,9 +180,9 @@ class Api::V1::CommunitiesController < ActionController::Base
         rescue  => ex
         end
       end
-      results = []
+      # results = []
       results << response
-      render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => ""}, :status=>200
+      render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => results}, :status=>200
     else
       render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => "Limit Exceeded"}, :status=>200
     end
