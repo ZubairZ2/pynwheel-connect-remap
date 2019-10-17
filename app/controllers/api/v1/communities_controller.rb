@@ -102,7 +102,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def user_saved_tour
     @device_id = params[:device_id]
-    @tour_user = TourUser.find_by_id params[:tour_user_id]
+    @tour_user = TourUser.find params[:id]
     @tours = VisitedStop.where(tour_user_id: @tour_user.id,device_id: @device_id).group('tour_id').group('tour_key').count
   end
   def include_application_data
@@ -148,40 +148,40 @@ class Api::V1::CommunitiesController < ActionController::Base
     app_version.neighborhood_counter = app_version.neighborhood_counter + 1
     result = nil
     if app_version.neighborhood_counter < app_version.counter_limit
-      # NeighbourhoodLog.create(from_ip: request.ip,cat: params[:cat])
-      # begin
-      #   if app_version.neighborhood_counter == 20
-      #     com = Community.find params[:id]
-      #     com.neighbourhood_counter_mail_200
-      #     NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
-      #   end
-      #   if app_version.neighborhood_counter == 20
-      #     com = Community.find params[:id]
-      #     com.neighbourhood_counter_mail_400
-      #     NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 200").deliver
-      #   end
-      # rescue => ex
-      #
-      # end
-      # @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI"
-      # response = HTTParty.get(@url)
-      # # @client = GooglePlaces::Client.new()
-      # results = []
-      # # cata = []
-      # # cata << params[:cat]
-      # # result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
-      #
-      # if response['next_page_token'].present? && (params[:cat] == "restaurant" || params[:cat] == "school" || params[:cat] == "park" || params[:cat] == "bank" || params[:cat] == "atm" )
-      #   results << response
-      #   begin
-      #     @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&pagetoken=#{response['next_page_token']}"
-      #     sleep 1
-      #     response = HTTParty.get(@url)
-      #   rescue  => ex
-      #   end
-      # end
-      # results = []
-      # results << response
+      NeighbourhoodLog.create(from_ip: request.ip,cat: params[:cat])
+      begin
+        if app_version.neighborhood_counter == 20
+          com = Community.find params[:id]
+          com.neighbourhood_counter_mail_200
+          NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
+        end
+        if app_version.neighborhood_counter == 20
+          com = Community.find params[:id]
+          com.neighbourhood_counter_mail_400
+          NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 200").deliver
+        end
+      rescue => ex
+
+      end
+      @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI"
+      response = HTTParty.get(@url)
+      # @client = GooglePlaces::Client.new()
+      results = []
+      # cata = []
+      # cata << params[:cat]
+      # result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
+
+      if response['next_page_token'].present? && (params[:cat] == "restaurant" || params[:cat] == "school" || params[:cat] == "park" || params[:cat] == "bank" || params[:cat] == "atm" )
+        results << response
+        begin
+          @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&pagetoken=#{response['next_page_token']}"
+          sleep 1
+          response = HTTParty.get(@url)
+        rescue  => ex
+        end
+      end
+      results = []
+      results << response
       render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => ""}, :status=>200
     else
       render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => "Limit Exceeded"}, :status=>200
