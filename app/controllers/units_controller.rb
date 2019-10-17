@@ -204,7 +204,11 @@ class UnitsController < ApplicationController
       ts.destroy
     end
     if @unit.save(validate: false)
-      redirect_to plotexp_community_sitemaps_path(@community), notice: "The plot has been deleted successfully."
+      if params[:floorplate].present?
+        redirect_to community_floorplate_plotexp_path(current_community,@floorplate), notice: "The plot has been deleted successfully."
+      else
+        redirect_to plotexp_community_sitemaps_path(@community), notice: "The plot has been deleted successfully."
+      end
     else
       redirect_to plotexp_community_sitemaps_path(@community), error: "Something went wrong."
     end
