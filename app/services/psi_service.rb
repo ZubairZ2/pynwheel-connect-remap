@@ -324,11 +324,11 @@ class PsiService < BaseService
                                          }
                                      }.to_json,
                                      :headers => { 'Content-Type' => 'application/json' } )
-            sleep 3
 
+            sleep 1
             response =  JSON.parse(response.body)
+            sleep 2
           end
-          sleep 3
 
           if response["response"]["code"] == 200
             unless response["response"]["result"].include?('No records found')
@@ -444,7 +444,7 @@ class PsiService < BaseService
                                          }.to_json,
                                          :headers => { 'Content-Type' => 'application/json' } )
                 response =  JSON.parse(response.body)
-                sleep 3
+                sleep 2
                 if response["response"]["code"] == 200
                   psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
                   psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]

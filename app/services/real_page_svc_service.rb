@@ -212,6 +212,7 @@ class RealPageSvcService < BaseService
                 unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
                 unit_record << unit.provider_unit_id
 
+
                 unit.save(validate: false)
 
 

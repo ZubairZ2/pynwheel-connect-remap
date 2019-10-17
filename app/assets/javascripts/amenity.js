@@ -106,6 +106,12 @@ $(document).ready(function(){
             else if (typeof tour_id !== 'undefined'){
                 url = '/communities/'+community_id+'/tours/'+tour_id+'/resetStartingPoint'
             }
+            else if (typeof unit_amenity_id !== 'undefined'){
+                url = '/communities/'+community_id+'/floorplates/'+unit_amenity_id+'/amenities/'+selected[0][0]+'/remove_amenity'
+            }
+            else if (typeof unit_id_for_amenity !== 'undefined'){
+                url = '/communities/'+community_id+'/units/'+unit_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
+            }
             else{
               url = '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
             }

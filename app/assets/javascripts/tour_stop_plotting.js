@@ -127,7 +127,9 @@ $(document).ready(function(){
                     url = '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
                 }
                 else if (typeof sitemap_id !== 'undefined'){
-                    url = '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+selected[0][0]+'/remove_amenity';
+                    // debugger;
+                    url = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
+                    // url = '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+selected[0][0]+'/remove_amenity';
                 }
                 else if (typeof floorplate_id_for_amenity !== 'undefined'){
                     url = '/communities/'+community_id+'/floorplates/'+floorplate_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
@@ -138,8 +140,8 @@ $(document).ready(function(){
                 else if (typeof tour_id_for_stop !== 'undefined'){
                     url = '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
                 }
-                else if (typeof unit_id_for_amenity !== 'undefined'){
-                    url = '/communities/'+community_id+'/units/'+unit_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
+                else if (typeof floorplate_id !== 'undefined'){
+                    url = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id=1'
                 }
                 else{
                     url = '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
