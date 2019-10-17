@@ -163,17 +163,18 @@ class Api::V1::CommunitiesController < ActionController::Base
       rescue => ex
 
       end
-      @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyD1mp2bOdzutabP7gpDom-HgHEyFUCc2rc"
+      @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI"
       response = HTTParty.get(@url)
       # @client = GooglePlaces::Client.new()
       results = []
       # cata = []
       # cata << params[:cat]
       # result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
-      if response['next_page_token'].present?
+
+      if response['next_page_token'].present? && (params[:cat] == "restaurant" || params[:cat] == "school" || params[:cat] == "park" || params[:cat] == "bank" || params[:cat] == "atm" )
         results << response
         begin
-          @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyD1mp2bOdzutabP7gpDom-HgHEyFUCc2rc}&pagetoken=#{response['next_page_token']}"
+          @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&pagetoken=#{response['next_page_token']}"
           sleep 1
           response = HTTParty.get(@url)
         rescue  => ex
