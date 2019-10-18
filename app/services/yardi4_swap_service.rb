@@ -126,6 +126,9 @@ class Yardi4SwapService < BaseService
           end
 
         end
+        if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
+          unit.availability = "Unoccupied"
+        end
         unit.availability = is_available ? "Unoccupied" : "Occupied"
         unit.available = is_available ? true : false
         unit.available_date = vacate_date
@@ -148,6 +151,9 @@ class Yardi4SwapService < BaseService
         unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
         unit.effective_rent = u[:Units][:Unit][:MarketRent]
         unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+        if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
+          unit.availability = "Unoccupied"
+        end
         is_available = false
         vacate_date = ""
         api_unit.each do |unit_with_key|

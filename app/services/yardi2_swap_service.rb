@@ -82,6 +82,12 @@ class Yardi2SwapService < BaseService
                 vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
                 is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
+              begin
+                if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
+                  unit.availability = "Unoccupied"
+                end
+              rescue =>ex
+              end
             end
           end
           unit.availability = is_available ? "Unoccupied" : "Occupied"
@@ -122,6 +128,12 @@ class Yardi2SwapService < BaseService
               if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
                 vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
                 is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+              end
+              begin
+                if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
+                  unit.availability = "Unoccupied"
+                end
+              rescue =>ex
               end
             end
           end

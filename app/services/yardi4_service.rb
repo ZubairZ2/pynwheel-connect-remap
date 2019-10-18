@@ -180,6 +180,9 @@ class Yardi4Service < BaseService
         end
         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
           unit.availability = is_available ? "Unoccupied" : "Occupied" if !unit.sold
+          if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
+            unit.availability = "Unoccupied"
+          end
         end
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
 
