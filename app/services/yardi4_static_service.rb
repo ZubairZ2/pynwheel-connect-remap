@@ -180,6 +180,9 @@ class Yardi4StaticService < BaseService
         end
         unless unit.availability_is_updated.present? && unit.availability_is_updated
           unit.availability = is_available ? "Unoccupied" : "Occupied"
+          if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
+            unit.availability = "Unoccupied"
+          end
         end
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated
           unit.available_date = vacate_date

@@ -129,6 +129,12 @@ class Yardi2StaticService < BaseService
           end
           unless unit.availability_is_updated.present? && unit.availability_is_updated
             unit.availability = is_available ? "Unoccupied" : "Occupied"
+            begin
+              if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
+                unit.availability = "Unoccupied"
+              end
+            rescue =>ex
+            end
           end
           unless unit.available_date_is_updated.present? && unit.available_date_is_updated
             unit.available_date = vacate_date
