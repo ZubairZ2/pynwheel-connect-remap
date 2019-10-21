@@ -784,7 +784,7 @@ function setModalAttributes(element) {
     {
         var lease = "";
         ss = $(element).data('unit-lease-pricing').split(';');
-        for (var i = 0; i < ss.length -1; i++) {
+        for (var i = 0; i < ss.length -1 ; i++) {
             var s = ss[i].split(':');
             var sp;
             if (s[2] != "")
@@ -795,7 +795,7 @@ function setModalAttributes(element) {
             {
                 sp = ""
             }
-            lease = lease + s[0] + " months - " + sp +"$"+ s[1] + " \n"
+            lease = lease + s[0] + " months - " + sp +"$"+ s[1] + '<br>'
         }
         debugger;
         $('#unitModal').find('#unit-lease-pricing').html(lease);
