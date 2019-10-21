@@ -134,11 +134,12 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
             %i.fa.fa-share
             %span Webpages
+      - if (current_community.self_tour)
         %li
           %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
             %i.fa.fa-share
-            %span Scheduler Widget
-      - if (current_community.tour_setup_visible)
+            %span Tour Scheduler Widget
+      - if (current_community.self_tour)
         %li{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
           %a{:href => "#{community_tours_path(current_community)}"}
             %i.fa.fa-plane
