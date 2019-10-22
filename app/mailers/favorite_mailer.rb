@@ -25,6 +25,7 @@ class FavoriteMailer < ApplicationMailer
     @email_body = ""
     @ios = true
     @community = community
+    @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
     @to_email = email_to
     mail(to: email_to,from: email_from, subject: 'Share Tour Details')
   end

@@ -120,8 +120,52 @@ class Api::V1::ToursController < ActionController::Base
     shared_tour = SharedTour.new shared_tour_params
     if shared_tour.save
       tu = TourUser.find_by(id: params[:tour_user_id])
+      
+      # @tours = VisitedStop.where(tour_user_id: tu.id, tour_key: params[:tour_key]).group('tour_stop_id').count
+
+
+      description_arr = []
+      gallery_arr = []
+      
+      # @tours.each do |tour|
+      #   tour_key = tour[0][1]
+      #   tour = Tour.find_by_id tour.last
+      #   # next unless tour.present?
+      #   binding.pry
+      #   end
+        
+      #   visited_stops = VisitedStop.where(tour_user_id: tu.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
+
+      #   visited_stops = TourStop.where(id: VisitedStop.where(tour_user_id: tu.id, tour_key: params[:tour_key]).group('tour_stop_id').count.keys)
+        
+      #   @tour = TourStop.find visited_stop[0]
+      #   user_gallery = VisitedStop.where(tour_user_id: tu.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(image: nil)
+      #   binding.pry
+      #   user_gallery.each do |ud|
+      #     gallery_arr << ud.image.url
+      #     # json.image ud.image.url
+      #   end
+      
+      #   binding.pry
+      #   user_notes = VisitedStop.where(tour_user_id: tu.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(description: nil)
+      #   binding.pry
+      #   user_notes.each do |un|
+      #     description_arr << un.description
+      #   end
+      #   binding.pry
+      # end
 
       visited_stops = TourStop.where(id: VisitedStop.where(tour_user_id: tu.id, tour_key: params[:tour_key]).group('tour_stop_id').count.keys)
+      
+      # visited_stops.each do |vs|
+      #   user_gallery = VisitedStop.where(tour_user_id: tu.id, tour_id: vs.tour_id).where.not(image: nil)
+      #   user_gallery.each do |ud|
+      #     gallery_arr << ud.image.url
+      #   end
+      # end
+      
+      # binding.pry
+
       community = visited_stops.last.tour.community
       shared_tour_stops = []
       visited_stops.pluck(:stop_type, :stop_id).each do |x|
@@ -130,10 +174,11 @@ class Api::V1::ToursController < ActionController::Base
       end
       shared_tour_stops.flatten!
       begin
-        FavoriteMailer.email_shared_tour(['nasir031@gmail.com','usman.khalid@intagleo.com.uk', shared_tour.email],shared_tour_stops,community).deliver_now
-        # FavoriteMailer.email_shared_tour(['nasir031@gmail.com'],shared_tour_stops,community).deliver_now
+        # FavoriteMailer.email_shared_tour(['nasir031@gmail.com', shared_tour.email],shared_tour_stops,community).deliver_now
+        FavoriteMailer.email_shared_tour('nasir031@gmail.com',shared_tour_stops,community).deliver_now
       rescue => ex
-        
+        puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"
+        puts ex
       end
 
       email_content = "There are total tour stops, we need tour_user_id to get visited stops Please send that #{visited_stops.to_s}"
