@@ -21,7 +21,8 @@ class FavoriteMailer < ApplicationMailer
 
   def email_shared_tour(email_to,stops,community)
     email_from = 'info@pynwheel.com'
-    @favorites = stops
+    # @favorites = stops
+    @shared_tour_stops = stops
     @email_body = ""
     @ios = true
     @community = community
