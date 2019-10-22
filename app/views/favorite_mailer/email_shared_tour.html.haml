@@ -379,30 +379,19 @@
                                         
                                         = raw(@email_body.gsub("<community_name>",@community.name).gsub("\n","<br>"))
              
+              - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
+              - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
+              
               - (0..(@favorites.count-1)).each_with_index do |f,index |
-                - puts "@favorites cout loop"*50
-                - puts @favorites[index].class
-                - puts "unit", @favorites[index].is_a?(Unit)
-                - puts "fp", @favorites[index].is_a?(Floorplan)
-                - puts 'gm', @favorites[index].is_a?(GalleryImage)
-                - puts 'am', @favorites[index].is_a?(Amenity)
+                - unit_or_amenity = @favorites[index]
                 
-                - if @favorites[index].is_a?(Unit)
-                  - puts 'Its UNIT' *50
-                  = render :partial => 'unit', :locals => {:unit => @favorites[index]}
-                - elsif @favorites[index].is_a?(Floorplan)
-                  - puts 'Its FLORR PLAN' *50
+                - if unit_or_amenity.is_a?(Unit)
+                  = render :partial => 'share_tour_unit', :locals => {:unit => unit_or_amenity}
+                - elsif unit_or_amenity.is_a?(Amenity)
+                  = render :partial => 'share_tour_amenity_image', :locals => {:img => unit_or_amenity}
+                
+                = render :partial => 'map_image', :locals => {:img => unit_or_amenity, :left_margin => left_margin, :right_margin => right_margin}
 
-                - elsif @favorites[index].is_a?(GalleryImage)
-                  - puts 'Its GI' *50
-                  = render :partial => 'gallery_image', :locals => {:img => @favorites[index]}
-                - elsif @favorites[index].is_a?(Amenity)
-                  - puts 'Its AMENITY' *50
-                  = render :partial => 'amenity_image', :locals => {:img => @favorites[index]}
-                - elsif @favorites[index].is_a?(AdditionalImage)
-                  - puts 'Its Imagepage' *50
-                  = render :partial => 'additional_image', :locals => {:img => @favorites[index]}
-                  
             %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "650"}
               %tr
                 %td

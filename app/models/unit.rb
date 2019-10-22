@@ -132,6 +132,10 @@ class Unit < ApplicationRecord
     self.effective_rent.to_i
   end
 
+  def name
+    self.marketing_name
+  end
+
 
   def self.path_data
     [{x: 1025, y: 503}, {x: 1000, y: 603}, {x: 980, y: 300}]
