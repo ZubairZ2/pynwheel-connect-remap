@@ -381,15 +381,25 @@
              
               - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
               - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
-              
+              - @favorites = []
+              - @shared_tour_stops.values.each {|x| @favorites <<  x[:stops] }
+              - @favorites.flatten!
+
               - (0..(@favorites.count-1)).each_with_index do |f,index |
+                - notes = @shared_tour_stops.values[index][:description]
+                - user_gallery = @shared_tour_stops.values[index][:images]
+
                 - unit_or_amenity = @favorites[index]
                 
                 - if unit_or_amenity.is_a?(Unit)
                   = render :partial => 'share_tour_unit', :locals => {:unit => unit_or_amenity}
                 - elsif unit_or_amenity.is_a?(Amenity)
                   = render :partial => 'share_tour_amenity_image', :locals => {:img => unit_or_amenity}
-                
+                - user_gallery.each do |gal|
+                  = render :partial => 'share_tour_gallery_image', :locals => {:img => gal}
+                - notes.each do |note|
+                  = render :partial => 'share_tour_user_notes', :locals => {:note => note}
+
                 = render :partial => 'map_image', :locals => {:img => unit_or_amenity, :left_margin => left_margin, :right_margin => right_margin}
 
             %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "650"}
