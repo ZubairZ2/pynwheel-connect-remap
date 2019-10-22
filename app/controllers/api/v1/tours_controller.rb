@@ -175,7 +175,7 @@ class Api::V1::ToursController < ActionController::Base
       shared_tour_stops.flatten!
       begin
         # FavoriteMailer.email_shared_tour(['nasir031@gmail.com', shared_tour.email],shared_tour_stops,community).deliver_now
-        FavoriteMailer.email_shared_tour([shared_tour.eamil, 'arslan.mirza@intagleo.com'],shared_tour_stops,community).deliver_now
+        FavoriteMailer.email_shared_tour([shared_tour.email, 'arslan.mirza@intagleo.com'],shared_tour_stops,community).deliver_now
       rescue => ex
         puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"
         puts ex
