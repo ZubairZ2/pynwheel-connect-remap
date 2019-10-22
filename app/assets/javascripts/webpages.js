@@ -800,7 +800,7 @@ function setModalAttributes(element) {
         debugger;
         $('#unitModal').find('#unit-lease-pricing').html(lease);
     }
-    if ($(element).data('unit-lease-pricing') == "")
+    if ($(element).data('unit-description') == "")
     {
         $('#unit-description-text-li').hide();
     }
@@ -811,7 +811,6 @@ function setModalAttributes(element) {
 
 
 
-    debugger;
     $('#unitModal').find('#unit-marketing-name').html($(element).data('unit-marketing-name'));
     $('#unitModal').find('#floorplan-name').html($(element).data('floorplan-name'));
   $('#unitModal').find('#square-feet').html($(element).data('square-feet'));
