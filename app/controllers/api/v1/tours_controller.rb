@@ -122,17 +122,15 @@ class Api::V1::ToursController < ActionController::Base
       tu = TourUser.find_by(id: params[:tour_user_id])
       
       
-     vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).group(:tour_stop_id).count
-    
-      only_desc = VisitedStop.where(tour_stop_id: 154, tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where(description: nil)
-
-      only_image = VisitedStop.where(tour_stop_id: 154, tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where(description: nil)
-
+      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).group(:tour_stop_id).count
 
       description_arr = []
       gallery_arr = []
       
-      visited_stops = TourStop.where(id: vs.keys)
+      visited_stops = []
+
+      vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
+
 
       community = visited_stops.last.tour.community
       shared_tour_stops = {}
