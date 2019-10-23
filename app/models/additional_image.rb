@@ -13,9 +13,11 @@
 #  crop_y       :float
 #  crop_w       :float
 #  crop_h       :float
+#  do_crop      :boolean          default(FALSE)
 #
 
 class AdditionalImage < ApplicationRecord
+	has_paper_trail
 	include RailsSortable::Model
   belongs_to :imagepage
   set_sortable :sort  

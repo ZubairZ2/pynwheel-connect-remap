@@ -19,6 +19,7 @@
 #
 
 class Location < ApplicationRecord
+  has_paper_trail
   include StandardUrl
   mount_uploader :image, AvatarUploader
   belongs_to :neighborhood

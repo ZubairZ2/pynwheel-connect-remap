@@ -42,9 +42,12 @@
 #  crop_w_secondary                  :float
 #  crop_h_secondary                  :float
 #  image_bit                         :boolean
+#  do_crop                           :boolean          default(FALSE)
+#  do_crop_secondary                 :boolean          default(FALSE)
 #
 
 class Floorplan < ApplicationRecord
+  has_paper_trail
   include StandardUrl
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :secondary_image, AvatarUploader

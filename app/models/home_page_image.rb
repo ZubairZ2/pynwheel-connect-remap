@@ -16,9 +16,11 @@
 #  standard_image_url :string
 #  thumb_image_url    :string
 #  large_image_url    :string
+#  do_crop            :boolean          default(FALSE)
 #
 
 class HomePageImage < ApplicationRecord
+  has_paper_trail
   include StandardUrl
   include RailsSortable::Model
   set_sortable :sort  

@@ -886,5 +886,69 @@ module ApplicationHelper
     c = Company.find_by(name: company)
     c.communities.pluck(:name,:id)
   end
-    
+  def get_logs_name(item_type, item_id,f)
+    begin
+      if (item_type.classify.constantize.find_by(id: item_id).nil?)
+        if item_type == "Unit"
+          f.object.split("marketing_name:")[1].split("'")[1]
+        else
+          return "Not Found"
+        end
+      else
+        if item_type == "Unit"
+          return (item_type.classify.constantize.find item_id).marketing_name
+        elsif item_type == "Neighborhood"
+          return (item_type.classify.constantize.find item_id).neighborhood_name
+        elsif item_type == "FavoriteSetting"
+          return (item_type.classify.constantize.find item_id).favorite_name
+        elsif item_type == "Credential" || item_type == "Design"
+          return ((Community.find ((item_type.classify.constantize.find item_id).community_id)).name)
+        elsif item_type == "Expressionist" || item_type == "Menu" || item_type == "Gable"
+          return ((Community.find ((Design.find (item_type.classify.constantize.find item_id).design_id).community_id)).name)
+        elsif item_type == "User"
+          return (item_type.classify.constantize.find item_id).email
+
+
+        else
+          return (item_type.classify.constantize.find item_id).name
+        end
+
+      end
+    rescue => ex
+      return "Not Found"
+    end
+  end
+  def get_community_name(item_type, item_id,f)
+    begin
+      if (item_type.classify.constantize.find_by(id: item_id).nil?)
+        if item_type == "Unit"
+          return (Community.find f.object.split("community_id:")[1].split(" ")[0].to_i).name
+        else
+          return "Not Found"
+        end
+      else
+        if item_type == "Community"
+          return (item_type.classify.constantize.find item_id).name
+        elsif item_type == "FavoriteImage" || item_type == "EbrochureMenuButton"
+          return (Community.find (FavoriteSetting.find (item_type.classify.constantize.find item_id).favorite_setting_id).community_id).name
+        elsif item_type == "AdditionalImage"
+          return (Community.find (Imagepage.find (item_type.classify.constantize.find item_id).imagepage_id).community_id).name
+        elsif item_type == "Design"
+          return ((Community.find ((item_type.classify.constantize.find item_id).community_id)).name)
+        elsif item_type == "Expressionist" || item_type == "Menu" || item_type == "Gable"
+          return ((Community.find ((Design.find (item_type.classify.constantize.find item_id).design_id).community_id)).name)
+        
+
+
+
+        else
+          return (Community.find (item_type.classify.constantize.find item_id).community_id).name
+        end
+
+      end
+    rescue => ex
+      return "Not Found"
+    end
+  end
+
 end

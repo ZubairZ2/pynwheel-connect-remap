@@ -17,9 +17,13 @@
 #  standard_image_url :string
 #  ios_image_url      :string
 #  large_image_url    :string
+#  video              :string
+#  do_crop            :boolean          default(FALSE)
+#  url                :string
 #
 
 class GalleryImage < ApplicationRecord
+	has_paper_trail
 	include RailsSortable::Model
   belongs_to :gallery
   set_sortable :sort  

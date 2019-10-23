@@ -12,9 +12,11 @@
 #  vid_content_type :string
 #  vid_file_size    :bigint(8)
 #  vid_updated_at   :datetime
+#  url              :string
 #
 
 class HomePageVideo < ApplicationRecord
+	has_paper_trail
 	mount_uploader :video, VideoUploader
 	process_in_background :video
 	belongs_to :design

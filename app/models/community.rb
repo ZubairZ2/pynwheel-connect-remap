@@ -53,9 +53,17 @@
 #  crop_w_secondary               :float
 #  crop_h_secondary               :float
 #  community_group_id             :integer
+#  alert_contact                  :integer          default("both")
+#  floorplan_name_order           :boolean          default(FALSE)
+#  image_bit                      :boolean
+#  do_crop                        :boolean          default(FALSE)
+#  do_crop_secondary              :boolean          default(FALSE)
+#  number_of_units                :integer
+#  tour_setup_visible             :boolean          default(FALSE)
 #
 
 class Community < ApplicationRecord
+  has_paper_trail
   # mount_uploader :logo, AvatarUploader
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader

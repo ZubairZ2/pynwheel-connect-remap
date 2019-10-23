@@ -143,5 +143,10 @@
           %a{:href => "#{community_tours_path(current_community)}"}
             %i.fa.fa-plane
             %span Tour Setup
+      - if (current_user.is_super_admin?)
+        %li{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
+          %a{:href => "#{community_logs_path(current_community)}"}
+            %i.fa.fa-plane
+            %span CMS Logs
   / /.sidebar
 / End menu nav left Section 
