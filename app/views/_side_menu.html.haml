@@ -32,7 +32,7 @@
           = link_to community_design_index_path(current_community) do
             %i.fa.fa-tv
             %span Design
-      - if (current_user.is_super_admin?)
+      - if (current_user.is_super_admin? || current_user.is_community_admin? )
         %li{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
           %a{:href => "#{community_settings_path(current_community)}"}
             %i.fa.fa-gears

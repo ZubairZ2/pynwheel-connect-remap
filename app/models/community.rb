@@ -267,6 +267,13 @@ class Community < ApplicationRecord
       end
     end
   end
+  def check_credentials
+    #psi_service = PsiService.new(credential.attributes)
+    #psi_service.perform
+    psi_static_service = CredentialsValid.new(JSON.parse(credential.attributes.to_json))
+    psi_static_service.perform
+    # ImportPsiDataJob.perform_async credential.attributes.to_json
+  end
   def import_psi_data
     #psi_service = PsiService.new(credential.attributes)
     #psi_service.perform
