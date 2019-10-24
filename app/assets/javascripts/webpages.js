@@ -775,42 +775,53 @@ function disable_area_filter_options(max_area) {
 
 function setModalAttributes(element) {
 
-    if ($(element).data('unit-lease-pricing') == "")
-    {
-        $('#unit-lease-pricing-text-li').hide();
-        // $('#unitModal').find('#unit-lease-pricing').html($(element).data('unit-lease-pricing'));
-    }
-    else
-    {
-        var lease = "";
-        ss = $(element).data('unit-lease-pricing').split(';');
-        var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-
-        ss = ss.sort(collator.compare).reverse();
-        for (var i = 0; i < ss.length -1; i++) {
-            var s = ss[i].split(':');
-            var sp;
-            if (s[2] != "")
-            {
-                sp = s[2] +" - "
-            }
-            else
-            {
-                sp = ""
-            }
-            lease = lease + s[0] + " months - " + sp +"$"+ s[1] + '<br>'
+    try {
+        if ($(element).data('unit-lease-pricing') == "")
+        {
+            $('#unit-lease-pricing-text-li').hide();
+            // $('#unitModal').find('#unit-lease-pricing').html($(element).data('unit-lease-pricing'));
         }
-        debugger;
-        $('#unitModal').find('#unit-lease-pricing').html(lease);
+        else
+        {
+            var lease = "";
+            ss = $(element).data('unit-lease-pricing').split(';');
+            var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+
+            ss = ss.sort(collator.compare).reverse();
+            for (var i = 0; i < ss.length -1; i++) {
+                var s = ss[i].split(':');
+                var sp;
+                if (s[2] != "")
+                {
+                    sp = s[2] +" - "
+                }
+                else
+                {
+                    sp = ""
+                }
+                lease = lease + s[0] + " months - " + sp +"$"+ s[1] + '<br>'
+            }
+            debugger;
+            $('#unitModal').find('#unit-lease-pricing').html(lease);
+        }
     }
-    if ($(element).data('unit-description') == "")
-    {
-        $('#unit-description-text-li').hide();
+    catch(err) {
+
     }
-    else
-    {
-        $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
+    try {
+        if ($(element).data('unit-description') == "")
+        {
+            $('#unit-description-text-li').hide();
+        }
+        else
+        {
+            $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
+        }
     }
+    catch(err) {
+    }
+
+
 
 
 
