@@ -3239,3 +3239,11 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .tooltipImport:hover .tooltiptext {
     visibility: visible;
 }
+.global_navigation_heading
+{
+    padding-left: 18px;
+}
+.global_navigation_sub_heading
+{
+    padding-left: 36px;
+}
