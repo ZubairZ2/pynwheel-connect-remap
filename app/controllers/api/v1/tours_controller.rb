@@ -120,20 +120,45 @@ class Api::V1::ToursController < ActionController::Base
     shared_tour = SharedTour.new shared_tour_params
     if shared_tour.save
       tu = TourUser.find_by(id: params[:tour_user_id])
+      
+      
+      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).group(:tour_stop_id).count
 
-      visited_stops = TourStop.where(id: VisitedStop.where(tour_user_id: tu.id, tour_key: params[:tour_key]).group('tour_stop_id').count.keys)
+      description_arr = []
+      gallery_arr = []
+      
+      visited_stops = []
+
+      vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
+
+
       community = visited_stops.last.tour.community
-      shared_tour_stops = []
-      visited_stops.pluck(:stop_type, :stop_id).each do |x|
-        puts "Visited Stop #{x} >>>>>>>>>>>>>>>>>>>>>>>>>"
-        shared_tour_stops << x.first.classify.constantize.where(id: x.last) if x.last.present?
-      end
-      shared_tour_stops.flatten!
-      begin
-        FavoriteMailer.email_shared_tour(['nasir031@gmail.com','usman.khalid@intagleo.com.uk', shared_tour.email],shared_tour_stops,community).deliver_now
-        # FavoriteMailer.email_shared_tour(['nasir031@gmail.com'],shared_tour_stops,community).deliver_now
-      rescue => ex
+      shared_tour_stops = {}
+      stops = []
+      visited_stops.each_with_index do |x,i|
+        puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
+
+        descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(description: nil)
+
+        images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(image: nil)
+        gallery_arr = []
         
+        images.each do |ud|
+          gallery_arr << ud.image.url
+        end
+        description_arr = []
+        descriptions.each do |un|
+          description_arr << un.description
+        end
+
+        stop = x.stop_type.classify.constantize.where(id: x.stop_id) if x.present?
+        shared_tour_stops[x.stop_id] = {stops: stop, description: description_arr, images: gallery_arr }
+      end
+      begin
+        FavoriteMailer.email_shared_tour([shared_tour.email, 'arslan.mirza@intagleo.com'],shared_tour_stops,community).deliver_now
+      rescue => ex
+        puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"
+        puts ex
       end
 
       email_content = "There are total tour stops, we need tour_user_id to get visited stops Please send that #{visited_stops.to_s}"
@@ -143,6 +168,20 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "shared tour was not saved, please try again."}
     end
   end
+
+  def floorplate_units
+    if params[:floorplate_id].present?
+      fp = Floorplate.find_by_id(params[:floorplate_id])
+      @units = fp.units if fp.present?
+      success = true
+      message = 'success'
+    else
+      success = false
+      message = 'Please provide floorplate_id'
+    end
+    render :json=> {:success=>success, :message => message, :data => @units ||= {} }
+  end
+
   private
 
   def share_tour_data
