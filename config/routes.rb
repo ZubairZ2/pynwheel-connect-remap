@@ -324,7 +324,7 @@ Rails.application.routes.draw do
         end
       end
       post :save_shared_tour, to: 'tours#save_shared_tour'
-      get '/get_floorplate_units', to: 'tours#floorplate_units'
+      get '/get_floorplan_units', to: 'tours#floorplan_units'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 
       # 
