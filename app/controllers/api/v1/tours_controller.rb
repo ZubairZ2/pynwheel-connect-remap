@@ -168,6 +168,20 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "shared tour was not saved, please try again."}
     end
   end
+
+  def floorplate_units
+    if params[:floorplate_id].present?
+      fp = Floorplate.find_by_id(params[:floorplate_id])
+      @units = fp.units if fp.present?
+      success = true
+      message = 'success'
+    else
+      success = false
+      message = 'Please provide floorplate_id'
+    end
+    render :json=> {:success=>success, :message => message, :data => @units ||= {} }
+  end
+
   private
 
   def share_tour_data
