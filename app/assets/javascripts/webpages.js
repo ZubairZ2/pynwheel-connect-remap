@@ -784,7 +784,10 @@ function setModalAttributes(element) {
     {
         var lease = "";
         ss = $(element).data('unit-lease-pricing').split(';');
-        for (var i = 0; i < ss.length -1 ; i++) {
+        var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+
+        ss = ss.sort(collator.compare);
+        for (var i = 1; i < ss.length  ; i++) {;
             var s = ss[i].split(':');
             var sp;
             if (s[2] != "")
