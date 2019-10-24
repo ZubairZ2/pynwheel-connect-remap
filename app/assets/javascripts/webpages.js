@@ -786,8 +786,8 @@ function setModalAttributes(element) {
         ss = $(element).data('unit-lease-pricing').split(';');
         var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
 
-        ss = ss.sort(collator.compare);
-        for (var i = 1; i < ss.length  ; i++) {;
+        ss = ss.sort(collator.compare).reverse();
+        for (var i = 0; i < ss.length -1; i++) {
             var s = ss[i].split(':');
             var sp;
             if (s[2] != "")
