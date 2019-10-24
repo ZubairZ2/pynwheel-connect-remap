@@ -801,11 +801,11 @@ function setModalAttributes(element) {
                 }
                 lease = lease + s[0] + " months - " + sp +"$"+ s[1] + '<br>'
             }
-            debugger;
             $('#unitModal').find('#unit-lease-pricing').html(lease);
         }
     }
     catch(err) {
+        $('#unit-lease-pricing-text-li').hide();
 
     }
     try {
@@ -819,6 +819,7 @@ function setModalAttributes(element) {
         }
     }
     catch(err) {
+        $('#unit-description-text-li').hide();
     }
 
 
