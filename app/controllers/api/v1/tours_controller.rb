@@ -169,17 +169,17 @@ class Api::V1::ToursController < ActionController::Base
     end
   end
 
-  def floorplate_units
-    if params[:floorplate_id].present?
-      fp = Floorplate.find_by_id(params[:floorplate_id])
-      @units = fp.units if fp.present?
+  def floorplan_units
+    if params[:unit_id].present?
+      unit = Unit.find_by_id(params[:unit_id])
+      @units = Unit.where(floorplan_id: unit.floorplan_id) if unit.present?
       success = true
       message = 'success'
     else
       success = false
-      message = 'Please provide floorplate_id'
+      message = 'Please provide unit_id'
     end
-    render :json=> {:success=>success, :message => message, :data => @units ||= {} }
+    render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => unit.floorplate.image_url }
   end
 
   private
