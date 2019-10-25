@@ -179,7 +179,7 @@ class Api::V1::ToursController < ActionController::Base
       success = false
       message = 'Please provide unit_id'
     end
-    render :json=> {:success=>success, :message => message, :data => @units ||= {} }
+    render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => unit.floorplate.image_url }
   end
 
   private
