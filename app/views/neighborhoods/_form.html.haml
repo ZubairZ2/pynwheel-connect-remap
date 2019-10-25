@@ -147,7 +147,7 @@
       -#    Change the radius to change the distance of the results on the neighborhood map are from the property. The smaller the radius; the closer the results.
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = text_field_tag :neighborhood_counter,@appVersion.neighborhood_counter  ,:class=>"form-control validate[required,custom[onlyNumber&Decimal]] neighborhood-form-field", :placeholder=>"Radius", :value=> @appVersion.neighborhood_counter
+      = text_field_tag :neighborhood_counter,@appVersion.neighborhood_counter  ,:readonly => true,:class=>"form-control validate[required,custom[onlyNumber&Decimal]] neighborhood-form-field", :placeholder=>"Radius", :value=> @appVersion.neighborhood_counter
 
 
 - unless @neighborhood.new_record?
