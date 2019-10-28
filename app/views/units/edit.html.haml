@@ -9,7 +9,7 @@
             %span
         .col-md-12
           = link_to "<Back to All Units", community_units_path(@community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
-          - if (current_user.is_super_admin?)
+          - if (current_user.self_tour)
             = link_to "Manage Unit Tour", community_unit_amenities_path(@community,@unit), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
       / /.box-header
       / form start
