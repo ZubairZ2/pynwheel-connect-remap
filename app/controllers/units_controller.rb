@@ -20,6 +20,7 @@ class UnitsController < ApplicationController
     @unit = @community.units.new(unit_params)
     @unit.provider = "manually"
     if @unit.save
+      PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "create",whodunnit: current_user.id)
       flash[:notice] = "Unit created successfully."
       redirect_to community_units_path(:community_id=>@community.id)
     else
@@ -93,6 +94,7 @@ class UnitsController < ApplicationController
         end
         if @unit.update(unit_params)
           set_manually_updated_column
+          PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id)
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           format.json { respond_with_bip(@unit) }
         else
@@ -104,6 +106,7 @@ class UnitsController < ApplicationController
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
           set_manually_updated_column
+          PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id)
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           format.json { respond_with_bip(@unit) }
         else
@@ -115,6 +118,7 @@ class UnitsController < ApplicationController
           else
             @unit.update(unit_params)
             set_manually_updated_column
+            PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id)
             format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
             format.json { respond_with_bip(@unit) }
           end
@@ -148,6 +152,7 @@ class UnitsController < ApplicationController
       VisitedStop.where(tour_stop_id: ts.id).destroy_all
       ts.destroy
     end
+    PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "delete",whodunnit: current_user.id)
     @unit.destroy
     flash[:notice] = "Unit deleted successfully."
     redirect_to community_units_path(:community_id=>@community.id)

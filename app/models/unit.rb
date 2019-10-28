@@ -52,7 +52,6 @@
 #
 
 class Unit < ApplicationRecord
-  has_paper_trail
   include StandardUrl
   mount_uploader :image, AvatarUploader
   mount_uploader :secondary_image, AvatarUploader
