@@ -137,6 +137,10 @@ class Api::V1::CommunitiesController < ActionController::Base
       community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(com.id)
       @communities << community unless community.locked
     end
+    @community_master = Community.find_by(community_group_id: @community_group.id,master_community: true)
+    unless @community_master.present?
+      @community_master = Community.where(community_group_id: @community_group.id).first
+    end
   end
   def get_neighbourhood_data
     # @@counter = @@counter + 1

@@ -8,7 +8,11 @@ json.inactivate !@community_group.inactivate
 
 json.community_group @communities do |co|
   @community = co
-
+  if @community.id == @community_master.id
+    json.master_community true
+  else
+    json.master_community false
+  end
   json.community_name  @community.name
   json.community_id  @community.id
   json.data_url "/api/v1/communities/#{@community.id}/data.json"

@@ -43,9 +43,15 @@ class CommunityGroupsController < ApplicationController
       communities.each do |com|
         if com.present? && !listed_communities.include?(com)
           community = Community.find com
+          community.master_community = false
           community.community_group_id = @community_group.id
           community.save
         end
+      end
+      if params[:master].present?
+        master_com = Community.find_by(name: params[:master])
+        master_com.master_community = true
+        master_com.save
       end
       @company = Company.find @community_group.company_id
       redirect_to company_community_group_path(@company.id,@community_group)
@@ -65,6 +71,10 @@ class CommunityGroupsController < ApplicationController
   def add_community
     @community_group = CommunityGroup.find params[:format]
     @company = Company.find @community_group.company_id
+    @selected = Community.find_by(community_group_id: @community_group.id,master_community: true)
+    unless @selected.present?
+      @selected = Community.new
+    end
   end
   def remove_community
     @community_group = CommunityGroup.find params[:id]
