@@ -175,11 +175,12 @@ class Api::V1::ToursController < ActionController::Base
       @units = Unit.where(floorplan_id: unit.floorplan_id) if unit.present?
       success = true
       message = 'success'
+      floorplate_image = unit.floorplate.present? ? unit.floorplate.image_url : "No Floorplate Image"
     else
       success = false
       message = 'Please provide unit_id'
     end
-    render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => unit.floorplate.image_url }
+    render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
   end
 
   private
