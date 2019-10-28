@@ -280,6 +280,7 @@ class RealPageSvcStaticService < BaseService
         community_id = credentials.community_id
 
         @array_of_dates.each do |hash|
+          date_check = hash[:ready_date] + 540
           response = HTTParty.post(
               url,
               :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -307,7 +308,7 @@ class RealPageSvcStaticService < BaseService
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>
-                                  <tem:singlevalue>'+hash[:ready_date].to_s+'</tem:singlevalue>
+                                  <tem:singlevalue>'+date_check.to_s+'</tem:singlevalue>
                                 </tem:ListCriterion>
                               </tem:listCriteria>
                               <tem:listCriteria>
@@ -361,7 +362,7 @@ class RealPageSvcStaticService < BaseService
               min_rent = nil
               max_rent = nil
               unit_no = u[:Address][:UnitID]
-              # if hash[:units].include?(unit_no)
+              if hash[:units].include?(unit_no)
                 if u[:RentMatrix].present?
                   best_price = nil
                   begin
@@ -408,7 +409,7 @@ class RealPageSvcStaticService < BaseService
                     puts " **** price updated *** ",unit.marketing_name
                   end
                 end
-              # end
+              end
             end
           end
         end
