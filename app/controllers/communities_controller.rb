@@ -78,7 +78,6 @@ class CommunitiesController < ApplicationController
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       else
-        byebug
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
         end
