@@ -25,6 +25,7 @@
     .row#data-connection-buttons
       / Start Panel left Side
       .col-lg-12.col-md-12
+
         - if current_user.is_super_admin?
           .row
             .col-md-6
@@ -59,10 +60,8 @@
                 Use this button for the initial import of unit and floor plan data or to update existing data. It will import data based unit ID and floor plan ID.
                 %b
                   Do NOT use this button to update data if data provider has changed, or if Floor Plan IDs or Unit IDs have changed.
-
             - if current_user.is_super_admin?
               .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-
                 .btn.btn-warning{"data-name"=>"Previous data","data-href" => "/communities/#{current_community.id}/delete_imported_data", "data-target" => "#confirm-delete-replace-data", "data-toggle" => "modal", :href => "javascrip::;"} Replace Data
                 %span#propertyDetailNameText
                   Use this button to DELETE all data and import new data.
@@ -78,9 +77,6 @@
                     Do NOT use this button if Unit Names have been manually overridden or have changed.
 
             -#= link_to "Update Data" , community_update_imported_data_path(current_community) , :class=>"btn btn-warning"
-
-
-
 
 :javascript
   var community_id = #{params[:community_id]}

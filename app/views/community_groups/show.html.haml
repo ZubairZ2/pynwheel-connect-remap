@@ -37,6 +37,7 @@
                       %th{:width => "79"} Sr #
 
                       %th Community Name
+                      -#%th Master Community
                       %th{:width => "250"} Actions
                   %tbody
                     - @community_group.communities.each_with_index  do |f,index|
@@ -46,6 +47,8 @@
                         %td
 
                           = link_to f.name, edit_company_community_path((Company.find f.company_id),f)
+                        -#%td
+                        -#  = radio_button_tag "efe",f.master_community
                         %td
                           -#= link_to edit_company_community_path(current_company,f),:class=>"text-success" do
                           -#  %i.fa.fa-edit.icon_size
