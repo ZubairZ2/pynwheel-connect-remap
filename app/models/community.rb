@@ -87,6 +87,7 @@ class Community < ApplicationRecord
   # validate :unique_community_code_on_update, on: [:update]
   after_create :set_default_theme
   after_create :create_default_gallery
+  after_create :create_sms_email_content
   validate :validate_page_position
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
@@ -463,6 +464,12 @@ class Community < ApplicationRecord
 
   def create_default_gallery
     self.galleries.create(name: 'default')
+  end
+
+  def create_sms_email_content
+    self.sms_text = CommunityConstants::SMS_TEXT
+    self.email_text = CommunityConstants::EMAIL_TEXT
+    self.save
   end
 
   def make_address
