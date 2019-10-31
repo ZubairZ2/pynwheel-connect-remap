@@ -82,7 +82,6 @@ class CommunitiesController < ApplicationController
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       else
-        byebug
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
         end
@@ -395,6 +394,8 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
     @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
+    @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
+    @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
