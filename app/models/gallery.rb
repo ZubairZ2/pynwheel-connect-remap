@@ -11,7 +11,6 @@
 #
 
 class Gallery < ApplicationRecord
-	has_paper_trail
 	include RailsSortable::Model
 	set_sortable :sort
 

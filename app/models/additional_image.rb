@@ -17,7 +17,6 @@
 #
 
 class AdditionalImage < ApplicationRecord
-	has_paper_trail
 	include RailsSortable::Model
   belongs_to :imagepage
   set_sortable :sort  

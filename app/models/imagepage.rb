@@ -15,7 +15,6 @@
 #
 
 class Imagepage < ApplicationRecord
-  has_paper_trail
   belongs_to :community
 
   include RailsSortable::Model

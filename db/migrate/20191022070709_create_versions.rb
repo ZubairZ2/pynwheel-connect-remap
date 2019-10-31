@@ -14,6 +14,8 @@ class CreateVersions < ActiveRecord::Migration[5.0]
       t.integer  :item_id,   null: false, limit: 8
       t.string   :event,     null: false
       t.string   :whodunnit
+      t.integer  :community_id
+      t.integer  :company_id
       t.text     :object, limit: TEXT_BYTES
 
       # Known issue in MySQL: fractional second precision

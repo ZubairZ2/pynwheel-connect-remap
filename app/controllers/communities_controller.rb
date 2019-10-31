@@ -33,8 +33,7 @@ class CommunitiesController < ApplicationController
   end
   def logs
     @community = Community.find params[:community_id]
-    @logs = PaperTrail::Version.all
-    @floorplans = Floorplan.where(community_id: 3)
+    @logs = PaperTrail::Version.all.order(created_at: :desc)
   end
 
   def edit
@@ -174,8 +173,11 @@ class CommunitiesController < ApplicationController
     # com.save
   end
   def destroy
+    idd = @community.id
+    design_id = @community.design.id
     @community.destroy
     flash[:notice] = "Community deleted successfully."
+    DeleteLogsOnDestroy.perform_async idd,design_id
     redirect_to company_communities_path(current_company)
   end
 

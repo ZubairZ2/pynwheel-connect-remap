@@ -23,7 +23,6 @@
 #
 
 class GalleryImage < ApplicationRecord
-	has_paper_trail
 	include RailsSortable::Model
   belongs_to :gallery
   set_sortable :sort  
