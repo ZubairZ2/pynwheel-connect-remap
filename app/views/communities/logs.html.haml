@@ -1,0 +1,65 @@
+- content_for :title, "Logs - Pynwheel"
+.divLoading.hidden
+%section.is-home-page
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-tv
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+        %h3
+          Logs List
+
+    .box.box-widget.panel-box
+      .box-header
+
+        .row
+          .col-md-12
+            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.logs_data_table
+              %thead
+                %tr
+                  %th.floorplan_sr_col Sr #
+                  %th.floorplan_name_col User
+                  %th Name
+                  %th Type
+                  %th Community
+                  %th Action
+                  %th Time
+                  -#%th Description
+                  -#%th
+                  -#  Interior Images
+                  -#%th Floor Plan Image
+                  -#%th
+                  -#  Actions
+              %tbody
+                -#- @floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@floorplans).sort.map{|x,y| y}.each_with_index  do |f,index|
+                - @logs.each_with_index do |f,index|
+                  - if (f.item_type == "Neighborhood" || f.item_type == "Menu" || f.item_type == "Gable" || f.item_type == "Expressionist" || f.item_type == "FilterPanel" || f.item_type == "Design") && f.event == "create"
+                    - next
+                  %tr
+                    %td
+                      = index+1
+                    %td
+                      = f.whodunnit.present? ? (User.find f.whodunnit.to_i).email : "-"
+                    %td
+                      = get_logs_name(f.item_type,f.item_id,f)
+                      -#= ( (f.item_type.classify.constantize.find_by(id: f.item_id).nil?) ? "fe" : (f.item_type.classify.constantize.find f.item_id).id )
+                    %td
+                      = f.item_type
+                    %td
+                      = get_community_name(f.item_type,f.item_id,f)
+                    %td
+                      = f.event
+                    -#%td= raw(f.description)
+                    %td
+                      = f.created_at
+                    -#%td
+
+                    -#%td
+                    -#  %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
+                    -#
+                    -#    %i.fa.fa-edit.icon_size{style: "color: #{f.manual_override ? "" : ""};"}
+                    -#  %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                    -#    %i.fa.fa-trash.icon_size{style: "color: #{f.manual_override ? "" : ""};"}

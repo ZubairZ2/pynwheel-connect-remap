@@ -3,8 +3,8 @@ class CommunitiesController < ApplicationController
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
   add_breadcrumb "Home", :root_path
-  add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
-  add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
+  add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page,:logs]
+  add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page,:logs]
 
   def index
     #@communities = Community.page(params[:page]).per(10)
@@ -29,6 +29,10 @@ class CommunitiesController < ApplicationController
       flash[:error] = @community.errors.full_messages.join(',')
       render :new
     end
+  end
+  def logs
+    @community = Community.find params[:community_id]
+    @logs = PaperTrail::Version.all.order(created_at: :desc)
   end
 
   def edit
@@ -169,8 +173,11 @@ class CommunitiesController < ApplicationController
     # com.save
   end
   def destroy
+    idd = @community.id
+    design_id = @community.design.id
     @community.destroy
     flash[:notice] = "Community deleted successfully."
+    DeleteLogsOnDestroy.perform_async idd,design_id
     redirect_to company_communities_path(current_company)
   end
 

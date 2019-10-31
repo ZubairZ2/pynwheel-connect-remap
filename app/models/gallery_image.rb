@@ -17,6 +17,9 @@
 #  standard_image_url :string
 #  ios_image_url      :string
 #  large_image_url    :string
+#  video              :string
+#  do_crop            :boolean          default(FALSE)
+#  url                :string
 #
 
 class GalleryImage < ApplicationRecord

@@ -23,6 +23,7 @@
 #
 
 class Floorplate < ApplicationRecord
+  has_paper_trail
   include StandardUrl
   mount_uploader :image, SiteMapUploader
   belongs_to :community

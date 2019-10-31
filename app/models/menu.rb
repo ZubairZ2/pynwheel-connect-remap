@@ -23,6 +23,7 @@
 #
 
 class Menu < ApplicationRecord
+	has_paper_trail
 	belongs_to :design
 	#after_save :convert_rgba_to_hex
 
