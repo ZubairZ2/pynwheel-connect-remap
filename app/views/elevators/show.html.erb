@@ -1,0 +1,39 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Name:</strong>
+  <%= @elevator.name %>
+</p>
+
+<p>
+  <strong>Description:</strong>
+  <%= @elevator.description %>
+</p>
+
+<p>
+  <strong>X plot:</strong>
+  <%= @elevator.x_plot %>
+</p>
+
+<p>
+  <strong>Y plot:</strong>
+  <%= @elevator.y_plot %>
+</p>
+
+<p>
+  <strong>Directional text:</strong>
+  <%= @elevator.directional_text %>
+</p>
+
+<p>
+  <strong>Floorplate:</strong>
+  <%= @elevator.floorplate %>
+</p>
+
+<p>
+  <strong>Community:</strong>
+  <%= @elevator.community %>
+</p>
+
+<%= link_to 'Edit', edit_elevator_path(@elevator) %> |
+<%= link_to 'Back', elevators_path %>

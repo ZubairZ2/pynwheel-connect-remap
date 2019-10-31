@@ -1,0 +1,87 @@
+<% content_for :title, "Amenities - Pynwheel" %>
+<section>
+  <div class="content">
+    <div class="title-heading">
+      <h4>
+        <i class="fa fa-plus-square"></i>
+        <%= @community.name.capitalize %>
+        <br>
+          <small class="text-primary">
+            <%= @community.code %>
+          </small>
+        </br>
+      </h4>
+    </div>
+    <div class="row">
+      <!-- Start Panel left Side
+      -->
+      <div class="col-lg-12 col-md-12">
+        <div class="row">
+          <div class="col-md-12">
+            <h4 class="title">Elevator Images</h4>
+            <h4 id="slide_show_span">
+              <p>
+                Upload images here to add to your property map. Then plot them on the property map so that they appear in the correct place.
+              </p>
+              <p>
+                Images will appear at a size of 500 x 400 px. Please note that images that are too small may appear pixelated.
+              </p>
+            </h4>
+            <div class="mt-35">
+              <!--%span.btn.btn-primary.btn-file.pull-right.mb-20
+              -->
+              <span class="btn btn-success btn-file some" style="margin-right: 5px; width: 135px">
+                <i class="fa fa-plus-circle"></i>
+                ADD FILES
+                <input id="elevator-images" multiple="multiple" type="file">/</input>
+              </span>
+              <i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="amenityAddFilesPopover">
+                <span id="propertyDetailNameText">
+                  Import property elevator photos or renderings here. After you import an image, you will be able to plot a marker on the Property Map. For example, add an image of the courtyard and then plot an elevator marker for the courtyard on the Property Map.
+                </span>
+              </i>
+            </div>
+            <div class="mt-10">
+              <% if @community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? ) %>
+                <%= link_to "PLOT ELEVATOR", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn" %>
+              <% end %>
+            </div>
+            <div class="divLoading hidden"></div>
+          </div>
+        </div>
+        <div id="images-index">
+          <%= render :partial=>'index' %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="modal fade edit-image" id="edit-image"></div>
+<script>
+  
+  var community_id = #{params[:community_id]}
+  $('#elevator-images').change(function () {
+    $('.plot_amenities_btn').removeClass('hidden');
+  });
+  if (#{@elevators.count > 0})
+  {
+    $('.plot_amenities_btn').removeClass('hidden');
+  }
+  if (!#{current_user.welcome_amenity_page})
+  {
+    $('[data-toggle="amenityAddFilesPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Import property elevator photos or renderings here. After you import an image, you will be able to plot a marker on the Property Map. For example, add an image of the courtyard and then plot an elevator marker for the courtyard on the Property Map.</div><div class="popover-footer"><a id="amenityAddFilesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#amenityAddFilesPopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_amenity_page = true}
+        #{current_user.save}
+    });
+  var amenity_id = null;
+
+
+</script>

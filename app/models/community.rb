@@ -75,7 +75,7 @@ class Community < ApplicationRecord
   after_create :set_default_theme
   after_create :create_default_gallery
   validate :validate_page_position
-
+  has_many :elevators, dependent: :destroy
 
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
 

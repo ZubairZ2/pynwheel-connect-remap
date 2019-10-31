@@ -57,6 +57,7 @@ Rails.application.routes.draw do
         post :add_description
       end
     end
+    resources :elevators
     resources :amenities do
       resources :amenity_galleries
       collection do
