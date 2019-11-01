@@ -47,7 +47,6 @@
 #
 
 class Floorplan < ApplicationRecord
-  has_paper_trail
   include StandardUrl
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :secondary_image, AvatarUploader
