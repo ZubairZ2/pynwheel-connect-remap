@@ -939,6 +939,9 @@ module ApplicationHelper
         end
       end
     else
+      if item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData"
+        return (Community.find f.community_id).name
+      end
       "Not found"
     end
 
@@ -973,6 +976,8 @@ module ApplicationHelper
           (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
         elsif item_type == "EbrochureMenuButton"
           f.object.split("name:")[1].split(" ")[0]
+        elsif item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData" || item_type == "Credential"
+          (Community.find f.community_id).name
 
         else
           if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
@@ -1008,6 +1013,9 @@ module ApplicationHelper
     rescue => ex
       if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
         return f.object.split("name:")[1].split(" ")[0].split("'")[1]
+      end
+      if item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData"
+        return (Community.find f.community_id).name
       end
       return delete_logs(item_type,item_id)
 

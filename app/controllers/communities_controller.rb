@@ -186,6 +186,7 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
+        PaperTrail::Version.create(item_type: "ImportData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',') 
@@ -297,6 +298,8 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_swaped and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
+        PaperTrail::Version.create(item_type: "SwapData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
@@ -330,6 +333,8 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present?
       if current_community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
+        PaperTrail::Version.create(item_type: "ReplaceData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
