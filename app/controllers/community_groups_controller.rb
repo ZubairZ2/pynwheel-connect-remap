@@ -1,6 +1,6 @@
 class CommunityGroupsController < ApplicationController
   def index
-    @community_groups = CommunityGroup.all
+    @community_groups = current_company.community_groups.all
   end
   def new
     @community_group = CommunityGroup.new
