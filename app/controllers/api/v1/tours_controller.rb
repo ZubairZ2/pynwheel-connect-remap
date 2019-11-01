@@ -173,6 +173,11 @@ class Api::V1::ToursController < ActionController::Base
     if params[:unit_id].present?
       unit = Unit.find_by_id(params[:unit_id])
       @units = Unit.where(floorplan_id: unit.floorplan_id) if unit.present?
+      @units.each do |u|
+        floorplate = Floorplate.find_by_id(u.floorplate_id)
+        floorplate_image = floorplate.image.url if floorplate.present?
+        u[:image] = floorplate_image 
+      end
       success = true
       message = 'success'
       floorplate_image = unit.floorplate.present? ? unit.floorplate.image_url : "No Floorplate Image"
