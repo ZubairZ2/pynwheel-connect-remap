@@ -174,9 +174,13 @@ class Api::V1::ToursController < ActionController::Base
       unit = Unit.find_by_id(params[:unit_id])
       @units = Unit.where(floorplan_id: unit.floorplan_id) if unit.present?
       @units.each do |u|
-        floorplate = Floorplate.find_by_id(u.floorplate_id)
-        floorplate_image = floorplate.image.url if floorplate.present?
-        u[:image] = floorplate_image 
+        if u.community.is_sitemap? == true
+          u[:image] = u.community.sitemap.image.url
+        else
+          floorplate = Floorplate.find_by_id(u.floorplate_id)
+          floorplate_image = floorplate.image.url if floorplate.present?
+          u[:image] = floorplate_image
+        end
       end
       success = true
       message = 'success'
