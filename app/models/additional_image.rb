@@ -13,6 +13,7 @@
 #  crop_y       :float
 #  crop_w       :float
 #  crop_h       :float
+#  do_crop      :boolean          default(FALSE)
 #
 
 class AdditionalImage < ApplicationRecord

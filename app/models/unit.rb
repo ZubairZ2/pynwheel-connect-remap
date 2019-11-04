@@ -46,6 +46,9 @@
 #  display_virtual_tour_button_label :boolean          default(FALSE)
 #  virtual_tour_button_label         :string           default("3D Tour")
 #  virtual_tour_url                  :string
+#  max_effective_rent                :float
+#  min_effective_rent                :float
+#  avg_effective_rent                :float
 #
 
 class Unit < ApplicationRecord

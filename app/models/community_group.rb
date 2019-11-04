@@ -9,13 +9,14 @@
 #  page_type  :boolean          default(FALSE)
 #  page_name  :string
 #  logo       :string
-#  inactivate :boolean
+#  inactivate :boolean          default(FALSE)
 #  company_id :integer
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
 
 class CommunityGroup < ApplicationRecord
+  has_paper_trail
   belongs_to :company
   has_many :communities
 
