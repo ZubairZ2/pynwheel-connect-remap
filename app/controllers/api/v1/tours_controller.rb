@@ -176,12 +176,12 @@ class Api::V1::ToursController < ActionController::Base
       @units.each do |u|
         if u.community.is_sitemap?
           sitemap_image = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.image.url(:svg_for_metro) : u.community.sitemap.image.url
-          u[:image] = ""
-          u[:image] = sitemap_image
+          # u[:image] = ""
+          # u[:image] = sitemap_image
         else
           floorplate = Floorplate.find_by_id(u.floorplate_id)
           floorplate_image = floorplate.image.url if floorplate.present?
-          u[:image] = floorplate_image
+          # u[:image] = floorplate_image
         end
       end
       success = true
