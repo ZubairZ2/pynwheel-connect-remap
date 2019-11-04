@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191030115045) do
+ActiveRecord::Schema.define(version: 20191104162237) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -384,6 +384,7 @@ ActiveRecord::Schema.define(version: 20191030115045) do
     t.integer  "community_id"
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
+    t.string   "image"
     t.index ["community_id"], name: "index_elevators_on_community_id", using: :btree
     t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id", using: :btree
   end

@@ -59,15 +59,15 @@
 <div class="modal fade edit-image" id="edit-image"></div>
 <script>
   
-  var community_id = #{params[:community_id]}
+  var community_id = <%= params[:community_id] %>;
   $('#elevator-images').change(function () {
     $('.plot_amenities_btn').removeClass('hidden');
   });
-  if (#{@elevators.count > 0})
+  if (<%= @elevators.count > 0 %>)
   {
     $('.plot_amenities_btn').removeClass('hidden');
   }
-  if (!#{current_user.welcome_amenity_page})
+  if (! <%= current_user.welcome_amenity_page %>)
   {
     $('[data-toggle="amenityAddFilesPopover"]').popover({
         html: true,
@@ -78,8 +78,8 @@
     $(document).on("click", "#amenityAddFilesPopoverClose" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        #{current_user.welcome_amenity_page = true}
-        #{current_user.save}
+        <% current_user.welcome_amenity_page = true %> 
+        <%  current_user.save %>
     });
   var amenity_id = null;
 

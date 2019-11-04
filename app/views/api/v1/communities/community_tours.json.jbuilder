@@ -14,6 +14,8 @@ json.tours @tours do |tour|
 
   json.path_points tour.path.present? ? tour.path.path_points : []
 
+  stops = tour.tour_stops 
+  stops.push @elevators
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
     json.x_plot stop.latitude
@@ -119,6 +121,9 @@ json.tours @tours do |tour|
     
     @existing_path_points.flatten!
     json.path_points @existing_path_points
+    
+
+    # binding.pry
 
     i+=1
   end

@@ -43,7 +43,7 @@
           <div class="carousel-inner" style="height: 500px;">
             <% @elevators.each_with_index do |elevator,index| %>
               <div class="<%= index == 0 ? 'active' : '' %> item text-center">
-                <%= image_tag elevator.standard_image_url %>
+                <%= image_tag elevator.image_url %>
                 <div class="carousel-caption">
                   image  
                 </div>
