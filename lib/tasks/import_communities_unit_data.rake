@@ -1,6 +1,15 @@
 namespace :import do
   desc 'rake task for importing communities units and floorplans'
   task :communities_unit_data => :environment do
+    begin
+      if Time.now.to_s(:time) >= "06:00" && Time.now.to_s(:time) <= "07:00"
+        app_version = AppVersion.first
+        app_version.neighborhood_counter = 0
+        app_version.save
+      end
+    rescue => ex
+
+    end
     community_count = Community.count 
     number_of_pages = community_count/5
     unless community_count%5 == 0
@@ -52,7 +61,6 @@ namespace :import do
     end
     community_logs = {Time.now => community_logs_str}
     # entrata_list_logs = {Time.now => entrata_list_logs_str}
-
     current_user = User.find 10
     unless current_user.community_logs.present?
       current_user.community_logs = ""
