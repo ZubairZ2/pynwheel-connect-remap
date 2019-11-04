@@ -190,7 +190,7 @@ class PsiService < BaseService
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
         end
-        unit.availability_url = u['UnitAvailabilityURL'] if u['UnitAvailabilityURL'].present?
+        unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
         # building = u["Units"]["Unit"]["BuildingName"]
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit_record << unit.provider_unit_id

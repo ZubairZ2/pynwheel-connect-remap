@@ -613,6 +613,15 @@ function showDataTables(){
         "stateSave": true,
         "paging": false
     });
+    $('#miyazaki.logs_data_table').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [0,1,2,3,4,5],
+        }],
+        "ordering": true,
+        "stateSave": true,
+        "paging": true
+    });
     $(".floorplan_name_col" ).click(function() {
         floorplan_names_order();
     });

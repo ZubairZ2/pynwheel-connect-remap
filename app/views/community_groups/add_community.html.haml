@@ -21,13 +21,13 @@
                   -if current_user.is_super_admin?
                     = f.select :communities, options_for_select(@company.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control group_list",:multiple=>true}
 
-          .row
-            .col-lg-9.col-lg-offset-1
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Application background color opacity
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = select_tag 'master', options_for_select([]),{:class => "form-control master_community_class"}
+          -#.row
+          -#  .col-lg-9.col-lg-offset-1
+          -#    .form-group
+          -#      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+          -#        Application background color opacity
+          -#      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          -#        = select_tag 'master', options_for_select([]),{:class => "form-control master_community_class"}
 
 
 

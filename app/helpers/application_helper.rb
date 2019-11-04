@@ -886,5 +886,201 @@ module ApplicationHelper
     c = Company.find_by(name: company)
     c.communities.pluck(:name,:id)
   end
-    
+  def delete_logs(item_type, item_id)
+    f = PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
+    if f.present?
+      if item_type == "Unit"
+        return f.object.split("marketing_name:")[1].split("'")[1]
+      elsif item_type == "AdditionalImage" || item_type == "Amenity"  || item_type == "Gallery" || item_type == "Imagepage" || item_type == "FavoriteImage"|| item_type == "GalleryImage"
+        return f.object.split("name:")[1].split(" ")[0].split(" ")[0]
+      elsif item_type == "Floorplan"
+        f.object.split("name:")[1].split(" ")[0].split(" ")[0]
+      elsif item_type == "Location"
+        return f.object.split("title:")[1].split(" ")[0]
+      elsif item_type == "Community"
+        return f.object.split("name:")[1].split(" ")[0]
+      elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
+        return (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
+      elsif item_type == "EbrochureMenuButton"
+        return f.object.split("name:")[1].split(" ")[0]
+
+      else
+        if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
+          return f.object.split("name:")[1].split(" ")[0].split("'")[1]
+        else
+          return "Not Found"
+        end
+
+      end
+    else
+      "Not found"
+    end
+  end
+  def delete_community_name(item_type, item_id)
+    f = PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
+    if f.present?
+      if item_type == "Unit"
+        return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name
+      elsif item_type == "Floorplan" || item_type == "Amenity" || item_type == "FavoriteImage"
+        (Community.find f.object.split("community_id:")[1].split(" ")[0].to_i).name
+      elsif item_type == "AdditionalImage" || item_type == "Imagepage" || item_type == "Gallery" || item_type == "GalleryImage"
+        (Community.find (f.object.split("community_id:")[1].split("'")[1].to_i)).name
+      elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
+        (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
+      elsif item_type == "Community"
+        f.object.split("name:")[1].split(" ")[0]
+      elsif item_type == "Location"
+        (Community.find (Neighborhood.find (f.object.split("neighborhood_id:")[1].split(" ")[0].to_i)).community_id).name
+      else
+        if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint" ||  item_type == "TourPath"
+          return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
+        else
+          return "Not Found"
+        end
+      end
+    else
+      if item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData"
+        return (Community.find f.community_id).name
+      end
+      "Not found"
+    end
+
+
+
+
+  end
+
+
+
+
+
+
+
+
+
+
+  def get_logs_name(item_type, item_id,f)
+    begin
+      if (item_type.classify.constantize.find_by(id: item_id).nil?)
+        if item_type == "Unit"
+          f.object.split("marketing_name:")[1].split("'")[1]
+        elsif item_type == "AdditionalImage"|| item_type == "Gallery" || item_type == "Imagepage" || item_type == "FavoriteImage"|| item_type == "GalleryImage"
+          f.object.split("name:")[1].split(" ")[0].split("'")[1]
+        elsif item_type == "Floorplan" || item_type == "HomePageImage" || item_type == "Amenity"
+          f.object.split("name:")[1].split(" ")[0].split(" ")[0]
+        elsif item_type == "Location"
+          f.object.split("title:")[1].split(" ")[0]
+        elsif item_type == "Community"
+          f.object.split("name:")[1].split(" ")[0]
+        elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
+          (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
+        elsif item_type == "EbrochureMenuButton"
+          f.object.split("name:")[1].split(" ")[0]
+        elsif item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData" || item_type == "Credential"
+          (Community.find f.community_id).name
+
+        else
+          if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
+            return f.object.split("name:")[1].split(" ")[0].split("'")[1]
+          else
+            return "Not Found"
+          end
+
+        end
+      else
+        if item_type == "Unit"
+          return (item_type.classify.constantize.find item_id).marketing_name
+        elsif item_type == "Neighborhood"
+          return (item_type.classify.constantize.find item_id).neighborhood_name
+        elsif item_type == "FavoriteSetting"
+          return (item_type.classify.constantize.find item_id).favorite_name
+        elsif item_type == "Credential" || item_type == "Design"
+          return ((Community.find ((item_type.classify.constantize.find item_id).community_id)).name)
+        elsif item_type == "Expressionist" || item_type == "Menu" || item_type == "Gable"  || item_type == "FilterPanel"
+          return ((Community.find ((Design.find (item_type.classify.constantize.find item_id).design_id).community_id)).name)
+        elsif item_type == "User"
+          return (item_type.classify.constantize.find item_id).email
+        elsif item_type == "Location"
+          return (item_type.classify.constantize.find item_id).title
+        elsif item_type == "EbrochureMenuButton"
+          f.object.split("name:")[1].split(" ")[0]
+
+        else
+          return (item_type.classify.constantize.find item_id).name
+        end
+
+      end
+    rescue => ex
+      if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
+        return f.object.split("name:")[1].split(" ")[0].split("'")[1]
+      end
+      if item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData"
+        return (Community.find f.community_id).name
+      end
+      return delete_logs(item_type,item_id)
+
+      # return "Not Found"
+    end
+  end
+  def get_community_name(item_type, item_id,f)
+    if f.community_id.present?
+      return (Community.find f.community_id).name
+    else
+      begin
+        if (item_type.classify.constantize.find_by(id: item_id).nil?)
+          if item_type == "Unit"
+            return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name
+          elsif item_type == "Floorplan" || item_type == "Amenity" || item_type == "FavoriteImage"
+            (Community.find f.object.split("community_id:")[1].split(" ")[0].to_i).name
+          elsif item_type == "AdditionalImage" || item_type == "Imagepage" || item_type == "Gallery" || item_type == "GalleryImage"
+            (Community.find (f.object.split("community_id:")[1].split("'")[1].to_i)).name
+          elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
+            (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
+          elsif item_type == "HomePageImage"
+            (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[0].to_i)).community_id).name
+          elsif item_type == "Community"
+            f.object.split("name:")[1].split(" ")[0]
+          elsif item_type == "Location"
+            (Community.find (Neighborhood.find (f.object.split("neighborhood_id:")[1].split(" ")[0].to_i)).community_id).name
+          else
+            if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint" ||  item_type == "TourPath"
+              return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
+            else
+              return "Not Found"
+            end
+          end
+        else
+          if item_type == "Community"
+            return (item_type.classify.constantize.find item_id).name
+          elsif item_type == "FavoriteImage" || item_type == "EbrochureMenuButton"
+            return (Community.find (FavoriteSetting.find (item_type.classify.constantize.find item_id).favorite_setting_id).community_id).name
+          elsif item_type == "AdditionalImage"
+            return (Community.find (Imagepage.find (item_type.classify.constantize.find item_id).imagepage_id).community_id).name
+          elsif item_type == "Design"
+            return ((Community.find ((item_type.classify.constantize.find item_id).community_id)).name)
+          elsif item_type == "Expressionist" || item_type == "Menu" || item_type == "Gable" || item_type == "HomePageImage"  || item_type == "FilterPanel"
+            return ((Community.find ((Design.find (item_type.classify.constantize.find item_id).design_id).community_id)).name)
+          elsif item_type == "Location"
+            return ((Community.find ((Neighborhood.find (item_type.classify.constantize.find item_id).neighborhood_id).community_id)).name)
+          elsif item_type == "Path"
+            return ((Community.find ((Neighborhood.find (item_type.classify.constantize.find item_id).neighborhood_id).community_id)).name)
+
+
+
+
+          else
+            return (Community.find (item_type.classify.constantize.find item_id).community_id).name
+          end
+
+        end
+      rescue => ex
+        if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
+          return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
+        end
+        delete_community_name(item_type,item_id)
+      end
+    end
+
+  end
+
 end

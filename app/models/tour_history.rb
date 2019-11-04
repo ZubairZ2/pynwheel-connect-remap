@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: tour_histories
+#
+#  id                     :integer          not null, primary key
+#  arrived                :datetime
+#  left                   :datetime
+#  id_mismatch            :boolean
+#  abandoned_tour_at_stop :integer
+#  tour_user_id           :integer
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#  lengthy_stay           :datetime
+#
+
 class TourHistory < ApplicationRecord
 	attr_accessor :community
 

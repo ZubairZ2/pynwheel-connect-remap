@@ -105,6 +105,8 @@
             = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success mb-20" do
               %i.fa.fa-plus-circle
               ADD GALLERY
+        %label
+          - dat = PaperTrail::Version.all
 
       / End Panel left Side
 / /.content
