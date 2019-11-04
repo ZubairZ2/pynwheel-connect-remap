@@ -34,7 +34,14 @@ class Floorplate < ApplicationRecord
   validates_with FloorValidator
   before_destroy :reset_units_plots
   after_commit :populate_image_urls, on: [:create,:update]
-  
+
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.image = original_object.image
+    })
+  end
+
   def reset_units_plots
     self.units.update_all(x_plot: 0,y_plot: 0, floorplate_id: nil)
   end

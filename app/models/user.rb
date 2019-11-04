@@ -61,6 +61,13 @@ class User < ApplicationRecord
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
 
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.avatar = original_object.avatar
+    })
+  end
+
   def all_companies
     Company.all.map(&:name).sort
   end

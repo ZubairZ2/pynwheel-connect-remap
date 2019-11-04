@@ -15,4 +15,10 @@
 class AmenityGallery < ApplicationRecord
   belongs_to :amenity
   mount_base64_uploader :image, AvatarUploader
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.image = original_object.image
+    })
+  end
 end

@@ -28,5 +28,10 @@ class Imagepage < ApplicationRecord
   scope :active, -> { where(hide_page: false) }
   validates_with WebAndImageValidator
 
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+    })
+  end
  
 end

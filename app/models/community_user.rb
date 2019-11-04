@@ -12,4 +12,7 @@
 class CommunityUser < ApplicationRecord
   belongs_to :user
   belongs_to :community
+  amoeba do
+    enable
+  end
 end
