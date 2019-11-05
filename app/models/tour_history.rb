@@ -11,7 +11,7 @@ class TourHistory < ApplicationRecord
   private
 
   def send_arrival_notifications
-  	send_email_sms_or_both ["Visitor Has Arrived", "A Pynwheel Self Tour has begun for: \n #{self.tour_user.name} \n #{self.tour_user.email} \n #{link_to('pynwheel.com', root_path)}"]
+  	send_email_sms_or_both ["Visitor Has Arrived", "A Pynwheel Self Tour has begun for: \n #{self.tour_user.name} \n #{self.tour_user.email}"]
   end
 
   def send_update_notifications
@@ -30,7 +30,7 @@ class TourHistory < ApplicationRecord
 
   	if self.left
   		@mail_content = get_alert_message('left')
-  		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email} \n #{link_to('pynwheel.com', root_path)}"
+  		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"
   		send_email_sms_or_both @mail_content
   	end
 
