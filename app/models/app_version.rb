@@ -7,6 +7,7 @@
 #  created_at           :datetime         not null
 #  updated_at           :datetime         not null
 #  neighborhood_counter :integer
+#  counter_limit        :integer          default(500)
 #
 
 class AppVersion < ApplicationRecord

@@ -13,6 +13,7 @@
 #  crop_y       :float
 #  crop_w       :float
 #  crop_h       :float
+#  do_crop      :boolean          default(FALSE)
 #
 
 class AdditionalImage < ApplicationRecord
@@ -23,6 +24,13 @@ class AdditionalImage < ApplicationRecord
 	before_create :set_image_name
 	after_update :crop_image
 
+
+	amoeba do
+
+		customize(lambda { |original_object,new_object|
+			new_object.image = original_object.image
+		})
+	end
 
 	def crop_image
 		image.recreate_versions! if (crop_x.present? && do_crop)

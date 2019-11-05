@@ -42,6 +42,8 @@
 #  crop_w_secondary                  :float
 #  crop_h_secondary                  :float
 #  image_bit                         :boolean
+#  do_crop                           :boolean          default(FALSE)
+#  do_crop_secondary                 :boolean          default(FALSE)
 #
 
 class Floorplan < ApplicationRecord
@@ -57,6 +59,14 @@ class Floorplan < ApplicationRecord
   # before_create :set_image_name
   after_update :crop_image
   after_update :crop_secondary_image
+
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.image = original_object.image
+      new_object.secondary_image = original_object.secondary_image
+    })
+  end
 
   def populate_image_urls
     if image.present?

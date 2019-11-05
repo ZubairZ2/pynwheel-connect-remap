@@ -3,8 +3,8 @@ class CommunitiesController < ApplicationController
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
   add_breadcrumb "Home", :root_path
-  add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
-  add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
+  add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page,:logs]
+  add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page,:logs]
 
   def index
     #@communities = Community.page(params[:page]).per(10)
@@ -29,6 +29,10 @@ class CommunitiesController < ApplicationController
       flash[:error] = @community.errors.full_messages.join(',')
       render :new
     end
+  end
+  def logs
+    @community = Community.find params[:community_id]
+    @logs = PaperTrail::Version.all.order(created_at: :desc)
   end
 
   def edit
@@ -102,6 +106,11 @@ class CommunitiesController < ApplicationController
       end
     end
   end
+  def clone_community
+    @community = Community.find params[:community_id]
+    copy_community = @community.clone_a_community(@community)
+    redirect_to edit_company_community_path(current_company,copy_community),notice: 'Community cloned successfully.'
+  end
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?
@@ -168,8 +177,11 @@ class CommunitiesController < ApplicationController
     # com.save
   end
   def destroy
+    idd = @community.id
+    design_id = @community.design.id
     @community.destroy
     flash[:notice] = "Community deleted successfully."
+    DeleteLogsOnDestroy.perform_async idd,design_id
     redirect_to company_communities_path(current_company)
   end
 
@@ -179,6 +191,7 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
+        PaperTrail::Version.create(item_type: "ImportData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',') 
@@ -290,6 +303,8 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_swaped and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
+        PaperTrail::Version.create(item_type: "SwapData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
@@ -323,6 +338,8 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present?
       if current_community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
+        PaperTrail::Version.create(item_type: "ReplaceData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')

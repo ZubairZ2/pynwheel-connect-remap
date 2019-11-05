@@ -19,6 +19,7 @@
 #
 
 class Neighborhood < ApplicationRecord
+  has_paper_trail
   belongs_to :community
   has_many :locations, dependent: :destroy
   before_save do
@@ -27,6 +28,10 @@ class Neighborhood < ApplicationRecord
   validate :validate_page_position
   validate :validate_show_neighborhood_length
 
+
+  amoeba do
+    enable
+  end
 
   def validate_show_neighborhood_length
     if attributes['neighborhood_name'].present?

@@ -35,6 +35,7 @@
 #
 
 class Gable < ApplicationRecord
+  has_paper_trail
   belongs_to :design
   mount_base64_uploader :home_page_nav_bg_image, AvatarUploader
   mount_base64_uploader :global_nav_bg_image, AvatarUploader
@@ -45,4 +46,20 @@ class Gable < ApplicationRecord
   mount_base64_uploader :gallery_bg_image_gables, AvatarUploader
   mount_base64_uploader :favourite_bg_image_gables, AvatarUploader
   mount_base64_uploader :additional_pages_bg_image_gables, AvatarUploader
+
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.home_page_nav_bg_image = original_object.home_page_nav_bg_image
+      new_object.global_nav_bg_image = original_object.global_nav_bg_image
+      new_object.filter_panel_bg_image = original_object.filter_panel_bg_image
+
+      new_object.application_bg_image_gables = original_object.application_bg_image_gables
+      new_object.apartment_bg_image_gables = original_object.apartment_bg_image_gables
+      new_object.gallery_bg_image_gables = original_object.gallery_bg_image_gables
+      new_object.favourite_bg_image_gables = original_object.favourite_bg_image_gables
+      new_object.additional_pages_bg_image_gables = original_object.additional_pages_bg_image_gables
+    })
+  end
+
 end

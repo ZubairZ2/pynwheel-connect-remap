@@ -46,6 +46,9 @@
 #  display_virtual_tour_button_label :boolean          default(FALSE)
 #  virtual_tour_button_label         :string           default("3D Tour")
 #  virtual_tour_url                  :string
+#  max_effective_rent                :float
+#  min_effective_rent                :float
+#  avg_effective_rent                :float
 #
 
 class Unit < ApplicationRecord
@@ -73,7 +76,15 @@ class Unit < ApplicationRecord
   #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
   scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
   after_commit :populate_image_urls, on: [:create,:update]
-  
+
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.image = original_object.image
+      new_object.secondary_image = original_object.secondary_image
+    })
+  end
+
   def floorplan
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
   end

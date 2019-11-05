@@ -1,6 +1,7 @@
 class CommunityGroupsController < ApplicationController
   def index
     @community_groups = CommunityGroup.where(company_id: current_company.id)
+
   end
   def new
     @community_group = CommunityGroup.new

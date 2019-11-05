@@ -17,6 +17,9 @@
 #  standard_image_url :string
 #  ios_image_url      :string
 #  large_image_url    :string
+#  video              :string
+#  do_crop            :boolean          default(FALSE)
+#  url                :string
 #
 
 class GalleryImage < ApplicationRecord
@@ -31,6 +34,13 @@ class GalleryImage < ApplicationRecord
 	# before_save :populate_image_urls
 	after_update :crop_image
   after_commit :populate_image_urls, on: :create
+
+	amoeba do
+		customize(lambda { |original_object,new_object|
+			new_object.image = original_object.image
+			new_object.video = original_object.video
+		})
+	end
 
 	def crop_image
     image.recreate_versions! if (crop_x.present? && do_crop)

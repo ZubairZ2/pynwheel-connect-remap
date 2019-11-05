@@ -2,12 +2,17 @@
 #
 # Table name: tour_users
 #
-#  id           :integer          not null, primary key
-#  name         :string
-#  phone_number :integer
-#  email        :string
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id                 :integer          not null, primary key
+#  name               :string
+#  email              :string
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  credit_card_number :string
+#  card_expiry        :string
+#  phone_number       :string
+#  image              :string
+#  id_card            :string
+#  id_selfie_mismatch :boolean          default(TRUE)
 #
 
 class TourUser < ApplicationRecord
@@ -22,4 +27,8 @@ class TourUser < ApplicationRecord
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
   
+  amoeba do
+    enable
+  end
+
 end

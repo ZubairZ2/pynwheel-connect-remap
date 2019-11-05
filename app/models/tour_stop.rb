@@ -28,4 +28,7 @@ class TourStop < ApplicationRecord
   def path_data
   	self.stop_type.classify.constantize.path_data
   end
+  amoeba do
+    enable
+  end
 end

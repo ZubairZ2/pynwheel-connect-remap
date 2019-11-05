@@ -49,6 +49,7 @@
 #
 
 class User < ApplicationRecord
+  has_paper_trail
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   mount_uploader :avatar, AvatarUploader
@@ -60,6 +61,7 @@ class User < ApplicationRecord
   belongs_to :company
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
+
 
   def all_companies
     Company.all.map(&:name).sort

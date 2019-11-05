@@ -53,9 +53,17 @@
 #  crop_w_secondary               :float
 #  crop_h_secondary               :float
 #  community_group_id             :integer
+#  alert_contact                  :integer          default("both")
+#  floorplan_name_order           :boolean          default(FALSE)
+#  image_bit                      :boolean
+#  do_crop                        :boolean          default(FALSE)
+#  do_crop_secondary              :boolean          default(FALSE)
+#  number_of_units                :integer
+#  tour_setup_visible             :boolean          default(FALSE)
 #
 
 class Community < ApplicationRecord
+  has_paper_trail
   # mount_uploader :logo, AvatarUploader
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
@@ -109,7 +117,13 @@ class Community < ApplicationRecord
   enum alert_contact: [:email, :phone, :both]
   
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
-
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.logo = original_object.logo
+      new_object.secondary_logo = original_object.secondary_logo
+    })
+  end
   def crop_image
     logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
@@ -171,6 +185,10 @@ class Community < ApplicationRecord
     else
       theme_name
     end
+  end
+  def clone_a_community(community)
+    clone_community = CloneCommunityJob.new
+    return clone_community.perform(community)
   end
 
   def has_temporary_images?

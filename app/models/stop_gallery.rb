@@ -11,5 +11,12 @@
 #
 
 class StopGallery < ApplicationRecord
+  has_paper_trail
   mount_uploader :image, AvatarUploader
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.image = original_object.image
+    })
+  end
 end

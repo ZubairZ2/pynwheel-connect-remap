@@ -10,8 +10,15 @@
 #
 
 class Sitemap < ApplicationRecord
+  has_paper_trail
   mount_uploader :image, SiteMapUploader
   belongs_to :community
   validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}
   has_many :amenities, as: :amenityable
+  amoeba do
+    enable
+    customize(lambda { |original_object,new_object|
+      new_object.image = original_object.image
+    })
+  end
 end
