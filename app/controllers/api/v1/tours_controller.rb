@@ -175,11 +175,12 @@ class Api::V1::ToursController < ActionController::Base
       @units = Unit.where(floorplan_id: unit.floorplan_id) if unit.present?
       @units.each do |u|
         if u.community.is_sitemap?
-          u[:image] = u.community.sitemap.image.url
+          u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
+            image.url(:svg_for_metro) : u.community.sitemap.image.url
         else
           floorplate = Floorplate.find_by_id(u.floorplate_id)
           floorplate_image = floorplate.image.url if floorplate.present?
-          u[:image] = floorplate_image
+          u.sitemap_image_url = floorplate_image
         end
       end
       success = true
