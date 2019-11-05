@@ -18,8 +18,12 @@ json.tours @tours do |tour|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
-    json.type stop.stop_type
     json.unit_id stop.stop_id
+    if params[:testing].present?
+      if stop.stop_type == 'unit' then json.type 'elevator' else json.type stop.stop_type end
+    else
+      json.type stop.stop_type
+    end
     if stop.stop_type == "unit"
       unit = Unit.find_by_id stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
