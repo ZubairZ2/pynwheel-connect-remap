@@ -172,8 +172,7 @@ class Community < ApplicationRecord
     end
   end
   def clone_a_community(community)
-    clone_community = CloneCommunityJob.new
-    return clone_community.perform(community)
+    CloneCommunityJob.perform_async community
   end
 
   def has_temporary_images?
