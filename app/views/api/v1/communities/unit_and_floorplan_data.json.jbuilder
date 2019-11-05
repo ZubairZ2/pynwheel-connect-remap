@@ -59,7 +59,7 @@ json.apartments do
       # json.floorplan_id floorplan.id
       json.unit_type unit.unit_type
       json.provider_unit_id unit.provider_unit_id
-      json.id (Unit.find_by provider_unit_id: unit.id).id
+      json.id (Unit.find_by provider_unit_id: unit.provider_unit_id).id rescue ""
       json.yuyuyuyuyuyuyuyuyuyyyyyyyyyyyyyy unit.availability
       # json.floorplan_name floorplan.present? ? floorplan.name : nil
       # json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
@@ -156,7 +156,7 @@ json.apartments do
     end
   end
   json.floorplans @floorplans do |floorplan|
-    json.id (Floorplan.find_by provider_floorplan_id: floorplan.id).id
+    json.id (Floorplan.find_by provider_floorplan_id: floorplan.provider_floorplan_id).id rescue ""
     json.provider_floorplan_id floorplan.provider_floorplan_id
     json.name floorplan.name
     json.rent floorplan.market_rent

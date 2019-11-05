@@ -255,4 +255,48 @@ class ToursController < ApplicationController
     end
     render json: {tour_stop: tour_stop.present? ? tour_stop : {}}, status: 200, message: status
   end
+
+  def id_selfie_matching
+    @visitor = TourUser.find_by_id(params[:tour_user_id])
+    # binding.pry
+    puts "<<<<<<<<<<< ID MISMATCH? #{@visitor.id_selfie_mismatch} >>>>>>>>>>"
+    render  'visitor_profile'
+  end
+
+  def flag_id_mismatch
+    if params[:tour_user_id].present?
+      tour_user = TourUser.find_by_id params[:tour_user_id]
+      tour_user.update_attributes id_selfie_mismatch: params[:match_status]
+      status = 200
+      message = "ID/Selfie is marked #{params[:match_status] == "true" ? 'Mismatched' : 'Matched' }"
+
+      if tour_user.id_selfie_mismatch
+        name = tour_user.name || tour_user.email.split('@').first.humanize
+
+        email_content = "The user has a mismatching ID/Selfie. <br/> <a href='#{manual_selfie_match_url tour_user.id }' target='_blank'> Visitor's ID page </a>"
+
+        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
+        DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
+        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'arslan.mirza@intagleo.com')
+
+      end
+    else
+      status = 404
+    end
+    # binding.pry
+    render json: { message: message, status: status }
+  end
+
+  def get_id_selfie_mismatch
+    if params[:tour_user_id].present?
+      tour_user = TourUser.find_by_id params[:tour_user_id]
+      status = 200
+      message = "User is found"
+    else
+      status = 404
+      message = "Please provide tour user id"
+    end
+
+    render json: {match_status: tour_user.id_selfie_mismatch ||= nil, message: message, status: status }
+  end
 end

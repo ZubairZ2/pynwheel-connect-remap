@@ -8,9 +8,9 @@
       .slide-image
         .image-box.video-box
           .images.height-200
+            - if gallery_image.is_video? || gallery_image.video.present?
+              = video_tag gallery_image.video.present? ? gallery_image.standard_image_url : gallery_image.image.url, :controls => true, :autobuffer => true
 
-            - if gallery_image.is_video?
-              = video_tag gallery_image.video.present? ? gallery_image.standard_image_url : gallery_image.standard_image_url, :controls => true, :autobuffer => true
             - else
               - rn =  rand(9999999999999999999999999)
               %a.preview-image{:href=>gallery_image.image? ? (gallery_image.crop_x.present? ? gallery_image.image.url(:large) + "?timestamp=#{rn}" : gallery_image.image.url(:large) + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>gallery_image.name}

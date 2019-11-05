@@ -9,8 +9,8 @@
                 %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                   %tr
                     %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                      -#%h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
-                        -#%b Image: #{img.name}
+                      %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                        %b #{img.name}
     %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
       %tr
         %td{:align => "center", :valign => "top"}
@@ -23,17 +23,8 @@
                       %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                         %tr
                           %td{:width => "100%"}
-                            - unless img.is_video?
-                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
-                                %tr
-                                  %td
-                                    %div{:style => "max-width:100%; overflow:hidden;"}
-                                      %img{:alt => "", :src => "#{img.large_image_url}", :width => "580", :style => "max-width:100%; height:auto; margin:auto;", :title => ""}/
-                            - else
-                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
-                                %tr
-                                  %td
-                                    %a{:href => img.image.url, :target => "_blank",:style=>"font-size: 16px; color: #0366d6; font-family: arial; display: inline-block; margin: 0px;"} 
-                                      %img{:alt => "", :src => "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg", :width => "580", :height => "400"}/
-                                /= img.image.file.filename          
-                            
+                            %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                              %tr
+                                %td
+                                  %div{:style => "width:100%; overflow:hidden;"}
+                                    %img{:alt => "", :src => "#{img.image.url}", :width => "580", :height => "auto", :style => "max-width:580px; margin:auto;", :title => ""}/

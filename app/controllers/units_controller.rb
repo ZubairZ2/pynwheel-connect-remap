@@ -131,7 +131,7 @@ class UnitsController < ApplicationController
       end
     end
   end
-  
+
   def set_manually_updated_column
     # @unit.update_attribute(:manually_updated, true)
     if @unit.sold

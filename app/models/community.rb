@@ -101,11 +101,17 @@ class Community < ApplicationRecord
   after_update :crop_image
   after_update :crop_secondary_image
 
+  #
+  # phony_normalize :phone
+  # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
+  # validates :phone, phony_plausible: true
+
 
 
   # phony_normalize :phone
   # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
   # validates :phone, phony_plausible: true
+
 
   enum alert_contact: [:email, :phone, :both]
   

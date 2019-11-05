@@ -1,0 +1,71 @@
+- content_for :title, "Companies - Pynwheel"
+/ Main content
+.container
+  %section
+    .mt-35
+    .box.box-widget.panel-box{ :style => "padding: 10px" }
+      .row
+        .col-md-6{:style => "transform:rotate(90deg);-ms-transform: rotate(90deg);-o-transform: rotate(90deg);-moz-transform: rotate(90deg);-webkit-transform: rotate(90deg); margin: 102px 0;"}
+          = image_tag @visitor.image.present? ? @visitor.image.url : "default.jpeg",:height=>"100%", :width=>"100%"
+        .col-md-6{:style => "transform:rotate(90deg);-ms-transform: rotate(90deg);-o-transform: rotate(90deg);-moz-transform: rotate(90deg);-webkit-transform: rotate(90deg); margin: 102px 0;"}
+          = image_tag @visitor.id_card.present? ? @visitor.id_card.url : "default.jpeg",:height=>"100%",:width=>"100%"
+      %hr
+      .row
+        .col-md-6
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Id/Selfie Mismatch?
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .TriSea-technologies-Switch
+                %span.pr-15 Matched
+                = check_box_tag :id_selfie_mismatch, nil, @visitor.id_selfie_mismatch, class: "show-tour-page"
+                %label.label-primary{:for => "id_selfie_mismatch"}
+                %span.pl-15 Mismatched
+        .col-md-6
+          %a.btn.btn-success.pull-right{:href => "/"}
+            Home
+
+:javascript
+  
+  $(document).ready(function() {
+    var visitor_id = "#{@visitor.id}"
+    $('#id_selfie_mismatch').change(function() {
+      
+      if(this.checked) {
+        user_input = prompt("Please enter the word FLAG:")
+
+        if(user_input === "FLAG") {
+          
+          $(this).prop("checked", true);
+            
+          $.post("/flag_id_mismatch", 
+          { 
+            "tour_user_id": visitor_id,
+            'match_status': this.checked
+          },
+          function(data,status,xhr) {
+            console.log(data)
+          });
+        }else{
+          $(this).prop("checked", false);
+        }
+
+      } else {
+        user_input = prompt("Please enter the word FLAG:")
+
+        if(user_input === "FLAG") {
+          $.post("/flag_id_mismatch",
+            { 
+              "tour_user_id": visitor_id,
+              'match_status': this.checked
+            },
+            function(data,status,xhr) {
+              console.log(data)
+            }
+          );
+        }
+
+      }
+    });
+
+  });

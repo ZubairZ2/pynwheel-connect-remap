@@ -41,6 +41,7 @@
               / = link_to "Show Pricing" , community_show_realpage_pricing_data_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "realpage_show_pricing_button"
               %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
                 If the page that opens contains a bunch of data, it's probably good! If it contains one line that is an error message, then your data cannot be imported into Pynwheel. Please contact your data provider to troubleshoot.
+
         .row
           .col-md-6
             %h4.title Import Vendor Data
@@ -52,6 +53,7 @@
               %p
                 %i.fa.fa-warning
                 This action will either create new, or update existing, Unit and Floor plan records, based on the vendor's record IDs.
+
             .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
               = link_to "Import Unit Data" , community_import_path(current_community) , :class=>"btn btn-primary import_data"
               %span#propertyDetailNameText
@@ -60,12 +62,12 @@
                   Do NOT use this button to update data if data provider has changed, or if Floor Plan IDs or Unit IDs have changed.
             - if current_user.is_super_admin?
               .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-
                 .btn.btn-warning{"data-name"=>"Previous data","data-href" => "/communities/#{current_community.id}/delete_imported_data", "data-target" => "#confirm-delete-replace-data", "data-toggle" => "modal", :href => "javascrip::;"} Replace Data
                 %span#propertyDetailNameText
                   Use this button to DELETE all data and import new data.
                   %b
                     All previous data, plotting, floor plan images, unit records, and floor plan records will be PERMANENTLY DELTED.
+
             - if current_user.is_super_admin?
               .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                 .btn.btn-warning{"data-name"=>"Update data","data-href" => "/communities/#{current_community.id}/update_imported_data", "data-target" => "#confirm-delete-update-data", "data-toggle" => "modal", :href => "javascrip::;"} Update Data
@@ -74,10 +76,7 @@
                   %b
                     Do NOT use this button if Unit Names have been manually overridden or have changed.
 
-
             -#= link_to "Update Data" , community_update_imported_data_path(current_community) , :class=>"btn btn-warning"
-
-
 
 :javascript
   var community_id = #{params[:community_id]}

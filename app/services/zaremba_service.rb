@@ -144,6 +144,7 @@ class ZarembaService < BaseService
     end
   end
 
+  
   def save_zaremba_floorplans(floorplans,property_id)
     floorplans.each do |f|
       floorplan = Floorplan.find_by(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"])#.first_or_initialize

@@ -818,10 +818,10 @@ function setModalAttributes(element) {
             $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
         }
     }
+
     catch(err) {
         $('#unit-description-text-li').hide();
     }
-
 
 
 

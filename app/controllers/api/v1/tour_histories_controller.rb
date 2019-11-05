@@ -1,7 +1,7 @@
 class Api::V1::TourHistoriesController < ActionController::Base
   
   def save_tour_history
-    if params[:community_id].present?
+    if params[:community_id].present? && params[:tour_user_id].present?
       params[:id].present? ? tour_history = TourHistory.find_or_create_by(id: params[:id]) : tour_history = TourHistory.new
 
       tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
@@ -9,13 +9,13 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
       tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
 
-      tour_history.id_mismatch = false
       tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
-      tour_history.tour_user_id = params[:tour_user_id] if params[:tour_user_id].present?
+      tour_history.tour_user_id = params[:tour_user_id]
+      
+      tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
       
       tour_history.community = set_community
-      # binding.pry
-      # Time.at(params[:lengthy_stay])
+      
       if tour_history.save
         render :json=> {:success=>true, :message => "success", :data => tour_history}
       else
@@ -26,6 +26,25 @@ class Api::V1::TourHistoriesController < ActionController::Base
     end
   end
 
+  def change_id_selfie_status
+    if params[:tour_user_id].present? && params[:id_selfie_mismatch_status].present?
+      
+      tour_user = TourUser.find_by_id(params[:tour_user_id])
+      if tour_user.present?
+        tour_user.id_selfie_mismatch = params[:id_selfie_mismatch_status]
+        if tour_user.save
+          render :json=> {:success=>true, :message => "status changed"}
+        else
+          render :json=> {:success=>false, :message => "tour user status was not changed."}
+        end
+      else
+        render :json=> {:success=>false, :message => "tour user was not found against this id, please try again."}
+      end
+
+    else
+      render :json=> {:success=>false, :message => "tour_user_id and id_selfie_mismatch_status are compulsory."}
+    end
+  end
 
   def get_tour_history
 
@@ -44,7 +63,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
     Time.strptime(epoch_str, '%s')
   end
   def tour_history_params
-    params.permit(:arrived, :left, :lengthy_stay, :id_mismatch, :abandoned_tour_at_stop, :tour_user_id)
+    params.permit(:arrived, :left, :lengthy_stay, :id_mismatch, :abandoned_tour_at_stop, :tour_user_id, :community_id)
   end
 
   def set_community

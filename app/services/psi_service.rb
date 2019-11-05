@@ -324,6 +324,7 @@ class PsiService < BaseService
                                          }
                                      }.to_json,
                                      :headers => { 'Content-Type' => 'application/json' } )
+
             sleep 1
             response =  JSON.parse(response.body)
             sleep 2
@@ -381,6 +382,8 @@ class PsiService < BaseService
 
                     unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                        unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
+                        unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
                         unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                       elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
                         unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
@@ -492,12 +495,15 @@ class PsiService < BaseService
 
                         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                           if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                            unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
+                            unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
                             unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                           elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
                             unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
                           else
                             unit.effective_rent = 0.0
                           end
+
                         end
                         rentStr = ""
                         begin

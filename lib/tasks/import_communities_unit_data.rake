@@ -60,6 +60,7 @@ namespace :import do
       sleep 25
     end
     community_logs = {Time.now => community_logs_str}
+
     # entrata_list_logs = {Time.now => entrata_list_logs_str}
     current_user = User.find 10
     unless current_user.community_logs.present?

@@ -14,7 +14,6 @@ class CommunitiesController < ApplicationController
       @communities = current_user.communities
     end
   end
-
   def new
     add_breadcrumb "Add Community", new_company_community_path(current_company)
     @community = current_company.communities.new
@@ -83,8 +82,9 @@ class CommunitiesController < ApplicationController
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       else
+        
         if @community.company_id != params[:community][:company_id].to_i
-          @community.community_group_id = nil
+          # @community.community_group_id = nil
         end
         if @community.update(community_params)
           @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
