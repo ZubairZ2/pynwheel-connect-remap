@@ -62,6 +62,7 @@ class User < ApplicationRecord
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
 
+
   def all_companies
     Company.all.map(&:name).sort
   end

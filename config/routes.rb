@@ -69,6 +69,9 @@ Rails.application.routes.draw do
     get :credentials
     get :settings_page
     get :logs
+
+    get :clone_community
+
     get :change_expressionist_default
     get :test_connection
     get :psi_pricing_test_connection
