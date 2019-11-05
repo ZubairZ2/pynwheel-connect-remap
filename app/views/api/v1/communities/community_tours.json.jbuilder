@@ -20,7 +20,7 @@ json.tours @tours do |tour|
     json.y_plot stop.longitude
     json.unit_id stop.stop_id
     if params[:testing].present?
-      if stop.stop_type == 'unit' then json.type 'elevator' else json.type stop.stop_type end
+      if stop.stop_type == 'amenity' then json.type 'elevator' else json.type stop.stop_type end
     else
       json.type stop.stop_type
     end
