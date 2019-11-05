@@ -59,6 +59,35 @@ $(document).ready(function(){
         e.stopPropagation()
     })
 
+    // This is for plotting elevator when clicked on ul dropdown
+    $("#imageselect3 li").click(function(e){
+      debugger
+      if ($(this).data("id")!=""){
+          console.log($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1);
+          if (selected.length == 0){
+              saveTourStopPoint($(this).data("id"));
+              // selected.push([ $(this).data("id"), $(this).data("name") ]);
+          }
+          else if ($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1){
+              saveTourStopPoint($(this).data("id"));
+              // selected.push([ $(this).data("id"), $(this).data("name") ]);
+          }
+      }
+      // add to selected list
+      $("#selected-units").empty();
+      for (i=0; i<selected.length; i++) {
+          $("#selected-units").append('<li class="s-unit" data-id='+i+'>' + selected[i][1] + '</li>');
+      }
+      $('#newmsg').hide();
+
+      // hide from unused list
+      $(this).css({"display": "none"});
+      plotMode();
+      $("#imageselect3").toggle();
+      // e.stopPropagation()
+      // window.location.reload()
+    });
+
     // $('.amenities-list').on('change', function(e) {
     //   e.preventDefault();
     //   $('.amenities-list :selected').each(function(){

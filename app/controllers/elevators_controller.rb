@@ -42,7 +42,7 @@ class ElevatorsController < ApplicationController
     respond_to do |format|
       # binding.pry
       # format.html { redirect_to action: 'index', notice: 'Elevator was successfully created.' }
-      format.html { redirect_back(fallback_location: elevators_path) }
+      format.html { redirect_back(fallback_location: community_elevators_path) }
 
       format.js {render inline: "location.reload();" }
     end
@@ -52,9 +52,10 @@ class ElevatorsController < ApplicationController
   # PATCH/PUT /elevators/1.json
   def update
     respond_to do |format|
+      binding.pry
       if @elevator.update(elevator_params)
-        format.html { redirect_to @elevator, notice: 'Elevator was successfully updated.' }
-        format.json { render :show, status: :ok, location: @elevator }
+        format.html { redirect_back(fallback_location: community_elevators_path, notice: 'Elevator was successfully updated.') }
+        format.js { render :show, status: :ok, location: @elevator }
       else
         format.html { render :edit }
         format.json { render json: @elevator.errors, status: :unprocessable_entity }
@@ -67,7 +68,8 @@ class ElevatorsController < ApplicationController
   def destroy
     @elevator.destroy
     respond_to do |format|
-      format.html { redirect_to elevators_url, notice: 'Elevator was successfully destroyed.' }
+      format.html { redirect_to community_elevators_url, notice: 'Elevator was successfully destroyed.' }
+      # format.html { redirect_back(fallback_location: community_elevators_path) }
       format.json { head :no_content }
     end
   end

@@ -117,6 +117,13 @@ class SitemapsController < ApplicationController
     @amenities = @community.amenities
   end
 
+  def plot_elevators
+    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
+    add_breadcrumb "Plot Property Map Elevators", plot_elevators_community_sitemaps_path(current_community) 
+    @sitemap = @community.sitemap
+    @elevators = @community.elevators
+  end
+
   def save_sitemap_image
     sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
     if sitemap.update_attribute(:image,params[:file])

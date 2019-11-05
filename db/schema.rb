@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191104162237) do
+ActiveRecord::Schema.define(version: 20191105135842) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -385,8 +385,10 @@ ActiveRecord::Schema.define(version: 20191104162237) do
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
     t.string   "image"
+    t.integer  "sitemap_id"
     t.index ["community_id"], name: "index_elevators_on_community_id", using: :btree
     t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id", using: :btree
+    t.index ["sitemap_id"], name: "index_elevators_on_sitemap_id", using: :btree
   end
 
   create_table "expressionists", force: :cascade do |t|
@@ -1083,6 +1085,7 @@ ActiveRecord::Schema.define(version: 20191104162237) do
   add_foreign_key "credentials", "communities"
   add_foreign_key "elevators", "communities"
   add_foreign_key "elevators", "floorplates"
+  add_foreign_key "elevators", "sitemaps"
   add_foreign_key "favorite_images", "favorite_settings"
   add_foreign_key "favorite_settings", "communities"
   add_foreign_key "galleries", "communities"

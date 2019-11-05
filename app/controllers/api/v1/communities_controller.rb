@@ -1,6 +1,4 @@
 class Api::V1::CommunitiesController < ActionController::Base
-  # TODO - to be removed
-  Elev = Struct.new(:x_plot, :y_plot, :type, :name, :image, :path_points)
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   before_action :set_community, only: :email_favorites
   @@counter = 0
@@ -81,23 +79,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   def community_tours
     @community = Community.find params[:id]
     @tours = Tour.where(community_id: params[:id])
-    
-    @elevators = []
-    # , [{x: 120, y: 455}, {x: 165, y: 655}, {x: 400, y: 155}]
-    # , [{x: 120, y: 455}, {x: 165, y: 655}, {x: 400, y: 155}]
-    # , [{x: 120, y: 455}, {x: 165, y: 655}, {x: 400, y: 155}]
-
-    # Elev = Struct.new(:x_plot, :y_plot, :type, :name, :image, :path_points)
-    o = Elev.new(120, 455, 'elevator', "Elev1", 'https://homepages.cae.wisc.edu/~ece533/images/fruits.png')
-
-    t = Elev.new(160, 255, 'elevator', "Elev2",'https://homepages.cae.wisc.edu/~ece533/images/fruits.png')
-    th = Elev.new(720, 755, 'elevator', "Elev1", 'https://homepages.cae.wisc.edu/~ece533/images/fruits.png')
-
-    @elevators.push(o)
-    @elevators.push(t)
-    @elevators.push(th)
-
   end
+
   def user_saved_tour
     @device_id = params[:device_id]
     @tour_user = TourUser.find params[:id]

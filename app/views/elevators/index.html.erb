@@ -43,7 +43,7 @@
             </div>
             <div class="mt-10">
               <% if @community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? ) %>
-                <%= link_to "PLOT ELEVATOR", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn" %>
+                <%= link_to "PLOT ELEVATOR", plot_elevators_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_elevators_btn" %>
               <% end %>
             </div>
             <div class="divLoading hidden"></div>
@@ -61,11 +61,11 @@
   
   var community_id = <%= params[:community_id] %>;
   $('#elevator-images').change(function () {
-    $('.plot_amenities_btn').removeClass('hidden');
+    $('.plot_elevators_btn').removeClass('hidden');
   });
   if (<%= @elevators.count > 0 %>)
   {
-    $('.plot_amenities_btn').removeClass('hidden');
+    $('.plot_elevators_btn').removeClass('hidden');
   }
   if (! <%= current_user.welcome_amenity_page %>)
   {
