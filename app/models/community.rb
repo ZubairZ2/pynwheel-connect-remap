@@ -171,6 +171,10 @@ class Community < ApplicationRecord
       theme_name
     end
   end
+  def clone_a_community(community)
+    clone_community = CloneCommunityJob.new
+    return clone_community.perform(community)
+  end
 
   def has_temporary_images?
     temporary_images.size > 0

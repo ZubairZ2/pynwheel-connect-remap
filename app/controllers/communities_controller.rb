@@ -103,6 +103,11 @@ class CommunitiesController < ApplicationController
       end
     end
   end
+  def clone_community
+    @community = Community.find params[:community_id]
+    copy_community = @community.clone_a_community(@community)
+    redirect_to edit_company_community_path(current_company,copy_community),notice: 'Community cloned successfully.'
+  end
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?
