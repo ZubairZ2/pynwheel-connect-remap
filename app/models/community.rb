@@ -87,6 +87,7 @@ class Community < ApplicationRecord
   # validate :unique_community_code_on_update, on: [:update]
   after_create :set_default_theme
   after_create :create_default_gallery
+  after_create :create_sms_email_content
   validate :validate_page_position
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
@@ -272,6 +273,13 @@ class Community < ApplicationRecord
         errors[:base] << "Community code has already been taken."
       end
     end
+  end
+  def check_credentials
+    #psi_service = PsiService.new(credential.attributes)
+    #psi_service.perform
+    psi_static_service = CredentialsValid.new(JSON.parse(credential.attributes.to_json))
+    psi_static_service.perform
+    # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
   def import_psi_data
     #psi_service = PsiService.new(credential.attributes)
@@ -479,6 +487,12 @@ class Community < ApplicationRecord
 
   def create_default_gallery
     self.galleries.create(name: 'default')
+  end
+
+  def create_sms_email_content
+    self.sms_text = CommunityConstants::SMS_TEXT
+    self.email_text = CommunityConstants::EMAIL_TEXT
+    self.save
   end
 
   def make_address

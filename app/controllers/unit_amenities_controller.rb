@@ -59,8 +59,6 @@ class UnitAmenitiesController < ApplicationController
     @unit.amenities.each do |amenity|
       amenity.x_plot = 0
       amenity.y_plot = 0
-      amenity.amenityable_type = nil
-      amenity.amenityable_id = nil
       amenity.save(validate: false)
     end
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "All plots have been deleted successfully."
@@ -90,8 +88,6 @@ class UnitAmenitiesController < ApplicationController
     amenities.each do |amenity|
       amenity.x_plot = 0
       amenity.y_plot = 0
-      amenity.amenityable_type = nil
-      amenity.amenityable_id = nil
       amenity.save(validate: false)
     end
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "Amenity plot have been deleted successfully."

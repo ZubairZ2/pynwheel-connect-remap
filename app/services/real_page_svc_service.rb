@@ -212,6 +212,7 @@ class RealPageSvcService < BaseService
                 unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
                 unit_record << unit.provider_unit_id
 
+
                 unit.save(validate: false)
 
 
@@ -229,7 +230,8 @@ class RealPageSvcService < BaseService
             unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
             unit.availability = "Occupied"
             unit.available = false
-            unit.save(validate: false)
+            unit.available_date = nil
+            unit.save(validate: false) unless unit.manual_override
           end
         else
           begin

@@ -7,45 +7,34 @@
 
     .row
       .col-lg-12
-        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #1e8ece;"}
           Home Page Options
+    %br
     = d.fields_for :expressionist do |e|
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Menu Position
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :home_page_menu_position , options_for_select(horizontal_menu_position_homepage,e.object.home_page_menu_position.present? ? e.object.home_page_menu_position : "Bottom"),{},{class: "form-control home-page-field",id: "home_page_menu_position"}
-      .row
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #1e8ece;"}
+        Logo options
+
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Position of logo
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :home_page_position_of_logo , options_for_select(home_page_position_of_logo,e.object.home_page_position_of_logo),{},{class: "form-control home-page-field",id: "home_page_position_of_logo"}
-      .row.logo_size_div_field
+      .row.logo_size_div_field.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Logo size
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :home_page_logo_size , options_for_select(home_page_logo_size,e.object.home_page_logo_size),{},{class: "form-control home-page-field", id: "logo_size_field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Font Family
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :home_page_button_font_family , options_for_select(font_families,e.object.home_page_button_font_family),{},{class: "form-control home-page-field"}             
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Font Size
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :home_page_button_font_size , options_for_select(font_sizes,e.object.home_page_button_font_size.present? ? e.object.home_page_button_font_size : "18px"),{},{class: "form-control home-page-field"}
-      .form-group
+
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #1e8ece;"}
+        Home Page Navigation Options
+      %br
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #1e8ece;"}
+        Home Page Navigation Background
+      .form-group.global_navigation_sub_heading
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
           Display home page navigation background
         .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -53,57 +42,22 @@
             %span.pr-15 No
             = e.check_box :display_home_page_nav_background, {class: "home-page-field"}
             %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_nav_background"}
-            %span.pl-15 Yes            
-      .row
+            %span.pl-15 Yes
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Menu Position
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :home_page_menu_position , options_for_select(horizontal_menu_position_homepage,e.object.home_page_menu_position.present? ? e.object.home_page_menu_position : "Bottom"),{},{class: "form-control home-page-field",id: "home_page_menu_position"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15#home_page_navigation_background_height
-              Home page navigation background height 
+              Home page navigation background height
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :home_page_navigation_background_height , options_for_select(navigation_background_height_options,d.object.home_page_navigation_background_height),{},{class: "form-control home-page-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Home page button shape 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :home_page_button_shape , options_for_select(button_shape_options,d.object.home_page_button_shape),{},{class: "form-control home-page-field home_page_button_shape"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Home page buttons border 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :home_page_buttons_border , options_for_select(border_options,d.object.home_page_buttons_border.present? ? d.object.home_page_buttons_border : 'All sides'),{},{class: "form-control home-page-field"}        
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Home page buttons height 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :home_page_buttons_height , options_for_select(button_height_options,d.object.home_page_buttons_height.present? ? d.object.home_page_buttons_height : "150px"),{},{class: "form-control home-page-field"}
-      .row.button-width-field
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Home page buttons width
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :home_page_buttons_width , options_for_select(home_page_button_width,d.object.home_page_buttons_width),{},{class: "form-control home-page-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Home page buttons opacity
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :home_page_buttons_opacity , options_for_select(opacity_options,d.object.home_page_buttons_opacity.present? ? d.object.home_page_buttons_opacity : "100%"),{},{class: "form-control home-page-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Home page navigation background opacity
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :home_page_navigation_background_opacity , options_for_select(opacity_options,d.object.home_page_navigation_background_opacity.present? ? d.object.home_page_navigation_background_opacity : "100%"),{},{class: "form-control home-page-field"}
-      .row
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -113,7 +67,112 @@
                 .input-group-addon
                   %i
                   = d.text_field :home_page_navigation_background_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_background_color.present? ? d.object.home_page_navigation_background_color : "#565455"
-      .row
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Home page navigation background opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :home_page_navigation_background_opacity , options_for_select(opacity_options,d.object.home_page_navigation_background_opacity.present? ? d.object.home_page_navigation_background_opacity : "100%"),{},{class: "form-control home-page-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 18px;  color: #ee3b31;"}
+        Upload image for navigation background
+      .form-group.global_navigation_sub_heading
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display home page navigation background image
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_home_page_nav_background_image, {class: "home-page-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_nav_background_image"}
+            %span.pl-15 Yes
+      #home-page-background-image-fields.hidden.global_navigation_sub_heading
+        .row
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Home page navigation background image
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .select-logo.mb-20.mt-30
+                  .select-logo-logo
+                    %a.preview-image{:href=>current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
+                      = image_tag current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-background-image-preview"
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %span.btn.btn-primary.btn-file.mt-30
+                  %i.fa.fa-upload
+                  Upload File
+                  = file_field_tag :home_page_background_image
+        .text-center.drag-box.mt-15.image-upload#home-page-background-image-upload-holder
+          %span.icon-upload
+            = image_tag "upload-image.png"
+            %p Drag &amp; Drop file to Upload
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #1e8ece;"}
+        Home Page Navigation Button Options
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+        Button Shape
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Home page button shape
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :home_page_button_shape , options_for_select(button_shape_options,d.object.home_page_button_shape),{},{class: "form-control home-page-field home_page_button_shape"}
+      .row.button-width-field.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Home page buttons width
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :home_page_buttons_width , options_for_select(home_page_button_width,d.object.home_page_buttons_width),{},{class: "form-control home-page-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Home page buttons height
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :home_page_buttons_height , options_for_select(button_height_options,d.object.home_page_buttons_height.present? ? d.object.home_page_buttons_height : "150px"),{},{class: "form-control home-page-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Spacing between buttons
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :spacing_between_buttons_for_homepage , options_for_select(spacing_between_buttons_options,e.object.spacing_between_buttons_for_homepage.present? ? e.object.spacing_between_buttons_for_homepage : '10px'),{},{class: "form-control home-page-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 18px;  color: #ee3b31;"}
+        Upload image for button background
+      .form-group.global_navigation_sub_heading
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display home page image
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_home_page_image, {class: "home-page-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_image"}
+            %span.pl-15 Yes
+      #home-page-image-fields.hidden
+        .row.global_navigation_sub_heading
+          .col-lg-10
+            .form-group.mt-30
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Home page button image
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .select-logo.mb-20.mt-30
+                  .select-logo-logo
+                    %a.preview-image{:href=>current_community.design.expressionist.home_page_button_image.present? ? current_community.design.expressionist.home_page_button_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page button image"}
+                      = image_tag current_community.design.expressionist.home_page_button_image.present? ? current_community.design.expressionist.home_page_button_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-button-image-preview"
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %span.btn.btn-primary.btn-file.mt-30
+                  %i.fa.fa-upload
+                  Upload File
+                  = file_field_tag :home_page_button_image
+        .text-center.drag-box.mt-15.image-upload#home-page-button-image-upload-holder
+          %span.icon-upload
+            = image_tag "upload-image.png"
+            %p Drag &amp; Drop file to Upload
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+        Button Color
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -123,7 +182,23 @@
                 .input-group-addon
                   %i
                   = d.text_field :home_page_navigation_button_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_button_color.present? ? d.object.home_page_navigation_button_color : "#3B3B3B"
-      .row
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Home page buttons opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :home_page_buttons_opacity , options_for_select(opacity_options,d.object.home_page_buttons_opacity.present? ? d.object.home_page_buttons_opacity : "100%"),{},{class: "form-control home-page-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+        Button Border
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Home page buttons border
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :home_page_buttons_border , options_for_select(border_options,d.object.home_page_buttons_border.present? ? d.object.home_page_buttons_border : 'All sides'),{},{class: "form-control home-page-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -132,8 +207,25 @@
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
-                  = e.text_field :home_page_button_border_color , class: "form-control home-page-field",autocomplete: true,:value=>e.object.home_page_button_border_color.present? ? e.object.home_page_button_border_color : "#565455"            
-      .form-group
+                  = e.text_field :home_page_button_border_color , class: "form-control home-page-field",autocomplete: true,:value=>e.object.home_page_button_border_color.present? ? e.object.home_page_button_border_color : "#565455"
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Homepage button border opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :homepage_button_border , options_for_select(opacity_options,e.object.homepage_button_border.present? ? e.object.homepage_button_border : "100%"),{},{class: "form-control home-page-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Homepage button border thickness
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :homepage_button_border_thickness , options_for_select(global_navigation_border_thickness_space,e.object.homepage_button_border_thickness.present? ? e.object.homepage_button_border_thickness : '0px'),{},{class: "form-control home-page-field"}
+
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+        Button Icon
+      .form-group.global_navigation_sub_heading
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
           Display home page button icon
         .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -141,8 +233,32 @@
             %span.pr-15 No
             = e.check_box :display_home_page_button_icon, {class: "home-page-field"}
             %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_button_icon"}
-            %span.pl-15 Yes            
-      .row
+            %span.pl-15 Yes
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Home page icons position
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :home_page_icons_position , options_for_select(home_page_icons_position_option,e.object.home_page_icons_position.present? ? e.object.home_page_icons_position : 'Above of text'),{},{class: "form-control home-page-field homepage_icons_position"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+        Button Font
+
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Font Family
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :home_page_button_font_family , options_for_select(font_families,e.object.home_page_button_font_family),{},{class: "form-control home-page-field"}             
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Font Size
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :home_page_button_font_size , options_for_select(font_sizes,e.object.home_page_button_font_size.present? ? e.object.home_page_button_font_size : "18px"),{},{class: "form-control home-page-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -152,20 +268,6 @@
                 .input-group-addon
                   %i
                   = d.text_field :home_page_navigation_font_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_font_color.present? ? d.object.home_page_navigation_font_color : "#c5c4c7"
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Spacing between buttons
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :spacing_between_buttons_for_homepage , options_for_select(spacing_between_buttons_options,e.object.spacing_between_buttons_for_homepage.present? ? e.object.spacing_between_buttons_for_homepage : '10px'),{},{class: "form-control home-page-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Home page icons position
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :home_page_icons_position , options_for_select(home_page_icons_position_option,e.object.home_page_icons_position.present? ? e.object.home_page_icons_position : 'Above of text'),{},{class: "form-control home-page-field homepage_icons_position"}
       -#.row
       -#  .col-lg-10
       -#    .form-group.mt-30
@@ -173,20 +275,6 @@
       -#        Button text position
       -#      .col-sm-12.col-lg-9.col-md-9.col-xs-12
       -#        = e.select :button_text_position , options_for_select(home_page_icons_position_option,e.object.button_text_position.present? ? e.object.button_text_position : 'Left of text'),{},{class: "form-control home-page-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Homepage button border thickness
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :homepage_button_border_thickness , options_for_select(global_navigation_border_thickness_space,e.object.homepage_button_border_thickness.present? ? e.object.homepage_button_border_thickness : '0px'),{},{class: "form-control home-page-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Homepage button border opacity
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :homepage_button_border , options_for_select(opacity_options,e.object.homepage_button_border.present? ? e.object.homepage_button_border : "100%"),{},{class: "form-control home-page-field"}
 
 
       -#.form-group
@@ -209,66 +297,7 @@
       -#      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_home_page_logo_visible"}
       -#      %span.pl-15 Yes
 
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display home page image
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = e.check_box :display_home_page_image, {class: "home-page-field"}
-            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_image"}
-            %span.pl-15 Yes
-      #home-page-image-fields.hidden            
-        .row
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Home page button image
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .select-logo.mb-20.mt-30
-                  .select-logo-logo
-                    %a.preview-image{:href=>current_community.design.expressionist.home_page_button_image.present? ? current_community.design.expressionist.home_page_button_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page button image"}
-                      = image_tag current_community.design.expressionist.home_page_button_image.present? ? current_community.design.expressionist.home_page_button_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-button-image-preview"
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15   
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %span.btn.btn-primary.btn-file.mt-30
-                  %i.fa.fa-upload
-                  Upload File
-                  = file_field_tag :home_page_button_image
-        .text-center.drag-box.mt-15.image-upload#home-page-button-image-upload-holder
-          %span.icon-upload
-            = image_tag "upload-image.png"
-            %p Drag &amp; Drop file to Upload
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display home page navigation background image
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = e.check_box :display_home_page_nav_background_image, {class: "home-page-field"}
-            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_home_page_nav_background_image"}
-            %span.pl-15 Yes
-      #home-page-background-image-fields.hidden
-        .row
-          .col-lg-10
-            .form-group.mt-30
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Home page navigation background image
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .select-logo.mb-20.mt-30
-                  .select-logo-logo
-                    %a.preview-image{:href=>current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
-                      = image_tag current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-background-image-preview"
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %span.btn.btn-primary.btn-file.mt-30
-                  %i.fa.fa-upload
-                  Upload File
-                  = file_field_tag :home_page_background_image
-        .text-center.drag-box.mt-15.image-upload#home-page-background-image-upload-holder
-          %span.icon-upload
-            = image_tag "upload-image.png"
-            %p Drag &amp; Drop file to Upload
+
 :javascript
   var display_home_page_image = "#{current_community.design.expressionist.display_home_page_image}"       
   var display_home_page_nav_background_image = "#{current_community.design.expressionist.display_home_page_nav_background_image}"       

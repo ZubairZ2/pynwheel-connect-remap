@@ -14,7 +14,6 @@ class CommunitiesController < ApplicationController
       @communities = current_user.communities
     end
   end
-
   def new
     add_breadcrumb "Add Community", new_company_community_path(current_company)
     @community = current_company.communities.new
@@ -33,7 +32,7 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
-    add_breadcrumb "Property Notes", edit_company_community_path(current_company,@community)
+    add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
     add_breadcrumb "Companies", companies_path(current_company)
@@ -80,7 +79,7 @@ class CommunitiesController < ApplicationController
         end
       else
         if @community.company_id != params[:community][:company_id].to_i
-          @community.community_group_id = nil
+          # @community.community_group_id = nil
         end
         if @community.update(community_params)
           @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
@@ -177,17 +176,17 @@ class CommunitiesController < ApplicationController
   def import
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
-    if @community.credentials_are_present?
+    if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',') 
-        redirect_to community_import_page_path(current_community)
+        redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
-      flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_import_page_path(current_community)
+      flash[:error] = "Please enter valid credentials in settings before importing data."
+      redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
 
@@ -288,17 +287,17 @@ class CommunitiesController < ApplicationController
   def update_imported_data
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
-    if @community.credentials_are_present?
+    if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_swaped and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
-        redirect_to community_import_page_path(current_community)
+        redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
       flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_import_page_path(current_community)
+      redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
 
@@ -388,6 +387,8 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
     @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
+    @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
+    @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
@@ -434,7 +435,7 @@ class CommunitiesController < ApplicationController
 
   def community_params
     params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
-      :data_provider,:theme_name,:code,:is_sitemap,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn, :self_tour, :show_gesture_icons,:is_vertical_app,
+      :data_provider,:theme_name,:code,:is_sitemap,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :show_gesture_icons,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
         :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,

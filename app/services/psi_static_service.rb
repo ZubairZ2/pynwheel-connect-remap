@@ -278,6 +278,7 @@ class PsiStaticService < BaseService
         end
         sleep 4
 
+
         if response["response"]["code"] == 200
           unless response["response"]["result"].include?('No records found')
             psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
