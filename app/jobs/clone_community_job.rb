@@ -7,6 +7,5 @@ class CloneCommunityJob < ApplicationJob
     copy_community.name = community.name + " (Copy)"
     copy_community.code = community.code.present? ? community.code + " (Copy)" : ""
     copy_community.save validate:false
-    return copy_community
   end
 end
