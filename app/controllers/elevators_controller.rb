@@ -52,7 +52,6 @@ class ElevatorsController < ApplicationController
   # PATCH/PUT /elevators/1.json
   def update
     respond_to do |format|
-      binding.pry
       if @elevator.update(elevator_params)
         format.html { redirect_back(fallback_location: community_elevators_path, notice: 'Elevator was successfully updated.') }
         format.js { render :show, status: :ok, location: @elevator }
