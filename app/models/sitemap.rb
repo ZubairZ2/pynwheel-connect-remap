@@ -21,4 +21,5 @@ class Sitemap < ApplicationRecord
       new_object.image = original_object.image
     })
   end
+  has_many :elevators, dependent: :destroy
 end

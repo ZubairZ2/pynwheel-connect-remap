@@ -22,6 +22,11 @@ $(document).ready(function(e){
         $("#imageselect2").toggle();
         e.stopPropagation();
     })
+    
+    $('body').on("click", ".elevator-imageselect", function(e){
+      $("#imageselect3").toggle();
+      e.stopPropagation();
+    })
 
   $("#multiselect li").click(function(e){
     if ($(this).hasClass("active")){

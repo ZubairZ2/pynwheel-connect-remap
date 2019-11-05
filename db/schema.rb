@@ -10,6 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+
 ActiveRecord::Schema.define(version: 20191022053513) do
 
 
@@ -129,17 +130,9 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.float    "crop_y_secondary"
     t.float    "crop_w_secondary"
     t.float    "crop_h_secondary"
+    t.integer  "alert_contact",                  default: 2
     t.integer  "community_group_id"
-    t.float    "crop_x"
-    t.float    "crop_y"
-    t.float    "crop_w"
-    t.float    "crop_h"
-    t.float    "crop_x_secondary"
-    t.float    "crop_y_secondary"
-    t.float    "crop_w_secondary"
-    t.float    "crop_h_secondary"
     t.boolean  "floorplan_name_order"
-
     t.boolean  "image_bit"
     t.boolean  "do_crop",                        default: false
     t.boolean  "do_crop_secondary",              default: false
@@ -388,6 +381,23 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.integer  "favorite_setting_id"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+  end
+
+  create_table "elevators", force: :cascade do |t|
+    t.string   "name"
+    t.string   "description"
+    t.integer  "x_plot"
+    t.integer  "y_plot"
+    t.string   "directional_text"
+    t.integer  "floorplate_id"
+    t.integer  "community_id"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.string   "image"
+    t.integer  "sitemap_id"
+    t.index ["community_id"], name: "index_elevators_on_community_id", using: :btree
+    t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id", using: :btree
+    t.index ["sitemap_id"], name: "index_elevators_on_sitemap_id", using: :btree
   end
 
   create_table "expressionists", force: :cascade do |t|
@@ -715,8 +725,6 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.string   "standard_image_url"
     t.string   "ios_image_url"
     t.string   "large_image_url"
-
-
     t.string   "video"
     t.boolean  "do_crop",            default: false
     t.string   "url"
@@ -1165,6 +1173,9 @@ ActiveRecord::Schema.define(version: 20191022053513) do
   add_foreign_key "community_users", "communities"
   add_foreign_key "community_users", "users"
   add_foreign_key "credentials", "communities"
+  add_foreign_key "elevators", "communities"
+  add_foreign_key "elevators", "floorplates"
+  add_foreign_key "elevators", "sitemaps"
   add_foreign_key "favorite_images", "favorite_settings"
   add_foreign_key "favorite_settings", "communities"
   add_foreign_key "galleries", "communities"

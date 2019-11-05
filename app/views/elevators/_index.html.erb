@@ -1,0 +1,65 @@
+<div class="text-center image-upload home-page-drag-box" id="elevator-image--upload-holder">
+  <%= image_tag "upload-image.png",:class=>"drag-image-padding-top" %>
+  <p>Drag &amp; Drop Images to Upload</p>
+</div>
+<div class="row slide-imgage-boxs">
+  <% @elevators.each do |elevator, id_tag| %>
+    <div class="col-lg-3">
+      <div class="slide-image">
+        <div class="image-box video-box">
+          <div class="images height-200">
+            <a class="preview-image" data-title="Amenity Image" data-toggle="lightbox" href="<%= elevator.image? ? elevator.image.url : asset_path("default.jpeg") %>">
+              <%= image_tag elevator.image.url %>
+            </a>
+          </div>
+        </div>
+        <div class="icons">
+          <%= link_to edit_community_amenity_path(@community,elevator), remote: true do  %>
+            <i class="fa fa-pencil" data-target="#edit-name" data-toggle="modal"></i>
+          <% end %>
+          <a class="text-danger" data-href="/communities/<%= current_community.id %>/elevators/<%= elevator.id %>" data-name="Image" data-target="#confirm-delete" data-toggle="modal" href="javascrip:;">
+            <i class="fa fa-close"></i>
+          </a>
+        </div>
+        <h4>
+          <%= elevator.name %>
+        </h4>
+      </div>
+    </div>
+  <% end %>
+</div>
+<div aria-hidden="true" aria-labelledby="myLargeModalLabel" class="modal fade bs-example-modal-lg edit-image" role="dialog" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+          <span aria-hidden="true">
+            <i class="fa fa-close"></i>
+          </span>
+        </button>
+        <div class="carousel slide" id="carousel-example-generic">
+          <!-- Wrapper for slides
+          -->
+          <div class="carousel-inner" style="height: 500px;">
+            <% @elevators.each_with_index do |elevator,index| %>
+              <div class="<%= index == 0 ? 'active' : '' %> item text-center">
+                <%= image_tag elevator.image_url %>
+                <div class="carousel-caption">
+                  image  
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <!-- Controls
+          -->
+          <a class="left carousel-control" data-slide="prev" href="#carousel-example-generic" role="button">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+          </a>
+          <a class="right carousel-control" data-slide="next" href="#carousel-example-generic" role="button">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
