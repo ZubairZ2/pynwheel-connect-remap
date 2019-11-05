@@ -1,6 +1,13 @@
 class PsiService < BaseService
   # @@floorplanHash = Hash.new
   def perform
+    begin
+      com_test = Community.find credentials.community_id
+      com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
+      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "Before call logs -"+Time.now.to_s + "-"
+      com_test.save
+    rescue => ex
+    end
 
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
@@ -11,6 +18,10 @@ class PsiService < BaseService
         else
           url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         end
+        # if com_test.id == 458
+        #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "2 "
+        #   com_test.save
+        # end
 
         password = credentials.password
         username = credentials.username
@@ -34,11 +45,20 @@ class PsiService < BaseService
           }.to_json,
           :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
-        sleep 5
+        # if com_test.id == 458
+        #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
+        #   com_test.save
+        # end
+        sleep 2
         if response["response"]["code"] == 200
           units = []
           floorplans = []
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
+            if com_test.id == 458
+              # tt = Time.now.to_s + response.to_s
+              com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3.1 "
+              com_test.save
+            end
             pro["ILS_Unit"].each do |ils|
               units << ils
             end
@@ -46,15 +66,27 @@ class PsiService < BaseService
               floorplans << f
             end
           end
+          # if com_test.id == 458
+          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "4 "
+          #   com_test.save
+          # end
           save_psi_floorplans(floorplans,property_id)
+          # if com_test.id == 458 || com_test.id == 819
+          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "5 "
+          #   com_test.save
+          # end
           save_psi_units(units,property_id)
+          # if com_test.id == 458 || com_test.id == 819
+          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "6 "
+          #   com_test.save
+          # end
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
             cred.save
           rescue => err
           end
-          save_website_column_of_community(response)
+          # save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
@@ -86,10 +118,27 @@ class PsiService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    fill_psi_pricing_details
+    begin
+      com_test = Community.find credentials.community_id
+      com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
+      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "After call logs -"+Time.now.to_s + "-  =========================="
+      com_test.save
+    rescue => ex
+    end
+    # if com_test.id == 458
+    #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "7 "
+    #   com_test.save
+    # end
+    fill_psi_pricing_details(1)
+    fill_psi_pricing_details(0)
   end
 
   def save_psi_units(units,property_id)
+    # units_in_feed = units.map{|x| x["Units"]["Unit"]["UnitType"]}
+    # units_in_feed2 = units.map{|x| x["Units"]["Unit"]["UnitType"] + "-" + x["Units"]["Unit"]["MarketingName"]}
+    # units_in_feed = units_in_feed + units_in_feed2
+    unit_record = []
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["psi"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
 
@@ -130,7 +179,9 @@ class PsiService < BaseService
         end
 
         if u["Availability"]["VacancyClass"] == "Unoccupied"
-          unit.available = true if !unit.sold
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+            unit.available = true if !unit.sold
+          end
           year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
           month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
           day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
@@ -139,11 +190,24 @@ class PsiService < BaseService
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
         end
-        unit.availability_url = u['UnitAvailabilityURL'] if u['UnitAvailabilityURL'].present?
+        unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
         # building = u["Units"]["Unit"]["BuildingName"]
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
+        unit_record << unit.provider_unit_id
         unit.save(validate: false)
       end
+    end
+
+    no_unit = unit_present - unit_record
+    if unit_record.nil?
+      no_unit = nil
+    end
+    no_unit.each do |un|
+      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit.availability = "Occupied"
+      unit.available = false
+      unit.available_date = nil
+      unit.save(validate: false) unless unit.manual_override
     end
   end
 
@@ -196,11 +260,15 @@ class PsiService < BaseService
     end
 
 
-  def fill_psi_pricing_details
+  def fill_psi_pricing_details(hit)
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
+      if hit == 1
+        move_in_dates = []
+        move_in_dates << "0"
+      end
       unless move_in_dates.present?
         move_in_dates = []
         move_in_dates << "0"
@@ -256,9 +324,10 @@ class PsiService < BaseService
                                          }
                                      }.to_json,
                                      :headers => { 'Content-Type' => 'application/json' } )
+            sleep 1
             response =  JSON.parse(response.body)
+            sleep 2
           end
-          sleep 5
 
           if response["response"]["code"] == 200
             unless response["response"]["result"].include?('No records found')
@@ -289,12 +358,14 @@ class PsiService < BaseService
                       unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                     end
 
-                    if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                      unit.availability = 'Unoccupied' if !unit.sold
-                      unit.available = true if !unit.sold
-                    else
-                      unit.availability = 'Occupied'
-                      unit.available = false
+                    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+                      if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                        unit.availability = 'Unoccupied' if !unit.sold
+                        unit.available = true if !unit.sold
+                      else
+                        unit.availability = 'Occupied'
+                        unit.available = false
+                      end
                     end
 
                     if us[1]["@attributes"]["AvailableOn"].present?
@@ -303,16 +374,20 @@ class PsiService < BaseService
                       day = dateSplit[0]
                       month = dateSplit[1]
                       year = dateSplit[2]
-                      unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+                        unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                      end
                     end
-                    if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                      unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
-                      unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
-                      unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                    elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
-                      unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
-                    else
-                      unit.effective_rent = 0.0
+
+                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                      if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                        unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                      elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
+                        unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                      else
+                        unit.effective_rent = 0.0
+                      end
+
                     end
                     rentStr = ""
                     begin
@@ -367,7 +442,7 @@ class PsiService < BaseService
                                          }.to_json,
                                          :headers => { 'Content-Type' => 'application/json' } )
                 response =  JSON.parse(response.body)
-                sleep 5
+                sleep 2
                 if response["response"]["code"] == 200
                   psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
                   psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
@@ -394,12 +469,14 @@ class PsiService < BaseService
                         unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                         end
-                        if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                          unit.availability = 'Unoccupied' if !unit.sold
-                          unit.available = true if !unit.sold
-                        else
-                          unit.availability = 'Occupied'
-                          unit.available = false
+                        unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+                          if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                            unit.availability = 'Unoccupied' if !unit.sold
+                            unit.available = true if !unit.sold
+                          else
+                            unit.availability = 'Occupied'
+                            unit.available = false
+                          end
                         end
 
                         if us[1]["@attributes"]["AvailableOn"].present?
@@ -408,16 +485,19 @@ class PsiService < BaseService
                           day = dateSplit[0]
                           month = dateSplit[1]
                           year = dateSplit[2]
-                          unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+                            unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                          end
                         end
-                        if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                          unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
-                          unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
-                          unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                        elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
-                          unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
-                        else
-                          unit.effective_rent = 0.0
+
+                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                          if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                            unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                          elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
+                            unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                          else
+                            unit.effective_rent = 0.0
+                          end
                         end
                         rentStr = ""
                         begin
@@ -505,7 +585,12 @@ class PsiService < BaseService
       moveIn_dates = []
       response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
         if dates['leaseStartDate'].present?
-          moveIn_dates << dates['leaseStartDate']
+          ss = dates['leaseStartDate'].split('/')
+          date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
+          date1 = (date1.to_date + 31).to_s
+          ss = date1.split('-')
+          added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
+          moveIn_dates << added_date
         end
       end
     rescue

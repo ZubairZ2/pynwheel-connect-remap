@@ -1,5 +1,25 @@
 Rails.application.routes.draw do
+
+  post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
+
+  get 'community_groups/index'
+
+  post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
+  post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
+  resources :schedual_tours do
+    # post :create_tour_user_from
+    # member do
+    # end
+  end
+  
   get 'tours/index'
+
+  namespace :schedular_widget do
+    get 'widget', to: 'widgets#widget'
+    get 'test_widget', to: 'widgets#test_widget'
+    get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
+    
+  end 
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
@@ -7,8 +27,18 @@ Rails.application.routes.draw do
   
   resources :companies do
     resources :communities
+    resources :community_groups
     resources :employees, :controller => 'users' do
       get :profile
+    end
+  end
+  resources :community_groups do
+    member do
+      delete :remove_community
+    end
+    collection do
+      get :add_community
+      post :save_community
     end
   end
   resources :communities do
@@ -34,6 +64,7 @@ Rails.application.routes.draw do
     get :experimental_import
     get :credentials
     get :settings_page
+    get :logs
     get :change_expressionist_default
     get :test_connection
     get :psi_pricing_test_connection
@@ -52,6 +83,12 @@ Rails.application.routes.draw do
         member do
           delete :remove_amenity
         end
+      end
+      member do
+        get :show_floorplan_image_in_modal
+        put :crop_image
+        get :show_floorplan_secondary_image_in_modal
+        put :crop_secondary_image
       end
       collection do
         post :add_description
@@ -140,6 +177,10 @@ Rails.application.routes.draw do
         get :logo
         get :secondary_logo
         get :map_marker_design
+        put :crop_logo
+        put :crop_secondary_logo
+        get :show_logo_in_modal
+        get :show_secondary_logo_in_modal
       end
     end
     resources :home_page do
@@ -248,6 +289,7 @@ Rails.application.routes.draw do
       resources :communities, only: :index do
         member do
           get :data
+          get :data_group
           get :community_tours
           post :user_saved_tour
           get :ios_data
@@ -256,6 +298,8 @@ Rails.application.routes.draw do
           get :get_neighbourhood_data
           get :reset_counter
           get :test_panzoom
+          get :unit_and_floorplan_data
+          get :update_unit_floorplan_data
         end
         collection do
           post :login
@@ -276,6 +320,10 @@ Rails.application.routes.draw do
       end
       post :save_shared_tour, to: 'tours#save_shared_tour'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
+
+      # 
+      post :save_tour_history, to: 'tour_histories#save_tour_history'
+      get :get_tour_history, to: 'tour_histories#get_tour_history'
     end
   end
 end

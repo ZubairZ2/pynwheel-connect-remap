@@ -14,6 +14,8 @@
           - if current_user.is_super_admin?
             %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
               %a{:href => "/companies"} Companies
+          %li{:class=>"#{controller_name =='community_group' ? 'active' : ''}"}
+            %a{:href => "/community_groups"} Community Group
           %li{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
             = link_to "Communities", root_path
       %li{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
@@ -30,7 +32,7 @@
           = link_to community_design_index_path(current_community) do
             %i.fa.fa-tv
             %span Design
-      - if (current_user.is_super_admin?)
+      - if (current_user.is_super_admin? || current_user.is_community_admin? )
         %li{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
           %a{:href => "#{community_settings_path(current_community)}"}
             %i.fa.fa-gears
@@ -132,10 +134,20 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
             %i.fa.fa-share
             %span Webpages
-      - if (current_user.is_super_admin?)
+      - if (current_community.self_tour)
+        %li
+          %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
+            %i.fa.fa-share
+            %span Tour Scheduler Widget
+      - if (current_community.self_tour)
         %li{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
           %a{:href => "#{community_tours_path(current_community)}"}
             %i.fa.fa-plane
             %span Tour Setup
+      - if (current_user.is_super_admin?)
+        %li{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
+          %a{:href => "#{community_logs_path(current_community)}"}
+            %i.fa.fa-history
+            %span CMS Logs
   / /.sidebar
 / End menu nav left Section 

@@ -21,6 +21,15 @@
         .box.box-widget.panel-box.add-plan.pt-30
           = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
             = hidden_field_tag "community_id", @community.id
+
+            .form-group.alert-contact
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Alert Contact
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})
+                = submit_tag 'Update', class: "btn btn-success btn-sm pull-right"
+
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Show Tour Page

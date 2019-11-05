@@ -1,0 +1,2 @@
+module SchedularWidget::WidgetHelper
+end

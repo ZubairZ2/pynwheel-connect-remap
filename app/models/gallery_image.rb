@@ -17,6 +17,9 @@
 #  standard_image_url :string
 #  ios_image_url      :string
 #  large_image_url    :string
+#  video              :string
+#  do_crop            :boolean          default(FALSE)
+#  url                :string
 #
 
 class GalleryImage < ApplicationRecord
@@ -33,7 +36,7 @@ class GalleryImage < ApplicationRecord
   after_commit :populate_image_urls, on: :create
 
 	def crop_image
-    image.recreate_versions! if crop_x.present?
+    image.recreate_versions! if (crop_x.present? && do_crop)
   end
 
   def is_video?

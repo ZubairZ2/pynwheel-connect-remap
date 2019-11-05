@@ -129,9 +129,14 @@
 #  panther_unit_floorplan_map_marker_color         :string
 #  gables_unit_floorplan_map_marker_color          :string
 #  modernist_unit_floorplan_map_marker_color       :string
+#  display_filter_label_image                      :boolean
+#  filter_label_image                              :string
+#  filter_panel_label_color                        :string
+#  filter_panel_label_opacity                      :string
 #
 
 class Design < ApplicationRecord
+	has_paper_trail
 	mount_base64_uploader :secondary_page_background_image, AvatarUploader
 	mount_base64_uploader :global_nav_button_on, AvatarUploader
 	mount_base64_uploader :global_nav_button_off, AvatarUploader

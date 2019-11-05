@@ -102,6 +102,8 @@ class Yardi4Service < BaseService
     
 
   def save_yardi4_units(ils_units,property_id)
+    unit_record = []
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,   ["yardi"]).map{|x| x.provider_unit_id}
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
       unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue])#.first_or_initialize
@@ -178,6 +180,9 @@ class Yardi4Service < BaseService
         end
         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
           unit.availability = is_available ? "Unoccupied" : "Occupied" if !unit.sold
+          if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
+            unit.availability = "Unoccupied"
+          end
         end
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
 
@@ -190,8 +195,21 @@ class Yardi4Service < BaseService
             unit.available = false
           end
         end
+        unit_record << unit.provider_unit_id
         unit.save(validate: false)
       end
+    end
+
+    no_unit = unit_present - unit_record
+    if unit_record.nil?
+      no_unit = nil
+    end
+    no_unit.each do |un|
+      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit.availability = "Occupied"
+      unit.available = false
+      unit.available_date = nil
+      unit.save(validate: false) unless unit.manual_override
     end
   end
 

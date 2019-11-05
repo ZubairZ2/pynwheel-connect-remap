@@ -24,16 +24,16 @@
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Property Map / Floorplates
-
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  = f.radio_button :is_sitemap, true
-                  = f.label :is_sitemap, "Property Map", :value => "true"
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  = f.radio_button :is_sitemap, false
-                  = f.label :is_sitemap, "Floorplates", :value => "false"
+              -#.form-group
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Property Map / Floorplates
+              -#
+              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+              -#    = f.radio_button :is_sitemap, true
+              -#    = f.label :is_sitemap, "Property Map", :value => "true"
+              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+              -#    = f.radio_button :is_sitemap, false
+              -#    = f.label :is_sitemap, "Floorplates", :value => "false"
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -74,6 +74,16 @@
                     = f.check_box :self_tour
                     %label.label-primary{:for => "community_self_tour"}
                     %span.pl-15 Yes
+              -#- if current_user.is_super_admin?
+              -#  .form-group
+              -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#      Tour Setup Visible
+              -#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#      .TriSea-technologies-Switch
+              -#        %span.pr-15 No
+              -#        = f.check_box :tour_setup_visible
+              -#        %label.label-primary{:for => "community_tour_setup_visible"}
+              -#        %span.pl-15 Yes
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

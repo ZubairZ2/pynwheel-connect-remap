@@ -55,7 +55,7 @@ class Api::V1::ToursController < ActionController::Base
   def tour_user_login
     tu = TourUser.find_by(email: params[:email])
     if tu.present?
-      render :json=> {:success=>true, :message => "User present"}
+      render :json=> {:success=>true, :message => "User present", tour_user: tu}
     else
       render :json=> {:success=>false, :message => "User not present"}
     end

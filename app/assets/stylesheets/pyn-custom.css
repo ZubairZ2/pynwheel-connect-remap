@@ -3201,3 +3201,49 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     margin-left: 56.5%;
     width: 28.25%;
 }
+.alert-contact input[type="radio"]{
+  margin: 0 10px 0 10px;
+}
+
+.tooltipImport {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltipImport .tooltiptext {
+    visibility: hidden;
+    width: 320px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+    top: -150px;
+    left: 10%;
+}
+.tooltipImport #tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -120px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.tooltipImport:hover .tooltiptext {
+    visibility: visible;
+}
+.global_navigation_heading
+{
+    padding-left: 18px;
+}
+.global_navigation_sub_heading
+{
+    padding-left: 36px;
+}

@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::Base
+  before_action :set_paper_trail_whodunnit
   before_action :authenticate_user!
   layout :layout_by_resource
   # before_action :check_community
@@ -11,7 +12,10 @@ class ApplicationController < ActionController::Base
 	  elsif controller_name =='communities' && params[:id].present?
 		  @community ||= Community.find params[:id]
 	  end  	
-  end	
+  end
+  def info_for_paper_trail
+    { community_id: (current_community.present? ? current_community.id : nil),company_id: (current_company.present? ? current_company.id : nil) }
+  end
 
   def current_company
     if params[:company_id].present?

@@ -11,20 +11,24 @@
     %script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
     %script{:async => "", :defer => "defer", :src => "https://cdn.rawgit.com/mahnunchik/markerclustererplus/master/dist/markerclusterer.min.js", :type => "text/javascript"}
     %script{:async => "", :defer => "defer", :src => "https://cdn.rawgit.com/printercu/google-maps-utility-library-v3-read-only/master/infobox/src/infobox_packed.js", :type => "text/javascript"}
-
+    %meta{:content => "no-cache, no-store, must-revalidate", "http-equiv" => "Cache-Control"}/
+    %meta{:content => "no-cache", "http-equiv" => "Pragma"}/
+    %meta{:content => "0", "http-equiv" => "Expires"}/
     %link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
-  %body.hold-transition.skin-blue.sidebar-mini{:id => "#{controller_name == "home" || controller_name == "companies" ? "no-sidemenu" : ""}"}
+  %body.hold-transition.skin-blue.sidebar-mini{:id => "#{controller_name == "home" || controller_name == "companies" || (controller_name == "community_groups" &&  params[:action] == "index") ? "no-sidemenu" : ""}"}
     .wrapper
       = render partial: "/header"
-      - unless controller_name == "home" || controller_name == "companies"
+      - unless controller_name == "home" || controller_name == "companies" || controller_name == "community_groups"
         - if (controller_name == "communities" && sidemenu_communities_actions.include?(params[:action])) &&  user_signed_in?
           = render partial: "/sidemenu_communities"
         - elsif controller_name == "users"  &&  user_signed_in?
           = render partial: "/sidemenu_communities"  
-        - elsif user_signed_in? 
+        - elsif user_signed_in?
           = render partial: "/side_menu"
       .content-wrapper
+        - if controller_name == "community_groups" && params[:action] != "index"
+          = render partial: "/sidemenu_communities"
         = render partial: "/messages"
         = render partial: "/breadcrumbs"
         = yield

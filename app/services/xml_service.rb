@@ -52,6 +52,8 @@ class XmlService < BaseService
     end
   end
   def save_xml_units(units,property_id)
+    unit_record = []
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["xml"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
       begin
@@ -102,11 +104,23 @@ class XmlService < BaseService
           # building = u["BuildingID"]
           # unit.building = building.present? ? building.gsub("Building ", "") : ""
           unit.manually_updated = false
+          unit_record << unit.provider_unit_id
           unit.save(validate: false)
 
         end
       rescue => e
       end
+    end
+    no_unit = unit_present - unit_record
+    if unit_record.nil?
+      no_unit = nil
+    end
+    no_unit.each do |un|
+      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit.availability = "Occupied"
+      unit.available = false
+      unit.available_date = nil
+      unit.save(validate: false) unless unit.manual_override
     end
   end
 

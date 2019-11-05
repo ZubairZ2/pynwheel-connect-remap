@@ -10,11 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190826133624) do
+
+ActiveRecord::Schema.define(version: 20191029093516) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-  enable_extension "pg_stat_statements"
 
   create_table "additional_images", force: :cascade do |t|
     t.string   "image"
@@ -24,6 +24,13 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
     t.index ["imagepage_id"], name: "index_additional_images_on_imagepage_id", using: :btree
+  end
+
+  create_table "alert_messages", force: :cascade do |t|
+    t.string   "message_key"
+    t.string   "message_body"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "amenities", force: :cascade do |t|
@@ -60,9 +67,10 @@ ActiveRecord::Schema.define(version: 20190826133624) do
 
   create_table "app_versions", force: :cascade do |t|
     t.string   "version"
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
     t.integer  "neighborhood_counter"
+    t.integer  "counter_limit",        default: 500
   end
 
   create_table "communities", force: :cascade do |t|
@@ -101,13 +109,48 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.string   "realpage_pricing_data"
     t.boolean  "realpage_pricing_data_uploaded", default: true
     t.boolean  "powered_by_btn",                 default: true
-    t.string   "entrata_exception_logs"
     t.boolean  "is_vertical_app",                default: false
+    t.string   "entrata_exception_logs"
     t.boolean  "show_tour_page"
     t.boolean  "display_available_date",         default: true
-    t.boolean  "show_gesture_icons"
+    t.boolean  "show_gesture_icons",             default: true
     t.boolean  "self_tour",                      default: false
+
+    t.float    "crop_x"
+    t.float    "crop_y"
+    t.float    "crop_w"
+    t.float    "crop_h"
+    t.float    "crop_x_secondary"
+    t.float    "crop_y_secondary"
+    t.float    "crop_w_secondary"
+    t.float    "crop_h_secondary"
+    t.integer  "community_group_id"
+    t.integer  "alert_contact",                  default: 2
+    t.boolean  "floorplan_name_order",           default: false
+    t.boolean  "image_bit"
+    t.boolean  "do_crop",                        default: false
+    t.boolean  "do_crop_secondary",              default: false
+    t.integer  "number_of_units"
+    t.boolean  "tour_setup_visible",             default: false
+    t.boolean  "master_community",               default: false
+    t.text     "sms_text"
+    t.text     "email_text"
+    t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
+  end
+
+  create_table "community_groups", force: :cascade do |t|
+    t.string   "name"
+    t.string   "address"
+    t.string   "code"
+    t.boolean  "page_type",  default: false
+    t.string   "page_name"
+    t.string   "logo"
+    t.boolean  "inactivate", default: true
+    t.integer  "company_id"
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+    t.index ["company_id"], name: "index_community_groups_on_company_id", using: :btree
   end
 
   create_table "community_users", force: :cascade do |t|
@@ -288,6 +331,7 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.string   "amenity_map_marker_size",                         default: "30px"
     t.string   "amenity_map_marker_color",                        default: "#ff0000"
     t.string   "modernist_map_marker_color",                      default: "no color"
+    t.string   "modernist_amenity_map_marker_color",              default: "no color"
     t.string   "modernists_amenity_map_marker_color",             default: "no color"
     t.integer  "property_map_size_integer",                       default: 30
     t.integer  "amenity_map_marker_size_integer",                 default: 30
@@ -318,6 +362,8 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.string   "panther_unit_floorplan_map_marker_color"
     t.string   "gables_unit_floorplan_map_marker_color"
     t.string   "modernist_unit_floorplan_map_marker_color"
+    t.boolean  "display_filter_label_image"
+    t.string   "filter_label_image"
   end
 
   create_table "ebrochure_menu_buttons", force: :cascade do |t|
@@ -409,13 +455,17 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.boolean  "use_gables_buttons",                               default: false
     t.string   "home_page_icons_position"
     t.string   "global_navigation_icons_position",                 default: "Above the text"
+    t.string   "filter_buttons_icons_position"
     t.boolean  "global_navigation_show_background_color",          default: true
+    t.boolean  "filter_panel_buttons_show_backround_color",        default: false
     t.string   "button_text_position"
     t.boolean  "display_global_navigation_button_color",           default: false
     t.string   "homepage_button_border_thickness"
     t.boolean  "global_navigation_home_icon",                      default: false
     t.string   "homepage_button_border"
     t.string   "global_nav_button_icon_size"
+    t.boolean  "display_neighborhood_bg_image"
+    t.string   "neighborhood_bg_image"
   end
 
   create_table "favorite_images", force: :cascade do |t|
@@ -522,6 +572,66 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.boolean  "manual_override",     default: false
   end
 
+  create_table "futurists", force: :cascade do |t|
+    t.string   "space_between_button_futurist",                   default: "10px"
+    t.string   "application_background_color_futurist",           default: "#c5c4c7"
+    t.string   "global_navigation_button_on_font_color_futurist", default: "#ffffff"
+    t.boolean  "display_button_on_bg_color_futurist",             default: false
+    t.string   "global_navigation_button_font_family_futurist",   default: "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
+    t.string   "global_navigation_button_font_size_futurist",     default: "16px"
+    t.string   "global_navigation_font_color_futurist",           default: "#C5C4C7"
+    t.string   "global_navigation_background_color_futurist",     default: "#C5C4C7"
+    t.string   "global_navigation_buttons_opacity_futurist",      default: "0%"
+    t.string   "global_nav_bg_opacity_futurist",                  default: "0%"
+    t.string   "global_nav_buttons_height_futurist",              default: "136px"
+    t.string   "global_nav_buttons_width_futurist",               default: "250px"
+    t.string   "secondary_page_menu_border_futurist",             default: "No border"
+    t.boolean  "global_nav_button_on_as_image_futurist",          default: true
+    t.boolean  "global_nav_button_off_as_image_futurist",         default: true
+    t.string   "global_nav_button_on_futurist",                   default: "global_nav_button_on.png"
+    t.string   "global_nav_button_off_futurist",                  default: "global_nav_button_off.png"
+    t.string   "global_navigation_icons_position_futurist",       default: "Right of text"
+    t.string   "filter_panel_font_style_futurist",                default: "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
+    t.string   "filter_panel_font_color_futurist",                default: "#ffffff"
+    t.string   "filter_button_font_style_futurist",               default: "Futura"
+    t.string   "filter_menu_buttons_border_futurist",             default: "No border"
+    t.string   "gallery_buttons_border_futurist",                 default: "No border"
+    t.boolean  "filter_button_as_image_futurist",                 default: true
+    t.string   "filter_button_futurist",                          default: "filetr_panel_button_bg.png"
+    t.string   "filter_panel_background_image_futurist",          default: "filter_panel_bg.png"
+    t.boolean  "display_filter_panel_icon_futurist",              default: true
+    t.string   "filter_panel_text_font_size_futurist",            default: "20px"
+    t.string   "filter_buttons_icons_position_futurist",          default: "Right of text"
+    t.string   "home_page_menu_position_futurist",                default: "Bottom"
+    t.string   "home_page_position_of_logo_futurist",             default: "Right"
+    t.string   "home_page_button_font_family_futurist",           default: "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
+    t.string   "home_page_button_font_size_futurist",             default: "28px"
+    t.string   "home_page_button_image_futurist",                 default: "home_page_button_bg.png"
+    t.string   "spacing_between_buttons_for_homepage_futurist",   default: "0px"
+    t.string   "home_page_buttons_height_futurist",               default: "200px"
+    t.string   "home_page_buttons_width_futurist",                default: "450px"
+    t.string   "home_page_buttons_opacity_futurist",              default: "0%"
+    t.boolean  "display_home_page_nav_background_futurist",       default: false
+    t.string   "home_page_icons_position_futurist",               default: "Right of text"
+    t.string   "header_bg_color_futurist",                        default: "#ffffff"
+    t.string   "header_font_color_futurist",                      default: "#565656"
+    t.string   "details_bg_color_futurist",                       default: "#7b7b7b"
+    t.string   "details_font_color_futurist",                     default: "#ffffff"
+    t.string   "available_appartments_font_color_futurist",       default: "#ffffff"
+    t.string   "available_appartments_bg_color_futurist",         default: "#3c3c3c"
+    t.string   "floor_bg_color_futurist",                         default: "#d2d2d2"
+    t.string   "unit_header_bg_color_futurist",                   default: "#ffffff"
+    t.string   "unit_header_font_color_futurist",                 default: "#565656"
+    t.string   "unit_details_font_color_futurist",                default: "#ffffff"
+    t.string   "unit_details_bg_color_futurist",                  default: "#7b7b7b"
+    t.string   "floorplan_name_bg_color_futurist",                default: "#3d3e3e"
+    t.string   "floorplan_name_font_color_futurist",              default: "#ffffff"
+    t.string   "unit_bg_color_futurist",                          default: "#d2d2d2"
+    t.integer  "design_id"
+    t.datetime "created_at",                                                                                                                                           null: false
+    t.datetime "updated_at",                                                                                                                                           null: false
+  end
+
   create_table "gables", force: :cascade do |t|
     t.boolean  "hide_tagline",                             default: true
     t.string   "appartment_button_color"
@@ -578,6 +688,10 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.string   "standard_image_url"
     t.string   "ios_image_url"
     t.string   "large_image_url"
+
+    t.string   "video"
+    t.boolean  "do_crop",            default: false
+    t.string   "url"
     t.index ["community_id"], name: "index_gallery_images_on_community_id", using: :btree
     t.index ["gallery_id"], name: "index_gallery_images_on_gallery_id", using: :btree
   end
@@ -602,8 +716,13 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.string   "video"
     t.string   "name"
     t.integer  "design_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.string   "vid_file_name"
+    t.string   "vid_content_type"
+    t.bigint   "vid_file_size"
+    t.datetime "vid_updated_at"
+    t.string   "url"
   end
 
   create_table "home_screens", force: :cascade do |t|
@@ -755,8 +874,13 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.time     "tour_time"
     t.integer  "tour_user_id"
     t.integer  "tour_id"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
+    t.integer  "community_id"
+    t.boolean  "hourly_email_sent", default: false
+    t.boolean  "daily_email_sent",  default: false
+    t.string   "user_time_zone"
+    t.integer  "day_diff"
     t.index ["tour_id"], name: "index_schedual_tours_on_tour_id", using: :btree
     t.index ["tour_user_id"], name: "index_schedual_tours_on_tour_user_id", using: :btree
   end
@@ -806,25 +930,45 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.datetime "updated_at",   null: false
   end
 
+  create_table "tour_histories", force: :cascade do |t|
+    t.datetime "arrived"
+    t.datetime "left"
+    t.boolean  "id_mismatch"
+    t.integer  "abandoned_tour_at_stop"
+    t.integer  "tour_user_id"
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+    t.datetime "lengthy_stay"
+    t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id", using: :btree
+  end
+
   create_table "tour_stops", force: :cascade do |t|
     t.integer  "tour_id"
     t.decimal  "latitude"
     t.decimal  "longitude"
     t.integer  "stop_id"
     t.string   "stop_type"
+    t.integer  "sort"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string   "name"
-    t.integer  "sort"
     t.index ["tour_id"], name: "index_tour_stops_on_tour_id", using: :btree
   end
 
   create_table "tour_users", force: :cascade do |t|
     t.string   "name"
-    t.integer  "phone_number"
     t.string   "email"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
+    t.string   "credit_card_number"
+    t.string   "card_expiry"
+    t.string   "phone_number"
+    t.string   "image"
+    t.string   "id_card"
+    t.boolean  "id_selfie_mismatch", default: true
+    t.string   "first_name"
+    t.string   "last_name"
   end
 
   create_table "tours", force: :cascade do |t|
@@ -858,7 +1002,6 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.integer  "x_plot",                            default: 0
     t.integer  "y_plot",                            default: 0
     t.integer  "floorplate_id"
-    t.integer  "lease_term",                        default: 12
     t.string   "image"
     t.integer  "floor"
     t.string   "standard_image_url"
@@ -914,10 +1057,10 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.integer  "invitations_count",             default: 0
     t.integer  "company_id"
     t.string   "company_name"
+    t.boolean  "welcome_prompt",                default: false
     t.string   "community_logs"
     t.string   "entrata_list_logs"
     t.string   "entrata_function_logs"
-    t.boolean  "welcome_prompt",                default: false
     t.boolean  "welcome_property_details_page", default: false
     t.boolean  "welcome_logo_page",             default: false
     t.boolean  "welcome_homepage_page",         default: false
@@ -936,6 +1079,18 @@ ActiveRecord::Schema.define(version: 20190826133624) do
     t.index ["invitations_count"], name: "index_users_on_invitations_count", using: :btree
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id", using: :btree
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
+  end
+
+  create_table "versions", force: :cascade do |t|
+    t.string   "item_type",    null: false
+    t.bigint   "item_id",      null: false
+    t.string   "event",        null: false
+    t.string   "whodunnit"
+    t.integer  "community_id"
+    t.integer  "company_id"
+    t.text     "object"
+    t.datetime "created_at"
+    t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id", using: :btree
   end
 
   create_table "visited_stops", force: :cascade do |t|
@@ -966,6 +1121,7 @@ ActiveRecord::Schema.define(version: 20190826133624) do
   add_foreign_key "additional_images", "imagepages"
   add_foreign_key "amenity_galleries", "amenities"
   add_foreign_key "communities", "companies"
+  add_foreign_key "community_groups", "companies"
   add_foreign_key "community_users", "communities"
   add_foreign_key "community_users", "users"
   add_foreign_key "credentials", "communities"
@@ -984,6 +1140,7 @@ ActiveRecord::Schema.define(version: 20190826133624) do
   add_foreign_key "sitemaps", "communities"
   add_foreign_key "stop_details", "tour_stops"
   add_foreign_key "stop_galleries", "tour_stops"
+  add_foreign_key "tour_histories", "tour_users"
   add_foreign_key "tour_stops", "tours"
   add_foreign_key "tours", "communities"
   add_foreign_key "visited_stops", "tour_users"
