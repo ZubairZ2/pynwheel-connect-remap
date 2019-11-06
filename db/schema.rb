@@ -997,6 +997,7 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.datetime "created_at",                         null: false
     t.datetime "updated_at",                         null: false
 
+
     t.string   "credit_card_number"
     t.string   "card_expiry"
     t.string   "phone_number"
