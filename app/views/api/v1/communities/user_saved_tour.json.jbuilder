@@ -78,7 +78,7 @@ json.tours @tours do |tour|
         end
         end
       end
-      json.amenity_gallery @unit_gallery_arr do |ag|
+      json.gallery @unit_gallery_arr do |ag|
         json.name ag.name
         json.image ag.image.url
         json.description ag.description
@@ -98,7 +98,7 @@ json.tours @tours do |tour|
         amenityGalleryArr << amen
       end
 
-      json.amenity_gallery amenityGalleryArr do |ag|
+      json.gallery amenityGalleryArr do |ag|
         json.name ag.name
         json.type "unit_stop"
         json.image ag.image.url

@@ -63,7 +63,7 @@ json.tours @tours do |tour|
           json.directional_text unit_amenity.directional_text
           if unit_amenity.amenity_galleries.count == 0
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
-            json.amenity_gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description, "directional_text" => unit_amenity.directional_text]
+            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description, "directional_text" => unit_amenity.directional_text]
           else
 
             amenityGalleryArr = []
@@ -72,7 +72,7 @@ json.tours @tours do |tour|
             unit_amenity.amenity_galleries.each do |amen|
               amenityGalleryArr << amen
             end
-            json.amenity_gallery amenityGalleryArr do |ag|
+            json.gallery amenityGalleryArr do |ag|
               json.name ag.name
               json.image ag.image.url
               json.description ag.description
@@ -88,6 +88,25 @@ json.tours @tours do |tour|
       json.stop_description elevator.description
       json.name elevator.name
       json.directional_text elevator.directional_text
+      if elevator.elevator_galleries.count == 0
+        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
+      else
+        # json.elevator_gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description]
+
+        elevatorGalleryArr = []
+        # elevator.description = nil
+        elevatorGalleryArr << elevator
+        elevator.elevator_galleries.each do |amen|
+          elevatorGalleryArr << amen
+        end
+        json.gallery elevatorGalleryArr do |ag|
+          json.name ag.name
+          json.type "unit_stop"
+          json.image ag.image.url
+          json.description ag.description
+          json.directional_text ag.directional_text
+        end
+      end
       
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
@@ -96,9 +115,9 @@ json.tours @tours do |tour|
       json.name amenity.name
       json.directional_text amenity.directional_text
       if amenity.amenity_galleries.count == 0
-        json.amenity_gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description, "directional_text" => amenity.directional_text]
+        json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description, "directional_text" => amenity.directional_text]
       else
-        # json.amenity_gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
+        # json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
 
         amenityGalleryArr = []
         # amenity.description = nil
@@ -106,7 +125,7 @@ json.tours @tours do |tour|
         amenity.amenity_galleries.each do |amen|
           amenityGalleryArr << amen
         end
-        json.amenity_gallery amenityGalleryArr do |ag|
+        json.gallery amenityGalleryArr do |ag|
           json.name ag.name
           json.type "unit_stop"
           json.image ag.image.url

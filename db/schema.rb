@@ -13,7 +13,6 @@
 
 ActiveRecord::Schema.define(version: 20191022053513) do
 
-
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -381,6 +380,14 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.integer  "favorite_setting_id"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+  end
+
+  create_table "elevator_galleries", force: :cascade do |t|
+    t.integer  "elevator_id"
+    t.string   "image"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["elevator_id"], name: "index_elevator_galleries_on_elevator_id", using: :btree
   end
 
   create_table "elevators", force: :cascade do |t|
@@ -1077,6 +1084,7 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.float    "max_effective_rent"
     t.float    "min_effective_rent"
     t.float    "avg_effective_rent"
+    t.string   "sitemap_image_url"
   end
 
   create_table "users", force: :cascade do |t|
@@ -1174,6 +1182,7 @@ ActiveRecord::Schema.define(version: 20191022053513) do
   add_foreign_key "community_users", "communities"
   add_foreign_key "community_users", "users"
   add_foreign_key "credentials", "communities"
+  add_foreign_key "elevator_galleries", "elevators"
   add_foreign_key "elevators", "communities"
   add_foreign_key "elevators", "floorplates"
   add_foreign_key "elevators", "sitemaps"
