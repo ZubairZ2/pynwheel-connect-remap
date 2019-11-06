@@ -102,6 +102,7 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
+    resources :elevators
     resources :amenities do
       resources :amenity_galleries
       collection do
@@ -113,6 +114,9 @@ Rails.application.routes.draw do
       end
     end
     resources :floorplates do
+      resources :elevators, controller: "floorplates" do
+        post :plot_elevator
+      end
       resources :amenities,controller: "floorplate_amenities" do
         post :plot_amenity
         collection do
@@ -174,6 +178,7 @@ Rails.application.routes.draw do
         get :map
         get :list_amenities
         get :plot_amenities
+        get :plot_elevators
         get :grid_overlay
         post :adjust_marker_positions
       end

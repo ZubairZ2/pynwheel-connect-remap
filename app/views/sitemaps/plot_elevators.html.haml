@@ -1,0 +1,117 @@
+-#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
+= render '/font_awesome_v5'
+- content_for :title, "Plot Elevators - Pynwheel"
+%section.is-amenity
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-map-marker
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    %h4{:style => "color: grey;"}
+      %p
+        Select elevator images to add a marker to the map. If nothing appears in the list, then there are no additional elevator images to add.
+      %p
+        Drag and drop markers to reposition them on the property map.
+      %p
+        Click "Plot Units" to switch to plot units on the map.
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Plot Property
+          %span Map Elevators
+          %i.propertyDetailName.fa.fa-question-circle
+            %span#propertyDetailNameText
+              Once you have selected an elevator image to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can click on a marker to delete it.
+          %span.hidden#active_x_plot 0
+          
+          %span.hidden#active_y_plot 0
+
+          - if @community.theme_name.include?('gables')
+            - marker_color = @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'modernist'
+            - marker_color = @community.design.modernists_amenity_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color
+          - elsif @community.theme_name == 'futurist'
+            - marker_color = @community.design.futurist_amenity_map_marker_color.present? ? @community.design.futurist_amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'expressionist'
+            - marker_color = @community.design.expressionist__amenity_map_marker_color.present? ? @community.design.expressionist__amenity_map_marker_color : "#d37474"
+          - elsif @community.theme_name == 'panther'
+            - marker_color = @community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : "#d37474"
+          - else
+            - marker_color = 'rgba(247, 0, 0, 0.61)'
+
+          - if @community.theme_name.include?('gables')
+            - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
+          - elsif @community.theme_name == 'modernist'
+            - marker_font_size = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
+          - elsif @community.theme_name == 'futurist'
+            - marker_font_size = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : 30
+          - elsif @community.theme_name == 'expressionist'
+            - marker_font_size = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
+          - elsif @community.theme_name == 'panther'
+            - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
+          - else
+            - marker_font_size = 30
+          - marker_font_size2 = marker_font_size
+          -#- marker_font_size = @community.design.amenity_map_marker_size_integer
+          -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
+          - marker_font_size = marker_font_size -5
+          - camera_font_size = marker_font_size / 2
+          - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
+          %span.hidden#marker-font-size #{marker_font_size}
+          %span.hidden#marker-color #{marker_color}
+          %span.hidden#camera-margin #{camera_margin}
+
+        .btn-btn-danger.mt-10
+          = link_to "ADD ELEVATOR IMAGES", community_elevators_path(@community), class: "btn btn-primary"
+          = link_to "PLOT UNITS <i class='propertyDetailName fa fa-question-circle'><span id='propertyDetailNameText' style='font-weight: normal'>Click on 'Plot Units' to switch from plotting amenity images to plotting units.</span></i>".html_safe, plotexp_community_sitemaps_path(@community), class: "btn btn-primary"
+          %a.btn.btn-danger{"data-name" => "sitemap's elevators plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/elevators/remove_elevators_plot"} RESET ALL PLOTS
+      / /.box-header
+      / form start
+      %form.form-horizontal
+        .box-body.map-body-top
+          .row
+            .col-lg-9#container.p-0
+              .map-block{:style=>"position: relative;"}
+                .plot-image#map
+                  = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  - @elevators.each do |elevator|
+                    - if elevator.x_plot.to_i + elevator.y_plot.to_i > 0
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => elevator.name, :id => "m_#{elevator.id}", :style => "left:#{elevator.x_plot}px; top:#{elevator.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{elevator.id}/remove_amenity"
+            .col-lg-3
+              %h5.mt-40.mb-20
+                SELECT ELEVATORS TO PLOT
+                %i.additionalPageAction.fa.fa-question-circle
+                  %span#additionalPageActionText{:style => "font-weight: normal;"}
+                    Select an elevator image to plot on the map. If nothing displays in the list, there are no elevator images left to plot.
+              .imageselect
+                .show-categories
+                  = "-- select elevator --"
+                %ul#imageselect{:style => "display: none;"}
+                  - elevator_arr = []
+                  - @elevators.each do |elevator|
+                    - if elevator.x_plot.to_i + elevator.y_plot.to_i == 0
+                      %li{"data-id" => "#{elevator.id}","data-name" => "#{elevator.name}"}
+                        %a
+                          = image_tag elevator.image.present? ? elevator.image.url : "upload-image.png"
+                          %span.ml-5
+                            = elevator.name
+                    - elevator_arr.push([elevator.id.to_s, elevator.x_plot.to_i, elevator.y_plot.to_i, true, elevator.name])
+
+              %h5.mt-40 SELECTED ELEVATORS
+              .add-plan.mt-10.mb-20
+                %ul#selected-units
+              / %button.btn.btn-success#new{:type => "button"} PLOT NOW
+              %label#newmsg Place marker for selected elevators on Map
+        #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
+          %i.icon-screenshot
+:javascript
+  var arr = #{raw elevator_arr}
+  var lmargin = 0
+  var rmargin = 0
+  var community_id = #{params[:community_id]}
+  var addmode = false;
+  var sitemap_id = #{@sitemap.id}
+  var floorplate_id_for_elevator = #{@sitemap.id}

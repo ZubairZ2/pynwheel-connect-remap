@@ -6,14 +6,23 @@ class ToursController < ApplicationController
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
 
     @amenities = @community.amenities
+    @elevators = @community.elevators
+
     @units = @community.units
+
+    # you might sometime later wonder that why this is being done like separate arrays
+    # I myself did using %w(amenity unit elevator) BUT those arrays are being used in views.
+    # Watchout
     @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
     @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
+
+    @tour_elevator_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id}
     
     @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
     @existing_stops = []
     @existing_stops << Unit.where(id: @tour_unit_array)
     @existing_stops << Amenity.where(id: @tour_amenity_array)
+    @existing_stops << Elevator.where(id: @tour_elevator_array)
 
     @existing_path_points = []
     # binding.pry
@@ -123,6 +132,9 @@ class ToursController < ApplicationController
     if stop_type == "amenity"
       st = Amenity.find tour_stop
       stName = st.name
+    elsif stop_type == "elevator"
+      st = Elevator.find tour_stop
+      stName = st.name
     else
       st = Unit.find tour_stop
       stName = st.marketing_name
@@ -148,9 +160,8 @@ class ToursController < ApplicationController
   end
 
   def draw_map_line
-    
     unless params[:map_path_for].present?
-      amenity_or_unit = Amenity.find_by_id(params[:unit_or_amenity]) || Unit.find_by_id(params[:unit_or_amenity])
+      amenity_or_unit = params[:stop_type].classify.constantize.find_by_id(params[:unit_or_amenity])
       path_name = amenity_or_unit.class.to_s == "Unit" ? amenity_or_unit.marketing_name : amenity_or_unit.name
     else
       # for starting point

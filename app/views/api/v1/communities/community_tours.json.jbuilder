@@ -14,12 +14,17 @@ json.tours @tours do |tour|
 
   json.path_points tour.path.present? ? tour.path.path_points.reorder('id ASC') : []
 
+  stops = tour.tour_stops 
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
-    json.type stop.stop_type
     json.unit_id stop.stop_id
+    if params[:testing].present?
+      if stop.stop_type == 'amenity' then json.type 'elevator' else json.type stop.stop_type end
+    else
+      json.type stop.stop_type
+    end
     if stop.stop_type == "unit"
       unit = Unit.find_by_id stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
@@ -77,6 +82,13 @@ json.tours @tours do |tour|
 
         end
       end
+    elsif stop.stop_type == "elevator"
+      elevator = Elevator.find_by_id stop.stop_id
+      json.image elevator.image.present? ? elevator.image.url : "no image"
+      json.stop_description elevator.description
+      json.name elevator.name
+      json.directional_text elevator.directional_text
+      
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
@@ -102,7 +114,6 @@ json.tours @tours do |tour|
           json.directional_text ag.directional_text
         end
       end
-
     end
     # binding.pry
     
@@ -115,11 +126,13 @@ json.tours @tours do |tour|
     end
     @existing_path_points = []
     @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-
     stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
     
     @existing_path_points.flatten!
     json.path_points @existing_path_points
+    
+
+    # binding.pry
 
     i+=1
   end

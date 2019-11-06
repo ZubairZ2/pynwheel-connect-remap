@@ -97,6 +97,7 @@ class Community < ApplicationRecord
   after_create :create_default_gallery
   after_create :create_sms_email_content
   validate :validate_page_position
+
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
   after_update :crop_image
@@ -106,6 +107,9 @@ class Community < ApplicationRecord
   # phony_normalize :phone
   # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
   # validates :phone, phony_plausible: true
+
+  has_many :elevators, dependent: :destroy
+
 
 
 

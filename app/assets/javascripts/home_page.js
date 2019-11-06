@@ -49,6 +49,20 @@ $(document).ready(function(){
   //     }
   //     $(this).val(''); 
   //   });
+  $("#elevator-images").change(function(){
+    var files = $(this).prop("files")
+    for (var i = 0; i < files.length; i++) {
+        if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+             readAmenityImageSrc(files[i],'elevator');
+      } 
+    }
+    if(files.length == 1){
+      if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+        $('#image-upload-warning').modal('show');
+      } 
+    }
+    $(this).val(''); 
+  });
 
   $("#amenity-images").change(function(){
       var files = $(this).prop("files")
@@ -133,6 +147,7 @@ $(document).ready(function(){
   imageAmenityGalleryDragNdrop()
   imageFloorplanAmenityDragNdrop()
   imageSitemapAmenityDragNdrop()
+  imageElevatorDragNdrop()
 
   $('#images-loop-type-radio').click(function(){
     if ($(this).is(':checked')){
@@ -339,6 +354,7 @@ function saveAnimation(value){
     }
 
   function AmenityImage(src,name,type){
+    debugger
     var amenityId = 0;
     if (type == "floorplate")
       var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/amenities"
@@ -348,6 +364,10 @@ function saveAnimation(value){
       var url = "/communities/"+community_id+"/units/"+unit_id+"/amenities"
     else if (type == "community")
     {amenityId = amenity_id;var url = "/communities/"+community_id+"/amenities"}
+    else if (type == "elevator"){
+      amenityId = amenity_id;
+      var url = "/communities/"+community_id+"/elevators"
+    }
     else
       var url = "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/amenities"
       $.ajax({
@@ -382,6 +402,30 @@ function saveAnimation(value){
             console.log("success");
         });
     }
+
+  function imageElevatorDragNdrop(){
+    var elevator_image_upload_holder = document.getElementById('elevator-image--upload-holder');
+    if (elevator_image_upload_holder){
+        elevator_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;
+          if (files.length > 0){
+              for (var i = 0; i < files.length; i++) {
+                if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                        readAmenityImageSrc(files[i], 'elevator');
+
+                }
+              }
+          }
+          if(files.length == 1){
+            console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+              $('#image-upload-warning').modal('show');
+            } 
+          }          
+      }
+    }
+  }
 
   function imageAmenityDragNdrop(){
     var amenity_image_upload_holder = document.getElementById('amenity-image--upload-holder');
