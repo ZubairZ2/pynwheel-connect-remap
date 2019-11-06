@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191105135842) do
+ActiveRecord::Schema.define(version: 20191106075727) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -72,9 +72,10 @@ ActiveRecord::Schema.define(version: 20191105135842) do
 
   create_table "app_versions", force: :cascade do |t|
     t.string   "version"
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
     t.integer  "neighborhood_counter"
+    t.integer  "counter_limit",        default: 500
   end
 
   create_table "communities", force: :cascade do |t|
@@ -134,6 +135,10 @@ ActiveRecord::Schema.define(version: 20191105135842) do
     t.boolean  "do_crop",                        default: false
     t.boolean  "do_crop_secondary",              default: false
     t.integer  "number_of_units"
+    t.boolean  "tour_setup_visible",             default: false
+    t.boolean  "master_community",               default: false
+    t.text     "sms_text"
+    t.text     "email_text"
     t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
@@ -372,6 +377,14 @@ ActiveRecord::Schema.define(version: 20191105135842) do
     t.integer  "favorite_setting_id"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+  end
+
+  create_table "elevator_galleries", force: :cascade do |t|
+    t.integer  "elevator_id"
+    t.string   "image"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["elevator_id"], name: "index_elevator_galleries_on_elevator_id", using: :btree
   end
 
   create_table "elevators", force: :cascade do |t|
@@ -998,6 +1011,7 @@ ActiveRecord::Schema.define(version: 20191105135842) do
     t.float    "max_effective_rent"
     t.float    "min_effective_rent"
     t.float    "avg_effective_rent"
+    t.string   "sitemap_image_url"
   end
 
   create_table "users", force: :cascade do |t|
@@ -1051,6 +1065,18 @@ ActiveRecord::Schema.define(version: 20191105135842) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
   end
 
+  create_table "versions", force: :cascade do |t|
+    t.string   "item_type",    null: false
+    t.bigint   "item_id",      null: false
+    t.string   "event",        null: false
+    t.string   "whodunnit"
+    t.integer  "community_id"
+    t.integer  "company_id"
+    t.text     "object"
+    t.datetime "created_at"
+    t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id", using: :btree
+  end
+
   create_table "visited_stops", force: :cascade do |t|
     t.integer  "tour_user_id"
     t.string   "image"
@@ -1083,6 +1109,7 @@ ActiveRecord::Schema.define(version: 20191105135842) do
   add_foreign_key "community_users", "communities"
   add_foreign_key "community_users", "users"
   add_foreign_key "credentials", "communities"
+  add_foreign_key "elevator_galleries", "elevators"
   add_foreign_key "elevators", "communities"
   add_foreign_key "elevators", "floorplates"
   add_foreign_key "elevators", "sitemaps"
