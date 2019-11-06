@@ -21,6 +21,9 @@
                 = link_to add_community_community_groups_path(@community_group),:class=>"btn btn-success pull-right mb-20" do
                   %i.fa.fa-plus-circle
                   ADD COMMUNITY
+                = link_to edit_community_group_path(@community_group),:class=>"btn btn-success pull-right mb-20 mr-10" do
+                  %i.fa.fa-plus-circle
+                  COMMUNITY GROUP DETAILS
               -#- if current_user.is_super_admin?
               -#  = link_to new_company_community_group_path(current_company),:class=>"btn btn-success pull-right mb-20" do
               -#    %i.fa.fa-plus-circle
