@@ -108,7 +108,7 @@
     <div class="row">
       <!-- Start Panel left Side
       -->
-      <div class="col-lg-6" style="margin-bottom: 10px;">
+      <div class="col-lg-4" style="margin-bottom: 10px;">
         <h5 class="mt-40 mb-20">Add Amenities</h5>
         <div class="imageselect amenity-imageselect">
           <div class="show-categories">
@@ -139,7 +139,7 @@
         <% #%label#newmsg Place marker for selected amenities on Map %>
       </div>
       <% units = @units.sort_by{|u| u.marketing_name} %>
-      <div class="col-lg-6">
+      <div class="col-lg-4">
         <h5 class="mt-40 mb-20">Add Units</h5>
         <div class="imageselect unit-imageselect">
           <div class="show-categories">
@@ -157,6 +157,30 @@
               <% end %>
               <% #- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id) %>
               <% #- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name]) %>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-4" style="margin-bottom: 10px;">
+        <h5 class="mt-40 mb-20">Add Elevators </h5>
+        <div class="imageselect elevator-imageselect">
+          <div class="show-categories">
+            <%= "- select elevator -" %>
+          </div>
+          <ul id="imageselect3" style="display: none; z-index: 999;">
+            <% elevator_arr = [] %>
+            <% @elevators.each do |elevator| %>
+              <% #- byebug %>
+              <% if !@tour_elevator_array.include?(elevator.id) && (elevator.x_plot.to_i + elevator.y_plot.to_i > 0 ) %>
+                <li data-id="<%= elevator.id.to_s+':elevator' %>" data-name="<%= elevator.name %>">
+                  <a>
+                    <%= image_tag elevator.image.present? ? elevator.image.url : "upload-image.png" %>
+                    <span class="ml-5">
+                      <%= elevator.name %>
+                    </span>
+                  </a>
+                </li>
+              <% end %>
             <% end %>
           </ul>
         </div>
