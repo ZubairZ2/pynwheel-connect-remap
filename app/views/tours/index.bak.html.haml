@@ -85,7 +85,7 @@
             - @elevators.each do |elevator|
               -#- byebug
               - if !@tour_elevator_array.include?(elevator.id) && (elevator.x_plot.to_i + elevator.y_plot.to_i > 0 )
-                %li{"data-id" => "#{elevator.id.to_s+":elevator"}","data-name" => "#{elevator.name}"}
+                %li{"data-id" => "#{elevator.id.to_s+':elevator'}","data-name" => "#{elevator.name}"}
                   %a
                     = image_tag elevator.image.present? ? elevator.image.url : "upload-image.png"
                     %span.ml-5
