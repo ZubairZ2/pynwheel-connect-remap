@@ -108,6 +108,7 @@ class Community < ApplicationRecord
       new_object.logo = original_object.logo
       new_object.secondary_logo = original_object.secondary_logo
     })
+    # exclude_association :gallery_images
   end
   def crop_image
     logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
