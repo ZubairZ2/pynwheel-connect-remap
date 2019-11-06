@@ -56,55 +56,6 @@
         </div>
       </div>
     </div>
-
-    <div class="box box-info add-plan mt-50" id="logo_header">
-      <div class="box-header">
-        <h3 class="box-title">
-          COMPOSSE TEXT/EMAILS
-          <span></span>
-        </h3>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12">
-        <div class="box box-widget panel-box add-plan pt-30">
-          <%= form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f| %>
-          <%= f.hidden_field :community_id, value: @community.id %>
-            <div class="box-body">
-              <div class="row">
-                <div class="col-lg-9 col-lg-offset-1">
-                  <div class="form-group">
-                    <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label">
-                      Sms Text
-                    </label>
-                    <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
-                      <%= f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5 %>
-                    </div>
-                  </div>       
-                </div>
-
-                <div class="col-lg-9 col-lg-offset-1">
-                  <div class="form-group">
-                    <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label">
-                      Email Text
-                    </label>
-                    <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
-                      <%= f.text_area :email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 5 %>
-                    </div>
-                  </div>       
-                </div>
-              </div>
-            </div>
-            <!-- /.box-body
-            -->
-            <div class="box-footer">
-              <%= f.submit "Save", :class=>"btn btn-success pull-right mr-10" %>
-            </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
-
     <div class="row">
       <!-- Start Panel left Side
       -->
@@ -128,15 +79,9 @@
                   </a>
                 </li>
               <% end %>
-              <% #- ts = TourStop.find_by(stop_type: "amenity",stop_id: amenity.id) %>
-              <% #- amenity_arr.push([amenity.id.to_s+":amenity", ts.present? ? ts.latitude.to_i : 0, ts.present? ? ts.longitude.to_i : 0, true, amenity.name]) %>
             <% end %>
           </ul>
         </div>
-        <% #%h5.mt-40 SELECTED IMAGES %>
-        <% #.add-plan.mt-10.mb-20 %>
-        <% # %>
-        <% #%label#newmsg Place marker for selected amenities on Map %>
       </div>
       <% units = @units.sort_by{|u| u.marketing_name} %>
       <div class="col-lg-4">
@@ -215,15 +160,20 @@
                           <% #  %i.fa.fa-eye %>
                           <% if stop.stop_type == "unit" %>
                             <% u = Unit.find stop.stop_id %>
-                            <%= link_to draw_line_path(u), id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do %>
+                            <%= link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do %>
                               <i class="fa fa-road icon_size"></i>
                             <% end %>
                             <%= link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do %>
                               <i class="fa fa-edit icon_size"></i>
                             <% end %>
+                          <% elsif stop.stop_type == "elevator" %>
+                            <% elevator = Elevator.find stop.stop_id %>
+                            <%= link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do %>
+                              <i class="fa fa-road icon_size"></i>
+                            <% end %>
                           <% else %>
                             <% amenity = Amenity.find stop.stop_id %>
-                            <%= link_to draw_line_path(amenity), id: "create_path",  class: "text-warning ml-5" do %>
+                            <%= link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do %>
                               <i class="fa fa-road icon_size"></i>
                             <% end %>
                             <%= link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do %>
@@ -286,6 +236,8 @@
                     <i class="custom-icon stops" id="stop_<%= stop.id %>" style="position: absolute; top: <%= stop.y_plot - 2 %>px; left: <%= stop.x_plot - 4 %>px; height:25px;width: 25px;border: 2px solid  #d37474;">
                       <i class="fa fa-camera-retro" style=" font-size:12px; color: #d37474; margin-top: 3px; "></i>
                     </i>
+                  <% elsif stop.class.to_s == "Elevator" %>
+                    <i class="fa fa-reorder stops" id="stop_<%= stop.id %>" style="font-size: 25px; position: absolute; top: <%= stop.y_plot - right_margin %>px; left: <%= stop.x_plot - left_margin %>px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "></i>
                   <% else %>
                     <i class="fa fa-map-marker stops" id="stop_<%= stop.id %>" style="font-size: 35px; position: absolute; top: <%= stop.y_plot - right_margin %>px; left: <%= stop.x_plot - left_margin %>px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "></i>
                   <% end %>
@@ -296,17 +248,14 @@
                   <div class="path_point" id="point_<%= point.id %>" style="position: absolute; top: <%= point.y_plot - 3 %>px; left: <%= point.x_plot - 3 %>px;" title="Drag to change, double click to remove"></div>
                 <% end %>
               </div>
-              <!-- End Panel left Side
-              -->
             </div>
           </div>
         </div>
-        <!-- /.content
-        -->
       </div>
     </form>
   </div>
 </section>
+
 
 <script>
   
