@@ -16,7 +16,6 @@ class CloneCommunityJob < ApplicationJob
     copy_community.code = (community.code.present? ? community.code + " (Copy#{(count.present? ? count : '')})" : "")
 
     copy_community.save validate:false
-    return copy_community
 
 
   end
