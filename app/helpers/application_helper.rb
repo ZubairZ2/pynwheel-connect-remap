@@ -1015,6 +1015,7 @@ module ApplicationHelper
 
       end
     rescue => ex
+      begin
       if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
         return f.object.split("name:")[1].split(" ")[0].split("'")[1]
       end
@@ -1022,7 +1023,8 @@ module ApplicationHelper
         return (Community.find f.community_id).name
       end
       return delete_logs(item_type,item_id)
-
+      rescue => ee
+      end
       # return "Not Found"
     end
   end
@@ -1107,8 +1109,11 @@ module ApplicationHelper
 
         end
       rescue => ex
+        begin
         if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
           return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
+        end
+        rescue => ee
         end
         delete_community_name(item_type,item_id)
       end
