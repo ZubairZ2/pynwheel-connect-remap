@@ -109,8 +109,8 @@ class CommunitiesController < ApplicationController
   end
   def clone_community
     @community = Community.find params[:community_id]
-    @community.clone_a_community(@community)
-    redirect_to community_design_index_path(current_community),notice: 'Community will clone within few seconds.'
+    copy = @community.clone_a_community(@community)
+    redirect_to community_design_index_path(copy),notice: 'Community will clone within few seconds.'
   end
   def check_community
     unless current_user.is_super_admin?

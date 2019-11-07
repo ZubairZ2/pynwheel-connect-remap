@@ -122,12 +122,11 @@ class Community < ApplicationRecord
   
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
   amoeba do
-    enable
     customize(lambda { |original_object,new_object|
       new_object.logo = original_object.logo
       new_object.secondary_logo = original_object.secondary_logo
     })
-    # exclude_association :gallery_images
+    include_association :design
   end
   def crop_image
     logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
@@ -192,7 +191,9 @@ class Community < ApplicationRecord
     end
   end
   def clone_a_community(community)
-    CloneCommunityJob.perform_async community
+    copy_community = CloneCommunityJob.new
+    return copy_community.perform community
+    # return CloneCommunityJob.perform_async community
   end
 
   def has_temporary_images?
