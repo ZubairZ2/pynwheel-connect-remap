@@ -156,6 +156,8 @@
                             - elevator = Elevator.find stop.stop_id
                             = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
+                            = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
+                              %i.fa.fa-edit.icon_size
 
                           - else
                             - amenity = Amenity.find stop.stop_id

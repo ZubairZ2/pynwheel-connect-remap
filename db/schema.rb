@@ -387,6 +387,7 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.string   "image"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.string   "name"
     t.index ["elevator_id"], name: "index_elevator_galleries_on_elevator_id", using: :btree
   end
 
@@ -398,10 +399,11 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.string   "directional_text"
     t.integer  "floorplate_id"
     t.integer  "community_id"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
     t.string   "image"
     t.integer  "sitemap_id"
+    t.string   "floorplate_covering_range"
     t.index ["community_id"], name: "index_elevators_on_community_id", using: :btree
     t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id", using: :btree
     t.index ["sitemap_id"], name: "index_elevators_on_sitemap_id", using: :btree

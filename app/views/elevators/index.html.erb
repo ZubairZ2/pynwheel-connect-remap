@@ -76,12 +76,8 @@
   }
 
     $(document).on("click", "#amenityAddFilesPopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        <% current_user.welcome_amenity_page = true %> 
-        <%  current_user.save %>
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
     });
-  var amenity_id = null;
-
-
+    var elevator_id = null;
 </script>

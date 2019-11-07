@@ -8,8 +8,8 @@ class ElevatorsController < ApplicationController
   # GET /elevators.json
   def index
     @community = current_community
-    @elevators = Elevator.where(community_id: current_community.id)
-    add_breadcrumb "Elevators", community_amenities_path(current_community)
+    @elevators = Elevator.where(community_id: @community.id)
+    add_breadcrumb "Elevators", community_elevators_path(current_community)
   end
 
   # GET /elevators/1
@@ -24,13 +24,19 @@ class ElevatorsController < ApplicationController
 
   # GET /elevators/1/edit
   def edit
+    @community = Community.find params[:community_id]
+    @elevator = Elevator.find_by_id(params[:id])
   end
-
+  def save_elevator_gallery
+    @community = Community.find_by_id params[:community_id]
+    @elevator = Elevator.find_by_id params[:elevator_id]
+    ElevatorGallery.create(name: params[:name],image: params[:src], elevator_id: @elevator.id)
+  end
   # POST /elevators
   # POST /elevators.json
   def create
-    if params[:amenityId].present?
-      @elevator = Elevator.find params[:amenityId]
+    if params[:elevator_id].present?
+      @elevator = Elevator.find_by_id params[:elevator_id]
       @elevator.image = params[:src]
       @elevator.save
       redirect_to edit_community_elevator_path(current_community, @elevator)
@@ -39,13 +45,13 @@ class ElevatorsController < ApplicationController
       @elevators = current_community.elevators.order(id: :desc)
     end
 
-    respond_to do |format|
-      # binding.pry
-      # format.html { redirect_to action: 'index', notice: 'Elevator was successfully created.' }
-      format.html { redirect_back(fallback_location: community_elevators_path) }
+    # respond_to do |format|
+    #   # binding.pry
+    #   # format.html { redirect_to action: 'index', notice: 'Elevator was successfully created.' }
+    #   format.html { redirect_back(fallback_location: community_elevators_path) }
 
-      format.js {render inline: "location.reload();" }
-    end
+    #   format.js {render inline: "location.reload();" }
+    # end
   end
 
   # PATCH/PUT /elevators/1
@@ -62,10 +68,19 @@ class ElevatorsController < ApplicationController
     end
   end
 
+  def destroy_elevator_gallery
+    
+  end
   # DELETE /elevators/1
   # DELETE /elevators/1.json
   def destroy
+    ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id).destroy
+    if ts.present?
+      VisitedStop.where(tour_stop_id: ts.id).destroy_all
+      ts.destroy
+    end
     @elevator.destroy
+
     respond_to do |format|
       format.html { redirect_to community_elevators_url, notice: 'Elevator was successfully destroyed.' }
       # format.html { redirect_back(fallback_location: community_elevators_path) }
