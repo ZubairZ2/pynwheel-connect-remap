@@ -8,7 +8,7 @@ class ElevatorsController < ApplicationController
   # GET /elevators.json
   def index
     @community = current_community
-    @elevators = Elevator.all
+    @elevators = Elevator.where(community_id: current_community.id)
     add_breadcrumb "Elevators", community_amenities_path(current_community)
   end
 
