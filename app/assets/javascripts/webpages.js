@@ -733,7 +733,7 @@ function select_units_according_to_filters(floorplate_units) {
 
 function set_psi_url(element) {
   //var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+$('#leasing-start-date').val();
-  var url = $(element).data('availability-url');
+    var url = $(element).data('availability-url');
   window.open(url, '_blank');
 }
 
@@ -881,7 +881,7 @@ function setModalAttributes(element) {
     $('#unitModal').find('#floorplan-image').attr('src', '/assets/default.jpeg');
   }
   //////////////////////////////////////////
-  if ($(element).data('provider') === 'psi') {
+  if ($(element).data('provider') != 'realpagesvc') {
     var website = $(element).data('website');
     // console.log(website);
     var uri = website.replace(/^https?\:\/\//, '');
