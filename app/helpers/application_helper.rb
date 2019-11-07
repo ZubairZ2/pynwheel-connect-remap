@@ -917,6 +917,7 @@ module ApplicationHelper
     end
   end
   def delete_community_name(item_type, item_id)
+    begin
     f = PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
     if f.present?
       if item_type == "Unit"
@@ -942,6 +943,9 @@ module ApplicationHelper
       if item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData"
         return (Community.find f.community_id).name
       end
+      "Not found"
+    end
+    rescue => mm
       "Not found"
     end
 
@@ -1024,7 +1028,36 @@ module ApplicationHelper
   end
   def get_community_name(item_type, item_id,f)
     if f.community_id.present?
-      return (Community.find f.community_id).name
+      begin
+      if (item_type.classify.constantize.find_by(id: item_id).nil?)
+        if item_type == "Unit"
+          return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name
+        elsif item_type == "Floorplan" || item_type == "Amenity" || item_type == "FavoriteImage"
+          (Community.find f.object.split("community_id:")[1].split(" ")[0].to_i).name
+        elsif item_type == "AdditionalImage" || item_type == "Imagepage" || item_type == "Gallery" || item_type == "GalleryImage"
+          (Community.find (f.object.split("community_id:")[1].split("'")[1].to_i)).name
+        elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
+          (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
+        elsif item_type == "HomePageImage"
+          (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[0].to_i)).community_id).name
+        elsif item_type == "Community"
+          f.object.split("name:")[1].split(" ")[0]
+        elsif item_type == "Location"
+          (Community.find (Neighborhood.find (f.object.split("neighborhood_id:")[1].split(" ")[0].to_i)).community_id).name
+        else
+          if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint" ||  item_type == "TourPath"
+            return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
+          else
+            return "Not Found"
+          end
+        end
+      else
+        return (Community.find f.community_id).name
+      end
+      rescue => ecc
+        "Not Found"
+      end
+
     else
       begin
         if (item_type.classify.constantize.find_by(id: item_id).nil?)
