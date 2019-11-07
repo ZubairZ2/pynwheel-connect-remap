@@ -30,6 +30,6 @@ class HomepageIcon < ApplicationRecord
   end
 
   def set_image_name
-  	self.name = image.file.filename
+  	self.name = image.file.filename rescue ""
   end
 end
