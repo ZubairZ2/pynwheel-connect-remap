@@ -17,7 +17,7 @@ port        ENV.fetch("PORT") { 3000 }
 environment ENV.fetch("RAILS_ENV") { Rails.env.production? ? "production" : "staging" }
 
 # SETTING WORKERS TO 1 BY INTAGLEO
-workers 2
+workers 5
 
 preload_app!
 
@@ -56,9 +56,9 @@ unless Rails.env.development?
     require 'puma_worker_killer'
 
     PumaWorkerKiller.config do |config|
-      config.ram           = Rails.env.production? ? 2500 : 500 # mb
+      config.ram           = Rails.env.production? ? 2500 : 1000 # mb
       config.frequency     = 5    # seconds
-      config.percent_usage = 0.98
+      config.percent_usage = 1.20
       config.rolling_restart_frequency = 1800 # 30 min in seconds
     end
     #PumaWorkerKiller.enable_rolling_restart(1 * 3600) # 1 hour in seconds
