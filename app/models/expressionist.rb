@@ -125,7 +125,6 @@ class Expressionist < ApplicationRecord
   belongs_to :design
 
   amoeba do
-    enable
     customize(lambda { |original_object,new_object|
       new_object.home_page_button_image = original_object.home_page_button_image
       new_object.application_background_image = original_object.application_background_image

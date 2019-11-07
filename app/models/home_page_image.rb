@@ -30,9 +30,7 @@ class HomePageImage < ApplicationRecord
   before_create :set_image_name
   after_update :crop_image
   after_commit :populate_image_urls, on: [:create,:update]
-
   amoeba do
-    enable
     customize(lambda { |original_object,new_object|
       new_object.image = original_object.image
     })

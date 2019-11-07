@@ -48,7 +48,6 @@ class Gable < ApplicationRecord
   mount_base64_uploader :additional_pages_bg_image_gables, AvatarUploader
 
   amoeba do
-    enable
     customize(lambda { |original_object,new_object|
       new_object.home_page_nav_bg_image = original_object.home_page_nav_bg_image
       new_object.global_nav_bg_image = original_object.global_nav_bg_image

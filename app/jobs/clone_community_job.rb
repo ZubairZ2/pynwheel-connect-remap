@@ -16,10 +16,12 @@ class CloneCommunityJob < ApplicationJob
     copy_community.name = community.name + " (Copy#{count.present? ? count : ""})"
     copy_community.code = (community.code.present? ? community.code + " (Copy#{(count.present? ? count : '')})" : "")
 
-    GC.start
-    sleep 5
     copy_community.save validate:false
+    sleep 20
+    copy_community.logo = community.logo
+    copy_community.secondary_logo = community.secondary_logo
 
+    copy_community.save validate:false
 
   end
     def copy(community)
