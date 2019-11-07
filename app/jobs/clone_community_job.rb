@@ -15,10 +15,13 @@ class CloneCommunityJob < ApplicationJob
     end
     copy_community.name = community.name + " (Copy#{count.present? ? count : ""})"
     copy_community.code = (community.code.present? ? community.code + " (Copy#{(count.present? ? count : '')})" : "")
+
     copy_community.save validate:false
-    copy_community.elevators.destroy_all
-    copy_community.theme_name = community.theme_name
+    copy_community.remove_logo!
+    copy_community.remove_secondary_logo!
+
     copy_community.save validate:false
+
   end
     def copy(community)
       com = community
