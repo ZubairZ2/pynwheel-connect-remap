@@ -12,6 +12,8 @@ json.community_group @communities do |co|
   else
     json.master_community false
   end
+  json.menu_button_shade @community.menu_button_shade
+
   json.community_name  @community.name
   json.community_id  @community.id
   json.data_url "/api/v1/communities/#{@community.id}/data.json"
