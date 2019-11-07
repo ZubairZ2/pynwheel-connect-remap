@@ -23,4 +23,8 @@
 
 class FilterPanel < ApplicationRecord
   belongs_to :design
+
+  amoeba do
+    enable
+  end
 end

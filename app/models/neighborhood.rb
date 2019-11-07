@@ -28,10 +28,6 @@ class Neighborhood < ApplicationRecord
   validate :validate_show_neighborhood_length
 
 
-  amoeba do
-    enable
-  end
-
   def validate_show_neighborhood_length
     if attributes['neighborhood_name'].present?
       words = attributes['neighborhood_name'].split(" ")

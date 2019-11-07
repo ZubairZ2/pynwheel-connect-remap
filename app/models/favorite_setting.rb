@@ -21,9 +21,6 @@ class FavoriteSetting < ApplicationRecord
   has_many :ebrochure_menu_buttons, dependent: :destroy
   validate :page_name_length_validate
 
-  amoeba do
-    enable
-  end
   def page_name_length_validate
     if attributes['favorite_name'].present?
       words = attributes['favorite_name'].split(" ")

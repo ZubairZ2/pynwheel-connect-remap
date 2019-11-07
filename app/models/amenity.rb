@@ -38,12 +38,6 @@ class Amenity < ApplicationRecord
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]
   # validate :image_size
-  amoeba do
-    enable
-    customize(lambda { |original_object,new_object|
-      new_object.image = original_object.image
-    })
-  end
   def image_size
     if image.size > 1.megabytes
       errors[:base] << "File can not be greater than 5MB"

@@ -15,7 +15,4 @@ class TourUser < ApplicationRecord
   has_many :tour_histories, dependent: :destroy
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 
-  amoeba do
-    enable
-  end
 end
