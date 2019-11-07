@@ -15,7 +15,6 @@ class CloneCommunityJob < ApplicationJob
     end
     copy_community.name = community.name + " (Copy#{count.present? ? count : ""})"
     copy_community.code = (community.code.present? ? community.code + " (Copy#{(count.present? ? count : '')})" : "")
-
     copy_community.save validate:false
 
 
@@ -48,7 +47,12 @@ class CloneCommunityJob < ApplicationJob
 
           d.save
         end
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
       begin
         if com.design.expressionist.present?
@@ -83,7 +87,13 @@ class CloneCommunityJob < ApplicationJob
 
           d.save
         end
+
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
       begin
         if com.design.filter_panel.present?
@@ -92,7 +102,13 @@ class CloneCommunityJob < ApplicationJob
           d.design_id = cc.design.id
           d.save
         end
+
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
       begin
         if com.design.menu.present?
@@ -101,7 +117,13 @@ class CloneCommunityJob < ApplicationJob
           d.design_id = cc.design.id
           d.save
         end
+
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
       begin
         if com.design.home_screen.present?
@@ -120,7 +142,13 @@ class CloneCommunityJob < ApplicationJob
 
           d.save
         end
+
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
 
       begin
@@ -136,7 +164,13 @@ class CloneCommunityJob < ApplicationJob
 
           d.save
         end
+
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
       begin
         if com.design.home_page_images.present?
@@ -148,7 +182,13 @@ class CloneCommunityJob < ApplicationJob
             d.save
           end
         end
+
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
       begin
         if com.design.homepage_icons.present?
@@ -161,7 +201,13 @@ class CloneCommunityJob < ApplicationJob
           end
 
         end
+
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
       begin
         if com.design.home_page_video.present?
@@ -172,7 +218,13 @@ class CloneCommunityJob < ApplicationJob
           d.design_id = cc.design.id
           d.save
         end
+
+        GC.start
+        sleep 3
       rescue => e
+
+        GC.start
+        sleep 3
       end
 
 
