@@ -6,8 +6,6 @@ connection: &connection
   pool: 5
   timeout: 5000
   min_messages: warning
-  url: postgres://lxyfovswotpbbf:b84d1b2addf0742f6963a09492ff0e8d47b1423c3b89371dfe1dd6f91d91a1e2@ec2-23-21-106-241.compute-1.amazonaws.com:5432/d5rifsn7rerlef
-
 development:
   <<: *connection
   database: pynwheel_development

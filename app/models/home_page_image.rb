@@ -33,9 +33,9 @@ class HomePageImage < ApplicationRecord
 
   amoeba do
     enable
-    customize(lambda { |original_object,new_object|
-      new_object.image = original_object.image
-    })
+    # customize(lambda { |original_object,new_object|
+    #   new_object.image = original_object.image
+    # })
   end
   def crop_image
     image.recreate_versions! if (crop_x.present? && do_crop)

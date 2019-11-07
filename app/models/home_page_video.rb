@@ -22,8 +22,8 @@ class HomePageVideo < ApplicationRecord
 	belongs_to :design
 	amoeba do
 		enable
-		customize(lambda { |original_object,new_object|
-			new_object.video = original_object.video
-		})
+		# customize(lambda { |original_object,new_object|
+		# 	new_object.video = original_object.video
+		# })
 	end
 end
