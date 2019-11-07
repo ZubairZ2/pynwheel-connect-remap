@@ -15,8 +15,8 @@ class CloneCommunityJob < ApplicationJob
     end
     copy_community.name = community.name + " (Copy#{count.present? ? count : ""})"
     copy_community.code = (community.code.present? ? community.code + " (Copy#{(count.present? ? count : '')})" : "")
-    copy_community.logo = community.logo
-    copy_community.secondary_logo = community.secondary_logo
+    copy_community.logo = nil
+    copy_community.secondary_logo = nil
     copy_community.save validate:false
 
 
