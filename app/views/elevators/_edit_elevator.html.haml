@@ -1,0 +1,14 @@
+.text-center.image-upload.home-page-drag-box#amenity-gallery-image-upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+  %p Drag &amp; Drop Images to Upload
+  .row.slide-imgage-boxs{:style => "padding-top: 55px;"}
+    - @elevator.elevator_galleries.each do |elevator_gallery_image, id_tag|
+      .col-lg-3
+        .slide-image
+          .image-box.video-box
+            .images.height-200
+              %a.preview-image{:href=>elevator_gallery_image.image? ? elevator_gallery_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Gallery Image"}
+                = image_tag elevator_gallery_image.image.url
+          
+          
+          %h4= elevator_gallery_image.name

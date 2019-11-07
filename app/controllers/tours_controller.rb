@@ -7,7 +7,6 @@ class ToursController < ApplicationController
 
     @amenities = @community.amenities
     @elevators = @community.elevators
-
     @units = @community.units
 
     # you might sometime later wonder that why this is being done like separate arrays
