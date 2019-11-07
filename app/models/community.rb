@@ -122,10 +122,6 @@ class Community < ApplicationRecord
   
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
   amoeba do
-    customize(lambda { |original_object,new_object|
-      new_object.logo = original_object.logo
-      new_object.secondary_logo = original_object.secondary_logo
-    })
     include_association :design
   end
   def crop_image
