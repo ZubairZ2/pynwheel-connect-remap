@@ -59,6 +59,10 @@ class ElevatorsController < ApplicationController
   def update
     respond_to do |format|
       if @elevator.update(elevator_params)
+        ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id)
+        if ts.present?
+          ts.update_attributes(name: @elevator.name)
+        end
         format.html { redirect_back(fallback_location: community_elevators_path, notice: 'Elevator was successfully updated.') }
         format.js { render :show, status: :ok, location: @elevator }
       else
@@ -68,13 +72,23 @@ class ElevatorsController < ApplicationController
     end
   end
 
+  def remove_elevators_plotting
+    current_community.elevators.update_all(x_plot: 0, y_plot: 0)
+    redirect_to plot_elevators_community_sitemaps_path(current_community), notice: "All plots have been deleted successfully."
+  end
+
+  def remove_elevator_plotting
+    current_community.elevators.find_by_id(params[:id]).update_attributes(x_plot: 0, y_plot: 0)
+    redirect_to plot_elevators_community_sitemaps_path(current_community), notice: "Plotting have been deleted successfully."
+  end
+
   def destroy_elevator_gallery
     
   end
   # DELETE /elevators/1
   # DELETE /elevators/1.json
   def destroy
-    ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id).destroy
+    ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id)
     if ts.present?
       VisitedStop.where(tour_stop_id: ts.id).destroy_all
       ts.destroy
