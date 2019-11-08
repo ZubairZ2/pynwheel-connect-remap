@@ -61,7 +61,11 @@ Rails.application.routes.draw do
       resources :elevator_galleries do
         post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
       end
+      member do
+        delete :remove_elevator_plotting
+      end
       collection do
+        delete :remove_elevators_plotting
         post :save_elevator_gallery
       end
     end

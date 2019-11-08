@@ -156,7 +156,6 @@
         "y_plot": dy,
      },
      function(data,status,xhr) {
-      debugger
        console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
        arr.push([data.elevator.id, data.elevator.x_plot, data.elevator.y_plot, true, data.elevator.name]);
        doDraggable();

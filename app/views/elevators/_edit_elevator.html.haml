@@ -7,7 +7,7 @@
         .slide-image
           .image-box.video-box
             .images.height-200
-              %a.preview-image{:href=>elevator_gallery_image.image? ? elevator_gallery_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Gallery Image"}
+              %a.preview-image{:href=>elevator_gallery_image.image? ? elevator_gallery_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Elevator Gallery Image"}
                 = image_tag elevator_gallery_image.image.url
           
           
