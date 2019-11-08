@@ -10,11 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-
-ActiveRecord::Schema.define(version: 20191022053513) do
+ActiveRecord::Schema.define(version: 20191108160331) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "pg_stat_statements"
 
   create_table "additional_images", force: :cascade do |t|
     t.string   "image"
@@ -114,13 +114,14 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.string   "realpage_pricing_data"
     t.boolean  "realpage_pricing_data_uploaded", default: true
     t.boolean  "powered_by_btn",                 default: true
-    t.boolean  "is_vertical_app",                default: false
     t.string   "entrata_exception_logs"
+    t.boolean  "is_vertical_app",                default: false
     t.boolean  "show_tour_page"
     t.boolean  "display_available_date",         default: true
-    t.boolean  "show_gesture_icons",             default: true
+    t.boolean  "show_gesture_icons"
     t.boolean  "self_tour",                      default: false
-
+    t.integer  "alert_contact",                  default: 2
+    t.integer  "community_group_id"
     t.float    "crop_x"
     t.float    "crop_y"
     t.float    "crop_w"
@@ -129,18 +130,16 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.float    "crop_y_secondary"
     t.float    "crop_w_secondary"
     t.float    "crop_h_secondary"
-    t.integer  "alert_contact",                  default: 2
-    t.integer  "community_group_id"
     t.boolean  "floorplan_name_order"
     t.boolean  "image_bit"
     t.boolean  "do_crop",                        default: false
     t.boolean  "do_crop_secondary",              default: false
     t.integer  "number_of_units"
-
     t.boolean  "tour_setup_visible",             default: false
     t.boolean  "master_community",               default: false
     t.text     "sms_text"
     t.text     "email_text"
+    t.string   "menu_button_shade",              default: "light"
     t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
@@ -337,7 +336,6 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.string   "amenity_map_marker_size",                         default: "30px"
     t.string   "amenity_map_marker_color",                        default: "#ff0000"
     t.string   "modernist_map_marker_color",                      default: "no color"
-    t.string   "modernist_amenity_map_marker_color",              default: "no color"
     t.string   "modernists_amenity_map_marker_color",             default: "no color"
     t.integer  "property_map_size_integer",                       default: 30
     t.integer  "amenity_map_marker_size_integer",                 default: 30
@@ -385,9 +383,11 @@ ActiveRecord::Schema.define(version: 20191022053513) do
   create_table "elevator_galleries", force: :cascade do |t|
     t.integer  "elevator_id"
     t.string   "image"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
     t.string   "name"
+    t.string   "description",      default: ""
+    t.string   "directional_text", default: ""
     t.index ["elevator_id"], name: "index_elevator_galleries_on_elevator_id", using: :btree
   end
 
@@ -490,9 +490,7 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.boolean  "use_gables_buttons",                               default: false
     t.string   "home_page_icons_position"
     t.string   "global_navigation_icons_position",                 default: "Above the text"
-    t.string   "filter_buttons_icons_position"
     t.boolean  "global_navigation_show_background_color",          default: true
-    t.boolean  "filter_panel_buttons_show_backround_color",        default: false
     t.string   "button_text_position"
     t.boolean  "display_global_navigation_button_color",           default: false
     t.string   "homepage_button_border_thickness"
@@ -618,66 +616,6 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.boolean  "manual_override",     default: false
   end
 
-  create_table "futurists", force: :cascade do |t|
-    t.string   "space_between_button_futurist",                   default: "10px"
-    t.string   "application_background_color_futurist",           default: "#c5c4c7"
-    t.string   "global_navigation_button_on_font_color_futurist", default: "#ffffff"
-    t.boolean  "display_button_on_bg_color_futurist",             default: false
-    t.string   "global_navigation_button_font_family_futurist",   default: "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
-    t.string   "global_navigation_button_font_size_futurist",     default: "16px"
-    t.string   "global_navigation_font_color_futurist",           default: "#C5C4C7"
-    t.string   "global_navigation_background_color_futurist",     default: "#C5C4C7"
-    t.string   "global_navigation_buttons_opacity_futurist",      default: "0%"
-    t.string   "global_nav_bg_opacity_futurist",                  default: "0%"
-    t.string   "global_nav_buttons_height_futurist",              default: "136px"
-    t.string   "global_nav_buttons_width_futurist",               default: "250px"
-    t.string   "secondary_page_menu_border_futurist",             default: "No border"
-    t.boolean  "global_nav_button_on_as_image_futurist",          default: true
-    t.boolean  "global_nav_button_off_as_image_futurist",         default: true
-    t.string   "global_nav_button_on_futurist",                   default: "global_nav_button_on.png"
-    t.string   "global_nav_button_off_futurist",                  default: "global_nav_button_off.png"
-    t.string   "global_navigation_icons_position_futurist",       default: "Right of text"
-    t.string   "filter_panel_font_style_futurist",                default: "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
-    t.string   "filter_panel_font_color_futurist",                default: "#ffffff"
-    t.string   "filter_button_font_style_futurist",               default: "Futura"
-    t.string   "filter_menu_buttons_border_futurist",             default: "No border"
-    t.string   "gallery_buttons_border_futurist",                 default: "No border"
-    t.boolean  "filter_button_as_image_futurist",                 default: true
-    t.string   "filter_button_futurist",                          default: "filetr_panel_button_bg.png"
-    t.string   "filter_panel_background_image_futurist",          default: "filter_panel_bg.png"
-    t.boolean  "display_filter_panel_icon_futurist",              default: true
-    t.string   "filter_panel_text_font_size_futurist",            default: "20px"
-    t.string   "filter_buttons_icons_position_futurist",          default: "Right of text"
-    t.string   "home_page_menu_position_futurist",                default: "Bottom"
-    t.string   "home_page_position_of_logo_futurist",             default: "Right"
-    t.string   "home_page_button_font_family_futurist",           default: "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"
-    t.string   "home_page_button_font_size_futurist",             default: "28px"
-    t.string   "home_page_button_image_futurist",                 default: "home_page_button_bg.png"
-    t.string   "spacing_between_buttons_for_homepage_futurist",   default: "0px"
-    t.string   "home_page_buttons_height_futurist",               default: "200px"
-    t.string   "home_page_buttons_width_futurist",                default: "450px"
-    t.string   "home_page_buttons_opacity_futurist",              default: "0%"
-    t.boolean  "display_home_page_nav_background_futurist",       default: false
-    t.string   "home_page_icons_position_futurist",               default: "Right of text"
-    t.string   "header_bg_color_futurist",                        default: "#ffffff"
-    t.string   "header_font_color_futurist",                      default: "#565656"
-    t.string   "details_bg_color_futurist",                       default: "#7b7b7b"
-    t.string   "details_font_color_futurist",                     default: "#ffffff"
-    t.string   "available_appartments_font_color_futurist",       default: "#ffffff"
-    t.string   "available_appartments_bg_color_futurist",         default: "#3c3c3c"
-    t.string   "floor_bg_color_futurist",                         default: "#d2d2d2"
-    t.string   "unit_header_bg_color_futurist",                   default: "#ffffff"
-    t.string   "unit_header_font_color_futurist",                 default: "#565656"
-    t.string   "unit_details_font_color_futurist",                default: "#ffffff"
-    t.string   "unit_details_bg_color_futurist",                  default: "#7b7b7b"
-    t.string   "floorplan_name_bg_color_futurist",                default: "#3d3e3e"
-    t.string   "floorplan_name_font_color_futurist",              default: "#ffffff"
-    t.string   "unit_bg_color_futurist",                          default: "#d2d2d2"
-    t.integer  "design_id"
-    t.datetime "created_at",                                                                                                                                           null: false
-    t.datetime "updated_at",                                                                                                                                           null: false
-  end
-
   create_table "gables", force: :cascade do |t|
     t.boolean  "hide_tagline",                             default: true
     t.string   "appartment_button_color"
@@ -736,7 +674,6 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.string   "large_image_url"
     t.string   "video"
     t.boolean  "do_crop",            default: false
-    t.string   "url"
     t.index ["community_id"], name: "index_gallery_images_on_community_id", using: :btree
     t.index ["gallery_id"], name: "index_gallery_images_on_gallery_id", using: :btree
   end
@@ -762,13 +699,8 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.string   "video"
     t.string   "name"
     t.integer  "design_id"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
-    t.string   "vid_file_name"
-    t.string   "vid_content_type"
-    t.bigint   "vid_file_size"
-    t.datetime "vid_updated_at"
-    t.string   "url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "home_screens", force: :cascade do |t|
@@ -1001,10 +933,10 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.decimal  "longitude"
     t.integer  "stop_id"
     t.string   "stop_type"
-    t.integer  "sort"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string   "name"
+    t.integer  "sort"
     t.index ["tour_id"], name: "index_tour_stops_on_tour_id", using: :btree
   end
 
@@ -1013,15 +945,11 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.string   "email"
     t.datetime "created_at",                         null: false
     t.datetime "updated_at",                         null: false
-
-
-    t.string   "credit_card_number"
     t.string   "card_expiry"
     t.string   "phone_number"
     t.string   "image"
     t.string   "id_card"
     t.boolean  "id_selfie_mismatch", default: false, null: false
-
     t.string   "first_name"
     t.string   "last_name"
   end
@@ -1057,6 +985,7 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.integer  "x_plot",                            default: 0
     t.integer  "y_plot",                            default: 0
     t.integer  "floorplate_id"
+    t.integer  "lease_term",                        default: 12
     t.string   "image"
     t.integer  "floor"
     t.string   "standard_image_url"
@@ -1116,10 +1045,10 @@ ActiveRecord::Schema.define(version: 20191022053513) do
     t.integer  "invitations_count",             default: 0
     t.integer  "company_id"
     t.string   "company_name"
-    t.boolean  "welcome_prompt",                default: false
     t.string   "community_logs"
     t.string   "entrata_list_logs"
     t.string   "entrata_function_logs"
+    t.boolean  "welcome_prompt",                default: false
     t.boolean  "welcome_property_details_page", default: false
     t.boolean  "welcome_logo_page",             default: false
     t.boolean  "welcome_homepage_page",         default: false
