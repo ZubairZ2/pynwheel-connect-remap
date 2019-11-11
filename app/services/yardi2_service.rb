@@ -48,7 +48,9 @@ class Yardi2Service < BaseService
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
           #else
@@ -57,22 +59,30 @@ class Yardi2Service < BaseService
         else
           cred1 = Credential.find credentials.id
           cred1.data_error_exp = "data_not present"
+          PaperTrail.enabled = false
           cred1.save
+          PaperTrail.enabled = true
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
         end
       rescue => e
         cred1 = Credential.find credentials.id
         cred1.data_error_exp = e
+        PaperTrail.enabled = false
         cred1.save
+        PaperTrail.enabled = true
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          PaperTrail.enabled = false
           cred.save
+          PaperTrail.enabled = true
         rescue => err
         end
         #puts '----------------------------------', e.message
