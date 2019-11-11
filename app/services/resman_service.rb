@@ -35,7 +35,9 @@ class ResmanService < BaseService
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
         else

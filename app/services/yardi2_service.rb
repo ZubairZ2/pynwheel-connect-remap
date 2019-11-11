@@ -1,8 +1,5 @@
 class Yardi2Service < BaseService
   def perform
-    cred1 = Credential.find credentials.id
-    cred1.data_error_exp = "just called"
-    cred1.save
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
