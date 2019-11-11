@@ -102,7 +102,19 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
-    resources :elevators
+    resources :elevators do
+      resources :elevator_galleries do
+        post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
+      end
+      member do
+        delete :remove_elevator_plotting
+      end
+      collection do
+        delete :remove_elevators_plotting
+        post :save_elevator_gallery
+      end
+    end
+
     resources :amenities do
       resources :amenity_galleries
       collection do

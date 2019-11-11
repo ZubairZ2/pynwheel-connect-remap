@@ -118,7 +118,7 @@ class SitemapsController < ApplicationController
   end
 
   def plot_elevators
-    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
+    add_breadcrumb "Community Elevators", community_elevators_path
     add_breadcrumb "Plot Property Map Elevators", plot_elevators_community_sitemaps_path(current_community) 
     @sitemap = @community.sitemap
     @elevators = @community.elevators

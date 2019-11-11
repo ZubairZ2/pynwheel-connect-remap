@@ -1,4 +1,4 @@
-<% content_for :title, "Amenities - Pynwheel" %>
+<% content_for :title, "Elevators - Pynwheel" %>
 <section>
   <div class="content">
     <div class="title-heading">
@@ -30,10 +30,10 @@
             <div class="mt-35">
               <!--%span.btn.btn-primary.btn-file.pull-right.mb-20
               -->
-              <span class="btn btn-success btn-file some" style="margin-right: 5px; width: 135px">
-                <i class="fa fa-plus-circle"></i>
+              <span class="btn btn-success btn-file" style="margin-right: 5px; width: 131px">
+                
                 ADD FILES
-                <input id="elevator-images" multiple="multiple" type="file">/</input>
+                <input id="elevator-images" multiple="multiple" type="file"></input>
               </span>
               <i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="amenityAddFilesPopover">
                 <span id="propertyDetailNameText">
@@ -76,12 +76,8 @@
   }
 
     $(document).on("click", "#amenityAddFilesPopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        <% current_user.welcome_amenity_page = true %> 
-        <%  current_user.save %>
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
     });
-  var amenity_id = null;
-
-
+    var elevator_id = null;
 </script>

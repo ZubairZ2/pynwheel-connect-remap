@@ -52,8 +52,8 @@ $(document).ready(function(){
   $("#elevator-images").change(function(){
     var files = $(this).prop("files")
     for (var i = 0; i < files.length; i++) {
-        if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-             readAmenityImageSrc(files[i],'elevator');
+      if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+        readElevatorImageSrc(files[i]);
       } 
     }
     if(files.length == 1){
@@ -62,6 +62,21 @@ $(document).ready(function(){
       } 
     }
     $(this).val(''); 
+  });
+
+  $("#elevator-gallery-images").change(function(){
+      var files = $(this).prop("files")
+      for (var i = 0; i < files.length; i++) {
+        if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+          readElevatorGalleryImageSrc(files[i],'community');
+        }
+      }
+      if(files.length == 1){
+        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){
+        $('#image-upload-warning').modal('show');
+        }
+      }
+      $(this).val('');
   });
 
   $("#amenity-images").change(function(){
@@ -335,6 +350,32 @@ function saveAnimation(value){
 //     }
 //   }
 // }
+  
+  function readElevatorImageSrc(file){
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      src = e.target.result
+      name= file.name
+
+      $.ajax({
+        url: "/communities/"+community_id+"/elevators",
+        type: "POST",
+        dataType: "script",
+        data: {
+            name: name,
+            src: src,
+            elevator_id: elevator_id
+        }
+      }).done(function(){
+          $(".divLoading").addClass("hidden");
+          console.log("success");
+          if (type == "community"){location.reload();}
+      });
+
+    }
+    reader.readAsDataURL(file);
+  }
 
   function readAmenityImageSrc(file,type){
     $(".divLoading").removeClass("hidden");
@@ -344,17 +385,25 @@ function saveAnimation(value){
     }
     reader.readAsDataURL(file);
   }
-    function readAmenityGalleryImageSrc(file,type){
-        $(".divLoading").removeClass("hidden");
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            AmenityGalleryImage(e.target.result,file.name,type);
-        }
-        reader.readAsDataURL(file);
+  function readAmenityGalleryImageSrc(file,type){
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        AmenityGalleryImage(e.target.result,file.name,type);
     }
+    reader.readAsDataURL(file);
+  }
+
+  function readElevatorGalleryImageSrc(file,type){
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      ElevatorGalleryImage(e.target.result,file.name,type, elevator_id);
+    }
+    reader.readAsDataURL(file);
+  }
 
   function AmenityImage(src,name,type){
-    debugger
     var amenityId = 0;
     if (type == "floorplate")
       var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/amenities"
@@ -365,64 +414,82 @@ function saveAnimation(value){
     else if (type == "community")
     {amenityId = amenity_id;var url = "/communities/"+community_id+"/amenities"}
     else if (type == "elevator"){
-      amenityId = amenity_id;
+      amenityId = elevator_id;
       var url = "/communities/"+community_id+"/elevators"
     }
     else
       var url = "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/amenities"
-      $.ajax({
-          url: url,
-          type: "POST",
-          dataType: "script",
-          data: {
-              name: name,
-              src: src,
-              amenityId: amenityId
-          }
-      }).done(function(){
-          $(".divLoading").addClass("hidden");
-          console.log("success");
-          if (type == "community"){location.reload();}
-      });
-    }
-    function AmenityGalleryImage(src,name,type){
-        var amenityId = amenity_id;
-        var url = "/communities/"+community_id+"/amenities/saveAmenityGallery";
-        $.ajax({
-            url: url,
-            type: "POST",
-            dataType: "script",
-            data: {
-                name: name,
-                src: src,
-                amenityId: amenityId
-            }
-        }).done(function(){
-            $(".divLoading").addClass("hidden");
-            console.log("success");
-        });
-    }
+    
+    $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "script",
+        data: {
+            name: name,
+            src: src,
+            amenityId: amenityId
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+        if (type == "community"){location.reload();}
+    });
+  }
+  function AmenityGalleryImage(src,name,type){
+    var amenityId = amenity_id;
+    var url = "/communities/"+community_id+"/amenities/saveAmenityGallery";
+    $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "script",
+        data: {
+            name: name,
+            src: src,
+            amenityId: amenityId
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+  }
+
+  function ElevatorGalleryImage(src,name,type, id){
+    var elevator_id = id;
+    var url = "/communities/"+community_id+"/elevators/save_elevator_gallery";
+    $.ajax({
+      url: url,
+      type: "POST",
+      dataType: "script",
+      data: {
+        name: name,
+        src: src,
+        elevator_id: elevator_id
+      }
+    }).done(function(){
+      $(".divLoading").addClass("hidden");
+      console.log("success addin elevator gallery image");
+    });
+  }
 
   function imageElevatorDragNdrop(){
     var elevator_image_upload_holder = document.getElementById('elevator-image--upload-holder');
     if (elevator_image_upload_holder){
         elevator_image_upload_holder.ondrop = function (e) {
-          e.preventDefault();
-          files = e.dataTransfer.files;
-          if (files.length > 0){
-              for (var i = 0; i < files.length; i++) {
-                if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
-                        readAmenityImageSrc(files[i], 'elevator');
-
-                }
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files.length > 0){
+            for (var i = 0; i < files.length; i++) {
+              if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                readAmenityImageSrc(files[i], 'elevator');
               }
-          }
-          if(files.length == 1){
-            console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
-            if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
-              $('#image-upload-warning').modal('show');
-            } 
-          }          
+            }
+        }
+        if(files.length == 1){
+          console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+          if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+            $('#image-upload-warning').modal('show');
+          } 
+        }          
       }
     }
   }

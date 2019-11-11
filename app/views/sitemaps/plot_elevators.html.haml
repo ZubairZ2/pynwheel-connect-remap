@@ -67,7 +67,7 @@
         .btn-btn-danger.mt-10
           = link_to "ADD ELEVATOR IMAGES", community_elevators_path(@community), class: "btn btn-primary"
           = link_to "PLOT UNITS <i class='propertyDetailName fa fa-question-circle'><span id='propertyDetailNameText' style='font-weight: normal'>Click on 'Plot Units' to switch from plotting amenity images to plotting units.</span></i>".html_safe, plotexp_community_sitemaps_path(@community), class: "btn btn-primary"
-          %a.btn.btn-danger{"data-name" => "sitemap's elevators plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/elevators/remove_elevators_plot"} RESET ALL PLOTS
+          %a.btn.btn-danger{"data-name" => "sitemap's elevators plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/elevators/remove_elevators_plotting"} RESET ALL PLOTS
       / /.box-header
       / form start
       %form.form-horizontal
@@ -77,9 +77,10 @@
               .map-block{:style=>"position: relative;"}
                 .plot-image#map
                   = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  - marker_color = '#d37474'
                   - @elevators.each do |elevator|
                     - if elevator.x_plot.to_i + elevator.y_plot.to_i > 0
-                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => elevator.name, :id => "m_#{elevator.id}", :style => "left:#{elevator.x_plot}px; top:#{elevator.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{elevator.id}/remove_amenity"
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fa fa-reorder' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => elevator.name, :id => "m_#{elevator.id}", :style => "left:#{elevator.x_plot}px; top:#{elevator.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/elevators/#{elevator.id}/remove_elevator_plotting"
             .col-lg-3
               %h5.mt-40.mb-20
                 SELECT ELEVATORS TO PLOT

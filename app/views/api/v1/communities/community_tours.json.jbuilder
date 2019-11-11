@@ -103,7 +103,7 @@ json.tours @tours do |tour|
           json.name ag.name
           json.type "unit_stop"
           json.image ag.image.url
-          json.description ag.description
+          json.description ag.description 
           json.directional_text ag.directional_text
         end
       end

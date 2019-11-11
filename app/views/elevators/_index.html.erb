@@ -14,7 +14,7 @@
           </div>
         </div>
         <div class="icons">
-          <%= link_to edit_community_amenity_path(@community,elevator), remote: true do  %>
+          <%= link_to edit_community_elevator_path(@community, elevator) do  %>
             <i class="fa fa-pencil" data-target="#edit-name" data-toggle="modal"></i>
           <% end %>
           <a class="text-danger" data-href="/communities/<%= current_community.id %>/elevators/<%= elevator.id %>" data-name="Image" data-target="#confirm-delete" data-toggle="modal" href="javascrip:;">
