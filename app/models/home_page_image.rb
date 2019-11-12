@@ -20,7 +20,7 @@
 #
 
 class HomePageImage < ApplicationRecord
-  has_paper_trail
+  has_paper_trail  on: [:create,:destroy]
   include StandardUrl
   include RailsSortable::Model
   set_sortable :sort  
