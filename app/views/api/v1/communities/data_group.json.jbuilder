@@ -7,12 +7,20 @@ json.inactivate !@community_group.inactivate
 
 json.community_group @communities do |co|
   @community = co
+  json.menu_button_shade @community.menu_button_shade
   if @community.id == @community_master.id
     json.master_community true
+    if @community.theme_name == "expressionist"
+      if @community.menu_button_shade == "dark"
+        json.menu_button_shade "light"
+      else
+        json.menu_button_shade "dark"
+      end
+    end
   else
     json.master_community false
   end
-  json.menu_button_shade @community.menu_button_shade
+  
 
   json.community_name  @community.name
   json.community_id  @community.id
