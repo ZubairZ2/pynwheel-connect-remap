@@ -27,7 +27,7 @@ json.tours @tours do |tour|
     end
     if stop.stop_type == "unit"
       unit = Unit.find_by_id stop.stop_id
-      json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
+      json.image unit.present? ? (unit.image.present? ? unit.image.url(:thumb) : (unit.floorplan.image.present? ? unit.floorplan.image.url(:thumb) : "no image") ): "no image"
       json.name  "Apartment "+unit.marketing_name
       lease_pricing = []
       if unit.lease_pricing.present?
