@@ -918,20 +918,29 @@ module ApplicationHelper
   end
   def delete_community_name(item_type, item_id)
     begin
-    f = PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
-    if f.present?
-      if item_type == "Unit"
-        return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name
-      elsif item_type == "Floorplan" || item_type == "Amenity" || item_type == "FavoriteImage"
-        (Community.find f.object.split("community_id:")[1].split(" ")[0].to_i).name
-      elsif item_type == "AdditionalImage" || item_type == "Imagepage" || item_type == "Gallery" || item_type == "GalleryImage"
-        (Community.find (f.object.split("community_id:")[1].split("'")[1].to_i)).name
-      elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
-        (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
-      elsif item_type == "Community"
-        f.object.split("name:")[1].split(" ")[0]
-      elsif item_type == "Location"
-        (Community.find (Neighborhood.find (f.object.split("neighborhood_id:")[1].split(" ")[0].to_i)).community_id).name
+
+      f = PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
+      if f.present?
+        if item_type == "Unit"
+          return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name
+        elsif item_type == "Floorplan" || item_type == "Amenity" || item_type == "FavoriteImage"
+          (Community.find f.object.split("community_id:")[1].split(" ")[0].to_i).name
+        elsif item_type == "AdditionalImage" || item_type == "Imagepage" || item_type == "Gallery" || item_type == "GalleryImage"
+          (Community.find (f.object.split("community_id:")[1].split("'")[1].to_i)).name
+        elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
+          (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
+        elsif item_type == "Community"
+          f.object.split("name:")[1].split(" ")[0]
+        elsif item_type == "Location"
+          (Community.find (Neighborhood.find (f.object.split("neighborhood_id:")[1].split(" ")[0].to_i)).community_id).name
+
+        else
+          if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint" ||  item_type == "TourPath"
+            return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
+          else
+            return "Not Found"
+          end
+        end
       else
         if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint" ||  item_type == "TourPath"
           return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
@@ -948,11 +957,12 @@ module ApplicationHelper
     rescue => mm
       "Not found"
     end
+    rescue => mm
+      "Not found"
+    end
 
 
 
-
-  end
 
 
 
@@ -1025,6 +1035,7 @@ module ApplicationHelper
       return delete_logs(item_type,item_id)
       rescue => ee
       end
+
       # return "Not Found"
     end
   end
@@ -1056,6 +1067,7 @@ module ApplicationHelper
       else
         return (Community.find f.community_id).name
       end
+
       rescue => ecc
         "Not Found"
       end
@@ -1114,11 +1126,14 @@ module ApplicationHelper
           return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
         end
         rescue => ee
+
+        end
+        rescue => ee
         end
         delete_community_name(item_type,item_id)
       end
-    end
-
   end
 
-end
+
+
+
