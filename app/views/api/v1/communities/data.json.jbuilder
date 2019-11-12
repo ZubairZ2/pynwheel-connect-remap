@@ -1286,7 +1286,7 @@ json.apartments do
   json.display_floorplan_gallery @community.display_floorplan_gallery
   json.display_available_date @community.display_available_date
   if @community.sitemap.present? and !@community.has_floorplates?
-    image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
+    image_url = @community.sitemap.image.url.present? ? @community.sitemap.image.url : @community.sitemap.image.url
     begin
       json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
     rescue
