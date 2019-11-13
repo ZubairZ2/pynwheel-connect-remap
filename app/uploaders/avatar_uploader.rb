@@ -45,7 +45,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
     # process :crop
     resize_to_fit(200, 200)
   end
-
+  resize_to_fit(500, 500)
   def timestamp
     var = :"@#{mounted_as}_timestamp"
     model.instance_variable_get(var) or model.instance_variable_set(var, Time.now.to_i)
