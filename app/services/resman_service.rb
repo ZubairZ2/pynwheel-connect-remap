@@ -35,14 +35,18 @@ class ResmanService < BaseService
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
         else
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
           puts '-----------------------------' , response["response"]["error"]["message"]
@@ -52,7 +56,9 @@ class ResmanService < BaseService
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          PaperTrail.enabled = false
           cred.save
+          PaperTrail.enabled = true
         rescue => err
         end
         puts '----------------------------' , e.message

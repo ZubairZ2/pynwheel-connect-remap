@@ -5,7 +5,9 @@ class PsiService < BaseService
       com_test = Community.find credentials.community_id
       com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
       com_test.entrata_exception_logs = com_test.entrata_exception_logs + "Before call logs -"+Time.now.to_s + "-"
+      PaperTrail.enabled = false
       com_test.save
+      PaperTrail.enabled = true
     rescue => ex
     end
 
@@ -54,11 +56,6 @@ class PsiService < BaseService
           units = []
           floorplans = []
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
-            if com_test.id == 458
-              # tt = Time.now.to_s + response.to_s
-              com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3.1 "
-              com_test.save
-            end
             pro["ILS_Unit"].each do |ils|
               units << ils
             end
@@ -83,7 +80,9 @@ class PsiService < BaseService
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
           # save_website_column_of_community(response)
@@ -94,7 +93,9 @@ class PsiService < BaseService
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
         end
@@ -102,7 +103,9 @@ class PsiService < BaseService
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          PaperTrail.enabled = false
           cred.save
+          PaperTrail.enabled = true
         rescue => err
         end
         begin
@@ -111,7 +114,9 @@ class PsiService < BaseService
             com.entrata_exception_logs = ""
           end
           com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||MITS|||||||| " + com.id.to_s + "--- "+ e.message
+          PaperTrail.enabled = false
           com.save
+          PaperTrail.enabled = true
         rescue => p
         end
         puts '----------------------------' , e.message
@@ -122,7 +127,9 @@ class PsiService < BaseService
       com_test = Community.find credentials.community_id
       com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
       com_test.entrata_exception_logs = com_test.entrata_exception_logs + "After call logs -"+Time.now.to_s + "-  =========================="
+      PaperTrail.enabled = false
       com_test.save
+      PaperTrail.enabled = true
     rescue => ex
     end
     # if com_test.id == 458
@@ -533,7 +540,9 @@ class PsiService < BaseService
                     com.entrata_exception_logs = ""
                   end
                   com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
+                  PaperTrail.enabled = false
                   com.save
+                  PaperTrail.enabled = true
                 rescue => r
                 end
                 puts '-------------- filling pricing --------------' , e.message
@@ -551,7 +560,9 @@ class PsiService < BaseService
               com.entrata_exception_logs = ""
             end
             com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
+            PaperTrail.enabled = false
             com.save
+            PaperTrail.enabled = true
           rescue => r
           end
           puts '-------------- filling pricing --------------' , e.message
@@ -606,7 +617,7 @@ class PsiService < BaseService
 
   def save_website_column_of_community(response)
     community = Community.find credentials.community_id
-    community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
+    # community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
   end
 
 

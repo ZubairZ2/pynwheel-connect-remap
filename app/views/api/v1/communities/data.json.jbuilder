@@ -1286,7 +1286,7 @@ json.apartments do
   json.display_floorplan_gallery @community.display_floorplan_gallery
   json.display_available_date @community.display_available_date
   if @community.sitemap.present? and !@community.has_floorplates?
-    image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
+    image_url = @community.sitemap.image.url.present? ? @community.sitemap.image.url : @community.sitemap.image.url
     begin
       json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
     rescue
@@ -1318,6 +1318,9 @@ json.apartments do
       units_floorplans << floorplan
       json.marketing_name unit.unit_market
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
+      json.min_rent unit.min_effective_rent.present? ? unit.min_effective_rent : 0
+      json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
+      json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : 0
       json.availability unit.availability
       json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
       json.available unit.available

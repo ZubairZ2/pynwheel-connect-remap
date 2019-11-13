@@ -182,6 +182,7 @@ class Api::V1::ToursController < ActionController::Base
           floorplate_image = floorplate.image.url if floorplate.present?
           u.sitemap_image_url = floorplate_image
         end
+        u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
       end
       success = true
       message = 'success'

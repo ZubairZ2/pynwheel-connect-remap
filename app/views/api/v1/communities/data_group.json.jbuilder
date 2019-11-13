@@ -7,12 +7,20 @@ json.inactivate !@community_group.inactivate
 
 json.community_group @communities do |co|
   @community = co
+  json.menu_button_shade @community.menu_button_shade
   if @community.id == @community_master.id
     json.master_community true
+    if @community.theme_name == "expressionist"
+      if @community.menu_button_shade == "dark"
+        json.menu_button_shade "light"
+      else
+        json.menu_button_shade "dark"
+      end
+    end
   else
     json.master_community false
   end
-  json.menu_button_shade @community.menu_button_shade
+  
 
   json.community_name  @community.name
   json.community_id  @community.id
@@ -1324,6 +1332,9 @@ json.community_group @communities do |co|
         units_floorplans << floorplan
         json.marketing_name unit.unit_market
         json.rent unit.effective_rent.present? ? unit.effective_rent : 0
+        json.min_rent unit.min_effective_rent.present? ? unit.min_effective_rent : 0
+        json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
+        json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : 0
         json.availability unit.availability
         json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
         json.available unit.available

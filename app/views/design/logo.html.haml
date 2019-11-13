@@ -22,6 +22,7 @@
             / Start L>ogo Upload section
             #home.tab-pane.fade.active.in{:role => "tabpanel"}
               = render 'logo'
+
 - unless @community.theme_name == "modernist"
   %section.is-home-page
     .content
@@ -40,7 +41,7 @@
               / Start L>ogo Upload section
               #home.tab-pane.fade.active.in{:role => "tabpanel"}
                 = render 'secondary_logo'
-                
+
 #crop-image.modal.fade.edit-image
 #crop-secondary-logo.modal.fade.edit-image
 :javascript
