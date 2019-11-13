@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191107181758) do
+ActiveRecord::Schema.define(version: 20191113064747) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -139,6 +139,7 @@ ActiveRecord::Schema.define(version: 20191107181758) do
     t.boolean  "master_community",               default: false
     t.text     "sms_text"
     t.text     "email_text"
+    t.string   "menu_button_shade",              default: "light"
     t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
@@ -382,9 +383,11 @@ ActiveRecord::Schema.define(version: 20191107181758) do
   create_table "elevator_galleries", force: :cascade do |t|
     t.integer  "elevator_id"
     t.string   "image"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
     t.string   "name"
+    t.string   "description",      default: ""
+    t.string   "directional_text", default: ""
     t.index ["elevator_id"], name: "index_elevator_galleries_on_elevator_id", using: :btree
   end
 
@@ -401,6 +404,7 @@ ActiveRecord::Schema.define(version: 20191107181758) do
     t.string   "image"
     t.integer  "sitemap_id"
     t.string   "floorplate_covering_range"
+    t.integer  "duplicate_of"
     t.index ["community_id"], name: "index_elevators_on_community_id", using: :btree
     t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id", using: :btree
     t.index ["sitemap_id"], name: "index_elevators_on_sitemap_id", using: :btree
@@ -942,7 +946,6 @@ ActiveRecord::Schema.define(version: 20191107181758) do
     t.string   "email"
     t.datetime "created_at",                         null: false
     t.datetime "updated_at",                         null: false
-    t.string   "credit_card_number"
     t.string   "card_expiry"
     t.string   "phone_number"
     t.string   "image"

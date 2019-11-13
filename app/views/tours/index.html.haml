@@ -33,7 +33,7 @@
             = submit_tag 'Save', class: "hidden"
     .row
       / Start Panel left Side
-      .col-lg-4{:style => "margin-bottom: 10px;"}
+      .col-lg-6{:style => "margin-bottom: 10px;"}
         %h5.mt-40.mb-20 Add Amenities
         .imageselect.amenity-imageselect
           .show-categories
@@ -50,7 +50,7 @@
                       = amenity.name
               
       - units = @units.sort_by{|u| u.marketing_name}
-      .col-lg-4
+      .col-lg-6
         %h5.mt-40.mb-20 Add Units
         .imageselect.unit-imageselect
           .show-categories
@@ -66,21 +66,21 @@
               -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
               -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
 
-      .col-lg-4{:style => "margin-bottom: 10px;"}
-        %h5.mt-40.mb-20 Add Elevators 
-        .imageselect.elevator-imageselect
-          .show-categories
-            = "- select elevator -"
-          %ul#imageselect3{:style => "display: none; z-index: 999;"}
-            - elevator_arr = []
-            - @elevators.each do |elevator|
+      -#.col-lg-4{:style => "margin-bottom: 10px;"}
+      -#  %h5.mt-40.mb-20 Add Elevators 
+      -#  .imageselect.elevator-imageselect
+      -#    .show-categories
+      -#     = "- select elevator -"
+      -#    %ul#imageselect3{:style => "display: none; z-index: 999;"}
+      -#      - elevator_arr = []
+      -#      - @elevators.each do |elevator|
               -#- byebug
-              - if !@tour_elevator_array.include?(elevator.id) && (elevator.x_plot.to_i + elevator.y_plot.to_i > 0 )
-                %li{"data-id" => "#{elevator.id.to_s+":elevator"}","data-name" => "#{elevator.name}"}
-                  %a
-                    = image_tag elevator.image.present? ? elevator.image.url : "upload-image.png"
-                    %span.ml-5
-                      = elevator.name
+      -#        - if !@tour_elevator_array.include?(elevator.id) && (elevator.x_plot.to_i + elevator.y_plot.to_i > 0 )
+      -#         %li{"data-id" => "#{elevator.id.to_s+":elevator"}","data-name" => "#{elevator.name}"}
+      -#           %a
+      -#             = image_tag elevator.image.present? ? elevator.image.url : "upload-image.png"
+      -#             %span.ml-5
+      -#               = elevator.name
 
       .col-lg-12.col-md-12
         
@@ -134,14 +134,17 @@
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
 
         .row
-          .col-md-6
-            = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
-              %i.fa.fa-plus-circle
-              ADD STARTING POINT
-          .col-md-6
-            = link_to draw_line_path(@tours.id), class: "btn btn-success mb-20 pull-right", id: "start-point-path" do
-              %i.fa.fa-plus-circle
-              ADD PATH FOR STARTING POINT
+          .col-md-12
+            .btn-group{"aria-label" => "Basic example", role: "group"}
+              = link_to starting_point_community_tours_path(@community), class: "btn btn-primary mb-20" do
+                %i.fa.fa-plus-circle
+                ADD STARTING POINT
+              = link_to create_elevator_path(@tours.id, params[:community_id]), class: "btn btn-primary mb-20", id: "add-elevator-path" do
+                %i.fa.fa-plus-circle
+                ADD ELEVATOR
+              = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
+                %i.fa.fa-plus-circle
+                ADD PATH FOR STARTING POINT
 
           
 
@@ -415,10 +418,39 @@
             scrollTop: $(".plot-image").offset().top
           }, 500);
         }
-
       });
       event.preventDefault();
     });
+
+    $("#add-elevator-path").on("click", function(event){
+      $.ajax({
+        type: "POST",
+        url: this.href,
+        data: $(this).serialize(),
+        success: function(response) {
+          actions = ''
+          stop_id = "TourStop_"+ response.path.id
+          row_sequence_number = parseInt($('.tour_sortable_disabled tr:last td:first').html())+1
+
+          elevator_stop = '<tr id=' + stop_id + '>'
+          elevator_stop += '<td>'+row_sequence_number+'</td>'
+          elevator_stop += '<td>'+response.path.name+'</td>'
+
+          $('.tour_sortable_disabled').append(elevator_stop);
+          window.location.reload()
+          debugger
+          //update drawing path for so we can use that path id to save point
+          //$("#drawing_path_for").val(response.path.id)
+          // $('.stops').removeClass('animate-element')
+          // $('#stop_'+response.path.map_path_id).addClass('animate-element')
+          // $('html, body').animate({
+          //   scrollTop: $(".plot-image").offset().top
+          // }, 500);
+        }
+      });
+      event.preventDefault();
+    });
+
 
     function getElementProperty(el){
       var dx = 0;

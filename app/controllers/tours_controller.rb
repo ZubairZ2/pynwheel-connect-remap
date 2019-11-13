@@ -169,6 +169,21 @@ class ToursController < ApplicationController
     render json: {path: path}, status: 200
   end
 
+  def add_elevator
+    
+    last_elev = Elevator.last if Elevator.count > 0
+
+    last_elevator_id = last_elev.present? ? last_elev.id : 0
+    elev_name = "Elevator#{last_elevator_id}"
+    elev_desc = "Elevator#{last_elevator_id}"
+    floorplate_range = "0-#{current_community.floorplates.count}"
+    
+    # binding.pry
+    elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 30, floorplate_covering_range: floorplate_range)
+    tour_stop = TourStop.create tour_id: params[:tour_id], stop_id: elevator.id, stop_type: 'elevator', name: elevator.name
+    render json: {path: tour_stop}, status: 200
+  end
+
   def point_save
     path_point = PathPoint.create x_plot: params[:x_plot], y_plot: params[:y_plot], path_id: params[:path_id]
     

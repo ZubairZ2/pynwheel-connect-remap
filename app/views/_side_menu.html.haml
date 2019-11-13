@@ -72,10 +72,6 @@
               = link_to community_amenities_path(current_community)  do
                 %i.fa.fa-plus-square
                 %span Amenity Images
-            %li{:class=>"#{controller_name =='elevators'? 'active' : ''}"}
-              = link_to community_elevators_path(current_community)  do
-                %i.fa.fa-plus-square
-                %span Elevators
           - if (current_user.is_super_admin? || current_user.is_community_admin? )
             %li{:class=>"#{controller_name =='floorplans' || controller_name =='floorplan_amenities' ? 'active' : ''}"}
               %a{:href => "#{community_floorplans_path(current_community)}"}
