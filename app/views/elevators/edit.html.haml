@@ -65,7 +65,7 @@
       .select-logo.center-img.mb-20.mt-30.logo-upload-bg
         .select-logo-logo.logo-container.logo-upload-container
           %a.preview-image{:href=>@elevator.image.present? ? @elevator.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-            = image_tag @elevator.image.present? ? @elevator.image.url : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"preview-image"
+            = image_tag @elevator.image.present? ? @elevator.image.url : "elev2.png",:height=>"100%",:width=>"100%",:id=>"preview-image"
     //////////////////////// Amenity Gallery
     .box.box-info.add-plan
 

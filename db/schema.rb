@@ -10,6 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+
 ActiveRecord::Schema.define(version: 20191108160331) do
 
   # These are extensions that must be enabled in order to support this database
@@ -404,6 +405,7 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "image"
     t.integer  "sitemap_id"
     t.string   "floorplate_covering_range"
+    t.integer  "duplicate_of"
     t.index ["community_id"], name: "index_elevators_on_community_id", using: :btree
     t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id", using: :btree
     t.index ["sitemap_id"], name: "index_elevators_on_sitemap_id", using: :btree
