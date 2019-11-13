@@ -63,6 +63,7 @@ class HomePageController < ApplicationController
       @home_page_image.do_crop = false
     end
     @home_page_image.update(home_page_image_params)
+    PaperTrail::Version.create(item_type: "HomePageImage",item_id: @home_page_image.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@home_page_image.name} community_id: #{@home_page_image.design.community_id}")
     flash[:notice] = "Image is edited successfully."
     redirect_back(fallback_location: root_path)
   end

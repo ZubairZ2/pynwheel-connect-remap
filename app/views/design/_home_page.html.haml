@@ -11,7 +11,7 @@
           Home Page Options
     %br
     = d.fields_for :expressionist do |e|
-      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #1e8ece;"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #89c765;"}
         Logo options
 
       .row.global_navigation_sub_heading
@@ -32,7 +32,7 @@
       %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #1e8ece;"}
         Home Page Navigation Options
       %br
-      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #1e8ece;"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #89c765;"}
         Home Page Navigation Background
       .form-group.global_navigation_sub_heading
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -106,9 +106,9 @@
           %span.icon-upload
             = image_tag "upload-image.png"
             %p Drag &amp; Drop file to Upload
-      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #1e8ece;"}
-        Home Page Navigation Button Options
       %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+        Home Page Navigation Button Options
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #9a5aa6;"}
         Button Shape
       .row.global_navigation_sub_heading
         .col-lg-10
@@ -170,7 +170,7 @@
           %span.icon-upload
             = image_tag "upload-image.png"
             %p Drag &amp; Drop file to Upload
-      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #9a5aa6;"}
         Button Color
       .row.global_navigation_sub_heading
         .col-lg-10
@@ -189,7 +189,7 @@
               Home page buttons opacity
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :home_page_buttons_opacity , options_for_select(opacity_options,d.object.home_page_buttons_opacity.present? ? d.object.home_page_buttons_opacity : "100%"),{},{class: "form-control home-page-field"}
-      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #9a5aa6;"}
         Button Border
       .row.global_navigation_sub_heading
         .col-lg-10
@@ -223,7 +223,7 @@
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :homepage_button_border_thickness , options_for_select(global_navigation_border_thickness_space,e.object.homepage_button_border_thickness.present? ? e.object.homepage_button_border_thickness : '0px'),{},{class: "form-control home-page-field"}
 
-      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #9a5aa6;"}
         Button Icon
       .form-group.global_navigation_sub_heading
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -241,7 +241,7 @@
               Home page icons position
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :home_page_icons_position , options_for_select(home_page_icons_position_option,e.object.home_page_icons_position.present? ? e.object.home_page_icons_position : 'Above of text'),{},{class: "form-control home-page-field homepage_icons_position"}
-      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #89c765;"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #9a5aa6;"}
         Button Font
 
       .row.global_navigation_sub_heading
