@@ -172,7 +172,7 @@ class Api::V1::ToursController < ActionController::Base
   def floorplan_units
     if params[:unit_id].present?
       unit = Unit.find_by_id(params[:unit_id])
-      @units = Unit.where(floorplan_id: unit.floorplan_id) if unit.present?
+      @units = Unit.where(floorplan_id: unit.floorplan_id,community_id: unit.community_id) if unit.present?
       @units.each do |u|
         if u.community.is_sitemap?
           u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
