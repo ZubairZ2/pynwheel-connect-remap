@@ -130,6 +130,6 @@ class ElevatorsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def elevator_params
-      params.require(:elevator).permit(:name, :description, :x_plot, :y_plot, :directional_text, :floorplate_id, :community_id, :image)
+      params.require(:elevator).permit(:name, :description, :x_plot, :y_plot, :directional_text, :floorplate_id, :community_id, :image, :floorplate_covering_range)
     end
 end

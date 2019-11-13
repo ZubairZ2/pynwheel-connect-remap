@@ -252,6 +252,7 @@ Rails.application.routes.draw do
   end
   post '/draw_map_line/:unit_or_amenity', to: 'tours#draw_map_line', as: :draw_line
   post '/add_elevator/:tour_id/:community_id', to: 'tours#add_elevator', as: :create_elevator
+  post '/update_elevator', to: 'tours#update_elevator', as: :update_elevator
   
   post :save_path_point, to: 'tours#point_save'
   post :update_path_point, to: 'tours#point_update'
