@@ -61,17 +61,17 @@
           %span.hidden#active_x_plot 0
 
           %span.hidden#active_y_plot 0
-          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "plotUnitOnSitemapPopover","data-content" => " "}
+          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "plotUnitOnFloorplatePopover","data-content" => " "}
             %span#propertyDetailNameText
               Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.
 
 
 
         .btn-btn-danger.mt-10
-          = link_to "ADD AMENITY IMAGES  <i class='propertyDetailName fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe, community_amenities_path(@community), class: "btn btn-primary"
+          = link_to "ADD AMENITY IMAGES  <i class='propertyDetailName fa fa-question-circle' data-toggle='floorplateManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe, community_amenities_path(@community), class: "btn btn-primary"
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"}
             Grid Overlay
-            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapGridOverlayPopover","data-content" => " "}
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateGridOverlayPopover","data-content" => " "}
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
           - if current_user.is_super_admin?
@@ -101,7 +101,7 @@
             .col-lg-3.multi-select-units.select-units-on-page
               %h5.mt-40.mb-20
                 SELECT UNITS TO PLOT
-                %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "sitemapSelectPlotToUnitsPopover","data-content" => " "}
+                %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "floorplateSelectPlotToUnitsPopover","data-content" => " "}
                   %span#additionalPageActionText{:style => "font-weight: normal;"}
                     You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
 
@@ -189,3 +189,49 @@
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
   var addmode = false;
+
+  if (#{current_user.welcome_floorplate_plot_page})
+    {
+      $('[data-toggle="plotUnitOnFloorplatePopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#propertyDetailNameId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplateManageAmenitiesPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding"  style="color: black;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#siteShowPropertyMapPagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplateGridOverlayPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 200 });
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="floorplateSelectPlotToUnitsPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+      showHideOverlayGrid();
+    });
+    $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_floorplate_plot_page = false}
+        #{current_user.save}
+    });
+
+
