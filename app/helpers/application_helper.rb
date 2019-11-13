@@ -1,17 +1,17 @@
 module ApplicationHelper
-  
-  def sidemenu_communities_actions 
+
+  def sidemenu_communities_actions
     ["index","new","create","update"]
   end
-  
+
   def flash_class(level)
     case level
     when 'notice' then "alert alert-success"
     when 'error' then "alert alert-danger"
-    when 'alert' then "alert alert-danger"  
+    when 'alert' then "alert alert-danger"
     end
   end
-  
+
   def gables_theme_options
     ["gables_organic","gables_refined","gables_energetic","gables_natural","gables_custom"]
   end
@@ -19,310 +19,310 @@ module ApplicationHelper
   def font_families
     options_with_style = []
     families = [
-      "Abadi MT Condensed",
-      "Minion Web",
-      "Agency FB",
-      "Aharoni",
-      "Aldhabi",
-      "Algerian",
-      "Almanac MT",
-      "American Uncial",
-      "Andale Mono",
-      "Andalus",
-      "Andy",
-      "AngsanaUPC",
-      "Angsana New",
-      "Aparajita",
-      "Arabic Transparent",
-      "Arabic Typesetting",
-      "Arial",
-      "Arial Black",
-      "Arial Narrow",
-      "Arial Narrow Special",
-      "Arial Rounded MT",
-      "Arial Special",
-      "Arial Unicode MS",
-      "Augsburger Initials",
-      "Baskerville Old Face",
-      "Batang",
-      "BatangChe",
-      "Bauhaus 93",
-      "Beesknees ITC",
-      "Bell MT",
-      "Berlin Sans FB",
-      "Bernard MT Condensed",
-      "Bickley Script",
-      "Blackadder ITC",
-      "Bodoni MT",
-      "Bodoni MT Condensed",
-      "Bon Apetit MT",
-      "Bookman Old Style",
-      "Bookshelf Symbol",
-      "Book Antiqua",
-      "Bradley Hand ITC",
-      "Braggadocio",
-      'BriemScript',
-      "Britannic Bold",
-      'Britannic Bold',
-      'Broadway',
-      "BrowalliaUPC",
-      "Browallia New",
-      "Brush Script MT",
-      "Calibri",
-      "Californian FB",
-      "Calisto MT",
-      "Cambria",
-      "Cambria Math",
-      "Candara",
-      "Cariadings",
-      "Castellar",
-      "Centaur",
-      "Century",
-      "Century Gothic",
-      "Century Schoolbook",
-      "Chiller",
-      "Colonna MT",
-      "Comic Sans MS",
-      "Consolas",
-      "Constantia",
-      "Contemporary Brush",
-      "Cooper Black",
-      "Copperplate Gothic",
-      "Corbel",
-      "CordiaUPC",
-      "Cordia New",
-      "Courier New",
-      "Curlz MT",
-      "DaunPenh",
-      "David",
-      "Desdemona",
-      "DFKai-SB",
-      "DilleniaUPC",
-      "Directions MT",
-      "DokChampa",
-      "Dotum",
-      "DotumChe",
-      "Ebrima",
-      "Eckmann",
-      "Edda",
-      "Edwardian Script ITC",
-      "Elephant",
-      "Engravers MT",
-      "Enviro",
-      "Eras ITC",
-      "Estrangelo Edessa",
-      "EucrosiaUPC",
-      "Euphemia",
-      "Eurostile",
-      "FangSong",
-      "Felix Titling",
-      "Fine Hand",
-      "Fixed Miriam Transparent",
-      "Flexure",
-      "Footlight MT",
-      "Forte",
-      "Franklin Gothic",
-      "Franklin Gothic Medium",
-      "FrankRuehl",
-      "FreesiaUPC",
-      "Freestyle Script",
-      "French Script MT",
-      "Futura",
-      "Gabriola",
-      "Gadugi",
-      "Garamond",
-      "Garamond MT",
-      "Gautami",
-      "Georgia",
-      "Georgia Ref",
-      "Gigi",
-      "Gill Sans MT",
-      "Gill Sans MT Condensed",
-      "Gisha",
-      "Gloucester",
-      "Goudy Old Style",
-      "Goudy Stout",
-      "Gradl",
-      "Gulim",
-      "GulimChe",
-      "Gungsuh",
-      "GungsuhChe",
-      "Haettenschweiler",
-      "Harlow Solid Italic",
-      "Harrington",
-      "High Tower Text",
-      "Holidays MT",
-      "Impact",
-      "Imprint MT Shadow",
-      "Informal Roman",
-      "IrisUPC",
-      "Iskoola Pota",
-      "JasmineUPC",
-      "Jokerman",
-      "Juice ITC",
-      "KaiTi",
-      "Kalinga",
-      "Kartika",
-      "Keystrokes MT",
-      "Khmer UI",
-      "Kino MT",
-      "KodchiangUPC",
-      "Kokila",
-      "Kristen ITC",
-      "Kunstler Script",
-      "Lao UI",
-      "Latha",
-      "LCD",
-      "Leelawadee",
-      "Levenim MT",
-      "LilyUPC",
-      "Lucida Blackletter",
-      "Lucida Bright",
-      "Lucida Bright Math",
-      "Lucida Calligraphy",
-      "Lucida Console",
-      "Lucida Fax",
-      "Lucida Handwriting",
-      "Lucida Sans",
-      "Lucida Sans Typewriter",
-      "Lucida Sans Unicode",
-      "Magneto",
-      "Maiandra GD",
-      "Malgun Gothic",
-      "Mangal",
-      "Map Symbols",
-      "Marlett",
-      "Matisse ITC",
-      "Matura MT Script Capitals",
-      "McZee",
-      "Mead Bold",
-      "Meiryo",
-      "Meiryo UI",
-      "Mercurius Script MT Bold",
-      "Microsoft Himalaya",
-      "Microsoft JhengHei",
-      "Microsoft JhengHei UI",
-      "Microsoft New Tai Lue",
-      "Microsoft PhagsPa",
-      "Microsoft Sans Serif",
-      "Microsoft Tai Le",
-      "Microsoft Uighur",
-      "Microsoft YaHei",
-      "Microsoft YaHei UI",
-      "Microsoft Yi Baiti",
-      "MingLiU-ExtB",
-      "PMingLiU",
-      "MingLiU_HKSCS-ExtB",
-      "MingLiU_HKSCS",
-      "Minion Web",
-      "Miriam",
-      "Miriam Fixed",
-      "Mistral",
-      "Modern No. 20",
-      "Mongolian Baiti",
-      "Monotype.com",
-      "Monotype Corsiva",
-      "Monotype Sorts",
-      "MoolBoran",
-      "MS Gothic",
-      "MS LineDraw",
-      "MS Mincho",
-      "MS Outlook",
-      "MS PGothic",
-      "MS PMincho",
-      "MS Reference",
-      "MS UI Gothic",
-      "MT Extra",
-      "MV Boli",
-      "Myanmar Text",
-      "Narkisim",
-      "News Gothic MT",
-      "New Caledonia",
-      "Niagara",
-      "Nirmala UI",
-      "NSimSun",
-      "Nyala",
-      "OCR-B-Digits",
-      "OCRB",
-      "OCR A Extended",
-      "Old English Text MT",
-      "Onyx",
-      "Palace Script MT",
-      "Palatino Linotype",
-      "Papyrus",
-      "Parade",
-      "Parchment",
-      "Parties MT",
-      "Peignot Medium",
-      "Pepita MT",
-      "Perpetua",
-      "Perpetua Titling MT",
-      "Placard Condensed",
-      "Plantagenet Cherokee",
-      "Playbill",
-      "PMingLiU-ExtB",
-      "PMingLiU-ExtB",
-      "Poor Richard",
-      "Pristina",
-      "Raavi",
-      "Rage Italic",
-      "Ransom",
-      "Ravie",
-      "RefSpecialty",
-      "Rockwell",
-      "Rockwell Condensed",
-      "Rockwell Extra Bold",
-      "Rod",
-      "Runic MT Condensed",
-      "Sakkal Majalla",
-      "Script MT Bold",
-      "Segoe Chess",
-      "Segoe Print",
-      "Segoe Pseudo",
-      "Segoe Script",
-      "Segoe UI",
-      "Segoe UI Symbol",
-      "Shonar Bangla",
-      "Showcard Gothic",
-      "Shruti",
-      "Signs MT",
-      "SimHei",
-      "Simplified Arabic Fixed",
-      "SimSun-ExtB",
-      "Snap ITC",
-      "Sports MT",
-      "Stencil",
-      "Stop",
-      "Sylfaen",
-      "Symbol",
-      "Tahoma",
-      "Tempo Grunge",
-      "Tempus Sans ITC",
-      "Temp Installer Font",
-      "Times New Roman",
-      "Times New Roman Special",
-      "Traditional Arabic",
-      "Transport MT",
-      "Trebuchet MS",
-      "Tunga",
-      "Tw Cen MT",
-      "Tw Cen MT Condensed",
-      "Urdu Typesetting",
-      "Utsaah",
-      "Vacation MT",
-      "Vani",
-      "Verdana",
-      "Verdana Ref",
-      "Vijaya",
-      "Viner Hand ITC",
-      "Vivaldi",
-      "Vixar ASCI",
-      "Vladimir Script",
-      "Vrinda",
-      "Webdings",
-      "Westminster",
-      "Wide Latin",
-      "Wingdings"]
+        "Abadi MT Condensed",
+        "Minion Web",
+        "Agency FB",
+        "Aharoni",
+        "Aldhabi",
+        "Algerian",
+        "Almanac MT",
+        "American Uncial",
+        "Andale Mono",
+        "Andalus",
+        "Andy",
+        "AngsanaUPC",
+        "Angsana New",
+        "Aparajita",
+        "Arabic Transparent",
+        "Arabic Typesetting",
+        "Arial",
+        "Arial Black",
+        "Arial Narrow",
+        "Arial Narrow Special",
+        "Arial Rounded MT",
+        "Arial Special",
+        "Arial Unicode MS",
+        "Augsburger Initials",
+        "Baskerville Old Face",
+        "Batang",
+        "BatangChe",
+        "Bauhaus 93",
+        "Beesknees ITC",
+        "Bell MT",
+        "Berlin Sans FB",
+        "Bernard MT Condensed",
+        "Bickley Script",
+        "Blackadder ITC",
+        "Bodoni MT",
+        "Bodoni MT Condensed",
+        "Bon Apetit MT",
+        "Bookman Old Style",
+        "Bookshelf Symbol",
+        "Book Antiqua",
+        "Bradley Hand ITC",
+        "Braggadocio",
+        'BriemScript',
+        "Britannic Bold",
+        'Britannic Bold',
+        'Broadway',
+        "BrowalliaUPC",
+        "Browallia New",
+        "Brush Script MT",
+        "Calibri",
+        "Californian FB",
+        "Calisto MT",
+        "Cambria",
+        "Cambria Math",
+        "Candara",
+        "Cariadings",
+        "Castellar",
+        "Centaur",
+        "Century",
+        "Century Gothic",
+        "Century Schoolbook",
+        "Chiller",
+        "Colonna MT",
+        "Comic Sans MS",
+        "Consolas",
+        "Constantia",
+        "Contemporary Brush",
+        "Cooper Black",
+        "Copperplate Gothic",
+        "Corbel",
+        "CordiaUPC",
+        "Cordia New",
+        "Courier New",
+        "Curlz MT",
+        "DaunPenh",
+        "David",
+        "Desdemona",
+        "DFKai-SB",
+        "DilleniaUPC",
+        "Directions MT",
+        "DokChampa",
+        "Dotum",
+        "DotumChe",
+        "Ebrima",
+        "Eckmann",
+        "Edda",
+        "Edwardian Script ITC",
+        "Elephant",
+        "Engravers MT",
+        "Enviro",
+        "Eras ITC",
+        "Estrangelo Edessa",
+        "EucrosiaUPC",
+        "Euphemia",
+        "Eurostile",
+        "FangSong",
+        "Felix Titling",
+        "Fine Hand",
+        "Fixed Miriam Transparent",
+        "Flexure",
+        "Footlight MT",
+        "Forte",
+        "Franklin Gothic",
+        "Franklin Gothic Medium",
+        "FrankRuehl",
+        "FreesiaUPC",
+        "Freestyle Script",
+        "French Script MT",
+        "Futura",
+        "Gabriola",
+        "Gadugi",
+        "Garamond",
+        "Garamond MT",
+        "Gautami",
+        "Georgia",
+        "Georgia Ref",
+        "Gigi",
+        "Gill Sans MT",
+        "Gill Sans MT Condensed",
+        "Gisha",
+        "Gloucester",
+        "Goudy Old Style",
+        "Goudy Stout",
+        "Gradl",
+        "Gulim",
+        "GulimChe",
+        "Gungsuh",
+        "GungsuhChe",
+        "Haettenschweiler",
+        "Harlow Solid Italic",
+        "Harrington",
+        "High Tower Text",
+        "Holidays MT",
+        "Impact",
+        "Imprint MT Shadow",
+        "Informal Roman",
+        "IrisUPC",
+        "Iskoola Pota",
+        "JasmineUPC",
+        "Jokerman",
+        "Juice ITC",
+        "KaiTi",
+        "Kalinga",
+        "Kartika",
+        "Keystrokes MT",
+        "Khmer UI",
+        "Kino MT",
+        "KodchiangUPC",
+        "Kokila",
+        "Kristen ITC",
+        "Kunstler Script",
+        "Lao UI",
+        "Latha",
+        "LCD",
+        "Leelawadee",
+        "Levenim MT",
+        "LilyUPC",
+        "Lucida Blackletter",
+        "Lucida Bright",
+        "Lucida Bright Math",
+        "Lucida Calligraphy",
+        "Lucida Console",
+        "Lucida Fax",
+        "Lucida Handwriting",
+        "Lucida Sans",
+        "Lucida Sans Typewriter",
+        "Lucida Sans Unicode",
+        "Magneto",
+        "Maiandra GD",
+        "Malgun Gothic",
+        "Mangal",
+        "Map Symbols",
+        "Marlett",
+        "Matisse ITC",
+        "Matura MT Script Capitals",
+        "McZee",
+        "Mead Bold",
+        "Meiryo",
+        "Meiryo UI",
+        "Mercurius Script MT Bold",
+        "Microsoft Himalaya",
+        "Microsoft JhengHei",
+        "Microsoft JhengHei UI",
+        "Microsoft New Tai Lue",
+        "Microsoft PhagsPa",
+        "Microsoft Sans Serif",
+        "Microsoft Tai Le",
+        "Microsoft Uighur",
+        "Microsoft YaHei",
+        "Microsoft YaHei UI",
+        "Microsoft Yi Baiti",
+        "MingLiU-ExtB",
+        "PMingLiU",
+        "MingLiU_HKSCS-ExtB",
+        "MingLiU_HKSCS",
+        "Minion Web",
+        "Miriam",
+        "Miriam Fixed",
+        "Mistral",
+        "Modern No. 20",
+        "Mongolian Baiti",
+        "Monotype.com",
+        "Monotype Corsiva",
+        "Monotype Sorts",
+        "MoolBoran",
+        "MS Gothic",
+        "MS LineDraw",
+        "MS Mincho",
+        "MS Outlook",
+        "MS PGothic",
+        "MS PMincho",
+        "MS Reference",
+        "MS UI Gothic",
+        "MT Extra",
+        "MV Boli",
+        "Myanmar Text",
+        "Narkisim",
+        "News Gothic MT",
+        "New Caledonia",
+        "Niagara",
+        "Nirmala UI",
+        "NSimSun",
+        "Nyala",
+        "OCR-B-Digits",
+        "OCRB",
+        "OCR A Extended",
+        "Old English Text MT",
+        "Onyx",
+        "Palace Script MT",
+        "Palatino Linotype",
+        "Papyrus",
+        "Parade",
+        "Parchment",
+        "Parties MT",
+        "Peignot Medium",
+        "Pepita MT",
+        "Perpetua",
+        "Perpetua Titling MT",
+        "Placard Condensed",
+        "Plantagenet Cherokee",
+        "Playbill",
+        "PMingLiU-ExtB",
+        "PMingLiU-ExtB",
+        "Poor Richard",
+        "Pristina",
+        "Raavi",
+        "Rage Italic",
+        "Ransom",
+        "Ravie",
+        "RefSpecialty",
+        "Rockwell",
+        "Rockwell Condensed",
+        "Rockwell Extra Bold",
+        "Rod",
+        "Runic MT Condensed",
+        "Sakkal Majalla",
+        "Script MT Bold",
+        "Segoe Chess",
+        "Segoe Print",
+        "Segoe Pseudo",
+        "Segoe Script",
+        "Segoe UI",
+        "Segoe UI Symbol",
+        "Shonar Bangla",
+        "Showcard Gothic",
+        "Shruti",
+        "Signs MT",
+        "SimHei",
+        "Simplified Arabic Fixed",
+        "SimSun-ExtB",
+        "Snap ITC",
+        "Sports MT",
+        "Stencil",
+        "Stop",
+        "Sylfaen",
+        "Symbol",
+        "Tahoma",
+        "Tempo Grunge",
+        "Tempus Sans ITC",
+        "Temp Installer Font",
+        "Times New Roman",
+        "Times New Roman Special",
+        "Traditional Arabic",
+        "Transport MT",
+        "Trebuchet MS",
+        "Tunga",
+        "Tw Cen MT",
+        "Tw Cen MT Condensed",
+        "Urdu Typesetting",
+        "Utsaah",
+        "Vacation MT",
+        "Vani",
+        "Verdana",
+        "Verdana Ref",
+        "Vijaya",
+        "Viner Hand ITC",
+        "Vivaldi",
+        "Vixar ASCI",
+        "Vladimir Script",
+        "Vrinda",
+        "Webdings",
+        "Westminster",
+        "Wide Latin",
+        "Wingdings"]
 
     f_families = [["Abadi MT Condensed","Abadi MT Condensed"],
                   ["Minion Web","Minion Web"],
@@ -653,7 +653,7 @@ module ApplicationHelper
                   ["Westminster","Westminster"],
                   ["Wide Latin","Wide Latin"],
                   ["Wingdings","Wingdings"]
-                ]
+    ]
 
     f_families.each do |family|
       options_with_style << [family[0],family[1],:style => "font-family:#{family[0]}" ]
@@ -665,16 +665,16 @@ module ApplicationHelper
     ["14px","16px","18px","20px","22px","24px","26px","28px","30px","32px","34px","36px","38px","40px","42px","44px","46px","48px","50px","52px","54px","56px","58px","60px"]
   end
   def display_position_on_homepage
-      [["Select",""],["1","1"],["2","2"],["3","3"]]
+    [["Select",""],["1","1"],["2","2"],["3","3"]]
   end
   def filter_panel_text_font_sizes
     ["12px","13px","14px","15px","16px","17px","18px"]
   end
-  
+
   def global_navigation_button_font_sizes
     ["13px","14px","15px","16px","17px","18px","19px","20px","21px","22px","23px","24px","25px","26px","27px","28px","29px","30px"]
   end
-  
+
   def filter_panel_button_text_font_sizes
     ["18px","19px","20px","21px"]
   end
@@ -701,11 +701,11 @@ module ApplicationHelper
   def horizontal_menu_position_homepage
     ["Top","Middle","Bottom",["Vertical Left","Vertical_Left"],["Vertical Middle","Vertical_Middle"],["Vertical Right","Vertical_Right"]]
   end
-  
+
   def home_page_position_of_logo
     [["Right align (Horizontal)","Right"],["Left align (Horizontal)","Left"],"Upper right","Upper left","Upper centre","Centre",["Bottom right","=Bottom right"],["Bottom left","=Bottom left"],["Bottom center","=Bottom center"],["Top align (Vertical)","Top"], ["Bottom align (Vertical)","Bottom"]]
   end
-  
+
   def home_page_logo_size
     ["487x160","450x200","550x250","600x300"]
   end
@@ -756,7 +756,7 @@ module ApplicationHelper
   def button_width_options
     ["100px","150px","200px"]
   end
-  
+
   def home_page_button_width
     ["300px","350px","400px","450px","500px","550px","600px"]
   end
@@ -769,7 +769,7 @@ module ApplicationHelper
   def navigation_button_width_options
     ["175px","250px","377px","475px","502px"]
   end
-  
+
   def spacing_options
     ["0px","10px","20px","30px","40px","50px","60px","70px","80px","90px","100px"]
   end
@@ -916,10 +916,43 @@ module ApplicationHelper
       "Not found"
     end
   end
+  def delete_community_name(item_type, item_id)
+    begin
+      f = PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
+      if f.present?
+        if item_type == "Unit"
+          return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name
+        elsif item_type == "Floorplan" || item_type == "Amenity" || item_type == "FavoriteImage"
+          (Community.find f.object.split("community_id:")[1].split(" ")[0].to_i).name
+        elsif item_type == "AdditionalImage" || item_type == "Imagepage" || item_type == "Gallery" || item_type == "GalleryImage"
+          (Community.find (f.object.split("community_id:")[1].split("'")[1].to_i)).name
+        elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
+          (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
+        elsif item_type == "Community"
+          f.object.split("name:")[1].split(" ")[0]
+        elsif item_type == "Location"
+          (Community.find (Neighborhood.find (f.object.split("neighborhood_id:")[1].split(" ")[0].to_i)).community_id).name
+        else
+          if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint" ||  item_type == "TourPath"
+            return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
+          else
+            return "Not Found"
+          end
+        end
+      else
+        if item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData"
+          return (Community.find f.community_id).name
+        end
+        "Not found"
+      end
+    rescue => mm
+      "Not found"
+    end
 
 
 
 
+  end
 
 
 
@@ -983,23 +1016,21 @@ module ApplicationHelper
       end
     rescue => ex
       begin
-      if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
-        return f.object.split("name:")[1].split(" ")[0].split("'")[1]
-      end
-      if item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData"
-        return (Community.find f.community_id).name
-      end
-      return delete_logs(item_type,item_id)
+        if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
+          return f.object.split("name:")[1].split(" ")[0].split("'")[1]
+        end
+        if item_type == "ImportData" || item_type == "ReplaceData" || item_type == "SwapData"
+          return (Community.find f.community_id).name
+        end
+        return delete_logs(item_type,item_id)
       rescue => ee
       end
-
       # return "Not Found"
     end
   end
   def get_community_name(item_type, item_id,f)
     if f.community_id.present?
       begin
-
         if (item_type.classify.constantize.find_by(id: item_id).nil?)
           if item_type == "Unit"
             return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name
@@ -1079,20 +1110,15 @@ module ApplicationHelper
         end
       rescue => ex
         begin
-        if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
-          return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
-
-        end
-        rescue => ee
-
-        end
+          if item_type == "PathPoint" ||  item_type == "TourStop" ||  item_type == "TourStopStartingPoint"  ||  item_type == "TourPath"
+            return (Community.find f.object.split("community_id:")[1].split(" ")[0].split("'")[1]).name
+          end
         rescue => ee
         end
         delete_community_name(item_type,item_id)
       end
+    end
+
   end
-  end 
 
-
-
-
+end
