@@ -109,17 +109,17 @@ class Yardi4StaticService < BaseService
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
         unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
-        unless unit.name_is_updated.present? && unit.name_is_updated
+        unless unit.name_is_updated.present? && unit.name_is_updated  && unit.manual_override
           unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
         end
-        unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+        unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated && unit.manual_override
           unit.floorplan_id = u[:Units][:Unit][:UnitType]
         end
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && unit.manual_override
           unit.effective_rent = u[:Units][:Unit][:MarketRent]
         end
         unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
-        unless unit.floor_is_updated.present? && unit.floor_is_updated
+        unless unit.floor_is_updated.present? && unit.floor_is_updated  && unit.manual_override
           unit.floor = evaluate_floor(unit.marketing_name) rescue nil
         end
 
@@ -182,16 +182,16 @@ class Yardi4StaticService < BaseService
         rescue
           unit.lease_pricing = nil
         end
-        unless unit.availability_is_updated.present? && unit.availability_is_updated
+        unless unit.availability_is_updated.present? && unit.availability_is_updated  && unit.manual_override
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
             unit.availability = "Unoccupied"
           end
         end
-        unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacate_date
         end
-        unless unit.available_is_updated.present? && unit.available_is_updated
+        unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           if unit.availability == "Unoccupied"
             unit.available = true
           else
@@ -217,12 +217,12 @@ class Yardi4StaticService < BaseService
           end
 
           if f.key?(:Name)
-            unless fp.name_is_updated.present? && fp.name_is_updated
+            unless fp.name_is_updated.present? && fp.name_is_updated  && fp.manual_override
               fp.name = f[:Name]
             end
 
           end
-          unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
+          unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
             if f.key?(:MarketRent)
               if f[:MarketRent][0][:Min].to_f > 0
                 fp.market_rent = f[:MarketRent][0][:Min]
@@ -232,7 +232,7 @@ class Yardi4StaticService < BaseService
             end
           end
 
-          unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
+          unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated  && fp.manual_override
             if f.key?(:SquareFeet)
               if f[:SquareFeet][0][:Min].to_f > 0
                 fp.square_feet = f[:SquareFeet][0][:Min]
@@ -247,11 +247,11 @@ class Yardi4StaticService < BaseService
 
         rooms.each do |room|
           if room[:Room][0][:RoomType] == "Bedroom"
-            unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
+            unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated  && fp.manual_override
               fp.bedrooms = room[:Room][1][:Count]
             end
           else
-            unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
+            unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated  && fp.manual_override
               fp.bathrooms = room[:Room][1][:Count]
             end
           end

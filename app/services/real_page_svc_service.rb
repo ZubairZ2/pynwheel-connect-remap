@@ -1,5 +1,6 @@
 class RealPageSvcService < BaseService
   def perform
+    @unit_record = []
     import_realpage_svc_floorplans
     import_realpage_svc_units 
     import_realpage_svc_price
@@ -123,7 +124,7 @@ class RealPageSvcService < BaseService
           ')
         result = Ox.load(response.body, mode: :hash)
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
-          unit_record = []
+
           unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["realpagesvc"]).map{|x| x.provider_unit_id}
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
           units.each do |u|
@@ -210,7 +211,7 @@ class RealPageSvcService < BaseService
                 # end
 
                 unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
-                unit_record << unit.provider_unit_id
+                @unit_record << unit.provider_unit_id
 
 
                 unit.save(validate: false)
@@ -219,9 +220,9 @@ class RealPageSvcService < BaseService
               end
             end
           end
-          puts "$$$$$"*1000, unit_present - unit_record
-          no_unit = unit_present - unit_record
-          if unit_record.nil?
+          puts "$$$$$"*1000, unit_present - @unit_record
+          no_unit = unit_present - @unit_record
+          if @unit_record.nil?
             no_unit = nil
           end
 

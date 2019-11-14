@@ -1,5 +1,6 @@
 class Yardi2Service < BaseService
   def perform
+    @unit_record = []
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -89,7 +90,7 @@ class Yardi2Service < BaseService
   end
 
   def save_yardi2_units(ils_units,property_id)
-    unit_record = []
+
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardi"]).map{|x| x.provider_unit_id}
     ils_units[0].lazy.each do |unit_entries|
       begin
@@ -146,7 +147,7 @@ class Yardi2Service < BaseService
               unit.available = true if !unit.sold
             end
           end
-          unit_record << unit.provider_unit_id
+          @unit_record << unit.provider_unit_id
           unit.save!(validate: false)
         else
           puts "Not Present "*20
@@ -156,8 +157,8 @@ class Yardi2Service < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
     end
-    no_unit = unit_present - unit_record
-    if unit_record.nil?
+    no_unit = unit_present - @unit_record
+    if @unit_record.nil?
       no_unit = nil
     end
     no_unit.each do |un|

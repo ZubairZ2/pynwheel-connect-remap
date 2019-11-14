@@ -1,5 +1,6 @@
 class ZarembaService < BaseService
   def perform
+    @unit_record = []
     property_ids = credentials.zaremba_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -85,7 +86,7 @@ class ZarembaService < BaseService
 
   end
   def save_zaremba_units(units,property_id)
-    unit_record = []
+
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["zaremba"]).map{|x| x.provider_unit_id}
     units.each do |u|
       puts u
@@ -130,15 +131,15 @@ class ZarembaService < BaseService
           unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
             unit.available_date = vacateDate
           end
-          unit_record << unit.provider_unit_id
+          @unit_record << unit.provider_unit_id
           # building = u["BuildingID"]
           # unit.building = building.present? ? building.gsub("Building ", "") : ""
           # unit.manually_updated = false
           unit.save(validate: false)
       end
     end
-    no_unit = unit_present - unit_record
-    if unit_record.nil?
+    no_unit = unit_present - @unit_record
+    if @unit_record.nil?
       no_unit = nil
     end
     no_unit.each do |un|
