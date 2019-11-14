@@ -85,6 +85,10 @@ class ElevatorsController < ApplicationController
   def destroy_elevator_gallery
     
   end
+
+  def edit_gallery_image_of
+    
+  end
   # DELETE /elevators/1
   # DELETE /elevators/1.json
   def destroy
