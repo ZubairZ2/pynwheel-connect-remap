@@ -1,6 +1,7 @@
 local_assets_base_url = "http://192.168.101.77:3000"
 random_numbers = []
 json.version @version
+json.data_provider @community.data_provider
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
   if @community.temporary_theme_name.include?('gables') || @community.temporary_theme_name == 'modernist'
@@ -9,17 +10,30 @@ json.ui_settigs do
     json.theme "expressionist"
   end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
-  if @community.theme_name == "futurist" || @community.theme_name == "modernist"
-    json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
-  else
-    json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url : @community.secondary_logo.url) : asset_url("pynwheel-default-logo.png")
+
+  if @community.secondary_logo.present? || @community.logo.present?
+    if @community.temporary_theme_name == 'modernist'
+      json.secondary_logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") )
+
+      json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") )
+
+    else
+      json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") )
+
+      json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") )
+
+    end
+    else
+    json.logo asset_url("pynwheel-default-logo.png")
+    json.secondary_logo asset_url("pynwheel-default-logo.png")
   end
-  json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url : @community.logo.url) : asset_url("pynwheel-default-logo.png")
+
   json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
   json.show_gesture_icons @community.show_gesture_icons
   json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
   json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
   json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
+  json.floorplan_name_order @community.floorplan_name_order
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
@@ -239,12 +253,14 @@ json.ui_settigs do
           json.display_gallery_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_gallery_nav_bg_image : false
           json.display_favourities_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_favourities_nav_bg_image : false
           json.display_additional_pages_nav_bg_image @community.design.expressionist.present? ? @community.design.expressionist.display_additional_pages_nav_bg_image : false
+          json.display_neighborhood_background_image @community.design.expressionist.present? ? (@community.design.expressionist.display_neighborhood_bg_image.present? ? @community.design.expressionist.display_neighborhood_bg_image : false) : false
           json.display_global_navigation_button_bg_color @community.design.expressionist.present? ? @community.design.expressionist.display_global_navigation_button_bg_color : true
         else
           json.display_apartment_nav_bg_image false
           json.display_gallery_nav_bg_image false
           json.display_favourities_nav_bg_image false
           json.display_additional_pages_nav_bg_image false
+          json.display_neighborhood_bg_image false
           json.display_global_navigation_button_bg_color true
         end
         if @community.theme_name == "futurist"
@@ -382,6 +398,7 @@ json.ui_settigs do
           json.gallery_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.gallery_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.gallery_nav_bg_image.url : @community.design.expressionist.gallery_nav_bg_image.url) : "No Image"
           json.favourities_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.favourities_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.favourities_nav_bg_image.url : @community.design.expressionist.favourities_nav_bg_image.url) : "No Image"
           json.additional_pages_nav_bg_image (@community.design.expressionist.present? and @community.design.expressionist.additional_pages_nav_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.additional_pages_nav_bg_image.url : @community.design.expressionist.additional_pages_nav_bg_image.url) : "No Image"
+          json.neighborhood_background_image (@community.design.expressionist.present? and @community.design.expressionist.neighborhood_bg_image.present?) ? (Rails.env.development? ? local_assets_base_url+@community.design.expressionist.neighborhood_bg_image.url : @community.design.expressionist.neighborhood_bg_image.url) : "No Image"
           json.apartment_nav_bg_color @community.design.expressionist.apartment_nav_bg_color.present? ? @community.design.expressionist.apartment_nav_bg_color : "#ffffff"
           json.gallery_nav_bg_color @community.design.expressionist.gallery_nav_bg_color.present? ? @community.design.expressionist.gallery_nav_bg_color : "#ffffff"
           json.favourities_nav_bg_color @community.design.expressionist.favourities_nav_bg_color.present? ? @community.expressionist.design.favourities_nav_bg_color : "#ffffff"
@@ -398,6 +415,7 @@ json.ui_settigs do
           json.gallery_nav_bg_image "No Image"
           json.favourities_nav_bg_image  "No Image"
           json.additional_pages_nav_bg_image  "No Image"
+          json.neighborhood_background_image  "No Image"
           json.apartment_nav_bg_color  "#ffffff"
           json.gallery_nav_bg_color "#ffffff"
           json.favourities_nav_bg_color "#ffffff"
@@ -609,6 +627,18 @@ json.ui_settigs do
           json.gallery_buttons_opacity "100%"
         end
         if @community.theme_name == "futurist"
+          json.filter_panel_label_opacity "100%"
+        elsif @community.theme_name == "panther"
+          json.filter_panel_label_opacity "100%"
+        else
+          json.filter_panel_label_opacity @community.design.filter_panel_label_opacity.present? ? @community.design.filter_panel_label_opacity : "100%"
+        end
+        if @community.theme_name == "panther"
+          json.filter_panel_label_color "#cae0da"
+        else
+          json.filter_panel_label_color @community.design.filter_panel_label_color.present? ? @community.design.filter_panel_label_color : "#565455"
+        end
+        if @community.theme_name == "futurist"
           json.filter_menu_buttons_border "No border"
         elsif @community.theme_name == "panther"
           json.filter_menu_buttons_border "No border"
@@ -638,9 +668,15 @@ json.ui_settigs do
         json.gallery_button_as_image @community.design.gallery_button_as_image
         if @community.theme_name == "modernist1"
           json.filter_panel_background_as_image false
+          json.display_filter_label_image false
         elsif @community.theme_name == "panther"
           json.filter_panel_background_as_image false
+          json.display_filter_label_image false
+        elsif @community.theme_name == "futurist"
+          json.display_filter_label_image true
+          json.filter_panel_background_as_image false
         else
+          json.display_filter_label_image @community.design.display_filter_label_image.present? ? @community.design.display_filter_label_image : false
           json.filter_panel_background_as_image @community.design.filter_panel_background_as_image
         end
         if @community.theme_name == "futurist"
@@ -658,11 +694,15 @@ json.ui_settigs do
           json.gallery_button_on_image "No Image"
         end
         if @community.theme_name == "futurist"
+          json.filter_label_image image_url("filetr_panel_button_bg.png")
           json.filter_panel_background_image image_url("filter_panel_bg.png")
         elsif @community.theme_name == "expressionist"
           json.filter_panel_background_image @community.design.filter_panel_background_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_panel_background_image.url : @community.design.filter_panel_background_image.url) : "No Image"
+          json.filter_label_image @community.design.filter_label_image.present? ? (Rails.env.development? ? local_assets_base_url+@community.design.filter_label_image.url : @community.design.filter_label_image.url) : "No Image"
+
         else
           json.filter_panel_background_image "No Image"
+          json.filter_label_image "No Image"
         end
         json.gallery_button_on_as_image @community.design.gallery_button_on_as_image
         if @community.theme_name == "panther"
@@ -1164,11 +1204,12 @@ json.ui_settigs do
         end
         if @community.theme_name == "futurist"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "modernist1"
-          json.floorplan_name_font_color "#ffffff"
+        elsif @community.theme_name == "modernist"
+
+          json.floorplan_name_font_color @community.design.secondary_font_color.present? ? @community.design.secondary_font_color : "#FFFFFF"
         elsif @community.theme_name == "panther"
           json.floorplan_name_font_color "#ffffff"
-        elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
+        elsif @community.theme_name == "expressionist"
           json.floorplan_name_font_color @community.design.floorplan_name_font_color.present? ? @community.design.floorplan_name_font_color : "#ffff"
         else
           json.floorplan_name_font_color "#ffff"
@@ -1201,7 +1242,7 @@ json.homescreen do
       #json.images @community.design.home_page_images.order(:sort) do |img|
       json.images @community.design.home_page_images do |img|
         json.filename img.name
-        json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
+        json.url Rails.env.development? ? local_assets_base_url+img.large_image_url + (img.crop_x.present? ? "?temp/"+img.crop_x.to_s  +  img.large_image_url.split('/')[ img.large_image_url.split('/').count - 1] : "")  : img.large_image_url + (img.crop_x.present? ? "?temp/"+img.crop_x.to_s +  img.large_image_url.split('/')[ img.large_image_url.split('/').count - 1] : "")
       end
     else
       json.images DefaultImage.find_each do |img|
@@ -1245,7 +1286,7 @@ json.apartments do
   json.display_floorplan_gallery @community.display_floorplan_gallery
   json.display_available_date @community.display_available_date
   if @community.sitemap.present? and !@community.has_floorplates?
-    image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
+    image_url = @community.sitemap.image.url.present? ? @community.sitemap.image.url : @community.sitemap.image.url
     begin
       json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
     rescue
@@ -1264,7 +1305,7 @@ json.apartments do
   end
   units_floorplans = []
   floorplans = @community.floorplans
-  available_units_and_sold_units = @community.units.available_units + @community.units.are_sold
+  available_units_and_sold_units = @community.units.available_units #+ @community.units.are_sold
   json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
     if @community.data_provider == "psi"
@@ -1277,6 +1318,9 @@ json.apartments do
       units_floorplans << floorplan
       json.marketing_name unit.unit_market
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
+      json.min_rent unit.min_effective_rent.present? ? unit.min_effective_rent : 0
+      json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
+      json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : 0
       json.availability unit.availability
       json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
       json.available unit.available
@@ -1293,6 +1337,7 @@ json.apartments do
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
       json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
       json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
+      json.availability_url unit.availability_url.present? ? unit.availability_url : (floorplan.availability_url.present? ? floorplan.availability_url : nil)
 
       if unit.virtual_tour_url.present?
         if unit.virtual_tour_url.include? '</iframe>'
@@ -1333,8 +1378,11 @@ json.apartments do
         json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : nil
         json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : nil
       else
-        json.image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-        json.secondary_image floorplan.present? ? (floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil) : nil
+        # json.image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
+        # json.secondary_image floorplan.present? ? (floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil) : nil
+
+        json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp/"+floorplan.crop_x.to_s +  floorplan.standard_image_url.split('/')[ floorplan.standard_image_url.split('/').count - 1] : ""): floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp/"+floorplan.crop_x.to_s+  floorplan.standard_image_url.split('/')[ floorplan.standard_image_url.split('/').count - 1] : "")) : nil
+        json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s +  floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : ""): floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s + floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : "")) : nil
       end
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
@@ -1391,8 +1439,8 @@ json.apartments do
     json.bathrooms floorplan.bathrooms
     json.square_feet floorplan.square_feet
     json.description floorplan.description
-    json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil
-    json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil
+    json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp/"+floorplan.crop_x.to_s +  floorplan.standard_image_url.split('/')[ floorplan.standard_image_url.split('/').count - 1] : ""): floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp/"+floorplan.crop_x.to_s+  floorplan.standard_image_url.split('/')[ floorplan.standard_image_url.split('/').count - 1] : "")) : nil
+    json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s +  floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : ""): floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s + floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : "")) : nil
     json.display_virtual_tour_button_label true #floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
     json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
 
@@ -1466,11 +1514,14 @@ json.neighborhood do
   if @community.neighborhood.present?
     json.show_neighborhood_page @community.neighborhood.show_neighborhood
     json.neighborhood_page_name @community.neighborhood.neighborhood_name
-    json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
-    json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+    # json.latitude @community.neighborhood.latitude.present? ? @community.neighborhood.latitude : @community.latitude
+    # json.longitude @community.neighborhood.longitude.present? ? @community.neighborhood.longitude : @community.longitude
+    json.latitude @community.latitude.present? ? @community.latitude : 0.0
+    json.longitude @community.longitude.present? ? @community.longitude : 0.0
     json.radius @community.neighborhood.radius.present? ? @community.neighborhood.radius : 5000
     json.zoom @community.neighborhood.zoom.present? ? @community.neighborhood.zoom : 14
-    json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
+    json.address (@community.address.present? ? @community.address + " , "  : "") + (@community.city.present? ? @community.city+ " , " : "") + (@community.state.present? ? @community.state+ " , " : "") + (@community.zip.present? ? @community.zip : "")
+    # json.address @community.neighborhood.address.present? ? @community.neighborhood.address : @community.make_address
     json.display_neighborhood_on_homepage @community.neighborhood.display_neighborhood_on_homepage
     if @community.neighborhood.listing.present?
       json.listing @community.neighborhood.listing
@@ -1528,7 +1579,7 @@ json.gallery do
           json.video true
           json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
         else
-          json.url Rails.env.development? ? local_assets_base_url+img.large_image_url : img.large_image_url
+          json.url Rails.env.development? ? local_assets_base_url+img.large_image_url + (img.crop_x.present? ? "?temp/"+img.crop_x.to_s   +  img.large_image_url.split('/')[ img.large_image_url.split('/').count - 1] : "") : img.large_image_url + (img.crop_x.present? ? "?temp/"+img.crop_x.to_s  + img.large_image_url.split('/')[ img.large_image_url.split('/').count - 1] : "")
           json.video false
         end
         json.type img.gallery.name
@@ -1587,7 +1638,7 @@ json.additional_pages do
         json.images imagepage.additional_images.order(:sort)  do |image|
           json.id image.id
           json.title image.name
-          json.image Rails.env.development? ? local_assets_base_url+image.image.url : image.image.url
+          json.image Rails.env.development? ? local_assets_base_url+image.image.url + (image.crop_x.present? ? "?temp/"+image.crop_x.to_s  +  image.image.url.split('/')[ image.image.url.split('/').count - 1] : "") : image.image.url + (image.crop_x.present? ? "?temp/"+image.crop_x.to_s  + image.image.url.split('/')[ image.image.url.split('/').count - 1] : "")
         end
       end
     end

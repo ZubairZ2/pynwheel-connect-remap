@@ -59,6 +59,35 @@ $(document).ready(function(){
         e.stopPropagation()
     })
 
+    // This is for plotting elevator when clicked on ul dropdown
+    $("#imageselect3 li").click(function(e){
+      debugger
+      if ($(this).data("id")!=""){
+          console.log($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1);
+          if (selected.length == 0){
+              saveTourStopPoint($(this).data("id"));
+              // selected.push([ $(this).data("id"), $(this).data("name") ]);
+          }
+          else if ($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1){
+              saveTourStopPoint($(this).data("id"));
+              // selected.push([ $(this).data("id"), $(this).data("name") ]);
+          }
+      }
+      // add to selected list
+      $("#selected-units").empty();
+      for (i=0; i<selected.length; i++) {
+          $("#selected-units").append('<li class="s-unit" data-id='+i+'>' + selected[i][1] + '</li>');
+      }
+      $('#newmsg').hide();
+
+      // hide from unused list
+      $(this).css({"display": "none"});
+      plotMode();
+      $("#imageselect3").toggle();
+      // e.stopPropagation()
+      // window.location.reload()
+    });
+
     // $('.amenities-list').on('change', function(e) {
     //   e.preventDefault();
     //   $('.amenities-list :selected').each(function(){
@@ -127,7 +156,9 @@ $(document).ready(function(){
                     url = '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
                 }
                 else if (typeof sitemap_id !== 'undefined'){
-                    url = '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+selected[0][0]+'/remove_amenity';
+                    // debugger;
+                    url = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
+                    // url = '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+selected[0][0]+'/remove_amenity';
                 }
                 else if (typeof floorplate_id_for_amenity !== 'undefined'){
                     url = '/communities/'+community_id+'/floorplates/'+floorplate_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
@@ -138,8 +169,8 @@ $(document).ready(function(){
                 else if (typeof tour_id_for_stop !== 'undefined'){
                     url = '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
                 }
-                else if (typeof unit_id_for_amenity !== 'undefined'){
-                    url = '/communities/'+community_id+'/units/'+unit_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
+                else if (typeof floorplate_id !== 'undefined'){
+                    url = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id=1'
                 }
                 else{
                     url = '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'

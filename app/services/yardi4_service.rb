@@ -76,14 +76,18 @@ class Yardi4Service < BaseService
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
         else
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
         end
@@ -91,7 +95,9 @@ class Yardi4Service < BaseService
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          PaperTrail.enabled = false
           cred.save
+          PaperTrail.enabled = true
         rescue => err
         end
         puts '------------------------'*20 , e.message
@@ -102,6 +108,8 @@ class Yardi4Service < BaseService
     
 
   def save_yardi4_units(ils_units,property_id)
+    unit_record = []
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,   ["yardi"]).map{|x| x.provider_unit_id}
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
       unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue])#.first_or_initialize
@@ -136,6 +144,8 @@ class Yardi4Service < BaseService
             #   is_available = true
             # end
           end
+          unit.min_effective_rent = unit_with_key[:EffectiveRent][0][:Min]
+          unit.max_effective_rent = unit_with_key[:EffectiveRent][0][:Max]
           unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
             if unit_with_key.key?(:EffectiveRent)
               unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
@@ -175,7 +185,10 @@ class Yardi4Service < BaseService
           unit.lease_pricing = nil
         end
         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-          unit.availability = is_available ? "Unoccupied" : "Occupied"
+          unit.availability = is_available ? "Unoccupied" : "Occupied" if !unit.sold
+          if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
+            unit.availability = "Unoccupied"
+          end
         end
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
 
@@ -183,13 +196,26 @@ class Yardi4Service < BaseService
         end
         unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           if unit.availability == "Unoccupied"
-            unit.available = true
+            unit.available = true if !unit.sold
           else
             unit.available = false
           end
         end
+        unit_record << unit.provider_unit_id
         unit.save(validate: false)
       end
+    end
+
+    no_unit = unit_present - unit_record
+    if unit_record.nil?
+      no_unit = nil
+    end
+    no_unit.each do |un|
+      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit.availability = "Occupied"
+      unit.available = false
+      unit.available_date = nil
+      unit.save(validate: false) unless unit.manual_override
     end
   end
 

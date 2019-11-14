@@ -111,6 +111,8 @@ class Yardi2StaticService < BaseService
             end
             if u.key?(:EffectiveRent)
               unit.market_rent = u[:EffectiveRent][0][:Min]
+              unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?
+              unit.max_effective_rent = u[:EffectiveRent][0][:Max] if u[:EffectiveRent][0][:Max].present?
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                 unit.effective_rent = u[:EffectiveRent][0][:Min]
               end
@@ -129,6 +131,12 @@ class Yardi2StaticService < BaseService
           end
           unless unit.availability_is_updated.present? && unit.availability_is_updated
             unit.availability = is_available ? "Unoccupied" : "Occupied"
+            begin
+              if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
+                unit.availability = "Unoccupied"
+              end
+            rescue =>ex
+            end
           end
           unless unit.available_date_is_updated.present? && unit.available_date_is_updated
             unit.available_date = vacate_date

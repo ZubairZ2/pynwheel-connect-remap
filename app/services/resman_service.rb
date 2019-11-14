@@ -35,14 +35,18 @@ class ResmanService < BaseService
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
         else
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
           puts '-----------------------------' , response["response"]["error"]["message"]
@@ -52,7 +56,9 @@ class ResmanService < BaseService
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          PaperTrail.enabled = false
           cred.save
+          PaperTrail.enabled = true
         rescue => err
         end
         puts '----------------------------' , e.message
@@ -61,6 +67,8 @@ class ResmanService < BaseService
     end
   end
   def save_resman_units(units,property_id,availability_url)
+    unit_record = []
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
       unit = Unit.find_by(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"])#.first_or_initialize
@@ -70,19 +78,20 @@ class ResmanService < BaseService
         # unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         # unit.marketing_name = u["Id"]
         # unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
-
+        unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
+        unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-          if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
+          if u["EffectiveRent"].present?
+            unit.effective_rent = u["EffectiveRent"]["Min"]
+          elsif u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
             unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
-          elsif u["EffectiveRent"].present?
-            unit.effective_rent = u["EffectiveRent"]["Avg"]
           end
         end
 
         # unit.floor = u["FloorLevel"]
         if u["Availability"].present?
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-            unit.availability = "Unoccupied"
+            unit.availability = "Unoccupied" if !unit.sold
           end
 
           year = u["Availability"]["VacateDate"]["Year"]
@@ -96,7 +105,7 @@ class ResmanService < BaseService
         end
         unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           if unit.availability == "Unoccupied"
-            unit.available = true
+            unit.available = true if !unit.sold
           else
             unit.available = false
           end
@@ -110,9 +119,21 @@ class ResmanService < BaseService
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
         # unit.manually_updated = false
         unit.availability_url = availability_url if availability_url.present?
+        unit_record << unit.provider_unit_id
         unit.save(validate: false)
 
       end
+    end
+    no_unit = unit_present - unit_record
+    if unit_record.nil?
+      no_unit = nil
+    end
+    no_unit.each do |un|
+      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit.availability = "Occupied"
+      unit.available = false
+      unit.available_date = nil
+      unit.save(validate: false) unless unit.manual_override
     end
   end
 

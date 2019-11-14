@@ -129,15 +129,21 @@
 #  panther_unit_floorplan_map_marker_color         :string
 #  gables_unit_floorplan_map_marker_color          :string
 #  modernist_unit_floorplan_map_marker_color       :string
+#  display_filter_label_image                      :boolean
+#  filter_label_image                              :string
+#  filter_panel_label_color                        :string
+#  filter_panel_label_opacity                      :string
 #
 
 class Design < ApplicationRecord
+	has_paper_trail
 	mount_base64_uploader :secondary_page_background_image, AvatarUploader
 	mount_base64_uploader :global_nav_button_on, AvatarUploader
 	mount_base64_uploader :global_nav_button_off, AvatarUploader
 	mount_base64_uploader :filter_button, AvatarUploader
 	mount_base64_uploader :gallery_button, AvatarUploader
 	mount_base64_uploader :filter_panel_background_image, AvatarUploader
+	mount_base64_uploader :filter_label_image, AvatarUploader
 	mount_base64_uploader :gallery_button_on_image, AvatarUploader
 	has_one :menu , dependent: :destroy
 	has_one :gable , dependent: :destroy
@@ -156,6 +162,19 @@ class Design < ApplicationRecord
 	accepts_nested_attributes_for :expressionist
 	accepts_nested_attributes_for :filter_panel
 
+	amoeba do
+		enable
+		customize(lambda { |original_object,new_object|
+			new_object.secondary_page_background_image = original_object.secondary_page_background_image
+			new_object.global_nav_button_on = original_object.global_nav_button_on
+			new_object.global_nav_button_off = original_object.global_nav_button_off
+			new_object.filter_button = original_object.filter_button
+			new_object.gallery_button = original_object.gallery_button
+			new_object.filter_panel_background_image = original_object.filter_panel_background_image
+			new_object.filter_label_image = original_object.filter_label_image
+			new_object.gallery_button_on_image = original_object.gallery_button_on_image
+		})
+	end
 	def has_images_loop_type?
 		loop_type == "images"
 	end

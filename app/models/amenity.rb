@@ -19,9 +19,11 @@
 #  standard_image_url  :string
 #  sort                :integer
 #  access_code         :string
+#  directional_text    :string
 #
 
 class Amenity < ApplicationRecord
+  has_paper_trail on: [:create,:destroy]
   include RailsSortable::Model
   set_sortable :sort
   include StandardUrl

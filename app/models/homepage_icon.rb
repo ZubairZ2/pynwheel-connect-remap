@@ -16,6 +16,7 @@
 #
 
 class HomepageIcon < ApplicationRecord
+  has_paper_trail
   include RailsSortable::Model
   set_sortable :sort  
   #mount_base64_uploader :image, ImageUploader
@@ -29,6 +30,6 @@ class HomepageIcon < ApplicationRecord
   end
 
   def set_image_name
-  	self.name = image.file.filename
+  	self.name = image.file.filename rescue ""
   end
 end

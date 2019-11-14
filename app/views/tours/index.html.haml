@@ -21,6 +21,15 @@
         .box.box-widget.panel-box.add-plan.pt-30
           = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
             = hidden_field_tag "community_id", @community.id
+
+            .form-group.alert-contact
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Alert Contact
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})
+                = submit_tag 'Update', class: "btn btn-success btn-sm pull-right"
+
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Show Tour Page
@@ -31,6 +40,35 @@
                   %label.label-primary{:for => "show_tour_page"}
                   %span.pl-15 Yes
             = submit_tag 'Save', class: "hidden"
+    #logo_header.box.box-info.add-plan.mt-50
+      .box-header
+        %h3.box-title
+          COMPOSSE TEXT/EMAILS
+          %span
+    .row
+      .col-md-12
+        .box.box-widget.panel-box.add-plan.pt-30
+          = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
+            = f.hidden_field :community_id, value: @community.id
+            .box-body
+              .row
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Sms Text
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Email Text
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = f.text_area :email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 5
+            /
+              \/.box-body
+            .box-footer
+              = f.submit "Save", :class=>"btn btn-success pull-right mr-10"
+
     .row
       / Start Panel left Side
       .col-lg-6{:style => "margin-bottom: 10px;"}
@@ -48,13 +86,7 @@
                     = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                     %span.ml-5
                       = amenity.name
-              -#- ts = TourStop.find_by(stop_type: "amenity",stop_id: amenity.id)
-              -#- amenity_arr.push([amenity.id.to_s+":amenity", ts.present? ? ts.latitude.to_i : 0, ts.present? ? ts.longitude.to_i : 0, true, amenity.name])
-
-        -#%h5.mt-40 SELECTED IMAGES
-        -#.add-plan.mt-10.mb-20
-        -#
-        -#%label#newmsg Place marker for selected amenities on Map
+              
       - units = @units.sort_by{|u| u.marketing_name}
       .col-lg-6
         %h5.mt-40.mb-20 Add Units
@@ -71,6 +103,22 @@
                     = unit.marketing_name
               -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
               -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
+
+      -#.col-lg-4{:style => "margin-bottom: 10px;"}
+      -#  %h5.mt-40.mb-20 Add Elevators 
+      -#  .imageselect.elevator-imageselect
+      -#    .show-categories
+      -#     = "- select elevator -"
+      -#    %ul#imageselect3{:style => "display: none; z-index: 999;"}
+      -#      - elevator_arr = []
+      -#      - @elevators.each do |elevator|
+              -#- byebug
+      -#        - if !@tour_elevator_array.include?(elevator.id) && (elevator.x_plot.to_i + elevator.y_plot.to_i > 0 )
+      -#         %li{"data-id" => "#{elevator.id.to_s+":elevator"}","data-name" => "#{elevator.name}"}
+      -#           %a
+      -#             = image_tag elevator.image.present? ? elevator.image.url : "upload-image.png"
+      -#             %span.ml-5
+      -#               = elevator.name
 
       .col-lg-12.col-md-12
         
@@ -99,14 +147,21 @@
 
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
-                            = link_to draw_line_path(u), id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
+                            = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
+                          - elsif stop.stop_type == "elevator"
+                            - elevator = Elevator.find stop.stop_id
+                            = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do
+                              %i.fa.fa-road.icon_size
+                            = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
+                              %i.fa.fa-edit.icon_size
+
                           - else
                             - amenity = Amenity.find stop.stop_id
-                            = link_to draw_line_path(amenity), id: "create_path",  class: "text-warning ml-5" do
+                            = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
@@ -117,14 +172,17 @@
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
 
         .row
-          .col-md-6
-            = link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do
-              %i.fa.fa-plus-circle
-              ADD STARTING POINT
-          .col-md-6
-            = link_to draw_line_path(@tours.id), class: "btn btn-success mb-20 pull-right", id: "start-point-path" do
-              %i.fa.fa-plus-circle
-              ADD PATH FOR STARTING POINT
+          .col-md-12
+            .btn-group{"aria-label" => "Basic example", role: "group"}
+              = link_to starting_point_community_tours_path(@community), class: "btn btn-primary mb-20" do
+                %i.fa.fa-plus-circle
+                ADD STARTING POINT
+              = link_to create_elevator_path(@tours.id, params[:community_id]), class: "btn btn-primary mb-20", id: "add-elevator-path" do
+                %i.fa.fa-plus-circle
+                ADD ELEVATOR
+              = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
+                %i.fa.fa-plus-circle
+                ADD PATH FOR STARTING POINT
 
           
 
@@ -146,21 +204,25 @@
                 = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", :onclick => "return false;"
 
 
-                = image_tag @sitemap.image? ? @sitemap.image.url : "default.jpeg", id: "testimg"
+                = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg"
                 - community_units = @community_units
                 - coordinates_array = []
                 - path_point_coords = {}
                 - @existing_stops.flatten.each_with_index do |stop, index|
                   - if stop.class.to_s == "Amenity"
-                    %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
+                    %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
                       %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
+
+                  - elsif stop.class.to_s == "Elevator"
+                    %i.fa.fa-reorder.stops.elevatorstop{:id => "elevatorstop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+
                   - else
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin}px; left: #{stop.x_plot - left_margin}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                 
                 /- binding.pry
 
                 - @existing_path_points.each_with_index do |point, index|
-                  .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot}px; left: #{point.x_plot}px;"}
+                  .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
 
 
 
@@ -174,9 +236,7 @@
     /*$.post( "/delete_path_on_sort_change",
       { "tour_stop_id": tour_stop_id },
       function(data,status,xhr) {
-        if(data){
-          debugger
-          
+        if(data){          
         }
       }
     );*/
@@ -215,6 +275,10 @@
       dragElement(document.getElementById(id));
     });
 
+     $.each($("*.elevatorstop"), function(i, elevator){
+       makeElevatorDragable(elevator);
+     });
+
     $("#testimg").on('click', function (ev) {
       mouseX = Math.round(ev.offsetX - point_size/2)
       mouseY = Math.round(ev.offsetY - point_size/2)
@@ -222,7 +286,37 @@
       savePoint(mouseX, mouseY, neighbour_units)
     });
 
+    function makeElevatorDragable(elevator){
+      elevator_id = $(elevator).prop('id').split('_')[1]
+      $(elevator).draggable({
+        containment: 'parent',
+          start: function(event, ui) {
+            console.log("start drag")
+            xpos = Math.round(ui.position.left);
+            ypos = Math.round(ui.position.top);
+          },
 
+          drag: function(event, ui) {
+            // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
+            xmove = ui.position.left - xpos;
+            ymove = ui.position.top - ypos;
+          },
+
+          stop: function(event, ui) {
+            left = Math.round(ui.position.left )
+            right = Math.round(ui.position.top );
+            $.ajax({
+              type: "POST",
+              url: "#{update_elevator_path}",
+              data: {elevator_id: elevator_id, x_plot: left, y_plot: right },
+              success: function(response) {
+                console.log(response.message)
+              }
+            });
+          }
+
+       });
+    }
     function savePoint(x, y, unit_ids){
       //debugger
       if($("#drawing_path_for").val() == ""){
@@ -394,10 +488,31 @@
             scrollTop: $(".plot-image").offset().top
           }, 500);
         }
-
       });
       event.preventDefault();
     });
+
+    $("#add-elevator-path").on("click", function(event){
+      $.ajax({
+        type: "POST",
+        url: this.href,
+        data: $(this).serialize(),
+        success: function(response) {
+          actions = ''
+          stop_id = "TourStop_"+ response.path.id
+          row_sequence_number = parseInt($('.tour_sortable_disabled tr:last td:first').html())+1
+
+          elevator_stop = '<tr id=' + stop_id + '>'
+          elevator_stop += '<td>'+row_sequence_number+'</td>'
+          elevator_stop += '<td>'+response.path.name+'</td>'
+
+          $('.tour_sortable_disabled').append(elevator_stop);
+          window.location.reload()
+        }
+      });
+      event.preventDefault();
+    });
+
 
     function getElementProperty(el){
       var dx = 0;

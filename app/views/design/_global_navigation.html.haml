@@ -4,62 +4,16 @@
     
     .row
       .col-lg-12
-        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #1e8ece;"}
           Global Navigation Options
+    %br
     = d.fields_for :expressionist do |e|
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display global navigation button color
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = e.check_box :display_global_navigation_button_bg_color, {class: "global-navigation-field",:checked=>e.object.display_global_navigation_button_bg_color.present? ? e.object.display_global_navigation_button_bg_color : true }
-            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_bg_color"}
-            %span.pl-15 Yes
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Button font family
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :global_navigation_button_font_family , options_for_select(font_families,e.object.global_navigation_button_font_family),{},{class: "form-control global-navigation-field"}             
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Button font size
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :global_navigation_button_font_size , options_for_select(global_navigation_button_font_sizes,e.object.global_navigation_button_font_size),{},{class: "form-control global-navigation-field"}              
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display global navigation button icon
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = e.check_box :display_global_navigation_button_icon, {class: "global-navigation-field"}
-            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_icon"}
-            %span.pl-15 Yes        
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Global navigation button border color
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              .input-group.colorpicker-style.hex-format-colorpicker
-                .input-group-addon
-                  %i
-                  = e.text_field :global_navigation_button_border_color , class: "form-control global-navigation-field",autocomplete: true,:value=>e.object.global_navigation_button_border_color.present? ? e.object.global_navigation_button_border_color : "#c5c4c7"
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Global navigation button font color
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              .input-group.colorpicker-style.hex-format-colorpicker
-                .input-group-addon
-                  %i
-                  = d.text_field :global_navigation_font_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_font_color.present? ? d.object.global_navigation_font_color : "#c5c4c7"
-      .row
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #89c765;"}
+        Global Navigation Background
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_sub_heading{:style => "font-size: 18px;  color: #89c765;"}
+        To load an image for the global navigation background please see tabs at the bottom of the page.
+
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -69,44 +23,117 @@
                 .input-group-addon
                   %i
                   = d.text_field :global_navigation_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>d.object.global_navigation_background_color.present? ? d.object.global_navigation_background_color : "#565455"
-      .row
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Global navigation buttons opacity 
+              Global navigation border thickness
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :global_navigation_buttons_opacity , options_for_select(opacity_options,d.object.global_navigation_buttons_opacity.present? ? d.object.global_navigation_buttons_opacity : "100%"),{},{class: "form-control global-navigation-field"}
-      .row
+              = e.select :global_navigation_border_thickness , options_for_select(global_navigation_border_thickness_space,e.object.global_navigation_border_thickness.present? ? e.object.global_navigation_border_thickness : '0px'),{},{class: "form-control global-navigation-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Global navigation background opacity 
+              Global navigation background opacity
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :global_nav_bg_opacity , options_for_select(opacity_options,d.object.global_nav_bg_opacity.present? ? d.object.global_nav_bg_opacity : "100%"),{},{class: "form-control global-navigation-field"}                      
-      .row
+              = d.select :global_nav_bg_opacity , options_for_select(opacity_options,d.object.global_nav_bg_opacity.present? ? d.object.global_nav_bg_opacity : "100%"),{},{class: "form-control global-navigation-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #89c765;"}
+        Application background
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_sub_heading{:style => "font-size: 18px;  color: #89c765;"}
+        To load an image for the application background or an individual page please see tabs at the bottom of the page.
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Global navigation button height 
+              Application background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = e.text_field :application_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.application_background_color.present? ? e.object.application_background_color : "#c5c4c7"
+
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Application background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :application_background_color_opacity , options_for_select(opacity_options,e.object.application_background_color_opacity.present? ? e.object.application_background_color_opacity : "100%"),{},{class: "form-control global-navigation-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #89c765;"}
+        Global Navigation Button Options
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_sub_heading{:style => "font-size: 18px;  color: #89c765;"}
+        To load an image for the global navigation "on" and "off: button please see tabs at the bottom of the page.
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #9a5aa6;"}
+        Button shape
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button shape
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field button_shape"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button height
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :global_nav_buttons_height , options_for_select(navigation_button_height_options,d.object.global_nav_buttons_height.present? ? d.object.global_nav_buttons_height : "110px"),{},{class: "form-control global-navigation-field"}
-      .row.button-width-field-on-global-navigation
+      .row.button-width-field-on-global-navigation.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Global navigation button width 
+              Global navigation button width
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :global_nav_buttons_width , options_for_select(navigation_button_width_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}        
-      -#.form-group
-      -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-      -#    Display global navigation button color
-      -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      -#    .TriSea-technologies-Switch
-      -#      %span.pr-15 No
-      -#      = e.check_box :display_global_navigation_button_color, {class: "global-navigation-field"}
-      -#      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_color"}
-      -#      %span.pl-15 Yes
-      .row
+              = d.select :global_nav_buttons_width , options_for_select(navigation_button_width_options,d.object.global_nav_buttons_width),{},{class: "form-control global-navigation-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Spacing between buttons
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :spacing_between_buttons , options_for_select(spacing_options,e.object.spacing_between_buttons.present? ? e.object.spacing_between_buttons : '0px'),{},{class: "form-control global-navigation-field"}
+
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #9a5aa6;"}
+        Button font
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button font family
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :global_navigation_button_font_family , options_for_select(font_families,e.object.global_navigation_button_font_family),{},{class: "form-control global-navigation-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Button font size
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :global_navigation_button_font_size , options_for_select(global_navigation_button_font_sizes,e.object.global_navigation_button_font_size),{},{class: "form-control global-navigation-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button font color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :global_navigation_font_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_font_color.present? ? d.object.global_navigation_font_color : "#c5c4c7"
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #9a5aa6;"}
+        Button "off" color options
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_sub_heading{:style => "font-size: 18px;  color: #9a5aa6;"}
+        Use these options for button appearance when the button is not selected
+      .form-group.global_navigation_sub_heading
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Global navigation buttons show background color
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :global_navigation_show_background_color, {class: "global-navigation-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_global_navigation_show_background_color"}
+            %span.pl-15 Yes
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -116,21 +143,18 @@
                 .input-group-addon
                   %i
                   = d.text_field :global_navigation_button_color , class: "form-control global-navigation-field",autocomplete: true,:value=>d.object.global_navigation_button_color.present? ? d.object.global_navigation_button_color : "#3B3B3B"
-      .row
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Button shape 
+              Global navigation buttons opacity
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape),{},{class: "form-control global-navigation-field button_shape"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Global navigation button border
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border.present? ? d.object.secondary_page_menu_border : 'All sides'),{},{class: "form-control global-navigation-field"}            
-      .form-group
+              = d.select :global_navigation_buttons_opacity , options_for_select(opacity_options,d.object.global_navigation_buttons_opacity.present? ? d.object.global_navigation_buttons_opacity : "100%"),{},{class: "form-control global-navigation-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #9a5aa6;"}
+        Button "on" color options
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_sub_heading{:style => "font-size: 18px;  color: #9a5aa6;"}
+        Use these options for button appearance when the button is selected
+      .form-group.global_navigation_sub_heading
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
           Display button on background color
         .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -139,7 +163,7 @@
             = e.check_box :display_button_on_bg_color, {class: "global-navigation-field"}
             %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_button_on_bg_color"}
             %span.pl-15 Yes
-      .row
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -148,15 +172,15 @@
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
-                  = e.text_field :button_on_bg_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.button_on_bg_color.present? ? e.object.button_on_bg_color : "#565455"      
-      .row
+                  = e.text_field :button_on_bg_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.button_on_bg_color.present? ? e.object.button_on_bg_color : "#565455"
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Button on background color opacity
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :button_on_bg_color_opacity , options_for_select(opacity_options,e.object.button_on_bg_color_opacity.present? ? e.object.button_on_bg_color_opacity : "100%"),{},{class: "form-control global-navigation-field"}            
-      .row
+              = e.select :button_on_bg_color_opacity , options_for_select(opacity_options,e.object.button_on_bg_color_opacity.present? ? e.object.button_on_bg_color_opacity : "100%"),{},{class: "form-control global-navigation-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -165,38 +189,64 @@
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
-                  = e.text_field :global_navigation_button_on_font_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.global_navigation_button_on_font_color.present? ? e.object.global_navigation_button_on_font_color : "#565455"      
-      .row
+                  = e.text_field :global_navigation_button_on_font_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.global_navigation_button_on_font_color.present? ? e.object.global_navigation_button_on_font_color : "#565455"
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #9a5aa6;"}
+        Button border
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Application background color
+              Global navigation button border
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :secondary_page_menu_border , options_for_select(border_options,d.object.secondary_page_menu_border.present? ? d.object.secondary_page_menu_border : 'All sides'),{},{class: "form-control global-navigation-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Global navigation button border color
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
-                  = e.text_field :application_background_color , class: "form-control global-navigation-field",autocomplete: true ,:value=>e.object.application_background_color.present? ? e.object.application_background_color : "#c5c4c7"      
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Application background color opacity
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :application_background_color_opacity , options_for_select(opacity_options,e.object.application_background_color_opacity.present? ? e.object.application_background_color_opacity : "100%"),{},{class: "form-control global-navigation-field"}                        
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Spacing between buttons
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :spacing_between_buttons , options_for_select(spacing_options,e.object.spacing_between_buttons.present? ? e.object.spacing_between_buttons : '0px'),{},{class: "form-control global-navigation-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Global navigation border thickness
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = e.select :global_navigation_border_thickness , options_for_select(global_navigation_border_thickness_space,e.object.global_navigation_border_thickness.present? ? e.object.global_navigation_border_thickness : '0px'),{},{class: "form-control global-navigation-field"}
+                  = e.text_field :global_navigation_button_border_color , class: "form-control global-navigation-field",autocomplete: true,:value=>e.object.global_navigation_button_border_color.present? ? e.object.global_navigation_button_border_color : "#c5c4c7"
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #9a5aa6;"}
+        Button icon
+      .form-group.global_navigation_sub_heading
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display global navigation button icon
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_global_navigation_button_icon, {class: "global-navigation-field"}
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_icon"}
+            %span.pl-15 Yes
+
+
+
+
+
+
+      .form-group.global_navigation_sub_heading
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Display global navigation button color
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = e.check_box :display_global_navigation_button_bg_color, {class: "global-navigation-field",:checked=>e.object.display_global_navigation_button_bg_color.present? ? e.object.display_global_navigation_button_bg_color : true }
+            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_bg_color"}
+            %span.pl-15 Yes
+
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #9a5aa6;"}
+        Image uploads
+      -#.form-group
+      -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+      -#    Display global navigation button color
+      -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      -#    .TriSea-technologies-Switch
+      -#      %span.pr-15 No
+      -#      = e.check_box :display_global_navigation_button_color, {class: "global-navigation-field"}
+      -#      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_global_navigation_button_color"}
+      -#      %span.pl-15 Yes
 
       -#.form-group
       -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -216,15 +266,6 @@
       -#      = e.check_box :use_gables_buttons, {class: "global-navigation-field"}
       -#      %label.label-primary{:for => "community_design_attributes_expressionist_attributes_use_gables_buttons"}
       -#      %span.pl-15 Yes
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Global navigation buttons show background color
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = e.check_box :global_navigation_show_background_color, {class: "global-navigation-field"}
-            %label.label-primary{:for => "community_design_attributes_expressionist_attributes_global_navigation_show_background_color"}
-            %span.pl-15 Yes
       -#.form-group
       -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
       -#    Global navigation home panther icon
@@ -269,6 +310,8 @@
               %a{"data-toggle" => "tab", :href => "#favourites-navigation-background-image"} Favourites background image
             %li
               %a{"data-toggle" => "tab", :href => "#additional-pages-navigation-background-image"} Additional pages background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#neighborhood-background-image"} Neighborhood background image
           .tab-content
             #global-navigation-button-on.tab-pane.fade.in.active
               .form-group
@@ -904,6 +947,37 @@
                 %span.icon-upload
                   = image_tag "upload-image.png"
                   %p Drag &amp; Drop file to Upload
+            /-----------------------------------------------------------
+            #neighborhood-background-image.tab-pane.fade
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Upload Neighborhood pages background image
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = e.check_box :display_neighborhood_bg_image, {class: "global-navigation-field"}
+                    %label.label-primary{:for => "community_design_attributes_expressionist_attributes_display_neighborhood_bg_image"}
+                    %span.pl-15 Yes
+              .row.neighborhood-bg-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Neighborhood background image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.expressionist.neighborhood_bg_image.present? ? current_community.design.expressionist.neighborhood_bg_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Neighborhood Background Image"}
+                            = image_tag current_community.design.expressionist.neighborhood_bg_image.present? ? current_community.design.expressionist.neighborhood_bg_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"neighborhood-bg-image-preview"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :neighborhood_bg_image
+              .text-center.drag-box.mt-15.image-upload#neighborhood-bg-image-upload-holder.neighborhood-bg-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
 :javascript 
   var global_nav_button_on_as_image = "#{current_community.design.global_nav_button_on_as_image}" 
   var global_nav_button_off_as_image = "#{current_community.design.global_nav_button_off_as_image}" 
@@ -931,6 +1005,7 @@
   var display_imagepage_btn_off_image = "#{current_community.design.expressionist.display_imagepage_btn_off_image}"
   var display_webpage_btn_off_image = "#{current_community.design.expressionist.display_webpage_btn_off_image}"
   var display_favourite_btn_off_image = "#{current_community.design.expressionist.display_favourite_btn_off_image}"
+  var display_neighborhood_bg_image = "#{current_community.design.expressionist.display_neighborhood_bg_image}"
 
  
   if(display_global_nav_background_image == "true")
@@ -982,7 +1057,18 @@
     $('.webpage-btn-off-upload-fields').removeClass('hidden');
   if(display_favourite_btn_off_image == "true")
     $('.favourite-btn-off-upload-fields').removeClass('hidden');
+  if(display_neighborhood_bg_image == "true")
+    $('.neighborhood-bg-upload-fields').removeClass('hidden');
     
+
+  $('#community_design_attributes_expressionist_attributes_display_neighborhood_bg_image').change(function(){
+    if($(this).is(':checked')){
+        $('.neighborhood-bg-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.neighborhood-bg-upload-fields').addClass('hidden');
+     }
+  });
 
   $('#community_design_attributes_expressionist_attributes_display_global_nav_background_image').change(function(){
     if($(this).is(':checked')){

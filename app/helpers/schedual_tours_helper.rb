@@ -1,0 +1,2 @@
+module SchedualToursHelper
+end

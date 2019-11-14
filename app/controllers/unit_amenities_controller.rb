@@ -52,15 +52,13 @@ class UnitAmenitiesController < ApplicationController
     @amenities = @unit.amenities
     @floorplan = Floorplan.where(provider_floorplan_id: @unit.floorplan_id,community_id: @community.id).first
 
-    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
+    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id if x.present?} if @community.tour.present?
   end
 
   def remove_amenities_plot
     @unit.amenities.each do |amenity|
       amenity.x_plot = 0
       amenity.y_plot = 0
-      amenity.amenityable_type = nil
-      amenity.amenityable_id = nil
       amenity.save(validate: false)
     end
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "All plots have been deleted successfully."
@@ -90,8 +88,6 @@ class UnitAmenitiesController < ApplicationController
     amenities.each do |amenity|
       amenity.x_plot = 0
       amenity.y_plot = 0
-      amenity.amenityable_type = nil
-      amenity.amenityable_id = nil
       amenity.save(validate: false)
     end
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "Amenity plot have been deleted successfully."

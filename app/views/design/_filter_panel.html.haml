@@ -5,11 +5,14 @@
       .row
         .col-md-12
           %p.title-box Customize Filter Panel
-      .row
-        .col-lg-12
-          %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+          %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label{:style => "font-size: 23px; color: #1e8ece;"}
             Filter Panel Options
-      .row
+      %br
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #89c765;"}
+        Filter panel background
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_sub_heading{:style => "font-size: 18px;  color: #89c765;"}
+        To load an image for the filter panel background please see tabs at the botton of the page
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -19,21 +22,30 @@
                 .input-group-addon
                   %i
                   = d.text_field :filter_panel_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_panel_color.present? ? d.object.filter_panel_color : "#3B3B3B"
-      .row
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter panel text font style 
+              Filter panel opacity
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :filter_panel_font_style , options_for_select(font_families,d.object.filter_panel_font_style),{},{class: "form-control filter-panel-field"}            
-      .row
+              = d.select :filter_panel_opacity , options_for_select(opacity_options,d.object.filter_panel_opacity.present? ? d.object.filter_panel_opacity : "100%"),{},{class: "form-control filter-panel-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #89c765;"}
+        Filter panel text options
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel text font style
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_panel_font_style , options_for_select(font_families,d.object.filter_panel_font_style),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Filter panel text font size
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = filter_panel.select :text_font_size , options_for_select(filter_panel_text_font_sizes,filter_panel.object.text_font_size.present? ? filter_panel.object.text_font_size : "18px"),{},{class: "form-control filter-panel-field"}            
-      .row
+              = filter_panel.select :text_font_size , options_for_select(filter_panel_text_font_sizes,filter_panel.object.text_font_size.present? ? filter_panel.object.text_font_size : "18px"),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -43,14 +55,22 @@
                 .input-group-addon
                   %i
                   = d.text_field :filter_panel_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_panel_font_color.present? ? d.object.filter_panel_font_color : "#ffff"
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter panel opacity 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :filter_panel_opacity , options_for_select(opacity_options,d.object.filter_panel_opacity.present? ? d.object.filter_panel_opacity : "100%"),{},{class: "form-control filter-panel-field"}            
-      .row
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #89c765;"}
+        Filter panel button options
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_sub_heading{:style => "font-size: 18px;  color: #89c765;"}
+        To load an image for the filter panel button background please see tabs at the bottom of the page
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #9a5aa6;"}
+        Filter panel button color
+      .form-group.global_navigation_sub_heading
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+          Filter panel buttons show backround color
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          .TriSea-technologies-Switch
+            %span.pr-15 No
+            = filter_panel.check_box :filter_panel_buttons_show_backround_color, {class: "filter-panel-field"}
+            %label.label-primary{:for => "community_design_attributes_filter_panel_attributes_filter_panel_buttons_show_backround_color"}
+            %span.pl-15 Yes
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -60,24 +80,21 @@
                 .input-group-addon
                   %i
                   = d.text_field :filter_button_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_button_color.present? ? d.object.filter_button_color : "#565455"
-      .row
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter button font style 
+              Filter buttons opacity
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :filter_button_font_style , options_for_select(font_families,d.object.filter_button_font_style),{},{class: "form-control filter-panel-field"}
-      .row
+              = d.select :filter_buttons_opacity , options_for_select(opacity_options,d.object.filter_buttons_opacity.present? ? d.object.filter_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter button font color
+              Filter menu buttons border
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              .input-group.colorpicker-style.hex-format-colorpicker
-                .input-group-addon
-                  %i
-                  = d.text_field :filter_button_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_button_font_color.present? ? d.object.filter_button_font_color : "#ffff"
-      .row
+              = d.select :filter_menu_buttons_border , options_for_select(border_options,d.object.filter_menu_buttons_border.present? ? d.object.filter_menu_buttons_border : 'All sides'),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -87,114 +104,35 @@
                 .input-group-addon
                   %i
                   = filter_panel.text_field :button_border_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.button_border_color.present? ? filter_panel.object.button_border_color : "#565455"
-      .row
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #9a5aa6;"}
+        Filter panel button text
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter button font style
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_button_font_style , options_for_select(font_families,d.object.filter_button_font_style),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               Filter panel button text font size
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = filter_panel.select :button_text_font_size , options_for_select(filter_panel_button_text_font_sizes,filter_panel.object.button_text_font_size),{},{class: "form-control filter-panel-field"}                        
-      .row
+              = filter_panel.select :button_text_font_size , options_for_select(filter_panel_button_text_font_sizes,filter_panel.object.button_text_font_size),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter buttons opacity 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :filter_buttons_opacity , options_for_select(opacity_options,d.object.filter_buttons_opacity.present? ? d.object.filter_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Gallery buttons opacity 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :gallery_buttons_opacity , options_for_select(opacity_options,d.object.gallery_buttons_opacity.present? ? d.object.gallery_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter menu buttons border 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :filter_menu_buttons_border , options_for_select(border_options,d.object.filter_menu_buttons_border.present? ? d.object.filter_menu_buttons_border : 'All sides'),{},{class: "form-control filter-panel-field"}
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Gallery buttons border 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = d.select :gallery_buttons_border , options_for_select(border_options,d.object.gallery_buttons_border.present? ? d.object.gallery_buttons_border : 'All sides'),{},{class: "form-control filter-panel-field"}    
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Gallery button on font color
+              Filter button font color
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i
-                  = filter_panel.text_field :gallery_button_on_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_font_color.present? ? filter_panel.object.gallery_button_on_font_color : "#ffff"        
-      .form-group
-        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Display gallery button on background color
-        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          .TriSea-technologies-Switch
-            %span.pr-15 No
-            = filter_panel.check_box :display_gallery_button_on_background_color, {class: "filter-panel-field"}
-            %label.label-primary{:for => "community_design_attributes_filter_panel_attributes_display_gallery_button_on_background_color"}
-            %span.pl-15 Yes
-
-      .row.gallery-button-on-background-color-field.hidden
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Gallery button on background color
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              .input-group.colorpicker-style.hex-format-colorpicker
-                .input-group-addon
-                  %i
-                  = filter_panel.text_field :gallery_button_on_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_background_color.present? ? filter_panel.object.gallery_button_on_background_color : "#565455"              
-      .row.gallery-button-on-background-color-field.hidden
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Gallery button on background color opacity
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = filter_panel.select :gallery_button_on_background_color_opacity , options_for_select(opacity_options,filter_panel.object.gallery_button_on_background_color_opacity.present? ? filter_panel.object.gallery_button_on_background_color_opacity : '100%'),{},{class: "form-control filter-panel-field"}                            
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter panel icon color
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              .input-group.colorpicker-style.hex-format-colorpicker
-                .input-group-addon
-                  %i
-                  = filter_panel.text_field :filter_panel_icon_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.filter_panel_icon_color.present? ? filter_panel.object.filter_panel_icon_color : "#ffff"              
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter panel icon background color
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              .input-group.colorpicker-style.hex-format-colorpicker
-                .input-group-addon
-                  %i
-                  = filter_panel.text_field :icon_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.icon_background_color.present? ? filter_panel.object.icon_background_color : "#565455"              
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter panel icon background color opacity
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = filter_panel.select :icon_background_color_opacity , options_for_select(opacity_options,filter_panel.object.icon_background_color_opacity.present? ? filter_panel.object.icon_background_color_opacity : '100%'),{},{class: "form-control filter-panel-field"}                
-      .row
-        .col-lg-10
-          .form-group.mt-30
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter buttons icons position
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = filter_panel.select :filter_buttons_icons_position , options_for_select(home_page_icons_position_option,filter_panel.object.filter_buttons_icons_position.present? ? filter_panel.object.filter_buttons_icons_position : 'Left of text'),{},{class: "form-control filter-panel-field"}
-
-      .form-group
+                  = d.text_field :filter_button_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_button_font_color.present? ? d.object.filter_button_font_color : "#ffff"
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #9a5aa6;"}
+        Filter panel icon options
+      .form-group.global_navigation_sub_heading
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
           Display filter panel icon
         .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -203,15 +141,123 @@
             = filter_panel.check_box :display_filter_panel_icon, {class: "filter-panel-field"}
             %label.label-primary{:for => "community_design_attributes_filter_panel_attributes_display_filter_panel_icon"}
             %span.pl-15 Yes
-      .form-group
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel icon color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :filter_panel_icon_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.filter_panel_icon_color.present? ? filter_panel.object.filter_panel_icon_color : "#ffff"
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel icon background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :icon_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.icon_background_color.present? ? filter_panel.object.icon_background_color : "#565455"
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel icon background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :icon_background_color_opacity , options_for_select(opacity_options,filter_panel.object.icon_background_color_opacity.present? ? filter_panel.object.icon_background_color_opacity : '100%'),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter buttons icons position
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :filter_buttons_icons_position , options_for_select(home_page_icons_position_option,filter_panel.object.filter_buttons_icons_position.present? ? filter_panel.object.filter_buttons_icons_position : 'Left of text'),{},{class: "form-control filter-panel-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 20px;  color: #89c765;"}
+        Filter panel - Gallery panel options
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_sub_heading{:style => "font-size: 18px;  color: #89c765;"}
+        To load an image for the gallery buttons or gallery "on" background please see tabs at the bottom of the page
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #9a5aa6;"}
+        Gallery button color
+      .form-group.global_navigation_sub_heading
         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-          Filter panel buttons show backround color
+          Display gallery button on background color
         .col-sm-12.col-lg-9.col-md-9.col-xs-12
           .TriSea-technologies-Switch
             %span.pr-15 No
-            = filter_panel.check_box :filter_panel_buttons_show_backround_color, {class: "filter-panel-field"}
-            %label.label-primary{:for => "community_design_attributes_filter_panel_attributes_filter_panel_buttons_show_backround_color"}
+            = filter_panel.check_box :display_gallery_button_on_background_color, {class: "filter-panel-field"}
+            %label.label-primary{:for => "community_design_attributes_filter_panel_attributes_display_gallery_button_on_background_color"}
             %span.pl-15 Yes
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery buttons opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :gallery_buttons_opacity , options_for_select(opacity_options,d.object.gallery_buttons_opacity.present? ? d.object.gallery_buttons_opacity : "100%"),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery buttons border
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :gallery_buttons_border , options_for_select(border_options,d.object.gallery_buttons_border.present? ? d.object.gallery_buttons_border : 'All sides'),{},{class: "form-control filter-panel-field"}
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #9a5aa6;"}
+        Gallery button "on" options
+      .row.gallery-button-on-background-color-field.hidden.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery button on background color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :gallery_button_on_background_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_background_color.present? ? filter_panel.object.gallery_button_on_background_color : "#565455"
+      .row.gallery-button-on-background-color-field.hidden.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery button on background color opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = filter_panel.select :gallery_button_on_background_color_opacity , options_for_select(opacity_options,filter_panel.object.gallery_button_on_background_color_opacity.present? ? filter_panel.object.gallery_button_on_background_color_opacity : '100%'),{},{class: "form-control filter-panel-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Gallery button on font color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = filter_panel.text_field :gallery_button_on_font_color , class: "form-control filter-panel-field",autocomplete: true,:value=>filter_panel.object.gallery_button_on_font_color.present? ? filter_panel.object.gallery_button_on_font_color : "#ffff"
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 21px;  color: #9a5aa6;"}
+        Filter panel label
+
+
+
+
+
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel label color
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i
+                  = d.text_field :filter_panel_label_color , class: "form-control filter-panel-field",autocomplete: true,:value=>d.object.filter_panel_label_color.present? ? d.object.filter_panel_label_color : "#565455"
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Filter panel label opacity
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = d.select :filter_panel_label_opacity , options_for_select(opacity_options,d.object.filter_panel_label_opacity.present? ? d.object.filter_panel_label_opacity : "100%"),{},{class: "form-control filter-panel-field"}
+
       .row
         .col-md-12
           %ul.nav.nav-tabs
@@ -222,7 +268,9 @@
             %li
               %a{"data-toggle" => "tab", :href => "#s-gallery-image-on"} Gallery image on  
             %li
-              %a{"data-toggle" => "tab", :href => "#s-filter-panel-background-image"} Filter panel background image  
+              %a{"data-toggle" => "tab", :href => "#s-filter-panel-background-image"} Filter panel background image
+            %li
+              %a{"data-toggle" => "tab", :href => "#s-filter-label-image"} Filter Label image
           .tab-content
             #s-filter-button.tab-pane.fade.in.active
               .row
@@ -351,7 +399,40 @@
               .text-center.drag-box.mt-15.image-upload#gallery-image-on-upload-holder.gallery-button-on-as-image-upload-fields.hidden
                 %span.icon-upload
                   = image_tag "upload-image.png"
-                  %p Drag &amp; Drop file to Upload 
+                  %p Drag &amp; Drop file to Upload
+                  /-------------------------------------------------
+            #s-filter-label-image.tab-pane.fade
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      Upload filter label image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = d.check_box :display_filter_label_image, {class: "filter-panel-field"}
+                        %label.label-primary{:for => "community_design_attributes_display_filter_label_image"}
+                        %span.pl-15 Yes
+              .row.filter-label-image-upload-fields.hidden
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Filter label image
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .select-logo.mb-20.mt-30
+                        .select-logo-logo
+                          %a.preview-image{:href=>current_community.design.filter_label_image.present? ? current_community.design.filter_label_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter label image"}
+                            = image_tag current_community.design.filter_label_image.present? ? current_community.design.filter_label_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-label-image-preview"
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      %span.btn.btn-primary.btn-file.mt-30
+                        %i.fa.fa-upload
+                        Upload File
+                        = file_field_tag :filter_label_image
+              .text-center.drag-box.mt-15.image-upload#filter-label-image-upload-holder.filter-label-image-upload-fields.hidden
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
 :javascript 
   var filter_button_as_image = "#{current_community.design.filter_button_as_image}" 
   var gallery_button_as_image = "#{current_community.design.gallery_button_as_image}"       
@@ -359,6 +440,10 @@
   var gallery_button_on_as_image = "#{current_community.design.gallery_button_on_as_image}"       
   var display_gallery_button_on_background_color = "#{current_community.design.filter_panel.display_gallery_button_on_background_color}"       
 
+  var filter_label_image = "#{current_community.design.display_filter_label_image}"
+
+  if(filter_label_image == "true")
+    $('.filter-label-image-upload-fields').removeClass('hidden');
   if(filter_button_as_image == "true")
     $('.filter-button-upload-fields').removeClass('hidden');
   if(gallery_button_as_image == "true")
@@ -369,6 +454,15 @@
     $('.gallery-button-on-as-image-upload-fields').removeClass('hidden');    
   if(display_gallery_button_on_background_color == "true")
     $('.gallery-button-on-background-color-field').removeClass('hidden');    
+
+  $('#community_design_attributes_display_filter_label_image').change(function(){
+    if($(this).is(':checked')){
+        $('.filter-label-image-upload-fields').removeClass('hidden');
+      }
+    else{
+        $('.filter-label-image-upload-fields').addClass('hidden');
+     }
+  });
 
   $('#community_design_attributes_filter_button_as_image').change(function(){
     if($(this).is(':checked')){

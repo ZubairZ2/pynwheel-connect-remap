@@ -6,6 +6,7 @@ class NeighborhoodsController < ApplicationController
 
 	def index
 		@neighborhood = @community.neighborhood || @community.create_neighborhood
+    @appVersion = AppVersion.first
 	end
 
 	def create
@@ -20,6 +21,17 @@ class NeighborhoodsController < ApplicationController
 	end
 
 	def update
+    begin
+      @appVersion = AppVersion.first
+      if params[:counter_limit].present? && !(@appVersion.counter_limit == params[:counter_limit])
+        @appVersion.counter_limit = params[:counter_limit]
+      end
+      if params[:neighborhood_counter].present? && !(@appVersion.neighborhood_counter == params[:neighborhood_counter])
+        @appVersion.neighborhood_counter = params[:neighborhood_counter]
+      end
+    rescue => ex
+    end
+    @appVersion.save
 		@neighborhood = @community.neighborhood
     respond_to do |format|
       if @neighborhood.update(neighborhood_params)

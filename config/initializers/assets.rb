@@ -3,10 +3,10 @@
 # Version of your assets, change this if you want to expire all your assets.
 Rails.application.config.assets.version = '1.0'
 Rails.application.config.assets.precompile += %w( jquery.mCustomScrollbar.css )
-Rails.application.config.assets.precompile += %w( slick.css )
+Rails.application.config.assets.precompile += %w( slick.css bootstrap-datetimepicker.css )
 Rails.application.config.assets.precompile += %w( jquery.arrayUtilities.js )
-Rails.application.config.assets.precompile += %w( slick.js )
-
+Rails.application.config.assets.precompile += %w( slick.js bootstrap-datetimepicker.js moment.js)
+Rails.application.config.assets.precompile += %w( jsTimezoneDetect.js )
 # Add additional assets to the asset load path
 # Rails.application.config.assets.paths << Emoji.images_path
 

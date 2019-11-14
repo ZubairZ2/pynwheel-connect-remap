@@ -20,7 +20,9 @@ class YardiRentCafeService < BaseService
         end
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
-        
+
+        unit_record = []
+        unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardirentcafe"]).map{|x| x.provider_unit_id}
         if response[0]["Error"].nil?
           response.each do |r|
             begin
@@ -36,12 +38,12 @@ class YardiRentCafeService < BaseService
                   unit.effective_rent = r["MinimumRent"]
                 end
                 unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-                  unit.availability = "Unoccupied"
+                  unit.availability = "Unoccupied" if !unit.sold
                 end
-                unit.availability = "Unoccupied"
+                unit.availability = "Unoccupied" if !unit.sold
                 if r["AvailableDate"] != ""
                   unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-                    unit.availability = "Unoccupied"
+                    unit.availability = "Unoccupied" if !unit.sold
                   end
                   unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
 
@@ -60,7 +62,7 @@ class YardiRentCafeService < BaseService
                 end
                 unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
                   if unit.availability == "Unoccupied"
-                    unit.available = true
+                    unit.available = true if !unit.sold
                   else
                     unit.available = false
                   end
@@ -68,7 +70,12 @@ class YardiRentCafeService < BaseService
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
-                unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"]
+                
+                unit_record << unit.provider_unit_id
+                unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
+                unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
+                unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
+
                 unit.save(validate: false)
 
               end
@@ -79,23 +86,40 @@ class YardiRentCafeService < BaseService
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
         else
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            PaperTrail.enabled = false
             cred.save
+            PaperTrail.enabled = true
           rescue => err
           end
           puts  "Invalid credentials.Please enter correct one and try again." 
+        end
+        no_unit = unit_present - unit_record
+        if unit_record.nil?
+          no_unit = nil
+        end
+        no_unit.each do |un|
+          unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+          unit.availability = "Occupied"
+          unit.available = false
+          unit.available_date = nil
+          unit.save(validate: false) unless unit.manual_override
         end
       rescue => e
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          PaperTrail.enabled = false
           cred.save
+          PaperTrail.enabled = true
         rescue => err
         end
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  

@@ -231,6 +231,10 @@ class RealPageSvcStaticService < BaseService
                 #   end
                 # end
                 unit.manually_updated = false
+
+                unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+
+
                 unit.save(validate: false)
                 #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
               end
@@ -277,6 +281,7 @@ class RealPageSvcStaticService < BaseService
         community_id = credentials.community_id
 
         @array_of_dates.each do |hash|
+          date_check = hash[:ready_date] + 540
           response = HTTParty.post(
               url,
               :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -304,7 +309,7 @@ class RealPageSvcStaticService < BaseService
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>
-                                  <tem:singlevalue>'+hash[:ready_date].to_s+'</tem:singlevalue>
+                                  <tem:singlevalue>'+date_check.to_s+'</tem:singlevalue>
                                 </tem:ListCriterion>
                               </tem:listCriteria>
                               <tem:listCriteria>
@@ -355,11 +360,15 @@ class RealPageSvcStaticService < BaseService
               # unitHash = Hash.new
               rentStr = ""
               unitLeaseTerm = []
+              min_rent = nil
+              max_rent = nil
               unit_no = u[:Address][:UnitID]
               if hash[:units].include?(unit_no)
                 if u[:RentMatrix].present?
                   best_price = nil
                   begin
+                    min_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent]
+                    max_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent]
 
                     u[:RentMatrix][1][:Rows][:Row].each_with_index do |opts,index|
                       next if index == 0
@@ -393,6 +402,8 @@ class RealPageSvcStaticService < BaseService
                     unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                       unit.effective_rent = best_price
                     end
+                    unit.min_effective_rent = min_rent
+                    unit.max_effective_rent = max_rent
                     unit.lease_pricing = rentStr
                     unit.save(:validate => false)
                     # @doc = @doc + response.body

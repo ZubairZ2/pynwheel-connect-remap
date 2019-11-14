@@ -22,6 +22,11 @@ $(document).ready(function(e){
         $("#imageselect2").toggle();
         e.stopPropagation();
     })
+    
+    $('body').on("click", ".elevator-imageselect", function(e){
+      $("#imageselect3").toggle();
+      e.stopPropagation();
+    })
 
   $("#multiselect li").click(function(e){
     if ($(this).hasClass("active")){
@@ -345,6 +350,28 @@ function readSecondaryURL(input) {
       }
     }
 }
+function readCommunityGroupLogoURL(input) {
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
+
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#preview-community-group-logo').attr('src', e.target.result);
+                $('#preview-community-group-logo').parent().attr('href', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+
+
+        }
+        else{
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
+    }
+}
 
 // preview image function including svg
 function readImageIncludingSVG(input) {  
@@ -561,7 +588,17 @@ function showCredentialsForm(){
 function readyJsOnAjaxCall(){
     showDataTables();
 }
+function floorplan_names_order() {
+    $.ajax({
+        type: "POST",
+        url: '/communities/'+community_id+'/floorplans/save_floorplan_name_order',
+        data: {desc: $('.floorplan_name_col')[0].classList[1]},
+        success: function(response) {
 
+        }
+
+    });
+}
 function showDataTables(){
     // $('#miyazaki.unit_data_table').DataTable({
     //     'aoColumnDefs': [{
@@ -581,6 +618,30 @@ function showDataTables(){
         "stateSave": true,
         "paging": false
     });
+    $('#miyazaki.logs_data_table').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [0,1,2,3,4,5],
+        }],
+        "ordering": true,
+        "stateSave": true,
+        "paging": true
+    });
+    $(".floorplan_name_col" ).click(function() {
+        floorplan_names_order();
+    });
+    $(".floorplan_sr_col" ).click(function() {
+        $.ajax({
+            type: "POST",
+            url: '/communities/'+community_id+'/floorplans/save_floorplan_name_order',
+            data: {desc: "sorting"},
+            success: function(response) {
+
+            }
+
+        });
+    });
+
     $("#miyazaki_info").detach().prependTo('#miyazaki_wrapper');
     $('#communities.table').DataTable({
         initComplete : function() {
@@ -606,6 +667,19 @@ function showDataTables(){
         language: {
             search: "",
             searchPlaceholder: "Search by company name"
+        }
+    });
+    $('#community_groups.table').DataTable({
+        initComplete : function() {
+            $("#community_groups_filter").detach().appendTo('#new-search-area');
+        },
+        "ordering": false,
+        "stateSave": true,
+        "info": false, //Dont display info e.g. "Showing 1 to 4 of 4 entries"
+        "paging": false, //Dont want paging
+        language: {
+            search: "",
+            searchPlaceholder: "Search by community group name"
         }
     });
 }

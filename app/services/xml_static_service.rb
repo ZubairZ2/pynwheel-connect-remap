@@ -73,6 +73,8 @@ class XmlStaticService < BaseService
             unit.effective_rent = u["EffectiveRent"]["Avg"]
           end
         end
+        unit.min_effective_rent = u["EffectiveRent"]["Min"]
+        unit.max_effective_rent = u["EffectiveRent"]["Max"]
         unless unit.floor_is_updated.present? && unit.floor_is_updated
           unit.floor = u["EntryFloor"]
         end

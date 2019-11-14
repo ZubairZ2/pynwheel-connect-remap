@@ -1,5 +1,7 @@
 - content_for :title, "Gallery Page - Pynwheel"
 / Main content
+
+
 %section
   .content
     .title-heading
@@ -103,11 +105,22 @@
             = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success mb-20" do
               %i.fa.fa-plus-circle
               ADD GALLERY
+        %label
+          - dat = PaperTrail::Version.all
 
       / End Panel left Side
 / /.content
 #show_modal
 :javascript
+  if (localStorage.getItem("galleryCropped") == "1")
+  {
+
+
+    localStorage.setItem("galleryCropped", "0");
+    location.reload(true);
+    // window.location.href = window.location.href;
+    // location.reload(true);
+  }
   $('.gallery-setting-field').change(function(){
     $('.gallery-settings-form').submit();
   });

@@ -71,6 +71,7 @@
                   = "-- select image --"
                 %ul#imageselect{:style => "display: none;"}
                   - amenity_arr = []
+                  - @tour_amenity_array = [] if @tour_amenity_array.nil?
                   - @amenities.each do |amenity|
                     - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0 && !(@tour_amenity_array.include?(amenity.id))
                       %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
@@ -136,6 +137,7 @@
   var lmargin = 0
   var rmargin = 0
   var community_id = #{params[:community_id]}
+  var unit_id_for_amenity = #{@unit.id}
   var addmode = false;
   var unit_id_for_amenity = #{@sitemap.id}
   var amenity_type = "unit"

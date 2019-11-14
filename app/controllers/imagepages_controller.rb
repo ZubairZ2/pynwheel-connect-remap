@@ -14,7 +14,9 @@ class ImagepagesController < ApplicationController
       flash[:notice] = "Imagepage created successfully."
     else
       flash[:error] = @imagepage.errors.full_messages.join(',')
-    end
+		end
+		PaperTrail::Version.create(item_type: "Imagepage",item_id: @imagepage.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@imagepage.name}' community_id: '#{current_community.id}'")
+
 	end
 
 	def edit
@@ -28,7 +30,9 @@ class ImagepagesController < ApplicationController
       flash[:notice] = "Imagepage updated successfully."
     else
       flash[:error] = @imagepage.errors.full_messages.join(',')
-    end
+		end
+		PaperTrail::Version.create(item_type: "Imagepage",item_id: @imagepage.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@imagepage.name}' community_id: '#{current_community.id}'")
+
 	end
 	def check_community
 		unless current_user.is_super_admin?
@@ -52,7 +56,8 @@ class ImagepagesController < ApplicationController
 	def destroy
 		@imagepage = @community.imagepages.find(params[:id])
     if @imagepage.destroy
-      flash[:notice] = "Imagepage deleted successfully."
+			PaperTrail::Version.create(item_type: "Imagepage",item_id: @imagepage.id,event: "destroy",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@imagepage.name}' community_id: '#{current_community.id}'")
+			flash[:notice] = "Imagepage deleted successfully."
     else
       flash[:error] = @imagepage.errors.full_messages.join(',')
     end
@@ -67,7 +72,9 @@ class ImagepagesController < ApplicationController
 
 	def save_additional_image
 		@imagepage = @community.imagepages.find(params[:id])
-		@imagepage.additional_images.create(image: params[:file])
+		@additional_image_obj = @imagepage.additional_images.create(image: params[:file])
+		PaperTrail::Version.create(item_type: "AdditionalImage",item_id: @additional_image_obj.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@additional_image_obj.name}' imagepage_id: #{@additional_image_obj.imagepage_id} community_id: '#{current_community.id}'")
+
 		#@gallery_images = @gallery.gallery_images.order(:sort).all
 		render :json=>{"status"=>"success"}
 	end
@@ -75,6 +82,8 @@ class ImagepagesController < ApplicationController
 	def delete_additional_image
 		@imagepage = @community.imagepages.find(params[:id])
 		@additional_image = @imagepage.additional_images.find(params[:additional_image_id])
+		PaperTrail::Version.create(item_type: "AdditionalImage",item_id: @additional_image.id,event: "destroy",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@additional_image.name}' imagepage_id: #{@additional_image.imagepage_id} community_id: '#{current_community.id}'")
+
 		@additional_image.destroy
 		flash[:notice] = "Image deleted successfully."
 		redirect_back(fallback_location: root_path)
@@ -88,6 +97,16 @@ class ImagepagesController < ApplicationController
 	def update_additional_image
 		@imagepage = @community.imagepages.find(params[:id])
 		@additional_image = @imagepage.additional_images.find(params[:additional_image_id])
+		if @additional_image.crop_x == params[:additional_image][:crop_x].to_f
+			@additional_image.do_crop = false
+		else
+			@additional_image.do_crop = true
+		end
+		if params[:additional_image][:crop_h].to_f == 0 && params[:additional_image][:crop_w].to_f == 0
+			@additional_image.do_crop = false
+		end
+		PaperTrail::Version.create(item_type: "AdditionalImage",item_id: @additional_image.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@additional_image.name}' imagepage_id: #{@additional_image.imagepage_id} community_id: '#{current_community.id}'")
+
 		@additional_image.update(additional_image_params)
 		flash[:notice] = "Image is edited successfully."
 		redirect_back(fallback_location: root_path)
@@ -104,6 +123,6 @@ class ImagepagesController < ApplicationController
 	end
 
 	def additional_image_params
-		params.require(:additional_image).permit(:name)
+		params.require(:additional_image).permit(:name,:crop_x,:crop_y,:crop_w,:crop_h)
 	end
 end

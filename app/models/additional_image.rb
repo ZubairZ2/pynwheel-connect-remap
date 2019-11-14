@@ -9,6 +9,11 @@
 #  imagepage_id :integer
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
+#  crop_x       :float
+#  crop_y       :float
+#  crop_w       :float
+#  crop_h       :float
+#  do_crop      :boolean          default(FALSE)
 #
 
 class AdditionalImage < ApplicationRecord
@@ -17,7 +22,12 @@ class AdditionalImage < ApplicationRecord
   set_sortable :sort  
 	mount_uploader :image, AvatarUploader
 	before_create :set_image_name
+	after_update :crop_image
 
+
+	def crop_image
+		image.recreate_versions! if (crop_x.present? && do_crop)
+	end
 	def set_image_name
   	self.name = image.file.filename
   end

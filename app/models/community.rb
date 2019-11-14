@@ -41,13 +41,34 @@
 #  is_vertical_app                :boolean          default(FALSE)
 #  entrata_exception_logs         :string
 #  show_tour_page                 :boolean
+#  display_available_date         :boolean          default(TRUE)
+#  show_gesture_icons             :boolean          default(TRUE)
+#  self_tour                      :boolean          default(FALSE)
+#  crop_x                         :float
+#  crop_y                         :float
+#  crop_w                         :float
+#  crop_h                         :float
+#  crop_x_secondary               :float
+#  crop_y_secondary               :float
+#  crop_w_secondary               :float
+#  crop_h_secondary               :float
+#  community_group_id             :integer
+#  alert_contact                  :integer          default("both")
+#  floorplan_name_order           :boolean          default(FALSE)
+#  image_bit                      :boolean
+#  do_crop                        :boolean          default(FALSE)
+#  do_crop_secondary              :boolean          default(FALSE)
+#  number_of_units                :integer
+#  tour_setup_visible             :boolean          default(FALSE)
 #
 
 class Community < ApplicationRecord
-  #mount_uploader :logo, AvatarUploader
+  has_paper_trail
+  # mount_uploader :logo, AvatarUploader
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
+  belongs_to :community_group
   has_many :community_users, dependent: :destroy
   has_many :users ,through: :community_users, dependent: :destroy
   has_many :units, dependent: :destroy
@@ -70,14 +91,45 @@ class Community < ApplicationRecord
   validates_uniqueness_of :name, scope: :company_id
   validate :apartment_page_name_length_validate
   validate :gallery_page_name_length_validate
-  validate :unique_community_code_on_create, on: [:create]
-  validate :unique_community_code_on_update, on: [:update]
+  # validate :unique_community_code_on_create, on: [:create]
+  # validate :unique_community_code_on_update, on: [:update]
   after_create :set_default_theme
   after_create :create_default_gallery
+  after_create :create_sms_email_content
   validate :validate_page_position
+
+  validates_with CodeValidatorOnUpdate , on: [:update]
+  validates_with CodeValidatorOnCreate , on: [:create]
+  after_update :crop_image
+  after_update :crop_secondary_image
+
+  #
+  # phony_normalize :phone
+  # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
+  # validates :phone, phony_plausible: true
+
   has_many :elevators, dependent: :destroy
 
+
+
+
+  # phony_normalize :phone
+  # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
+  # validates :phone, phony_plausible: true
+
+
+  enum alert_contact: [:email, :phone, :both]
+  
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
+  amoeba do
+    include_association :design
+  end
+  def crop_image
+    logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
+  end
+  def crop_secondary_image
+    secondary_logo.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
+  end
 
   def is_futurist?
     theme_name == "futurist"
@@ -133,6 +185,9 @@ class Community < ApplicationRecord
     else
       theme_name
     end
+  end
+  def clone_a_community(community)
+    return CloneCommunityJob.perform_async community
   end
 
   def has_temporary_images?
@@ -235,6 +290,13 @@ class Community < ApplicationRecord
         errors[:base] << "Community code has already been taken."
       end
     end
+  end
+  def check_credentials
+    #psi_service = PsiService.new(credential.attributes)
+    #psi_service.perform
+    psi_static_service = CredentialsValid.new(JSON.parse(credential.attributes.to_json))
+    psi_static_service.perform
+    # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
   def import_psi_data
     #psi_service = PsiService.new(credential.attributes)
@@ -442,6 +504,12 @@ class Community < ApplicationRecord
 
   def create_default_gallery
     self.galleries.create(name: 'default')
+  end
+
+  def create_sms_email_content
+    self.sms_text = CommunityConstants::SMS_TEXT
+    self.email_text = CommunityConstants::EMAIL_TEXT
+    self.save
   end
 
   def make_address

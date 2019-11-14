@@ -1,0 +1,22 @@
+%tr
+  %td{:align => "center", :valign => "top"}
+    %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+      %tr
+        %td{:align => "center", :valign => "top"}
+          %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
+            %tr
+              %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
+                %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                  %tr
+                    %td{:align => "center", :valign => "top"}
+                      %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                        %tr
+                          %td{:width => "100%"}
+                            %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                              %tr
+                                %td
+                                  %div{:style => "width:100%; overflow: hidden; position: relative;"}
+                                    - t = img.y_plot/@sitemap.image.height.to_f * 365
+                                    - l = img.x_plot/@sitemap.image.width.to_f * 580
+                                    %i.fa.fa-map-marker.stops{ id: img.id, :style => "position: absolute; font-size: 15px; background: #00ff08; border-radius: 30px; top: #{t-5}px; left: #{l-5}px; height:15px; width: 15px; color: #d37474; margin-top: 3px;"}
+                                    %img{:alt => "", :src => "#{@sitemap.image.url}", :width => "580", :height => "auto", :style => "max-width:666px; margin:auto;", :title => ""}

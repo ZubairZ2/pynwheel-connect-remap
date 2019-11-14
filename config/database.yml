@@ -6,7 +6,6 @@ connection: &connection
   pool: 5
   timeout: 5000
   min_messages: warning
-
 development:
   <<: *connection
   database: pynwheel_development

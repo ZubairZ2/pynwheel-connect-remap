@@ -27,7 +27,7 @@ $(document).ready(function(){
 
   //************************* Gallery Images Upload using dropzone plugin **************//
   if ($("#gallery-image-upload-holder").length){
-    saveGalleryImage(); 
+    saveGalleryImage();
   }
 
   if ($("#additional-image-upload-holder").length){
@@ -52,8 +52,8 @@ $(document).ready(function(){
   $("#elevator-images").change(function(){
     var files = $(this).prop("files")
     for (var i = 0; i < files.length; i++) {
-        if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
-             readAmenityImageSrc(files[i],'elevator');
+      if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
+        readElevatorImageSrc(files[i]);
       } 
     }
     if(files.length == 1){
@@ -62,6 +62,21 @@ $(document).ready(function(){
       } 
     }
     $(this).val(''); 
+  });
+
+  $("#elevator-gallery-images").change(function(){
+      var files = $(this).prop("files")
+      for (var i = 0; i < files.length; i++) {
+        if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+          readElevatorGalleryImageSrc(files[i],'community');
+        }
+      }
+      if(files.length == 1){
+        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){
+        $('#image-upload-warning').modal('show');
+        }
+      }
+      $(this).val('');
   });
 
   $("#amenity-images").change(function(){
@@ -147,6 +162,7 @@ $(document).ready(function(){
   imageAmenityGalleryDragNdrop()
   imageFloorplanAmenityDragNdrop()
   imageSitemapAmenityDragNdrop()
+  imageElevatorDragNdrop()
 
   $('#images-loop-type-radio').click(function(){
     if ($(this).is(':checked')){
@@ -334,6 +350,32 @@ function saveAnimation(value){
 //     }
 //   }
 // }
+  
+  function readElevatorImageSrc(file){
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      src = e.target.result
+      name= file.name
+
+      $.ajax({
+        url: "/communities/"+community_id+"/elevators",
+        type: "POST",
+        dataType: "script",
+        data: {
+            name: name,
+            src: src,
+            elevator_id: elevator_id
+        }
+      }).done(function(){
+          $(".divLoading").addClass("hidden");
+          console.log("success");
+          if (type == "community"){location.reload();}
+      });
+
+    }
+    reader.readAsDataURL(file);
+  }
 
   function readAmenityImageSrc(file,type){
     $(".divLoading").removeClass("hidden");
@@ -343,17 +385,25 @@ function saveAnimation(value){
     }
     reader.readAsDataURL(file);
   }
-    function readAmenityGalleryImageSrc(file,type){
-        $(".divLoading").removeClass("hidden");
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            AmenityGalleryImage(e.target.result,file.name,type);
-        }
-        reader.readAsDataURL(file);
+  function readAmenityGalleryImageSrc(file,type){
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        AmenityGalleryImage(e.target.result,file.name,type);
     }
+    reader.readAsDataURL(file);
+  }
+
+  function readElevatorGalleryImageSrc(file,type){
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      ElevatorGalleryImage(e.target.result,file.name,type, elevator_id);
+    }
+    reader.readAsDataURL(file);
+  }
 
   function AmenityImage(src,name,type){
-    debugger
     var amenityId = 0;
     if (type == "floorplate")
       var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/amenities"
@@ -364,43 +414,85 @@ function saveAnimation(value){
     else if (type == "community")
     {amenityId = amenity_id;var url = "/communities/"+community_id+"/amenities"}
     else if (type == "elevator"){
-      amenityId = amenity_id;
+      amenityId = elevator_id;
       var url = "/communities/"+community_id+"/elevators"
     }
     else
       var url = "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/amenities"
-      $.ajax({
-          url: url,
-          type: "POST",
-          dataType: "script",
-          data: {
-              name: name,
-              src: src,
-              amenityId: amenityId
-          }
-      }).done(function(){
-          $(".divLoading").addClass("hidden");
-          console.log("success");
-          if (type == "community"){location.reload();}
-      });
-    }
-    function AmenityGalleryImage(src,name,type){
-        var amenityId = amenity_id;
-        var url = "/communities/"+community_id+"/amenities/saveAmenityGallery";
-        $.ajax({
-            url: url,
-            type: "POST",
-            dataType: "script",
-            data: {
-                name: name,
-                src: src,
-                amenityId: amenityId
+    
+    $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "script",
+        data: {
+            name: name,
+            src: src,
+            amenityId: amenityId
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+        if (type == "community"){location.reload();}
+    });
+  }
+  function AmenityGalleryImage(src,name,type){
+    var amenityId = amenity_id;
+    var url = "/communities/"+community_id+"/amenities/saveAmenityGallery";
+    $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "script",
+        data: {
+            name: name,
+            src: src,
+            amenityId: amenityId
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+  }
+
+  function ElevatorGalleryImage(src,name,type, id){
+    var elevator_id = id;
+    var url = "/communities/"+community_id+"/elevators/save_elevator_gallery";
+    $.ajax({
+      url: url,
+      type: "POST",
+      dataType: "script",
+      data: {
+        name: name,
+        src: src,
+        elevator_id: elevator_id
+      }
+    }).done(function(){
+      $(".divLoading").addClass("hidden");
+      console.log("success addin elevator gallery image");
+    });
+  }
+
+  function imageElevatorDragNdrop(){
+    var elevator_image_upload_holder = document.getElementById('elevator-image--upload-holder');
+    if (elevator_image_upload_holder){
+        elevator_image_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files.length > 0){
+            for (var i = 0; i < files.length; i++) {
+              if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                readAmenityImageSrc(files[i], 'elevator');
+              }
             }
-        }).done(function(){
-            $(".divLoading").addClass("hidden");
-            console.log("success");
-        });
+        }
+        if(files.length == 1){
+          console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+          if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+            $('#image-upload-warning').modal('show');
+          } 
+        }          
+      }
     }
+  }
 
   function imageAmenityDragNdrop(){
     var amenity_image_upload_holder = document.getElementById('amenity-image--upload-holder');
@@ -578,6 +670,14 @@ function fetchAdditionalImages(){
     });
 }
 
+function FileListItem(a) {
+    a = [].slice.call(Array.isArray(a) ? a : arguments)
+    for (var c, b = c = a.length, d = !0; b-- && d;) d = a[b] instanceof File
+    if (!d) throw new TypeError("expected argument to FileList is File or array of File objects")
+    for (b = (new ClipboardEvent("")).clipboardData || new DataTransfer; c--;) b.items.add(a[c])
+    return b.files
+}
+
 function saveGalleryImage(){
   var galleryImageDropzone = new Dropzone("#gallery-image-upload-holder", { url: "/communities/"+community_id+"/galleries/"+gallery_id+"/save_gallery_image"});
   Dropzone.options.galleryImageDropzone = {
@@ -592,15 +692,47 @@ function saveGalleryImage(){
   galleryImageDropzone.on("addedfile", function(file) {
     console.log(file.type);
     $(".divLoading").removeClass("hidden");
-    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg" || file.type == "video/mp4")) {
+    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
       $(".divLoading").addClass("hidden");
-      $('#image-and-video-upload-warning').modal('show');
+      // $('#image-and-video-upload-warning').modal('show');
+      //   debugger;
+        // f = video_field.files;
+        // f.add(file)
+        // f = file;
+        dropHandler1(file);
+        // $("#video_submit").click();
       galleryImageDropzone.removeFile(file);
     }
 
+
   });
 }
+function dropHandler1(e)
+{
+    if (e.size < 500000000)
+    {
+        if ( e.type == "video/mp4")
+        {
+            $(".divLoading").removeClass("hidden");
+            // e.preventDefault();
+            // console.log(e.dataTransfer);
+            // setTimeout(function(){
+            video_field.files = new FileListItem(e)
+            // }, 5000);
 
+            // video_field.files = e;
+            $("#video_submit").click();
+        }
+        else
+        {
+            $('#video-upload-warning').modal('show');
+        }
+    }
+    else
+    {
+        // $('#video-size-warning').modal('show');
+    }
+};
 function saveAdditionalImage(){
   var additionalImageDropzone = new Dropzone("#additional-image-upload-holder", { url: "/communities/"+community_id+"/imagepages/"+imagepage_id+"/save_additional_image"});
   Dropzone.options.additionalImageDropzone = {
@@ -690,17 +822,26 @@ function saveHomePageVideo(){
   homePageVideoDropzone.on("addedfile", function(file) {
       if (file.size < 500000001)
       {
-      // {
-          $(".divLoading").removeClass("hidden");
-      $.ajax({
-          type: "POST",
-          url: "/communities/" + community_id + "/home_page/save_home_page_video",
-          file: file,
-          success: function () {
-          },
-          error: function () {
+          if (!(file.type == "video/mp4")) {
+                $(".divLoading").addClass("hidden");
+                $('#video-upload-warning').modal('show');
+                homePageVideoDropzone.removeFile(file);
           }
-      })
+          else
+          {
+              $(".divLoading").removeClass("hidden");
+              $.ajax({
+                  type: "POST",
+                  url: "/communities/" + community_id + "/home_page/save_home_page_video",
+                  file: file,
+                  success: function () {
+                      console.log("sccuess");
+                  },
+                  error: function () {console.log("error");
+                  }
+              });
+          }
+
         }
       else
       {

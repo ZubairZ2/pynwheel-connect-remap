@@ -51,7 +51,7 @@ class PsiStaticService < BaseService
             cred.save
           rescue => err
           end
-          save_website_column_of_community(response)
+          # save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
@@ -74,7 +74,8 @@ class PsiStaticService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    fill_psi_pricing_details
+    fill_psi_pricing_details(1)
+    fill_psi_pricing_details(0)
   end
 
   def save_psi_units(units,property_id)
@@ -147,6 +148,7 @@ class PsiStaticService < BaseService
       unless unit.building_is_updated.present? && unit.building_is_updated
         unit.building = building.present? ? building.gsub("Building ", "") : ""
       end
+      unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
       unit.manually_updated = false
       unit.save(validate: false)
 
@@ -205,11 +207,15 @@ class PsiStaticService < BaseService
     end
   end
 
-  def fill_psi_pricing_details
+  def fill_psi_pricing_details(hit)
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
+      if hit == 1
+        move_in_dates = []
+        move_in_dates << "0"
+      end
       unless move_in_dates.present?
         move_in_dates = []
         move_in_dates << "0"
@@ -246,6 +252,7 @@ class PsiStaticService < BaseService
                                    :headers => { 'Content-Type' => 'application/json' } )
           response =  JSON.parse(response.body)
         else
+          sleep 5
           response = HTTParty.post(url,
                                    :body => {
                                        "auth": {
@@ -265,9 +272,12 @@ class PsiStaticService < BaseService
                                        }
                                    }.to_json,
                                    :headers => { 'Content-Type' => 'application/json' } )
+          sleep 5
+          puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"* 300,move_in_date
           response =  JSON.parse(response.body)
         end
-        sleep 5
+        sleep 4
+
 
         if response["response"]["code"] == 200
           unless response["response"]["result"].include?('No records found')
@@ -315,6 +325,8 @@ class PsiStaticService < BaseService
                     unit.available_date = Date.parse("#{month}-#{day}-#{year}")
                   end
                   if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                    unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
+                    unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
                     unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                   elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
                     unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
@@ -418,6 +430,8 @@ class PsiStaticService < BaseService
                         unit.available_date = Date.parse("#{month}-#{day}-#{year}")
                       end
                       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                        unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
+                        unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
                         unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                       elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
                         unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
@@ -510,10 +524,16 @@ class PsiStaticService < BaseService
       moveIn_dates = []
       response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
         if dates['leaseStartDate'].present?
-          moveIn_dates << dates['leaseStartDate']
+          ss = dates['leaseStartDate'].split('/')
+          date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
+          date1 = (date1.to_date + 31).to_s
+          ss = date1.split('-')
+          added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
+          moveIn_dates << added_date
         end
       end
     rescue
+
     end
     moveIn_dates
   end

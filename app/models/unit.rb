@@ -2,47 +2,53 @@
 #
 # Table name: units
 #
-#  id                        :integer          not null, primary key
-#  community_id              :integer
-#  provider                  :string
-#  property_id               :string
-#  provider_unit_id          :string
-#  unit_type                 :string
-#  marketing_name            :string
-#  floorplan_id              :string
-#  market_rent               :float
-#  effective_rent            :float
-#  availability              :string
-#  available_date            :date
-#  building                  :string
-#  created_at                :datetime         not null
-#  updated_at                :datetime         not null
-#  x_plot                    :integer          default(0)
-#  y_plot                    :integer          default(0)
-#  floorplate_id             :integer
-#  image                     :string
-#  floor                     :integer
-#  standard_image_url        :string
-#  updated_by_admin          :boolean          default(FALSE)
-#  available                 :boolean
-#  sold                      :boolean          default(FALSE)
-#  manually_updated          :boolean          default(FALSE)
-#  manual_override           :boolean          default(FALSE)
-#  square_feet               :float
-#  description               :text
-#  secondary_image           :string
-#  availability_url          :string
-#  lease_pricing             :string
-#  name_is_updated           :boolean
-#  floorplan_id_is_updated   :boolean
-#  effective_rent_is_updated :boolean
-#  available_date_is_updated :boolean
-#  available_is_updated      :boolean
-#  sold_is_updated           :boolean
-#  floor_is_updated          :boolean
-#  building_is_updated       :boolean
-#  availability_is_updated   :boolean
-#  stop_description          :string
+#  id                                :integer          not null, primary key
+#  community_id                      :integer
+#  provider                          :string
+#  property_id                       :string
+#  provider_unit_id                  :string
+#  unit_type                         :string
+#  marketing_name                    :string
+#  floorplan_id                      :string
+#  market_rent                       :float
+#  effective_rent                    :float
+#  availability                      :string
+#  available_date                    :date
+#  building                          :string
+#  created_at                        :datetime         not null
+#  updated_at                        :datetime         not null
+#  x_plot                            :integer          default(0)
+#  y_plot                            :integer          default(0)
+#  floorplate_id                     :integer
+#  image                             :string
+#  floor                             :integer
+#  standard_image_url                :string
+#  updated_by_admin                  :boolean          default(FALSE)
+#  available                         :boolean
+#  sold                              :boolean          default(FALSE)
+#  manually_updated                  :boolean          default(FALSE)
+#  manual_override                   :boolean          default(FALSE)
+#  square_feet                       :float
+#  description                       :text
+#  secondary_image                   :string
+#  availability_url                  :string
+#  lease_pricing                     :string
+#  name_is_updated                   :boolean
+#  floorplan_id_is_updated           :boolean
+#  effective_rent_is_updated         :boolean
+#  available_date_is_updated         :boolean
+#  available_is_updated              :boolean
+#  sold_is_updated                   :boolean
+#  floor_is_updated                  :boolean
+#  building_is_updated               :boolean
+#  availability_is_updated           :boolean
+#  stop_description                  :string
+#  display_virtual_tour_button_label :boolean          default(FALSE)
+#  virtual_tour_button_label         :string           default("3D Tour")
+#  virtual_tour_url                  :string
+#  max_effective_rent                :float
+#  min_effective_rent                :float
+#  avg_effective_rent                :float
 #
 
 class Unit < ApplicationRecord
@@ -64,13 +70,14 @@ class Unit < ApplicationRecord
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
   scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
-  scope :has_x_plot, -> { where("x_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+2.year) }
-  scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ?", 0, Date.today, Date.today+2.year) }
+  scope :has_x_plot, -> { where("x_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+2.year,true) }
+  scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+2.year,true) }
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
   scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
   after_commit :populate_image_urls, on: [:create,:update]
-  
+
+
   def floorplan
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
   end
@@ -127,6 +134,10 @@ class Unit < ApplicationRecord
   end
   def show_integer_rent
     self.effective_rent.to_i
+  end
+
+  def name
+    self.marketing_name
   end
 
 

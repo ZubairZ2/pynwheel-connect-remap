@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  arrived: 2019-09-03 11:31:34
+  left: 2019-09-03 11:31:34
+  lengthy_stay: MyString
+  id_mismatch: false
+  abandoned_tour_at_stop: 1
+  tour_user: one
+
+two:
+  arrived: 2019-09-03 11:31:34
+  left: 2019-09-03 11:31:34
+  lengthy_stay: MyString
+  id_mismatch: false
+  abandoned_tour_at_stop: 1
+  tour_user: two
