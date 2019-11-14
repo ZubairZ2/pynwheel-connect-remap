@@ -1,6 +1,6 @@
 -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
-- content_for :title, "Property Map - Pynwheel"
+- content_for :title, "Edit Elevator - Pynwheel"
 .divLoading.hidden
 %section.is-sitemap
   .content
@@ -64,7 +64,7 @@
     .form-group.logo-upload-bg.pt-15
       .select-logo.center-img.mb-20.mt-30.logo-upload-bg
         .select-logo-logo.logo-container.logo-upload-container
-          %a.preview-image{:href=>@elevator.image.present? ? @elevator.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+          %a.preview-image{:href=>@elevator.image.present? ? @elevator.image.url : asset_path("elev2.png"),"data-toggle"=>"lightbox","data-title"=>"Elevator Image"}
             = image_tag @elevator.image.present? ? @elevator.image.url : "elev2.png",:height=>"100%",:width=>"100%",:id=>"preview-image"
     //////////////////////// Amenity Gallery
     .box.box-info.add-plan

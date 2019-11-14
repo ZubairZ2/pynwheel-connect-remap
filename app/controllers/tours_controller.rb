@@ -192,7 +192,6 @@ class ToursController < ApplicationController
   end
 
   def add_elevator
-    
     last_elev = Elevator.last if Elevator.count > 0
 
     last_elevator_id = last_elev.present? ? last_elev.id : 0
@@ -204,6 +203,20 @@ class ToursController < ApplicationController
     elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 30, floorplate_covering_range: floorplate_range)
     tour_stop = TourStop.create tour_id: params[:tour_id], stop_id: elevator.id, stop_type: 'elevator', name: elevator.name
     render json: {path: tour_stop}, status: 200
+  end
+
+  def update_elevator
+    elevator = Elevator.find_by_id(params[:elevator_id])
+    if elevator.present?
+      elevator.update_attributes x_plot: params[:x_plot], y_plot: params[:y_plot]
+      status = 200
+      message = 'updated successfully'
+    else
+      status = 201
+      message = 'update failed'
+    end
+
+    render json: {message: message}, status: status
   end
 
   def point_save

@@ -214,7 +214,7 @@
                       %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
 
                   - elsif stop.class.to_s == "Elevator"
-                    %i.fa.fa-reorder.stops.elevatorstop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot - right_margin}px; left: #{stop.x_plot - left_margin}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                    %i.fa.fa-reorder.stops.elevatorstop{:id => "elevatorstop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
                   - else
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin}px; left: #{stop.x_plot - left_margin}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
@@ -236,9 +236,7 @@
     /*$.post( "/delete_path_on_sort_change",
       { "tour_stop_id": tour_stop_id },
       function(data,status,xhr) {
-        if(data){
-          debugger
-          
+        if(data){          
         }
       }
     );*/
@@ -277,10 +275,9 @@
       dragElement(document.getElementById(id));
     });
 
-    $.each($("*.elevatorstop"), function(i, elevator){
-      id = $(elevator).prop('id');
-      dragElement(document.getElementById(id));
-    });
+     $.each($("*.elevatorstop"), function(i, elevator){
+       makeElevatorDragable(elevator);
+     });
 
     $("#testimg").on('click', function (ev) {
       mouseX = Math.round(ev.offsetX - point_size/2)
@@ -289,7 +286,37 @@
       savePoint(mouseX, mouseY, neighbour_units)
     });
 
+    function makeElevatorDragable(elevator){
+      elevator_id = $(elevator).prop('id').split('_')[1]
+      $(elevator).draggable({
+        containment: 'parent',
+          start: function(event, ui) {
+            console.log("start drag")
+            xpos = Math.round(ui.position.left);
+            ypos = Math.round(ui.position.top);
+          },
 
+          drag: function(event, ui) {
+            // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
+            xmove = ui.position.left - xpos;
+            ymove = ui.position.top - ypos;
+          },
+
+          stop: function(event, ui) {
+            left = Math.round(ui.position.left )
+            right = Math.round(ui.position.top );
+            $.ajax({
+              type: "POST",
+              url: "#{update_elevator_path}",
+              data: {elevator_id: elevator_id, x_plot: left, y_plot: right },
+              success: function(response) {
+                console.log(response.message)
+              }
+            });
+          }
+
+       });
+    }
     function savePoint(x, y, unit_ids){
       //debugger
       if($("#drawing_path_for").val() == ""){
@@ -481,13 +508,6 @@
 
           $('.tour_sortable_disabled').append(elevator_stop);
           window.location.reload()
-          //update drawing path for so we can use that path id to save point
-          //$("#drawing_path_for").val(response.path.id)
-          // $('.stops').removeClass('animate-element')
-          // $('#stop_'+response.path.map_path_id).addClass('animate-element')
-          // $('html, body').animate({
-          //   scrollTop: $(".plot-image").offset().top
-          // }, 500);
         }
       });
       event.preventDefault();
