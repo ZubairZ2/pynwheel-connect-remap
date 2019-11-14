@@ -1,8 +1,8 @@
-.modal-dialog{:style=>"overflow-y: initial; min-width: 250px !important; width: fit-content;"}
+.modal-dialog{:style=>"min-width: 250px !important; width: fit-content; height: fit-content; !important;"}
   .modal-content
     = form_for @additional_image,url: update_additional_image_community_imagepage_path(@community,@imagepage,additional_image_id: @additional_image.id),method: :put do |f|
       .modal-body
-        .image-crop{:style=>"overflow-y: auto;"}
+        .image-crop{:style=>"max-height: fit-content;"}
           - rn =  rand(9999999999999999999999999)
           = image_tag @additional_image.image.url  + "?timestamp=#{rn}", id: "cropbox",:class => "clas1"
           - %w[x y w h].each do |attribute|
@@ -26,7 +26,7 @@
   });
 
   $('#cropbox').Jcrop({
-  boxWidth: 550, boxHeight: 550,
+  boxWidth: 600, boxHeight: 550,
     onSelect: update_crop,
     onChange: update_crop,
   });

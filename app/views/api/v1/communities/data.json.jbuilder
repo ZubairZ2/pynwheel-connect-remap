@@ -10,11 +10,9 @@ json.ui_settigs do
     json.theme "expressionist"
   end
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
-  if @community.theme_name == "futurist" || @community.theme_name == "modernist"
-    json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : asset_url("pynwheel-default-logo.png")
-  else
-    json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : asset_url("pynwheel-default-logo.png")
-  end
+
+  json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : asset_url("pynwheel-default-logo.png")
+
   json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : asset_url("pynwheel-default-logo.png")
   json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
   json.show_gesture_icons @community.show_gesture_icons

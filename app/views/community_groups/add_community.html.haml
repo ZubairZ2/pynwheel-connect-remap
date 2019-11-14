@@ -19,7 +19,16 @@
 
 
                   -if current_user.is_super_admin?
-                    = f.select :communities, options_for_select(@company.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control",:multiple=>true}
+                    = f.select :communities, options_for_select(@company.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control group_list",:multiple=>true}
+
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Master Community
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = select_tag 'master', options_for_select([]),{:class => "form-control master_community_class"}
+
 
 
 
@@ -30,3 +39,42 @@
 
 :javascript
   $('#community_group_communities').multiSelect();
+  try {
+    $(".group_list").change(function(e){
+    var selected=[];
+   $('.group_list :selected').each(function(){
+       selected.push($(this).text());
+   });
+   added = [];
+   var x = document.getElementById("master");
+   // for (j=0; j < x.options.length;j++)
+   // {
+   //    added.push(x.options[j].value);
+   // }
+   $('#master').empty()
+
+
+   for (i = 0; i < selected.length; i++) {
+    var option = document.createElement("option");
+    option.text = selected[i];
+      // if (!(added.includes(selected[i])))
+      // {
+      x.add(option,selected[i]);
+      // }
+    }
+
+  });
+   var selected=[];
+   $('.group_list :selected').each(function(){
+       selected.push($(this).text());
+   });
+   var x = document.getElementById("master");
+   for (i = 0; i < selected.length; i++) {
+    var option = document.createElement("option");
+    option.text = selected[i];
+    x.add(option,selected[i]);
+    }
+
+    x.value = "#{@selected.name}"
+  }
+  catch (e) {  }

@@ -1,0 +1,553 @@
+<% content_for :title, "Tour Setup Page - Pynwheel" %>
+<% left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i %>
+<% right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i %>
+<!-- Main content
+-->
+<section>
+  <div class="content">
+    <div class="title-heading">
+      <h4>
+        <i class="fa fa-image"></i>
+        <%= @community.name.capitalize %>
+        <br>
+          <small class="text-primary">
+            <%= @community.code %>
+          </small>
+        </br>
+      </h4>
+    </div>
+    <div class="box box-info add-plan mt-20" id="logo_header">
+      <div class="box-header">
+        <h3 class="box-title">
+          TOUR SETUP PAGE
+          <span></span>
+        </h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="box box-widget panel-box add-plan pt-30">
+          <%= form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do %>
+            <%= hidden_field_tag "community_id", @community.id %>
+            <div class="form-group alert-contact">
+              <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label font-size-15">
+                Alert Contact
+              </label>
+              <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
+                <%= collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"}) %>
+                <%= submit_tag 'Update', class: "btn btn-success btn-sm pull-right" %>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label font-size-15">
+                Show Tour Page
+              </label>
+              <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
+                <div class="TriSea-technologies-Switch">
+                  <span class="pr-15">No</span>
+                  <%= check_box_tag :show_tour_page, true, @community.show_tour_page, class: "show-tour-page" %>
+                  <label class="label-primary" for="show_tour_page"></label>
+                  <span class="pl-15">Yes</span>
+                </div>
+              </div>
+            </div>
+            <%= submit_tag 'Save', class: "hidden" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="box box-info add-plan mt-50" id="logo_header">
+      <div class="box-header">
+        <h3 class="box-title">
+          COMPOSSE TEXT/EMAILS
+          <span></span>
+        </h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="box box-widget panel-box add-plan pt-30">
+          <%= form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f| %>
+          <%= f.hidden_field :community_id, value: @community.id %>
+            <div class="box-body">
+              <div class="row">
+                <div class="col-lg-9 col-lg-offset-1">
+                  <div class="form-group">
+                    <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label">
+                      Sms Text
+                    </label>
+                    <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
+                      <%= f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5 %>
+                    </div>
+                  </div>       
+                </div>
+
+                <div class="col-lg-9 col-lg-offset-1">
+                  <div class="form-group">
+                    <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label">
+                      Email Text
+                    </label>
+                    <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
+                      <%= f.text_area :email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 5 %>
+                    </div>
+                  </div>       
+                </div>
+              </div>
+            </div>
+            <!-- /.box-body
+            -->
+            <div class="box-footer">
+              <%= f.submit "Save", :class=>"btn btn-success pull-right mr-10" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Start Panel left Side
+      -->
+      <div class="col-lg-6" style="margin-bottom: 10px;">
+        <h5 class="mt-40 mb-20">Add Amenities</h5>
+        <div class="imageselect amenity-imageselect">
+          <div class="show-categories">
+            <%= "- select amenity -" %>
+          </div>
+          <ul id="imageselect1" style="display: none; z-index: 999;">
+            <% amenity_arr = [] %>
+            <% @amenities.each do |amenity| %>
+              <% #- byebug %>
+              <% if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" ) %>
+                <li data-id="<%= amenity.id.to_s+':amenity' %>" data-name="<%= amenity.name %>">
+                  <a>
+                    <%= image_tag amenity.image.present? ? amenity.image.url : "upload-image.png" %>
+                    <span class="ml-5">
+                      <%= amenity.name %>
+                    </span>
+                  </a>
+                </li>
+              <% end %>
+              <% #- ts = TourStop.find_by(stop_type: "amenity",stop_id: amenity.id) %>
+              <% #- amenity_arr.push([amenity.id.to_s+":amenity", ts.present? ? ts.latitude.to_i : 0, ts.present? ? ts.longitude.to_i : 0, true, amenity.name]) %>
+            <% end %>
+          </ul>
+        </div>
+        <% #%h5.mt-40 SELECTED IMAGES %>
+        <% #.add-plan.mt-10.mb-20 %>
+        <% # %>
+        <% #%label#newmsg Place marker for selected amenities on Map %>
+      </div>
+      <% units = @units.sort_by{|u| u.marketing_name} %>
+      <div class="col-lg-6">
+        <h5 class="mt-40 mb-20">Add Units</h5>
+        <div class="imageselect unit-imageselect">
+          <div class="show-categories">
+            <%= "- select unit -" %>
+          </div>
+          <ul id="imageselect2" style="display: none; z-index: 999;">
+            <% amenity_arr = [] %>
+            <% units.each do |unit| %>
+              <% if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) %>
+                <li data-id="<%= unit.id.to_s+':unit' %>" data-name="<%= unit.marketing_name %>">
+                  <span class="ml-5">
+                    <%= unit.marketing_name %>
+                  </span>
+                </li>
+              <% end %>
+              <% #- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id) %>
+              <% #- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name]) %>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-12 col-md-12">
+        <% #.box.box-widget.panel-box.add-plan %>
+        <div class="box box-widget panel-box">
+          <div class="row">
+            <div class="col-md-12">
+              <table class="table table-bordered table-striped table-hover table-responsive">
+                <thead>
+                  <tr>
+                    <th width="79">Sr #</th>
+                    <th>Tour Stop</th>
+                    <th width="100">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="tour_sortable_disabled">
+                  <% orderVar = 0 %>
+                  <% if @tour_stops.present? %>
+                    <% sortable_fetch(@tour_stops.order(:sort)) do |stop,index| %>
+                      <tr id="<%= index %>">
+                        <% orderVar = orderVar + 1 %>
+                        <td>
+                          <%= orderVar %>
+                        </td>
+                        <td>
+                          <%= stop.name %>
+                        </td>
+                        <td>
+                          <% #%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"} %>
+                          <% #  %i.fa.fa-eye %>
+                          <% if stop.stop_type == "unit" %>
+                            <% u = Unit.find stop.stop_id %>
+                            <%= link_to draw_line_path(u), id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do %>
+                              <i class="fa fa-road icon_size"></i>
+                            <% end %>
+                            <%= link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do %>
+                              <i class="fa fa-edit icon_size"></i>
+                            <% end %>
+                          <% else %>
+                            <% amenity = Amenity.find stop.stop_id %>
+                            <%= link_to draw_line_path(amenity), id: "create_path",  class: "text-warning ml-5" do %>
+                              <i class="fa fa-road icon_size"></i>
+                            <% end %>
+                            <%= link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do %>
+                              <i class="fa fa-edit icon_size"></i>
+                            <% end %>
+                          <% end %>
+                          <a class="text-danger" data-href="/communities/<%= @community.id %>/tours/<%= @tours.id %>/tour_stops/<%= stop.id %>" data-name="Tour Stop" data-target="#confirm-delete" data-toggle="modal">
+                            <i class="fa fa-trash icon_size"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    <% end %>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <input id="<%= :drawing_path_for %>" type="hidden"></input>
+        <div class="row">
+          <div class="col-md-6">
+            <%= link_to starting_point_community_tours_path(@community), class: "btn btn-success mb-20" do %>
+              <i class="fa fa-plus-circle"></i>
+              ADD STARTING POINT
+            <% end %>
+          </div>
+          <div class="col-md-6">
+            <%= link_to draw_line_path(@tours.id), class: "btn btn-success mb-20 pull-right", id: "start-point-path" do %>
+              <i class="fa fa-plus-circle"></i>
+              ADD PATH FOR STARTING POINT
+            <% end %>
+          </div>
+          <% #.col-md-12 %>
+          <% #  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do %>
+          <% #    %i.fa.fa-plus-circle %>
+          <% #    SELECT STOPS %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="is-floorplate">
+  <div class="content">
+    <form class="form-horizontal">
+      <div class="box-body map-body-top">
+        <div class="row">
+          <div class="col-lg-12 p-0" id="container">
+            <div class="map-block" style="position: relative;">
+              <!-- id map
+              -->
+              <div class="plot-image">
+                <div class="grid-graph hidden"></div>
+                <%= link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", :onclick => "return false;" %>
+                <%= image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg" %>
+                <% community_units = @community_units %>
+                <% coordinates_array = [] %>
+                <% path_point_coords = {} %>
+                <% @existing_stops.flatten.each_with_index do |stop, index| %>
+                  <% if stop.class.to_s == "Amenity" %>
+                    <i class="custom-icon stops" id="stop_<%= stop.id %>" style="position: absolute; top: <%= stop.y_plot - 2 %>px; left: <%= stop.x_plot - 4 %>px; height:25px;width: 25px;border: 2px solid  #d37474;">
+                      <i class="fa fa-camera-retro" style=" font-size:12px; color: #d37474; margin-top: 3px; "></i>
+                    </i>
+                  <% else %>
+                    <i class="fa fa-map-marker stops" id="stop_<%= stop.id %>" style="font-size: 35px; position: absolute; top: <%= stop.y_plot - right_margin %>px; left: <%= stop.x_plot - left_margin %>px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "></i>
+                  <% end %>
+                <% end %>
+                <!--- binding.pry
+                -->
+                <% @existing_path_points.each_with_index do |point, index| %>
+                  <div class="path_point" id="point_<%= point.id %>" style="position: absolute; top: <%= point.y_plot - 3 %>px; left: <%= point.x_plot - 3 %>px;" title="Drag to change, double click to remove"></div>
+                <% end %>
+              </div>
+              <!-- End Panel left Side
+              -->
+            </div>
+          </div>
+        </div>
+        <!-- /.content
+        -->
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+  
+  $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
+    tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
+    
+    /*$.post( "/delete_path_on_sort_change",
+      { "tour_stop_id": tour_stop_id },
+      function(data,status,xhr) {
+        if(data){
+          debugger
+          
+        }
+      }
+    );*/
+
+  });
+
+  $('.show-tour-page').change(function(){
+    $('.tour-settings-form').submit();
+  });
+  $('.tour_sortable').railsSortable();
+  community_id = <%= params[:community_id] %>;
+  
+  cords_arr = JSON.parse('<%= raw(path_point_coords.to_json) %>');
+
+
+
+  $(document).ready(function(){
+    var path_id;
+    
+    radius = 50;
+    var point_color = 'rgb(85, 88, 85)';
+    var point_size = 20;
+    
+    path_array = $(".path_point")
+    
+    $(".plot-image").append(createLine($('.start-point'), path_array[0]))
+    for(i=0; i < path_array.length-1; i++){
+      $(".plot-image").append(createLine(path_array[i], path_array[i+1]))
+    }
+    
+    // add listner to prev points 
+    $.each($("*.path_point"), function(i, existing_point){
+    
+      id = $(existing_point).prop('id');
+      dragElement(document.getElementById(id));
+    });
+
+    $("#testimg").on('click', function (ev) {
+      mouseX = Math.round(ev.offsetX - point_size/2)
+      mouseY = Math.round(ev.offsetY - point_size/2)
+      neighbour_units =  detectNearestUnits()
+      savePoint(mouseX, mouseY, neighbour_units)
+    });
+
+
+    function savePoint(x, y, unit_ids){
+      
+      if($("#drawing_path_for").val() == ""){
+        alert("Please select a Stop from table for which you want to draw path")
+        return false
+      }
+      $.post( "/save_path_point/",
+        { "x_plot": x,
+          "y_plot": y,
+          "path_id": $("#drawing_path_for").val(),
+          "unit_ids": unit_ids
+        },
+        function(data,status,xhr) {
+          drop_point_on_screen(data)
+        }
+      );
+    }
+
+    function drop_point_on_screen(db_data){
+            
+      var size =  point_size.toString()+ 'px';
+
+      id = "point_"+db_data.point.id.toString()
+
+      path_point = $('<div title="Drag to change, double click to remove" class="path_point" id="'+ id +'"></div>')
+              .css('top', mouseY + 'px')
+              .css('left', mouseX + 'px')
+              .css('width', size)
+              .css('height', size)
+
+      $(".plot-image").append(path_point);
+      path_array.push(path_point)
+      if(path_array.length == 1){
+      
+        line = createLine($(".start-point"), path_array[path_array.length-1])
+        $(".plot-image").append(line)
+      }
+
+      if(path_array.length > 1){
+        line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
+        $(".plot-image").append(line)
+      }
+
+      dragElement(document.getElementById(id));
+    }
+
+    $(document).on("dblclick", "*.path_point" , function() {
+      point_id = this.id.replace( /^\D+/g, '')
+        $.post( "/delete_path_point",
+          { "point_id": point_id },
+          function(data,status,xhr) {
+            if(data){
+              $("#"+data.point_id).remove()
+            }
+          }
+        );
+      return false;
+    });
+
+    function detectNearestUnits(){
+      neighbour_unit_ids = []
+      $.each(cords_arr, function(index, unit){
+        xp = Math.pow((unit.x - mouseX), 2)
+        yp = Math.pow((unit.y - mouseY), 2)
+
+        d = Math.sqrt(xp + yp)
+        if(d <= radius)
+          neighbour_unit_ids.push(index)
+      });
+      
+      return neighbour_unit_ids
+    }
+
+    $(document).on("click", "*.path_point",  function(e){
+      mouseX = this.offsetLeft
+      mouseY = this.offsetTop
+      neighbour_units =  detectNearestUnits()
+      updatePoint(mouseX, mouseY, neighbour_units, this.id.replace( /^\D+/g, ''))
+    });
+
+    function updatePoint(x, y, unit_ids, point_id){
+      $.post( "/update_path_point",
+        { 
+          "x_plot": x,
+          "y_plot": y,
+          "point_id": point_id,
+          "unit_ids": unit_ids
+        },
+        function(data,status,xhr) {
+          // drop_point_on_screen(data)
+        }
+      );
+    }
+
+    function dragElement(elmnt) {
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+      
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        // debugger
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        // debugger
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement(e) {
+        e = e || window.event;
+        // path_array = $('.path_point')
+        console.log(path_array)
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+
+
+    $('#start-point-path').on("click", function(event){
+      $.ajax({
+        type: "POST",
+        url: this.href,
+        data: {map_path_for: 'starting_point'},
+        success: function(response) {
+          //update drawing path for so we can use that path id to save point
+          $("#drawing_path_for").val(response.path.id)
+          $('.stops').removeClass('animate-element')
+          $('#stop_'+response.path.map_path_id).addClass('animate-element')
+          $('html, body').animate({
+            scrollTop: $(".plot-image").offset().top
+          }, 500);
+        }
+
+      });
+      event.preventDefault();
+    });
+
+    
+    $("*#create_path").on("click", function(event){
+
+      $.ajax({
+        type: "POST",
+        url: this.href,
+        data: $(this).serialize(),
+        success: function(response) {
+          //update drawing path for so we can use that path id to save point
+          $("#drawing_path_for").val(response.path.id)
+          $('.stops').removeClass('animate-element')
+          $('#stop_'+response.path.map_path_id).addClass('animate-element')
+          $('html, body').animate({
+            scrollTop: $(".plot-image").offset().top
+          }, 500);
+        }
+
+      });
+      event.preventDefault();
+    });
+
+    function getElementProperty(el){
+      var dx = 0;
+      var dy = 0;
+      var width = $(el).width()|0;
+      var height = $(el).height()|0;  
+      dx += parseInt($(el).css('left'), 10);
+      dy += parseInt($(el).css('top'), 10);
+      
+      
+      return { top: dy, left: dx, width: width, height: height };
+    }
+
+    function createLine(el1, el2){
+      var off1 =getElementProperty(el1);
+      var off2 =getElementProperty(el2);
+      // center of first point
+      var dx1 = off1.left + off1.width/2;
+      var dy1 = off1.top + off1.height/2;
+      // center of second point 
+      var dx2 = off2.left + off2.width/2;
+      var dy2 = off2.top + off1.height/2;
+      // distance
+      var length = Math.sqrt(((dx2-dx1) * (dx2-dx1)) + ((dy2-dy1) * (dy2-dy1)));
+      // center
+      var cx = ((dx1 + dx2) / 2) - (length / 2);
+      var cy = ((dy1 + dy2) / 2) - (2  / 2);
+      // angle
+      var angle = Math.atan2((dy1-dy2),(dx1-dx2))*(180/Math.PI);
+      // draw line
+      return  "<section class='connectingLines' style='left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -webkit-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg); z-index: 99999; background-color: #1c1c1d; position: absolute; height: 2px; '></section>";
+    };
+
+  });
+
+</script>
