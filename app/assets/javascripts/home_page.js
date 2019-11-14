@@ -370,7 +370,7 @@ function saveAnimation(value){
       }).done(function(){
           $(".divLoading").addClass("hidden");
           console.log("success");
-          if (type == "community"){location.reload();}
+          location.reload()
       });
 
     }
@@ -467,6 +467,7 @@ function saveAnimation(value){
       }
     }).done(function(){
       $(".divLoading").addClass("hidden");
+      window.location.reload()
       console.log("success addin elevator gallery image");
     });
   }
