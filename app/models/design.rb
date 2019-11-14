@@ -161,6 +161,7 @@ class Design < ApplicationRecord
 
 	amoeba do
 		enable
+		exclude_association :home_page_images
 		customize(lambda { |original_object,new_object|
 			new_object.secondary_page_background_image = original_object.secondary_page_background_image
 			new_object.global_nav_button_on = original_object.global_nav_button_on
