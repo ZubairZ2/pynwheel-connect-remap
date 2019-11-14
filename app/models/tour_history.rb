@@ -16,10 +16,10 @@ class TourHistory < ApplicationRecord
 
   def send_update_notifications
   	
-  	if time_difference >= 10
+  	if time_difference >= 60 && self.lengthy_stay_email_sent == false
   		@mail_content = get_alert_message('lengthy_stay')
   		@mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
-
+      self.update_attributes(lengthy_stay_email_sent: true)
   		send_email_sms_or_both @mail_content
   	end
 
