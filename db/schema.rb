@@ -923,9 +923,10 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.boolean  "id_mismatch"
     t.integer  "abandoned_tour_at_stop"
     t.integer  "tour_user_id"
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
+    t.datetime "created_at",                              null: false
+    t.datetime "updated_at",                              null: false
     t.datetime "lengthy_stay"
+    t.boolean  "lengthy_stay_email_sent", default: false
     t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id", using: :btree
   end
 

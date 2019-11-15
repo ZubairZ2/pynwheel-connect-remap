@@ -173,16 +173,15 @@
 
         .row
           .col-md-12
-            .btn-group{"aria-label" => "Basic example", role: "group"}
-              = link_to starting_point_community_tours_path(@community), class: "btn btn-primary mb-20" do
-                %i.fa.fa-plus-circle
-                ADD STARTING POINT
-              = link_to create_elevator_path(@tours.id, params[:community_id]), class: "btn btn-primary mb-20", id: "add-elevator-path" do
-                %i.fa.fa-plus-circle
-                ADD ELEVATOR
-              = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
-                %i.fa.fa-plus-circle
-                ADD PATH FOR STARTING POINT
+            = link_to starting_point_community_tours_path(@community), class: "btn btn-primary mb-20 mr-5" do
+              %i.fa.fa-plus-circle
+              ADD STARTING POINT
+            = link_to create_elevator_path(@tours.id, params[:community_id]), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path" do
+              %i.fa.fa-plus-circle
+              ADD ELEVATOR
+            = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
+              %i.fa.fa-plus-circle
+              ADD PATH FOR STARTING POINT
 
           
 

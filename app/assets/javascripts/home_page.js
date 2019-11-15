@@ -163,6 +163,7 @@ $(document).ready(function(){
   imageFloorplanAmenityDragNdrop()
   imageSitemapAmenityDragNdrop()
   imageElevatorDragNdrop()
+  imageElevatorGalleryDragNdrop()
 
   $('#images-loop-type-radio').click(function(){
     if ($(this).is(':checked')){
@@ -370,7 +371,7 @@ function saveAnimation(value){
       }).done(function(){
           $(".divLoading").addClass("hidden");
           console.log("success");
-          if (type == "community"){location.reload();}
+          location.reload()
       });
 
     }
@@ -467,6 +468,7 @@ function saveAnimation(value){
       }
     }).done(function(){
       $(".divLoading").addClass("hidden");
+      window.location.reload()
       console.log("success addin elevator gallery image");
     });
   }
@@ -493,6 +495,29 @@ function saveAnimation(value){
       }
     }
   }
+
+  function imageElevatorGalleryDragNdrop(){
+      var amenity_image_upload_holder = document.getElementById('elevator-gallery-image-upload-holder');
+      if (amenity_image_upload_holder){
+        amenity_image_upload_holder.ondrop = function (e) {
+          e.preventDefault();
+          files = e.dataTransfer.files;
+          if (files.length > 0){
+              for (var i = 0; i < files.length; i++) {
+                  if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                    readElevatorGalleryImageSrc(files[i], 'elevator_gallery');
+                  }
+              }
+          }
+          if(files.length == 1){
+              console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+              if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){
+                  $('#image-upload-warning').modal('show');
+              }
+          }
+        }
+      }
+    }
 
   function imageAmenityDragNdrop(){
     var amenity_image_upload_holder = document.getElementById('amenity-image--upload-holder');

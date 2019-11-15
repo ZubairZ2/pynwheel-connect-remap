@@ -1,4 +1,4 @@
-.text-center.image-upload.home-page-drag-box#amenity-gallery-image-upload-holder
+.text-center.image-upload.home-page-drag-box#elevator-gallery-image-upload-holder
   = image_tag "upload-image.png",:class=>"drag-image-padding-top"
   %p Drag &amp; Drop Images to Upload
   .row.slide-imgage-boxs{:style => "padding-top: 55px;"}
@@ -9,6 +9,11 @@
             .images.height-200
               %a.preview-image{:href=>elevator_gallery_image.image? ? elevator_gallery_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Elevator Gallery Image"}
                 = image_tag elevator_gallery_image.image.url
-          
+          .icons
+            = link_to edit_community_elevator_elevator_gallery_path(@community, @elevator, elevator_gallery_image), remote: true do
+              %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+
+            %a.text-danger{"data-name"=>"Image","data-href" => "#{community_elevator_elevator_gallery_path(@community, @elevator, elevator_gallery_image)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip:;"}
+              %i.fa.fa-close
           
           %h4= elevator_gallery_image.name
