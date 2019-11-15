@@ -4,6 +4,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   include CarrierWave::RMagick
   # Include the Sprockets helpers
   include Sprockets::Rails::Helper
+  include Piet::CarrierWaveExtension
 
   # Choose what kind of storage to use for this uploader:
   #storage :file
@@ -16,6 +17,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   # This is a sensible default for uploaders that are meant to be mounted:
   version :svg_for_metro , :if => :svg? do
     process convert: 'jpg'
+    process optimize: [{quality: 50, level: 7}]
     resize_to_fit(1412, 932)
     def full_filename (for_file = model.image.file) 
       #{}"#{timestamp}-#{model.id.to_s + '.png'}"  
