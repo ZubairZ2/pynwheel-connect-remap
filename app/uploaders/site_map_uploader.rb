@@ -17,13 +17,13 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   # This is a sensible default for uploaders that are meant to be mounted:
   version :svg_for_metro , :if => :svg? do
     process convert: 'jpg'
-    process optimize: [{quality: 50, level: 7}]
     resize_to_fit(1412, 932)
     def full_filename (for_file = model.image.file) 
       #{}"#{timestamp}-#{model.id.to_s + '.png'}"  
       super.chomp(File.extname(super)) + '.jpg'
     end 
   end
+  process optimize: [{quality: 50, level: 7}]
 
   def set_file_dimensions
     if image?(file)
