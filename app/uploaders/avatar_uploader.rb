@@ -40,6 +40,10 @@ class AvatarUploader < CarrierWave::Uploader::Base
        @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
      end
 
+   end
+  version :thumb do
+    # process :crop
+    process resize_to_fill: [200,200]
   end
 
   def timestamp
