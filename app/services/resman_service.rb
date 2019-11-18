@@ -1,5 +1,6 @@
 class ResmanService < BaseService
   def perform
+    @unit_record = []
     property_ids = credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -67,7 +68,7 @@ class ResmanService < BaseService
     end
   end
   def save_resman_units(units,property_id,availability_url)
-    unit_record = []
+
     unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
@@ -119,13 +120,13 @@ class ResmanService < BaseService
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
         # unit.manually_updated = false
         unit.availability_url = availability_url if availability_url.present?
-        unit_record << unit.provider_unit_id
+        @unit_record << unit.provider_unit_id
         unit.save(validate: false)
 
       end
     end
-    no_unit = unit_present - unit_record
-    if unit_record.nil?
+    no_unit = unit_present - @unit_record
+    if @unit_record.nil?
       no_unit = nil
     end
     no_unit.each do |un|

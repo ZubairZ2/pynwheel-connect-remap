@@ -875,6 +875,12 @@ json.ui_settigs do
         else
           json.home_page_button_font_size "18px"
         end
+        json.overlay_text (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text.present? ? @community.design.expressionist.overlay_text : "") : "")
+        json.overlay_font (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_font.present? ? @community.design.expressionist.overlay_font : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial") : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial")
+        json.overlay_color (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_color.present? ? @community.design.expressionist.overlay_color : "#000000") : "#000000")
+        json.overlay_opacity (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_opacity.present? ? @community.design.expressionist.overlay_opacity : "100%") : "100%")
+        json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_size.present? ? @community.design.expressionist.overlay_size : "18px") : "18px")
+
         if @community.theme_name == "futurist"
           json.home_page_button_image image_url("home_page_button_bg.png")
         elsif @community.theme_name == "expressionist"

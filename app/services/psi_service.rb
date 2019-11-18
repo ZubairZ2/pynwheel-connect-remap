@@ -1,6 +1,7 @@
 class PsiService < BaseService
   # @@floorplanHash = Hash.new
   def perform
+    @unit_record = []
     begin
       com_test = Community.find credentials.community_id
       com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
@@ -144,7 +145,7 @@ class PsiService < BaseService
     # units_in_feed = units.map{|x| x["Units"]["Unit"]["UnitType"]}
     # units_in_feed2 = units.map{|x| x["Units"]["Unit"]["UnitType"] + "-" + x["Units"]["Unit"]["MarketingName"]}
     # units_in_feed = units_in_feed + units_in_feed2
-    unit_record = []
+
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["psi"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
@@ -200,13 +201,13 @@ class PsiService < BaseService
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
         # building = u["Units"]["Unit"]["BuildingName"]
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
-        unit_record << unit.provider_unit_id
+        @unit_record << unit.provider_unit_id
         unit.save(validate: false)
       end
     end
 
-    no_unit = unit_present - unit_record
-    if unit_record.nil?
+    no_unit = unit_present - @unit_record
+    if @unit_record.nil?
       no_unit = nil
     end
     no_unit.each do |un|

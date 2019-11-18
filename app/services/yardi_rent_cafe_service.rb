@@ -6,6 +6,7 @@ class YardiRentCafeService < BaseService
   end
 
   def import_yardirentcafe_units
+    @unit_record = []
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
       begin
@@ -21,7 +22,7 @@ class YardiRentCafeService < BaseService
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
 
-        unit_record = []
+
         unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardirentcafe"]).map{|x| x.provider_unit_id}
         if response[0]["Error"].nil?
           response.each do |r|
@@ -70,8 +71,8 @@ class YardiRentCafeService < BaseService
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
-                
-                unit_record << unit.provider_unit_id
+
+                @unit_record << unit.provider_unit_id
                 unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
@@ -102,8 +103,8 @@ class YardiRentCafeService < BaseService
           end
           puts  "Invalid credentials.Please enter correct one and try again." 
         end
-        no_unit = unit_present - unit_record
-        if unit_record.nil?
+        no_unit = unit_present - @unit_record
+        if @unit_record.nil?
           no_unit = nil
         end
         no_unit.each do |un|
