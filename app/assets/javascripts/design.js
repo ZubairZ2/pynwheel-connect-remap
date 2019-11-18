@@ -2022,7 +2022,17 @@ function readDesignPageLogoSrcFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
         var reader = new FileReader();
-
+        var img = getHeightWidthLimit(input);
+        img.onload = function () {
+            if (this.width < 200 || this.height < 200)
+            {
+                $(".waring_exal").removeClass("hidden");
+            }
+            else
+            {
+                $(".waring_exal").addClass("hidden");
+            }
+        };
       reader.onload = function (e) {
         $('#preview-image').attr('src', e.target.result);
         $('#preview-image').parent().attr('href', e.target.result);
@@ -3521,4 +3531,14 @@ function setGablesCustomValues() {
   if (window.current_theme == "gables_organic" || window.current_theme == "gables_refined" || window.current_theme == "gables_energetic" || window.current_theme == "gables_natural" || window.current_theme == "gables_custom") {
     $('#gables-form').submit();
   }
+}
+function getHeightWidthLimit (input) {
+    var _URL = window.URL || window.webkitURL;
+    var file, img;
+    if ((file = input.files[0])) {
+        img = new Image();
+        img.src = _URL.createObjectURL(file);
+        return img;
+    }
+
 }
