@@ -107,6 +107,11 @@ class CommunitiesController < ApplicationController
       end
     end
   end
+  def clone_community
+    @community = Community.find params[:community_id]
+    @community.clone_a_community(@community)
+    redirect_to community_design_index_path(current_community),notice: 'Community will clone within few seconds.'
+  end
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?
@@ -129,20 +134,20 @@ class CommunitiesController < ApplicationController
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
     elsif params[:community][:data_provider].present? and params[:community][:data_provider] == 'spreadsheet'
-      '<div class="alert alert-success">Data is imported successfully.</div>'  
+      '<div class="alert alert-success">Data is imported successfully.</div>'
     elsif params[:community][:logo].present?
       '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:secondary_logo].present?
-      '<div class="alert alert-success">Home Page Logo updated successfully.</div>'  
+      '<div class="alert alert-success">Home Page Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
-      # elsif params[:overlay_tab].present? 
+      # elsif params[:overlay_tab].present?
       #   '<div class="alert alert-success">Expressionist options selected successfully.</div>'
-    elsif params[:global_navigation_tab].present? 
+    elsif params[:global_navigation_tab].present?
       '<div class="alert alert-success">Global Navigation options selected successfully.</div>'
-    elsif params[:filter_panel_tab].present? 
+    elsif params[:filter_panel_tab].present?
       '<div class="alert alert-success">Filter panel options selected successfully.</div>'
-    elsif params[:home_page_tab].present? 
+    elsif params[:home_page_tab].present?
       '<div class="alert alert-success">Home page options selected successfully.</div>'
     elsif params[:map_marker_tab].present?
       '<div class="alert alert-success">Map marker options selected successfully.</div>'
@@ -150,18 +155,18 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Ebrochure settings options selected successfully.</div>'
     elsif params[:ebrochure_settings_tab_message].present?
       '<div class="alert alert-success">Ebrochure settings options selected successfully.</div>'
-    elsif params[:floorplan_unit_popup_tab].present? 
-      '<div class="alert alert-success">Floor plan/Unit popup options selected successfully.</div>'          
-    elsif params[:community][:design_attributes][:gable_attributes].present? 
-      '<div class="alert alert-success">Gables options uploaded successfully.</div>'  
-    elsif params[:menu_tab].present? 
-      '<div class="alert alert-success">Menu options selected successfully.</div>'  
-    elsif params[:custom_style_tab].present? 
+    elsif params[:floorplan_unit_popup_tab].present?
+      '<div class="alert alert-success">Floor plan/Unit popup options selected successfully.</div>'
+    elsif params[:community][:design_attributes][:gable_attributes].present?
+      '<div class="alert alert-success">Gables options uploaded successfully.</div>'
+    elsif params[:menu_tab].present?
+      '<div class="alert alert-success">Menu options selected successfully.</div>'
+    elsif params[:custom_style_tab].present?
       '<div class="alert alert-success">Custom style options selected successfully.</div>'
-    elsif params[:community][:design_attributes][:main_screen_attributes].present? 
+    elsif params[:community][:design_attributes][:main_screen_attributes].present?
       '<div class="alert alert-success">Main screen button uploaded successfully.</div>'
-    elsif params[:community][:design_attributes][:home_screen_attributes].present? 
-      '<div class="alert alert-success">Landing page button uploaded successfully.</div>'         
+    elsif params[:community][:design_attributes][:home_screen_attributes].present?
+      '<div class="alert alert-success">Landing page button uploaded successfully.</div>'
     end
   end
   def change_expressionist_default
@@ -190,7 +195,7 @@ class CommunitiesController < ApplicationController
         PaperTrail::Version.create(item_type: "ImportData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
         redirect_to community_settings_path(:community_id=>@community.id)
       else
-        flash[:error] = Thread.current[:errors].join(',') 
+        flash[:error] = Thread.current[:errors].join(',')
         redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
@@ -355,13 +360,13 @@ class CommunitiesController < ApplicationController
     @community.delete_plots
     redirect_to plotexp_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
   end
-  
+
   def add_plots
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
     units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
     redirect_to plotexp_community_sitemaps_path(@community.present? ? @community : current_community), notice: "Plots are added successfully."
   end
-  
+
   def add_plots_on_floorplate
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
     units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
@@ -411,7 +416,7 @@ class CommunitiesController < ApplicationController
   def save_floor_plan_button
     @community = Community.find params[:community_id]
     @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
-  
+
     if @community.save
       flash[:notice] = "Floor Plan settings updated successfully."
       redirect_back(fallback_location: root_path)

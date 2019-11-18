@@ -60,6 +60,7 @@ class Floorplan < ApplicationRecord
   after_update :crop_image
   after_update :crop_secondary_image
 
+
   def populate_image_urls
     if image.present?
       set_standard_url('Floorplan',id)

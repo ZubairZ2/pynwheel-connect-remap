@@ -116,7 +116,9 @@ class Community < ApplicationRecord
   enum alert_contact: [:email, :phone, :both]
   
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
-
+  amoeba do
+    include_association :design
+  end
   def crop_image
     logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
@@ -178,6 +180,9 @@ class Community < ApplicationRecord
     else
       theme_name
     end
+  end
+  def clone_a_community(community)
+    CloneCommunityJob.perform_async community
   end
 
   def has_temporary_images?

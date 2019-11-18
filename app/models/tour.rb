@@ -20,4 +20,5 @@ class Tour < ApplicationRecord
 
   has_one :path, as: :map_path
   has_many :path_points, through: :path
+
 end

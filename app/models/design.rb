@@ -162,6 +162,20 @@ class Design < ApplicationRecord
 	accepts_nested_attributes_for :expressionist
 	accepts_nested_attributes_for :filter_panel
 
+	amoeba do
+		enable
+		exclude_association :home_page_images
+		customize(lambda { |original_object,new_object|
+			new_object.secondary_page_background_image = original_object.secondary_page_background_image
+			new_object.global_nav_button_on = original_object.global_nav_button_on
+			new_object.global_nav_button_off = original_object.global_nav_button_off
+			new_object.filter_button = original_object.filter_button
+			new_object.gallery_button = original_object.gallery_button
+			new_object.filter_panel_background_image = original_object.filter_panel_background_image
+			new_object.filter_label_image = original_object.filter_label_image
+			new_object.gallery_button_on_image = original_object.gallery_button_on_image
+		})
+	end
 	def has_images_loop_type?
 		loop_type == "images"
 	end

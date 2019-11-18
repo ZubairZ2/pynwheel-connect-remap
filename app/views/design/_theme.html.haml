@@ -1,10 +1,12 @@
 = form_for @community,:method=>"PUT",:html=>{:id=>"theme-form"},:remote=>true do |f|
   = hidden_field_tag "theme_tab", true
   .row
-    .col-lg-12
+    .col-lg-6
       %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
         Select Theme
         %span Select a theme from below.
+    .col-lg-6
+      = link_to "Clone Community" , community_clone_community_path(current_community) , :class=>"btn btn-primary",:style => "float: right; margin-right: 15px;"
   .row
     .col-lg-12
       .col-lg-3.col-md-6.col-sm-12

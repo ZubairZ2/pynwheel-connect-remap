@@ -35,6 +35,7 @@ class GalleryImage < ApplicationRecord
 	after_update :crop_image
   after_commit :populate_image_urls, on: :create
 
+
 	def crop_image
     image.recreate_versions! if (crop_x.present? && do_crop)
   end

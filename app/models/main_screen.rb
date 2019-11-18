@@ -21,4 +21,13 @@ class MainScreen < ApplicationRecord
 	mount_base64_uploader :neighborhood_button, AvatarUploader
 	mount_base64_uploader :favorities_button, AvatarUploader
 	belongs_to :design
+
+	amoeba do
+		customize(lambda { |original_object,new_object|
+			new_object.appartments_button = original_object.appartments_button
+			new_object.galleries_button = original_object.galleries_button
+			new_object.neighborhood_button = original_object.neighborhood_button
+			new_object.favorities_button = original_object.favorities_button
+		})
+	end
 end

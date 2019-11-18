@@ -76,7 +76,8 @@ class Unit < ApplicationRecord
   #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
   scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
   after_commit :populate_image_urls, on: [:create,:update]
-  
+
+
   def floorplan
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
   end

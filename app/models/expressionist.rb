@@ -123,4 +123,34 @@ class Expressionist < ApplicationRecord
   mount_base64_uploader :global_nav_background_image, AvatarUploader
   mount_base64_uploader :neighborhood_bg_image, AvatarUploader
   belongs_to :design
+
+  amoeba do
+    customize(lambda { |original_object,new_object|
+      new_object.home_page_button_image = original_object.home_page_button_image
+      new_object.application_background_image = original_object.application_background_image
+      new_object.apartment_nav_bg_image = original_object.apartment_nav_bg_image
+      new_object.gallery_nav_bg_image = original_object.gallery_nav_bg_image
+      new_object.favourities_nav_bg_image = original_object.favourities_nav_bg_image
+      new_object.additional_pages_nav_bg_image = original_object.additional_pages_nav_bg_image
+
+      new_object.apartment_btn_on_image = original_object.apartment_btn_on_image
+      new_object.gallery_btn_on_image = original_object.gallery_btn_on_image
+      new_object.neighborhood_btn_on_image = original_object.neighborhood_btn_on_image
+      new_object.imagepage_btn_on_image = original_object.imagepage_btn_on_image
+      new_object.webpage_btn_on_image = original_object.webpage_btn_on_image
+      new_object.favourite_btn_on_image = original_object.favourite_btn_on_image
+
+      new_object.apartment_btn_off_image = original_object.apartment_btn_off_image
+      new_object.gallery_btn_off_image = original_object.gallery_btn_off_image
+      new_object.neighborhood_btn_off_image = original_object.neighborhood_btn_off_image
+      new_object.imagepage_btn_off_image = original_object.imagepage_btn_off_image
+      new_object.webpage_btn_off_image = original_object.webpage_btn_off_image
+      new_object.favourite_btn_off_image = original_object.favourite_btn_off_image
+
+      new_object.home_page_background_image = original_object.home_page_background_image
+      new_object.global_nav_background_image = original_object.global_nav_background_image
+      new_object.neighborhood_bg_image = original_object.neighborhood_bg_image
+    })
+  end
+
 end
