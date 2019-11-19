@@ -23,24 +23,23 @@
             #home.tab-pane.fade.active.in{:role => "tabpanel"}
               = render 'logo'
 
-- unless @community.theme_name == "modernist"
-  %section.is-home-page
-    .content
-      -#.title-heading
-      -#  %h4
-      -#    %i.fa.fa-image
-      -#    = @community.name.capitalize
-      -#    %br
-      -#      %small.text-primary
-      -#        = @community.code
-      .row
-        / Start Panel left Side
-        .col-lg-12.col-md-12
-          .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
-            #myTabContent.tab-content.add-plan
-              / Start L>ogo Upload section
-              #home.tab-pane.fade.active.in{:role => "tabpanel"}
-                = render 'secondary_logo'
+%section.is-home-page
+  .content
+    -#.title-heading
+    -#  %h4
+    -#    %i.fa.fa-image
+    -#    = @community.name.capitalize
+    -#    %br
+    -#      %small.text-primary
+    -#        = @community.code
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
+          #myTabContent.tab-content.add-plan
+            / Start L>ogo Upload section
+            #home.tab-pane.fade.active.in{:role => "tabpanel"}
+              = render 'secondary_logo'
 
 #crop-image.modal.fade.edit-image
 #crop-secondary-logo.modal.fade.edit-image
