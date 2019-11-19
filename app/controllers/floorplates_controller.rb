@@ -21,6 +21,8 @@ class FloorplatesController < ApplicationController
     @floorplate = current_community.floorplates.new(floorplate_params)
     if @floorplate.save
       flash[:notice] = "Floorplate created successfully."
+      PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+
       redirect_to community_floorplates_path(current_community)
     else
       add_breadcrumb "Floor plates", community_floorplates_path(current_community)
@@ -64,6 +66,8 @@ class FloorplatesController < ApplicationController
     if params[:floorplate][:manual_override] == "true"
       if @floorplate.update(floorplate_params)
         flash[:notice] = "Floorplate updated successfully."
+        PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+
         redirect_to community_floorplates_path(current_community)
       else
         add_breadcrumb "Floorplates", community_floorplates_path(current_community)
@@ -75,6 +79,8 @@ class FloorplatesController < ApplicationController
       unless (params[:floorplate][:name] != @floorplate.name) || (params[:floorplate][:building] != @floorplate.building)
         if @floorplate.update(floorplate_params)
           flash[:notice] = "Floorplate updated successfully."
+          PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+
           redirect_to community_floorplates_path(current_community)
         else
           add_breadcrumb "Floorplates", community_floorplates_path(current_community)
@@ -93,6 +99,8 @@ class FloorplatesController < ApplicationController
   end
 
   def destroy
+    PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "destroy",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+
     @floorplate.destroy
     flash[:notice] = "Floorplate deleted successfully."
     redirect_to community_floorplates_path(current_community)
