@@ -134,6 +134,15 @@
                     %th{:width => "100"} Actions
                 %tbody.tour_sortable_disabled
                   - orderVar = 0
+                  - if @tours.x_plot >= 0 || @tours.y_plot >= 0
+                    %tr
+                      %td
+                        = orderVar = orderVar + 1
+                      %td
+                        Starting Point
+                      %td
+                        = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
+                          %i.fa.fa-road.icon_size
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       %tr{:id=> index}
@@ -154,14 +163,14 @@
 
                           - elsif stop.stop_type == "elevator"
                             - elevator = Elevator.find stop.stop_id
-                            = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do
+                            = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
                           - else
                             - amenity = Amenity.find stop.stop_id
-                            = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do
+                            = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
@@ -180,6 +189,7 @@
               = link_to create_elevator_path(@tours.id, params[:community_id]), class: "btn btn-primary mb-20", id: "add-elevator-path" do
                 %i.fa.fa-plus-circle
                 ADD ELEVATOR
+              / - binding.pry
               = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
                 %i.fa.fa-plus-circle
                 ADD PATH FOR STARTING POINT
@@ -250,7 +260,6 @@
   
   community_id = #{params[:community_id]}
   
-
   cords_arr = JSON.parse('#{raw(path_point_coords.to_json)}');
 
 
@@ -263,7 +272,8 @@
     var point_size = 20;
     
     path_array = $(".path_point")
-    $(".plot-image").append(createLine($('.start-point'), path_array[0]))
+    debugger
+    $(".plot-image").append(createLine($('#stop_1208'), path_array[0]))
     for(i=0; i < path_array.length-1; i++){
       $(".plot-image").append(createLine(path_array[i], path_array[i+1]))
     }
@@ -334,9 +344,9 @@
         }
       );
     }
-
+    var start_point_array = []
     function drop_point_on_screen(db_data){
-            
+
       var size =  point_size.toString()+ 'px';
 
       id = "point_"+db_data.point.id.toString()
@@ -346,17 +356,20 @@
               .css('left', mouseX + 'px')
               .css('width', size)
               .css('height', size)
-
       $(".plot-image").append(path_point);
       path_array.push(path_point)
-      if(path_array.length == 1){
-        //debugger
-        line = createLine($(".start-point"), path_array[path_array.length-1])
+      start_point_array.push(db_data.line_started_point.id)
+      if(path_array.length == 1 ){
+        line = createLine($('#stop_'+db_data.line_started_point.id), path_array[path_array.length-1])
         $(".plot-image").append(line)
       }
 
-      if(path_array.length > 1){
+      if(path_array.length > 1 && start_point_array[start_point_array.length - 1] == start_point_array[start_point_array.length - 2]){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
+        $(".plot-image").append(line)
+      }
+      else {
+        line = createLine($('#stop_'+db_data.line_started_point.id), path_array[path_array.length-1])
         $(".plot-image").append(line)
       }
 
@@ -473,22 +486,36 @@
     });
 
     
+    var arr = []
+    data = []
     $("*#create_path").on("click", function(event){
+      arr.push(this.href)
+      var url1  = arr[0].substring(arr[0].lastIndexOf('/') + 1);
+      var stop_1_id = url1.split('?')[0]
+      $('#stop_'+url1.split('?')[0]).addClass('animate-element')
+      if (arr.length == 2) {
+        var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
+        var stop_2_id = url2.split('?')[0]
+        stop_ids = [stop_1_id, stop_2_id]
+        $.ajax({
+          type: "POST",
+          url: this.href,
+          data: 'stop_ids=' + stop_ids,
+          success: function(response) {
+            //update drawing path for so we can use that path id to save point
+            $("#drawing_path_for").val(response.path.id)
+            $('.stops').removeClass('animate-element')
+            id = arr[0].substring(arr[0].lastIndexOf('/') + 1);
+            $('#stop_'+id.split('?')[0]).addClass('animate-element')
+            $('#stop_'+response.path.map_path_id).addClass('animate-element')
+            arr = []
+            $('html, body').animate({
+              scrollTop: $(".plot-image").offset().top
+            }, 500);
+          }
 
-      $.ajax({
-        type: "POST",
-        url: this.href,
-        data: $(this).serialize(),
-        success: function(response) {
-          //update drawing path for so we can use that path id to save point
-          $("#drawing_path_for").val(response.path.id)
-          $('.stops').removeClass('animate-element')
-          $('#stop_'+response.path.map_path_id).addClass('animate-element')
-          $('html, body').animate({
-            scrollTop: $(".plot-image").offset().top
-          }, 500);
-        }
-      });
+        });
+      } 
       event.preventDefault();
     });
 
