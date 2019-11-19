@@ -1485,7 +1485,7 @@ json.apartments do
     # floorplates = floorplates.sort_by { |f| -f.number }
     json.floorplates floors do |floor|
       floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
-      image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
+      image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : (floorplate.standard_image_url.present? ? floorplate.standard_image_url : floorplate.image.url)
       json.id floor
       json.number floor
       json.name floorplate.name
