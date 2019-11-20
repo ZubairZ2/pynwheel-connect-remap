@@ -483,6 +483,7 @@
           $("#drawing_path_for").val(response.path.id)
           $('.stops').removeClass('animate-element')
           $('#stop_'+response.path.map_path_id).addClass('animate-element')
+          $('#elevatorstop_'+response.path.map_path_id).addClass('animate-element')
           $('html, body').animate({
             scrollTop: $(".plot-image").offset().top
           }, 500);
