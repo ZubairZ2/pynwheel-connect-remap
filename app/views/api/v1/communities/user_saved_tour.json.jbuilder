@@ -21,12 +21,11 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
-
   visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
 
   json.visited_tour visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop[0]
-
+    
     json.id @tour.id
     # @tour = TourStop.find visited_stop[0]
     json.type @tour.stop_type
@@ -85,31 +84,31 @@ json.tours @tours do |tour|
         json.directional_text ag.directional_text
       end
     
-    elsif @tour.stop_type == "elevator"
-      elevator = Elevator.find_by_id @tour.stop_id
-      json.image elevator.image.present? ? elevator.image.url : "no image"
-      json.stop_description elevator.description
-      json.name elevator.name
-      json.directional_text elevator.directional_text
-      if elevator.elevator_galleries.count == 0
-        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
-      else
-        # json.elevator_gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description]
+    # elsif @tour.stop_type == "elevator"
+    #   elevator = Elevator.find_by_id @tour.stop_id
+    #   json.image elevator.image.present? ? elevator.image.url : "no image"
+    #   json.stop_description elevator.description
+    #   json.name elevator.name
+    #   json.directional_text elevator.directional_text
+    #   if elevator.elevator_galleries.count == 0
+    #     json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
+    #   else
+    #     # json.elevator_gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description]
 
-        elevatorGalleryArr = []
-        # elevator.description = nil
-        elevatorGalleryArr << elevator
-        elevator.elevator_galleries.each do |amen|
-          elevatorGalleryArr << amen
-        end
-        json.gallery elevatorGalleryArr do |ag|
-          json.name ag.name
-          json.type "unit_stop"
-          json.image ag.image.url
-          json.description ag.description
-          json.directional_text ag.directional_text
-        end
-      end
+    #     elevatorGalleryArr = []
+    #     # elevator.description = nil
+    #     elevatorGalleryArr << elevator
+    #     elevator.elevator_galleries.each do |amen|
+    #       elevatorGalleryArr << amen
+    #     end
+    #     json.gallery elevatorGalleryArr do |ag|
+    #       json.name ag.name
+    #       json.type "unit_stop"
+    #       json.image ag.image.url
+    #       json.description ag.description
+    #       json.directional_text ag.directional_text
+    #     end
+    #   end
     elsif @tour.stop_type == "amenity"
       amenity = Amenity.find @tour.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
