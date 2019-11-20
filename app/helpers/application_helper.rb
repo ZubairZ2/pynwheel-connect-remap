@@ -972,9 +972,11 @@ module ApplicationHelper
           f.object.split("name:")[1].split(" ")[0].split("'")[1]
         elsif item_type == "Floorplan" || item_type == "HomePageImage" || item_type == "Amenity"
           f.object.split("name:")[1].split(" ")[0].split(" ")[0]
+        elsif item_type == "Floorplate"
+          f.object.split("name:")[1].split(" ")[0]
         elsif item_type == "Location"
           f.object.split("title:")[1].split(" ")[0]
-        elsif item_type == "Community"
+        elsif item_type == "Community"  && item_type == "Floorplate"
           f.object.split("name:")[1].split(" ")[0]
         elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"
           (Community.find (Design.find (f.object.split("design_id:")[1].split(" ")[1].to_i)).community_id).name
@@ -1034,8 +1036,10 @@ module ApplicationHelper
         if (item_type.classify.constantize.find_by(id: item_id).nil?)
           if item_type == "Unit"
             return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name
-          elsif item_type == "Floorplan" || item_type == "Amenity" || item_type == "FavoriteImage"
+          elsif item_type == "Floorplan" || item_type == "Amenity" || item_type == "FavoriteImage"   && item_type == "Floorplate"
             (Community.find f.object.split("community_id:")[1].split(" ")[0].to_i).name
+          elsif item_type == "Floorplate"
+            (Community.find f.object.split("community_id:")[1].to_i).name
           elsif item_type == "AdditionalImage" || item_type == "Imagepage" || item_type == "Gallery" || item_type == "GalleryImage"
             (Community.find (f.object.split("community_id:")[1].split("'")[1].to_i)).name
           elsif item_type == "Design" || item_type == "Expressionist" || item_type == "FilterPanel" || item_type == "Neighborhood"

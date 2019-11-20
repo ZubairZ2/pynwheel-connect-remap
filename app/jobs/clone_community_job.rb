@@ -4,7 +4,6 @@ class CloneCommunityJob < ApplicationJob
 
   def perform(community)
     PaperTrail.enabled = false
-
     # copy community
     copy_community = community.amoeba_dup
     count = nil
@@ -60,7 +59,6 @@ class CloneCommunityJob < ApplicationJob
     sleep 20
     copy_community.logo = community.logo
     copy_community.secondary_logo = community.secondary_logo
-
 
     copy_community.save validate:false
     PaperTrail.enabled = true
