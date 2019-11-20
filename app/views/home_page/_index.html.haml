@@ -13,10 +13,10 @@
           .icons
             = link_to show_image_in_modal_community_home_page_index_path(current_community,home_page_image_id: home_page_image.id), remote: true do 
               %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
-            
+
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_image?home_page_image_id=#{home_page_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
               %i.fa.fa-close
-        %h4= home_page_image.name    
+        %h4= home_page_image.name
 
 
 .modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}

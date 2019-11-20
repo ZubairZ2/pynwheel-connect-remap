@@ -9,6 +9,8 @@
           .images.height-200
             %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
               = image_tag amenity.image.url
+          = image_tag "exclamation-mark.jpg", class: "waring_exal #{(amenity.image.width < 350 && amenity.image.height < 300) ? "" : "hidden"}", style: "width: 25px"
+
         .icons
           = link_to edit_community_amenity_path(@community,amenity), remote: true do 
             %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
@@ -29,6 +31,7 @@
             - @amenities.each_with_index do |amenity,index|
               .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
                 = image_tag amenity.standard_image_url
+
                 .carousel-caption
                   image  
             
