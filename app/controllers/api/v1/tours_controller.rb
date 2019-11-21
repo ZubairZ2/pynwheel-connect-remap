@@ -131,7 +131,7 @@ class Api::V1::ToursController < ActionController::Base
 
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
 
-
+      visited_stops = visited_stops.where.not(stop_type: "elevator")
       community = visited_stops.last.tour.community
       shared_tour_stops = {}
       stops = []
@@ -162,7 +162,7 @@ class Api::V1::ToursController < ActionController::Base
       end
 
       email_content = "There are total tour stops, we need tour_user_id to get visited stops Please send that #{visited_stops.to_s}"
-      # DelayedSchedulerMailerJob.perform_async("A Tour Shared With You", email_content, 'usman.khalid@intagleo.co.uk')
+      DelayedSchedulerMailerJob.perform_async("A Tour Shared With You", email_content, 'usman.khalid@intagleo.co.uk')
       render :json=> {:success=>true, :message => "success", :data => visited_stops}
     else
       render :json=> {:success=>false, :message => "shared tour was not saved, please try again."}
