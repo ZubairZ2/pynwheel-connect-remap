@@ -2095,6 +2095,16 @@ function readGlobalNavButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
         var reader = new FileReader();
+        img.onload = function () {
+            if (this.width < 200 || this.height < 200)
+            {
+                $(".exal_global_nav_button_on").removeClass("hidden");
+            }
+            else
+            {
+                $(".exal_global_nav_button_on").addClass("hidden");
+            }
+        };
 
       reader.onload = function (e) {
         $('#global-nav-button-on-preview-image').attr('src', e.target.result);
@@ -2588,7 +2598,18 @@ function readFilterlabelImageFromInput(input) {
 function readHomePageButtonImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-            var reader = new FileReader();
+        var img = getHeightWidthLimit(input);
+        img.onload = function () {
+            if (this.width < 200 || this.height < 200)
+            {
+                $(".exal_home_page_button_image").removeClass("hidden");
+            }
+            else
+            {
+                $(".exal_home_page_button_image").addClass("hidden");
+            }
+        };
+        var reader = new FileReader();
 
             reader.onload = function (e) {
                 $('#home-page-button-image-preview').attr('src', e.target.result);
@@ -2609,6 +2630,16 @@ function readHomePageBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            img.onload = function () {
+                if (this.width < 200 || this.height < 200)
+                {
+                    $(".exal_home_page_background_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_home_page_background_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#home-page-background-image-preview').attr('src', e.target.result);
@@ -3541,4 +3572,25 @@ function getHeightWidthLimit (input) {
         return img;
     }
 
+}
+function getHeightWidthLimitMultipleFiles (input,i) {
+    var _URL = window.URL || window.webkitURL;
+    var file, img;
+    if ((file = input.files[i])) {
+        img = new Image();
+        img.src = _URL.createObjectURL(file);
+        img.fil = input.files[i];
+        img.fil2 = input;
+        return img;
+    }
+
+}
+function wrongWidhAndHeight(width,height) {
+    if (width < 500 || height < 500)
+    {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
