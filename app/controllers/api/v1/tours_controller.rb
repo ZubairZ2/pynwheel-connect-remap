@@ -130,29 +130,28 @@ class Api::V1::ToursController < ActionController::Base
       visited_stops = []
 
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
-
-      visited_stops = visited_stops.where.not(stop_type: "elevator")
-      community = visited_stops.last.tour.community
+      community = visited_stops.last&.tour.community
       shared_tour_stops = {}
       stops = []
       visited_stops.each_with_index do |x,i|
         puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
+        if x.stop_type != "elevator"
+          descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(description: nil)
 
-        descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(description: nil)
+          images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(image: nil)
+          gallery_arr = []
+          
+          images.each do |ud|
+            gallery_arr << ud.image.url
+          end
+          description_arr = []
+          descriptions.each do |un|
+            description_arr << un.description
+          end
 
-        images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(image: nil)
-        gallery_arr = []
-        
-        images.each do |ud|
-          gallery_arr << ud.image.url
+          stop = x.stop_type.classify.constantize.where(id: x.stop_id) if x.present?
+          shared_tour_stops[x.stop_id] = {stops: stop, description: description_arr, images: gallery_arr }
         end
-        description_arr = []
-        descriptions.each do |un|
-          description_arr << un.description
-        end
-
-        stop = x.stop_type.classify.constantize.where(id: x.stop_id) if x.present?
-        shared_tour_stops[x.stop_id] = {stops: stop, description: description_arr, images: gallery_arr }
       end
       begin
         FavoriteMailer.email_shared_tour([shared_tour.email, 'arslan.mirza@intagleo.com'],shared_tour_stops,community).deliver_now
