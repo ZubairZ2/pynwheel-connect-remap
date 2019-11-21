@@ -206,12 +206,6 @@ class ToursController < ApplicationController
 
   def update_elevator
     elevator = Elevator.find_by_id(params[:elevator_id])
-    ts = TourStop.find_by(stop_id: elevator.id)
-    if ts.present?
-      ts.latitude  = elevator.x_plot
-      ts.longitude = elevator.y_plot
-      ts.save
-    end
     if elevator.present?
       elevator.update_attributes x_plot: params[:x_plot], y_plot: params[:y_plot]
       status = 200
@@ -220,7 +214,12 @@ class ToursController < ApplicationController
       status = 201
       message = 'update failed'
     end
-
+    ts = TourStop.find_by(stop_id: elevator.id)
+    if ts.present?
+      ts.latitude  = elevator.x_plot
+      ts.longitude = elevator.y_plot
+      ts.save
+    end
     render json: {message: message}, status: status
   end
 
