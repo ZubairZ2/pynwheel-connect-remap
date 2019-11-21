@@ -14,7 +14,7 @@ json.tours @tours do |tour|
 
   json.path_points tour.path.present? ? tour.path.path_points.reorder('id ASC') : []
 
-  stops = tour.tour_stops 
+  stops = tour.tour_stops
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
     json.id stop.id
     json.x_plot stop.latitude
@@ -84,7 +84,7 @@ json.tours @tours do |tour|
       end
     elsif stop.stop_type == "elevator"
       elevator = Elevator.find_by_id stop.stop_id
-      json.image elevator.image.present? ? elevator.image.url : "no image"
+      json.image elevator.image.present? ? elevator.image.url : File.open(asset_path("elev2.png"))
       json.stop_description elevator.description
       json.name elevator.name
       json.directional_text elevator.directional_text
