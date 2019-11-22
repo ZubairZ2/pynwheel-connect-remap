@@ -4,6 +4,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   include CarrierWave::RMagick
   # Include the Sprockets helpers
   include Sprockets::Rails::Helper
+  include Piet::CarrierWaveExtension
 
   # Choose what kind of storage to use for this uploader:
   #storage :file
@@ -22,6 +23,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
       super.chomp(File.extname(super)) + '.jpg'
     end 
   end
+  process optimize: [{quality: 50, level: 7}]
 
   def set_file_dimensions
     if image?(file)

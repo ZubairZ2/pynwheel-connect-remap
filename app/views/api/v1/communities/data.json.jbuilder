@@ -12,7 +12,7 @@ json.ui_settigs do
   json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
 
   if @community.secondary_logo.present? || @community.logo.present?
-    if @community.temporary_theme_name == 'modernist'
+    if @community.temporary_theme_name == 'modernist23'
       json.secondary_logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") )
 
       json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") )
@@ -875,6 +875,12 @@ json.ui_settigs do
         else
           json.home_page_button_font_size "18px"
         end
+        json.overlay_text (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text.present? ? @community.design.expressionist.overlay_text : "") : "")
+        json.overlay_font (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_font.present? ? @community.design.expressionist.overlay_font : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial") : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial")
+        json.overlay_color (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_color.present? ? @community.design.expressionist.overlay_color : "#000000") : "#000000")
+        json.overlay_opacity (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_opacity.present? ? @community.design.expressionist.overlay_opacity : "100%") : "100%")
+        json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_size.present? ? @community.design.expressionist.overlay_size : "18px") : "18px")
+
         if @community.theme_name == "futurist"
           json.home_page_button_image image_url("home_page_button_bg.png")
         elsif @community.theme_name == "expressionist"
@@ -1318,7 +1324,7 @@ json.apartments do
       units_floorplans << floorplan
       json.marketing_name unit.unit_market
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
-      json.min_rent unit.min_effective_rent.present? ? unit.min_effective_rent : 0
+      json.min_rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
       json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : 0
       json.availability unit.availability
@@ -1488,7 +1494,7 @@ json.apartments do
     # floorplates = floorplates.sort_by { |f| -f.number }
     json.floorplates floors do |floor|
       floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
-      image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
+      image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : (floorplate.standard_image_url.present? ? floorplate.standard_image_url : floorplate.image.url)
       json.id floor
       json.number floor
       json.name floorplate.name

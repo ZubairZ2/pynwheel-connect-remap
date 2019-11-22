@@ -68,6 +68,7 @@
     });
   }
     function saveTourStopPoint(id){
+
         $.post( "/communities/"+community_id+"/tours/" + id + "/ajaxplottourstoppoint",
             {
 
@@ -76,7 +77,6 @@
             function(data,status,xhr) {
                 // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
                 // doDraggable();
-                debugger
                 if (data.tour.stop_type == "unit")
                 {
                     $('.tour_sortable_disabled').append("<tr id=\"TourStop_"+data.tour.id+"\" class=\"ui-sortable-handle\">\n" +
@@ -91,7 +91,7 @@
                         "<i class=\"fa fa-trash icon_size\"></i>\n" +
                         "</a>\n" +
                         "</td>\n" +
-                        "</tr>")
+                        "</tr>") 
                 }
                 else
                 {
@@ -109,7 +109,7 @@
                         "</td>\n" +
                         "</tr>")
                 }
-
+                window.location.reload(true);
             });
     }
 
@@ -146,6 +146,7 @@
            $(this).remove();
          }
        });
+       window.location.reload(true);
      });
   }
 

@@ -17,6 +17,44 @@ class CloneCommunityJob < ApplicationJob
     copy_community.name = community.name + " (Copy#{count.present? ? count : ""})"
     copy_community.code = (community.code.present? ? community.code + " (Copy#{(count.present? ? count : '')})" : "")
 
+
+    copy_community.address = nil
+    copy_community.city = nil
+    copy_community.state = nil
+    copy_community.zip = nil
+    copy_community.email = nil
+    copy_community.phone = nil
+    copy_community.description = nil
+    copy_community.latitude = nil
+    copy_community.longitude = nil
+    copy_community.locked = nil
+    copy_community.data_provider = nil
+    copy_community.website = nil
+    copy_community.is_sitemap = nil
+    copy_community.show_gallery = nil
+    copy_community.gallery_page_name = nil
+    copy_community.display_unit_on_homepage = nil
+    copy_community.display_gallery_on_homepage = nil
+    copy_community.realpage_pricing_data = nil
+    copy_community.powered_by_btn = nil
+    copy_community.is_vertical_app = nil
+
+    copy_community.entrata_exception_logs = nil
+    copy_community.show_tour_page = nil
+    copy_community.show_gesture_icons = nil
+    copy_community.self_tour = nil
+
+    copy_community.number_of_units = nil
+    copy_community.crop_x = nil
+    copy_community.crop_y = nil
+    copy_community.crop_h = nil
+    copy_community.crop_w = nil
+
+    copy_community.crop_x_secondary = nil
+    copy_community.crop_y_secondary = nil
+    copy_community.crop_h_secondary = nil
+    copy_community.crop_w_secondary = nil
+
     copy_community.save validate:false
     sleep 20
     copy_community.logo = community.logo

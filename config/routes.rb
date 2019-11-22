@@ -69,9 +69,7 @@ Rails.application.routes.draw do
     get :credentials
     get :settings_page
     get :logs
-
     get :clone_community
-
     get :change_expressionist_default
     get :test_connection
     get :psi_pricing_test_connection
@@ -103,9 +101,13 @@ Rails.application.routes.draw do
       end
     end
     resources :elevators do
-      resources :elevator_galleries do
-        post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
-      end
+      resources :elevator_galleries
+      # do
+        # post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
+      # end
+      # member do
+      #   get :edit_gallery_image_of
+      # end
       member do
         delete :remove_elevator_plotting
       end

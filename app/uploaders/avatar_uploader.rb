@@ -2,6 +2,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
   include CarrierWave::RMagick
+  include Piet::CarrierWaveExtension
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
@@ -45,7 +46,8 @@ class AvatarUploader < CarrierWave::Uploader::Base
     # process :crop
     resize_to_fit(200, 200)
   end
-  resize_to_fit(500, 500)
+  process optimize: [{quality: 20, level: 7}]
+  # resize_to_fit(500, 500)
   def timestamp
     var = :"@#{mounted_as}_timestamp"
     model.instance_variable_get(var) or model.instance_variable_set(var, Time.now.to_i)

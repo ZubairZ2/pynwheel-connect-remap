@@ -20,10 +20,4 @@ class HomePageVideo < ApplicationRecord
 	mount_uploader :video, VideoUploader
 	process_in_background :video
 	belongs_to :design
-	# amoeba do
-	# 	enable
-	# 	# customize(lambda { |original_object,new_object|
-	# 	# 	new_object.video = original_object.video
-	# 	# })
-	# end
 end

@@ -23,7 +23,6 @@ class MainScreen < ApplicationRecord
 	belongs_to :design
 
 	amoeba do
-		enable
 		customize(lambda { |original_object,new_object|
 			new_object.appartments_button = original_object.appartments_button
 			new_object.galleries_button = original_object.galleries_button

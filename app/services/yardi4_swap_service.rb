@@ -122,6 +122,10 @@ class Yardi4SwapService < BaseService
             # end
           end
           if unit_with_key.key?(:EffectiveRent)
+            unit.min_effective_rent = unit_with_key[:EffectiveRent][0][:Min] if unit_with_key[:EffectiveRent].present? rescue nil
+            unit.max_effective_rent = unit_with_key[:EffectiveRent][0][:Max] if unit_with_key[:EffectiveRent].present? rescue nil
+          end
+          if unit_with_key.key?(:EffectiveRent)
             unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
           end
 
@@ -172,6 +176,10 @@ class Yardi4SwapService < BaseService
             # elsif vacate_date >= Date.today
             #   is_available = true
             # end
+          end
+          if unit_with_key.key?(:EffectiveRent)
+            unit.min_effective_rent = unit_with_key[:EffectiveRent][0][:Min] if unit_with_key[:EffectiveRent].present? rescue nil
+            unit.max_effective_rent = unit_with_key[:EffectiveRent][0][:Max] if unit_with_key[:EffectiveRent].present? rescue nil
           end
           if unit_with_key.key?(:EffectiveRent)
             unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
