@@ -44,7 +44,7 @@ class TourHistory < ApplicationRecord
   	end
 
   	if self.left
-  		@mail_content = get_alert_message('left')
+  		@mail_content = get_alert_message('tour_has_ended')
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"
   		send_email_sms_or_both @mail_content
   	end

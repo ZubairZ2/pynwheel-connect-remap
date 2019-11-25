@@ -183,7 +183,10 @@
               %i.fa.fa-plus-circle
               ADD PATH FOR STARTING POINT
 
-          
+        .row
+          .col-md-12
+            %h4 Elevator icon(three horizontal lines) will appear below after the page auto-refreshes.
+            %h4 Drag and drop the icon onto the correct postion on the map.          
 
           -#.col-md-12
           -#  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do
@@ -228,7 +231,7 @@
               / End Panel left Side
         / /.content
 :javascript
-  
+
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
     
@@ -284,6 +287,7 @@
       neighbour_units =  detectNearestUnits()
       savePoint(mouseX, mouseY, neighbour_units)
     });
+
 
     function makeElevatorDragable(elevator){
       elevator_id = $(elevator).prop('id').split('_')[1]
@@ -483,6 +487,7 @@
           $("#drawing_path_for").val(response.path.id)
           $('.stops').removeClass('animate-element')
           $('#stop_'+response.path.map_path_id).addClass('animate-element')
+          $('#elevatorstop_'+response.path.map_path_id).addClass('animate-element')
           $('html, body').animate({
             scrollTop: $(".plot-image").offset().top
           }, 500);

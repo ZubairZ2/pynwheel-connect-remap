@@ -199,8 +199,7 @@ class ToursController < ApplicationController
     elev_desc = "Elevator#{last_elevator_id}"
     floorplate_range = "0-#{current_community.floorplates.count}"
     
-    # binding.pry
-    elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 30, floorplate_covering_range: floorplate_range)
+    elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 30, floorplate_covering_range: floorplate_range, image: File.open("app/assets/images/elev2.png"))
     tour_stop = TourStop.create tour_id: params[:tour_id], stop_id: elevator.id, stop_type: 'elevator', name: elevator.name
     render json: {path: tour_stop}, status: 200
   end
@@ -215,7 +214,12 @@ class ToursController < ApplicationController
       status = 201
       message = 'update failed'
     end
-
+    ts = TourStop.find_by(stop_id: elevator.id)
+    if ts.present?
+      ts.latitude  = elevator.x_plot
+      ts.longitude = elevator.y_plot
+      ts.save
+    end
     render json: {message: message}, status: status
   end
 
