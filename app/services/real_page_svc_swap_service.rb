@@ -214,8 +214,11 @@ class RealPageSvcSwapService < BaseService
 
                 unit.floorplan_id = u[:FloorPlan][:FloorPlanID]
 
-                unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
-                # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                if u[:RentMatrix].present?
+                  unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                else
+                  unit.effective_rent = u[:BaseRentAmount]
+                end                # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
                 # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
 
                 unit.availability = u[:Availability][:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
@@ -270,7 +273,11 @@ class RealPageSvcSwapService < BaseService
 
                 # unit.market_rent = u[:BaseRentAmount]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
-                  unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                  if u[:RentMatrix].present?
+                    unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                  else
+                    unit.effective_rent = u[:BaseRentAmount]
+                  end
                   # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
                   # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
                 end
@@ -365,8 +372,8 @@ class RealPageSvcSwapService < BaseService
                                 <tem:LeaseTerm>12</tem:LeaseTerm>
                                 <tem:unitids>
                                     <!--Zero or more repetitions:-->
-                                    <tem:int>148</tem:int><tem:int>42</tem:int><tem:int>62</tem:int><tem:int>106</tem:int><tem:int>161</tem:int><tem:int>136</tem:int><tem:int>212</tem:int><tem:int>7</tem:int><tem:int>209</tem:int><tem:int>83</tem:int><tem:int>77</tem:int><tem:int>12</tem:int><tem:int>203</tem:int><tem:int>149</tem:int><tem:int>96</tem:int><tem:int>91</tem:int><tem:int>138</tem:int><tem:int>19</tem:int><tem:int>6</tem:int><tem:int>211</tem:int><tem:int>68</tem:int><tem:int>50</tem:int><tem:int>118</tem:int><tem:int>89</tem:int><tem:int>67</tem:int><tem:int>179</tem:int>
-                                </tem:unitids>
+                                    '+units_str.to_s+'
+                                    </tem:unitids>
                                 <tem:viewingQuoteOnly>1</tem:viewingQuoteOnly>
                             </tem:getrentmatrix>
                         </tem:getrentmatrix>
