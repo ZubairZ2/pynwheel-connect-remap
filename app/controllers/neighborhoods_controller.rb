@@ -22,16 +22,15 @@ class NeighborhoodsController < ApplicationController
 
 	def update
     begin
-      @appVersion = AppVersion.first
-      if params[:counter_limit].present? && !(@appVersion.counter_limit == params[:counter_limit])
-        @appVersion.counter_limit = params[:counter_limit]
+      if params[:counter_limit].present? && !(@community.neighborhood_request_counter_limit == params[:counter_limit])
+        @community.neighborhood_request_counter_limit = params[:counter_limit]
       end
-      if params[:neighborhood_counter].present? && !(@appVersion.neighborhood_counter == params[:neighborhood_counter])
-        @appVersion.neighborhood_counter = params[:neighborhood_counter]
+      if params[:neighborhood_counter].present? && !(@community.neighborhood_request_counter == params[:neighborhood_counter])
+        # @community.neighborhood_request_counter = params[:neighborhood_counter]
       end
     rescue => ex
     end
-    @appVersion.save
+    @community.save(validate: false)
 		@neighborhood = @community.neighborhood
     respond_to do |format|
       if @neighborhood.update(neighborhood_params)

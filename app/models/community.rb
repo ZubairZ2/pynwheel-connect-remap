@@ -571,10 +571,10 @@ class Community < ApplicationRecord
     end
   end
   def neighbourhood_counter_mail_200
-    NeighbourhoodMailer.email_counter_200("umersani47@gmail.com","muhammad.umer@intagleo.com","").deliver
+    NeighbourhoodMailer.email_counter_200("umersani47@gmail.com","msds19063@itu.edu.pk","",self).deliver
   end
   def neighbourhood_counter_mail_400
-    NeighbourhoodMailer.email_counter_400("umersani47@gmail.com","muhammad.umer@intagleo.com","").deliver
+    NeighbourhoodMailer.email_counter_400("umersani47@gmail.com","muhammad.umer@intagleo.com","",self).deliver
   end
 
   def image_src
