@@ -267,7 +267,7 @@ class ToursController < ApplicationController
     elsif path.map_path_from_type == "Elevator"
       start =  Elevator.find(path.map_path_from_id).id
     else
-      start = TourStop.find_by_stop_id(Path.find(201).map_path_id).tour.id
+      start = TourStop.find_by_stop_id(path.map_path_id).tour.id
     end
 
     PaperTrail::Version.create(item_type: "PathPoint",item_id: path.id,event: "create",whodunnit: current_user.id,community_id: path.community_id, company_id: current_company.id,object: "name: '#{path.is_a?(Unit) ? path.marketing_name : path.name}' community_id: '#{path.community_id}'")
