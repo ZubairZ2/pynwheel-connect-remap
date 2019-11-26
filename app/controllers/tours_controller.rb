@@ -29,8 +29,8 @@ class ToursController < ApplicationController
     
 
     @existing_path_points << @tours.path_points.reorder('id ASC') if @tours.path.present?
+    # binding.pry
     @existing_path_points.flatten!
-    binding.pry
     @existing_path_points
     rescue => ex
     end
@@ -159,8 +159,10 @@ class ToursController < ApplicationController
   end
 
   def draw_map_line
-    first = params["stop_ids"].split(',').first
-    second = params["stop_ids"].split(',').second
+    from_id = params["stop_ids"].first
+    from_type = params["stop_types"].first
+    to_id = params["stop_ids"].second
+    to_type = params["stop_types"].second
     unless params[:map_path_for].present?
       amenity_or_unit = params[:stop_type].classify.constantize.find_by_id(params[:unit_or_amenity])
       path_name = amenity_or_unit.class.to_s == "Unit" ? amenity_or_unit.marketing_name : amenity_or_unit.name
@@ -168,14 +170,32 @@ class ToursController < ApplicationController
       # for starting point
       amenity_or_unit = Tour.find_by_id(params[:unit_or_amenity])
     end
-    unit_or_amenity_to = Unit.find_by_id(first) ? Unit.find_by_id(first) : Amenity.find_by_id(first) 
-    unit_or_amenity_from = Unit.find_by_id(second) ? Unit.find_by_id(second) : Amenity.find_by_id(second)
-    path = Path.where(map_path_id: amenity_or_unit.id, map_path_type: amenity_or_unit.class.to_s,
-           map_path_to_id: unit_or_amenity_to&.id, map_path_to_type: unit_or_amenity_to&.class&.to_s,
-           map_path_from_id: unit_or_amenity_from&.id, map_path_from_type: unit_or_amenity_from.class.to_s ).first
+    # to_un = Unit.find_by_id(second)
+    # to_am = Amenity.find_by_id(second)
+    # to_el = Elevator.find_by_id(second)
+    if from_type == "unit"
+      unit_amenity_or_elevator_from = Unit.find_by_id(from_id)
+    elsif from_type == "amenity"
+      unit_amenity_or_elevator_from = Amenity.find_by_id(from_id)
+    elsif from_type == "elevator"
+      unit_amenity_or_elevator_from = Elevator.find_by_id(from_id)
+    end
+
+    if to_type == "unit"
+      unit_amenity_or_elevator_to = Unit.find_by_id(to_id)
+    elsif to_type == "amenity"
+      unit_amenity_or_elevator_to = Amenity.find_by_id(to_id)
+    elsif to_type == "elevator"
+      unit_amenity_or_elevator_to = Elevator.find_by_id(to_id)
+    end
+
+    # unit_amenity_or_elevator_to = Unit.find_by_id(first) ? Unit.find_by_id(first) : Amenity.find_by_id(first) 
+    # unit_amenity_or_elevator_from = Unit.find_by_id(second) ? Unit.find_by_id(second) : Amenity.find_by_id(second)
+    path = Path.where(map_path_to_id: unit_amenity_or_elevator_to&.id, map_path_to_type: unit_amenity_or_elevator_to&.class&.to_s,
+                      map_path_from_id: unit_amenity_or_elevator_from&.id, map_path_from_type: unit_amenity_or_elevator_from&.class&.to_s ).first
     unless path.present?
       path = Path.create name: path_name
-      path.update(map_path: amenity_or_unit, map_path_to: unit_or_amenity_to, map_path_from: unit_or_amenity_from)
+      path.update(map_path: amenity_or_unit, map_path_to: unit_amenity_or_elevator_to, map_path_from: unit_amenity_or_elevator_from)
       begin
         if path.map_path_type == "Unit"
           stop = Unit.find path.map_path_id
@@ -234,16 +254,20 @@ class ToursController < ApplicationController
     path = (Path.find params[:path_id])
     if path.map_path_type == "Unit"
       stop =  Unit.find path.map_path_id
-    else
+    elsif path.map_path_type == "Amenity"
       stop =  Amenity.find path.map_path_id
+    else
+      stop =  Elevator.find path.map_path_id
     end
     
-    if path.map_path_to_type == "Unit"
-      start =  Unit.find path.map_path_to_id
-    elsif path.map_path_to_type == "Amenity"
-      start =  Amenity.find path.map_path_to_id
+    if path.map_path_from_type == "Unit"
+      start =  Unit.find(path.map_path_from_id).id
+    elsif path.map_path_from_type == "Amenity"
+      start =  Amenity.find(path.map_path_from_id).id
+    elsif path.map_path_from_type == "Elevator"
+      start =  Elevator.find(path.map_path_from_id).id
     else
-      start = ""
+      start = TourStop.find_by_stop_id(Path.find(201).map_path_id).tour.id
     end
 
     PaperTrail::Version.create(item_type: "PathPoint",item_id: path.id,event: "create",whodunnit: current_user.id,community_id: path.community_id, company_id: current_company.id,object: "name: '#{path.is_a?(Unit) ? path.marketing_name : path.name}' community_id: '#{path.community_id}'")

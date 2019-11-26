@@ -225,15 +225,15 @@
                       %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
 
                   - elsif stop.class.to_s == "Elevator"
-                    %i.fa.fa-reorder.stops.elevatorstop{:id => "elevatorstop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                    %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
                   - else
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin}px; left: #{stop.x_plot - left_margin}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                 
                 /- binding.pry
 
-                - @existing_path_points.each_with_index do |point, index|
-                  .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
+                - @existing_path_points.each_with_index do |point, index|               
+                  .path_point{:id => "point_#{point.id}", :value => "#{point.path.map_path_from&.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
 
 
 
@@ -273,11 +273,19 @@
     var point_size = 20;
     
     path_array = $(".path_point")
-    debugger
-    $(".plot-image").append(createLine($('#stop_1208'), path_array[0]))
-    for(i=0; i < path_array.length-1; i++){
-      $(".plot-image").append(createLine(path_array[i], path_array[i+1]))
+    debugger;
+    if (path_array.length > 0){
+      $(".plot-image").append(createLine('#stop_'+document.getElementById($(".path_point")[0].id).getAttribute('value'), path_array[0]))
+      for(i=0; i < path_array.length-1; i++){
+        if (document.getElementById($(".path_point")[i].id).getAttribute('value')== document.getElementById($(".path_point")[i+1].id).getAttribute('value')){
+          $(".plot-image").append(createLine(path_array[i], path_array[i+1]))
+        }
+        else {
+          $(".plot-image").append(createLine('#stop_'+document.getElementById($(".path_point")[i+1].id).getAttribute('value'), path_array[i+1]))
+        }
+      }
     }
+    
     
     // add listner to prev points 
     $.each($("*.path_point"), function(i, existing_point){
@@ -360,18 +368,21 @@
               .css('height', size)
       $(".plot-image").append(path_point);
       path_array.push(path_point)
-      start_point_array.push(db_data.line_started_point.id)
-      if(path_array.length == 1 ){
-        line = createLine($('#stop_'+db_data.line_started_point.id), path_array[path_array.length-1])
+      start_point_array.push(db_data.line_started_point)
+
+      if(path_array.length == 1 && db_data.line_started_point != "" ){
+        line = createLine($('#stop_'+db_data.line_started_point), path_array[path_array.length-1])
         $(".plot-image").append(line)
       }
 
+      debugger
       if(path_array.length > 1 && start_point_array[start_point_array.length - 1] == start_point_array[start_point_array.length - 2]){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
         $(".plot-image").append(line)
       }
       else {
-        line = createLine($('#stop_'+db_data.line_started_point.id), path_array[path_array.length-1])
+        debugger
+        line = createLine($('#stop_'+db_data.line_started_point), path_array[path_array.length-1])
         $(".plot-image").append(line)
       }
 
@@ -491,26 +502,31 @@
     var arr = []
     data = []
     $("*#create_path").on("click", function(event){
+      $('.stops').removeClass('animate-element')
       arr.push(this.href)
       var url1  = arr[0].substring(arr[0].lastIndexOf('/') + 1);
       var stop_1_id = url1.split('?')[0]
+      var stop_1_type = url1.split('=')[1]
       $('#stop_'+url1.split('?')[0]).addClass('animate-element')
       if (arr.length == 2) {
         var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
         var stop_2_id = url2.split('?')[0]
+        var stop_2_type = url2.split('=')[1]
+        
         stop_ids = [stop_1_id, stop_2_id]
+        stop_types = [stop_1_type, stop_2_type]
         $.ajax({
           type: "POST",
           url: this.href,
-          data: 'stop_ids=' + stop_ids,
+          data: {stop_ids: stop_ids, stop_types: stop_types},
           success: function(response) {
             //update drawing path for so we can use that path id to save point
             $("#drawing_path_for").val(response.path.id)
-            $('.stops').removeClass('animate-element')
+            $('.start-point').removeClass('animate-element')
+            / $('.stops').removeClass('animate-element')
             id = arr[0].substring(arr[0].lastIndexOf('/') + 1);
-            $('#stop_'+id.split('?')[0]).addClass('animate-element')
-            $('#stop_'+response.path.map_path_id).addClass('animate-element')
-            $('#elevatorstop_'+response.path.map_path_id).addClass('animate-element')
+            $('#stop_'+stop_1_id).addClass('animate-element')
+            $('#stop_'+stop_2_id).addClass('animate-element')
             arr = []
             $('html, body').animate({
               scrollTop: $(".plot-image").offset().top
