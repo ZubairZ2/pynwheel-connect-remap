@@ -271,20 +271,16 @@ class CommunitiesController < ApplicationController
   end
   def show_realpage_pricing_data
     @community = Community.find params[:community_id]
-    if @community.realpage_pricing_data.present?
-      # doc =  Nokogiri::XML(@community.realpage_pricing_data)
-      # byebug
-      # doc.xpath('s:Envelope').each do
-      #
-      # |char_element|
-      #
-      #   puts char_element.text
-      #
-      # end
-      render :xml => @community.realpage_pricing_data
+    if @community.credentials_are_present?
+      if xml = @community.connect_to_pricing
+        render :xml => xml
+      end
     else
-      render :json => Nokogiri::XML("<data>No Data</data>")
+      flash[:error] = "Please enter credentials in settings before importing data."
+      redirect_to community_settings_path(:community_id=>@community.id)
     end
+
+
   end
 
   def credentials
