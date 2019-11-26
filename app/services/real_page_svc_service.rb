@@ -148,7 +148,11 @@ class RealPageSvcService < BaseService
 
 
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
-                unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                if u[:RentMatrix].present?
+                  unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                else
+                  unit.effective_rent = u[:BaseRentAmount]
+                end
                 # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
                 # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
               end
