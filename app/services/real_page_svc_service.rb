@@ -170,12 +170,14 @@ class RealPageSvcService < BaseService
                   if unit.available_date.year == 1900
                     unit.available_date = ""
                   end
-                  if unit.availability == "Occupied" #&& unit.available_date < Date.today
-                    unit.available_date = ""
-                    unit.available = false
-                  else
-                    unit.available = true if !unit.sold
-                  end
+                end
+                unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
+                if unit.availability == "Occupied" #&& unit.available_date < Date.today
+                  unit.available_date = ""
+                  unit.available = false
+                else
+                  unit.available = true if !unit.sold
+                end
                 end
 
                 if unit.available_date.present?
