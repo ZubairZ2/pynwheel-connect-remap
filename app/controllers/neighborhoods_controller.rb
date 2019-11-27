@@ -20,18 +20,19 @@ class NeighborhoodsController < ApplicationController
     end
 	end
 
-	def update
+  def update
     begin
-      if params[:counter_limit].present? && !(@community.neighborhood_request_counter_limit == params[:counter_limit])
-        @community.neighborhood_request_counter_limit = params[:counter_limit]
+      @appVersion = AppVersion.first
+      if params[:counter_limit].present? && !(@appVersion.counter_limit == params[:counter_limit])
+        @appVersion.counter_limit = params[:counter_limit]
       end
-      if params[:neighborhood_counter].present? && !(@community.neighborhood_request_counter == params[:neighborhood_counter])
-        # @community.neighborhood_request_counter = params[:neighborhood_counter]
+      if params[:neighborhood_counter].present? && !(@appVersion.neighborhood_counter == params[:neighborhood_counter])
+        @appVersion.neighborhood_counter = params[:neighborhood_counter]
       end
     rescue => ex
     end
-    @community.save(validate: false)
-		@neighborhood = @community.neighborhood
+    @appVersion.save
+    @neighborhood = @community.neighborhood
     respond_to do |format|
       if @neighborhood.update(neighborhood_params)
         #flash[:notice] = "Neighborhood updated successfully."
@@ -46,6 +47,7 @@ class NeighborhoodsController < ApplicationController
       end
     end
   end
+
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?
