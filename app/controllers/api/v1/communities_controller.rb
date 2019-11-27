@@ -101,6 +101,11 @@ class Api::V1::CommunitiesController < ActionController::Base
     @tours = Tour.where(community_id: params[:id])
   end
 
+  def delete_tour_stop
+    @community = Community.find params[:id]
+    @tours = Tour.where(id: params[:tour_id])
+  end
+
   def user_saved_tour
     @device_id = params[:device_id]
     @tour_user = TourUser.find params[:id]
