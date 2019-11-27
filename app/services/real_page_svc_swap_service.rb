@@ -399,8 +399,7 @@ class RealPageSvcSwapService < BaseService
           if result[:"s:Envelope"][1][:"s:Body"][1].present?
 
             units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
-
-
+            
             #Old code
             # units.each do |u|
             #   unit_no = u[:Address][:UnitID].to_i
