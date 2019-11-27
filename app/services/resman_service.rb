@@ -123,6 +123,66 @@ class ResmanService < BaseService
         @unit_record << unit.provider_unit_id
         unit.save(validate: false)
 
+      else
+        vacateDate = ""
+        unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize
+        unless unit.manual_override
+          unit.property_id = property_id
+          unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
+
+          unless unit.name_is_updated.present? && unit.name_is_updated
+            unit.marketing_name = u["Id"]
+          end
+          unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+            unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
+          end
+          unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
+          unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+            unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+            if u["EffectiveRent"].present?
+              unit.effective_rent = u["EffectiveRent"]["Min"]
+            elsif u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
+              unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
+            end
+          end
+          unless unit.floor_is_updated.present? && unit.floor_is_updated
+            unit.floor = u["FloorLevel"]
+          end
+
+          if u["Availability"].present?
+            unless unit.availability_is_updated.present? && unit.availability_is_updated
+              unit.availability = "Unoccupied"
+            end
+
+            year = u["Availability"]["VacateDate"]["Year"]
+            month = u["Availability"]["VacateDate"]["Month"]
+            day = u["Availability"]["VacateDate"]["Day"]
+            vacateDate = Date.parse("#{year}-#{month}-#{day}")
+          else
+            unless unit.availability_is_updated.present? && unit.availability_is_updated
+              unit.availability = "Occupied"
+            end
+          end
+          unless unit.available_is_updated.present? && unit.available_is_updated
+            if unit.availability == "Occupied"
+              unit.available = false
+            else
+              unit.available = true
+            end
+          end
+          unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+            unit.available_date = vacateDate
+
+          end
+          unless unit.building_is_updated.present? && unit.building_is_updated
+            building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
+            unit.building = building.present? ? building.gsub("Building ", "") : ""
+          end
+
+          unit.manually_updated = false
+          unit.save(validate: false)
+        end
       end
     end
     no_unit = unit_present - @unit_record

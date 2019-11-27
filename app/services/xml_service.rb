@@ -108,6 +108,66 @@ class XmlService < BaseService
           @unit_record << unit.provider_unit_id
           unit.save(validate: false)
 
+        else
+          vacateDate = ""
+          unit = Unit.where(provider: "xml",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize
+          unless unit.manual_override
+            unit.property_id = property_id
+            unit.unit_type = u["Unit"]["Information"]["UnitType"]
+            unless unit.name_is_updated.present? && unit.name_is_updated
+              unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
+            end
+            unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+              unit.floorplan_id = u["FloorplanID"]
+            end
+
+            unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+              unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+              if u["EffectiveRent"]["Min"].present?
+                unit.effective_rent = u["EffectiveRent"]["Min"]
+              elsif u["EffectiveRent"]["Avg"].present?
+                unit.effective_rent = u["EffectiveRent"]["Avg"]
+              end
+            end
+            unit.min_effective_rent = u["EffectiveRent"]["Min"]
+            unit.max_effective_rent = u["EffectiveRent"]["Max"]
+            unless unit.floor_is_updated.present? && unit.floor_is_updated
+              unit.floor = u["EntryFloor"]
+            end
+
+            if u["Availability"].present?
+              unless unit.availability_is_updated.present? && unit.availability_is_updated
+                unit.availability = u["Availability"]["VacancyClass"]
+              end
+
+              if u["Availability"]["VacancyClass"] == "Unoccupied"
+                unless unit.available_is_updated.present? && unit.available_is_updated
+                  unit.available = true
+                end
+
+              end
+              if u["Availability"]["VacateDate"].present?
+                year = u["Availability"]["VacateDate"]["Year"]
+                month = u["Availability"]["VacateDate"]["Month"]
+                day = u["Availability"]["VacateDate"]["Day"]
+                vacateDate = Date.parse("#{year}-#{month}-#{day}")
+              end
+
+            end
+            unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
+            unit.square_feet = u["Unit"]["Information"]["MinSquareFeet"]
+            unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+              unit.available_date = vacateDate
+            end
+
+            building = u["BuildingID"]
+            unless unit.building_is_updated.present? && unit.building_is_updated
+              unit.building = building.present? ? building.gsub("Building ", "") : ""
+            end
+
+            unit.manually_updated = false
+            unit.save(validate: false)
+          end
         end
       rescue => e
       end

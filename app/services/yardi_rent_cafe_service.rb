@@ -79,6 +79,63 @@ class YardiRentCafeService < BaseService
 
                 unit.save(validate: false)
 
+              else
+                unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
+                unless unit.manual_override
+                  unit.property_id = r["PropertyId"]
+                  unit.unit_type = r["ApartmentName"]
+                  unless unit.name_is_updated.present? && unit.name_is_updated
+                    unit.marketing_name = r["ApartmentName"]
+                  end
+                  unless unit.floor_is_updated.present? && unit.floor_is_updated
+                    unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                  end
+                  unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+                    unit.floorplan_id = r["FloorplanId"]
+                  end
+
+                  unit.market_rent = r["MinimumRent"]
+                  unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                    unit.effective_rent = r["MinimumRent"]
+                  end
+
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated
+                    unit.availability = "Unoccupied"
+                  end
+                  if r["AvailableDate"] != ""
+                    unless unit.availability_is_updated.present? && unit.availability_is_updated
+                      unit.availability = "Unoccupied"
+                    end
+                    unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+                      unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
+                    end
+
+                  else
+                    unless unit.availability_is_updated.present? && unit.availability_is_updated
+                      unit.availability = "Occupied"
+                    end
+                    unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+                      unit.available_date = ""
+                    end
+
+                  end
+                  unless unit.available_is_updated.present? && unit.available_is_updated
+                    if unit.availability == "Occupied"
+                      unit.available = false
+                    else
+                      unit.available = true
+                    end
+
+                  end
+                  unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
+                  unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
+                  if unit.effective_rent <= 0
+                    unit.effective_rent = 1.0
+                  end
+                  unit.manually_updated = false
+                  unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
+                  unit.save(validate: false)
+                end
               end
             rescue => e
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 

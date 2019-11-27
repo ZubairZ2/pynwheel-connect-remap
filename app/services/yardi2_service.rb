@@ -150,6 +150,69 @@ class Yardi2Service < BaseService
           @unit_record << unit.provider_unit_id
           unit.save!(validate: false)
         else
+          unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id]).first_or_initialize
+          unless unit.manual_override
+            unit.property_id = property_id
+            unit.unit_type = unit_entries[0][:Id]
+            unless unit.name_is_updated.present? && unit.name_is_updated
+              unit.marketing_name = unit_entries[0][:Id]
+            end
+            unless unit.floor_is_updated.present? && unit.floor_is_updated
+              unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
+            end
+
+            is_available = false
+            vacate_date = ""
+            unit_entries.each do |u|
+              if u.key?(:Unit)
+                unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+                  unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
+                end
+
+              end
+              if u.key?(:EffectiveRent)
+                unit.market_rent = u[:EffectiveRent][0][:Min]
+                unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?
+                unit.max_effective_rent = u[:EffectiveRent][0][:Max] if u[:EffectiveRent][0][:Max].present?
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                  unit.effective_rent = u[:EffectiveRent][0][:Min]
+                end
+
+              end
+              if u.key?(:Availability)
+                if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
+                  vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
+                  is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+                end
+                if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
+                  vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
+                  is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+                end
+              end
+            end
+            unless unit.availability_is_updated.present? && unit.availability_is_updated
+              unit.availability = is_available ? "Unoccupied" : "Occupied"
+              begin
+                if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
+                  unit.availability = "Unoccupied"
+                end
+              rescue =>ex
+              end
+            end
+            unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+              unit.available_date = vacate_date
+            end
+            unless unit.available_is_updated.present? && unit.available_is_updated
+              if unit.availability == "Occupied"
+                unit.available = false
+              else
+                unit.available = true
+              end
+            end
+
+            unit.manually_updated = false
+            unit.save(validate: false)
+          end
           puts "Not Present "*20
         end
       rescue => e

@@ -205,6 +205,105 @@ class Yardi4Service < BaseService
         end
         @unit_record << unit.provider_unit_id
         unit.save(validate: false)
+      else
+        unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue]).first_or_initialize
+        unless unit.manual_override
+          unit.property_id = property_id
+          #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
+          unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
+          unless unit.name_is_updated.present? && unit.name_is_updated  && unit.manual_override
+            unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
+          end
+          unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated && unit.manual_override
+            unit.floorplan_id = u[:Units][:Unit][:UnitType]
+          end
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && unit.manual_override
+            unit.effective_rent = u[:Units][:Unit][:MarketRent]
+          end
+          unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
+          unless unit.floor_is_updated.present? && unit.floor_is_updated  && unit.manual_override
+            unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+          end
+
+          is_available = false
+          vacate_date = ""
+          api_unit.each do |unit_with_key|
+            if unit_with_key.key?(:Availability)
+
+              if unit_with_key[:Availability][:VacateDate][0][:Year].present? && unit_with_key[:Availability][:VacateDate][0][:Year].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Month].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Day].to_i > 0
+                vacate_date = Date.parse("#{unit_with_key[:Availability][:VacateDate][0][:Year]}-#{unit_with_key[:Availability][:VacateDate][0][:Month]}-#{unit_with_key[:Availability][:VacateDate][0][:Day]}")
+                is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+              end
+              if unit_with_key[:Availability][:MadeReadyDate][0][:Year].present?
+                vacate_date = Date.parse("#{unit_with_key[:Availability][:MadeReadyDate][0][:Year]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Month]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Day]}")
+                is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+              end
+              # if vacate_date <= Date.today && unit_with_key[:Availability][:VacancyClass] == "Unoccupied"
+              #   is_available = true
+              # elsif vacate_date >= Date.today
+              #   is_available = true
+              # end
+            end
+            if unit_with_key.key?(:EffectiveRent)
+              unit.min_effective_rent = unit_with_key[:EffectiveRent][0][:Min] if unit_with_key[:EffectiveRent].present? rescue nil
+              unit.max_effective_rent = unit_with_key[:EffectiveRent][0][:Max] if unit_with_key[:EffectiveRent].present? rescue nil
+            end
+            unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+              if unit_with_key.key?(:EffectiveRent)
+                unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
+              end
+            end
+
+
+          end
+          pr = api_unit[3]
+          # unitHash = Hash.new
+          rentStr = ""
+          unitLeaseTerm = []
+          begin
+            if pr[:Pricing].present?
+              pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing,index|
+                month = pricing[:DateRange][:StartDate][0][:Month]
+                day = pricing[:DateRange][:StartDate][0][:Day]
+                year = pricing[:DateRange][:StartDate][0][:Year]
+                startDate = "#{day}/#{month}/#{year}"
+                month = pricing[:DateRange][:EndDate][0][:Month]
+                day = pricing[:DateRange][:EndDate][0][:Day]
+                year = pricing[:DateRange][:EndDate][0][:Year]
+                endDate =  "#{day}/#{month}/#{year}"
+                unless unitLeaseTerm.include?(pricing[:Term])
+                  rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +"::"+ startDate +":"+ endDate + ";"
+                  unitLeaseTerm << pricing[:Term]
+                end
+                # hashData = {(pricing[:Term]) => [ pricing[:EffectiveRent], startDate, endDate ]}
+                # unitHash.merge! hashData
+              end
+            end
+            # unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
+            unit.lease_pricing = rentStr
+          rescue
+            unit.lease_pricing = nil
+          end
+          unless unit.availability_is_updated.present? && unit.availability_is_updated  && unit.manual_override
+            unit.availability = is_available ? "Unoccupied" : "Occupied"
+            if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
+              unit.availability = "Unoccupied"
+            end
+          end
+          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+            unit.available_date = vacate_date
+          end
+          unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
+            if unit.availability == "Unoccupied"
+              unit.available = true
+            else
+              unit.available = false
+            end
+          end
+
+          unit.manually_updated = false
+          unit.save(validate: false)
+        end
       end
     end
 
