@@ -23,7 +23,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
       super.chomp(File.extname(super)) + '.jpg'
     end 
   end
-  # process optimize: [{quality: 50, level: 7}]
+  process optimize: [{quality: 50, level: 7}]
 
   def set_file_dimensions
     if image?(file)
