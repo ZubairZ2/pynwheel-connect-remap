@@ -100,6 +100,23 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
+    resources :elevators do
+      resources :elevator_galleries
+      # do
+        # post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
+      # end
+      # member do
+      #   get :edit_gallery_image_of
+      # end
+      member do
+        delete :remove_elevator_plotting
+      end
+      collection do
+        delete :remove_elevators_plotting
+        post :save_elevator_gallery
+      end
+    end
+
     resources :amenities do
       resources :amenity_galleries
       collection do
@@ -111,6 +128,9 @@ Rails.application.routes.draw do
       end
     end
     resources :floorplates do
+      resources :elevators, controller: "floorplates" do
+        post :plot_elevator
+      end
       resources :amenities,controller: "floorplate_amenities" do
         post :plot_amenity
         collection do
@@ -172,6 +192,7 @@ Rails.application.routes.draw do
         get :map
         get :list_amenities
         get :plot_amenities
+        get :plot_elevators
         get :grid_overlay
         post :adjust_marker_positions
       end
@@ -283,6 +304,8 @@ Rails.application.routes.draw do
     end
   end
   post '/draw_map_line/:unit_or_amenity', to: 'tours#draw_map_line', as: :draw_line
+  post '/add_elevator/:tour_id/:community_id', to: 'tours#add_elevator', as: :create_elevator
+  post '/update_elevator', to: 'tours#update_elevator', as: :update_elevator
   
   post :save_path_point, to: 'tours#point_save'
   post :update_path_point, to: 'tours#point_update'

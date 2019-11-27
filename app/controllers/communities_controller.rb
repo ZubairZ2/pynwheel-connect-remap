@@ -82,7 +82,7 @@ class CommunitiesController < ApplicationController
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       else
-        
+
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
         end
@@ -405,6 +405,8 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
     @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
+    @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
+    @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
@@ -483,7 +485,7 @@ class CommunitiesController < ApplicationController
         :favourite_bg_image_gables,:additional_pages_bg_image_gables,:display_application_bg_image_gables,:display_apartment_bg_image_gables,:display_gallery_bg_image_gables,:display_favourite_bg_image_gables,:display_additional_pages_bg_image_gables,
         :appartment_button_color,:gallery_button_color,:neighborhood_button_color,:favorite_button_color,:filter_panel_color,:webpages_button_color,
         :imagepages_button_color],:expressionist_attributes=>[:id,:home_page_menu_position,:home_page_position_of_logo,:home_page_logo_size,
-        :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:home_page_button_font_size,:display_home_page_image,
+        :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:overlay_text ,:overlay_font,:overlay_size,:overlay_color,:overlay_opacity ,:home_page_button_font_size,:display_home_page_image,
         :display_home_page_nav_background,:display_global_nav_background_image,:home_page_button_image,:display_global_navigation_button_icon,:global_navigation_button_border_color,
         :global_navigation_button_font_family,:global_navigation_button_font_size,:display_global_navigation_button_bg_color,:filter_panel_button_border_color,
         :filter_panel_text_font_size,:filter_panel_button_text_font_size, :spacing_between_buttons,:use_gables_buttons,:home_page_icons_position,:button_text_position,:homepage_button_border_thickness, :homepage_button_border,:global_navigation_icons_position,:global_nav_button_icon_size,

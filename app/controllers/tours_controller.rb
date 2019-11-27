@@ -6,14 +6,22 @@ class ToursController < ApplicationController
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
 
     @amenities = @community.amenities
+    @elevators = @community.elevators
     @units = @community.units
+
+    # you might sometime later wonder that why this is being done like separate arrays
+    # I myself did using %w(amenity unit elevator) BUT those arrays are being used in views.
+    # Watchout
     @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
     @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
+
+    @tour_elevator_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id}
     
     @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
     @existing_stops = []
     @existing_stops << Unit.where(id: @tour_unit_array)
     @existing_stops << Amenity.where(id: @tour_amenity_array)
+    @existing_stops << Elevator.where(id: @tour_elevator_array)
 
     @existing_path_points = []
     # binding.pry
@@ -123,6 +131,9 @@ class ToursController < ApplicationController
     if stop_type == "amenity"
       st = Amenity.find tour_stop
       stName = st.name
+    elsif stop_type == "elevator"
+      st = Elevator.find tour_stop
+      stName = st.name
     else
       st = Unit.find tour_stop
       stName = st.marketing_name
@@ -148,9 +159,8 @@ class ToursController < ApplicationController
   end
 
   def draw_map_line
-    
     unless params[:map_path_for].present?
-      amenity_or_unit = Amenity.find_by_id(params[:unit_or_amenity]) || Unit.find_by_id(params[:unit_or_amenity])
+      amenity_or_unit = params[:stop_type].classify.constantize.find_by_id(params[:unit_or_amenity])
       path_name = amenity_or_unit.class.to_s == "Unit" ? amenity_or_unit.marketing_name : amenity_or_unit.name
     else
       # for starting point
@@ -179,6 +189,34 @@ class ToursController < ApplicationController
     end
 
     render json: {path: path}, status: 200
+  end
+
+  def add_elevator
+    last_elev = Elevator.last if Elevator.count > 0
+
+    last_elevator_id = last_elev.present? ? last_elev.id : 0
+    elev_name = "Elevator#{last_elevator_id}"
+    elev_desc = "Elevator#{last_elevator_id}"
+    floorplate_range = "0-#{current_community.floorplates.count}"
+    
+    # binding.pry
+    elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 30, floorplate_covering_range: floorplate_range)
+    tour_stop = TourStop.create tour_id: params[:tour_id], stop_id: elevator.id, stop_type: 'elevator', name: elevator.name
+    render json: {path: tour_stop}, status: 200
+  end
+
+  def update_elevator
+    elevator = Elevator.find_by_id(params[:elevator_id])
+    if elevator.present?
+      elevator.update_attributes x_plot: params[:x_plot], y_plot: params[:y_plot]
+      status = 200
+      message = 'updated successfully'
+    else
+      status = 201
+      message = 'update failed'
+    end
+
+    render json: {message: message}, status: status
   end
 
   def point_save

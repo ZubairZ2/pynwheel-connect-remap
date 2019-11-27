@@ -26,5 +26,5 @@ class TourUser < ApplicationRecord
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
-  
+
 end

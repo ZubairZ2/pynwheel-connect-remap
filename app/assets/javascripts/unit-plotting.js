@@ -11,6 +11,9 @@
     }
     else if ( typeof floorplate_id_for_amenity !== 'undefined'){
       saveAmenityPlotForFloorplate(id, dx, dy);
+    }
+    else if(typeof floorplate_id_for_elevator !== 'undefined'){
+      saveElevatorPlotForFloorplate(id, dx, dy); 
     } 
     else if ( typeof unit_id_for_amenity !== 'undefined'){
       saveAmenityPlotForUnit(id, dx, dy);
@@ -73,6 +76,7 @@
             function(data,status,xhr) {
                 // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
                 // doDraggable();
+                debugger
                 if (data.tour.stop_type == "unit")
                 {
                     $('.tour_sortable_disabled').append("<tr id=\"TourStop_"+data.tour.id+"\" class=\"ui-sortable-handle\">\n" +
@@ -135,6 +139,25 @@
      function(data,status,xhr) {
        console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
        arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+       doDraggable();
+       // delete from unused list
+       $('.amenities-list option').each(function(){
+         if ($(this).val() == id) {
+           $(this).remove();
+         }
+       });
+     });
+  }
+
+  function saveElevatorPlotForFloorplate(id,dx,dy){
+
+    $.post( "/communities/"+community_id+"/floorplates/"+floorplate_id_for_elevator+"/elevators/" + id + "/plot_elevator",
+     { "x_plot": dx,
+        "y_plot": dy,
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+       arr.push([data.elevator.id, data.elevator.x_plot, data.elevator.y_plot, true, data.elevator.name]);
        doDraggable();
        // delete from unused list
        $('.amenities-list option').each(function(){

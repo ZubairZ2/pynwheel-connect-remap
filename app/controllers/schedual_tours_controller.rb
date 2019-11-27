@@ -29,7 +29,7 @@ class SchedualToursController < ApplicationController
     
     phone_number = make_phone
 
-    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, credit_card_number: params[:tour_user][:credit_card_number], card_expiry: params[:tour_user][:card_expiry]
+    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry]
 
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
@@ -146,11 +146,11 @@ class SchedualToursController < ApplicationController
       puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{params}---"
       # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
       
-      email_content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Thank you for scheduling your self-guided tour! We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>This phone</li></ul>Please download the Pynwheel self-guided tour app before you arrive: <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>"
+      email_content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Thank you for scheduling your self-guided tour! We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>This phone</li></ul>Please download the Pynwheel self-guided tour app before you arrive: <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a> #{community.email_text}"
 
       web_notification = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel App </a>"
 
-      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions."
+      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. #{community.sms_text}"
 
       # delayed_day_before_content = "We look forward to having you visit our property at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>. <br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
 

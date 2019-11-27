@@ -17,6 +17,7 @@ class CloneCommunityJob < ApplicationJob
     copy_community.name = community.name + " (Copy#{count.present? ? count : ""})"
     copy_community.code = (community.code.present? ? community.code + " (Copy#{(count.present? ? count : '')})" : "")
 
+
     copy_community.address = nil
     copy_community.city = nil
     copy_community.state = nil

@@ -32,6 +32,22 @@ class FloorplatesController < ApplicationController
     end
   end
 
+  def plot_elevator
+
+    @elevator = Elevator.find_by_id(params[:elevator_id])
+    @elevator.x_plot = params[:x_plot]
+    @elevator.y_plot = params[:y_plot]
+
+    # TODO - this SHOULD BE FIXED 
+    # this floorplate_id is being used for both sitemap_id 
+    @elevator.sitemap_id = params[:floorplate_id]
+    if @elevator.save(validate: false)
+      render json: {elevator: @elevator}, status: 200
+    else
+      render json: {}, status: 404
+    end
+  end
+
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?

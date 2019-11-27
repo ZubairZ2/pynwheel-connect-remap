@@ -26,15 +26,15 @@ class TourHistory < ApplicationRecord
   private
 
   def send_arrival_notifications
-  	send_email_sms_or_both ["Visitor Has Arrived", "Tour has begun"]
+  	send_email_sms_or_both ["Visitor Has Arrived", "A Pynwheel Self Tour has begun for: \n #{self.tour_user.name} \n #{self.tour_user.email}"]
   end
 
   def send_update_notifications
   	
-  	if time_difference >= 10
+  	if time_difference >= 60 && self.lengthy_stay_email_sent == false
   		@mail_content = get_alert_message('lengthy_stay')
   		@mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
-
+      self.update_attributes(lengthy_stay_email_sent: true)
   		send_email_sms_or_both @mail_content
   	end
 
@@ -44,8 +44,8 @@ class TourHistory < ApplicationRecord
   	end
 
   	if self.left
-  		@mail_content = get_alert_message('left')
-  		@mail_content[1] = "#{@mail_content.last}, spending #{time_distance} on site."
+  		@mail_content = get_alert_message('tour_has_ended')
+  		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"
   		send_email_sms_or_both @mail_content
   	end
 

@@ -7,11 +7,20 @@ json.inactivate !@community_group.inactivate
 
 json.community_group @communities do |co|
   @community = co
+  json.menu_button_shade @community.menu_button_shade
   if @community.id == @community_master.id
     json.master_community true
+    if @community.theme_name == "expressionist"
+      if @community.menu_button_shade == "dark"
+        json.menu_button_shade "light"
+      else
+        json.menu_button_shade "dark"
+      end
+    end
   else
     json.master_community false
   end
+
   json.menu_button_shade @community_group.menu_button_shade
 
   json.community_name  @community.name
@@ -30,12 +39,23 @@ json.community_group @communities do |co|
       json.theme "expressionist"
     end
     json.animation @community.design.animation.present? ? @community.design.animation : 'bouncing effects'
-    if @community.theme_name == "futurist" || @community.theme_name == "modernist"
-      json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : asset_url("pynwheel-default-logo.png")
+    if @community.secondary_logo.present? || @community.logo.present?
+      if @community.temporary_theme_name == 'modernist23'
+        json.secondary_logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") )
+
+        json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") )
+
+      else
+        json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") )
+
+        json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") )
+
+      end
     else
-      json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : asset_url("pynwheel-default-logo.png")
+      json.logo asset_url("pynwheel-default-logo.png")
+      json.secondary_logo asset_url("pynwheel-default-logo.png")
     end
-    json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : asset_url("pynwheel-default-logo.png")
+    # json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : asset_url("pynwheel-default-logo.png")
     json.powered_by_pynwheel @community.powered_by_btn.present? ? @community.powered_by_btn : false
     json.show_gesture_icons @community.show_gesture_icons
     json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
@@ -1324,6 +1344,9 @@ json.community_group @communities do |co|
         units_floorplans << floorplan
         json.marketing_name unit.unit_market
         json.rent unit.effective_rent.present? ? unit.effective_rent : 0
+        json.min_rent unit.effective_rent.present? ? unit.effective_rent : 0
+        json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
+        json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : 0
         json.availability unit.availability
         json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
         json.available unit.available

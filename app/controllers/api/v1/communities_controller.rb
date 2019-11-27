@@ -100,6 +100,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community = Community.find params[:id]
     @tours = Tour.where(community_id: params[:id])
   end
+
   def user_saved_tour
     @device_id = params[:device_id]
     @tour_user = TourUser.find params[:id]

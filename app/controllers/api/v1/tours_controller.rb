@@ -172,7 +172,18 @@ class Api::V1::ToursController < ActionController::Base
   def floorplan_units
     if params[:unit_id].present?
       unit = Unit.find_by_id(params[:unit_id])
-      @units = Unit.where(floorplan_id: unit.floorplan_id) if unit.present?
+      @units = Unit.where(floorplan_id: unit.floorplan_id,community_id: unit.community_id) if unit.present?
+      @units.each do |u|
+        if u.community.is_sitemap?
+          u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
+            image.url(:svg_for_metro) : u.community.sitemap.image.url
+        else
+          floorplate = Floorplate.find_by_id(u.floorplate_id)
+          floorplate_image = floorplate.image.url if floorplate.present?
+          u.sitemap_image_url = floorplate_image
+        end
+        u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
+      end
       success = true
       message = 'success'
       floorplate_image = unit.floorplate.present? ? unit.floorplate.image_url : "No Floorplate Image"
