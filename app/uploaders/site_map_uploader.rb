@@ -4,7 +4,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   include CarrierWave::RMagick
   # Include the Sprockets helpers
   include Sprockets::Rails::Helper
-  # include Piet::CarrierWaveExtension
+  include Piet::CarrierWaveExtension
 
   # Choose what kind of storage to use for this uploader:
   #storage :file
