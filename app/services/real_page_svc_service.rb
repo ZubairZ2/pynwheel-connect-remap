@@ -68,6 +68,40 @@ class RealPageSvcService < BaseService
 
                 # floorplan.square_feet = fp[:GrossSquareFootage]
                 floorplan.save(:validate => false)
+
+              else
+                floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
+
+                unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+
+                  if fp[:FloorPlanName].present?
+                    floorplan.name = fp[:FloorPlanName]
+                  elsif fp[:FloorPlanCode].present?
+                    if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                      floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                    else
+                      floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                    end
+                  else
+                    floorplan.name = fp[:FloorPlanNameMarketing]
+                  end
+                end
+                unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+                  floorplan.bathrooms = fp[:Bathrooms]
+                end
+
+                unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+                  floorplan.bedrooms = fp[:Bedrooms]
+                end
+                unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+                  floorplan.square_feet = fp[:GrossSquareFootage]
+                end
+                unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+                  floorplan.market_rent = fp[:RentMin]
+                end
+
+                floorplan.save(:validate => false)
+
               end
             end
           end
@@ -166,6 +200,7 @@ class RealPageSvcService < BaseService
                 unless u[:Availability][:AvailableDate].present?
                   availableDate = u[:Availability][:VacantDate][3..4] + "/" + u[:Availability][:VacantDate][0..1] + "/" + u[:Availability][:VacantDate][5..9]
                   unit.available_date = availableDate
+
                 end
               end
               unless unit.available_is_updated.present? && unit.available_is_updated && (unit.manual_override)
@@ -175,6 +210,76 @@ class RealPageSvcService < BaseService
                   unit.available = true
                 end
 
+              end
+              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+
+              unit.save(validate: false)
+              #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
+            else
+              unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:Address][:UnitID]).first_or_initialize
+              @array_of_units << u[:Address][:UnitID]
+              unless unit.manual_override
+                unit.property_id = u[:SiteID]
+                unit.unit_type = u[:Address][:UnitNumber]
+                if u[:Address][:BuildingNumber].present?
+                  unit.building = u[:Address][:BuildingNumber] unless u[:Address][:BuildingNumber] == "N/A"
+                end
+                unless unit.name_is_updated.present? && unit.name_is_updated
+                  unit.marketing_name = u[:Address][:UnitNumber]
+                end
+
+                unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+                  unit.floorplan_id = u[:FloorPlan][:FloorPlanID]
+                end
+
+                # unit.market_rent = u[:BaseRentAmount]
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                  if u[:RentMatrix].present?
+                    unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                  else
+                    unit.effective_rent = u[:BaseRentAmount]
+                  end
+                  # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                  # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
+                end
+
+                unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+                  unit.availability = u[:Availability][:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                end
+                if u[:UnitDetails][:RentSqFtCount].present?
+                  unit.square_feet = u[:UnitDetails][:RentSqFtCount]
+                end
+                #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                unless unit.floor_is_updated.present? && unit.floor_is_updated
+                  unit.floor = u[:UnitDetails][:FloorNumber] rescue nil
+                end
+                unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
+                  if u[:Availability][:AvailableDate].present?
+                    availableDate = u[:Availability][:AvailableDate].split("/")[1] + "/" + u[:Availability][:AvailableDate].split("/")[0] + "/" + u[:Availability][:AvailableDate].split("/")[2]
+                    unit.available_date = availableDate
+                  end
+
+                  unless u[:Availability][:AvailableDate].present?
+                    availableDate = u[:Availability][:VacantDate][3..4] + "/" + u[:Availability][:VacantDate][0..1] + "/" + u[:Availability][:VacantDate][5..9]
+                    unit.available_date = availableDate
+                  end
+                end
+                unless unit.available_is_updated.present? && unit.available_is_updated
+                  if unit.availability == "Occupied"
+                    unit.available = false
+                  else
+                    unit.available = true
+                  end
+
+                end
+
+                unit.manually_updated = false
+
+                unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+
+
+                unit.save(validate: false)
+                #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
               end
               unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
 
@@ -263,6 +368,7 @@ class RealPageSvcService < BaseService
         result = Ox.load(response.body, mode: :hash)
 
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
+
 
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getrentmatrixResponse][1][:getrentmatrixResult][:GetRentMatrix][1][:RentMatrices][:RentMatrix]
 
