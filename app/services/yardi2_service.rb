@@ -279,6 +279,62 @@ class Yardi2Service < BaseService
 
           fp.save(validate: false)
 
+        else
+          fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id]).first_or_initialize
+          unless fp.manual_override
+
+            rooms = []
+            floorplan.each do |f|
+
+              if f.key?(:Room)
+                rooms << f
+              end
+
+              if f.key?(:Name)
+                unless fp.name_is_updated.present? && fp.name_is_updated
+                  fp.name = f[:Name]
+                end
+
+              end
+              unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
+                if f.key?(:MarketRent)
+                  if f[:MarketRent][0][:Min].to_f > 0
+                    fp.market_rent = f[:MarketRent][0][:Min]
+                  else
+                    fp.market_rent = f[:MarketRent][0][:Max]
+                  end
+                end
+              end
+
+              unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
+                if f.key?(:SquareFeet)
+                  if f[:SquareFeet][0][:Min].to_f > 0
+                    fp.square_feet = f[:SquareFeet][0][:Min]
+                  else
+                    fp.square_feet = f[:SquareFeet][0][:Max]
+                  end
+                end
+              end
+
+
+            end
+
+            rooms.each do |room|
+              if room[:Room][0][:Type] == "Bedroom"
+                unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
+                  fp.bedrooms = room[:Room][1][:Count]
+                end
+
+              else
+                unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
+                  fp.bathrooms = room[:Room][1][:Count]
+                end
+
+              end
+            end
+
+            fp.save(validate: false)
+          end
         end
       rescue => e
         puts '----------------------------------', e.message

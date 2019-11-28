@@ -248,6 +248,50 @@ class ZarembaService < BaseService
 
         floorplan.save
 
+      else
+        floorplan = Floorplan.where(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize
+        floorplan.property_id = property_id
+        unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+          floorplan.name = f["Name"]
+        end
+
+        floorplan.unit_count = f["UnitCount"]
+        floorplan.units_available = f["UnitsAvailable"]
+        if f["Deposit"].present? # No field for this present
+          floorplan.deposit = f["Deposit"]["Amount"]["Value"]
+        end
+        if f["FloorplanAvailabilityURL"].present?
+          floorplan.availability_url = f["FloorplanAvailabilityURL"]
+        end
+        room_types = f["Room"]
+        room_types.each do |rt|
+          if rt["RoomType"] == "Bedroom"
+            unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+              floorplan.bedrooms = rt["Count"]
+            end
+          else
+            unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+              floorplan.bathrooms = rt["Count"]
+            end
+          end
+        end
+        unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+          if f["SquareFeet"]["Min"].to_f > 0
+            floorplan.square_feet = f["SquareFeet"]["Min"]
+          else
+            floorplan.square_feet = f["SquareFeet"]["Max"]
+          end
+        end
+        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+          if f["MarketRent"]["Min"].to_f > 0
+            floorplan.market_rent = f["MarketRent"]["Min"]
+          else
+            floorplan.market_rent = f["MarketRent"]["Max"]
+          end
+        end
+
+        floorplan.save(validate: false)
+
       end
     end
   end
@@ -287,6 +331,50 @@ class ZarembaService < BaseService
 
       floorplan.save
 
+    else
+      floorplan = Floorplan.where(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: floorplans["IDValue"]).first_or_initialize
+      floorplan.property_id = property_id
+      unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+        floorplan.name = floorplans["Name"]
+      end
+
+      floorplan.unit_count = floorplans["UnitCount"]
+      floorplan.units_available = floorplans["UnitsAvailable"]
+      if floorplans["Deposit"].present? # No field for this present
+        floorplan.deposit = floorplans["Deposit"]["Amount"]["Value"]
+      end
+      if floorplans["FloorplanAvailabilityURL"].present?
+        floorplan.availability_url = floorplans["FloorplanAvailabilityURL"]
+      end
+      room_types = floorplans["Room"]
+      room_types.each do |rt|
+        if rt["RoomType"] == "Bedroom"
+          unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+            floorplan.bedrooms = rt["Count"]
+          end
+        else
+          unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+            floorplan.bathrooms = rt["Count"]
+          end
+
+        end
+      end
+      unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+        if floorplans["SquareFeet"]["Min"].to_f > 0
+          floorplan.square_feet = floorplans["SquareFeet"]["Min"]
+        else
+          floorplan.square_feet = floorplans["SquareFeet"]["Max"]
+        end
+      end
+      unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+        if floorplans["MarketRent"]["Min"].to_f > 0
+          floorplan.market_rent = floorplans["MarketRent"]["Min"]
+        else
+          floorplan.market_rent = floorplans["MarketRent"]["Max"]
+        end
+      end
+
+      floorplan.save(validate: false)
     end
 
   end

@@ -223,6 +223,37 @@ class YardiRentCafeService < BaseService
               # fp.deposit = r["MinimumDeposit"]
               fp.save(validate: false)
 
+            else
+              fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
+              unless fp.manual_override
+                fp.property_id = r["PropertyId"]
+                fp.provider_floorplan_id = r["FloorplanId"]
+                unless fp.name_is_updated.present? && fp.name_is_updated
+                  fp.name = r["FloorplanName"]
+                end
+
+                fp.unit_count = r[""]
+                fp.units_available = r[""]
+                unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
+                  fp.bedrooms = r["Beds"]
+                end
+                unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
+                  fp.bathrooms = r["Baths"]
+                end
+                unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
+                  if r["MinimumSQFT"].present?
+                    fp.square_feet = r["MinimumSQFT"]
+                  elsif r["SQFT"].present?
+                    fp.square_feet = r["SQFT"]
+                  end
+                end
+                unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
+                  fp.market_rent = r["MinimumRent"]
+                end
+
+                fp.deposit = r["MinimumDeposit"]
+                fp.save(validate: false)
+              end
             end
           end
         else 

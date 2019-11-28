@@ -331,6 +331,54 @@ class PsiService < BaseService
 
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
+      else
+        floorplan = Floorplan.where(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
+
+        floorplan.property_id = property_id
+
+        unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+          floorplan.name = f["Name"]
+        end
+
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        else
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+        end
+        floorplan.unit_count = f["UnitsAvailable"]
+        floorplan.units_available = f["DisplayedUnitsAvailable"]
+        floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
+        floorplan.availability_url = f["FloorplanAvailabilityURL"]
+
+        room_types = f["Room"]
+        room_types.each do |rt|
+          if rt["@attributes"]["RoomType"] == "Bedroom"
+            unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+              floorplan.bedrooms = rt["Count"]
+            end
+          else
+            unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+              floorplan.bathrooms = rt["Count"]
+            end
+          end
+        end
+        unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+          if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+          else
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+          end
+        end
+        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+          if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+            floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
+          else
+
+            floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
+          end
+        end
+        floorplan.save(validate: false)
+
       end
 
       floorplan.save(validate: false)
