@@ -24,12 +24,9 @@ class ToursController < ApplicationController
     @existing_stops << Elevator.where(id: @tour_elevator_array)
 
     @existing_path_points = []
-    # binding.pry
     @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
     
-
     @existing_path_points << @tours.path_points.reorder('id ASC') if @tours.path.present?
-    # binding.pry
     @existing_path_points.flatten!
     @existing_path_points
     rescue => ex
@@ -159,14 +156,15 @@ class ToursController < ApplicationController
   end
 
   def draw_map_line
-    from_id = params["stop_ids"].first
-    from_type = params["stop_types"].first
-    to_id = params["stop_ids"].second
-    to_type = params["stop_types"].second
+    from_id = params["stop_ids"].first if params["stop_ids"].present?
+    from_type = params["stop_types"].first if params["stop_types"].present?
+    to_id = params["stop_ids"].second if params["stop_ids"].present?
+    to_type = params["stop_types"].second if params["stop_types"].present?
     unless params[:map_path_for].present?
-      amenity_or_unit = params[:stop_type].classify.constantize.find_by_id(params[:unit_or_amenity])
-      path_name = amenity_or_unit.class.to_s == "Unit" ? amenity_or_unit.marketing_name : amenity_or_unit.name
+      amenity_or_unit = params[:stop_type]&.classify&.constantize&.find_by_id(params[:unit_or_amenity])
+      path_name = amenity_or_unit.class.to_s == "Unit" ? amenity_or_unit.marketing_name : amenity_or_unit&.name
     else
+      # binding.pry
       # for starting point
       amenity_or_unit = Tour.find_by_id(params[:unit_or_amenity])
     end
@@ -193,6 +191,11 @@ class ToursController < ApplicationController
     # unit_amenity_or_elevator_from = Unit.find_by_id(second) ? Unit.find_by_id(second) : Amenity.find_by_id(second)
     path = Path.where(map_path_to_id: unit_amenity_or_elevator_to&.id, map_path_to_type: unit_amenity_or_elevator_to&.class&.to_s,
                       map_path_from_id: unit_amenity_or_elevator_from&.id, map_path_from_type: unit_amenity_or_elevator_from&.class&.to_s ).first
+    if path.blank?
+      path = Path.where(map_path_to_id: unit_amenity_or_elevator_from&.id, map_path_to_type: unit_amenity_or_elevator_from&.class&.to_s,
+                        map_path_from_id: unit_amenity_or_elevator_to&.id, map_path_from_type: unit_amenity_or_elevator_to&.class&.to_s ).first
+    end
+    # binding.pry
     unless path.present?
       path = Path.create name: path_name
       path.update(map_path: amenity_or_unit, map_path_to: unit_amenity_or_elevator_to, map_path_from: unit_amenity_or_elevator_from)
@@ -213,7 +216,7 @@ class ToursController < ApplicationController
 
     end
 
-    render json: {path: path}, status: 200
+    render json: {path: path, path_points: path.path_points}, status: 200
   end
 
   def add_elevator
@@ -252,12 +255,14 @@ class ToursController < ApplicationController
     path_point = PathPoint.create x_plot: params[:x_plot], y_plot: params[:y_plot], path_id: params[:path_id]
     begin
     path = (Path.find params[:path_id])
-    if path.map_path_type == "Unit"
-      stop =  Unit.find path.map_path_id
-    elsif path.map_path_type == "Amenity"
-      stop =  Amenity.find path.map_path_id
+    if path.map_path_to_type == "Unit"
+      stop =  Unit.find(path.map_path_id).id
+    elsif path.map_path_to_type == "Amenity"
+      stop =  Amenity.find(path.map_path_id).id
+    elsif path.map_path_to_type == "Elevator"
+      stop =  Elevator.find(path.map_path_id).id
     else
-      stop =  Elevator.find path.map_path_id
+      stop = TourStop.find_by_stop_id(path.map_path_id).tour.id
     end
     
     if path.map_path_from_type == "Unit"
@@ -275,7 +280,7 @@ class ToursController < ApplicationController
       puts "exception *************"
     end
     NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
-    render json: {point: path_point, line_started_point: start}, status: 200
+    render json: {point: path_point, line_start_point: start, line_stop_point: stop}, status: 200
   end
 
   def point_update
