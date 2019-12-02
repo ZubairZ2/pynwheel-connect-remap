@@ -2,6 +2,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   before_action :set_community, only: :email_favorites
   @@counter = 0
+  $deleted_ids = []
 
   def test_panzoom
     puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'
@@ -100,8 +101,6 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community = Community.find params[:id]
     @tours = Tour.where(community_id: params[:id])
   end
-
-  $deleted_ids = []
   
   def delete_tour_stop
     @community = Community.find params[:id]

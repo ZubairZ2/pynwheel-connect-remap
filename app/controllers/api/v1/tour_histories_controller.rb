@@ -1,6 +1,7 @@
 class Api::V1::TourHistoriesController < ActionController::Base
   
   def save_tour_history
+    $deleted_ids = []
     if params[:community_id].present? && params[:tour_user_id].present?
       params[:id].present? ? tour_history = TourHistory.find_or_create_by(id: params[:id]) : tour_history = TourHistory.new
 
