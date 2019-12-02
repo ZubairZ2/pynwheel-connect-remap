@@ -101,6 +101,8 @@ class Api::V1::CommunitiesController < ActionController::Base
     @tours = Tour.where(community_id: params[:id])
   end
 
+  $deleted_ids = []
+  
   def delete_tour_stop
     @community = Community.find params[:id]
     @tours = Tour.where(id: params[:tour_id])

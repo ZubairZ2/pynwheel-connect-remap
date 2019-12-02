@@ -15,7 +15,9 @@ json.tours @tours do |tour|
   json.path_points tour.path.present? ? tour.path.path_points.reorder('id ASC') : []
 
   stops = tour.tour_stops
-  json.tour_stop tour.tour_stops.where.not(id: params[:stop_id]).order(:sort) do |stop|
+  $deleted_ids << params[:stop_id]
+  # $deleted_ids = []
+  json.tour_stop tour.tour_stops.where.not(id: $deleted_ids).order(:sort) do |stop|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
