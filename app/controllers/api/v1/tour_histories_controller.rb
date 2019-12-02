@@ -1,7 +1,6 @@
 class Api::V1::TourHistoriesController < ActionController::Base
   
   def save_tour_history
-    $deleted_ids = []
     if params[:community_id].present? && params[:tour_user_id].present?
       params[:id].present? ? tour_history = TourHistory.find_or_create_by(id: params[:id]) : tour_history = TourHistory.new
 
@@ -16,6 +15,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
       
       tour_history.community = set_community
+
       
       if tour_history.save
         render :json=> {:success=>true, :message => "success", :data => tour_history}
@@ -69,5 +69,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
   def set_community
     @community ||= Community.find_by_id params[:community_id] if params[:community_id].present?
+    @community.deleted_ids = []
   end
 end
