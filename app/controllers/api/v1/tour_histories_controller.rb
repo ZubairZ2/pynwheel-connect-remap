@@ -70,5 +70,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
   def set_community
     @community ||= Community.find_by_id params[:community_id] if params[:community_id].present?
     @community.deleted_ids = []
+    @community.save
   end
 end
