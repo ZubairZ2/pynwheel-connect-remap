@@ -149,6 +149,7 @@ json.tours @tours do |tour|
     # @existing_path_points = []
     # @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
     # stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
+    @existing_path_points = []
     if i == 0
       @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
       stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
