@@ -156,11 +156,11 @@ json.tours @tours do |tour|
       # tour.tour_stops[i-1].stop_id
       path = Path.where(map_path_to_id: ts[i].stop_id, map_path_to_type: ts[i].stop_type.classify.constantize,
                       map_path_from_id: ts[i-1].stop_id, map_path_from_type: ts[i-1].stop_type.classify.constantize ).first
-      if path.path_points.blank?
+      if path.blank?
         path = Path.where(map_path_to_id: ts[i-1].stop_id, map_path_to_type: ts[i-1].stop_type.classify.constantize,
                           map_path_from_id: ts[i].stop_id, map_path_from_type: ts[i].stop_type.classify.constantize ).first
       end
-      @existing_path_points << path.path_points.reorder('id ASC')
+      @existing_path_points << path.path_points.reorder('id ASC') if path.present?
     end
     
     @existing_path_points.flatten!
