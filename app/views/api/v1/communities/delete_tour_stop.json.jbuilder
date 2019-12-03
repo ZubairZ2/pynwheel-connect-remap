@@ -155,7 +155,11 @@ json.tours @tours do |tour|
     @existing_path_points = []
     if i == 0
       @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-      stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
+      if path.blank?
+        path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
+      end
+      @existing_path_points << path.path_points.reorder('id ASC') if path.present?
     else
       path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: ts[i-1].stop_id).first
       if path.blank?
@@ -163,7 +167,6 @@ json.tours @tours do |tour|
       end
       @existing_path_points << path.path_points.reorder('id ASC') if path.present?
     end
-    
     @existing_path_points.flatten!
     json.path_points @existing_path_points
 
