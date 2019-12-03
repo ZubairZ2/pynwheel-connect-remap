@@ -11,7 +11,6 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
-
   json.path_points tour.path.present? ? tour.path.path_points.reorder('id ASC') : []
 
   stops = tour.tour_stops
@@ -143,10 +142,22 @@ json.tours @tours do |tour|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
-    @existing_path_points = []
-    @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-    stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
     
+    @existing_path_points = []
+    if i == 0
+      @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
+      stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
+    else
+      # tour.tour_stops[i-1].stop_id
+      path = Path.where(map_path_to_id: tour.tour_stops[i].stop_id, map_path_to_type: tour.tour_stops[i].stop_type.classify.constantize,
+                      map_path_from_id: tour.tour_stops[i-1].stop_id, map_path_from_type: tour.tour_stops[i-1].stop_type.classify.constantize ).first
+      if path.path_points.blank?
+        path = Path.where(map_path_to_id: tour.tour_stops[i-1].stop_id, map_path_to_type: tour.tour_stops[i-1].stop_type.classify.constantize,
+                          map_path_from_id: tour.tour_stops[i].stop_id, map_path_from_type: tour.tour_stops[i].stop_type.classify.constantize ).first
+      end
+      @existing_path_points << path.path_points.reorder('id ASC')
+    end
+
     @existing_path_points.flatten!
     json.path_points @existing_path_points
     
