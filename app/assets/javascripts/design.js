@@ -1,3 +1,5 @@
+var image_height = 200;
+var image_width = 200;
 $(document).ready(function () {
   if ($('.is-home-page')[0]) {
     showTabsAccordingToTheme(selected_theme);
@@ -972,6 +974,18 @@ function readSecondaryPageBackgroundImageSrc(file) {
 
 function readGlobalNavButtonOnSrc(file) {
   $(".divLoading").removeClass("hidden");
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        debugger;
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_global_nav_button_on").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_global_nav_button_on").addClass("hidden");
+        }
+    };
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#global-nav-button-on-preview-image').attr('src', e.target.result);
@@ -983,6 +997,17 @@ function readGlobalNavButtonOnSrc(file) {
 
 function readApartmentNavButtonOnSrc(file) {
   $(".divLoading").removeClass("hidden");
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_apartment_btn_on_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_apartment_btn_on_image").addClass("hidden");
+        }
+    };
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#apartment-button-on-preview-image').attr('src', e.target.result);
@@ -993,6 +1018,17 @@ function readApartmentNavButtonOnSrc(file) {
 }
 function readGalleryNavButtonOnSrc(file) {
   $(".divLoading").removeClass("hidden");
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_gallery_btn_on_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_gallery_btn_on_image").addClass("hidden");
+        }
+    };
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#gallery-button-on-preview-image').attr('src', e.target.result);
@@ -1003,6 +1039,17 @@ function readGalleryNavButtonOnSrc(file) {
 }
 function readNeighborhoodNavButtonOnSrc(file) {
   $(".divLoading").removeClass("hidden");
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_neighborhood_btn_on_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_neighborhood_btn_on_image").addClass("hidden");
+        }
+    };
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#neighborhood-button-on-preview-image').attr('src', e.target.result);
@@ -1013,6 +1060,17 @@ function readNeighborhoodNavButtonOnSrc(file) {
 }
 function readImagepageNavButtonOnSrc(file) {
   $(".divLoading").removeClass("hidden");
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_imagepage_btn_on_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_imagepage_btn_on_image").addClass("hidden");
+        }
+    };
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#imagepage-button-on-preview-image').attr('src', e.target.result);
@@ -1034,6 +1092,17 @@ function readWebpageNavButtonOnSrc(file) {
 function readFavouriteNavButtonOnSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_favourite_btn_on_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_favourite_btn_on_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#favourite-button-on-preview-image').attr('src', e.target.result);
     $('#favourite-button-on-preview-image').parent().attr('href', e.target.result);
@@ -1044,6 +1113,17 @@ function readFavouriteNavButtonOnSrc(file) {
 function readApertmentButtonOffImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_apartment_btn_off_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_apartment_btn_off_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#apartment-button-off-preview-image').attr('src', e.target.result);
     $('#apartment-button-off-preview-image').parent().attr('href', e.target.result);
@@ -1054,6 +1134,17 @@ function readApertmentButtonOffImageSrc(file) {
 function readGalleryButtonOffImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_gallery_btn_off_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_gallery_btn_off_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#gallery-button-off-preview-image').attr('src', e.target.result);
     $('#gallery-button-off-preview-image').parent().attr('href', e.target.result);
@@ -1064,6 +1155,17 @@ function readGalleryButtonOffImageSrc(file) {
 function readNeighborhoodButtonOffImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_neighborhood_btn_off_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_neighborhood_btn_off_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#neighborhood-button-off-preview-image').attr('src', e.target.result);
     $('#neighborhood-button-off-preview-image').parent().attr('href', e.target.result);
@@ -1074,6 +1176,17 @@ function readNeighborhoodButtonOffImageSrc(file) {
 function readImagepageButtonOffImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_imagepage_btn_off_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_imagepage_btn_off_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#imagepage-button-off-preview-image').attr('src', e.target.result);
     $('#imagepage-button-off-preview-image').parent().attr('href', e.target.result);
@@ -1083,6 +1196,17 @@ function readImagepageButtonOffImageSrc(file) {
 }
 function readWebpageButtonOffImageSrc(file) {
   $(".divLoading").removeClass("hidden");
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_webpage_btn_off_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_webpage_btn_off_image").addClass("hidden");
+        }
+    };
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#webpage-button-off-preview-image').attr('src', e.target.result);
@@ -1094,6 +1218,17 @@ function readWebpageButtonOffImageSrc(file) {
 function readfavouriteButtonOffImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_favourite_btn_off_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_favourite_btn_off_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#favourite-button-off-preview-image').attr('src', e.target.result);
     $('#favourite-button-off-preview-image').parent().attr('href', e.target.result);
@@ -1104,6 +1239,17 @@ function readfavouriteButtonOffImageSrc(file) {
 function readGlobalNavButtonOffSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_global_nav_button_on").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_global_nav_button_on").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#global-nav-button-off-preview-image').attr('src', e.target.result);
     $('#global-nav-button-off-preview-image').parent().attr('href', e.target.result);
@@ -1116,6 +1262,17 @@ function readApplicationBackgroundImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
   reader.onload = function (e) {
+      var img = getHeightWidthLimit(file);
+      img.onload = function () {
+          if (this.width < image_width && this.height < image_height)
+          {
+              $(".exal_application_background_image").removeClass("hidden");
+          }
+          else
+          {
+              $(".exal_application_background_image").addClass("hidden");
+          }
+      };
     $('#application-background-preview-image').attr('src', e.target.result);
     $('#application-background-preview-image').parent().attr('href', e.target.result);
     applicationBackgroundImage(e.target.result);
@@ -1126,6 +1283,17 @@ function readApplicationBackgroundImageSrc(file) {
 function readApartmentNavigationBgImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_apartment_nav_bg_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_apartment_nav_bg_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#apartment-navigation-bg-image-preview').attr('src', e.target.result);
     $('#apartment-navigation-bg-image-preview').parent().attr('href', e.target.result);
@@ -1136,6 +1304,17 @@ function readApartmentNavigationBgImageSrc(file) {
 function readGalleryNavigationBgImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_apartment_btn_on_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_apartment_btn_on_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#gallery-navigation-bg-image-preview').attr('src', e.target.result);
     $('#gallery-navigation-bg-image-preview').parent().attr('href', e.target.result);
@@ -1146,6 +1325,17 @@ function readGalleryNavigationBgImageSrc(file) {
 function readFavouritiesNavigationBgImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_favourities_nav_bg_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_favourities_nav_bg_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#favourities-navigation-bg-image-preview').attr('src', e.target.result);
     $('#favourities-navigation-bg-image-preview').parent().attr('href', e.target.result);
@@ -1156,6 +1346,17 @@ function readFavouritiesNavigationBgImageSrc(file) {
 function readAdditionalPagesNavigationBgImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_additional_pages_nav_bg_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_additional_pages_nav_bg_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#additional-pages-navigation-bg-image-preview').attr('src', e.target.result);
     $('#additional-pages-navigation-bg-image-preview').parent().attr('href', e.target.result);
@@ -1166,6 +1367,17 @@ function readAdditionalPagesNavigationBgImageSrc(file) {
 function readNeighborhoodBgImageSrc(file) {
     $(".divLoading").removeClass("hidden");
     var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".neighborhood_bg_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".neighborhood_bg_image").addClass("hidden");
+        }
+    };
     reader.onload = function (e) {
         $('#neighborhood-bg-image-preview').attr('src', e.target.result);
         $('#neighborhood-bg-image-preview').parent().attr('href', e.target.result);
@@ -1220,6 +1432,17 @@ function filterLabelImageSrc(file) {
 
 function homePageButtonImageSrc(file) {
   $(".divLoading").removeClass("hidden");
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_home_page_button_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_home_page_button_image").addClass("hidden");
+        }
+    };
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#home-page-button-image-preview').attr('src', e.target.result);
@@ -1231,6 +1454,17 @@ function homePageButtonImageSrc(file) {
 
 function homePageBackgroundImageSrc(file) {
   $(".divLoading").removeClass("hidden");
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_home_page_background_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_home_page_background_image").addClass("hidden");
+        }
+    };
   var reader = new FileReader();
   reader.onload = function (e) {
     $('#home-page-background-image-preview').attr('src', e.target.result);
@@ -1273,6 +1507,17 @@ function gableFilterPanelBackgroundImageSrc(file) {
 function globalNavBackgroundImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_global_nav_background_image").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_global_nav_background_image").addClass("hidden");
+        }
+    };
   reader.onload = function (e) {
     $('#global-nav-background-image-preview').attr('src', e.target.result);
     $('#global-nav-background-image-preview').parent().attr('href', e.target.result);
@@ -2024,7 +2269,7 @@ function readDesignPageLogoSrcFromInput(input) {
         var reader = new FileReader();
         var img = getHeightWidthLimit(input);
         img.onload = function () {
-            if (this.width < 200 || this.height < 200)
+            if (this.width < image_height && this.height < image_width)
             {
                 $(".waring_exal").removeClass("hidden");
             }
@@ -2095,8 +2340,9 @@ function readGlobalNavButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
         var reader = new FileReader();
+        var img = getHeightWidthLimit(input);
         img.onload = function () {
-            if (this.width < 200 || this.height < 200)
+            if (this.width < image_width && this.height < image_height)
             {
                 $(".exal_global_nav_button_on").removeClass("hidden");
             }
@@ -2125,6 +2371,17 @@ function readApartmentButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_apartment_btn_on_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_apartment_btn_on_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#apartment-button-on-preview-image').attr('src', e.target.result);
@@ -2146,6 +2403,17 @@ function readGalleryButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_gallery_btn_on_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_gallery_btn_on_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#gallery-button-on-preview-image').attr('src', e.target.result);
@@ -2167,6 +2435,17 @@ function readNeighborhoodButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_neighborhood_btn_on_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_neighborhood_btn_on_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#neighborhood-button-on-preview-image').attr('src', e.target.result);
@@ -2187,6 +2466,17 @@ function readImagepageButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_imagepage_btn_on_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_imagepage_btn_on_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#imagepage-button-on-preview-image').attr('src', e.target.result);
@@ -2207,6 +2497,17 @@ function readWebpageButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_webpage_btn_on_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_webpage_btn_on_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#webpage-button-on-preview-image').attr('src', e.target.result);
@@ -2227,8 +2528,20 @@ function readFavouriteButtonOnFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_favourite_btn_on_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_favourite_btn_on_image").addClass("hidden");
+                }
+            };
 
-            reader.onload = function (e) {
+
+        reader.onload = function (e) {
                 $('#favourite-button-on-preview-image').attr('src', e.target.result);
                 $('#favourite-button-on-preview-image').parent().attr('href', e.target.result);
                 favouriteButtonOnImage(e.target.result);
@@ -2247,6 +2560,17 @@ function readApartmentButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_apartment_btn_off_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_apartment_btn_off_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#apartment-button-off-preview-image').attr('src', e.target.result);
@@ -2267,6 +2591,17 @@ function readGalleryButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_gallery_btn_off_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_gallery_btn_off_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#gallery-button-off-preview-image').attr('src', e.target.result);
@@ -2287,6 +2622,17 @@ function readNeighborhoodButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_neighborhood_btn_off_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_neighborhood_btn_off_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#neighborhood-button-off-preview-image').attr('src', e.target.result);
@@ -2307,6 +2653,17 @@ function readImagepageButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_imagepage_btn_off_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_imagepage_btn_off_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#imagepage-button-off-preview-image').attr('src', e.target.result);
@@ -2327,6 +2684,17 @@ function readWebpageButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_webpage_btn_off_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_webpage_btn_off_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#webpage-button-off-preview-image').attr('src', e.target.result);
@@ -2347,6 +2715,17 @@ function readFavouriteButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_favourite_btn_off_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_favourite_btn_off_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#favourite-button-off-preview-image').attr('src', e.target.result);
@@ -2367,6 +2746,17 @@ function readGlobalNavButtonOffFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_global_nav_button_off").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_global_nav_button_off").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#global-nav-button-off-preview-image').attr('src', e.target.result);
@@ -2388,6 +2778,17 @@ function readApplicationBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_application_background_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_application_background_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#application-background-preview-image').attr('src', e.target.result);
@@ -2409,6 +2810,17 @@ function readApartmentNavBgImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_apartment_nav_bg_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_apartment_nav_bg_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#apartment-navigation-bg-image-preview').attr('src', e.target.result);
@@ -2430,6 +2842,17 @@ function readGalleryNavBgImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_apartment_btn_on_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_apartment_btn_on_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#gallery-navigation-bg-image-preview').attr('src', e.target.result);
@@ -2451,6 +2874,17 @@ function readFavouritiesNavBgImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_favourities_nav_bg_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_favourities_nav_bg_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#favourities-navigation-bg-image-preview').attr('src', e.target.result);
@@ -2472,6 +2906,17 @@ function readAdditionalPagesNavBgImageFromInput(input) {
     if (input.files && input.files[0]) {
         if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_additional_pages_nav_bg_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_additional_pages_nav_bg_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#additional-pages-navigation-bg-image-preview').attr('src', e.target.result);
@@ -2492,6 +2937,17 @@ function readNeighborhoodBgImageFromInput(input) {
     if (input.files && input.files[0]) {
         if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_neighborhood_bg_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_neighborhood_bg_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#neighborhood-bg-image-preview').attr('src', e.target.result);
@@ -2600,7 +3056,7 @@ function readHomePageButtonImageFromInput(input) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
         var img = getHeightWidthLimit(input);
         img.onload = function () {
-            if (this.width < 200 || this.height < 200)
+            if (this.width < image_width && this.height < image_height)
             {
                 $(".exal_home_page_button_image").removeClass("hidden");
             }
@@ -2630,8 +3086,9 @@ function readHomePageBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
             img.onload = function () {
-                if (this.width < 200 || this.height < 200)
+                if (this.width < image_width && this.height < image_height)
                 {
                     $(".exal_home_page_background_image").removeClass("hidden");
                 }
@@ -2723,6 +3180,17 @@ function readGlobalNavBackgroundImageFromInput(input) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
             var reader = new FileReader();
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_width && this.height < image_height)
+                {
+                    $(".exal_global_nav_background_image").removeClass("hidden");
+                }
+                else
+                {
+                    $(".exal_global_nav_background_image").addClass("hidden");
+                }
+            };
 
             reader.onload = function (e) {
                 $('#global-nav-background-image-preview').attr('src', e.target.result);
@@ -3566,11 +4034,23 @@ function setGablesCustomValues() {
 function getHeightWidthLimit (input) {
     var _URL = window.URL || window.webkitURL;
     var file, img;
-    if ((file = input.files[0])) {
-        img = new Image();
-        img.src = _URL.createObjectURL(file);
-        return img;
+    if (input.files == undefined)
+    {
+        if ((file = input)) {
+            img = new Image();
+            img.src = _URL.createObjectURL(file);
+            return img;
+        }
     }
+    else
+    {
+        if ((file = input.files[0])) {
+            img = new Image();
+            img.src = _URL.createObjectURL(file);
+            return img;
+        }
+    }
+
 
 }
 function getHeightWidthLimitMultipleFiles (input,i) {
