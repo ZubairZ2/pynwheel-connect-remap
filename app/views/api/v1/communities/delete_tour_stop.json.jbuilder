@@ -1,5 +1,5 @@
 i = 0
-ts = tour.tour_stops.where.not(id: @community.deleted_ids)
+ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
 json.tours @tours do |tour|
 
   json.id tour.id
@@ -13,7 +13,11 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
-  json.path_points tour.path.present? ? tour.path.path_points.reorder('id ASC') : []
+  sp = Path.where(map_path_from_id: tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort).last.stop_id, map_path_to_id: nil).first
+  if sp.blank?
+    sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort).last.stop_id).first
+  end
+  json.path_points tour.path.present? ? sp.path_points.reorder('id ASC') : []
 
   stops = tour.tour_stops
   # @community.deleted_ids = []
@@ -154,12 +158,9 @@ json.tours @tours do |tour|
       @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
       stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
     else
-      # tour.tour_stops[i-1].stop_id
-      path = Path.where(map_path_to_id: ts[i].stop_id, map_path_to_type: ts[i].stop_type.classify.constantize,
-                      map_path_from_id: ts[i-1].stop_id, map_path_from_type: ts[i-1].stop_type.classify.constantize ).first
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: ts[i-1].stop_id).first
       if path.blank?
-        path = Path.where(map_path_to_id: ts[i-1].stop_id, map_path_to_type: ts[i-1].stop_type.classify.constantize,
-                          map_path_from_id: ts[i].stop_id, map_path_from_type: ts[i].stop_type.classify.constantize ).first
+        path = Path.where(map_path_to_id: ts[i-1].stop_id, map_path_from_id: stop.stop_id).first
       end
       @existing_path_points << path.path_points.reorder('id ASC') if path.present?
     end

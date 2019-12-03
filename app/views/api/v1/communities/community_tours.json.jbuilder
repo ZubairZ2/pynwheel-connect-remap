@@ -11,7 +11,11 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
-  json.path_points tour.path.present? ? tour.path.path_points.reorder('id ASC') : []
+  sp = Path.where(map_path_from_id: tour.tour_stops.order(:sort).last.stop_id, map_path_to_id: nil).first
+  if sp.blank?
+    sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops.order(:sort).last.stop_id).first
+  end
+  json.path_points tour.path.present? ? sp.path_points.reorder('id ASC') : []
 
   stops = tour.tour_stops
   json.tour_stop tour.tour_stops.order(:sort) do |stop|
@@ -150,9 +154,9 @@ json.tours @tours do |tour|
     else
       # tour.tour_stops[i-1].stop_id
       path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: tour.tour_stops.order(:sort)[i-1].stop_id).first
-      # if path.blank?
-      #   path = Path.where(map_path_to_id: tour.tour_stops[i-1].stop_id, map_path_from_id: tour.tour_stops[i].stop_id).first
-      # end
+      if path.blank?
+        path = Path.where(map_path_to_id: tour.tour_stops.order(:sort)[i-1].stop_id, map_path_from_id: stop.stop_id).first
+      end
       @existing_path_points << path.path_points.reorder('id ASC') if path.present?
     end
 
