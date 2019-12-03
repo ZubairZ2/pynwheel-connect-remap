@@ -1,5 +1,4 @@
 i = 0
-ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
 json.tours @tours do |tour|
 
   json.id tour.id
@@ -12,10 +11,10 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
-
-  sp = Path.where(map_path_from_id: tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort).last.stop_id, map_path_to_id: nil).first
+  ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
+  sp = Path.where(map_path_from_id: ts.last.stop_id, map_path_to_id: nil).first
   if sp.blank?
-    sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort).last.stop_id).first
+    sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.last.stop_id).first
   end
   json.path_points tour.path.present? ? sp.path_points.reorder('id ASC') : []
 
