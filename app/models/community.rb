@@ -398,7 +398,7 @@ class Community < ApplicationRecord
     end
   end
 
-  def connect_to_pricing
+  def connect_to_pricing(com)
     case data_provider
       when "psi"
         connect_pricing_to_psi
