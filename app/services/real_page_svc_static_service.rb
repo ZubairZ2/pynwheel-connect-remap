@@ -255,7 +255,7 @@ class RealPageSvcStaticService < BaseService
     site_ids.each do |site_id|
       begin
         url = REALPAGE_URL
-        soap_action = REALPAGE_MATRIX_ACTION
+        soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
         pmc_id = credentials.pmc_id
         #site_id = credentials.site_id
         username = REALPAGESVC_USERNAME
@@ -334,11 +334,22 @@ class RealPageSvcStaticService < BaseService
               unitHash = nil
             end
 
-            if unit_min_rent.present?
-              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no,building: unit_add)
-              if unit.present?
-                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && !(unit.manual_override)
-                  unit.effective_rent = unit_min_rent
+              if unit_min_rent.present?
+
+                unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no,building: unit_add)
+                unless unit.present?
+                  unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
+                end
+                if unit.present?
+                  unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && !(unit.manual_override)
+                    unit.effective_rent = unit_min_rent
+                  end
+                  unit.min_effective_rent = unit_min_rent
+                  unit.max_effective_rent = unit_max_rent
+                  unit.lease_pricing = rentStr
+                  unit.save(:validate => false)
+                  # @doc = @doc + response.body
+                  puts " **** price updated *** ",unit.marketing_name
                 end
                 unit.min_effective_rent = unit_min_rent
                 unit.max_effective_rent = unit_max_rent
@@ -348,7 +359,6 @@ class RealPageSvcStaticService < BaseService
                 puts " **** price updated *** ",unit.marketing_name
               end
 
-            end
           end
         end
       rescue => e
