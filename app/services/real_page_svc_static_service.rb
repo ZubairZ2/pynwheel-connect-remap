@@ -333,7 +333,7 @@ class RealPageSvcStaticService < BaseService
 
               unitHash = nil
             end
-            
+
               if unit_min_rent.present?
 
                 unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no,building: unit_add)
@@ -359,7 +359,6 @@ class RealPageSvcStaticService < BaseService
                 puts " **** price updated *** ",unit.marketing_name
               end
 
-            end
           end
         end
       rescue => e
