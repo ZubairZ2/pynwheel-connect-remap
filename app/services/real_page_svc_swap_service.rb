@@ -341,7 +341,7 @@ class RealPageSvcSwapService < BaseService
     site_ids.each do |site_id|
       begin
         url = REALPAGE_URL
-        soap_action = REALPAGE_MATRIX_ACTION
+        soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
         pmc_id = credentials.pmc_id
         #site_id = credentials.site_id
         username = REALPAGESVC_USERNAME
@@ -422,6 +422,9 @@ class RealPageSvcSwapService < BaseService
 
             if unit_min_rent.present?
               unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no,building: unit_add)
+              unless unit.present?
+                unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
+              end
               if unit.present?
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && !(unit.manual_override)
                   unit.effective_rent = unit_min_rent
