@@ -149,7 +149,7 @@ json.tours @tours do |tour|
       stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
     else
       # tour.tour_stops[i-1].stop_id
-      path = Path.where(map_path_to_id: tour.tour_stops[i].stop_id, map_path_from_id: tour.tour_stops[i-1].stop_id).first
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: tour.tour_stops.order(:sort)[i-1].stop_id).first
       # if path.blank?
       #   path = Path.where(map_path_to_id: tour.tour_stops[i-1].stop_id, map_path_from_id: tour.tour_stops[i].stop_id).first
       # end
