@@ -192,6 +192,11 @@
               %i.fa.fa-plus-circle
               ADD PATH FOR STARTING POINT
 
+        - if @tours.tour_stops.present?      
+          .row
+            .col-md-12
+              %h3{ style: 'color: #800000;' } Draw a Path Between Two Points:
+
         .row
           .col-md-12
             %h4 Elevator icon(three horizontal lines) will appear below after the page auto-refreshes.
