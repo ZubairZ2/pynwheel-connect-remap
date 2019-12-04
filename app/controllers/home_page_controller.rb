@@ -15,7 +15,7 @@ class HomePageController < ApplicationController
 
   def save_home_page_image
     image = MiniMagick::Image.open(params[:file].path)
-    current_community.design.home_page_images.create(image: params[:file],is_small: (image.width < 400 || image.height < 300) ? true : false)
+    current_community.design.home_page_images.create(image: params[:file],is_small: (image.width < 800 && image.height < 600) ? true : false)
     #@home_page_images = current_community.design.home_page_images.order(:sort).all
     render :json=>{"status"=>"sucdess"}
   end
@@ -63,7 +63,7 @@ class HomePageController < ApplicationController
     if params[:home_page_image][:crop_h].to_f == 0 && params[:home_page_image][:crop_w].to_f == 0
       @home_page_image.do_crop = false
     else
-      @home_page_image.is_small = (params[:home_page_image][:crop_w].to_f < 500 || params[:home_page_image][:crop_h].to_f < 400) ? true : false
+      @home_page_image.is_small = (params[:home_page_image][:crop_w].to_f < 800 && params[:home_page_image][:crop_h].to_f < 600) ? true : false
     end
     @home_page_image.update(home_page_image_params)
     PaperTrail::Version.create(item_type: "HomePageImage",item_id: @home_page_image.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@home_page_image.name} community_id: #{@home_page_image.design.community_id}")
