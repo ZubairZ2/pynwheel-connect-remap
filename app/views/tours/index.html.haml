@@ -188,16 +188,16 @@
             = link_to create_elevator_path(@tours.id, params[:community_id]), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path" do
               %i.fa.fa-plus-circle
               ADD ELEVATOR
-            = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
-              %i.fa.fa-plus-circle
-              ADD PATH FOR STARTING POINT
+            / = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
+            /   %i.fa.fa-plus-circle
+            /   ADD PATH FOR STARTING POINT
 
         - if @tours.tour_stops.present?      
           .row
             .col-md-12
               %h3{ style: 'color: #800000;' } Draw a Path Between Two Points:
 
-        .row
+          .row
           .col-md-12
             %h4 Elevator icon(three horizontal lines) will appear below after the page auto-refreshes.
             %h4 Drag and drop the icon onto the correct postion on the map.          
