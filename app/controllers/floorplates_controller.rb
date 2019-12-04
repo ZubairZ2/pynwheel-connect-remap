@@ -19,17 +19,24 @@ class FloorplatesController < ApplicationController
 
   def create
     @floorplate = current_community.floorplates.new(floorplate_params)
-    if @floorplate.save
-      flash[:notice] = "Floorplate created successfully."
-      PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
 
-      redirect_to community_floorplates_path(current_community)
-    else
-      add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-        add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
-      flash[:error] = @floorplate.errors.full_messages.join(',')
+    image = MiniMagick::Image.open(params[:floorplate][:image].path)
+    if image.width < 1000 && image.height < 700
+      flash[:error] = "Too small property map image"
       render :new
+    else
+      if @floorplate.save
+        flash[:notice] = "Floorplate created successfully."
+        PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+        redirect_to community_floorplates_path(current_community)
+      else
+        add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+        add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
+        flash[:error] = @floorplate.errors.full_messages.join(',')
+        render :new
+      end
     end
+
   end
 
   def plot_elevator
