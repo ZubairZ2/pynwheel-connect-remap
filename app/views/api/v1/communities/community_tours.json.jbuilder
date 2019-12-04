@@ -11,9 +11,9 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
-  sp = Path.where(map_path_from_id: tour.tour_stops.order(:sort).last.stop_id, map_path_to_id: nil).first
+  sp = Path.where(map_path_from_id: tour.tour_stops&.order(:sort)&.last&.stop_id, map_path_to_id: nil)&.first
   if sp.blank?
-    sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops.order(:sort).last.stop_id).first
+    sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops&.order(:sort)&.last&.stop_id)&.first
     json.path_points tour.path.present? ? sp&.path_points&.reorder('id DESC') : []
   else
     json.path_points tour.path.present? ? sp&.path_points&.reorder('id ASC') : []
