@@ -41,6 +41,7 @@ json.ui_settigs do
   json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_size.present? ? @community.design.expressionist.overlay_size : "18px") : "18px")
   json.overlay_text_position (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text_position.present? ? @community.design.expressionist.overlay_text_position : "Left") : "Left")
 
+  
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
