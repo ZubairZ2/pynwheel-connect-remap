@@ -306,7 +306,14 @@
       mouseX = Math.round(ev.offsetX - point_size/2)
       mouseY = Math.round(ev.offsetY - point_size/2)
       neighbour_units =  detectNearestUnits()
-      savePoint(mouseX, mouseY, neighbour_units)
+      var len = $("i[class*='animate-element']").length + $("a[class*='animate-element']").length
+
+      if (len == 1){
+        alert("Please select two stops from table for which you want to draw path")
+      }
+      else {
+        savePoint(mouseX, mouseY, neighbour_units)
+      }
     });
 
 
