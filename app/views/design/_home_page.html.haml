@@ -311,6 +311,13 @@
               Overlay text opacity
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :overlay_opacity , options_for_select(opacity_options,e.object.overlay_opacity.present? ? e.object.overlay_opacity : '100%'),{},{class: "form-control home-page-field"}
+      .row.global_navigation_sub_heading
+        .col-lg-10
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              Overlay text Position
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = e.select :overlay_text_position , options_for_select(["left","right"],e.object.overlay_text_position.present? ? e.object.overlay_text_position : "left"),{},{class: "form-control home-page-field"}
 
 
 
