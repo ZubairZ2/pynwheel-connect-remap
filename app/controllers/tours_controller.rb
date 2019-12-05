@@ -25,8 +25,11 @@ class ToursController < ApplicationController
 
     @existing_path_points = []
     @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
-    
-    @existing_path_points << @tours.path_points.reorder('id ASC') if @tours.path.present?
+    @community.tour.tour_stops.order(:sort).each do |stop|  
+      path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
+      @existing_path_points << path.path_points if path.present?
+    end
+    # @existing_path_points << @tours.path_points.reorder('id ASC') if @tours.path.present?
     @existing_path_points.flatten!
     @existing_path_points
     rescue => ex
