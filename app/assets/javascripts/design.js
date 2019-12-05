@@ -628,6 +628,9 @@ $(document).ready(function () {
   $('.home-page-field').change(function () {
     $('#home-page-form').submit();
   });
+    $('.home-page-image-field').change(function () {
+        $('#home-page-image-form').submit();
+    });
 
   $('.map-marker-field').change(function () {
     $('#map-marker-form').submit();
