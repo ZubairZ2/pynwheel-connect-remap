@@ -12,12 +12,12 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
   ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
-  sp = Path.where(map_path_from_id: ts.last.stop_id, map_path_to_id: nil).first
+  sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
   if sp.blank?
-    sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.last.stop_id).first
-    json.path_points tour.path.present? ? sp.path_points.reorder('id DESC') : []
+    sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first
+    json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
   else
-    json.path_points tour.path.present? ? sp.path_points.reorder('id ASC') : []
+    json.path_points sp.present? ? sp.path_points.reorder('id ASC') : []
   end
 
   stops = tour.tour_stops
@@ -160,17 +160,17 @@ json.tours @tours do |tour|
       path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
       if path.blank?
         path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
-        @existing_path_points << path.path_points.reorder('id DESC') if path.present?
+        @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
       else
-        @existing_path_points << path.path_points.reorder('id ASC') if path.present?
+        @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
       end
     else
       path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: ts[i-1].stop_id).first
       if path.blank?
         path = Path.where(map_path_to_id: ts[i-1].stop_id, map_path_from_id: stop.stop_id).first
-        @existing_path_points << path.path_points.reorder('id DESC') if path.present?
+        @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
       else
-        @existing_path_points << path.path_points.reorder('id ASC') if path.present?
+        @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
       end
       # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
     end
