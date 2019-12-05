@@ -39,7 +39,7 @@ json.ui_settigs do
   json.overlay_color (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_color.present? ? @community.design.expressionist.overlay_color : "#000000") : "#000000")
   json.overlay_opacity (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_opacity.present? ? @community.design.expressionist.overlay_opacity : "100%") : "100%")
   json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_size.present? ? @community.design.expressionist.overlay_size : "18px") : "18px")
-  json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text_position.present? ? @community.design.expressionist.overlay_text_position : "left") : "left")
+  json.overlay_text_position (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text_position.present? ? @community.design.expressionist.overlay_text_position : "left") : "left")
 
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
