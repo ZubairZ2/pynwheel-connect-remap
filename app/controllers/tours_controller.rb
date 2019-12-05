@@ -262,9 +262,9 @@ class ToursController < ApplicationController
     elsif path.map_path_to_type == "Elevator"
       stop =  Elevator.find(path.map_path_id).id
     else
-      stop = TourStop.find_by_stop_id(path.map_path_id).tour.id
+      stop = path.map_path_to_id.present? ? TourStop.find_by_stop_id(path.map_path_to_id).tour.id : TourStop.find_by_stop_id(path.map_path_from_id).tour.id
     end
-    
+
     if path.map_path_from_type == "Unit"
       start =  Unit.find(path.map_path_from_id).id
     elsif path.map_path_from_type == "Amenity"
@@ -272,7 +272,7 @@ class ToursController < ApplicationController
     elsif path.map_path_from_type == "Elevator"
       start =  Elevator.find(path.map_path_from_id).id
     else
-      start = TourStop.find_by_stop_id(path.map_path_id).tour.id
+      start = path.map_path_to_id.present? ? TourStop.find_by_stop_id(path.map_path_to_id).tour.id : TourStop.find_by_stop_id(path.map_path_from_id).tour.id
     end
 
     PaperTrail::Version.create(item_type: "PathPoint",item_id: path.id,event: "create",whodunnit: current_user.id,community_id: path.community_id, company_id: current_company.id,object: "name: '#{path.is_a?(Unit) ? path.marketing_name : path.name}' community_id: '#{path.community_id}'")
