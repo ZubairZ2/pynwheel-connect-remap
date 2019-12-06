@@ -149,7 +149,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     if params[:token] == "pynwheeltoken12345"
       app_version = AppVersion.first
 
-      @community = params[:id] == 1 ? Community.find 748 :Community.find params[:id]
+      @community = (params[:id].to_i == 1 ? (Community.find(748)) : (Community.find params[:id]))
       @community.neighborhood_request_counter = @community.neighborhood_request_counter + 1
       result = nil
       if @community.neighborhood_request_counter < @community.neighborhood_request_counter_limit
