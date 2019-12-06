@@ -5,19 +5,16 @@ class ToursController < ApplicationController
     @tours = @community.tour || @community.create_tour
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
 
-    @amenities = @community.amenities
-    @elevators = @community.elevators
-    @units = @community.units
+
+
 
     # you might sometime later wonder that why this is being done like separate arrays
     # I myself did using %w(amenity unit elevator) BUT those arrays are being used in views.
     # Watchout
-    @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
-    @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
 
     @tour_elevator_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id}
-    
-    @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
+
+    @floorplates = @community.floorplates unless @community.is_sitemap
     @existing_stops = []
     @existing_stops << Unit.where(id: @tour_unit_array)
     @existing_stops << Amenity.where(id: @tour_amenity_array)
@@ -32,6 +29,18 @@ class ToursController < ApplicationController
     @existing_path_points.flatten!
     # binding.pry
     @existing_path_points
+    if params[:floorNo].present?
+      @sitemap =  @community.floorplates.select{|f| f.floors.include?(params[:floorNo].to_i)}.first
+      @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @sitemap.amenities.map{|x| x.id}
+      @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.map{|x| x.id}
+    else
+      @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
+      @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
+      @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
+    end
+    @amenities = @community.is_sitemap ? @community.amenities : @sitemap.amenities
+    @elevators = @community.elevators
+    @units = @community.is_sitemap ? @community.units : @sitemap.units
     rescue => ex
     end
   end

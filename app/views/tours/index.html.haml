@@ -203,10 +203,16 @@
               / id map
               .plot-image
                 .grid-graph.hidden
-                = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", :onclick => "return false;"
-
-
-                = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg"
+                .container
+                  -#= form_tag community_tours_path(@community), {:class => 'tour_floor_form'} do
+                  -#  = hidden_field_tag "floorNo", 6, :class => "hidden_floor"
+                  - unless @community.is_sitemap
+                    - @community.floorplates.map{|f| f.floors}.flatten.sort.each do |f|
+                      %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #e0e0e0;padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
+                      -#%button.floor_selection_btn{:type => "button",:herf} #{f}
+                    -#= submit_tag 'Save', class: " floor_submit_btn"
+                  = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
+                  = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg"
                 - community_units = @community_units
                 - coordinates_array = []
                 - path_point_coords = {}
@@ -245,8 +251,10 @@
 
   });
 
-  $('.show-tour-page').change(function(){
-    $('.tour-settings-form').submit();
+  $('.floor_selection_btn').click(function(){
+    $('.hidden_floor').val(this.textContent);
+    debugger;
+    $('.floor_submit_btn').click();
   });
   $('.tour_sortable').railsSortable();
   
@@ -255,7 +263,26 @@
 
   cords_arr = JSON.parse('#{raw(path_point_coords.to_json)}');
 
-
+  $('.floor_submit_btn').click(function () {
+    $('.floor_submit_btn').click();
+  });
+  // $('.floor_selection_btn111').click(function () {
+  //   var url = '/communities/' + community_id + '/tours';
+  //   $.ajax({
+  //     url: url,
+  //     type: "GET",
+  //     dataType: "script",
+  //     data: {
+  //       floorNo: this.textContent
+  //     }
+  //   }).done(function () {
+  //     $(".divLoading").addClass("hidden");
+  //     console.log("success");
+  //   });
+  //
+  //
+  //
+  // });
 
   $(document).ready(function(){
     var path_id;
