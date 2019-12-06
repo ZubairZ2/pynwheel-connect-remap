@@ -35,7 +35,7 @@
 #
 
 class Gable < ApplicationRecord
-  # has_paper_trail
+  has_paper_trail
   belongs_to :design
   mount_base64_uploader :home_page_nav_bg_image, AvatarUploader
   mount_base64_uploader :global_nav_bg_image, AvatarUploader
