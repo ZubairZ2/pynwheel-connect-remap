@@ -123,7 +123,7 @@ class Api::V1::ToursController < ActionController::Base
       
            # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
       
-      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], device_id: params[:device_id]).group(:tour_stop_id).count
+      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id]).group(:tour_stop_id).count
 
       description_arr = []
       gallery_arr = []
@@ -137,9 +137,9 @@ class Api::V1::ToursController < ActionController::Base
       visited_stops.each_with_index do |x,i|
         puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
         if x.stop_type != "elevator"
-          descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(description: nil)
+          descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
 
-          images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(image: nil)
+          images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(image: nil)
           gallery_arr = []
           
           images.each do |ud|

@@ -110,9 +110,9 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def user_saved_tour
-    @device_id = params[:device_id]
-    @tour_user = TourUser.find params[:id]
-    @tours = VisitedStop.where(tour_user_id: @tour_user.id,device_id: @device_id).group('tour_id').group('tour_key').count
+    # @device_id = params[:device_id]
+    @tour_user = TourUser.find params[:tour_user_id]
+    @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
   end
   def include_application_data
     @version = AppVersion.first.version
