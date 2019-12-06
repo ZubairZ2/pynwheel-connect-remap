@@ -180,8 +180,8 @@ class CommunitiesController < ApplicationController
   def destroy
     idd = @community.id
     design_id = @community.design.id
-    @community.destroy
-    flash[:notice] = "Community deleted successfully."
+    @community.delete_community
+    flash[:notice] = "Community will be deleted within few mintues."
     DeleteLogsOnDestroy.perform_async idd,design_id
     redirect_to company_communities_path(current_company)
   end

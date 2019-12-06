@@ -59,8 +59,8 @@ class CompaniesController < ApplicationController
     end
   end
   def destroy
-    @company.destroy
-    flash[:notice] = "Company deleted successfully."
+    @company.delete_company
+    flash[:notice] = "Company will be deleted within few mintues."
     redirect_to companies_path
   end
 
