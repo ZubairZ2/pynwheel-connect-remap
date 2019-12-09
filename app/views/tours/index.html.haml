@@ -79,7 +79,6 @@
           %ul#imageselect1{:style => "display: none; z-index: 999;"}
             - amenity_arr = []
             - @amenities.each do |amenity|
-              -#- byebug
               - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
                 %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
                   %a
@@ -136,6 +135,8 @@
                   - orderVar = 0
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
+                      - unless @all_stops.include?(stop.stop_id) || stop.stop_type == "elevator"
+                        - next
                       %tr{:id=> index}
                         - orderVar = orderVar + 1
                         %td= orderVar
@@ -176,7 +177,7 @@
             = link_to starting_point_community_tours_path(@community), class: "btn btn-primary mb-20 mr-5" do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
-            = link_to create_elevator_path(@tours.id, params[:community_id]), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path" do
+            = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path" do
               %i.fa.fa-plus-circle
               ADD ELEVATOR
             = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
@@ -211,7 +212,8 @@
                       %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #e0e0e0;padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
                       -#%button.floor_selection_btn{:type => "button",:herf} #{f}
                     -#= submit_tag 'Save', class: " floor_submit_btn"
-                  = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
+                  - if !@community.is_sitemap && @sitemap.floors.flatten.include?(0)
+                    = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
                   = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg"
                 - community_units = @community_units
                 - coordinates_array = []

@@ -16,19 +16,17 @@ class ToursController < ApplicationController
 
     @floorplates = @community.floorplates unless @community.is_sitemap
     @existing_stops = []
-    @existing_stops << Unit.where(id: @tour_unit_array)
-    @existing_stops << Amenity.where(id: @tour_amenity_array)
-    @existing_stops << Elevator.where(id: @tour_elevator_array)
+
 
     @existing_path_points = []
     # binding.pry
-    @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
+    # @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if x.present? }
     
 
-    @existing_path_points << @tours.path_points.reorder('id ASC') if @tours.path.present?
-    @existing_path_points.flatten!
+    # @existing_path_points << @tours.path_points.reorder('id ASC') if @tours.path.present?
+    # @existing_path_points.flatten!
     # binding.pry
-    @existing_path_points
+    # @existing_path_points
     if params[:floorNo].present?
       @sitemap =  @community.floorplates.select{|f| f.floors.include?(params[:floorNo].to_i)}.first
       @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @sitemap.amenities.map{|x| x.id}
@@ -38,6 +36,19 @@ class ToursController < ApplicationController
       @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
       @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
     end
+
+    @all_stops = @tour_amenity_array | @tour_unit_array | @community.elevators.map{|x| x.id}
+    @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if (x.present? && @all_stops.include?(x.stop_id)) }
+
+
+
+    @existing_path_points << @tours.path_points.reorder('id ASC') if @tours.path.present?
+    @existing_path_points.flatten!
+    # binding.pry
+    @existing_path_points
+    @existing_stops << Unit.where(id: @tour_unit_array)
+    @existing_stops << Amenity.where(id: @tour_amenity_array)
+    @existing_stops << Elevator.where(id: @tour_elevator_array)
     @amenities = @community.is_sitemap ? @community.amenities : @sitemap.amenities
     @elevators = @community.elevators
     @units = @community.is_sitemap ? @community.units : @sitemap.units
@@ -206,9 +217,10 @@ class ToursController < ApplicationController
     last_elevator_id = last_elev.present? ? last_elev.id : 0
     elev_name = "Elevator#{last_elevator_id}"
     elev_desc = "Elevator#{last_elevator_id}"
-    floorplate_range = "0-#{current_community.floorplates.count}"
-    
-    elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 30, floorplate_covering_range: floorplate_range, image: File.open("app/assets/images/elev2.png"))
+    @floorplate = Floorplate.find params[floorplate] if params[:floorplate].present?
+    floorplate_range = @floorplate.present? ? @floorplate.range : "0"
+
+    elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 40, floorplate_covering_range: floorplate_range, image: File.open("app/assets/images/elev2.png"),floorplate_id: @floorplate.present? ? @floorplate.id : nil)
     tour_stop = TourStop.create tour_id: params[:tour_id], stop_id: elevator.id, stop_type: 'elevator', name: elevator.name
     render json: {path: tour_stop}, status: 200
   end
