@@ -12,7 +12,7 @@
 #
 
 class FavoriteImage < ApplicationRecord
-  has_paper_trail
+  # has_paper_trail
   mount_uploader :image, AvatarUploader
   belongs_to :favorite_setting
   include RailsSortable::Model
