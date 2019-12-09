@@ -1,4 +1,4 @@
-source 'https://rubygems.org'
+source 'http://rubygems.org'
 
 ruby '2.5.0'
 gem "letter_opener", :group => :development
@@ -14,7 +14,6 @@ gem 'carrierwave_direct'
 gem 'newrelic_rpm'
 gem 'momentjs-rails', '>= 2.9.0'
 gem 'bootstrap3-datetimepicker-rails', '~> 4.17.47'
-gem 'pry'
 gem 'piet'
 gem 'piet-binary'
 gem 'twilio-ruby'

@@ -1352,7 +1352,8 @@ json.community_group @communities do |co|
         json.rent unit.effective_rent.present? ? unit.effective_rent : 0
         json.min_rent unit.effective_rent.present? ? unit.effective_rent : 0
         json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
-        json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : unit.effective_rent
+
+        json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : (unit.effective_rent.present? ? unit.effective_rent : 0)
         json.availability unit.availability
         json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
         json.available unit.available

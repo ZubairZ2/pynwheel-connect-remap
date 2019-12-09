@@ -23,7 +23,7 @@ json.ui_settigs do
       json.secondary_logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") )
 
     end
-    else
+  else
     json.logo asset_url("pynwheel-default-logo.png")
     json.secondary_logo asset_url("pynwheel-default-logo.png")
   end
@@ -1329,7 +1329,7 @@ json.apartments do
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.min_rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
-      json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : unit.effective_rent
+      json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : (unit.effective_rent.present? ? unit.effective_rent : 0)
       json.availability unit.availability
       json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
       json.available unit.available
