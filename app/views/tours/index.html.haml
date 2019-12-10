@@ -224,9 +224,9 @@
                   - unless @community.is_sitemap
                     - @community.floorplates.map{|f| f.floors}.flatten.sort.each do |f|
                       %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #e0e0e0;padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
-                      -#%button.floor_selection_btn{:type => "button",:herf} #{f}
-                    -#= submit_tag 'Save', class: " floor_submit_btn"
-                  - if !@community.is_sitemap && @sitemap.present? && @sitemap.floors.flatten.include?(0)
+                  - if @community.is_sitemap
+                    = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
+                  - elsif @sitemap.present? && (@sitemap == @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first)
                     = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
                   = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg"
                 - community_units = @community_units
