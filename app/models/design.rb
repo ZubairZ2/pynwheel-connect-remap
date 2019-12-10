@@ -136,7 +136,7 @@
 #
 
 class Design < ApplicationRecord
-	# has_paper_trail
+	has_paper_trail
 	mount_base64_uploader :secondary_page_background_image, AvatarUploader
 	mount_base64_uploader :global_nav_button_on, AvatarUploader
 	mount_base64_uploader :global_nav_button_off, AvatarUploader

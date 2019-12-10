@@ -13,7 +13,7 @@
 #
 
 class AmenityGallery < ApplicationRecord
-  # has_paper_trail
+  has_paper_trail
   belongs_to :amenity
   mount_base64_uploader :image, AvatarUploader
 end
