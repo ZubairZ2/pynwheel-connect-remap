@@ -49,11 +49,11 @@ class ToursController < ApplicationController
     @existing_stops << Unit.where(id: @tour_unit_array)
     @existing_stops << Amenity.where(id: @tour_amenity_array)
     @existing_stops << Elevator.where(id: @tour_elevator_array)
-    byebug
     @amenities = @community.is_sitemap ? @community.amenities : (@sitemap.amenities.present? ? @sitemap.amenities : []) rescue []
     @elevators = @community.elevators
     @units = @community.is_sitemap ? @community.units : @sitemap.units rescue []
     rescue => ex
+
     end
   end
   
