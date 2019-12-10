@@ -4,7 +4,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
   include CarrierWave::RMagick
   include CarrierWave::Video  # for your video processing
   include CarrierWave::Video::Thumbnailer
-  include Piet::CarrierWaveExtension
+  # include Piet::CarrierWaveExtension
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
@@ -53,7 +53,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
     # process :crop
     resize_to_limit(1920, 1080)
   end
-  process optimize: [{quality: 50, level: 7}]
+  # process optimize: [{quality: 50, level: 7}]
   def png_name for_file, version_name
     %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
   end
