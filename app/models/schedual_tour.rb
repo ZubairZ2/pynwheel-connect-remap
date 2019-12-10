@@ -17,7 +17,7 @@
 #
 
 class SchedualTour < ApplicationRecord
-  has_paper_trail
+  # has_paper_trail
   belongs_to :tour_user, optional: true
   belongs_to :tour, optional: true
   belongs_to :community, optional: true

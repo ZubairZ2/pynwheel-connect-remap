@@ -11,6 +11,6 @@
 #
 
 class EbrochureMenuButton < ApplicationRecord
-  has_paper_trail
+  # has_paper_trail
   belongs_to :favorite_setting
 end

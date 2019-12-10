@@ -10,5 +10,5 @@
 #
 
 class StopDetail < ApplicationRecord
-  has_paper_trail
+  # has_paper_trail
 end
