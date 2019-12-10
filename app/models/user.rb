@@ -49,7 +49,7 @@
 #
 
 class User < ApplicationRecord
-  # has_paper_trail
+  has_paper_trail
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   mount_uploader :avatar, AvatarUploader

@@ -16,7 +16,7 @@
 #
 
 class HomepageIcon < ApplicationRecord
-  # has_paper_trail
+  has_paper_trail
   include RailsSortable::Model
   set_sortable :sort  
   #mount_base64_uploader :image, ImageUploader

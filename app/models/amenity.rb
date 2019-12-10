@@ -23,7 +23,7 @@
 #
 
 class Amenity < ApplicationRecord
-  # has_paper_trail on: [:create,:destroy]
+  has_paper_trail on: [:create,:destroy]
   include RailsSortable::Model
   set_sortable :sort
   include StandardUrl

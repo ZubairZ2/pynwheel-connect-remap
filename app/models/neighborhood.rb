@@ -19,7 +19,7 @@
 #
 
 class Neighborhood < ApplicationRecord
-  # has_paper_trail
+  has_paper_trail
   belongs_to :community
   has_many :locations, dependent: :destroy
   before_save do

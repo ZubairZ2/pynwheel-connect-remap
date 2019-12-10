@@ -11,6 +11,6 @@
 #
 
 class StopGallery < ApplicationRecord
-  # has_paper_trail
+  has_paper_trail
   mount_uploader :image, AvatarUploader
 end

@@ -38,7 +38,7 @@
 #
 
 class Credential < ApplicationRecord
-  # has_paper_trail
+  has_paper_trail
   belongs_to :community
   before_save :set_https_in_url
   
