@@ -133,7 +133,7 @@
                     %th{:width => "100"} Actions
                 %tbody.tour_sortable_disabled
                   - orderVar = 0
-                  - if params[:floorNo] == "1"
+                  - if @community.floorplates.map{|f| f.floors}.flatten.sort.first == params[:floorNo].to_i
                     - if @tours.x_plot >= 0 || @tours.y_plot >= 0 
                       %tr
                         %td
