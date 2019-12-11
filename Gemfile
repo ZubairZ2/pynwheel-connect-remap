@@ -26,7 +26,7 @@ source 'https://rails-assets.org' do
   gem 'rails-assets-jsTimezoneDetect'
 end
 gem 'amoeba'
-gem 'deep_cloneable', '~> 3.0.0'
+gem 'derailed', group: :development
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server
