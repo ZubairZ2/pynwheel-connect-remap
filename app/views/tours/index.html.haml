@@ -133,15 +133,16 @@
                     %th{:width => "100"} Actions
                 %tbody.tour_sortable_disabled
                   - orderVar = 0
-                  - if @tours.x_plot >= 0 || @tours.y_plot >= 0
-                    %tr
-                      %td
-                        = orderVar = orderVar + 1
-                      %td
-                        Starting Point
-                      %td
-                        = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
-                          %i.fa.fa-road.icon_size
+                  - if params[:floorNo] == "1"
+                    - if @tours.x_plot >= 0 || @tours.y_plot >= 0 
+                      %tr
+                        %td
+                          = orderVar = orderVar + 1
+                        %td
+                          Starting Point
+                        %td
+                          = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
+                            %i.fa.fa-road.icon_size
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       - unless @all_stops.include?(stop.stop_id) || stop.stop_type == "elevator"
