@@ -17,9 +17,10 @@ class TourStopsController < ApplicationController
     path = @tour_stop.stop_type.classify.constantize.find_by_id(@tour_stop.stop_id).paths.last
     path.path_points.destroy_all if path.present?
     path.destroy if path.present?
+
     VisitedStop.where(tour_stop_id: @tour_stop.id).destroy_all
     if @tour_stop.destroy
-      redirect_to community_tours_path(current_community), :notice => "Tour Stop deleted"
+      redirect_to community_tours_path(current_community,floorNo = (params[:floorplate].present? ? params[:floorplate] : nil)), :notice => "Tour Stop deleted"
     else
       redirect_to community_tours_path(current_community)
     end

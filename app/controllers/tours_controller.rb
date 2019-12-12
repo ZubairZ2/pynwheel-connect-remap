@@ -27,7 +27,9 @@ class ToursController < ApplicationController
     # @existing_path_points.flatten!
     # binding.pry
     # @existing_path_points
-    if params[:floorNo].present?
+
+    params[:floorNo] = params[:format] if params[:format].present?
+    if params[:floorNo].present? || params[:format].present?
       @sitemap =  @community.floorplates.select{|f| f.floors.include?(params[:floorNo].to_i)}.first
       @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @sitemap.amenities.map{|x| x.id}
       @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.map{|x| x.id}
@@ -79,7 +81,7 @@ class ToursController < ApplicationController
   def starting_point
     @community = Community.find params[:community_id]
     @tours = @community.tour
-    @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
+    @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
     @amenities = @community.amenities
     @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
@@ -218,8 +220,8 @@ class ToursController < ApplicationController
     last_elevator_id = last_elev.present? ? last_elev.id : 0
     elev_name = "Elevator#{last_elevator_id}"
     elev_desc = "Elevator#{last_elevator_id}"
-    @floorplate = Floorplate.find params[floorplate] if params[:floorplate].present?
-    floorplate_range = @floorplate.present? ? @floorplate.range : "0"
+    @floorplate = Floorplate.find params[:floorplate] if params[:floorplate].present?
+    floorplate_range = "-"
 
     elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 40, floorplate_covering_range: floorplate_range, image: File.open("app/assets/images/elev2.png"),floorplate_id: @floorplate.present? ? @floorplate.id : nil)
     tour_stop = TourStop.create tour_id: params[:tour_id], stop_id: elevator.id, stop_type: 'elevator', name: elevator.name
