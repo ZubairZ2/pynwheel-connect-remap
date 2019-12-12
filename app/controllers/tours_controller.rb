@@ -351,6 +351,9 @@ class ToursController < ApplicationController
     end
     if path_point.present?
       path_point.destroy
+      if !path_point.path.path_points.present?
+        path_point.path.destroy
+      end
     end
     render json: {point: path_point.present? ? path_point : {}, point_id: "point_#{params[:point_id]}"}, status: 200
   end
