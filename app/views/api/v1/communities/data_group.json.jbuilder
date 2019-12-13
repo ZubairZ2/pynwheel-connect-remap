@@ -1358,7 +1358,11 @@ json.community_group @communities do |co|
         json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
         json.available unit.available
         json.sold unit.sold
-        json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+        if @community.theme_name == "modernist"
+          json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_color.present? ? @community.design.primary_color : '#CF492F')}'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+        else
+          json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+        end
         json.x_plot unit.x_plot
         json.y_plot unit.y_plot
         json.building unit.building
