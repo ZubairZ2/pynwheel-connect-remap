@@ -27,12 +27,16 @@ class ToursController < ApplicationController
     # @existing_path_points.flatten!
     # binding.pry
     # @existing_path_points
-
+    @floor = nil
     params[:floorNo] = params[:format] if params[:format].present?
-    if params[:floorNo].present? || params[:format].present?
+    unless params[:floorNo].present?
+      params[:floorNo] = @community.floorplates.map{|f| f.floors}.flatten.sort[0].to_s
+    end
+    if params[:floorNo].present?
+      @floor = params[:floorNo]
       @sitemap =  @community.floorplates.select{|f| f.floors.include?(params[:floorNo].to_i)}.first
       @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @sitemap.amenities.map{|x| x.id}
-      @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.map{|x| x.id}
+      @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.map{|x| x.id if x.floor == @floor.to_i}
     else
       @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id}
       @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
