@@ -171,6 +171,7 @@
 
                             = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
 
+
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
@@ -200,6 +201,7 @@
             -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
             -#  %i.fa.fa-plus-circle
             -#  ADD PATH FOR STARTING POINT
+
 
         - if @tours.tour_stops.present?      
           .row
@@ -251,6 +253,7 @@
 
                     - if (!@community.is_sitemap && !(@sitemap.floors & stop.floors == [])) || (stop.floorplate_covering_range == "-")
                       %i.fa.fa-reorder.stops.elevatorstop{:id => "elevatorstop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+
 
                   - else
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
