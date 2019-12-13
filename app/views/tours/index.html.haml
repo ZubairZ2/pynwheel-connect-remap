@@ -181,7 +181,7 @@
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
-                          %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @sitemap.range.split("-")[0].to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                          %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                             %i.fa.fa-trash.icon_size
 
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
@@ -232,7 +232,7 @@
                   -#  = hidden_field_tag "floorNo", 6, :class => "hidden_floor"
                   - if @community.is_sitemap
                     = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
-                  - elsif @sitemap.present? && (@sitemap == @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first)
+                  - elsif @sitemap.present? && (@floor.to_i == @community.floorplates.map{|f| f.floors}.flatten.min.to_i)
                     = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
                   = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg", :style => "margin-left: -15px;"
                 - community_units = @community_units
@@ -245,7 +245,7 @@
 
                   - elsif stop.class.to_s == "Elevator"
                     - if (!@community.is_sitemap && !(@sitemap.floors & stop.floors == [])) || (stop.floorplate_covering_range == "-")
-                      %i.fa.fa-reorder.stops.elevatorstop{:id => "elevatorstop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                      %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
 
                   - else
