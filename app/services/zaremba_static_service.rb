@@ -114,7 +114,7 @@ class ZarembaStaticService < BaseService
       unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
         unit.floorplan_id = u["Units"]["Unit"]["Identification"][1]["IDValue"]
       end
-      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["MarketRent"].present?
           unit.effective_rent = u["MarketRent"]
@@ -127,12 +127,12 @@ class ZarembaStaticService < BaseService
       unless unit.floor_is_updated.present? && unit.floor_is_updated
         unit.floor = u["FloorLevel"]
       end
-      unless unit.availability_is_updated.present? && unit.availability_is_updated
+      unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
         if u["Availability"]["VacancyClass"] == "Vacant"
           unit.availability = "Unoccupied"
         end
       end
-      unless unit.available_is_updated.present? && unit.available_is_updated
+      unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
         if  unit.availability == "Unoccupied"
           unit.available = true
         else

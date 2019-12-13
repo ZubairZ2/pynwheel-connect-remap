@@ -30,7 +30,6 @@ class TourHistory < ApplicationRecord
   end
 
   def send_update_notifications
-  	
   	if time_difference >= 60 && self.lengthy_stay_email_sent == false
   		@mail_content = get_alert_message('lengthy_stay')
   		@mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
@@ -47,12 +46,16 @@ class TourHistory < ApplicationRecord
   		@mail_content = get_alert_message('tour_has_ended')
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"
   		send_email_sms_or_both @mail_content
+      community.deleted_ids = []
+      community.save
   	end
 
   	if self.abandoned_tour_at_stop.present?
   		@mail_content = get_alert_message('abandoned_tour_at_stop')
   		@mail_content[1] = "#{@mail_content.last} stop #{self.abandoned_tour_at_stop.to_s}"
   		send_email_sms_or_both @mail_content
+      community.deleted_ids = []
+      community.save
   	end
   end
   	

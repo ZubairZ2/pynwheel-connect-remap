@@ -10,26 +10,20 @@ json.tours @tours do |tour|
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
-  json.is_sitemap @community.is_sitemap
-  if @community.is_sitemap
-    json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
-
-  else
-    @floorplate = @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
-    json.image @floorplate.image
-
-  end
-  sp = Path.where(map_path_from_id: tour.tour_stops&.order(:sort)&.last&.stop_id, map_path_to_id: nil)&.first
+  json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
+  ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
+  sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
   if sp.blank?
-    sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops&.order(:sort)&.last&.stop_id)&.first
+    sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first
     json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
   else
     json.path_points sp.present? ? sp.path_points.reorder('id ASC') : []
   end
 
-
   stops = tour.tour_stops
-  json.tour_stop tour.tour_stops.order(:sort) do |stop|
+  # @community.deleted_ids = []
+  # @community.save
+  json.tour_stop tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) do |stop|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
@@ -43,7 +37,6 @@ json.tours @tours do |tour|
       unit = Unit.find_by_id stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url: (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
       json.name  "Apartment "+unit.marketing_name
-      json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       lease_pricing = []
       if unit.lease_pricing.present?
         str_split = unit.lease_pricing.split(';')
@@ -103,7 +96,6 @@ json.tours @tours do |tour|
       json.stop_description elevator.description
       json.name elevator.name
       json.directional_text elevator.directional_text
-      json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
       if elevator.elevator_galleries.count == 0
         json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
       else
@@ -130,7 +122,6 @@ json.tours @tours do |tour|
       json.stop_description amenity.description
       json.name amenity.name
       json.directional_text amenity.directional_text
-      json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       if amenity.amenity_galleries.count == 0
         json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description, "directional_text" => amenity.directional_text]
       else
@@ -160,27 +151,32 @@ json.tours @tours do |tour|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
-    
+    # @existing_path_points = []
+    # @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
+    # stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
     @existing_path_points = []
     if i == 0
       @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-      stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
-    else
-      # tour.tour_stops[i-1].stop_id
-      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: tour.tour_stops.order(:sort)[i-1].stop_id).first
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
       if path.blank?
-        path = Path.where(map_path_to_id: tour.tour_stops.order(:sort)[i-1].stop_id, map_path_from_id: stop.stop_id).first
+        path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
         @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
       else
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
       end
+    else
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: ts[i-1].stop_id).first
+      if path.blank?
+        path = Path.where(map_path_to_id: ts[i-1].stop_id, map_path_from_id: stop.stop_id).first
+        @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+      else
+        @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+      end
+      # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
     end
-
     @existing_path_points.flatten!
     json.path_points @existing_path_points
-    
 
-    # binding.pry
     i+=1
   end
 

@@ -34,6 +34,14 @@ json.ui_settigs do
   json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
   json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
   json.floorplan_name_order @community.floorplan_name_order
+  json.overlay_text (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text.present? ? @community.design.expressionist.overlay_text : "") : "")
+  json.overlay_font (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_font.present? ? @community.design.expressionist.overlay_font : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial") : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial")
+  json.overlay_color (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_color.present? ? @community.design.expressionist.overlay_color : "#000000") : "#000000")
+  json.overlay_opacity (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_opacity.present? ? @community.design.expressionist.overlay_opacity : "100%") : "100%")
+  json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_size.present? ? @community.design.expressionist.overlay_size : "18px") : "18px")
+  json.overlay_text_position (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text_position.present? ? @community.design.expressionist.overlay_text_position : "Left") : "Left")
+
+  
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
@@ -875,11 +883,6 @@ json.ui_settigs do
         else
           json.home_page_button_font_size "18px"
         end
-        json.overlay_text (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text.present? ? @community.design.expressionist.overlay_text : "") : "")
-        json.overlay_font (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_font.present? ? @community.design.expressionist.overlay_font : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial") : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial")
-        json.overlay_color (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_color.present? ? @community.design.expressionist.overlay_color : "#000000") : "#000000")
-        json.overlay_opacity (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_opacity.present? ? @community.design.expressionist.overlay_opacity : "100%") : "100%")
-        json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_size.present? ? @community.design.expressionist.overlay_size : "18px") : "18px")
 
         if @community.theme_name == "futurist"
           json.home_page_button_image image_url("home_page_button_bg.png")

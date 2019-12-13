@@ -328,6 +328,7 @@ Rails.application.routes.draw do
           get :test_panzoom
           get :unit_and_floorplan_data
           get :update_unit_floorplan_data
+          delete :delete_tour_stop
         end
         collection do
           post :login
