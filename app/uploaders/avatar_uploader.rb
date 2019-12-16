@@ -46,6 +46,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
     # process :crop
     resize_to_fit(200, 200)
   end
+
   process :quality => 40
 
   # process optimize: [{quality: 20, level: 7}]

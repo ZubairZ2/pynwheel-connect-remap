@@ -168,7 +168,9 @@
                               %i.fa.fa-edit.icon_size
 
                           - elsif stop.stop_type == "elevator"
-                            = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do
+
+                            = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
+
 
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
@@ -191,10 +193,14 @@
             = link_to starting_point_community_tours_path(@community), class: "btn btn-primary mb-20 mr-5" do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
+
             - if !@community.is_sitemap
               = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path" do
                 %i.fa.fa-plus-circle
                 ADD ELEVATOR
+            -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
+            -#  %i.fa.fa-plus-circle
+            -#  ADD PATH FOR STARTING POINT
 
 
         - if @tours.tour_stops.present?      
@@ -244,6 +250,7 @@
                       %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
 
                   - elsif stop.class.to_s == "Elevator"
+
                     - if (!@community.is_sitemap && !(@sitemap.floors & stop.floors == [])) || (stop.floorplate_covering_range == "-")
                       %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
