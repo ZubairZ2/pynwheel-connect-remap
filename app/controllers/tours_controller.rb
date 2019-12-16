@@ -51,12 +51,12 @@ class ToursController < ApplicationController
     # @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if (x.present? && @all_stops.include?(x.stop_id)) }
     @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if (z.path_points.present? &&  !floorplate_units.include?(z.map_path_from_id) && !z.map_path_from_id.nil? ) } if (x.present? && @all_stops.include?(x.stop_id)) }
     floorplate_elevators = TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id}  & @sitemap.elevators.map{|x| x.id}
-    floorplate_elevators.each{|z| Elevator.find(z).paths.each{|path| @existing_path_points << path.path_points.reorder('id ASC') if (!floorplate_elevators.include?(path.map_path_from_id)  ) }}
+    floorplate_elevators.each{|z| Elevator.find(z).paths.each{|path| @existing_path_points << path.path_points.reorder('id ASC') if (!floorplate_units.include?(path.map_path_from_id)  ) }}
 
     
 
     @community.tour.tour_stops.order(:sort).each do |stop|
-      path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first if (!@community.is_sitemap && (@floor.to_i == @community.floorplates.map{|f| f.floors}.flatten.min.to_i))
+      path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first if (!@community.is_sitemap && (@floor.to_i == @community.floorplates.map{|f| f.floors}.flatten.min.to_i) )
       @existing_path_points << path.path_points if (path.present?)
     end
 
