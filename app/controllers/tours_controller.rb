@@ -268,7 +268,7 @@ class ToursController < ApplicationController
     elev_name = "Elevator#{last_elevator_id}"
     elev_desc = "Elevator#{last_elevator_id}"
     @floorplate = Floorplate.find params[:floorplate] if params[:floorplate].present?
-    floorplate_range = "-"
+    floorplate_range = @floorplate.present? ? @floorplate.range : "-"
 
 
     elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 40, floorplate_covering_range: floorplate_range, image: File.open("app/assets/images/elev2.png"),floorplate_id: @floorplate.present? ? @floorplate.id : nil)
