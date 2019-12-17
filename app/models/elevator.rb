@@ -18,7 +18,7 @@ class Elevator < ApplicationRecord
     elsif floorplate_covering_range.include? '-'
       arr = floorplate_covering_range.split('-')
       for n in arr[0].to_i..arr[1].to_i
-        floorplate_covering_range << n
+        floors << n
       end
     elsif floorplate_covering_range.include? ','
       flrs = floorplate_covering_range.split(',')

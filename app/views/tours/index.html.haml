@@ -149,7 +149,7 @@
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find stop.stop_id
-                        - if (@sitemap.floors & elevator.floors) == [] && !(elevator.floorplate_covering_range == "-")
+                        - if !(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")
                           - next
                       %tr{:id=> index}
                         - orderVar = orderVar + 1
@@ -251,7 +251,7 @@
 
                   - elsif stop.class.to_s == "Elevator"
 
-                    - if (!@community.is_sitemap && !(@sitemap.floors & stop.floors == [])) || (stop.floorplate_covering_range == "-")
+                    - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
                       %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
 
