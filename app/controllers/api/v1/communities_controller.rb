@@ -103,10 +103,10 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   
   def delete_tour_stop
-    @community = Community.find params[:id]
+    @tours = Tour.where(id: params[:tour_id]).first
+    @community = @tours.community
     @community.deleted_ids << params[:stop_id]
-    @community.save
-    @tours = Tour.where(id: params[:tour_id])
+    @community.save(validate: false)
   end
 
   def user_saved_tour

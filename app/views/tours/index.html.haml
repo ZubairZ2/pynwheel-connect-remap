@@ -149,7 +149,7 @@
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find stop.stop_id
-                        - if (!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (elevator.floors.max.to_i == (@floor.to_i))
+                        - if (!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-"))
                           - next
                       %tr{:id=> index}
                         - orderVar = orderVar + 1
@@ -168,11 +168,13 @@
                               %i.fa.fa-edit.icon_size
 
                           - elsif stop.stop_type == "elevator"
+                            - if (elevator.floors.max.to_i == (@floor.to_i))
+                              = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "not_selected text-warning ml-5" do
+                                %i.fa.fa-road.icon_size
+                            - else
+                              = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
+                                %i.fa.fa-road.icon_size
 
-                            = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
-
-
-                              %i.fa.fa-road.icon_size
                             = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
@@ -273,7 +275,10 @@
     for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
       if ($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1] != undefined)
       {
-        arr.push($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1]);
+        if (!($('.stops_table').children("tbody").children("tr")[i].children[2].children[0].className.includes("not_selected")))
+        {
+          arr.push($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1]);
+        }
       }
     }
     debugger;
@@ -309,7 +314,11 @@
     stop: function (event, ui) {
     var arr = [];
     for (i = 0; i < this.children.length ; i++) {
-      arr.push(this.children[i].id.split("TourStop_")[1]);
+    //not_selected
+      if (!(this.children[i].children[2].children[0].className.includes("not_selected")))
+      {
+        arr.push(this.children[i].id.split("TourStop_")[1]);
+      }
     }
 
         $.ajax({
