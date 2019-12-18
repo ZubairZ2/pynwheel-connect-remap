@@ -149,7 +149,7 @@
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find stop.stop_id
-                        - if !(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")
+                        - if (!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (elevator.floors.max.to_i == (@floor.to_i))
                           - next
                       %tr{:id=> index}
                         - orderVar = orderVar + 1
