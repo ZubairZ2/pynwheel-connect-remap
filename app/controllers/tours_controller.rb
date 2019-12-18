@@ -106,6 +106,15 @@ class ToursController < ApplicationController
     @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
   end
+  def sort_stops
+    tour = Tour.find_by(community_id: params[:community_id])
+    hash = {}
+
+    hash = tour.sort_hash.class == "String" ? JSON.parse(tour.sort_hash) : tour.sort_hash
+    hash[params[:floor].to_s] = params[:array]
+    tour.sort_hash = hash
+    tour.save
+  end
   def save_starting_point
 
     @community = Community.find params[:community_id]
@@ -272,7 +281,8 @@ class ToursController < ApplicationController
     elev_name = "Elevator#{last_elevator_id}"
     elev_desc = "Elevator#{last_elevator_id}"
     @floorplate = Floorplate.find params[:floorplate] if params[:floorplate].present?
-    floorplate_range = @floorplate.present? ? @floorplate.range : "-"
+
+    floorplate_range = @floorplate.present? ? (@floorplate.range.include?("-") ? @floorplate.floors.min.to_s + "-" + (@floorplate.floors.max.to_i + 1).to_s : (@floorplate.range.to_s + "-" + (@floorplate.range.to_i + 1).to_s).to_s )  : "-"
 
     elevator = Elevator.create(name: elev_name, description: elev_desc, x_plot: 10, y_plot: 40, floorplate_covering_range: floorplate_range, image: File.open("app/assets/images/elev2.png"),floorplate_id: @floorplate.present? ? @floorplate.id : nil)
     tour_stop = TourStop.create tour_id: params[:tour_id], stop_id: elevator.id, stop_type: 'elevator', name: elevator.name

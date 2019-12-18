@@ -125,13 +125,13 @@
         .box.box-widget.panel-box
           .row
             .col-md-12
-              %table.table.table-bordered.table-striped.table-hover.table-responsive
+              %table.table.table-bordered.table-striped.table-hover.table-responsive.stops_table
                 %thead
                   %tr
                     %th{:width => "79"} Sr #
                     %th Tour Stop
                     %th{:width => "100"} Actions
-                %tbody.tour_sortable_disabled
+                %tbody.tour_sortable
                   - orderVar = 0
                   - if @community.is_sitemap || @community.floorplates.map{|f| f.floors}.flatten.sort.first == params[:floorNo].to_i
                     - if @tours.x_plot >= 0 || @tours.y_plot >= 0 
@@ -280,6 +280,27 @@
       }
     );*/
 
+  });
+  $('.stops_table').children("tbody").sortable({
+    stop: function (event, ui) {
+    var arr = [];
+    for (i = 0; i < this.children.length ; i++) {
+      arr.push(this.children[i].id.split("TourStop_")[1]);
+    }
+        debugger;
+        $.ajax({
+        url: "/communities/#{@community.id}/tours/sort_stops",
+        type: "POST",
+        dataType: "script",
+        data: {
+            sitemap: "#{@community.is_sitemap}" ,
+            array: arr,
+            floor: "#{@floor}"
+        }
+      }).done(function () {
+        console.log("success");
+      });
+    }
   });
 
   $('.floor_selection_btn').click(function(){

@@ -27,9 +27,44 @@ json.tours @tours do |tour|
     json.path_points sp.present? ? sp.path_points.reorder('id ASC') : []
   end
 
+  stops_arr = []
+  @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+    if @community.tour.sort_hash[floor.to_s].present?
+      @community.tour.sort_hash[floor.to_s].each do |s_id|
+        stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
+      end
+    end
+  end
 
-  stops = tour.tour_stops
-  json.tour_stop tour.tour_stops.order(:sort) do |stop|
+
+  # stops = []
+  # stop2 = []
+  # @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+  #   @floorplate_ = @community.floorplates.select{|f| f.floors.include?(floor.to_i)}.first
+  #   @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @floorplate_.amenities.map{|x| x.id}
+  #   @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @floorplate_.units.map{|x| x.id if x.floor == @floor.to_i}
+  #   @all_stops = @tour_amenity_array | @tour_unit_array | @floorplate_.elevators.map{|f| f.id if f.floors.include?(floor.to_i)}
+  #
+  #   @all_stops = @all_stops.compact
+  #   # @all_stops.each{|f| stops << TourStop.find_by(stop_id: f) }
+  #
+  #   stops << @all_stops
+  #   @community.tour.tour_stops.order(:sort).each do |ts|
+  #     stop2 << ts if stops.include?
+  #   end
+  #   # stops.compact.sort_by(&:sort)
+  #   # stops.each{|f| stop2 << f }
+  # end
+  # @community.floorplates.map{|f| f.floors}.flatten.sort.each do |f|
+  #   @community.tour.tour_stops.order(:sort).each do |ts|
+  #     stop2 if stops.include?
+  #   end
+  # end
+  #
+  # stop2 = stop2.compact
+
+  # stops = tour.tour_stops.map{|x| x.stop_id @te << x.stop_type.classify.constantize.find_by_id(x.stop_id)}
+  json.tour_stop stops_arr do |stop|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
@@ -167,9 +202,10 @@ json.tours @tours do |tour|
       stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
     else
       # tour.tour_stops[i-1].stop_id
-      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: tour.tour_stops.order(:sort)[i-1].stop_id).first
+
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: tour.tour_stops.order(:sort)[i-1].stop_id).first rescue nil
       if path.blank?
-        path = Path.where(map_path_to_id: tour.tour_stops.order(:sort)[i-1].stop_id, map_path_from_id: stop.stop_id).first
+        path = Path.where(map_path_to_id: tour.tour_stops.order(:sort)[i-1].stop_id, map_path_from_id: stop.stop_id).first rescue nil
         @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
       else
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
