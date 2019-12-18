@@ -107,13 +107,16 @@ class ToursController < ApplicationController
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
   end
   def sort_stops
+    
+    if params[:sitemap] == "false"
     tour = Tour.find_by(community_id: params[:community_id])
-    hash = {}
+      hash = {}
 
-    hash = tour.sort_hash.class == "String" ? JSON.parse(tour.sort_hash) : tour.sort_hash
-    hash[params[:floor].to_s] = params[:array]
-    tour.sort_hash = hash
-    tour.save
+      hash = tour.sort_hash.class == String ? JSON.parse(tour.sort_hash) : tour.sort_hash
+      hash[params[:floor].to_s] = params[:array]
+      tour.sort_hash = hash
+      tour.save
+    end
   end
   def save_starting_point
 

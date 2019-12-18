@@ -268,6 +268,29 @@
               / End Panel left Side
         / /.content
 :javascript
+  $(document).ready(function() {
+    var arr = [];
+    for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
+      if ($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1] != undefined)
+      {
+        arr.push($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1]);
+      }
+    }
+    debugger;
+    $.ajax({
+        url: "/communities/#{@community.id}/tours/sort_stops",
+        type: "POST",
+        dataType: "script",
+        data: {
+            sitemap: "#{@community.is_sitemap}" ,
+            array: arr,
+            floor: "#{@floor}"
+        }
+      }).done(function () {
+        console.log("success");
+      });
+
+  });
 
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
@@ -281,13 +304,14 @@
     );*/
 
   });
+
   $('.stops_table').children("tbody").sortable({
     stop: function (event, ui) {
     var arr = [];
     for (i = 0; i < this.children.length ; i++) {
       arr.push(this.children[i].id.split("TourStop_")[1]);
     }
-        debugger;
+
         $.ajax({
         url: "/communities/#{@community.id}/tours/sort_stops",
         type: "POST",
