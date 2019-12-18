@@ -2,7 +2,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   before_action :set_community, only: :email_favorites
   @@counter = 0
-  $deleted_ids = []
+  # $deleted_ids = []
 
   def test_panzoom
     puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'
