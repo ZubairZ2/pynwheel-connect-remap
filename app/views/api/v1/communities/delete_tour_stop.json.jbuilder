@@ -10,8 +10,17 @@ json.tours @tours do |tour|
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
-  json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
+  json.is_sitemap @community.is_sitemap
+  if @community.is_sitemap
+    json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
+
+  else
+    @floorplate = @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
+    json.image @floorplate.image
+
+  end
   ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
+  ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
   sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
   if sp.blank?
     sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first
@@ -19,11 +28,43 @@ json.tours @tours do |tour|
   else
     json.path_points sp.present? ? sp.path_points.reorder('id ASC') : []
   end
+  stops_arr = []
+  if @community.is_sitemap
+    stops_arr = @community.tour.tour_stops
+  else
+    @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+      if @community.tour.sort_hash[floor.to_s].present?
+        @community.tour.sort_hash[floor.to_s].each do |s_id|
+          stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
+        end
+      end
+    end
+    last_stop = stops_arr[stops_arr.size - 1]
+    min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
+    sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
+    max_floor = sto.amenityable.floors.max
+    @plates = []
+    @ele_ = []
+    Floorplate.where(community_id: @community.id).each{|x| @plates << x}
+    @plates.each do |pl|
+      floor_pl = Floorplate.find pl
+      Elevator.where(floorplate_id: pl).map{|x| @ele_ << x}
+    end
+    while min_floor != max_floor do
+      ele = @ele_.map{|x| x if x.floors.include?(max_floor)}.compact.first
+      max_floor = ele.floors.min
+      stops_arr << TourStop.find_by(stop_id: ele.id)
+    end
+  end
 
   stops = tour.tour_stops
   # @community.deleted_ids = []
   # @community.save
-  json.tour_stop tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) do |stop|
+  # tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
+  json.tour_stop stops_arr do |stop|
+    if @community.deleted_ids.include?(stop.id) || ts1.include?(stop.id)
+      next
+    end
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
@@ -165,9 +206,9 @@ json.tours @tours do |tour|
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
       end
     else
-      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: ts[i-1].stop_id).first
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: stops_arr[i-1].stop_id).first
       if path.blank?
-        path = Path.where(map_path_to_id: ts[i-1].stop_id, map_path_from_id: stop.stop_id).first
+        path = Path.where(map_path_to_id: stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
         @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
       else
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
