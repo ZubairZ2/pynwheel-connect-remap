@@ -209,9 +209,9 @@ json.tours @tours do |tour|
     else
       # tour.tour_stops[i-1].stop_id
 
-      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: tour.tour_stops.order(:sort)[i-1].stop_id).first rescue nil
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: stops_arr[i].stop_id).first
       if path.blank?
-        path = Path.where(map_path_to_id: tour.tour_stops.order(:sort)[i-1].stop_id, map_path_from_id: stop.stop_id).first rescue nil
+        path = Path.where(map_path_to_id: stops_arr[i].stop_id, map_path_from_id: stop.stop_id).first
         @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
       else
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
