@@ -193,6 +193,9 @@ class Community < ApplicationRecord
   def has_temporary_images?
     temporary_images.size > 0
   end
+  def delete_community
+    DeleteCommunityJob.perform_async self
+  end
 
   def data_is_imported
     case data_provider

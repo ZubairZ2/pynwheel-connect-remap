@@ -486,6 +486,10 @@ class PsiService < BaseService
                       unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                     end
 
+                    unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                    end
+
                     unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                       if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                         unit.availability = 'Unoccupied' if !unit.sold
@@ -598,6 +602,10 @@ class PsiService < BaseService
                         end
                         unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                        end
+
+                        unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                         end
                         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                           if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"

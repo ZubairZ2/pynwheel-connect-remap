@@ -156,23 +156,24 @@ class Api::V1::CommunitiesController < ActionController::Base
     # @@counter = @@counter + 1
     if params[:token] == "pynwheeltoken12345"
       app_version = AppVersion.first
-      unless app_version.neighborhood_counter.present?
-        app_version.neighborhood_counter = 0
-      end
-      app_version.neighborhood_counter = app_version.neighborhood_counter + 1
+
+      @community = (params[:id].to_i == 1 ? (Community.find(748)) : (Community.find params[:id]))
+      @community.neighborhood_request_counter = @community.neighborhood_request_counter + 1
       result = nil
-      if app_version.neighborhood_counter < app_version.counter_limit
+      if @community.neighborhood_request_counter < @community.neighborhood_request_counter_limit
         NeighbourhoodLog.create(from_ip: request.ip,cat: params[:cat])
         begin
-          if app_version.neighborhood_counter == 20
+          if @community.neighborhood_request_counter > 19 && @community.neighborhood_request_counter < 21 && !@community.limit_200_hit
             com = Community.find params[:id]
             com.neighbourhood_counter_mail_200
+            @community.limit_200_hit = true
             NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
           end
-          if app_version.neighborhood_counter == 20
+          if @community.neighborhood_request_counter > 39 && @community.neighborhood_request_counter < 41 && !@community.limit_400_hit
             com = Community.find params[:id]
             com.neighbourhood_counter_mail_400
-            NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 200").deliver
+            @community.limit_400_hit = true
+            NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 400").deliver
           end
         rescue => ex
 
@@ -194,13 +195,13 @@ class Api::V1::CommunitiesController < ActionController::Base
           rescue  => ex
           end
         end
-        # results = []
+        results = []
         results << response
-        render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => results}, :status=>200
+        render :json=> {:success=>true,:counter => @community.neighborhood_request_counter, :message => results}, :status=>200
       else
-        render :json=> {:success=>true,:counter => app_version.neighborhood_counter, :message => "Limit Exceeded"}, :status=>200
+        render :json=> {:success=>true,:counter => @community.neighborhood_request_counter, :message => "Limit Exceeded"}, :status=>200
       end
-      app_version.save
+      @community.save
     else
       render :json=> {:success=>false, :message => "You are not allowd to make this call."}, :status=>200
     end
