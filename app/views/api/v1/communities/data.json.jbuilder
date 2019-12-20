@@ -1294,6 +1294,12 @@ json.apartments do
   json.display_sitemap @community.display_sitemap
   json.display_floorplan_gallery @community.display_floorplan_gallery
   json.display_available_date @community.display_available_date
+
+
+  json.show_property_map_key @community.show_property_map_key
+  json.show_property_map_key_text @community.show_property_map_key_text
+  json.show_amenity_key @community.show_amenity_key
+  json.show_amenity_key_text @community.show_amenity_key_text
   if @community.sitemap.present? and !@community.has_floorplates?
     image_url = @community.sitemap.image.url.present? ? @community.sitemap.image.url : @community.sitemap.image.url
     begin
