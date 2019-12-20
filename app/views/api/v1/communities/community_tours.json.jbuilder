@@ -56,7 +56,15 @@ json.tours @tours do |tour|
     end
   end
 
-
+  new_stops_arr = []
+  last_element  = nil
+  stops_arr.each do |x|
+    if last_element != x
+      new_stops_arr << x
+    end
+    last_element = x
+  end
+  new_stops_arr
 
 
 
@@ -87,7 +95,7 @@ json.tours @tours do |tour|
   # stop2 = stop2.compact
 
   # stops = tour.tour_stops.map{|x| x.stop_id @te << x.stop_type.classify.constantize.find_by_id(x.stop_id)}
-  json.tour_stop stops_arr do |stop|
+  json.tour_stop new_stops_arr do |stop|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
@@ -226,9 +234,9 @@ json.tours @tours do |tour|
     else
       # tour.tour_stops[i-1].stop_id
 
-      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: stops_arr[i-1].stop_id).first rescue []
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first rescue []
       if path.blank?
-        path = Path.where(map_path_to_id: stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first rescue []
+        path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first rescue []
         @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
       else
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
