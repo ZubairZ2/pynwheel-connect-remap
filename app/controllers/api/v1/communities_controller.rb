@@ -99,6 +99,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def community_tours
     @community = Community.find params[:id]
+    @community.deleted_ids = []
+    @community.save
     @tours = Tour.where(community_id: params[:id])
   end
   

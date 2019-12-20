@@ -2,8 +2,6 @@ class ToursController < ApplicationController
   def index
 
     @community = Community.find params[:community_id]
-    @community.deleted_ids = []
-    @community.save(validate: false)
     @tours = @community.tour || @community.create_tour
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
 
@@ -111,7 +109,7 @@ class ToursController < ApplicationController
   def sort_stops
 
     if params[:sitemap] == "false"
-    tour = Tour.find_by(community_id: params[:community_id])
+      tour = Tour.find_by(community_id: params[:community_id])
       hash = {}
 
       hash = tour.sort_hash.class == String ? JSON.parse(tour.sort_hash) : tour.sort_hash
