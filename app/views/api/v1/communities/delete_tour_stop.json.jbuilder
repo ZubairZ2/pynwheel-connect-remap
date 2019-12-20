@@ -60,8 +60,8 @@ json.tours @tours do |tour|
   stops = tour.tour_stops
   all_stop_ids = stops_arr.pluck(:id)
   stops_except_deleted_ids = all_stop_ids - @community.deleted_ids
-  stops_except_deleted = TourStop.where(id: stops_except_deleted_ids)
-  
+  stops_except_deleted = TourStop.find(stops_except_deleted_ids)
+
   json.tour_stop stops_except_deleted do |stop|
     json.id stop.id
     json.x_plot stop.latitude
