@@ -61,10 +61,9 @@ json.tours @tours do |tour|
   # @community.deleted_ids = []
   # @community.save
   # tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
-  json.tour_stop stops_arr do |stop|
-    if @community.deleted_ids.include?(stop.id) || ts1.include?(stop.id)
-      next
-    end
+  stops_except_deleted = []
+  stops_except_deleted = stops_arr.where.not(id: @community.deleted_ids) 
+  json.tour_stop stops_except_deleted do |stop|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
@@ -206,9 +205,9 @@ json.tours @tours do |tour|
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
       end
     else
-      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: stops_arr[i-1].stop_id).first
+      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: stops_except_deleted[i-1].stop_id).first
       if path.blank?
-        path = Path.where(map_path_to_id: stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
+        path = Path.where(map_path_to_id: stops_except_deleted[i-1].stop_id, map_path_from_id: stop.stop_id).first
         @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
       else
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
