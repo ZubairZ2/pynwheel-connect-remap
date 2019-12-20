@@ -198,7 +198,6 @@ json.tours @tours do |tour|
     @existing_path_points = []
     if i == 0
       @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-      binding.pry
       path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
       if path.blank?
         path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
@@ -207,7 +206,6 @@ json.tours @tours do |tour|
         @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
       end
     else
-      binding.pry
       path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: stops_except_deleted[i-1].stop_id).first
       if path.blank?
         path = Path.where(map_path_to_id: stops_except_deleted[i-1].stop_id, map_path_from_id: stop.stop_id).first
