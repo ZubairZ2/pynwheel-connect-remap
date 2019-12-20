@@ -78,6 +78,7 @@ json.tours @tours do |tour|
       unit = Unit.find_by_id stop.stop_id
       json.image unit.present? ? (unit.image.present? ? unit.image.url: (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
       json.name  "Apartment "+unit.marketing_name
+      json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       lease_pricing = []
       if unit.lease_pricing.present?
         str_split = unit.lease_pricing.split(';')
@@ -137,6 +138,7 @@ json.tours @tours do |tour|
       json.stop_description elevator.description
       json.name elevator.name
       json.directional_text elevator.directional_text
+      json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
       if elevator.elevator_galleries.count == 0
         json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
       else
@@ -163,6 +165,7 @@ json.tours @tours do |tour|
       json.stop_description amenity.description
       json.name amenity.name
       json.directional_text amenity.directional_text
+      json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       if amenity.amenity_galleries.count == 0
         json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description, "directional_text" => amenity.directional_text]
       else
@@ -192,9 +195,7 @@ json.tours @tours do |tour|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
-    # @existing_path_points = []
-    # @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-    # stop.stop_type.classify.constantize.find_by_id(stop.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') }
+    
     @existing_path_points = []
     if i == 0
       @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
@@ -215,9 +216,12 @@ json.tours @tours do |tour|
       end
       # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
     end
+
     @existing_path_points.flatten!
     json.path_points @existing_path_points
+    
 
+    # binding.pry
     i+=1
   end
 
