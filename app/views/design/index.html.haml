@@ -90,6 +90,7 @@
   window.current_theme = '#{@community.theme_name}';
 
   $(document).ready(function(e){
+  $('[data-toggle="popover"]').popover();
     if (!(#{current_user.welcome_prompt}))
     {
       $('#welcome-prompt-modal1').modal('show');
