@@ -9,14 +9,14 @@
           .images.height-200
             %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
               = image_tag amenity.image.url
-          = image_tag "exclamation-mark.png", class: "waring_exal #{(amenity.image.width < 350 && amenity.image.height < 300) ? "" : "hidden"}", style: "width: 25px"
+          = image_tag "exclamation-mark.png", class: "waring_exal #{(amenity.image.width < 350 && amenity.image.height < 300) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Too small image", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
         .icons
           = link_to edit_community_amenity_path(@community,amenity), remote: true do 
             %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
           %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/amenities/#{amenity.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip:;"} 
             %i.fa.fa-close
-        %h4= amenity.name        
+        %h4= amenity.name
 
 .modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog

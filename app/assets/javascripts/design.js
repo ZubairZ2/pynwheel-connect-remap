@@ -1,6 +1,7 @@
 var image_height = 200;
 var image_width = 200;
 $(document).ready(function () {
+    $('[data-toggle="popover"]').popover();
   if ($('.is-home-page')[0]) {
     showTabsAccordingToTheme(selected_theme);
     set_primary_font_changes();
