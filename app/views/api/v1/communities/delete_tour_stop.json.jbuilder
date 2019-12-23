@@ -21,7 +21,7 @@ json.tours @tours do |tour|
   end
   ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
   ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
-  @comunity.is_sitemap ? sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: ts.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first
+  @community.is_sitemap ? sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: ts.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first
   if sp.blank?
     @comunity.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first
     json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
