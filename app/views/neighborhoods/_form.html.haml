@@ -139,7 +139,7 @@
       -#  %span#propertyDetailNameText
       -#    Change the radius to change the distance of the results on the neighborhood map are from the property. The smaller the radius; the closer the results.
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = text_field_tag :neighborhood_counter,@community.neighborhood_request_counter  ,:class=>"form-control neighborhood-form-field", :placeholder=>"Radius", :value=> @community.neighborhood_request_counter, :readonly => true
+      = text_field_tag :neighborhood_counter,@community.neighborhood_request_counter  ,:class=>"form-control neighborhood-form-field", :placeholder=>"Radius", :value=> @community.neighborhood_request_counter, :readonly => true, :style => "background: lightgrey;"
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Neighborhood Request Limit
