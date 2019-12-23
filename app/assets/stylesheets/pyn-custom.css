@@ -3247,3 +3247,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     padding-left: 36px;
 }
+
+.popover {background-color: #000000;
+    color: #FFFFFF;
+}
+.popover.right .arrow:after {
+    border-right-color: #000000;
+}
