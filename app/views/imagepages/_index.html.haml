@@ -18,3 +18,8 @@
           %a.text-danger{"data-name"=>"Image","data-href" => "#{ delete_additional_image_community_imagepage_path(@community,@imagepage,:additional_image_id => additional_image.id)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
             %i.fa.fa-close
         %h4= additional_image.name
+
+:javascript
+  $(document).ready(function(e){
+  $('[data-toggle="popover"]').popover();
+  });
