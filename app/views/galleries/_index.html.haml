@@ -55,4 +55,6 @@
   $('.image_slide_view').bind("DOMSubtreeModified",function(){
     $('#image_count').text('#{@gallery.name.capitalize} Gallery - #{@gallery_images.count} #{@gallery_images.count > 1 ? "images" : "image"}');
   });
-
+  $(document).ready(function(e){
+  $('[data-toggle="popover"]').popover();
+  });
