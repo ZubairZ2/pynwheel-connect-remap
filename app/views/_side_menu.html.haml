@@ -27,7 +27,7 @@
           = link_to community_settings_page_path(current_community) do
             %i.fa.fa-cog
             %span Settings
-      - if (current_user.is_super_admin?)
+      - if (current_user.is_super_admin? && current_community.touchscreen_app)
         %li{:class=>"#{controller_name =='design' && params[:action] != 'logo' && params[:action] != 'secondary_logo' && params[:action] !='map_marker_design' ? 'active' : ''}"}
           = link_to community_design_index_path(current_community) do
             %i.fa.fa-tv
@@ -42,10 +42,11 @@
         = link_to logo_community_design_index_path(current_community) do
           %i.fa.fa-cubes
           %span Logo
-      %li{:class=>"#{controller_name =='home_page' || controller_name =='homepage_icons' ? 'active' : ''}"}
-        = link_to community_home_page_index_path(current_community) do
-          %i.fa.fa-home
-          %span Home Page
+      - if (current_community.touchscreen_app)
+        %li{:class=>"#{controller_name =='home_page' || controller_name =='homepage_icons' ? 'active' : ''}"}
+          = link_to community_home_page_index_path(current_community) do
+            %i.fa.fa-home
+            %span Home Page
       %li.treeview{:class=>"#{controller_name =='sitemaps' || controller_name =='floorplates' || controller_name =='sitemap_amenities' || controller_name =='floorplans' || controller_name =='units' || controller_name =='floorplate_amenities' || controller_name =='amenities' || controller_name =='floorplates' ? 'active' : ''}"}
         %a{:href => "/"}
           - if current_community.is_sitemap
@@ -113,23 +114,24 @@
       -#    = link_to community_units_path(current_community)  do
       -#      %i.fa.fa-laptop
       -#      %span Units
-      %li{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
-        %a{:href => "#{community_galleries_path(current_community)}"}
-          %i.fa.fa-image
-          %span Gallery Page
-      %li{:class=>"#{controller_name =='neighborhoods' ? 'active' : ''}"}
-        %a{:href => "#{community_neighborhoods_path(current_community)}"}
-          %i.fa.fa-bank
-          %span Neighborhood Page
-      %li{:class=>"#{controller_name =='favorite_settings' || controller_name == 'ebrochure_menu_buttons' || controller_name == 'favorite_images' ? 'active' : ''}"}
-        %a{:href => "#{community_favorite_settings_path(current_community)}"}
-          %i.fa.fa-heart
-          %span Favorites Page & eBrochure
-      - if (current_user.is_super_admin? || current_user.is_community_admin? )  
-        %li{:class=>"#{controller_name =='additional_pages' || controller_name =='imagepages' ? 'active' : ''}"}
-          %a{:href => "#{community_additional_pages_path(current_community)}"}
-            %i.fa.fa-star
-            %span Additional Pages
+      - if (current_community.touchscreen_app)
+        %li{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
+          %a{:href => "#{community_galleries_path(current_community)}"}
+            %i.fa.fa-image
+            %span Gallery Page
+        %li{:class=>"#{controller_name =='neighborhoods' ? 'active' : ''}"}
+          %a{:href => "#{community_neighborhoods_path(current_community)}"}
+            %i.fa.fa-bank
+            %span Neighborhood Page
+        %li{:class=>"#{controller_name =='favorite_settings' || controller_name == 'ebrochure_menu_buttons' || controller_name == 'favorite_images' ? 'active' : ''}"}
+          %a{:href => "#{community_favorite_settings_path(current_community)}"}
+            %i.fa.fa-heart
+            %span Favorites Page & eBrochure
+        - if (current_user.is_super_admin? || current_user.is_community_admin? )  
+          %li{:class=>"#{controller_name =='additional_pages' || controller_name =='imagepages' ? 'active' : ''}"}
+            %a{:href => "#{community_additional_pages_path(current_community)}"}
+              %i.fa.fa-star
+              %span Additional Pages
       - if (current_user.is_super_admin? || current_user.is_community_admin? )
         %li
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
