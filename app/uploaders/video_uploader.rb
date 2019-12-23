@@ -27,16 +27,16 @@ class VideoUploader < CarrierWave::Uploader::Base
   def store_dir
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
   end
-  # version :thumb do
-  #   process thumbnail: [{format: 'png', quality: 10, size: 192, strip: true, logger: Rails.logger}]
-  #   def full_filename for_file
-  #     png_name for_file, version_name
-  #   end
-  # end
+  version :thumb do
+    process thumbnail: [{format: 'png', quality: 10, size: 192, strip: true, logger: Rails.logger}]
+    def full_filename for_file
+      png_name for_file, version_name
+    end
+  end
 
-  # def png_name for_file, version_name
-  #   %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
-  # end
+  def png_name for_file, version_name
+    %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
+  end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
   # def default_url(*args)
