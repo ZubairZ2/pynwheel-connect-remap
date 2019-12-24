@@ -108,7 +108,8 @@ class Api::V1::ToursController < ActionController::Base
     end
   end
   def tour_user_login
-    tu = TourUser.find_by(email: params[:email])
+    tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
+    tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name]) if tu.blank?
     if tu.present?
       render :json=> {:success=>true, :message => "User present", tour_user: tu}
     else
