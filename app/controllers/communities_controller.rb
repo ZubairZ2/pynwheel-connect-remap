@@ -272,9 +272,8 @@ class CommunitiesController < ApplicationController
     end
   end
   def account_report
-    byebug
     @community = Community.find(params[:community_id])
-    workbook = WriteXLSX.new("public/AccountReport.xlsx")
+    workbook = WriteXLSX.new("public/AccountReport/AccountReport.xlsx")
     # workbook = WriteXLSX.new("public/Reports/intagleo report "+ filenam +".xlsx")
     worksheet = workbook.add_worksheet("Sheet 1")
     format = workbook.add_format
@@ -316,12 +315,22 @@ class CommunitiesController < ApplicationController
     worksheet.write(11, 0, "Design Style",format)
     worksheet.write(11, 1, @community.theme_name)
 
-
+    if @community.data_provider == "psi"
+      data_provider = "Entrata"
+    elsif @community.data_provider == "realpagesvc"
+      data_provider = "RealPage"
+    elsif @community.data_provider == "zaremba"
+      data_provider = "RE Data Systems (ftp)"
+    elsif @community.data_provider.present?
+      data_provider = @community.data_provider.capitalized
+    else
+      data_provider = "Nill"
+    end
     worksheet.write(12, 0, "Data Provider",format)
-    worksheet.write(12, 1, @community.data_provider)
+    worksheet.write(12, 1, data_provider)
 
     worksheet.write(13, 0, "Self Tour (Yes/No)",format)
-    worksheet.write(13, 1, @community.self_tour)
+    worksheet.write(13, 1, @community.self_tour == true ? "Yes" : "No")
 
     worksheet.write(14, 0, "Active/Inactive",format)
     worksheet.write(14, 1, @community.locked.present? ? (@community.locked ? "Inactive" : "Active") : "Active")
@@ -340,9 +349,22 @@ class CommunitiesController < ApplicationController
 
 
     workbook.close
-    
 
-    send_data(workbook, :type => 'application/file', :filename => "grgrgr")
+
+    temp_file = Tempfile.new("AccountReport.zip")
+    reportFiles = Dir.entries('public/AccountReport')
+    Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip_file|
+      reportFiles.each do |d|
+        unless d == "." || d == ".."
+          zip_file.add(d,"public/AccountReport/AccountReport.xlsx")
+        end
+      end
+    end
+    zip_data = File.read(temp_file.path)
+    ###### redirect_to download_sheet_reports_path(zip_data,filename)
+    send_data(zip_data, :type => 'application/zip', :filename => "AccountReport.zip")
+
+    # send_data("public/AccountReport.xlsx", :disposition => 'attachment',:charset => "utf-8", :type => 'application/xml', :filename => "grgrgr.xlsx")
   end
   def realpage_load_pricing_data
     @community = Community.find params[:community_id]
