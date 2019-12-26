@@ -45,6 +45,7 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
   end
   def update
+    puts params
     if params[:community][:image]
       @community.crop_x = nil
     end
@@ -86,6 +87,11 @@ class CommunitiesController < ApplicationController
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
         end
+        params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
+        @community.date_activated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "0")
+        @community.date_inactivated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "1")
+        params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
+
         if @community.update(community_params)
           @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
           if params[:community][:name].present?
@@ -264,6 +270,101 @@ class CommunitiesController < ApplicationController
       flash[:error] = "Please enter credentials in settings before importing data."
       redirect_to community_settings_path(:community_id=>@community.id)
     end
+  end
+  def account_report
+    @community = Community.find(params[:community_id])
+    workbook = WriteXLSX.new("public/AccountReport/AccountReport.xlsx")
+    # workbook = WriteXLSX.new("public/Reports/intagleo report "+ filenam +".xlsx")
+    worksheet = workbook.add_worksheet("Sheet 1")
+    format = workbook.add_format
+    row = 0
+    format.set_bold
+    worksheet.write(0, 0, "Company",format)
+    worksheet.write(0, 1, @community.company.name)
+
+    worksheet.write(1, 0, "Property Name",format)
+    worksheet.write(1, 1, @community.name)
+
+    worksheet.write(2, 0, "Number of Units",format)
+    worksheet.write(2, 1, @community.number_of_units)
+
+    worksheet.write(3, 0, "Address",format)
+    worksheet.write(3, 1, @community.address)
+
+    worksheet.write(4, 0, "City",format)
+    worksheet.write(4, 1, @community.city)
+
+    worksheet.write(5, 0, "State",format)
+    worksheet.write(5, 1, @community.state)
+
+    worksheet.write(6, 0, "Zip",format)
+    worksheet.write(6, 1, @community.zip)
+
+    worksheet.write(7, 0, "Property Email Address",format)
+    worksheet.write(7, 1, @community.email)
+
+    worksheet.write(8, 0, "eBrochure 'From' Email Address",format)
+    worksheet.write(8, 1, @community.favorite_setting.email_from)
+
+    worksheet.write(9, 0, "eBrochure 'BCC' Email Address ",format)
+    worksheet.write(9, 1, @community.favorite_setting.email_bcc)
+
+    worksheet.write(10, 0, "Phone",format)
+    worksheet.write(10, 1, @community.phone)
+
+    worksheet.write(11, 0, "Design Style",format)
+    worksheet.write(11, 1, @community.theme_name)
+
+    if @community.data_provider == "psi"
+      data_provider = "Entrata"
+    elsif @community.data_provider == "realpagesvc"
+      data_provider = "RealPage"
+    elsif @community.data_provider == "zaremba"
+      data_provider = "RE Data Systems (ftp)"
+    elsif @community.data_provider.present?
+      data_provider = @community.data_provider.capitalized
+    else
+      data_provider = "Nill"
+    end
+    worksheet.write(12, 0, "Data Provider",format)
+    worksheet.write(12, 1, data_provider)
+
+    worksheet.write(13, 0, "Self Tour (Yes/No)",format)
+    worksheet.write(13, 1, @community.self_tour == true ? "Yes" : "No")
+
+    worksheet.write(14, 0, "Active/Inactive",format)
+    worksheet.write(14, 1, @community.locked.present? ? (@community.locked ? "Inactive" : "Active") : "Active")
+
+    worksheet.write(15, 0, "Date Activated",format)
+    worksheet.write(15, 1, @community.date_activated)
+
+    worksheet.write(16, 0, "Date Inactivated",format)
+    worksheet.write(16, 1, @community.date_inactivated)
+
+    worksheet.write(17, 0, "Billing Month",format)
+    worksheet.write(17, 1, @community.billing_type == "annual" ? @community.billing_month : "Annual")
+
+    worksheet.write(18, 0, "Billing Rate",format)
+    worksheet.write(18, 1, @community.billing_rate)
+
+
+    workbook.close
+
+
+    temp_file = Tempfile.new("AccountReport.zip")
+    reportFiles = Dir.entries('public/AccountReport')
+    Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip_file|
+      reportFiles.each do |d|
+        unless d == "." || d == ".."
+          zip_file.add(d,"public/AccountReport/AccountReport.xlsx")
+        end
+      end
+    end
+    zip_data = File.read(temp_file.path)
+    ###### redirect_to download_sheet_reports_path(zip_data,filename)
+    send_data(zip_data, :type => 'application/zip', :filename => "AccountReport.zip")
+
+    # send_data("public/AccountReport.xlsx", :disposition => 'attachment',:charset => "utf-8", :type => 'application/xml', :filename => "grgrgr.xlsx")
   end
   def realpage_load_pricing_data
     @community = Community.find params[:community_id]
@@ -458,7 +559,7 @@ class CommunitiesController < ApplicationController
 
   def community_params
     params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
-      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :touchscreen_app, :show_gesture_icons,:is_vertical_app,
+      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
         :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
