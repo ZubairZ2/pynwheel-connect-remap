@@ -587,10 +587,10 @@ $(document).ready(function () {
     }
 
 
-    hideShowBackgroundColorDiv($('#community_design_attributes_menu_attributes_manage_background'), $('#c-style-background-color '), $('#c-style-background-color-text-field'));
-    $('#community_design_attributes_menu_attributes_manage_background').change(function () {
-      hideShowBackgroundColorDiv($(this), $('#c-style-background-color '), $('#c-style-background-color-text-field'));
-    });
+    // hideShowBackgroundColorDiv($('#community_design_attributes_menu_attributes_manage_background'), $('#c-style-background-color '), $('#c-style-background-color-text-field'));
+    // $('#community_design_attributes_menu_attributes_manage_background').change(function () {
+    //   hideShowBackgroundColorDiv($(this), $('#c-style-background-color '), $('#c-style-background-color-text-field'));
+    // });
 
 
   }

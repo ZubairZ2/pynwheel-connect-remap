@@ -37,7 +37,7 @@
             / /.search form
           - if current_user.is_super_admin?
             %li.mt-5
-              = link_to "Account Report" , community_account_report_path(current_community) , :class=>"btn btn-primary mr-5", style: "color: white;height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"
+              = link_to "Account Report" , community_account_report_path(current_community) , :class=>"btn mr-5", style: "background: #138fd4; color:white;  height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"
           %li.mt-5
             %input#publish_changes{:type => "button", :value => "How to Publish Changes" ,:class => "btn btn-primary"}/
           %li.hidden
