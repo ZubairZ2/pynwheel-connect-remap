@@ -265,8 +265,6 @@
                 - @existing_path_points.each_with_index do |point, index|               
                   .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
 
-
-
               / End Panel left Side
         / /.content
 :javascript
@@ -390,8 +388,8 @@
     
     
     // add listner to prev points 
+
     $.each($("*.path_point"), function(i, existing_point){
-      // debugger
       id = $(existing_point).prop('id');
       dragElement(document.getElementById(id));
     });
@@ -615,6 +613,7 @@
     
     var arr = []
     data = []
+    var highlights = []
     $("*#create_path").on("click", function(event){
       $('.stops').removeClass('animate-element')
       $('.start-point').removeClass('animate-element')
@@ -622,6 +621,18 @@
       var url1  = arr[0].substring(arr[0].lastIndexOf('/') + 1);
       var stop_1_id = url1.split('?')[0]
       var stop_1_type = url1.split('=')[1]
+      highlights.push(this)
+      if (highlights.length <= 2){
+        $(this).parent().parent().css('backgroundColor', '#D3D3D3');
+      }
+      else {
+        $(this).parent().parent().css('backgroundColor', '#D3D3D3');
+        $(highlights[0]).parent().parent().css('backgroundColor', '');
+        $(highlights[1]).parent().parent().css('backgroundColor', '');
+        highlights = []
+        highlights.push(this)
+      }
+
       $('#stop_'+url1.split('?')[0]).addClass('animate-element')
       if (arr.length == 2) {
         var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
@@ -637,7 +648,8 @@
           success: function(response) {
             if (response.path_points.length > 0) {
               alert("there is already a path between selected points.")
-              $('#stop_'+stop_1_id).removeClass('animate-element')
+              $('#stop_'+stop_1_id).addClass('animate-element')
+              $('#stop_'+stop_2_id).addClass('animate-element')
               arr = []
             }
             else{
