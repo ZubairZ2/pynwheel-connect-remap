@@ -43,14 +43,12 @@ class ToursController < ApplicationController
       @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
       @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
     end
-
     @all_stops = @tour_amenity_array | @tour_unit_array | @community.elevators.map{|x| x.id}
     floorplate_units = []
     floorplate_units = TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.where.not(floor: @floor.to_i).map{|x| x.id} if @floor.present?
     # @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if (x.present? && @all_stops.include?(x.stop_id)) }
     @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if (z.path_points.present? &&  !floorplate_units.include?(z.map_path_from_id) && !z.map_path_from_id.nil? ) } if (x.present? && @all_stops.include?(x.stop_id)) }
     floorplate_elevators = TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id if (Elevator.find_by(id: x.stop_id.to_i).floors.include?(@floor.to_i))}.compact
-    # byebug
     # f = floorplate_elevators.each{|z| Elevator.find(z).id}
     floorplate_elevators.each{|z| Elevator.find(z).paths.each{|path| @existing_path_points << path.path_points.reorder('id ASC') if (@tour_unit_array.include?(path.map_path_from_id) || @tour_amenity_array.include?(path.map_path_from_id) ||  @tour_unit_array.include?(path.map_path_to_id) || floorplate_elevators.include?(path.map_path_from_id)) }}
     
@@ -281,7 +279,8 @@ class ToursController < ApplicationController
     last_elev = Elevator.last if Elevator.count > 0
 
     last_elevator_id = last_elev.present? ? last_elev.id : 0
-    elev_name = "Elevator#{last_elevator_id}"
+    elevators = TourStop.where(tour_id: @community.tour.id,stop_type: "elevator")
+    elev_name = "Elevator #{elevators.present? ? elevators.length + 1 : 1}"
     elev_desc = "Elevator#{last_elevator_id}"
     @floorplate = Floorplate.find params[:floorplate] if params[:floorplate].present?
 
