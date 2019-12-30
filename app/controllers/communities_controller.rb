@@ -277,43 +277,43 @@ class CommunitiesController < ApplicationController
     # workbook = WriteXLSX.new("public/Reports/intagleo report "+ filenam +".xlsx")
     worksheet = workbook.add_worksheet("Sheet 1")
     format = workbook.add_format
+    format1 = workbook.add_format({'align': 'left'})
     row = 0
-    format.set_bold
     worksheet.write(0, 0, "Company",format)
-    worksheet.write(0, 1, @community.company.name)
+    worksheet.write(0, 1, @community.company.name,format1)
 
     worksheet.write(1, 0, "Property Name",format)
-    worksheet.write(1, 1, @community.name)
+    worksheet.write(1, 1, @community.name,format1)
 
     worksheet.write(2, 0, "Number of Units",format)
-    worksheet.write(2, 1, @community.number_of_units)
+    worksheet.write(2, 1, @community.number_of_units,format1)
 
     worksheet.write(3, 0, "Address",format)
-    worksheet.write(3, 1, @community.address)
+    worksheet.write(3, 1, @community.address,format1)
 
     worksheet.write(4, 0, "City",format)
-    worksheet.write(4, 1, @community.city)
+    worksheet.write(4, 1, @community.city,format1)
 
     worksheet.write(5, 0, "State",format)
-    worksheet.write(5, 1, @community.state)
+    worksheet.write(5, 1, @community.state,format1)
 
     worksheet.write(6, 0, "Zip",format)
-    worksheet.write(6, 1, @community.zip)
+    worksheet.write(6, 1, @community.zip,format1)
 
     worksheet.write(7, 0, "Property Email Address",format)
-    worksheet.write(7, 1, @community.email)
+    worksheet.write(7, 1, @community.email,format1)
 
     worksheet.write(8, 0, "eBrochure 'From' Email Address",format)
-    worksheet.write(8, 1, @community.favorite_setting.email_from)
+    worksheet.write(8, 1, @community.favorite_setting.email_from,format1)
 
     worksheet.write(9, 0, "eBrochure 'BCC' Email Address ",format)
-    worksheet.write(9, 1, @community.favorite_setting.email_bcc)
+    worksheet.write(9, 1, @community.favorite_setting.email_bcc,format1)
 
     worksheet.write(10, 0, "Phone",format)
-    worksheet.write(10, 1, @community.phone)
+    worksheet.write(10, 1, @community.phone,format1)
 
     worksheet.write(11, 0, "Design Style",format)
-    worksheet.write(11, 1, @community.theme_name)
+    worksheet.write(11, 1, @community.theme_name.capitalize,format1)
 
     if @community.data_provider == "psi"
       data_provider = "Entrata"
@@ -327,25 +327,25 @@ class CommunitiesController < ApplicationController
       data_provider = "Nill"
     end
     worksheet.write(12, 0, "Data Provider",format)
-    worksheet.write(12, 1, data_provider)
+    worksheet.write(12, 1, data_provider,format1)
 
     worksheet.write(13, 0, "Self Tour (Yes/No)",format)
-    worksheet.write(13, 1, @community.self_tour == true ? "Yes" : "No")
+    worksheet.write(13, 1, @community.self_tour == true ? "Yes" : "No",format1)
 
     worksheet.write(14, 0, "Active/Inactive",format)
-    worksheet.write(14, 1, @community.locked.present? ? (@community.locked ? "Inactive" : "Active") : "Active")
+    worksheet.write(14, 1, @community.locked.present? ? (@community.locked ? "Inactive" : "Active") : "Active",format1)
 
     worksheet.write(15, 0, "Date Activated",format)
-    worksheet.write(15, 1, @community.date_activated)
+    worksheet.write(15, 1, @community.date_activated,format1)
 
     worksheet.write(16, 0, "Date Inactivated",format)
-    worksheet.write(16, 1, @community.date_inactivated)
+    worksheet.write(16, 1, @community.date_inactivated,format1)
 
     worksheet.write(17, 0, "Billing Month",format)
-    worksheet.write(17, 1, @community.billing_type == "annual" ? @community.billing_month : "Annual")
+    worksheet.write(17, 1, @community.billing_type == "annual" ? "Annual" : "Monthly (#{@community.billing_month})",format1)
 
     worksheet.write(18, 0, "Billing Rate",format)
-    worksheet.write(18, 1, @community.billing_rate)
+    worksheet.write(18, 1, @community.billing_rate,format1)
 
 
     workbook.close
