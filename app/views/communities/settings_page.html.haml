@@ -213,7 +213,7 @@
 
 :javascript
   populate_multiselect()
-  $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
+  $(".datepicker").datepicker({dateFormat: 'yy-mm-dd', maxDate: new Date, minDate: new Date(2007, 6, 12) });
   $(document).ready(function(e){
     if (!(#{current_user.welcome_prompt}))
     {

@@ -87,7 +87,7 @@ class CommunitiesController < ApplicationController
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
         end
-        params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
+        params[:community][:billing_month] = params[:community][:billing_month] if params[:community][:billing_month].present?
         @community.date_activated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "0")
         @community.date_inactivated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "1")
         params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
@@ -322,7 +322,7 @@ class CommunitiesController < ApplicationController
     elsif @community.data_provider == "zaremba"
       data_provider = "RE Data Systems (ftp)"
     elsif @community.data_provider.present?
-      data_provider = @community.data_provider.capitalized
+      data_provider = @community.data_provider.capitalize
     else
       data_provider = "Nill"
     end
