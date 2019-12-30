@@ -271,8 +271,7 @@ class ToursController < ApplicationController
       end
 
     end
-
-    render json: {path: path, path_points: path.path_points}, status: 200
+    render json: {path: path, path_points: path.path_points.reorder('id DESC')}, status: 200
   end
 
   def add_elevator
