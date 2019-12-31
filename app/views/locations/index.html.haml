@@ -53,7 +53,7 @@
                         %td
                           .drop-img
                             = image_tag location.standard_image_url.present? ? location.standard_image_url : "/assets/default.jpeg"
-                          = image_tag "exclamation-mark.png", class: "waring_exal #{(location.standard_image_url.present? ? (location.image.width < 400 && location.image.height < 400 ? "" : "hidden" ) : "hidden")}", style: "width: 25px", "data-content" => "Too small image", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                          = image_tag "exclamation-mark.png", class: "waring_exal #{(location.standard_image_url.present? ? (location.image.width < 400 && location.image.height < 400 ? "" : "hidden" ) : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
                         %td
                           = link_to  edit_community_neighborhood_location_path(@community,@neighborhood,location), remote: true, class: "text-success ml-5" do
                             %i.fa.fa-edit.icon_size
