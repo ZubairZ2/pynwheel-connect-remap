@@ -261,9 +261,10 @@
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                 
                 /- binding.pry
-
                 - @existing_path_points.each_with_index do |point, index|               
                   .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
+
+                
 
               / End Panel left Side
         / /.content
@@ -279,7 +280,6 @@
         }
       }
     }
-    debugger;
     $.ajax({
         url: "/communities/#{@community.id}/tours/sort_stops",
         type: "POST",
@@ -614,6 +614,7 @@
     var arr = []
     data = []
     var highlights = []
+    var points = []
     $("*#create_path").on("click", function(event){
       $('.stops').removeClass('animate-element')
       $('.start-point').removeClass('animate-element')
@@ -626,15 +627,17 @@
         $(this).parent().parent().css('backgroundColor', '#D3D3D3');
       }
       else {
-        $(this).parent().parent().css('backgroundColor', '#D3D3D3');
         $(highlights[0]).parent().parent().css('backgroundColor', '');
         $(highlights[1]).parent().parent().css('backgroundColor', '');
+        $(this).parent().parent().css('backgroundColor', '#D3D3D3');
         highlights = []
         highlights.push(this)
       }
 
       $('#stop_'+url1.split('?')[0]).addClass('animate-element')
       if (arr.length == 2) {
+        $('.path_point').hide();
+        $('.connectingLines').hide();
         var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
         var stop_2_id = url2.split('?')[0]
         var stop_2_type = url2.split('=')[1]
@@ -647,10 +650,28 @@
           data: {stop_ids: stop_ids, stop_types: stop_types},
           success: function(response) {
             if (response.path_points.length > 0) {
-              alert("there is already a path between selected points.")
+              for(i=0; i < response.path_points.length; i++){
+                id = "point_"+response.path_points[i].id
+                point = $('<div title="Drag to change, double click to remove" class="path_point" id="'+ id +'"></div>')
+                    .css('top', response.path_points[i].y_plot + 'px')
+                    .css('left', response.path_points[i].x_plot + 'px')
+                points.push(point)
+                $(".plot-image").append(point);
+              }
+              debugger
+              if (response.path.map_path_from_id == null){
+                $(".plot-image").append(createLine($('.start-point'), points[points.length-1]))
+              }
+              else{
+                $(".plot-image").append(createLine('#stop_'+response.path.map_path_from_id, points[points.length-1]))
+              }
+              for(i=0; i < points.length-1; i++){
+                $(".plot-image").append(createLine(points[i], points[i+1]))
+              }
               $('#stop_'+stop_1_id).addClass('animate-element')
               $('#stop_'+stop_2_id).addClass('animate-element')
               arr = []
+              points = []
             }
             else{
               $("#drawing_path_for").val(response.path.id)
