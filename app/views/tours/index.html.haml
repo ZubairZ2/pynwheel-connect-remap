@@ -671,6 +671,8 @@
               $('#stop_'+stop_2_id).addClass('animate-element')
               arr = []
               points = []
+              var elmnt = document.getElementById('testimg');
+              elmnt.scrollIntoView({behavior: "smooth", inline: "nearest"});
             }
             else{
               $("#drawing_path_for").val(response.path.id)
