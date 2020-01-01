@@ -1,11 +1,11 @@
 class VideoUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
-  include CarrierWave::RMagick
+  # include CarrierWave::RMagick
   # include CarrierWave::MiniMagick
-  include CarrierWave::Video  # for your video processing
-  include CarrierWave::Video::Thumbnailer
-  # include ::CarrierWave::Backgrounder::Delay
+  #include CarrierWave::Video  # for your video processing
+  #include CarrierWave::Video::Thumbnailer
+  include ::CarrierWave::Backgrounder::Delay
   include CarrierWaveDirect::Uploader
   # Choose what kind of storage to use for this uploader:
   #storage :file
