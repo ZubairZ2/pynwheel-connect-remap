@@ -3247,3 +3247,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     padding-left: 36px;
 }
+.visitor_list
+{
+    margin-top: 1.5%;
+}

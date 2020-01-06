@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  get 'tour_users/index'
+
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
 
   get 'community_groups/index'
@@ -126,6 +128,9 @@ Rails.application.routes.draw do
       member do
         get :edit_amenity_gallery_image
       end
+    end
+    resources :tour_users do
+
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do

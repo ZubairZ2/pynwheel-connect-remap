@@ -1,0 +1,38 @@
+- content_for :title, "Visitor Details Page - Pynwheel"
+/ Main content
+
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-image
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          VISITORS
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12
+            .box.box-widget.panel-box.add-plan.pt-30
+              - @tour_users.each_with_index  do |user,index|
+                .list-group-item{:style => "background: #{index%2 == 1 ? "#e8e8e8" : ""}"}
+                  .row
+
+                    .col-lg-2.visitor_list
+                      erfgrfggdsjavfjdsfvj
+                    .col-lg-1.image-box
+                      = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 75px; width: 75px;"
+                    .col-lg-2.visitor_list
+                      = link_to "#{user.name}"
+                    .col-lg-2.visitor_list
+                      = link_to "#{user.email}"
+                    .col-lg-1.visitor_list
+                      333.33333.3233
+                    .col-lg-2.visitor_list
+                      rwgrgrwgrgr
