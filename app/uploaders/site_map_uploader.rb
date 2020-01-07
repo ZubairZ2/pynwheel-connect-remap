@@ -25,6 +25,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   end
   # process optimize: [{quality: 50, level: 7}]
 
+  process :quality => 40
   def set_file_dimensions
     if image?(file)
       # manipulate! do |source|
