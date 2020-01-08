@@ -192,12 +192,12 @@
 
         .row
           .col-md-12
-            = link_to starting_point_community_tours_path(@community), class: "btn btn-primary mb-20 mr-5" do
+            = link_to starting_point_community_tours_path(@community), {:style=>'font-weight:bold;', class: "btn btn-primary mb-20 mr-5"} do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
 
             - if !@community.is_sitemap
-              = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path" do
+              = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), {:style=>'font-weight:bold;', class: "btn btn-primary mb-20 mr-5"}, id: "add-elevator-path" do
                 %i.fa.fa-plus-circle
                 ADD ELEVATOR
             -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
@@ -212,7 +212,10 @@
 
           .row
           .col-md-12
-            %h4 Elevator icon(three horizontal lines) will appear below after the page auto-refreshes.
+            %h4 Add a Starting Point: After you click "Add Staring Point" click the map in the location that your visitors will begin your tours.
+            %h4{:style => "display: inline"} Draw a Path between two stops: Choose two points from the list above by clicking on the "Way Finding" icon.
+            %i.fa.fa-road.icon_size
+            %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
             %h4 Drag and drop the icon onto the correct postion on the map.         
             %h4 To delete a point on the path, double-click the point. 
 
