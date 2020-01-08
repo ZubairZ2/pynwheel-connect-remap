@@ -125,11 +125,17 @@ class SitemapsController < ApplicationController
   end
 
   def save_sitemap_image
-    sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
-    if sitemap.update_attribute(:image,params[:file])
-      render :json=>{"status"=>"success"}
+    image = MiniMagick::Image.open(params[:file].path)
+    if image.width < 1000 && image.height < 700
+      flash[:error] = "Too small property map image"
+      redirect_to community_sitemaps_path(@community)
     else
-      render :json=>{"status"=>"fail"}
+      sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
+      if sitemap.update_attribute(:image,params[:file])
+        render :json=>{"status"=>"success"}
+      else
+        render :json=>{"status"=>"fail"}
+      end
     end
   end
     
