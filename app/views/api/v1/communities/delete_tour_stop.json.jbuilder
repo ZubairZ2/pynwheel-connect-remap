@@ -146,7 +146,7 @@ json.tours @tours do |tour|
       end
     elsif stop.stop_type == "elevator"
       elevator = Elevator.find_by_id stop.stop_id
-      json.image elevator.image.present? ? elevator.image.url : File.open(asset_path("elev2.png"))
+      json.image elevator.image.present? ? elevator.image.url : asset_path("elev2.png")
       json.stop_description elevator.description
       json.name elevator.name
       json.directional_text elevator.directional_text
