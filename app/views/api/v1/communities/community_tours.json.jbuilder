@@ -51,8 +51,11 @@ json.tours @tours do |tour|
     end
     while min_floor != max_floor do
       ele = @ele_.map{|x| x if x.floors.include?(max_floor)}.compact.first
-      max_floor = ele.floors.min if ele.present?
-      stops_arr << TourStop.find_by(stop_id: ele.id) if ele.present?
+      unless ele.present?
+        break;
+      end
+      max_floor = ele.floors.min
+      stops_arr << TourStop.find_by(stop_id: ele.id)
     end
   end
 
