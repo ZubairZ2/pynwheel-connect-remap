@@ -3,7 +3,14 @@ class TourUsersController < ApplicationController
   before_action :breadCrumb
 
   def index
+    @community = Community.find params[:community_id]
     @tour_users = TourUser.all
+  end
+  def show
+    @community = Community.find params[:community_id]
+    @tour_user = TourUser.find params[:id]
+    @visited_stop = VisitedStop.where(tour_id: @community.tour.id,tour_user_id: @tour_user.id).group_by(&:tour_stop_id)
+    @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
   end
 
   def breadCrumb
