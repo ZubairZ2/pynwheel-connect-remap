@@ -17,9 +17,11 @@
           %span
             #{@tour_user.name}
         %span{:style => "float: right;"}
-          fgrgrgrgrgrgrgr
+          #{Time.zone.now}
         %span{:style => "float: right;"}
-          fgrgrgrgrgrgrgr
+          = image_tag  image_url("unlock.png"), :style => "height: 20px; width: 20px;"
+        %span{:style => "float: right;"}
+          #{Time.zone.now}
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12

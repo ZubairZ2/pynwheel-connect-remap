@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   before_action :set_paper_trail_whodunnit
   before_action :authenticate_user!
   layout :layout_by_resource
+  config.time_zone = 'Eastern Time (US & Canada)'
   # before_action :check_community
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
