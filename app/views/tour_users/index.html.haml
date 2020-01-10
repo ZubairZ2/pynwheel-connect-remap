@@ -1,0 +1,76 @@
+- content_for :title, "Visitor Details Page - Pynwheel"
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-image
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          VISITORS
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12
+            .box.box-widget.panel-box.add-plan.pt-30
+              - @tour_users.each_with_index  do |user,index|
+                %a{:href => "/communities/#{@community.id}/tour_users/#{user.id}", :style => "display:block"}
+                  .list-group-item{:style => "background: #{index%2 == 1 ? "#e8e8e8" : ""}", :onclick => "click_list(#{user.id})"}
+                    .row
+                      .col-lg-2.visitor_list.custom_label_color
+                        #{Time.now}
+                      .col-lg-1
+                        = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 75px; width: 75px;"
+                      .col-lg-2.visitor_list
+                        = link_to "#{user.name}"
+                      .col-lg-2.visitor_list
+                        = link_to "#{user.email}"
+                      .col-lg-1.visitor_list
+                        333.33333.3233
+                      .col-lg-2.visitor_list
+                        = image_tag  "calender.png", :style => "height: 20px; width: 20px; margin-left: 40px;"
+                        = image_tag  "clock.png", :style => "height: 20px; width: 20px;  margin-left: 30px;"
+                        = image_tag  "open.png", :style => "height: 20px; width: 20px;  margin-left: 30px;"
+
+-#.content-wrapper
+-#  %section{:name => "visitors"}
+-#    .clearfix
+-#    .table-visitors
+-#      .heading
+-#        %h1 Visitors
+-#      .visitors_inner_tables
+-#        .table-responsive
+-#          %table.table
+-#            %tbody
+-#              - if @tour_users.present?
+-#                - @tour_users.each do |visitor|
+-#                  %tr
+-#                    - tours = visitor.tour_histories
+-#                    %td= tours.present? ? Time.now : Time.now
+-#                    %td
+-#                      = image_tag visitor.image.url, :width => "75px",:height => "75px" if visitor.image.present?
+-#                      = link_to visitor.name, community_tour_user_path(@community, visitor)
+-#                    %td
+-#                      %a.link{:href => "#"}= visitor.email
+-#                    %td= image_tag visitor.id_card.present? ? visitor.id_card.url : ""
+-#                    %td
+-#                      = link_to image_tag("clock"), community_tour_user_path(@community, visitor)
+-#                    %td= link_to image_tag("calender"), community_tour_user_path(@community, visitor)
+-#                    %td= link_to image_tag("open"), community_tour_user_path(@community, visitor)
+-#                    %td{:width => "20%"}
+-#              - else
+-#                %center
+-#                  %h3 No visitor for this community.
+-#
+
+
+:javascript
+  function click_list(id)
+  {
+  }
