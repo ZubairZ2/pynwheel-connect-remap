@@ -197,7 +197,7 @@
               ADD STARTING POINT
 
             - if !@community.is_sitemap
-              = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), {:style=>'font-weight:bold;', class: "btn btn-primary mb-20 mr-5"}, id: "add-elevator-path" do
+              = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
                 %i.fa.fa-plus-circle
                 ADD ELEVATOR
             -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
