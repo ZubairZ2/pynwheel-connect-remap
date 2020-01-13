@@ -16,12 +16,12 @@
           SUMMARY
           %span
             #{@tour_user.name}
-        %span{:style => "float: right;"}
-          #{Time.zone.now}
-        %span{:style => "float: right;"}
-          = image_tag  image_url("unlock.png"), :style => "height: 20px; width: 20px;"
-        %span{:style => "float: right;"}
-          #{Time.zone.now}
+        -#%span{:style => "float: right;"}
+        -#  #{Time.zone.now}
+        -#%span{:style => "float: right;"}
+        -#  = image_tag  image_url("unlock.png"), :style => "height: 20px; width: 20px;"
+        -#%span{:style => "float: right;"}
+        -#  #{Time.zone.now}
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
@@ -32,7 +32,7 @@
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
                     .col-lg-2
-                      = image_tag  @tour_user.image, :class => "my_class", :style => "height: 100px; width: 100px; margin-left: -30px;"
+                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "my_class", :style => "height: 100px; width: 100px; margin-left: -30px; transform: rotate(90deg);"
                     .col-lg-3{:style => "margin-top: 15px; margin-left: -29px;"}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
@@ -43,7 +43,7 @@
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6
-                      = image_tag  @tour_user.id_card, :class => "my_class", :style => "height: 75px; width: 175px; margin-top: 15px;  margin-left: 29px;"
+                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "my_class", :style => "height: 75px; width: 175px; margin-top: 15px;  margin-left: 29px;"
                   %h4{:style => "margin-left: 30px"}
                     Alert
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
@@ -55,7 +55,7 @@
                         %br
                         .alert-div2{:style => "margin-top: -10px"}
                           = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;"
-                          #{((alert.left - alert.arrived) / 3600).to_i.to_s + " hour " + ((alert.left - alert.arrived) / 60).to_i.to_s + " Minutes"}
+                          #{((alert.left.present? && alert.arrived.present? ? (alert.left - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((alert.left.present? && alert.arrived.present? ? (alert.left - alert.arrived) : 0) / 60).to_i.to_s + " Minutes"}
                         %br
                         .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
                           = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;"
@@ -67,21 +67,25 @@
                     = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :style => "height: 100%; width: 720px;"
 
                 .col-lg-6
-                  - @visited_stop.each do |stop|
-                    - @stop = TourStop.find stop[0].to_i
-                    - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
-                    .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available;"}
-                      .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
-                        %strong{:style => "font-size: 16px;"}
-                          #{@stop.name}
-                      .col-lg-2
-                        Tour photo
-                        = image_tag  @stop.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
+                  .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
+                    - @visited_stop.each do |stop|
+                      - @stop = TourStop.find stop[0].to_i
+                      - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
+
+                      - image_hit = true
                       - stop[1].each do |stop_image|
                         - if stop_image.image.present?
+                          - if image_hit
+                            .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
+                              %strong{:style => "font-size: 16px;"}
+                                #{@stop.name}
+                            .col-lg-2
+                              Tour photo
+                              = image_tag  @stop.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
+                              - image_hit = false
                           .col-lg-2
                             User photo
-                            = image_tag  stop_image.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
+                            = image_tag  stop_image.image.url, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
                       - stop[1].each do |stop_decription|
                         - if stop_decription.description.present?
                           .col-lg-8

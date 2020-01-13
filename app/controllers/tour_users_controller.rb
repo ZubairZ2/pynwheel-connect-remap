@@ -4,7 +4,9 @@ class TourUsersController < ApplicationController
 
   def index
     @community = Community.find params[:community_id]
-    @tour_users = TourUser.all
+    user_ids = TourHistory.where(tour_id: @community.tour.present? ? @community.tour.id : nil).map{|x| x.tour_user_id}.uniq
+    @tour_users = []
+    user_ids.each {|x| @tour_users << TourUser.find_by_id(x)}
   end
   def show
     @community = Community.find params[:community_id]
