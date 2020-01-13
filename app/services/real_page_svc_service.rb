@@ -1,5 +1,6 @@
 class RealPageSvcService < BaseService
   def perform
+    @unit_record = []
     import_realpage_svc_floorplans
     import_realpage_svc_units
     import_realpage_svc_price
@@ -114,6 +115,7 @@ class RealPageSvcService < BaseService
 
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["realpagesvc"]).map{|x| x.provider_unit_id}
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
@@ -212,7 +214,7 @@ class RealPageSvcService < BaseService
 
               end
               unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
-
+              @unit_record << unit.provider_unit_id
               unit.save(validate: false)
               #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
             else
@@ -286,6 +288,17 @@ class RealPageSvcService < BaseService
               unit.save(validate: false)
               #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
             end
+          end
+          no_unit = unit_present - @unit_record
+          if @unit_record.nil?
+            no_unit = nil
+          end
+          no_unit.each do |un|
+            unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+            unit.availability = "Occupied"
+            unit.available = false
+            unit.available_date = nil
+            unit.save(validate: false) unless unit.manual_override
           end
           begin
             cred = Credential.find credentials.id
@@ -368,7 +381,6 @@ class RealPageSvcService < BaseService
         result = Ox.load(response.body, mode: :hash)
 
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
-          byebug
 
 
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getrentmatrixResponse][1][:getrentmatrixResult][:GetRentMatrix][1][:RentMatrices][:RentMatrix]
@@ -418,7 +430,6 @@ class RealPageSvcService < BaseService
                 unit.min_effective_rent = unit_min_rent
                 unit.max_effective_rent = unit_max_rent
                 unit.lease_pricing = rentStr
-                byebug
                 unit.save(:validate => false)
                 # @doc = @doc + response.body
                 puts " **** price updated *** ",unit.marketing_name
