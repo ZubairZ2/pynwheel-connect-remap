@@ -444,7 +444,6 @@ class RealPageSvcService < BaseService
       end
     end
   end
-
   def realpage_building
     begin
       url = REALPAGE_URL
