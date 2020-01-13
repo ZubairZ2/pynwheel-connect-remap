@@ -35,7 +35,7 @@
                       = image_tag  @tour_user.image, :class => "my_class", :style => "height: 100px; width: 100px; margin-left: -30px;"
                     .col-lg-3{:style => "margin-top: 15px; margin-left: -29px;"}
                       %strong
-                        #{@tour_user.last_name + ", " + @tour_user.first_name}
+                        #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
                       %br
                       %a.mt-5
                         #{@tour_user.email}
