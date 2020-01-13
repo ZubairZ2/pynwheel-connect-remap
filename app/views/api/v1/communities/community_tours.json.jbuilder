@@ -98,7 +98,7 @@ json.tours @tours do |tour|
   # stop2 = stop2.compact
 
   # stops = tour.tour_stops.map{|x| x.stop_id @te << x.stop_type.classify.constantize.find_by_id(x.stop_id)}
-  json.tour_stop new_stops_arr do |stop|
+  json.tour_stop new_stops_arr.compact do |stop|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
