@@ -48,18 +48,19 @@
                     Alert
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
                     - @alerts.each do |alert|
+                      - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                       .col-lg-6
                         .alert-div1{:style => "margin-top: 10px"}
-                          = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;"
+                          = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;"
                           #{alert.arrived}
                         %br
                         .alert-div2{:style => "margin-top: -10px"}
                           = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;"
-                          #{((alert.left.present? && alert.arrived.present? ? (alert.left - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((alert.left.present? && alert.arrived.present? ? (alert.left - alert.arrived) : 0) / 60).to_i.to_s + " Minutes"}
+                          #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.arrived.present? ? ((end_time - alert.arrived) + 1) : 0) / 60).to_i.to_s + " Minutes"}
                         %br
                         .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
                           = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;"
-                          #{alert.left}
+                          #{end_time}
                   //Tour Tracking
                   %h4{:style => "margin-left: 30px"}
                     Tour Tracking Tour 1
