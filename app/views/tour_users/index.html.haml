@@ -19,6 +19,9 @@
         .row
           .col-md-12
             .box.box-widget.panel-box.add-plan.pt-30
+              - if @tour_users.count == 0
+                %h3{:style => "text-align: center; font-weight: bolder"}
+                  No Visitor To Display
               - @tour_users.each_with_index  do |user,index|
                 %a{:href => "/communities/#{@community.id}/tour_users/#{user.id}", :style => "display:block"}
                   .list-group-item{:style => "background: #{index%2 == 1 ? "#e8e8e8" : ""}", :onclick => "click_list(#{user.id})"}
