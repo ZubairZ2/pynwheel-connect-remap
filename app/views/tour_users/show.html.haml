@@ -32,7 +32,7 @@
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
                     .col-lg-2
-                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "my_class", :style => "height: 100px; width: 100px; margin-left: -30px; transform: rotate(90deg);"
+                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "my_class", :style => "height: 100px; width: 100px; margin-left: -30px; #{@tour_user.image.present? ? "transform: rotate(90deg);" : ""}"
                     .col-lg-3{:style => "margin-top: 15px; margin-left: -29px;"}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}

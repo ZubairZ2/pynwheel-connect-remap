@@ -11,12 +11,12 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
 
       tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
+      tour_history.abandoned_tour_time = params[:abandoned_tour_time] if params[:abandoned_tour_at_stop].present?
       tour_history.tour_user_id = params[:tour_user_id]
       
       tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
       
       tour_history.community = set_community
-
       if tour_history.save
         render :json=> {:success=>true, :message => "success", :data => tour_history}
       else
