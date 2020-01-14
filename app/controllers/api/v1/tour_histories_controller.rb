@@ -6,7 +6,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
       tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
       tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
-      tour_history.tour_id = params[:tour_id] if params[:tour_id].present?
+      tour_history.tour_id = params[:tour_id].to_i if params[:tour_id].present?
 
       tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
 
@@ -16,7 +16,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
       
       tour_history.community = set_community
-      
+      byebug
       if tour_history.save
         render :json=> {:success=>true, :message => "success", :data => tour_history}
       else
