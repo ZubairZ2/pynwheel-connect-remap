@@ -43,7 +43,7 @@
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6
-                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "my_class", :style => "height: 75px; width: 175px; margin-top: 15px;  margin-left: 29px; #{@tour_user.id_card.present? ? "transform: rotate(90deg);" : ""}"
+                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "my_class", :style => "height: 100px; width: 175px;  margin-left: 29px; #{@tour_user.id_card.present? ? "" : ""}"
                   %h4{:style => "margin-left: 30px"}
                     Alert
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
@@ -86,7 +86,7 @@
                               - image_hit = false
                           .col-lg-2
                             User photo
-                            = image_tag  stop_image.image.url, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px; transform: rotate(90deg);"
+                            = image_tag  stop_image.image.url, :class => "my_class", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
                       - stop[1].each do |stop_decription|
                         - if stop_decription.description.present?
                           .col-lg-8
