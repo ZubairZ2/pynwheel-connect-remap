@@ -26,7 +26,7 @@
                 %thead
                   %tr
                     %th
-                      Time
+                      Arrived
                     %th
                       Image
                     %th
@@ -34,9 +34,9 @@
                     %th
                       Email
                     %th
-                      No
+                      Phone
                     %th
-                      Icon
+
                 -#%a{:href => "/communities/#{@community.id}/tour_users/#{user.id}", :style => "display:block"}
                 -#  .list-group-item#item_list{:style => "background: #{index%2 == 1 ? "#e8e8e8" : ""}", :onclick => "click_list(#{user.id})"}
                     .row.row1
