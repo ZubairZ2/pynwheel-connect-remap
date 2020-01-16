@@ -452,7 +452,7 @@ module ApplicationHelper
                   ["Gotham Book","ms-appx:/Assets/Fonts/gotham_book.ttf#Gotham Book"],
                   ["Gotham Bold","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Gotham Bold.otf#Gotham Bold"],
                   ["Gotham Light","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Gotham Light.otf#Gotham"],
-                  ["Gotham Condensed Book","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Gotham Condensed Book.otf#Gotham Condensed Book"],
+                  ["Gotham Condensed Book","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Gotham Condensed Book.otf#Gotham"],
                   ["Goudy Old Style","Goudy Old Style"],
                   ["Goudy Stout","Goudy Stout"],
                   ["Gradl","Gradl"],
