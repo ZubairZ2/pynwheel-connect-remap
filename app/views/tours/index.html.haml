@@ -68,6 +68,10 @@
               \/.box-body
             .box-footer
               = f.submit "Save", :class=>"btn btn-success pull-right mr-10"
+    - unless @community.is_sitemap
+      %h3 Select a Floor
+      - @community.floorplates.map{|f| f.floors}.flatten.sort.each do |f|
+        %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #e0e0e0;padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
 
     .row
       / Start Panel left Side
@@ -230,9 +234,6 @@
     %form.form-horizontal
       .box-body.map-body-top
         .row
-          - unless @community.is_sitemap
-            - @community.floorplates.map{|f| f.floors}.flatten.sort.each do |f|
-              %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #e0e0e0;padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
 
           #container.col-lg-12.p-0
             .map-block{:style => "position: relative;"}
