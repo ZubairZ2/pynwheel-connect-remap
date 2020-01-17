@@ -1519,6 +1519,7 @@ json.apartments do
           json.name amenity.name
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
+          json.floor amenity.floor
           json.floorplate_id floor
           json.id amenity.id
         end

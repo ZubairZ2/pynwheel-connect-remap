@@ -78,6 +78,13 @@ class FloorplatesController < ApplicationController
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Floorplate Details", edit_community_floorplate_path(current_community,@floorplate)
   end
+  def select_floor
+    @community = Community.find params[:community_id]
+    @floorplate = Floorplate.find params[:floorplate_id]
+    if params[:floor].present?
+      redirect_to plot_amenities_community_floorplate_amenities_path(current_community,@floorplate,floor: params[:floor])
+    end
+  end
 
   def update
     if params[:floorplate][:name] != @floorplate.name

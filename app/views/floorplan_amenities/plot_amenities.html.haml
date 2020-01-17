@@ -86,6 +86,7 @@
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 :javascript
+  var floor = null;
   var arr = #{raw amenity_arr}
   var lmargin = 0
   var rmargin = 0

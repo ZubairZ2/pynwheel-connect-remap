@@ -52,11 +52,13 @@ class FloorplateAmenitiesController < ApplicationController
   # end
 
   def plot_amenity
+    puts params
     @amenity = Amenity.find (params[:amenity_id])
     @amenity.amenityable_type = "Floorplate"
     @amenity.amenityable_id = params[:floorplate_id]
     @amenity.x_plot = params[:x_plot]
     @amenity.y_plot = params[:y_plot]
+    @amenity.floor = params[:floor]
     if @amenity.save(validate: false)
       render json: {amenity: @amenity}, status: 200
     else
@@ -84,6 +86,7 @@ class FloorplateAmenitiesController < ApplicationController
   end
 
   def plot_amenities
+    @floor = params[:floor] if params[:floor].present?
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community,@floorplate)
     @sitemap = @floorplate

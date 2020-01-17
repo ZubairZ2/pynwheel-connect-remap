@@ -147,6 +147,8 @@ Rails.application.routes.draw do
           delete :remove_amenity
         end
       end
+      get :select_floor
+      post :select_floor
       get :plotexp
       get :grid_overlay
       post :adjust_marker_positions

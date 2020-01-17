@@ -1543,6 +1543,7 @@ json.community_group @communities do |co|
             json.x_plot amenity.x_plot
             json.y_plot amenity.y_plot
             json.floorplate_id floor
+            json.floor amenity.floor
             json.id amenity.id
           end
         end

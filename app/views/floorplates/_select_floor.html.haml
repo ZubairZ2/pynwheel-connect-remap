@@ -1,0 +1,17 @@
+.modal-dialog{:style=>"overflow-y: initial width: 400px !important; width: 300px;"}
+  .modal-content{:style => "margin-top: 50%;"}
+    = form_tag url: plot_amenities_community_floorplate_amenities_path(current_community,@floorplate),method: :post do |f|
+      .modal-body{:style => "text-align: center;"}
+
+        %label Select floor
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+
+        = select_tag :floor , options_for_select(@floorplate.floors, "Floor"), class: "form-control", placeholder: "Floor", :style => "width: 170px; margin-left: 22%; margin-top: 20px;"
+
+        .form-group
+          -#= link_to "fffffff", plot_amenities_community_floorplate_amenities_path(current_community,@floorplate),:class => "btn btn-success"
+          %button.btn.btn-success.btn-sm.mt-20{:type => "submit"}
+            Plot
+}
