@@ -338,7 +338,7 @@ class ToursController < ApplicationController
       puts "exception *************"
     end
     NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
-    render json: {point: path_point, line_start_point: start, line_stop_point: stop,exist: path.path_points.count > 1}, status: 200
+    render json: {point: path_point, line_start_point: start, line_stop_point: stop,exist: path.path_points.count > 1, last_point: path.path_points.sort[path.path_points.count - 2]}, status: 200
   end
 
   def point_update
