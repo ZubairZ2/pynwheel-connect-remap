@@ -10,9 +10,10 @@
         .form-group
           %label{:for => "exampleInputEmail1"} Image Title
           = f.text_field :name , class: "form-control", placeholder: "Name"
-        .form-group
-          %label{:for => "exampleInputEmail1"} Amenity floor
-          = f.text_field :floor , class: "form-control validate[required,custom[onlyNumber&Decimal]]", placeholder: "Floor"
+        - if !@community.is_sitemap && f.object.amenityable.present?
+          .form-group
+            %label{:for => "exampleInputEmail1"} Amenity floor
+            = f.select :floor , f.object.amenityable.floors,{}, class: "form-control", placeholder: "Floor"
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
             Apply Changes
