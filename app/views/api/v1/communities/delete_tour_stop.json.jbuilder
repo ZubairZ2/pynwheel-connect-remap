@@ -35,12 +35,12 @@ json.tours @tours do |tour|
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
       if @community.tour.sort_hash[floor.to_s].present?
         @community.tour.sort_hash[floor.to_s].each do |s_id|
-          amenity_hit = true
-          ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
-          if ts_ck.present?  && ts_ck.stop_type == "amenity"
-            amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
-          end
-          stops_arr << ts_ck if (ts_ck.present? && amenity_hit)
+          # amenity_hit = true
+          # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
+          # if ts_ck.present?  && ts_ck.stop_type == "amenity"
+          #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
+          # end
+          stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
         end
       end
     end
@@ -81,7 +81,7 @@ json.tours @tours do |tour|
   end
   new_stops_arr
 
-  json.tour_stop new_stops_arr do |stop|
+  json.tour_stop new_stops_arr.compact do |stop|
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
