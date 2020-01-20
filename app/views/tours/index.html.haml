@@ -341,7 +341,6 @@
 
   $('.floor_selection_btn').click(function(){
     $('.hidden_floor').val(this.textContent);
-    debugger;
     $('.floor_submit_btn').click();
   });
   $('.tour_sortable').railsSortable();
@@ -450,8 +449,8 @@
        });
     }
     function savePoint(x, y, unit_ids){
-      //debugger
       if($("#drawing_path_for").val() == ""){
+
         alert("Please select two stops from table for which you want to draw path")
         return false
       }
@@ -496,6 +495,15 @@
       else if(db_data.line_start_point == null){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
         $(".plot-image").append(line) 
+      }
+      else if(path_array.length > 1 && db_data.line_start_point != "" && db_data.exist){
+        te = path_array.sort(function(a, b) {
+          var compA = $(a).attr('id').toUpperCase();
+          var compB = $(b).attr('id').toUpperCase();
+          return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
+        })
+        line = createLine(path_array[path_array.length-2], path_array[path_array.length-1])
+        $(".plot-image").append(line)
       }
       else {
         line = createLine($('#stop_'+db_data.line_start_point), path_array[path_array.length-1])
@@ -570,7 +578,6 @@
       }
 
       function elementDrag(e) {
-        // debugger
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
@@ -677,6 +684,7 @@
               points = []
               var elmnt = document.getElementById('testimg');
               elmnt.scrollIntoView({behavior: "smooth", inline: "nearest"});
+              $("#drawing_path_for").val(response.path.id)
             }
             else{
               $("#drawing_path_for").val(response.path.id)
