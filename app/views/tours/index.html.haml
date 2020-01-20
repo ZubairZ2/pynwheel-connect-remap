@@ -155,7 +155,7 @@
                         - elevator = Elevator.find stop.stop_id
                         - if (!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-"))
                           - next
-                      %tr{:id=> index}
+                      %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
                         %td= orderVar
                         %td
@@ -285,6 +285,10 @@
         }
       }
     }
+    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0)
+    {
+      arr = []
+    }
     $.ajax({
         url: "/communities/#{@community.id}/tours/sort_stops",
         type: "POST",
@@ -322,6 +326,10 @@
       {
         arr.push(this.children[i].id.split("TourStop_")[1]);
       }
+    }
+    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0)
+    {
+      arr = []
     }
 
         $.ajax({
