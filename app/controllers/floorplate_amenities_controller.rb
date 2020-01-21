@@ -117,8 +117,12 @@ class FloorplateAmenitiesController < ApplicationController
       amenity.amenityable_type = nil
       amenity.amenityable_id = nil
       amenity.save(validate: false)
+      ts = TourStop.find_by(stop_id: amenity.id)
+      ts.destroy if ts.present?
+      Path.where(:map_path_to_id => amenity.id).destroy_all rescue ""
+      Path.where(:map_path_from_id => amenity.id).destroy_all rescue ""
     end
-    redirect_to plot_amenities_community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity plot have been deleted successfully."
+    redirect_to plot_amenities_community_floorplate_amenities_path(@community,@floorplate,floor: params[:floor]), notice: "Amenity plot have been deleted successfully."
   end
 
   private
