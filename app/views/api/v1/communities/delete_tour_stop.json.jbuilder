@@ -34,7 +34,12 @@ json.tours @tours do |tour|
   else
     temp_max_floor = nil
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+
       if @community.tour.sort_hash[floor.to_s].present?
+        arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
+        if arr_to_remove.map{|x| (TourStop.find x).stop_type }.uniq.count == 1
+          next
+        end
         temp_max_floor = floor
         @community.tour.sort_hash[floor.to_s].each do |s_id|
           # amenity_hit = true
@@ -46,7 +51,7 @@ json.tours @tours do |tour|
         end
       end
     end
-    last_stop = stops_arr[stops_arr.size - 1]
+    last_stop = stops_arr.compact[stops_arr.compact.size - 1]
     min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
     sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
     max_floor = sto.floors.max rescue (max_floor = temp_max_floor)
@@ -58,9 +63,17 @@ json.tours @tours do |tour|
       Elevator.where(floorplate_id: pl).map{|x| @ele_ << x}
     end
     while min_floor != max_floor do
-      ele = @ele_.map{|x| x if x.floors.include?(max_floor)}.compact.first
-      max_floor = ele.floors.min
-      stops_arr << TourStop.find_by(stop_id: ele.id)
+      begin
+        ele = @ele_.map{|x| x if x.floors.include?(max_floor)}.compact.first
+        max_floor = ele.floors.min
+        if stops_arr[stops_arr.size - 1].stop_id == ele.id
+          max_floor = max_floor - 1
+          next
+        end
+        stops_arr << TourStop.find_by(stop_id: ele.id)
+      rescue
+        break
+      end
     end
   end
 

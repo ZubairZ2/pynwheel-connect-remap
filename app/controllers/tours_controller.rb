@@ -280,7 +280,7 @@ class ToursController < ApplicationController
     last_elevator_id = last_elev.present? ? last_elev.id : 0
     elevators = TourStop.where(tour_id: @community.tour.id,stop_type: "elevator")
     elev_name = "Elevator #{elevators.present? ? elevators.length + 1 : 1}"
-    elev_desc = "Elevator#{last_elevator_id}"
+    elev_desc = "Elevator #{elevators.present? ? elevators.length + 1 : 1}"
     @floorplate = Floorplate.find params[:floorplate] if params[:floorplate].present?
 
     floorplate_range = @floorplate.present? ? (@floorplate.range.include?("-") ? @floorplate.floors.min.to_s + "-" + (@floorplate.floors.max.to_i + 1).to_s : (@floorplate.range.to_s + "-" + (@floorplate.range.to_i + 1).to_s).to_s )  : "-"
