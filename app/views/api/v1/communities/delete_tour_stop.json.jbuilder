@@ -37,6 +37,7 @@ json.tours @tours do |tour|
     min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
 
+      begin
       if @community.tour.sort_hash[floor.to_s].present?
         arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
         if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor)
@@ -56,6 +57,8 @@ json.tours @tours do |tour|
           # end
           stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
         end
+      end
+      rescue 
       end
     end
     blocked = []
