@@ -25,7 +25,7 @@ json.tours @tours do |tour|
   visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
 
   json.visited_tour visited_stops do |visited_stop|
-    @tour = TourStop.find visited_stop[0]
+    @tour = TourStop.find visited_stop[0] rescue next
     if @tour.stop_type != "elevator"
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
