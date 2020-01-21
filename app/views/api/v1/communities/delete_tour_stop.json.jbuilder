@@ -21,9 +21,10 @@ json.tours @tours do |tour|
   end
   ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
   ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
-  @community.is_sitemap ? sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: ts.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first
+
+  @community.is_sitemap ? sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: ts.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first rescue nil
   if sp.blank?
-    @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first
+    @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first rescue nil
     json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
   else
     json.path_points sp.present? ? sp.path_points.reorder('id ASC') : []
@@ -38,7 +39,7 @@ json.tours @tours do |tour|
 
       if @community.tour.sort_hash[floor.to_s].present?
         arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
-        if arr_to_remove.map{|x| (TourStop.find x).stop_type }.uniq.count == 1 && (min_floor != floor)
+        if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor)
           begin
           unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
             next
