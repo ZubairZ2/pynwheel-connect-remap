@@ -60,7 +60,7 @@ json.tours @tours do |tour|
     blocked = []
     begin
     while (stops_arr.compact[stops_arr.compact.size - 1]).stop_type == "elevator"
-      blocked << stops_arr.compact[stops_arr.compact.size - 1].id
+      blocked << stops_arr.compact[stops_arr.compact.size - 1].stop_id
       stops_arr = stops_arr - [stops_arr[stops_arr.size - 1]]
     end
     rescue
