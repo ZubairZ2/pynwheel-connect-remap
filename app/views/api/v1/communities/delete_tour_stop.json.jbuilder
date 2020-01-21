@@ -47,7 +47,7 @@ json.tours @tours do |tour|
     last_stop = stops_arr[stops_arr.size - 1]
     min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
     sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
-    max_floor = sto.floors.max
+    max_floor = sto.floors.max rescue (max_floor = temp_max_floor)
     @plates = []
     @ele_ = []
     Floorplate.where(community_id: @community.id).each{|x| @plates << x}
