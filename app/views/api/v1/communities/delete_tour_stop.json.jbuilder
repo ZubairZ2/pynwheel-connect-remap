@@ -32,8 +32,10 @@ json.tours @tours do |tour|
   if @community.is_sitemap
     stops_arr = @community.tour.tour_stops
   else
+    temp_max_floor = nil
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
       if @community.tour.sort_hash[floor.to_s].present?
+        temp_max_floor = floor
         @community.tour.sort_hash[floor.to_s].each do |s_id|
           # amenity_hit = true
           # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
@@ -47,7 +49,7 @@ json.tours @tours do |tour|
     last_stop = stops_arr[stops_arr.size - 1]
     min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
     sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
-    max_floor = sto.floors.max
+    max_floor = sto.floors.max rescue (max_floor = temp_max_floor)
     @plates = []
     @ele_ = []
     Floorplate.where(community_id: @community.id).each{|x| @plates << x}
