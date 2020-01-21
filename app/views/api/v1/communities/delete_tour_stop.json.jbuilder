@@ -57,6 +57,15 @@ json.tours @tours do |tour|
         end
       end
     end
+    blocked = []
+    begin
+    while (stops_arr.compact[stops_arr.compact.size - 1]).stop_type == "elevator"
+      blocked << stops_arr.compact[stops_arr.compact.size - 1].id
+      stops_arr = stops_arr - [stops_arr[stops_arr.size - 1]]
+    end
+    rescue
+    end
+
     last_stop = stops_arr.compact[stops_arr.compact.size - 1]
 
     sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
@@ -76,7 +85,7 @@ json.tours @tours do |tour|
           max_floor = max_floor - 1
           next
         end
-        stops_arr << TourStop.find_by(stop_id: ele.id)
+        stops_arr << TourStop.find_by(stop_id: ele.id) unless blocked.include?(ele.id)
       rescue
         break
       end
