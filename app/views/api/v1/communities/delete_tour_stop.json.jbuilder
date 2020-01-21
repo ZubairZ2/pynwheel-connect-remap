@@ -64,7 +64,7 @@ json.tours @tours do |tour|
 
 
   stops = tour.tour_stops
-  all_stop_ids = stops_arr.pluck(:id)
+  all_stop_ids = stops_arr.compact.pluck(:id)
   stops_except_deleted_ids = all_stop_ids - @community.deleted_ids
   stops_except_deleted = []
   stops_except_deleted_ids.each do |id|
