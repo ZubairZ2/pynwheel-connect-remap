@@ -275,6 +275,10 @@
         / /.content
 :javascript
   $(document).ready(function() {
+  if (window.location.href.includes('floorNo'))
+  {
+    $('html, body').animate({ scrollTop: 800 });
+  }
     var arr = [];
     for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
       if ($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1] != undefined)
