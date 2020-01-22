@@ -171,7 +171,7 @@
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
-                          - elsif stop.stop_type == "elevator"
+                          - elsif stop.stop_type == "elevator" && !@community.is_sitemap
                             - if (elevator.floors.max.to_i == (@floor.to_i))
                               = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "not_selected text-warning ml-5" do
                                 %i.fa.fa-road.icon_size
