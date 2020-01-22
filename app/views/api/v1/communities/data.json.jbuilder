@@ -121,7 +121,7 @@ json.ui_settigs do
       json.secondary_font_size @community.design.secondary_font_size
       json.secondary_font_weight @community.design.secondary_font_weight
       json.secondary_text_align @community.design.secondary_text_align
-      json.secondary_font_color @community.design.secondary_font_color
+      json.secondary_font_color @community.design.secondary_font_color.present? ? @community.design.secondary_font_color : "#FFFFFF"
     end
     json.menu do
       if @community.temporary_theme_name == 'modernist' && @community.is_vertical_app

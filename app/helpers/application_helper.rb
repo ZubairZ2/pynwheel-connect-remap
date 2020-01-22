@@ -439,7 +439,7 @@ module ApplicationHelper
                   ["Futura Bk BT","ms-appx:/DesignTemplates/Expressionist/CutomFonts/FuturaBookBT.ttf#Futura"],
                   ["Gabriola","Gabriola"],
                   ["Gadugi","Gadugi"],
-                  ["Garamond","Garamond"],
+                  ["Garamond","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Garamond.ttf#Garamond"],
                   ["Garamond MT","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Garamond MT.ttf#Garamond"],
                   ["Gautami","Gautami"],
                   ["Georgia","Georgia"],
