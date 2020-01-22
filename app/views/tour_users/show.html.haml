@@ -70,7 +70,7 @@
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
                     - @visited_stop.each do |stop|
-                      - @stop = TourStop.find stop[0].to_i
+                      - @stop = TourStop.find stop[0].to_i rescue next
                       - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
 
                       - image_hit = true
