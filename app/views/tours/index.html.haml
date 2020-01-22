@@ -151,6 +151,8 @@
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       - unless @all_stops.include?(stop.stop_id) || stop.stop_type == "elevator"
                         - next
+                      - if stop.stop_type == "elevator" && @community.is_sitemap
+                        - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find stop.stop_id
                         - if (!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-"))
