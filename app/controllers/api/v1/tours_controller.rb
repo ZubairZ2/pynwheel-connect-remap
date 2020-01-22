@@ -108,7 +108,8 @@ class Api::V1::ToursController < ActionController::Base
     end
   end
   def tour_user_login
-    tu = TourUser.find_by(email: params[:email])
+    tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
+    tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name]) if tu.blank?
     if tu.present?
       render :json=> {:success=>true, :message => "User present", tour_user: tu}
     else
@@ -123,7 +124,7 @@ class Api::V1::ToursController < ActionController::Base
       
            # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
       
-      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], device_id: params[:device_id]).group(:tour_stop_id).count
+      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id]).group(:tour_stop_id).count
 
       description_arr = []
       gallery_arr = []
@@ -137,9 +138,9 @@ class Api::V1::ToursController < ActionController::Base
       visited_stops.each_with_index do |x,i|
         puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
         if x.stop_type != "elevator"
-          descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(description: nil)
+          descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
 
-          images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(image: nil)
+          images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(image: nil)
           gallery_arr = []
           
           images.each do |ud|

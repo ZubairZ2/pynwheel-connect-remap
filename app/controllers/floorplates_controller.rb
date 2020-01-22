@@ -19,6 +19,7 @@ class FloorplatesController < ApplicationController
 
   def create
     @floorplate = current_community.floorplates.new(floorplate_params)
+
     image = MiniMagick::Image.open(params[:floorplate][:image].path)
     if image.width < 1000 && image.height < 700
       flash[:error] = "Too small property map image"
@@ -26,6 +27,7 @@ class FloorplatesController < ApplicationController
     else
       if @floorplate.save
         flash[:notice] = "Floorplate created successfully."
+        PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
         redirect_to community_floorplates_path(current_community)
         PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
       else
@@ -76,6 +78,13 @@ class FloorplatesController < ApplicationController
   def edit
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Floorplate Details", edit_community_floorplate_path(current_community,@floorplate)
+  end
+  def select_floor
+    @community = Community.find params[:community_id]
+    @floorplate = Floorplate.find params[:floorplate_id]
+    if params[:floor].present?
+      redirect_to plot_amenities_community_floorplate_amenities_path(current_community,@floorplate,floor: params[:floor])
+    end
   end
 
   def update

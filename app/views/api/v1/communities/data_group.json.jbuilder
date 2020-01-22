@@ -44,7 +44,6 @@ json.community_group @communities do |co|
         json.secondary_logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") )
 
         json.logo @community.logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") )
-
       else
         json.logo @community.secondary_logo.present? ? (Rails.env.development? ? local_assets_base_url+@community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") : @community.secondary_logo.url + (@community.crop_x_secondary.present? ? "?temp/"+@community.crop_x_secondary.to_s  + @community.secondary_logo.url.split('/')[@community.secondary_logo.url.split('/').count - 1] : "") ) : (Rails.env.development? ? local_assets_base_url+@community.logo.url + (@community.crop_x.present? ? "?temp/"+@community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") : @community.logo.url + (@community.crop_x.present? ? "?temp/" + @community.crop_x.to_s + @community.logo.url.split('/')[@community.logo.url.split('/').count - 1] : "") )
 
@@ -147,7 +146,7 @@ json.community_group @communities do |co|
       json.secondary_font_size @community.design.secondary_font_size
       json.secondary_font_weight @community.design.secondary_font_weight
       json.secondary_text_align @community.design.secondary_text_align
-      json.secondary_font_color @community.design.secondary_font_color
+      json.secondary_font_color @community.design.secondary_font_color.present? ? @community.design.secondary_font_color : "#FFFFFF"
     end
     json.menu do
       if @community.temporary_theme_name == 'modernist' && @community.is_vertical_app
@@ -1359,12 +1358,17 @@ json.community_group @communities do |co|
         json.rent unit.effective_rent.present? ? unit.effective_rent : 0
         json.min_rent unit.effective_rent.present? ? unit.effective_rent : 0
         json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
+
         json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : (unit.effective_rent.present? ? unit.effective_rent : 0)
         json.availability unit.availability
         json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
         json.available unit.available
         json.sold unit.sold
-        json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+        if @community.theme_name == "modernist"
+          json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.floorplan.description+"</div>"  : nil)
+        else
+          json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+        end
         json.x_plot unit.x_plot
         json.y_plot unit.y_plot
         json.building unit.building
@@ -1539,6 +1543,7 @@ json.community_group @communities do |co|
             json.x_plot amenity.x_plot
             json.y_plot amenity.y_plot
             json.floorplate_id floor
+            json.floor amenity.floor
             json.id amenity.id
           end
         end

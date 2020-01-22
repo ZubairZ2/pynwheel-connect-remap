@@ -143,8 +143,7 @@
                       -#    Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.
                     .col-sm-12.col-lg-6.col-md-6.col-xs-12
                       = text_field_tag :show_amenity_key_text, @community.show_amenity_key_text, :class=>"form-control apartment-setting-field"
-
-
+                        
                   = submit_tag 'Save', class: "hidden"
             -#.col-md-12
             -#  .box.box-info.add-plan.mt-10
@@ -214,7 +213,11 @@
                               %span#propertyDetailNameText
                                 Add or change where unit markers appear on each floorplate. Each marker will represent the position of the unit marker on every floor. (For example, if the floorplate is for floors 2-4, units 201, 301, and 401 will be plotted at once, with one marker, and then appear on floors 2, 3, and 4 respectively.)
                           %td
-                            = link_to "Plot Amenities",plot_amenities_community_floorplate_amenities_path(current_community,f), :class=>"btn btn-default black-button"
+                            - if f.range.include?('-')
+                              = link_to community_floorplate_select_floor_path(current_community,f), remote: true do
+                                %button.btn-default.black-button{"data-target" => "#select_floor", "data-toggle" => "modal"} Plot Amenities
+                            - else
+                              = link_to "Plot Amenities",plot_amenities_community_floorplate_amenities_path(current_community,f,floor: f.range), :class=>"btn btn-default black-button"
                             %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "floorplatePlotAmenitiesPopover","data-content" => " "}
                               %span#additionalPageActionText
                                 Add or change where amenity markers appear on each floorplate.
@@ -233,6 +236,7 @@
         .col-lg-4.col-md-12
           .row
             .col-md-12
+  #select_floor.modal.fade.select_floor
 :javascript
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();

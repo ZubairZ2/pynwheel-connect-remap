@@ -43,6 +43,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
       png_name for_file, version_name
     end
   end
+  process :quality => 40
 
   version :ios, :if => :image? do
     resize_to_limit(1024, 768)

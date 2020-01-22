@@ -26,7 +26,6 @@ source 'https://rails-assets.org' do
   gem 'rails-assets-jsTimezoneDetect'
 end
 gem 'amoeba'
-gem 'deep_cloneable', '~> 3.0.0'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
 # Use Puma as the app server
@@ -40,7 +39,6 @@ gem 'coffee-rails', '~> 4.2'
 # See https://github.com/rails/execjs#readme for more supported runtimes
 # gem 'therubyracer', platforms: :ruby
 gem 'paper_trail'
-gem 'paper_trail-association_tracking'
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
