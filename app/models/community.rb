@@ -193,6 +193,9 @@ class Community < ApplicationRecord
   def has_temporary_images?
     temporary_images.size > 0
   end
+  def delete_community
+    DeleteCommunityJob.perform_async self
+  end
 
   def data_is_imported
     case data_provider
@@ -403,7 +406,7 @@ class Community < ApplicationRecord
       when "psi"
         connect_pricing_to_psi
       when "realpagesvc"
-        connect_to_realpagesvc_pricing(com)
+        connect_to_realpagesvc_pricing
     end
 
   end
@@ -423,8 +426,9 @@ class Community < ApplicationRecord
     psi_space_configuration_connection_service = PsiSpaceConfigurationConnectionService.new(credential.attributes)
     psi_space_configuration_connection_service.perform
   end
-  def connect_to_realpagesvc_pricing(com)
-    RealPageSvcPricingJob.perform_async credential.attributes.to_json
+  def connect_to_realpagesvc_pricing
+    psi_space_configuration_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
+    psi_space_configuration_connection_service.perform
     # if com.realpage_pricing_data.present?
     #   return com.realpage_pricing_data
     # end
@@ -571,10 +575,10 @@ class Community < ApplicationRecord
     end
   end
   def neighbourhood_counter_mail_200
-    NeighbourhoodMailer.email_counter_200("umersani47@gmail.com","muhammad.umer@intagleo.com","").deliver
+    NeighbourhoodMailer.email_counter_200("umersani47@gmail.com","msds19063@itu.edu.pk","",self).deliver
   end
   def neighbourhood_counter_mail_400
-    NeighbourhoodMailer.email_counter_400("umersani47@gmail.com","muhammad.umer@intagleo.com","").deliver
+    NeighbourhoodMailer.email_counter_400("umersani47@gmail.com","muhammad.umer@intagleo.com","",self).deliver
   end
 
   def image_src

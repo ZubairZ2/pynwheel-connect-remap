@@ -13,10 +13,12 @@
           .icons
             = link_to show_image_in_modal_community_home_page_index_path(current_community,home_page_image_id: home_page_image.id), remote: true do 
               %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
-            
+
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_image?home_page_image_id=#{home_page_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
               %i.fa.fa-close
-        %h4= home_page_image.name    
+        = image_tag "exclamation-mark.png", class: "waring_exal #{(home_page_image.is_small) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+
+        %h4= home_page_image.name
 
 
 .modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
@@ -54,5 +56,7 @@
   else{
     $('#slideshow-button').show();
   }
-  
+  $(document).ready(function(e){
+  $('[data-toggle="popover"]').popover();
+  });
   

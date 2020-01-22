@@ -43,12 +43,73 @@
               %span#propertyDetailNameText
                 Changing Animation will change the movement of the menu buttons on the home page.
           = select_tag :animation, options_for_select(["bouncing effects","none"],@community.design.animation),{:class=>"form-control"}    
+    .box.box-widget.panel-box.add-plan.pt-30
+      = form_for @community,:method=>"PUT",:html=>{:id=>"home-page-image-form"},:remote=>true  do |f|
+        = hidden_field_tag "home_page_tab", true
+        = f.fields_for :design do |d|
+          = d.fields_for :expressionist do |e|
+            .form-group.mt-30
+              .row
+                .form-group.mt-30
+                  .col-lg-10
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Overlay text
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = e.text_area :overlay_text,:class=>"form-control mb-20 home-page-image-field ",:placeholder=>"Enter Overlay Text...", :rows => "3"
+
+                      -#= e.select :overlay_text , options_for_select(global_navigation_border_thickness_space,e.object.homepage_button_border_thickness.present? ? e.object.homepage_button_border_thickness : '0px'),{},{class: "form-control home-page-field"}
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Overlay text font
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = e.select :overlay_font , options_for_select(font_families,e.object.overlay_font),{},{class: "form-control home-page-image-field"}
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Overlay font size
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = e.select :overlay_size , options_for_select(font_sizes,e.object.overlay_size.present? ? e.object.overlay_size : '18px'),{},{class: "form-control home-page-image-field"}
+
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Overlay text color
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .input-group.colorpicker-style.hex-format-colorpicker
+                        .input-group-addon
+                          %i
+                          = e.text_field :overlay_color , class: "form-control home-page-image-field",autocomplete: true,:value=>e.object.overlay_color.present? ? e.object.overlay_color : "#000000"
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Overlay text opacity
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = e.select :overlay_opacity , options_for_select(opacity_options,e.object.overlay_opacity.present? ? e.object.overlay_opacity : '100%'),{},{class: "form-control home-page-image-field"}
+              .row
+                .col-lg-10
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Overlay text Position
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = e.select :overlay_text_position , options_for_select(["Left","Right","Center"],e.object.overlay_text_position.present? ? e.object.overlay_text_position : "Left"),{},{class: "form-control home-page-image-field"}
+
+
+
+
+
+
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
         / Start image-slide section
         #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
           .row
             .col-lg-12
+
               .title-home
                 %h4
                   Slide Show Images
@@ -58,8 +119,8 @@
                   .br
                   %h4#slide_show_span
                     Images will appear at a size of 1920 x 1080 px. Please note that images that are too small may appear pixelated.
-                
-                
+
+
                 %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-image-upload-holder').click();"}
                   %i.fa.fa-plus-circle
                   Add Files

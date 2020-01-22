@@ -19,17 +19,23 @@ class FloorplatesController < ApplicationController
 
   def create
     @floorplate = current_community.floorplates.new(floorplate_params)
-    if @floorplate.save
-      flash[:notice] = "Floorplate created successfully."
-      PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
-
-      redirect_to community_floorplates_path(current_community)
-    else
-      add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-        add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
-      flash[:error] = @floorplate.errors.full_messages.join(',')
+    image = MiniMagick::Image.open(params[:floorplate][:image].path)
+    if image.width < 1000 && image.height < 700
+      flash[:error] = "Too small property map image"
       render :new
+    else
+      if @floorplate.save
+        flash[:notice] = "Floorplate created successfully."
+        redirect_to community_floorplates_path(current_community)
+        PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+      else
+        add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+        add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
+        flash[:error] = @floorplate.errors.full_messages.join(',')
+        render :new
+      end
     end
+
   end
 
   def plot_elevator
@@ -79,20 +85,12 @@ class FloorplatesController < ApplicationController
     if params[:floorplate][:building] != @floorplate.building
       @floorplate.building_is_updated = true
     end
-    if params[:floorplate][:manual_override] == "true"
-      if @floorplate.update(floorplate_params)
-        flash[:notice] = "Floorplate updated successfully."
-        PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
-
-        redirect_to community_floorplates_path(current_community)
-      else
-        add_breadcrumb "Floorplates", community_floorplates_path(current_community)
-        add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
-        flash[:error] = @floorplate.errors.full_messages.join(',')
-        render :edit
-      end
+    image = MiniMagick::Image.open(params[:floorplate][:image].path)
+    if image.width < 1000 && image.height < 700
+      flash[:error] = "Too small property map image"
+      render :edit
     else
-      unless (params[:floorplate][:name] != @floorplate.name) || (params[:floorplate][:building] != @floorplate.building)
+      if params[:floorplate][:manual_override] == "true"
         if @floorplate.update(floorplate_params)
           flash[:notice] = "Floorplate updated successfully."
           PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
@@ -105,10 +103,24 @@ class FloorplatesController < ApplicationController
           render :edit
         end
       else
-        add_breadcrumb "Floorplates", community_floorplates_path(current_community)
-        add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
-        flash[:error] = "Please set manual override field first"
-        render :edit
+        unless (params[:floorplate][:name] != @floorplate.name) || (params[:floorplate][:building] != @floorplate.building)
+          if @floorplate.update(floorplate_params)
+            flash[:notice] = "Floorplate updated successfully."
+            PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+
+            redirect_to community_floorplates_path(current_community)
+          else
+            add_breadcrumb "Floorplates", community_floorplates_path(current_community)
+            add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
+            flash[:error] = @floorplate.errors.full_messages.join(',')
+            render :edit
+          end
+        else
+          add_breadcrumb "Floorplates", community_floorplates_path(current_community)
+          add_breadcrumb "Edit Floorplate", edit_community_floorplate_path(current_community,@floorplate)
+          flash[:error] = "Please set manual override field first"
+          render :edit
+        end
       end
     end
 

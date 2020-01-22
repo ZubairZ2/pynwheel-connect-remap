@@ -49,6 +49,90 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Billing Type
+
+                .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                  = f.radio_button :billing_type, "annual"
+                  = f.label :billing_type, "Annual", :value => "annual"
+                .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                  = f.radio_button :billing_type, "monthly"
+                  = f.label :billing_type, "Monthly", :value => "monthly"
+
+              - if @community.billing_type == "monthly"
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Billing Month
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .multiselect
+                      .show-categories
+                        = @community.billing_month
+                      %ul#multiselect{style: "display:none;"}
+                        %li{:class=> set_active_class('January',@community.billing_month), 'data-title' => 'January'}
+                          %a
+                            %i.fa.fa-check
+                            January
+                        %li{:class=> set_active_class('February',@community.billing_month), 'data-title' => 'February'}
+                          %a
+                            %i.fa.fa-check
+                            February
+                        %li{:class=> set_active_class('March',@community.billing_month), 'data-title' => 'March'}
+                          %a
+                            %i.fa.fa-check
+                            March
+                        %li{:class=> set_active_class('April',@community.billing_month), 'data-title' => 'April'}
+                          %a
+                            %i.fa.fa-check
+                            April
+                        %li{:class=> set_active_class('May',@community.billing_month), 'data-title' => 'May'}
+                          %a
+                            %i.fa.fa-check
+                            May
+                        %li{:class=> set_active_class('June',@community.billing_month), 'data-title' => 'June'}
+                          %a
+                            %i.fa.fa-check
+                            June
+                        %li{:class=> set_active_class('July',@community.billing_month), 'data-title' => 'July'}
+                          %a
+                            %i.fa.fa-check
+                            July
+                        %li{:class=> set_active_class('August',@community.billing_month), 'data-title' => 'August'}
+                          %a
+                            %i.fa.fa-check
+                            August
+                        %li{:class=> set_active_class('September',@community.billing_month), 'data-title' => 'September'}
+                          %a
+                            %i.fa.fa-check
+                            September
+                        %li{:class=> set_active_class('October',@community.billing_month), 'data-title' => 'October'}
+                          %a
+                            %i.fa.fa-check
+                            October
+                        %li{:class=> set_active_class('November',@community.billing_month), 'data-title' => 'November'}
+                          %a
+                            %i.fa.fa-check
+                            November
+                        %li{:class=> set_active_class('December',@community.billing_month), 'data-title' => 'December'}
+                          %a
+                            %i.fa.fa-check
+                            December
+                = f.hidden_field :billing_month, :multiple => true, id: "categories_field",:class=>""
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Billing Rate
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :billing_rate, :class=>"form-control validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"00.00",:maxlength=>"10"
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Date Installed
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true
+
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Show Gesture Icons
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
@@ -128,6 +212,8 @@
 
 
 :javascript
+  populate_multiselect()
+  $(".datepicker").datepicker({dateFormat: 'yy-mm-dd', maxDate: new Date, minDate: new Date(2007, 6, 12) });
   $(document).ready(function(e){
     if (!(#{current_user.welcome_prompt}))
     {

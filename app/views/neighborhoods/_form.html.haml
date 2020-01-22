@@ -129,6 +129,8 @@
             Errands
 = f.hidden_field :category, :multiple => true, id: "categories_field",:class=>"neighborhood-form-field"
 
+
+
 - if current_user.is_super_admin?
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -136,19 +138,17 @@
       -#%i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodRadiusPopover","data-content" => " "}
       -#  %span#propertyDetailNameText
       -#    Change the radius to change the distance of the results on the neighborhood map are from the property. The smaller the radius; the closer the results.
-
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = text_field_tag :neighborhood_counter,@appVersion.neighborhood_counter  ,:class=>"form-control validate[required,custom[onlyNumber&Decimal]] neighborhood-form-field", :placeholder=>"Radius", :value=> @appVersion.neighborhood_counter, :readonly => true
+      = text_field_tag :neighborhood_counter,@community.neighborhood_request_counter  ,:class=>"form-control neighborhood-form-field", :placeholder=>"Radius", :value=> @community.neighborhood_request_counter, :readonly => true, :style => "background: lightgrey;"
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Neighborhood Request Limit
       -#%i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodRadiusPopover","data-content" => " "}
       -#  %span#propertyDetailNameText
       -#    Change the radius to change the distance of the results on the neighborhood map are from the property. The smaller the radius; the closer the results.
-
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = text_field_tag :counter_limit,@community.neighborhood_request_counter_limit ,:class=>"form-control validate[required,custom[onlyNumber&Decimal]] neighborhood-form-field", :placeholder=>"Radius", :value=> @community.neighborhood_request_counter_limit
 
-      = text_field_tag :counter_limit,@appVersion.counter_limit ,:class=>"form-control validate[required,custom[onlyNumber&Decimal]] neighborhood-form-field", :placeholder=>"Radius", :value=> @appVersion.counter_limit
 
 - unless @neighborhood.new_record?
   .btn-btn-danger

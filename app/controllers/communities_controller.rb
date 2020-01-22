@@ -45,6 +45,7 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
   end
   def update
+    puts params
     if params[:community][:image]
       @community.crop_x = nil
     end
@@ -86,6 +87,11 @@ class CommunitiesController < ApplicationController
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
         end
+        params[:community][:billing_month] = params[:community][:billing_month] if params[:community][:billing_month].present?
+        @community.date_activated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "0")
+        @community.date_inactivated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "1")
+        params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
+
         if @community.update(community_params)
           @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
           if params[:community][:name].present?
@@ -180,8 +186,8 @@ class CommunitiesController < ApplicationController
   def destroy
     idd = @community.id
     design_id = @community.design.id
-    @community.destroy
-    flash[:notice] = "Community deleted successfully."
+    @community.delete_community
+    flash[:notice] = "Community will be deleted within few mintues."
     DeleteLogsOnDestroy.perform_async idd,design_id
     redirect_to company_communities_path(current_company)
   end
@@ -265,6 +271,92 @@ class CommunitiesController < ApplicationController
       redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
+  def account_report
+    @community = Community.find(params[:community_id])
+    workbook = WriteXLSX.new("public/AccountReport/AccountReport.xlsx")
+    # workbook = WriteXLSX.new("public/Reports/intagleo report "+ filenam +".xlsx")
+    worksheet = workbook.add_worksheet("Sheet 1")
+    format = workbook.add_format({'align': 'left', 'font': 'Arial', 'size': '10','locked': true})
+    format.set_bold()
+    format.set_locked()
+    format1 = workbook.add_format({'align': 'left', 'font': 'Arial', 'size': '10'})
+    row = 1
+    worksheet.freeze_panes(1, 2)
+    worksheet.write(0, 0, "Company",format,{'freeze_panes': true})
+    worksheet.write(0, 1, "Property Name",format)
+    worksheet.write(0, 2, "Number of Units",format)
+    worksheet.write(0, 3, "Address",format)
+    worksheet.write(0, 4, "City",format)
+    worksheet.write(0, 5, "State",format)
+    worksheet.write(0, 6, "Zip",format)
+    worksheet.write(0, 7, "Property Email Address",format)
+    worksheet.write(0, 8, "eBrochure 'From' Email Address",format)
+    worksheet.write(0, 9, "eBrochure 'BCC' Email Address ",format)
+    worksheet.write(0, 10, "Phone",format)
+    worksheet.write(0, 11, "Design Style",format)
+    worksheet.write(0, 12, "Data Provider",format)
+    worksheet.write(0, 13, "Self Tour (Yes/No)",format)
+    worksheet.write(0, 14, "Active/Inactive",format)
+    worksheet.write(0, 15, "Date Activated",format)
+    worksheet.write(0, 16, "Date Inactivated",format)
+    worksheet.write(0, 17, "Billing Month",format)
+    worksheet.write(0, 18, "Billing Rate",format)
+
+    Community.all.each do |community|
+      if community.present?
+        worksheet.write(row, 0, community.company.name,format1)
+        worksheet.write(row, 1, community.name,format1)
+        worksheet.write(row, 2, community.number_of_units,format1)
+        worksheet.write(row, 3, community.address,format1)
+        worksheet.write(row, 4, community.city,format1)
+        worksheet.write(row, 5, community.state,format1)
+        worksheet.write(row, 6, community.zip,format1)
+        worksheet.write(row, 7, community.email,format1)
+        worksheet.write(row, 8, community.favorite_setting.email_from,format1) if community.favorite_setting.present?
+        worksheet.write(row, 9, community.favorite_setting.email_bcc,format1) if community.favorite_setting.present?
+        worksheet.write(row, 10, community.phone,format1)
+        worksheet.write(row, 11, community.theme_name.capitalize,format1) if community.theme_name.present?
+
+        if community.data_provider == "psi"
+          data_provider = "Entrata"
+        elsif community.data_provider == "realpagesvc"
+          data_provider = "RealPage"
+        elsif community.data_provider == "zaremba"
+          data_provider = "RE Data Systems (ftp)"
+        elsif community.data_provider.present?
+          data_provider = community.data_provider.capitalize
+        else
+          data_provider = "Nill"
+        end
+        worksheet.write(row, 12, data_provider,format1)
+        worksheet.write(row, 13, community.self_tour == true ? "Yes" : "No",format1)
+        worksheet.write(row, 14, community.locked.present? ? (community.locked ? "Inactive" : "Active") : "Active",format1)
+        worksheet.write(row, 15, community.date_activated,format1)
+        worksheet.write(row, 16, community.date_inactivated,format1)
+        worksheet.write(row, 17, community.billing_type == "annual" ? "Annual" : "Monthly (#{community.billing_month})",format1)
+        worksheet.write(row, 18, community.billing_rate,format1)
+
+        row = row + 1
+      end
+    end
+    workbook.close
+
+
+    temp_file = Tempfile.new("AccountReport.zip")
+    reportFiles = Dir.entries('public/AccountReport')
+    Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip_file|
+      reportFiles.each do |d|
+        unless d == "." || d == ".."
+          zip_file.add(d,"public/AccountReport/AccountReport.xlsx")
+        end
+      end
+    end
+    zip_data = File.read(temp_file.path)
+    ###### redirect_to download_sheet_reports_path(zip_data,filename)
+    send_data(zip_data, :type => 'application/zip', :filename => "AccountReport.zip")
+
+    # send_data("public/AccountReport.xlsx", :disposition => 'attachment',:charset => "utf-8", :type => 'application/xml', :filename => "grgrgr.xlsx")
+  end
   def realpage_load_pricing_data
     @community = Community.find params[:community_id]
     @community.connect_to_pricing(@community)
@@ -276,20 +368,16 @@ class CommunitiesController < ApplicationController
   end
   def show_realpage_pricing_data
     @community = Community.find params[:community_id]
-    if @community.realpage_pricing_data.present?
-      # doc =  Nokogiri::XML(@community.realpage_pricing_data)
-      # byebug
-      # doc.xpath('s:Envelope').each do
-      #
-      # |char_element|
-      #
-      #   puts char_element.text
-      #
-      # end
-      render :xml => @community.realpage_pricing_data
+    if @community.credentials_are_present?
+      if xml = @community.connect_to_pricing
+        render :xml => xml
+      end
     else
-      render :json => Nokogiri::XML("<data>No Data</data>")
+      flash[:error] = "Please enter credentials in settings before importing data."
+      redirect_to community_settings_path(:community_id=>@community.id)
     end
+
+
   end
 
   def credentials
@@ -436,6 +524,15 @@ class CommunitiesController < ApplicationController
     @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
     @community.display_unit_on_homepage = params[:display_unit_on_homepage].present? ? params[:display_unit_on_homepage] : false
     @community.apartment_page_name = params[:apartment_page_name] if params[:apartment_page_name].present?
+
+
+    
+    @community.show_property_map_key = params[:show_property_map_key].present? ? params[:show_property_map_key] : false
+    @community.show_amenity_key = params[:show_amenity_key].present? ? params[:show_amenity_key] : false
+
+    @community.show_property_map_key_text = params[:show_property_map_key_text] if params[:show_property_map_key_text].present?
+    @community.show_amenity_key_text = params[:show_amenity_key_text] if params[:show_amenity_key_text].present?
+
     if @community.save
       flash[:notice] = "Apartment settings updated successfully."
       redirect_back(fallback_location: root_path)
@@ -453,7 +550,7 @@ class CommunitiesController < ApplicationController
 
   def community_params
     params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
-      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :show_gesture_icons,:is_vertical_app,
+      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
         :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
@@ -485,7 +582,7 @@ class CommunitiesController < ApplicationController
         :favourite_bg_image_gables,:additional_pages_bg_image_gables,:display_application_bg_image_gables,:display_apartment_bg_image_gables,:display_gallery_bg_image_gables,:display_favourite_bg_image_gables,:display_additional_pages_bg_image_gables,
         :appartment_button_color,:gallery_button_color,:neighborhood_button_color,:favorite_button_color,:filter_panel_color,:webpages_button_color,
         :imagepages_button_color],:expressionist_attributes=>[:id,:home_page_menu_position,:home_page_position_of_logo,:home_page_logo_size,
-        :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:overlay_text ,:overlay_font,:overlay_size,:overlay_color,:overlay_opacity ,:home_page_button_font_size,:display_home_page_image,
+        :home_page_button_border_color,:display_home_page_button_icon,:home_page_button_font_family,:overlay_text ,:overlay_font,:overlay_size,:overlay_color,:overlay_text_position,:overlay_opacity ,:home_page_button_font_size,:display_home_page_image,
         :display_home_page_nav_background,:display_global_nav_background_image,:home_page_button_image,:display_global_navigation_button_icon,:global_navigation_button_border_color,
         :global_navigation_button_font_family,:global_navigation_button_font_size,:display_global_navigation_button_bg_color,:filter_panel_button_border_color,
         :filter_panel_text_font_size,:filter_panel_button_text_font_size, :spacing_between_buttons,:use_gables_buttons,:home_page_icons_position,:button_text_position,:homepage_button_border_thickness, :homepage_button_border,:global_navigation_icons_position,:global_nav_button_icon_size,

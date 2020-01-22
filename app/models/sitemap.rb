@@ -10,7 +10,7 @@
 #
 
 class Sitemap < ApplicationRecord
-  has_paper_trail
+  # has_paper_trail
   mount_uploader :image, SiteMapUploader
   belongs_to :community
   validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}

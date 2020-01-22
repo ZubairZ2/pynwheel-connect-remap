@@ -31,22 +31,22 @@ class PsiService < BaseService
         #property_id = credentials.property_id
 
         response = HTTParty.post(url,
-          :body => {
-            "auth": {
-              "type": "basic",
-              "password": password,
-              "username": username
-            },
-            "method": {
-              "name": "getMitsPropertyUnits",
-              "params": {
-                "propertyIds": property_id,
-                "availableUnitsOnly": "0",
-                "showUnitSpaces": "1"
-              }
-            }
-          }.to_json,
-          :headers => { 'Content-Type' => 'application/json' } )
+                                 :body => {
+                                     "auth": {
+                                         "type": "basic",
+                                         "password": password,
+                                         "username": username
+                                     },
+                                     "method": {
+                                         "name": "getMitsPropertyUnits",
+                                         "params": {
+                                             "propertyIds": property_id,
+                                             "availableUnitsOnly": "0",
+                                             "showUnitSpaces": "1"
+                                         }
+                                     }
+                                 }.to_json,
+                                 :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
         # if com_test.id == 458
         #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
@@ -169,8 +169,8 @@ class PsiService < BaseService
             unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
           elsif u["EffectiveRent"].present?
             unit.effective_rent = u["EffectiveRent"]
-          # else
-          #   unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+            # else
+            #   unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           end
         end
 
@@ -203,6 +203,77 @@ class PsiService < BaseService
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
         @unit_record << unit.provider_unit_id
         unit.save(validate: false)
+      else
+        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
+        unless unit.present?
+          unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first_or_initialize
+        end
+        unit.property_id = property_id
+        unit.unit_type = u["Units"]["Unit"]["UnitType"]
+        unless unit.name_is_updated.present? && unit.name_is_updated
+          unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
+        end
+
+        if u["Units"]["Unit"]["MinSquareFeet"].present?
+          if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
+            unit.square_feet = u["Units"]["Unit"]["MinSquareFeet"].to_f
+          else
+            unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
+          end
+        end
+        unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+          unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
+        end
+
+        # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
+        if u["Units"]["Unit"]["MarketRent"].present?
+          unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+        end
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+          if u["Units"]["Unit"]["MarketRent"].present?
+            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+          elsif u["EffectiveRent"].present?
+            unit.effective_rent = u["EffectiveRent"]
+          else
+            unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+          end
+        end
+
+
+        # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+        unless unit.floor_is_updated.present? && unit.floor_is_updated
+          unit.floor = u["FloorLevel"]
+        end
+        unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
+
+        unless unit.availability_is_updated.present? && unit.availability_is_updated
+          unit.availability = u["Availability"]["VacancyClass"]
+        end
+
+        unless unit.available_is_updated.present? && unit.available_is_updated
+          unit.available = false
+        end
+        if u["Availability"]["VacancyClass"] == "Unoccupied"
+          unless unit.available_is_updated.present? && unit.available_is_updated
+            unit.available = true
+          end
+          year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
+          month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
+          day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
+          vacateDate = Date.parse("#{year}-#{month}-#{day}")
+        end
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+          unit.available_date = vacateDate
+        end
+
+        building = u["Units"]["Unit"]["BuildingName"]
+        unless unit.building_is_updated.present? && unit.building_is_updated
+          unit.building = building.present? ? building.gsub("Building ", "") : ""
+        end
+        unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
+        unit.manually_updated = false
+        unit.save(validate: false)
+
       end
     end
 
@@ -231,41 +302,89 @@ class PsiService < BaseService
         floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
 
 
-          # room_types = f["Room"]
-          # room_types.each do |rt|
-          #   if rt["@attributes"]["RoomType"] == "Bedroom"
-          #     floorplan.bedrooms = rt["Count"]
-          #   else
-          #     floorplan.bathrooms = rt["Count"]
-          #   end
-          # end
-          #
-          # if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
-          #
-          #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
-          # else
-          #
-          #
-          #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
-          # end
-          # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-          #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
-          # else
-          #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
-          # end
-          if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+        # room_types = f["Room"]
+        # room_types.each do |rt|
+        #   if rt["@attributes"]["RoomType"] == "Bedroom"
+        #     floorplan.bedrooms = rt["Count"]
+        #   else
+        #     floorplan.bathrooms = rt["Count"]
+        #   end
+        # end
+        #
+        # if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+        #
+        #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+        # else
+        #
+        #
+        #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+        # end
+        # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        # else
+        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+        # end
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
 
+          floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
+        else
+
+          floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
+        end
+      else
+        floorplan = Floorplan.where(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
+
+        floorplan.property_id = property_id
+
+        unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+          floorplan.name = f["Name"]
+        end
+
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        else
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+        end
+        floorplan.unit_count = f["UnitsAvailable"]
+        floorplan.units_available = f["DisplayedUnitsAvailable"]
+        floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
+        floorplan.availability_url = f["FloorplanAvailabilityURL"]
+
+        room_types = f["Room"]
+        room_types.each do |rt|
+          if rt["@attributes"]["RoomType"] == "Bedroom"
+            unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+              floorplan.bedrooms = rt["Count"]
+            end
+          else
+            unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+              floorplan.bathrooms = rt["Count"]
+            end
+          end
+        end
+        unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+          if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+          else
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+          end
+        end
+        unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+          if f["MarketRent"]["@attributes"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
           else
 
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
           end
         end
-
         floorplan.save(validate: false)
 
       end
+
+      floorplan.save(validate: false)
+
     end
+  end
 
 
   def fill_psi_pricing_details(hit)
@@ -367,6 +486,10 @@ class PsiService < BaseService
                       unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                     end
 
+                    unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                    end
+
                     unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                       if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                         unit.availability = 'Unoccupied' if !unit.sold
@@ -390,8 +513,8 @@ class PsiService < BaseService
 
                     unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                        unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
-                        unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
+                        unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
+                        unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
                         unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                       elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
                         unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
@@ -480,6 +603,10 @@ class PsiService < BaseService
                         unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                         end
+
+                        unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                        end
                         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                           if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                             unit.availability = 'Unoccupied' if !unit.sold
@@ -503,8 +630,8 @@ class PsiService < BaseService
 
                         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                           if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                            unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
-                            unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
+                            unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
+                            unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
                             unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                           elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
                             unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]

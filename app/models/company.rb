@@ -23,4 +23,8 @@ class Company < ApplicationRecord
   has_many :users, dependent: :destroy
   has_many :community_groups, dependent: :destroy
   validates_uniqueness_of :name
+
+  def delete_company
+    DeleteCompanyJob.perform_async self
+  end
 end

@@ -61,6 +61,13 @@ json.community_group @communities do |co|
     json.is_vertical_app @community.is_vertical_app.present? ? @community.is_vertical_app : false
     json.show_tour_page @community.show_tour_page.present? ? @community.show_tour_page : false
     json.data_error_message @community.credential.present? ? (@community.credential.data_error_message.present? ? @community.credential.data_error_message : nil) : nil
+    json.overlay_text (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text.present? ? @community.design.expressionist.overlay_text : "") : "")
+    json.overlay_font (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_font.present? ? @community.design.expressionist.overlay_font : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial") : "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial")
+    json.overlay_color (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_color.present? ? @community.design.expressionist.overlay_color : "#000000") : "#000000")
+    json.overlay_opacity (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_opacity.present? ? @community.design.expressionist.overlay_opacity : "100%") : "100%")
+    json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_size.present? ? @community.design.expressionist.overlay_size : "18px") : "18px")
+    json.overlay_text_position (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text_position.present? ? @community.design.expressionist.overlay_text_position : "Left") : "Left")
+
     if @community.theme_name.include?('gables')
       json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
     elsif @community.temporary_theme_name == 'modernist'
@@ -1311,6 +1318,12 @@ json.community_group @communities do |co|
     json.display_sitemap @community.display_sitemap
     json.display_floorplan_gallery @community.display_floorplan_gallery
     json.display_available_date @community.display_available_date
+
+
+    json.show_property_map_key @community.show_property_map_key
+    json.show_property_map_key_text @community.show_property_map_key_text
+    json.show_amenity_key @community.show_amenity_key
+    json.show_amenity_key_text @community.show_amenity_key_text
     if @community.sitemap.present? and !@community.has_floorplates?
       image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
       begin
@@ -1346,7 +1359,7 @@ json.community_group @communities do |co|
         json.rent unit.effective_rent.present? ? unit.effective_rent : 0
         json.min_rent unit.effective_rent.present? ? unit.effective_rent : 0
         json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
-        json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : 0
+        json.max_rent unit.max_effective_rent.present? ? unit.max_effective_rent : (unit.effective_rent.present? ? unit.effective_rent : 0)
         json.availability unit.availability
         json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
         json.available unit.available

@@ -1,15 +1,7 @@
 namespace :import do
   desc 'rake task for importing communities units and floorplans'
   task :communities_unit_data => :environment do
-    begin
-      if Time.now.to_s(:time) >= "06:00" && Time.now.to_s(:time) <= "07:00"
-        app_version = AppVersion.first
-        app_version.neighborhood_counter = 0
-        app_version.save
-      end
-    rescue => ex
 
-    end
     community_count = Community.count 
     number_of_pages = community_count/5
     unless community_count%5 == 0
@@ -24,6 +16,17 @@ namespace :import do
 
     (1..number_of_pages).each do |page|
       Community.page(page).per(5).each do |community|
+        begin
+          if Time.now.to_s(:time) >= "06:00" && Time.now.to_s(:time) <= "07:00"
+            comun = Community.find community.id
+            comun.neighborhood_request_counter = 0
+            comun.limit_200_hit = false
+            comun.limit_400_hit = false
+            comun.save(validate:false)
+          end
+        rescue => ex
+
+        end
         puts '****************************' , community.id
         community_logs_str = community_logs_str + community.id.to_s + " , "
         case community.data_provider
