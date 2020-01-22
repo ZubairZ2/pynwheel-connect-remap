@@ -440,7 +440,7 @@ module ApplicationHelper
                   ["Gabriola","Gabriola"],
                   ["Gadugi","Gadugi"],
                   ["Garamond","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Garamond.ttf#Garamond"],
-                  ["Garamond MT","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Garamond MT.ttf#Garamond"],
+                  ["Garamond MT","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Garamond MT.ttf#Garamond MT"],
                   ["Gautami","Gautami"],
                   ["Georgia","Georgia"],
                   ["Georgia Ref","Georgia Ref"],
