@@ -71,7 +71,7 @@
     - unless @community.is_sitemap
       %h3 Select a Floor
       - @community.floorplates.map{|f| f.floors}.flatten.sort.each do |f|
-        %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #e0e0e0;padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
+        %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floor.present? ? (@floor.to_i == f ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
 
     .row
       / Start Panel left Side

@@ -38,27 +38,27 @@ json.tours @tours do |tour|
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
 
       begin
-      if @community.tour.sort_hash[floor.to_s].present?
-        arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
-        if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor)
-          begin
-          unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
-            next
+        if @community.tour.sort_hash[floor.to_s].present?
+          arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
+          if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor)
+            begin
+              unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
+                next
+              end
+            rescue
+            end
           end
-          rescue
+          temp_max_floor = floor
+          @community.tour.sort_hash[floor.to_s].each do |s_id|
+            # amenity_hit = true
+            # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
+            # if ts_ck.present?  && ts_ck.stop_type == "amenity"
+            #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
+            # end
+            stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
           end
         end
-        temp_max_floor = floor
-        @community.tour.sort_hash[floor.to_s].each do |s_id|
-          # amenity_hit = true
-          # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
-          # if ts_ck.present?  && ts_ck.stop_type == "amenity"
-          #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
-          # end
-          stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
-        end
-      end
-      rescue 
+      rescue
       end
     end
     blocked = []
@@ -104,7 +104,7 @@ json.tours @tours do |tour|
   stops_except_deleted_ids.each do |id|
     stops_except_deleted << TourStop.find(id)
   end
-  
+
   new_stops_arr = []
   last_element  = nil
   stops_except_deleted.each do |x|
@@ -205,11 +205,11 @@ json.tours @tours do |tour|
           json.name ag.name
           json.type "unit_stop"
           json.image ag.image.url
-          json.description ag.description 
+          json.description ag.description
           json.directional_text ag.directional_text
         end
       end
-      
+
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
@@ -238,7 +238,7 @@ json.tours @tours do |tour|
       end
     end
     # binding.pry
-    
+
     stop.stop_details.each do |sd|
       json.stop_description sd.description
     end
@@ -246,7 +246,7 @@ json.tours @tours do |tour|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
     end
-    
+
     @existing_path_points = []
     if i == 0
       @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
@@ -270,7 +270,7 @@ json.tours @tours do |tour|
 
     @existing_path_points.flatten!
     json.path_points @existing_path_points
-    
+
 
     # binding.pry
     i+=1
