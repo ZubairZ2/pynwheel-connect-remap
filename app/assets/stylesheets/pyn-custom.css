@@ -2660,7 +2660,11 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   .modal-right{
     width: 99%;
   }
-
+  .email_div
+  {
+      margin-top: -50px !important;
+      margin-left: -70px !important;
+  }
 }
 @media (max-width:767px){
   .pop-over{
