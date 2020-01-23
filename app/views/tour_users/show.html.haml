@@ -67,8 +67,8 @@
                   //Tour Tracking
                   %h4{:style => "margin-left: 30px"}
                     Tour Tracking Tour 1
-                  .col-lg-12{:style => "background: #efefef; margin: 30px"}
-                    = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :style => "height: 100%; width: 720px;"
+                  .col-lg-12.col-md-12.col-sm-12.col-xs-12{:style => "background: #efefef; margin: 30px"}
+                    = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :style => "height: 100%; width: 100%;"
 
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
