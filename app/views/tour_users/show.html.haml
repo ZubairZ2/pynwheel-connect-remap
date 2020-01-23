@@ -31,9 +31,9 @@
               .row
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: 100px;"}
-                    .col-lg-2
+                    .col-lg-2.col-md-2.col-sm-2.col-xs-2
                       = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "my_class", :style => "height: 100px; width: 100px; margin-left: -30px; #{@tour_user.image.present? ? "transform: rotate(90deg);" : ""}"
-                    .col-lg-3{:style => "margin-top: 15px; margin-left: -29px;"}
+                    .col-lg-3.col-md-3.col-sm-3.col-xs-3.email_div{:style => "margin-top: 15px; margin-left: -29px;"}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
                       %br
@@ -42,17 +42,19 @@
                       %br
                       .mt-5
                         #{@tour_user.phone_number}
-                    .col-lg-6
+                    .col-lg-6.col-md-6.col-sm-6.col-xs-6
                       = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "my_class", :style => "height: 175px; width: 100px;  margin-left: 99px; margin-top: -37px; #{@tour_user.id_card.present? ? "transform: rotate(90deg);" : ""}"
-                  %h4{:style => "margin-left: 30px"}
-                    Alert
+                  .row
+                    %h4{:style => "margin-left: 45px"}
+                      Alert
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
                     - @alerts.each_with_index do |alert,index|
                       - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                       .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                         .alert-div1{:style => "margin-top: 10px"}
                           = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;"
-                          #{alert.arrived}
+                          - if alert.arrived.present?
+                            #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                         %br
                         .alert-div2{:style => "margin-top: -10px"}
                           = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;"
@@ -60,7 +62,8 @@
                         %br
                         .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
                           = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;"
-                          #{end_time}
+                          - if end_time.present?
+                            #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                   //Tour Tracking
                   %h4{:style => "margin-left: 30px"}
                     Tour Tracking Tour 1
@@ -72,29 +75,31 @@
                     - @visited_stop.each do |stop|
                       - @stop = TourStop.find stop[0].to_i rescue next
                       - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
-
-                      - image_hit = true
-                      - stop[1].each do |stop_image|
-                        - if stop_image.image.present?
-                          - if image_hit
-                            .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
-                              %strong{:style => "font-size: 16px;"}
-                                #{@stop.name}
-                            .col-lg-2
-                              Tour photo
-                              = image_tag  @stop.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
-                              - image_hit = false
-                          .col-lg-2
-                            User photo
-                            = image_tag  stop_image.image.url, :class => "my_class", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
-                      - stop[1].each do |stop_decription|
-                        - if stop_decription.description.present?
-                          .col-lg-8
-                            User Notes
-                            %br
-                            .user_note{:style => "background: white;"}
-                              -##{stop_decription.description}
-                              = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
+                      .row
+                        - image_hit = true
+                        - stop[1].each do |stop_image|
+                          - if stop_image.image.present?
+                            - if image_hit
+                              .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
+                                %strong{:style => "font-size: 16px;"}
+                                  #{@stop.name}
+                              .col-lg-2.col-md-2.col-sm-6.col-xs-6
+                                Tour photo
+                                %br
+                                = image_tag  @stop.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
+                                - image_hit = false
+                            .col-lg-2.col-md-2.col-sm-6.col-xs-6.user_photo
+                              User photo
+                              %br
+                              = image_tag  stop_image.image.url, :class => "", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
+                        - stop[1].each do |stop_decription|
+                          - if stop_decription.description.present?
+                            .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
+                              User Notes
+                              %br
+                              .user_note{:style => "background: ;"}
+                                -##{stop_decription.description}
+                                = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
 
                     -#.col-lg-12{:style => "background: #efefef;  margin: 30px "}
                     -#  .col-lg-12
