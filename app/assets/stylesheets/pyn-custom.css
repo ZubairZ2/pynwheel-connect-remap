@@ -2404,6 +2404,21 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   .slide-imgage-boxs .col-lg-3{
     width:33%;
   }
+  .email_div
+  {
+      margin-left: 10px !important;
+  }
+    .user_photo
+    {
+        margin-left: 44px !important;
+    }
+    .user_description
+    {
+        /*margin-left: 54px !important;*/
+        width: 85% !important;
+        margin-top: 30px !important;
+    }
+
 }
 
 @media only screen and (min-width: 1034px) and (max-width: 1280px)  {
@@ -3353,4 +3368,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 }
 .unotes{
     width: 340px;
+}
+.user_photo
+{
+
 }
