@@ -176,19 +176,11 @@ class RealPageSvcSwapService < BaseService
               u = u[:UnitObject]
               hit = false
 
-              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber])
+              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber]).first
               unless unit.present?
-                unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber])
-              end
-
-              if unit.count > 1
-                unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber],building: u[:BuildingNumber])unless u[:BuildingNumber] == "N/A"
-                unless unit.present?
-                  unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber],building: u[:BuildingNumber]) unless u[:BuildingNumber] == "N/A"
-                end
+                unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber]).first
               end
               if unit.present?
-                unit = unit.first
                 unit.provider = "realpagesvc_new"
                 unit.provider_unit_id = u[:UnitID]
                 unit.property_id = u[:SiteID]
@@ -200,7 +192,6 @@ class RealPageSvcSwapService < BaseService
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
-                unit.available = u[:AvailableBit] == "true" ? true : false
                 if u[:RentSqFtCount].present?
                   unit.square_feet = u[:RentSqFtCount]
                 end
@@ -241,7 +232,17 @@ class RealPageSvcSwapService < BaseService
                   @array_of_dates << struct
                 end
 
-                unit.save(validate: false)
+
+                # unit.building = ""
+                # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
+                # if bldgResult.present?
+                #   if bldgResult == "N/A"
+                #     unit.building = ""
+                #   else
+                #     unit.building = bldgResult
+                #   end
+                # end
+                unit.save
               else
                 dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:UnitID])
                 if dup.present?
@@ -260,6 +261,7 @@ class RealPageSvcSwapService < BaseService
                 end
                 unit.marketing_name = u[:UnitNumber]
 
+                unit.building = u[:BuildingID]
                 unit.floorplan_id = u[:FloorplanID]
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
@@ -289,13 +291,43 @@ class RealPageSvcSwapService < BaseService
                   current_date = Date.today
                 end
 
-                unit.save(validate: false)
+                @array_of_dates.each do |hash|
+                  if hash[:ready_date] == current_date
+                    hash[:units] << unit.provider_unit_id
+                    hit = true
+                  end
+                end
+
+                if !hit
+                  struct = {
+                      ready_date: current_date,
+                      units: [unit.provider_unit_id]
+                  }
+                  @array_of_dates << struct
+                end
+
+
+                # unit.building = ""
+                # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
+                # if bldgResult.present?
+                #   if bldgResult == "N/A"
+                #     unit.building = ""
+                #   else
+                #     unit.building = bldgResult
+                #   end
+                # end
+                unit.save
 
               end
 
             end
           end
-
+          unit = Unit.where(community_id: credentials.community_id)
+          unit.each do |d|
+            unless d.provider == "realpagesvc_new" || d.provider == "manually"
+              d.destroy
+            end
+          end
 
 
         end
@@ -366,7 +398,7 @@ class RealPageSvcSwapService < BaseService
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units.each do |u|
-            @array_of_units << u[:Address][:UnitID]
+            @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber])
             unless unit.present?
               unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:BuildingNumber] + "-" + u[:Address][:UnitNumber])

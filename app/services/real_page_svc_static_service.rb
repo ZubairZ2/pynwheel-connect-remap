@@ -1,6 +1,7 @@
 class RealPageSvcStaticService < BaseService
   def perform
     # @doc = ""
+    @array_of_units = []
     import_realpage_svc_floorplans
     import_initial_realpage_units
     import_realpage_svc_units
@@ -96,7 +97,6 @@ class RealPageSvcStaticService < BaseService
   end
   def import_initial_realpage_units
     #building_result = realpage_building #Ignore it for now
-    @array_of_units = []
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
@@ -143,7 +143,6 @@ class RealPageSvcStaticService < BaseService
               u = u[:UnitObject]
               hit = false
               unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
-              @array_of_units  << u[:Address][:UnitID]
               unless unit.manual_override
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = u[:UnitID]
@@ -204,6 +203,31 @@ class RealPageSvcStaticService < BaseService
                   current_date = Date.today
                 end
 
+                @array_of_dates.each do |hash|
+                  if hash[:ready_date] == current_date
+                    hash[:units] << unit.provider_unit_id
+                    hit = true
+                  end
+                end
+
+                if !hit
+                  struct = {
+                      ready_date: current_date,
+                      units: [unit.provider_unit_id]
+                  }
+                  @array_of_dates << struct
+                end
+
+
+                # unit.building = ""
+                # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
+                # if bldgResult.present?
+                #   if bldgResult == "N/A"
+                #     unit.building = ""
+                #   else
+                #     unit.building = bldgResult
+                #   end
+                # end
                 unit.manually_updated = false
                 unit.save(validate: false)
                 #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
@@ -297,7 +321,7 @@ class RealPageSvcStaticService < BaseService
           units.each do |u|
 
             unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:Address][:UnitID]).first_or_initialize
-            @array_of_units  << u[:Address][:UnitID]
+            @array_of_units  << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unless unit.manual_override
               unit.property_id = u[:SiteID]
               unit.unit_type = u[:Address][:UnitNumber]
