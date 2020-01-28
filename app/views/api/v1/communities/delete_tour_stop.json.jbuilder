@@ -35,7 +35,7 @@ json.tours @tours do |tour|
   else
     temp_max_floor = nil
     min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
-    @community.deleted_ids.each do |floor|
+    [1,4,3,2].each do |floor|
 
       begin
         if @community.tour.sort_hash[floor.to_s].present?
