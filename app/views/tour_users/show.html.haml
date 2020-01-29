@@ -32,7 +32,7 @@
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: 100px;"}
                     .col-lg-2.col-md-2.col-sm-2.col-xs-2
-                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "my_class", :style => "height: 100px; width: 100px; margin-left: -30px; #{@tour_user.image.present? ? "transform: rotate(90deg);" : ""}"
+                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "my_class", :style => "height: 100%; width: 100px; margin-top: 19px; margin-left: -48px; #{@tour_user.image.present? ? "transform: rotate(90deg);" : ""}"
                     .col-lg-3.col-md-3.col-sm-3.col-xs-3.email_div{:style => "margin-top: 15px; margin-left: -29px;"}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
@@ -43,7 +43,7 @@
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
-                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "my_class", :style => "height: 175px; width: 100px;  margin-left: 99px; margin-top: -37px; #{@tour_user.id_card.present? ? "transform: rotate(90deg);" : ""}"
+                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "id_card", :style => "height: 175px; width: 100px;  margin-left: 99px; margin-top: -37px; #{@tour_user.id_card.present? ? "" : ""}"
                   .row
                     %h4{:style => "margin-left: 45px"}
                       Alert
