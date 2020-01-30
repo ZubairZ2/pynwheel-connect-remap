@@ -32,6 +32,7 @@ json.tours @tours do |tour|
   stops_arr = []
   if @community.is_sitemap
     stops_arr = @community.tour.tour_stops
+    stop_count = stops_arr.count
   else
     temp_max_floor = nil
     min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
@@ -61,6 +62,7 @@ json.tours @tours do |tour|
       rescue
       end
     end
+    stop_count = stops_arr.compact.count
     blocked = []
     # begin
     # while (stops_arr.compact[stops_arr.compact.size - 1]).stop_type == "elevator"
@@ -115,7 +117,16 @@ json.tours @tours do |tour|
   end
   new_stops_arr
 
+  counter = 0
   json.tour_stop new_stops_arr.compact do |stop|
+    if counter == 0
+      json.navigation_title "First Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
+    elsif counter == stop_count - 3
+      json.navigation_title "Last Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
+    else
+      json.navigation_title "Next Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
+    end
+    counter += 1
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
@@ -126,9 +137,11 @@ json.tours @tours do |tour|
       json.type stop.stop_type
     end
     if stop.stop_type == "unit"
+
       unit = Unit.find_by_id stop.stop_id
+      if unit.present?
       json.image unit.present? ? (unit.image.present? ? unit.image.url: (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.name  "Apartment "+unit.marketing_name
+      json.name  "Apartment "+ unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       lease_pricing = []
       if unit.lease_pricing.present?
@@ -182,6 +195,7 @@ json.tours @tours do |tour|
           end
 
         end
+      end
       end
     elsif stop.stop_type == "elevator"
       elevator = Elevator.find_by_id stop.stop_id
