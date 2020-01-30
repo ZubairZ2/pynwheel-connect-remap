@@ -63,6 +63,7 @@ json.tours @tours do |tour|
       end
     end
     stop_count = stops_arr.compact.count
+    second_last = stops_arr.compact[stop_count - 2]
     blocked = []
     # begin
     # while (stops_arr.compact[stops_arr.compact.size - 1]).stop_type == "elevator"
@@ -117,13 +118,15 @@ json.tours @tours do |tour|
   end
   new_stops_arr
 
+  hit = true
   counter = 0
   json.tour_stop new_stops_arr.compact do |stop|
     if counter == 0
       json.navigation_title "First Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
-    elsif counter == stop_count - 3
+    elsif second_last.id == stop.id
       json.navigation_title "Last Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
-    else
+      hit = false
+    elsif hit
       json.navigation_title "Next Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
     end
     counter += 1
