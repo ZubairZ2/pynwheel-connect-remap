@@ -129,7 +129,7 @@ json.tours @tours do |tour|
     elsif hit
       json.navigation_title "Next Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
     end
-    counter += 1
+
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
@@ -170,6 +170,19 @@ json.tours @tours do |tour|
       stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
+      byebug
+      unless @unit_amenities.present?
+        uuu = {
+            "x_plot" : 0,
+        "y_plot" : 0,
+        "name" : "No Image",
+        "image" : image_url("no_image.png"),
+        "stop_description" : nil,
+        "directional_text" : nil,
+        "gallery" : []
+        }
+        json.unit_amenities
+      end
       json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
         if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot > 0)
           json.x_plot unit_amenity.x_plot
@@ -207,6 +220,14 @@ json.tours @tours do |tour|
       json.name elevator.name
       json.directional_text elevator.directional_text
       json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
+      if new_stops_arr.compact[counter + 1].present?
+        next_stop = new_stops_arr.compact[counter + 1]
+        next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id
+        next if next_stop.is_a? Elevator
+        json.elevator_title next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : ""
+      else
+        json.elevator_title ""
+      end
       if elevator.elevator_galleries.count == 0
         json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
       else
@@ -291,6 +312,7 @@ json.tours @tours do |tour|
 
     # binding.pry
     i+=1
+    counter += 1
   end
 
 end
