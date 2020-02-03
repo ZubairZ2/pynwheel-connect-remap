@@ -170,21 +170,10 @@ json.tours @tours do |tour|
       stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
-      byebug
-      unless @unit_amenities.present?
-        uuu = {
-            "x_plot" : 0,
-        "y_plot" : 0,
-        "name" : "No Image",
-        "image" : image_url("no_image.png"),
-        "stop_description" : nil,
-        "directional_text" : nil,
-        "gallery" : []
-        }
-        json.unit_amenities
-      end
+      unit_amenities_hit = true
       json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
         if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot > 0)
+          unit_amenities_hit = false
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
@@ -211,6 +200,18 @@ json.tours @tours do |tour|
           end
 
         end
+      end
+      if unit_amenities_hit
+        unit_amenities_array = {
+            "x_plot" => 0,
+            "y_plot" => 0,
+            "name" => "No Image",
+            "image" => image_url("no_image.png"),
+            "stop_description" => nil,
+            "directional_text" => nil,
+            "gallery" => []
+        }
+        json.unit_amenities unit_amenities_array
       end
       end
     elsif stop.stop_type == "elevator"
