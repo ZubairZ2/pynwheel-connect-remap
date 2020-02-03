@@ -125,10 +125,10 @@ json.tours @tours do |tour|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
     if second_last.id == stop.id
-      json.navigation_title "Last Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
+      json.navigation_title "Last Stop " + new_stops_arr[counter].name if new_stops_arr[counter + 1].present?
       hit = false
     elsif hit
-      json.navigation_title "Next Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
+      json.navigation_title "Next Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter].present?
     end
 
     json.id stop.id
