@@ -127,7 +127,7 @@ json.tours @tours do |tour|
       json.navigation_title "Last Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
       hit = false
     elsif hit
-      json.navigation_title "Next Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
+      json.navigation_title "Next Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
     end
 
     json.id stop.id
@@ -209,7 +209,10 @@ json.tours @tours do |tour|
             "image" => image_url("no_image.png"),
             "stop_description" => nil,
             "directional_text" => nil,
-            "gallery" => []
+            "gallery" => {"name" => "No Image",
+                          "image" => image_url("no_image.png"),
+                          "description" => nil,
+                          "directional_text" => nil }
         }
         json.unit_amenities unit_amenities_array
       end
@@ -224,8 +227,12 @@ json.tours @tours do |tour|
       if new_stops_arr.compact[counter + 1].present?
         next_stop = new_stops_arr.compact[counter + 1]
         next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id
-        next if next_stop.is_a? Elevator
-        json.elevator_title next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : ""
+        if next_stop.is_a? Elevator
+          json.elevator_title ""
+        else
+          json.elevator_title next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : ""
+        end
+
       else
         json.elevator_title ""
       end
