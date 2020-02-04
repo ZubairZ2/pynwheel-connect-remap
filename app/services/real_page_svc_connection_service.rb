@@ -10,8 +10,9 @@ class RealPageSvcConnectionService < BaseService
       username = REALPAGESVC_USERNAME
       password = REALPAGESVC_PASSWORD
       license_key = REALPAGESVC_LICENSE_KEY
-      date_needed = Date.today + 540
+      date_needed = Date.today
       community_id = credentials.community_id
+      puts "%%%%%%%%1"*500
       response = HTTParty.post(
           url,
           :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -52,6 +53,8 @@ class RealPageSvcConnectionService < BaseService
                             </tem:getunitlist>
                           </soapenv:Body>
                         </soapenv:Envelope>')
+      puts "%%%%%%%%5"*1000
+      puts response
       return response.body
     rescue
       false

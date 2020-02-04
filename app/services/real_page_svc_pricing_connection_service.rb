@@ -108,8 +108,6 @@ class RealPageSvcPricingConnectionService < BaseService
     end
 
     ########################
-    puts "%%%%%%%%5"*1000
-    puts response
 
     return response.body
   end
