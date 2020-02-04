@@ -93,8 +93,8 @@ class FloorplatesController < ApplicationController
     if params[:floorplate][:building] != @floorplate.building
       @floorplate.building_is_updated = true
     end
-    image = MiniMagick::Image.open(params[:floorplate][:image].path)
-    if image.width < 1000 && image.height < 700
+    image = MiniMagick::Image.open(params[:floorplate][:image].path) if params[:floorplate][:image].present?
+    if image.present? && image.width < 1000 && image.height < 700
       flash[:error] = "Too small property map image"
       render :edit
     else

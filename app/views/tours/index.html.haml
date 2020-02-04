@@ -151,6 +151,8 @@
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       - unless @all_stops.include?(stop.stop_id) || stop.stop_type == "elevator"
                         - next
+                      - if stop.stop_type == "elevator" && @community.is_sitemap
+                        - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find stop.stop_id
                         - if (!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-"))
@@ -171,7 +173,7 @@
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
-                          - elsif stop.stop_type == "elevator"
+                          - elsif stop.stop_type == "elevator" && !@community.is_sitemap
                             - if (elevator.floors.max.to_i == (@floor.to_i))
                               = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "not_selected text-warning ml-5" do
                                 %i.fa.fa-road.icon_size
@@ -182,7 +184,7 @@
                             = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
-                          - else
+                          - elsif stop.stop_type == "amenity"
                             - amenity = Amenity.find stop.stop_id
                             = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size

@@ -107,6 +107,34 @@ class Api::V1::ToursController < ActionController::Base
 
     end
   end
+  def start_tour_auto_message
+    begin
+      if params[:access_token] == "AC1097385e8559f1ad63"
+        to = params[:phone_number]
+        start_tour_auto_msg = "Thank you for choosing to tour our property!
+click here to start your tour
+www.google.com"
+
+        prod_from = '+12017012957'
+        account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
+        auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
+        @client = Twilio::REST::Client.new(account_sid, auth_token)
+
+
+        message = @client.messages
+                      .create(
+                          body: start_tour_auto_msg,
+                          from: prod_from,
+                          to: to
+                      )
+        render :json=> {:success=>true, :message => "Message Sent"}
+      else
+        render :json=> {:success=>false, :message => "Message Not Sent", :error => "Invalid Token"}
+      end
+    rescue => ex
+      render :json=> {:success=>false, :message => "Message Not Sent", :error => ex}
+    end
+  end
   def tour_user_login
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
     tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name]) if tu.blank?
