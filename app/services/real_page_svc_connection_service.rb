@@ -1,10 +1,10 @@
 class RealPageSvcConnectionService < BaseService
 	def perform
-    puts "%%%%%%%%1"*500
+    puts "%%%%%%%%3"*500
     site_ids = credentials.site_id.split(',') rescue []
     site_id = site_ids[0]
     begin
-      puts "%%%%%%%%2"*500
+      puts "%%%%%%%%4"*500
 	    url = REALPAGE_URL
       soap_action = REALPAGE_PRICE_ACTION
       pmc_id = credentials.pmc_id
@@ -14,7 +14,7 @@ class RealPageSvcConnectionService < BaseService
       license_key = REALPAGESVC_LICENSE_KEY
       date_needed = Date.today
       community_id = credentials.community_id
-      puts "%%%%%%%%3"*500
+      puts "%%%%%%%%5"*500
       response = HTTParty.post(
           url,
           :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -55,7 +55,7 @@ class RealPageSvcConnectionService < BaseService
                             </tem:getunitlist>
                           </soapenv:Body>
                         </soapenv:Envelope>')
-      puts "%%%%%%%%5"*1000
+      puts "%%%%%%%%9"*1000
       puts response
       return response.body
     rescue
