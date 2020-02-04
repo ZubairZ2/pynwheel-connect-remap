@@ -51,7 +51,6 @@ class RealPageSvcConnectionService < BaseService
                                 <tem:singlevalue>12</tem:singlevalue>
                               </tem:listCriteria>
                             </tem:getunitlist>
-
                           </soapenv:Body>
                         </soapenv:Envelope>')
       return response.body
