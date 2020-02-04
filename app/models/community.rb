@@ -383,7 +383,6 @@ class Community < ApplicationRecord
   end
 
   def connect_to_provider
-    puts "%%%%%%%%0"*500
     case data_provider
       when "psi"
         connect_to_psi
@@ -402,7 +401,7 @@ class Community < ApplicationRecord
     end
   end
 
-  def connect_to_pricing
+  def connect_to_pricing(com)
     case data_provider
       when "psi"
         connect_pricing_to_psi
@@ -459,7 +458,6 @@ class Community < ApplicationRecord
   end
 
   def connect_to_realpagesvc
-    puts "%%%%%%%%1"*500
     real_page_svc_connection_service = RealPageSvcConnectionService.new(credential.attributes)
     real_page_svc_connection_service.perform
     # RealPageSvcPricingJob.perform_async credential.attributes.to_json
