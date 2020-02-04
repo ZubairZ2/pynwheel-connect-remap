@@ -384,6 +384,10 @@ class RealPageSvcSwapService < BaseService
                                   <tem:name>DateNeeded</tem:name>
                                   <tem:singlevalue>'+date_needed.to_s+'</tem:singlevalue>
                                 </tem:ListCriterion>
+                                <tem:ListCriterion>
+                                  <tem:name>IncludeRentMatrix</tem:name>
+                                  <tem:singlevalue>0</tem:singlevalue>
+                                </tem:ListCriterion>
                               </tem:listCriteria>
                               <tem:listCriteria>
                                 <tem:name>LeaseTerms</tem:name>
@@ -392,7 +396,7 @@ class RealPageSvcSwapService < BaseService
                             </tem:getunitlist>
                           </soapenv:Body>
                         </soapenv:Envelope>')
-        sleep 2
+        sleep 1
         result = Ox.load(response.body, mode: :hash)
         puts "0000"
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
