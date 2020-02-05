@@ -435,6 +435,7 @@ class RealPageSvcStaticService < BaseService
         community_id = credentials.community_id
 
         date_check = Date.today
+
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
