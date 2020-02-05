@@ -229,13 +229,13 @@ json.tours @tours do |tour|
         next_stop = new_stops_arr.compact[counter + 1]
         next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id
         if next_stop.is_a? Elevator
-          json.elevator_title ""
+          json.name ""
         else
-          json.elevator_title next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : ""
+          json.name next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : ""
         end
 
       else
-        json.elevator_title ""
+        json.name ""
       end
       if elevator.elevator_galleries.count == 0
         json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
