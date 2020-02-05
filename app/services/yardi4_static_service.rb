@@ -56,7 +56,8 @@ class Yardi4StaticService < BaseService
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
-            # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ", pr
+
+            #  "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ", pr
             if pr.key?(:IDValue)
               external_property_id = pr[:IDValue]
             end
@@ -94,7 +95,7 @@ class Yardi4StaticService < BaseService
           cred.save
         rescue => err
         end
-        puts '------------------------'*20 , e.message
+        puts '-------55555-------'*20 , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -104,13 +105,13 @@ class Yardi4StaticService < BaseService
   def save_yardi4_units(ils_units,property_id)
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
-      unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue]).first_or_initialize
+      unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][0][:IDValue]).first_or_initialize
       unless unit.manual_override
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
-        unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
+        unit.unit_type = u[:Units][:Unit][:Identification][0][0][:IDValue]
         unless unit.name_is_updated.present? && unit.name_is_updated  && unit.manual_override
-          unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
+          unit.marketing_name = u[:Units][:Unit][:Identification][0][0][:IDValue]
         end
         unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated && unit.manual_override
           unit.floorplan_id = u[:Units][:Unit][:UnitType]
