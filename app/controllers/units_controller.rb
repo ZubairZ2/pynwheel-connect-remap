@@ -135,14 +135,14 @@ class UnitsController < ApplicationController
   def set_manually_updated_column
     # @unit.update_attribute(:manually_updated, true)
     if @unit.sold
-      @unit.update_attributes(availability: "Occupied",available_date: '')
+      @unit.update_attributes(availability: "Occupied",available: false,available_date: '',availability_is_updated: true)
     end
     if params[:unit][:available] == 'true'
 
-      @unit.update_attributes(availability: "Unoccupied",available: true)
+      @unit.update_attributes(availability: "Unoccupied",available: true, availability_is_updated: true)
     end
     if params[:unit][:available] == 'false'
-      @unit.update_attributes(availability: "Occupied",available: false)
+      @unit.update_attributes(availability: "Occupied",available: false,  availability_is_updated: true)
     end
   end
 
@@ -252,22 +252,22 @@ class UnitsController < ApplicationController
 
 
   def set_floor
-    @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor],manually_updated: true)
+    @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor],manually_updated: true,floor_is_updated: true)
     flash[:notice] = "Floor is updated for units successfully."
     redirect_to :back
   end
 
   def set_available_date
-    @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date],manually_updated: true)
+    @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date],manually_updated: true,available_date_is_updated: true)
     flash[:notice] = "Available date is updated for units successfully."
     redirect_to :back
   end
   
   def set_available
     if params[:available] == 'true'
-      @community.units.where(id: params[:unit_ids]).update_all(availability: "Unoccupied",manually_updated: true,available_date: Date.today-1,available: true)
+      @community.units.where(id: params[:unit_ids]).update_all(availability: "Unoccupied",manually_updated: true,available_date: Date.today-1,available_is_updated: true,available: true)
     else
-      @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied",manually_updated: true,available: false)
+      @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied",manually_updated: true,available: false,available_is_updated: true)
     end
     flash[:notice] = "Available is updated for units successfully."
     redirect_to :back
