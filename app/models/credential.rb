@@ -49,11 +49,12 @@ class Credential < ApplicationRecord
       unless index == 0 
         unit = Unit.where(provider: "spreadsheet",community_id: community_id,provider_unit_id: u[0].to_s.gsub(".","")).first_or_initialize
         unit.provider_unit_id = u[0].to_s.gsub(".","")
-        unit.marketing_name = u[0]
+        unit.marketing_name = u[0].to_i == 0 ? u[0] : u[0] rescue u[0]
         unit.unit_type = u[0]
         unit.floorplan_id = u[1]
         unit.floor = u[3]
         unit.availability = u[4] == true ? "Unoccupied" : "Occupied"
+        unit.available = u[4] == true ? true : false
         unit.available_date = u[5]
         unit.market_rent = u[6].present? ? u[6] : 1
         unit.effective_rent = u[6].present? ? u[6] : 1
@@ -79,7 +80,8 @@ class Credential < ApplicationRecord
     units = xlsx.sheet(0)
     units.each_with_index do |u,index|
       unless index == 0
-        unit = Unit.where(community_id: community_id,marketing_name: u[0]).first
+        unit_name = u[0].to_i == 0 ? u[0] : u[0] rescue u[0]
+        unit = Unit.where(community_id: community_id,marketing_name: unit_name).first
         if unit.present?
           unit.provider_unit_id = u[0].to_s.gsub(".","")
           unit.provider = "spreadsheet_new"
@@ -87,6 +89,7 @@ class Credential < ApplicationRecord
           unit.floorplan_id = u[1]
           unit.floor = u[3]
           unit.availability = u[4] == true ? "Unoccupied" : "Occupied"
+          unit.available = u[4] == true ? true : false
           unit.available_date = u[5]
           unit.market_rent = u[6].present? ? u[6] : 1
           unit.effective_rent = u[6].present? ? u[6] : 1
@@ -98,13 +101,14 @@ class Credential < ApplicationRecord
           end
           unit = Unit.new
           unit.community_id = community_id
-          unit.marketing_name = u[0]
+          unit.marketing_name = u[0].to_i == 0 ? u[0] : u[0] rescue u[0]
           unit.provider_unit_id = u[0].to_s.gsub(".","")
           unit.provider = "spreadsheet_new"
           unit.unit_type = u[0]
           unit.floorplan_id = u[1]
           unit.floor = u[3]
           unit.availability = u[4] == true ? "Unoccupied" : "Occupied"
+          unit.available = u[4] == true ? true : false
           unit.available_date = u[5]
           unit.market_rent = u[6].present? ? u[6] : 1
           unit.effective_rent = u[6].present? ? u[6] : 1
