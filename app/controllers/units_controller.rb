@@ -270,9 +270,9 @@ class UnitsController < ApplicationController
   
   def set_available
     if params[:available] == 'true'
-      @community.units.where(id: params[:unit_ids]).update_all(availability: "Unoccupied",manually_updated: true,available_date: Date.today-1,available_is_updated: true,available: true)
+      @community.units.where(id: params[:unit_ids]).update_all(availability: "Unoccupied",manually_updated: true,available_date: Date.today-1,available_is_updated: true,availability_is_updated: true,available: true)
     else
-      @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied",manually_updated: true,available: false,available_is_updated: true)
+      @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied",manually_updated: true,available: false,available_is_updated: true, availability_is_updated: true)
     end
     flash[:notice] = "Available is updated for units successfully."
     redirect_to :back
@@ -286,9 +286,9 @@ class UnitsController < ApplicationController
   
   def set_sold
     if params[:sold] == "true"
-      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true,availability: "Occupied",available: false)
+      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true,availability: "Occupied",available: false, availability_is_updated: true, available_is_updated: true)
     else
-      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true)
+      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true, availability_is_updated: true, available_is_updated: true)
     end
     flash[:notice] = "Sold is updated for units successfully."
     redirect_to :back
