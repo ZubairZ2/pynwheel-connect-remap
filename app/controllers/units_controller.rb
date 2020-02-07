@@ -19,6 +19,11 @@ class UnitsController < ApplicationController
   def create
     @unit = @community.units.new(unit_params)
     @unit.provider = "manually"
+    if params[:unit][:availability] == "Unoccupied"
+      @unit.available = true
+    else
+      @unit.available = false
+    end
     if @unit.save
       PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
       flash[:notice] = "Unit created successfully."
