@@ -32,12 +32,19 @@
             .mt-10
               - if @community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? )
                 = link_to "PLOT AMENITIES", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
+            %button.btn-success.done_btn{:onclick => "amenity_goBack()"}
+              %i.fa.fa-plus-circle
+              DONE
             .divLoading.hidden
         #images-index
           = render :partial=>'index'
 #edit-image.modal.fade.edit-image
 :javascript
   var community_id = #{params[:community_id]}
+  function amenity_goBack()
+  {
+     window.history.back();
+  }
   $('#amenity-images').change(function () {
     $('.plot_amenities_btn').removeClass('hidden');
   });

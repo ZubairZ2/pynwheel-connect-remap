@@ -206,6 +206,9 @@
               = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
                 %i.fa.fa-plus-circle
                 ADD ELEVATOR
+            %button.btn-success.done_btn{:onclick => "tour_setup_goBack()",:style => "margin-top: 0px;"}
+              %i.fa.fa-plus-circle
+              DONE
             -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
             -#  %i.fa.fa-plus-circle
             -#  ADD PATH FOR STARTING POINT
@@ -276,6 +279,10 @@
               / End Panel left Side
         / /.content
 :javascript
+  function tour_setup_goBack()
+  {
+     window.history.back();
+  }
   $(document).ready(function() {
   if (window.location.href.includes('floorNo'))
   {

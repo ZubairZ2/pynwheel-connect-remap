@@ -166,6 +166,10 @@
     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapUploadFilePopover","data-content" => " "}
       %span#propertyDetailNameText{:style => "font-weight: normal;"}
         Uploading a file will change the property map image that appears in the Pynwheel app. Careful! Do not change the file unless you are sure that it is the exact same dimensions as the one already loaded, or the markers will all be in the wrong position.
+    %br
+    %button.btn-success.done_btn{:onclick => "sitemap_goBack()"}
+      %i.fa.fa-plus-circle
+      DONE
 
     .text-center.image-upload.home-page-drag-box#sitemap-image-upload-holder
       = image_tag "upload-image.png",:class=>"drag-image-padding-top"
@@ -354,6 +358,11 @@
   var addmode = false;
   var sitemap_id = '#{@sitemap.id}';
 
+  function sitemap_goBack()
+  {
+    $('.apartment-settings-form').submit();
+    window.history.back();
+  }
   if (!#{current_user.welcome_sitemap_page})
     {
       $('[data-toggle="sitemapPageNamePopover"]').popover({
