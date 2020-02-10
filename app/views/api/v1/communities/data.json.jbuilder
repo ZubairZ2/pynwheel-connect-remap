@@ -1277,7 +1277,9 @@ json.homescreen do
     json.loop_type "images"
   end
 end
-
+if @community.id == 440
+  @community.errefgfvrfv
+end
 json.apartments do
   if @community.has_floorplates?
     json.map_type "floorplates"
