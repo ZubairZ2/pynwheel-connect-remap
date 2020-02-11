@@ -56,7 +56,12 @@
                       %span.pr-15 No
                       = check_box_tag :display_gallery_on_homepage, true, @community.display_gallery_on_homepage, class: "gallery-setting"
                       %label.label-primary{:for => "display_gallery_on_homepage"}
-                      %span.pl-15 Yes      
+                      %span.pl-15 Yes
+                .form-group
+                  .col-md-12
+                    %button.btn-success.done_btn{:onclick => "gallery_goBack()"}
+                      %i.fa.fa-plus-circle
+                      DONE
                 = submit_tag 'Save', class: "hidden"
         -#.box.box-widget.panel-box.add-plan
         %h4{style: "color: grey;"}
@@ -105,10 +110,6 @@
             = link_to new_community_gallery_path(@community), remote: true, class: "btn btn-success" do
               %i.fa.fa-plus-circle
               ADD GALLERY
-          .col-md-12
-            %button.btn-success.done_btn{:onclick => "gallery_goBack()"}
-              %i.fa.fa-plus-circle
-              DONE
         %label
           - dat = PaperTrail::Version.all
 
