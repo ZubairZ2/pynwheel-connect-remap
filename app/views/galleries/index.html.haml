@@ -57,12 +57,13 @@
                       = check_box_tag :display_gallery_on_homepage, true, @community.display_gallery_on_homepage, class: "gallery-setting"
                       %label.label-primary{:for => "display_gallery_on_homepage"}
                       %span.pl-15 Yes
-                .form-group
-                  .col-md-12
-                    %button.btn-success.done_btn{:onclick => "gallery_goBack()"}
-                      %i.fa.fa-plus-circle
-                      DONE
+
                 = submit_tag 'Save', class: "hidden"
+              .form-group
+                .col-md-12
+                  %button.btn-success.done_btn{:onclick => "gallery_goBack()"}
+                    %i.fa.fa-plus-circle
+                    DONE
         -#.box.box-widget.panel-box.add-plan
         %h4{style: "color: grey;"}
           %p
@@ -119,7 +120,7 @@
 :javascript
   function gallery_goBack()
   {
-    $('.gallery-settings-form').submit();
+
      if (window.history.length == 1)
      {
       window.location.reload();
@@ -128,6 +129,7 @@
      {
       window.history.back();
      }
+     // $('.gallery-settings-form').submit();
   }
   if (localStorage.getItem("galleryCropped") == "1")
   {

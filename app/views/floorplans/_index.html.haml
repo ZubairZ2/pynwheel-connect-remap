@@ -15,6 +15,10 @@
       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplanDetailsToMultiplePopover","data-content" => " "}
         %span#propertyDetailNameText
           Add or change details for multiple floor plans. Details will appear in the "Additional Details" tab.
+    .col-lg-12.col-md-12.mb-20
+      %button.btn-success.done_btn{:onclick => "floorplan_goBack()"}
+        %i.fa.fa-plus-circle
+        DONE
   .row{ style: "margin-left: 0px;"}
     -#.box.box-widget.panel-box.ml-15
     %h4{style: "color: grey; font-size: 17px; "}
@@ -92,3 +96,14 @@
   setTimeout(function(){
       floorplan_names_order();
   }, 2000);
+  function floorplan_goBack()
+    {
+      if (window.history.length == 1)
+      {
+        window.location.reload();
+      }
+      else
+      {
+        window.history.back();
+      }
+    }

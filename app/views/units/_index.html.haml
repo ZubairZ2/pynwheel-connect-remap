@@ -12,7 +12,7 @@
           %i.fa.fa-plus-circle
           ADD UNIT
       .col-md-12
-        .dropdown.mt-5.mb-20
+        .dropdown.mt-5
           %button.dropbtn.btn.btn-primary MASS OVERRIDES
           .dropdown-content.mass_override_dropdown
             %a{:href => "##",'data-target' =>'#modal-to-set-available', 'data-toggle' => 'modal'} Available
@@ -26,6 +26,10 @@
         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitMassOverridePopover","data-content" => " "}
           %span#propertyDetailNameText
             Use this button to change data for multiple units at once, such as availability, floor number, details, and images.
+      .col-lg-12.col-md-12.mb-20
+        %button.btn-success.done_btn{:onclick => "unit_goBack()"}
+          %i.fa.fa-plus-circle
+          DONE
 
       .col-md-12
         %h4{:style => "margin-left: 3px; color: grey;"}
@@ -310,6 +314,17 @@
 
   / End Panel left Side
   :javascript
+    function unit_goBack()
+    {
+      if (window.history.length == 1)
+      {
+        window.location.reload();
+      }
+      else
+      {
+        window.history.back();
+      }
+    }
      $(document).ready(function(){
 
       $('.wysihtml5').each(function(i, elem) {
