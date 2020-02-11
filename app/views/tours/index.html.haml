@@ -282,7 +282,14 @@
 :javascript
   function tour_setup_goBack()
   {
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   $(document).ready(function() {
   if (window.location.href.includes('floorNo'))

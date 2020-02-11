@@ -120,7 +120,14 @@
   function gallery_goBack()
   {
     $('.gallery-settings-form').submit();
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   if (localStorage.getItem("galleryCropped") == "1")
   {

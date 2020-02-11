@@ -43,7 +43,14 @@
   var community_id = #{params[:community_id]}
   function amenity_goBack()
   {
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   $('#amenity-images').change(function () {
     $('.plot_amenities_btn').removeClass('hidden');

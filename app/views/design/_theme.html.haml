@@ -86,7 +86,14 @@
 :javascript
   function design_goBack()
   {
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   //$( "#expressionist-theme" ).click(function() {
   //$.ajax({

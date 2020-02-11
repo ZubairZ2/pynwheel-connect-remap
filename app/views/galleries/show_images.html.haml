@@ -55,7 +55,14 @@
 :javascript
   function show_gallery_image_goBack()
   {
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   var community_id = #{params[:community_id]}
   var gallery_id = #{params[:id]}
