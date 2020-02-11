@@ -85,7 +85,14 @@
   function favorite_goBack()
   {
     $('#favorite-settings-form').submit();
-    window.history.back();
+    if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   $('.favorite_setting_field').change(function(){
     $('#favorite-settings-form').submit();

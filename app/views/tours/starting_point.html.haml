@@ -162,7 +162,14 @@
   function starting_point_goBack()
   {
     $('.save-starting-point-form').submit();
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   if (#{@tours.x_plot.to_i + @tours.y_plot.to_i == 0})
   {

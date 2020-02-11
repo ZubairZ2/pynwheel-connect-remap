@@ -55,7 +55,14 @@
 :javascript
   function logo_page_goBack()
   {
-    window.history.back();
+    if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   if (localStorage.getItem("logoCropped") == "1")
   {

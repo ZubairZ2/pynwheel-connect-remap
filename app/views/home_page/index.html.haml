@@ -174,7 +174,14 @@
   function home_page_goBack()
   {
     $('#home-page-image-form').submit();
-    window.history.back();
+    if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
 
   $("#file-load-drop").on('drop', function(e) {

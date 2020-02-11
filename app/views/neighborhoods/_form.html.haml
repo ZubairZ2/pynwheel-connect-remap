@@ -171,7 +171,14 @@
   function goBack()
   {
     $('.neighborhood-form').submit();
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
   $('#neighborhood_show_neighborhood').change(function(){
     if (!($(this).is(':checked')))

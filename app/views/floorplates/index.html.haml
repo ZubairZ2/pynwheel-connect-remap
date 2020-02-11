@@ -249,7 +249,14 @@
   function floorplate_goBack()
   {
     $('.apartment-settings-form').submit();
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
 
   // $('#show_apartment').change(function(){

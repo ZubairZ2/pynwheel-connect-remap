@@ -92,7 +92,14 @@
   }
   function additional_goBack()
   {
-     window.history.back();
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
   }
 
     $(document).on("click", "#additionalPageGridActionsPopoverClose" , function(){
