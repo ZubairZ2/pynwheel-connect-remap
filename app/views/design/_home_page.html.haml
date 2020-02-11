@@ -273,7 +273,13 @@
                   %i
                   = d.text_field :home_page_navigation_font_color , class: "form-control home-page-field",autocomplete: true,:value=>d.object.home_page_navigation_font_color.present? ? d.object.home_page_navigation_font_color : "#c5c4c7"
 
-
+      .row
+        .col-lg-10
+          .form-group
+            .col-lg-12.col-md-12
+              %button.btn-success.done_btn{:onclick => "homepage_goBack()",:style => "margin-top: 35px;"}
+                %i.fa.fa-plus-circle
+                DONE
       -#.row
       -#  .col-lg-10
       -#    .form-group.mt-30
@@ -308,6 +314,11 @@
   var display_home_page_image = "#{current_community.design.expressionist.display_home_page_image}"       
   var display_home_page_nav_background_image = "#{current_community.design.expressionist.display_home_page_nav_background_image}"       
 
+  function homepage_goBack()
+  {
+    $('.home-page-form').submit();
+     window.location.reload();
+  }
   if(display_home_page_image == "true")
     $('#home-page-image-fields').removeClass('hidden');
 

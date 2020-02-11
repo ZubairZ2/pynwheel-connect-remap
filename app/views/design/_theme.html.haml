@@ -79,9 +79,15 @@
   .row
     .col-lg-12
       .box-footer.mt-30.pt-15
+        %button.btn-success.done_btn{:onclick => "design_goBack()"}
+          %i.fa.fa-plus-circle
+          DONE
 
 :javascript
-
+  function design_goBack()
+  {
+     window.history.back();
+  }
   //$( "#expressionist-theme" ).click(function() {
   //$.ajax({
   //    url: "/communities/"+#{current_community.id}+"/change_expressionist_default",

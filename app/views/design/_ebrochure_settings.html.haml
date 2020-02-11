@@ -104,3 +104,15 @@
 -#          .col-sm-12.col-lg-9.col-md-9.col-xs-12
 -#            = d.text_area :ebrochure_email_message, class: "form-control ebrochure-setting-field-for-message default_ebrochure_message",:rows => "5",:value=> - @community.design.ebrochure_email_message.gsub("<community_name>",@community.name) #d.object.ebrochure_email_message
 
+.row
+  .col-lg-10
+    .form-group
+      .col-lg-12.col-md-12
+        %button.btn-success.done_btn{:onclick => "ebrochure_setting_goBack()",:style => "margin-top: 35px;"}
+          %i.fa.fa-plus-circle
+          DONE
+:javascript
+  function ebrochure_setting_goBack()
+  {
+     window.location.reload();
+  }

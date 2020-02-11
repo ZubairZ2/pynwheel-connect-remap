@@ -152,9 +152,12 @@
             -#        PROPERTY MAP PAGE (High Rise / Mid Rise)
             .col-md-6
               .mt-35
-                = link_to new_community_floorplate_path(current_community), :class=>"btn btn-success mb-20" do
+                = link_to new_community_floorplate_path(current_community), :class=>"btn btn-success" do
                   %i.fa.fa-plus-circle
                   ADD FLOORPLATE
+              %button.btn-success.done_btn.mb-20{:onclick => "floorplate_goBack()"}
+                %i.fa.fa-plus-circle
+                DONE
               .divLoading.hidden
           %h4{:style => "color: grey;"}
             %p
@@ -241,6 +244,11 @@
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
   });
+  function floorplate_goBack()
+  {
+    $('.apartment-settings-form').submit();
+     window.history.back();
+  }
 
   // $('#show_apartment').change(function(){
   //   if (!($(this).is(':checked')))

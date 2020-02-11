@@ -262,7 +262,13 @@
                 %i
                 = d.text_field :modernist_unit_floorplan_map_marker_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.modernist_unit_floorplan_map_marker_color.present? ? d.object.modernist_unit_floorplan_map_marker_color : (d.object.primary_color.present? ? d.object.primary_color : "#CF492F")
 
-
+    .row
+      .col-lg-10
+        .form-group
+          .col-lg-12.col-md-12
+            %button.btn-success.done_btn{:onclick => "community_map_marker_goBack()",:style => "margin-top: 35px;"}
+              %i.fa.fa-plus-circle
+              DONE
 
 
 :javascript
@@ -298,7 +304,11 @@
       }
   });
 
-
+  function community_map_marker_goBack()
+  {
+    $('.property-map-marker-form').submit();
+     window.location.reload();
+  }
 
 
 
