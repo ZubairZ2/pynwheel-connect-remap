@@ -257,7 +257,6 @@
               Filter panel label opacity
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :filter_panel_label_opacity , options_for_select(opacity_options,d.object.filter_panel_label_opacity.present? ? d.object.filter_panel_label_opacity : "100%"),{},{class: "form-control filter-panel-field"}
-
       .row
         .col-md-12
           %ul.nav.nav-tabs
@@ -443,6 +442,17 @@
                 %span.icon-upload
                   = image_tag "upload-image.png"
                   %p Drag &amp; Drop file to Upload
+
+      .row
+        .col-md-12
+          .box-footer.mt-30.pt-15
+            .row
+              .col-lg-10
+                .form-group{:style => "margin-bottom: 0px;"}
+                  .col-lg-12.col-md-12
+                    %button.btn-success.done_btn{:onclick => "filter_panel_goBack()",:style => "margin-left: -15px;"}
+                      %i.fa.fa-plus-circle
+                      DONE
 :javascript 
   var filter_button_as_image = "#{current_community.design.filter_button_as_image}" 
   var gallery_button_as_image = "#{current_community.design.gallery_button_as_image}"       
@@ -465,6 +475,11 @@
   if(display_gallery_button_on_background_color == "true")
     $('.gallery-button-on-background-color-field').removeClass('hidden');    
 
+  function filter_panel_goBack()
+  {
+    $('.filter-panel-form').submit();
+     window.location.reload();
+  }
   $('#community_design_attributes_display_filter_label_image').change(function(){
     if($(this).is(':checked')){
         $('.filter-label-image-upload-fields').removeClass('hidden');

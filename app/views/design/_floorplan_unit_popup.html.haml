@@ -208,4 +208,19 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             Floor plan background color opacity
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            = d.select :floor_bg_color_opacity , options_for_select(opacity_options,d.object.floor_bg_color_opacity.present? ? d.object.floor_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}                                                                        
+            = d.select :floor_bg_color_opacity , options_for_select(opacity_options,d.object.floor_bg_color_opacity.present? ? d.object.floor_bg_color_opacity : "100%"),{},{class: "form-control floorplan-unit-popup-field"}
+
+    .row
+      .col-lg-10
+        .form-group
+          .col-lg-12.col-md-12
+            %button.btn-success.done_btn{:onclick => "floorplan_unit_pop_goBack()",:style => "margin-top: 35px;"}
+              %i.fa.fa-plus-circle
+              DONE
+
+:javascript
+  function floorplan_unit_pop_goBack()
+  {
+    $('.floorplan-unit-popup-form').submit();
+     window.location.reload();
+  }

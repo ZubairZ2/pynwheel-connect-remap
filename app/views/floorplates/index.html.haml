@@ -143,7 +143,12 @@
                       -#    Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.
                     .col-sm-12.col-lg-6.col-md-6.col-xs-12
                       = text_field_tag :show_amenity_key_text, @community.show_amenity_key_text, :class=>"form-control apartment-setting-field"
-                        
+
+                  .form-group
+                    .col-lg-12.col-md-12
+                      %button.btn-success.done_btn.mb-20{:onclick => "floorplate_goBack()"}
+                        %i.fa.fa-plus-circle
+                        DONE
                   = submit_tag 'Save', class: "hidden"
             -#.col-md-12
             -#  .box.box-info.add-plan.mt-10
@@ -152,7 +157,7 @@
             -#        PROPERTY MAP PAGE (High Rise / Mid Rise)
             .col-md-6
               .mt-35
-                = link_to new_community_floorplate_path(current_community), :class=>"btn btn-success mb-20" do
+                = link_to new_community_floorplate_path(current_community), :class=>"btn btn-success" do
                   %i.fa.fa-plus-circle
                   ADD FLOORPLATE
               .divLoading.hidden
@@ -241,6 +246,11 @@
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
   });
+  function floorplate_goBack()
+  {
+    $('.apartment-settings-form').submit();
+     window.history.back();
+  }
 
   // $('#show_apartment').change(function(){
   //   if (!($(this).is(':checked')))
