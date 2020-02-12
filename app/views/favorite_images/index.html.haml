@@ -22,6 +22,10 @@
                 %span.btn.btn-success.btn-file.text-UP.pull-left{:onclick=>"$('#favorite-image-upload-holder').click();"}
                   %i.fa.fa-plus-circle
                   Add Files
+            .col-lg-12.col-md-12
+              %button.btn-success.done_btn.mb-20{:onclick => "favorite_image_show_goBack()"}
+                %i.fa.fa-plus-circle
+                DONE
               .mt-35
                  
     .row
@@ -38,4 +42,15 @@
   $(document).ready(function(e){
     $('[data-toggle="popover"]').popover();
   });
+  function favorite_image_show_goBack()
+    {
+      if (window.history.length == 1)
+      {
+        window.location.reload();
+      }
+      else
+      {
+        window.history.back();
+      }
+    }
 
