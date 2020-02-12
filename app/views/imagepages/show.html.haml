@@ -26,6 +26,10 @@
                   %i.fa.fa-plus-circle
                   Add Files
                   / %input#gallery-images{:multiple => "multiple", :type => "file"}/
+            .col-md-12.col-lg-12
+              %button.btn-success.done_btn.mb-20{:onclick => "imagepage_show_goBack()"}
+                %i.fa.fa-plus-circle
+                DONE
               .mt-35
           /       = form_tag save_gallery_video_community_gallery_path(@community,@gallery),:method=>"POST",:id=>"gallery-page-video-form",:multipart => true,:remote=>true  do 
           /         %span.btn.btn-primary.btn-file.ml-5.text-UP.pull-left
@@ -42,3 +46,14 @@
 :javascript
   var community_id = #{params[:community_id]}
   var imagepage_id = #{params[:id]}
+  function imagepage_show_goBack()
+    {
+      if (window.history.length == 1)
+      {
+        window.location.reload();
+      }
+      else
+      {
+        window.history.back();
+      }
+    }
