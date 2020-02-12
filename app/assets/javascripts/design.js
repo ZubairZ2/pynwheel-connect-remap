@@ -957,7 +957,7 @@ function readDesignPageLogoSrc(file) {
 function readDesignPageSecondaryLogoSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
-    var img = getHeightWidthLimit(input);
+    var img = getHeightWidthLimit(file);
     img.onload = function () {
         if (this.width < image_width && this.height < image_height)
         {
