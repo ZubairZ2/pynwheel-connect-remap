@@ -10,7 +10,7 @@
         %br
           %small.text-primary
             = @community.code
-    = link_to "<Back to All Units", community_floorplans_path(@community), class: "btn btn-primary ", style: "background: #8f4a9c; color: white;"
+    = link_to "<Back to All Units", community_units_path(@community), class: "btn btn-primary ", style: "background: #8f4a9c; color: white;"
     %h4{:style => "color: grey;"}
       If no images appear in the list, there are no available images to plot.
     .box.box-info.add-plan
