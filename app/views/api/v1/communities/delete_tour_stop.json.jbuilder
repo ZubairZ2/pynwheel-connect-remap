@@ -248,7 +248,7 @@ json.tours @tours do |tour|
         end
 
       else
-        json.name ""
+        json.name "Go to floor " + min_floor.to_s
       end
       if elevator.elevator_galleries.count == 0
         json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
