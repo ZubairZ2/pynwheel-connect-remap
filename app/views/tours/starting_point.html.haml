@@ -47,11 +47,11 @@
                 -#      %span.pl-15 Yes
 
                 = submit_tag 'Save', class: "hidden"
-                .form-group
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    %button.btn-success.mb-20.done_btn{:onclick => "starting_point_goBack()",:style => "margin-top: 30px;"}
-                      %i.fa.fa-plus-circle
-                      DONE
+              .form-group
+                .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                  %button.btn-success.mb-20.done_btn{:onclick => "starting_point_goBack()",:style => "margin-top: 30px;"}
+                    %i.fa.fa-plus-circle
+                    DONE
 
     .box.box-info.add-plan
       .box-header
@@ -161,7 +161,6 @@
   });
   function starting_point_goBack()
   {
-    $('.save-starting-point-form').submit();
      if (window.history.length == 1)
      {
       window.location.reload();
