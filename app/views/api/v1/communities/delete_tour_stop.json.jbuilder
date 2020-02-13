@@ -22,7 +22,13 @@ json.tours @tours do |tour|
   ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
   ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
 
-  @community.is_sitemap ? sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: ts.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first rescue nil
+  if @community.is_sitemap
+    sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
+  else
+    ts.where(stop_type: "elevator").each do |last_elev|
+      sp = Path.where(map_path_from_id: last_elev.stop_id, map_path_to_id: nil)&.first unless sp.present? rescue nil
+    end
+  end
   if sp.blank?
     @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first rescue nil
     json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
@@ -63,7 +69,8 @@ json.tours @tours do |tour|
       end
     end
     stop_count = stops_arr.compact.count
-    second_last = stops_arr.compact[stop_count - 2]
+    second_last = stops_arr.compact[stop_count - 3]
+    last_stop_desc = stops_arr.compact[stop_count - 2]
     blocked = []
     # begin
     # while (stops_arr.compact[stops_arr.compact.size - 1]).stop_type == "elevator"
@@ -120,15 +127,17 @@ json.tours @tours do |tour|
 
   hit = true
   counter = 0
-  json.navigation_title "First Stop " + new_stops_arr[0].name if new_stops_arr[0].present?
+  json.navigation_title "First Stop: " + new_stops_arr[0].name if new_stops_arr[0].present?
   json.tour_stop new_stops_arr.compact do |stop|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
     if second_last.id == stop.id
-      json.navigation_title "Last Stop " + new_stops_arr[counter].name if new_stops_arr[counter + 1].present?
+      json.navigation_title "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
       hit = false
+    elsif last_stop_desc.id == stop.id
+      json.navigation_title "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?
     elsif hit
-      json.navigation_title "Next Stop " + new_stops_arr[counter + 1].name if new_stops_arr[counter].present?
+      json.navigation_title "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter].present?
     end
 
     json.id stop.id
@@ -227,11 +236,15 @@ json.tours @tours do |tour|
       json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
       if new_stops_arr.compact[counter + 1].present?
         next_stop = new_stops_arr.compact[counter + 1]
-        next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id
+        next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
         if next_stop.is_a? Elevator
-          json.name ""
+          unless hit
+            json.name next_stop.floors.present? ? "Go to floor " + next_stop.floors.max.to_s : "" rescue ""
+          else
+            json.name ""
+          end
         else
-          json.name next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : ""
+          json.name next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : "" rescue ""
         end
 
       else
