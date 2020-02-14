@@ -73,10 +73,9 @@
                 Click "Add Image Page" to add an image page such as an
                 %br
                 "About Page" static image, sliding image, or slide show.
-          .col-lg-12.col-md-12
-            %button.btn-success.done_btn{:onclick => "additional_goBack()"}
-              %i.fa.fa-plus-circle
-              DONE
+          -#.col-lg-12.col-md-12
+          -#  %button.btn-primary.done_btn{:onclick => "additional_goBack()"}
+          -#    DONE
       / End Panel left Side
 / /.content
 #show_modal
@@ -89,18 +88,11 @@
         html: true,
         template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each page including its name; whether or not it will appear in the Pynwheel app; whether or not it will appear in the home page menu; and in what position it will appear on the home page menu.</div><div class="popover-footer"><a id="additionalPageGridActionsPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
-  }
-  function additional_goBack()
-  {
-     if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
-  }
+  // }
+  // function additional_goBack()
+  // {
+  //     window.location.reload();
+  // }
 
     $(document).on("click", "#additionalPageGridActionsPopoverClose" , function(){
      $('#addWebpage').modal('show');

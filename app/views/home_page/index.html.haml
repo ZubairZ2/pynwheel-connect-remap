@@ -97,7 +97,12 @@
                       Overlay text Position
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = e.select :overlay_text_position , options_for_select(["Left","Right","Center"],e.object.overlay_text_position.present? ? e.object.overlay_text_position : "Left"),{},{class: "form-control home-page-image-field"}
-
+              .row
+                .col-lg-10
+                  .form-group.mt-30{:style => "margin-bottom: 0px;"}
+                    .col-sm-12.col-lg-12.col-md-12
+                      %button.btn-primary.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 0px;"}
+                        DONE
 
 
 
@@ -125,9 +130,9 @@
                   %i.fa.fa-plus-circle
                   Add Files
                 /   %input#home-page-images{:type => "file",:multiple=>"multiple"}
-                %button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 40px;"}
-                  %i.fa.fa-plus-circle
-                  DONE
+                -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 40px;"}
+                -#  %i.fa.fa-plus-circle
+                -#  DONE
           .row
             .col-lg-12
               .pull-right
@@ -152,9 +157,9 @@
                     %span#propertyDetailNameText
                       Adding a video file (MP4 files only) will change the video that appears on the the home page.
                 /     = f.file_field :video
-                %button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 15px;"}
-                  %i.fa.fa-plus-circle
-                  DONE
+                -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 15px;"}
+                -#  %i.fa.fa-plus-circle
+                -#  DONE
 
 
           .slide-imgage-boxs
@@ -174,14 +179,8 @@
   function home_page_goBack()
   {
     $('#home-page-image-form').submit();
-    if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
+    window.location.reload();
+
   }
 
   $("#file-load-drop").on('drop', function(e) {

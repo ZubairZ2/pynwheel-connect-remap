@@ -78,21 +78,13 @@
     -#    .checkbox
     -#      = f.check_box :handicap_accessible_logo
     -#      %label Handicap accessible logo
-%button.btn-success.done_btn{:onclick => "favorite_goBack()"}
-  %i.fa.fa-plus-circle
+%button.btn-primary.done_btn{:onclick => "favorite_goBack()"}
   DONE
 :javascript
   function favorite_goBack()
   {
     $('#favorite-settings-form').submit();
-    if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
+    window.location.reload();
   }
   $('.favorite_setting_field').change(function(){
     $('#favorite-settings-form').submit();
