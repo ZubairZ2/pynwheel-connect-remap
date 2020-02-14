@@ -230,8 +230,8 @@ json.tours @tours do |tour|
     elsif stop.stop_type == "elevator"
       elevator = Elevator.find_by_id stop.stop_id
       json.image elevator.image.present? ? elevator.image.url : asset_path("elev2.png")
-      json.stop_description elevator.description
-      json.name elevator.name
+      json.name "Elevator"#elevator.description
+      # json.name elevator.name
       json.directional_text elevator.directional_text
       json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
       if new_stops_arr.compact[counter + 1].present?
@@ -239,16 +239,16 @@ json.tours @tours do |tour|
         next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
         if next_stop.is_a? Elevator
           unless hit
-            json.name next_stop.floors.present? ? "Go to floor " + next_stop.floors.max.to_s : "" rescue ""
+            json.stop_description stop.floors.present? ? "Go to floor " + stop.floors.max.to_s : "" #rescue ""
           else
-            json.name ""
+            json.stop_description stop.floors.present? ? "Go to floor " + stop.floors.min.to_s : "" #rescue ""
           end
         else
-          json.name next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : "" rescue ""
+          json.stop_description next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : "" rescue ""
         end
 
       else
-        json.name "Go to floor " + min_floor.to_s
+        json.stop_description "Go to floor " + min_floor.to_s
       end
       if elevator.elevator_galleries.count == 0
         json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
