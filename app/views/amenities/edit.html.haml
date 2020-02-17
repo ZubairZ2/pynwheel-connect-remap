@@ -55,6 +55,10 @@
                   -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
                   = f.select :floor , f.object.amenityable.floors,{}, class: "form-control", placeholder: "Floor"
             = submit_tag 'Save', class: "hidden"
+          .form-group
+            .col-md-12
+              %button.btn-primary.done_btn{:onclick => "amenity_edit_goBack()"}
+                DONE
 
     %span.btn.btn-primary.btn-file
       %i.fa.fa-upload
@@ -97,3 +101,14 @@
   });
   var community_id = #{params[:community_id]}
   var amenity_id = #{@amenity.id}
+  function amenity_edit_goBack()
+  {
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
+  }
