@@ -103,9 +103,22 @@
 -#                %center
 -#                  %h3 No visitor for this community.
 -#
-
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "visitor_index_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 
 :javascript
   function click_list(id)
   {
+  }
+  function visitor_index_goBack()
+  {
+      window.location.reload();
+
   }
