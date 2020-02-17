@@ -17,7 +17,7 @@
           .col-md-6
             .mt-35
               - if @community.favorite_setting.ebrochure_menu_buttons.size <5
-                = link_to new_community_favorite_setting_ebrochure_menu_button_path(@community,@favorite_setting), :class=>"btn btn-success pull-right" do
+                = link_to new_community_favorite_setting_ebrochure_menu_button_path(@community,@favorite_setting), :class=>"btn btn-success pull-right mb-20" do
                   %i.fa.fa-plus-circle
                   ADD WEBLINKS
           -#.col-md-12.col-lg-12
