@@ -61,8 +61,7 @@
                 = submit_tag 'Save', class: "hidden"
               .form-group
                 .col-md-12
-                  %button.btn-success.done_btn{:onclick => "gallery_goBack()"}
-                    %i.fa.fa-plus-circle
+                  %button.btn-primary.done_btn{:onclick => "gallery_goBack()"}
                     DONE
         -#.box.box-widget.panel-box.add-plan
         %h4{style: "color: grey;"}
@@ -120,16 +119,8 @@
 :javascript
   function gallery_goBack()
   {
-
-     if (window.history.length == 1)
-     {
+      $('.gallery-settings-form').submit();
       window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
-     // $('.gallery-settings-form').submit();
   }
   if (localStorage.getItem("galleryCropped") == "1")
   {

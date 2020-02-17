@@ -146,8 +146,7 @@
 
                   .form-group
                     .col-lg-12.col-md-12
-                      %button.btn-success.done_btn.mb-20{:onclick => "floorplate_goBack()"}
-                        %i.fa.fa-plus-circle
+                      %button.btn-primary.done_btn.mb-20{:onclick => "floorplate_goBack()"}
                         DONE
                   = submit_tag 'Save', class: "hidden"
             -#.col-md-12
@@ -249,14 +248,8 @@
   function floorplate_goBack()
   {
     $('.apartment-settings-form').submit();
-     if (window.history.length == 1)
-     {
       window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
+
   }
 
   // $('#show_apartment').change(function(){

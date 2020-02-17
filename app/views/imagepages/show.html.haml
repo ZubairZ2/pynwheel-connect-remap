@@ -26,10 +26,7 @@
                   %i.fa.fa-plus-circle
                   Add Files
                   / %input#gallery-images{:multiple => "multiple", :type => "file"}/
-            .col-md-12.col-lg-12
-              %button.btn-success.done_btn.mb-20{:onclick => "imagepage_show_goBack()"}
-                %i.fa.fa-plus-circle
-                DONE
+
               .mt-35
           /       = form_tag save_gallery_video_community_gallery_path(@community,@gallery),:method=>"POST",:id=>"gallery-page-video-form",:multipart => true,:remote=>true  do 
           /         %span.btn.btn-primary.btn-file.ml-5.text-UP.pull-left
@@ -42,6 +39,15 @@
     / End Tabs Secttions
 / /.content
 / End Body right Section
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "imagepage_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 #edit-image.modal.fade.edit-image
 :javascript
   var community_id = #{params[:community_id]}

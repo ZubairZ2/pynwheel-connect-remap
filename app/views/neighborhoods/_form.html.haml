@@ -161,7 +161,6 @@
 
   -#%a{:href => "javascript:history.back()",:onclick => "f1()"} Done
   %button.btn-success.done_btn{:onclick => "goBack()"}
-    %i.fa.fa-plus-circle
     DONE
 
 
@@ -171,14 +170,8 @@
   function goBack()
   {
     $('.neighborhood-form').submit();
-     if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
+    window.location.reload();
+
   }
   $('#neighborhood_show_neighborhood').change(function(){
     if (!($(this).is(':checked')))

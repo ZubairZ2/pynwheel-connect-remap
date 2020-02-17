@@ -47,22 +47,14 @@
         .col-lg-10
           .form-group{:style => "margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %button.btn-success.done_btn{:onclick => "logo_page_goBack()",:style => "margin-left: -15px;"}
-                %i.fa.fa-plus-circle
+              %button.btn-primary.done_btn{:onclick => "logo_page_goBack()",:style => "margin-left: -15px;"}
                 DONE
 #crop-image.modal.fade.edit-image
 #crop-secondary-logo.modal.fade.edit-image
 :javascript
   function logo_page_goBack()
   {
-    if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
+    window.location.reload();
   }
   if (localStorage.getItem("logoCropped") == "1")
   {

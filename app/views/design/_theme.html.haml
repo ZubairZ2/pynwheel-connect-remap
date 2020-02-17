@@ -79,21 +79,13 @@
   .row
     .col-lg-12
       .box-footer.mt-30.pt-15
-        %button.btn-success.done_btn{:onclick => "design_goBack()"}
-          %i.fa.fa-plus-circle
+        %button.btn-primary.done_btn{:onclick => "design_goBack()"}
           DONE
 
 :javascript
   function design_goBack()
   {
-     if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
+    window.location.reload();
   }
   //$( "#expressionist-theme" ).click(function() {
   //$.ajax({

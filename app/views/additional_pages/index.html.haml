@@ -73,13 +73,21 @@
                 Click "Add Image Page" to add an image page such as an
                 %br
                 "About Page" static image, sliding image, or slide show.
-          .col-lg-12.col-md-12
-            %button.btn-success.done_btn{:onclick => "additional_goBack()"}
-              %i.fa.fa-plus-circle
-              DONE
+          -#.col-lg-12.col-md-12
+          -#  %button.btn-primary.done_btn{:onclick => "additional_goBack()"}
+          -#    DONE
       / End Panel left Side
 / /.content
 #show_modal
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "additional_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 
 :javascript
   if (!#{current_user.welcome_additional_page})
@@ -92,14 +100,7 @@
   }
   function additional_goBack()
   {
-     if (window.history.length == 1)
-     {
       window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
   }
 
     $(document).on("click", "#additionalPageGridActionsPopoverClose" , function(){
