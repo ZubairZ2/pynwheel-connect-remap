@@ -49,6 +49,10 @@
                 = f.text_field :floorplate_covering_range, :class=>"form-control elevator_edit_field", :placeholder=>"Floorplate Covering Range",:maxlength=>"70"
 
             = submit_tag 'Save', class: "hidden"
+          .form-group
+            .col-md-12
+              %button.btn-primary.done_btn{:onclick => "elevator_edit_goBack()"}
+                DONE
 
     %span.btn.btn-primary.btn-file
       %i.fa.fa-upload
@@ -91,3 +95,14 @@
   });
   var community_id = #{params[:community_id]}
   var elevator_id = #{@elevator.id}
+  function elevator_edit_goBack()
+  {
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
+  }
