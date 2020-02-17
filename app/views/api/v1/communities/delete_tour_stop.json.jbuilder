@@ -144,7 +144,7 @@ json.tours @tours do |tour|
     elsif new_stops_arr[counter + 1].present?
       navigation_title = "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter].present? rescue ""
     end
-    if ["Elevator", "elevator"].include? navigation_title.split(" ")[0]
+    if (navigation_title.include? "elevator") || (navigation_title.include? "Elevator")
       navigation_title = "Next Stop: Elevator"
     end
     json.navigation_title navigation_title
