@@ -247,7 +247,8 @@ json.tours @tours do |tour|
         next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
         if next_stop.is_a? Elevator
           elevator_stop_description = ""
-          unless hit
+
+          if hit
             current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
             elevator_stop_description = current_stop.floors.present? ? "Go to floor " + current_stop.floors.max.to_s : "" rescue ""
           else

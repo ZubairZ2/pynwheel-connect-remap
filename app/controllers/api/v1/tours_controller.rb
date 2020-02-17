@@ -179,7 +179,7 @@ www.google.com"
             description_arr << un.description
           end
 
-          stop = x.stop_type.classify.constantize.where(id: x.stop_id) if x.present?
+          stop = x.stop_type.classify.constantize.where(id: x.stop_id).order(:id) if x.present?
           shared_tour_stops[x.stop_id] = {stops: stop, description: description_arr, images: gallery_arr }
         end
       end
