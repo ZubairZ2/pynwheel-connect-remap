@@ -117,10 +117,11 @@ class ToursController < ApplicationController
     end
   end
   def display_stop
-    ts = TourStop.params[:stop_id]
+    ts = TourStop.find params[:stop_id]
     ts.display_stop ? ts.display_stop = false : ts.display_stop = true
     ts.save
-    render json: {display: ts.display_stop}, status: 200
+    render :json => {:display=> ts.display_stop, :status => "200"}
+    # render json: {display: ts.display_stop}, status: 200
   end
   def save_starting_point
 

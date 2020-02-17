@@ -168,9 +168,9 @@
 
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
-                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye ml-5 #{stop.display_stop ? "" : "hidden"}" do
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
                               %i.fa.fa-eye.icon_size
-                            = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "stop_eye_slash #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
                               %i.fa.fa-eye-slash.icon_size
                             = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
@@ -190,9 +190,9 @@
 
                           - elsif stop.stop_type == "amenity"
                             - amenity = Amenity.find stop.stop_id
-                            = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "stop_eye #{stop.display_stop ? "" : "hidden"} text-warning ml-5" do
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} #{stop.display_stop ? "" : "hidden"} text-warning ml-5" do
                               %i.fa.fa-eye.icon_size
-                            = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "stop_eye_slash #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
                               %i.fa.fa-eye-slash.icon_size
 
                             = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
@@ -323,24 +323,22 @@
     $.ajax({
         url: "/communities/#{@community.id}/tours/display_stop",
         type: "POST",
-        dataType: "script",
         data: {
             stop_id: stop_id ,
         }
-      }).done(function () {
-        if (data.display == true)
-        {
-          $('.stop_eye').show();
-          $('.stop_eye_slash').hide();
-        }
-        else
-        {
-          $('.stop_eye').hide();
-          $('.stop_eye_slash').show();
-        }
-        console.log("success");
+      }).done(function (data) {
+        // if (data.display == true)
+        // {
+        //   $('.stop_eye' + stop_id).show();
+        //   $('.stop_eye_slash' + stop_id).hide();
+        // }
+        // else
+        // {
+        //   $('.stop_eye' + stop_id).hide();
+        //   $('.stop_eye_slash' + stop_id).show();
+        // }
+
       });
-    debugger;
   }
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
