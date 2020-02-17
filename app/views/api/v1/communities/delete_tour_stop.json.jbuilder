@@ -135,15 +135,19 @@ json.tours @tours do |tour|
   json.tour_stop new_stops_arr.compact do |stop|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
+    navigation_title = ""
     if second_last.id == stop.id
-      json.navigation_title "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
+      navigation_title = "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
       hit = false
     elsif last_stop_desc.id == stop.id
-      json.navigation_title "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
+      navigation_title = "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
     elsif new_stops_arr[counter + 1].present?
-      json.navigation_title "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter].present? rescue ""
+      navigation_title = "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter].present? rescue ""
     end
-
+    if ["Elevator", "elevator"].include? navigation_title.split(" ")[0]
+      navigation_title = "Next Stop: Elevator"
+    end
+    json.navigation_title navigation_title
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
