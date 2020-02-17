@@ -134,7 +134,7 @@
                   %tr
                     %th{:width => "79"} Sr #
                     %th Tour Stop
-                    %th{:width => "100"} Actions
+                    %th{:width => "150"} Actions
                 %tbody.tour_sortable
                   - orderVar = 0
                   - if @community.is_sitemap || @community.floorplates.map{|f| f.floors}.flatten.sort.first == params[:floorNo].to_i
@@ -168,6 +168,10 @@
 
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
+                              %i.fa.fa-eye.icon_size
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                              %i.fa.fa-eye-slash.icon_size
                             = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
@@ -186,6 +190,11 @@
 
                           - elsif stop.stop_type == "amenity"
                             - amenity = Amenity.find stop.stop_id
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} #{stop.display_stop ? "" : "hidden"} text-warning ml-5" do
+                              %i.fa.fa-eye.icon_size
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                              %i.fa.fa-eye-slash.icon_size
+
                             = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
@@ -319,12 +328,33 @@
             array: arr,
             floor: "#{@floor}"
         }
-      }).done(function () {
+      }).done(function (data) {
         console.log("success");
       });
 
   });
+  function display_stop(stop_id)
+  {
+    $.ajax({
+        url: "/communities/#{@community.id}/tours/display_stop",
+        type: "POST",
+        data: {
+            stop_id: stop_id ,
+        }
+      }).done(function (data) {
+        // if (data.display == true)
+        // {
+        //   $('.stop_eye' + stop_id).show();
+        //   $('.stop_eye_slash' + stop_id).hide();
+        // }
+        // else
+        // {
+        //   $('.stop_eye' + stop_id).hide();
+        //   $('.stop_eye_slash' + stop_id).show();
+        // }
 
+      });
+  }
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
     

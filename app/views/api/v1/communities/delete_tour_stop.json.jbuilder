@@ -37,7 +37,7 @@ json.tours @tours do |tour|
   end
   stops_arr = []
   if @community.is_sitemap
-    stops_arr = @community.tour.tour_stops
+    stops_arr = @community.tour.tour_stops.where(display_stop: true)
     stop_count = stops_arr.count
   else
     temp_max_floor = nil
@@ -62,7 +62,11 @@ json.tours @tours do |tour|
             # if ts_ck.present?  && ts_ck.stop_type == "amenity"
             #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
             # end
-            stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
+            add_stop = TourStop.find_by_id(s_id)
+            if add_stop.present?
+              stops_arr << add_stop if add_stop.display_stop
+            end
+            # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
           end
         end
       rescue
