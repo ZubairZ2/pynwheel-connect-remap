@@ -22,11 +22,6 @@
                 %span.btn.btn-success.btn-file.text-UP.pull-left{:onclick=>"$('#favorite-image-upload-holder').click();"}
                   %i.fa.fa-plus-circle
                   Add Files
-            .col-lg-12.col-md-12
-              %button.btn-success.done_btn.mb-20{:onclick => "favorite_image_show_goBack()"}
-                %i.fa.fa-plus-circle
-                DONE
-              .mt-35
                  
     .row
       
@@ -36,6 +31,15 @@
           %p Drop files here or click to Upload
         #images-index
           = render 'index'
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "favorite_image_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 :javascript
   var community_id = "#{params[:community_id]}"
   var favorite_setting_id = "#{params[:favorite_setting_id]}"

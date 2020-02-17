@@ -20,10 +20,10 @@
                 = link_to new_community_favorite_setting_ebrochure_menu_button_path(@community,@favorite_setting), :class=>"btn btn-success pull-right" do
                   %i.fa.fa-plus-circle
                   ADD WEBLINKS
-          .col-md-12.col-lg-12
-            %button.btn-success.done_btn.mb-20{:onclick => "ebrochure_menu_button_goBack()",:style => "float: right;"}
-              %i.fa.fa-plus-circle
-              DONE
+          -#.col-md-12.col-lg-12
+          -#  %button.btn-success.done_btn.mb-20{:onclick => "ebrochure_menu_button_goBack()",:style => "float: right;"}
+          -#    %i.fa.fa-plus-circle
+          -#    DONE
             .divLoading.hidden
         .box.box-widget.panel-box
           .box-header  
@@ -60,7 +60,15 @@
       .col-lg-4.col-md-12
         .row
           .col-md-12
-
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "ebrochure_menu_button_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 :javascript
   function ebrochure_menu_button_goBack()
   {
