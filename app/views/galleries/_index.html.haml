@@ -2,7 +2,7 @@
   = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
   %p Drop files here or click to Upload
 .row.slide-imgage-boxs.sortable.image_slide_view
-  - @gallery_images.reload()
+  -#- @gallery_images.reload()
   - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
     .col-lg-2{:id=> id_tag}
       .slide-image
@@ -12,7 +12,7 @@
               = video_tag gallery_image.video.present? ? gallery_image.standard_image_url : gallery_image.image.url, :controls => true, :autobuffer => true
 
             - else
-              - rn =  rand(9999999999999999999999999)
+              - rn =  rand(9999)
               %a.preview-image{:href=>gallery_image.image? ? (gallery_image.crop_x.present? ? gallery_image.image.url(:large) + "?timestamp=#{rn}" : gallery_image.image.url(:large) + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>gallery_image.name}
                 = image_tag (gallery_image.crop_x.present? ? gallery_image.image.url(:large) + "?timestamp=#{rn}" : gallery_image.image.url(:large) + "?timestamp=#{rn}")
           - unless gallery_image.is_video? || gallery_image.video.present?
