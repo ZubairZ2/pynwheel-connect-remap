@@ -332,6 +332,7 @@
   });
   function display_stop(stop_id)
   {
+    event.preventDefault();
     $.ajax({
         url: "/communities/#{@community.id}/tours/display_stop",
         type: "POST",
@@ -339,16 +340,16 @@
             stop_id: stop_id ,
         }
       }).done(function (data) {
-        // if (data.display == true)
-        // {
-        //   $('.stop_eye' + stop_id).show();
-        //   $('.stop_eye_slash' + stop_id).hide();
-        // }
-        // else
-        // {
-        //   $('.stop_eye' + stop_id).hide();
-        //   $('.stop_eye_slash' + stop_id).show();
-        // }
+        if (data.display == true)
+        {
+          $('.stop_eye' + stop_id).removeClass('hidden');
+          $('.stop_eye_slash' + stop_id).addClass('hidden');
+        }
+        else
+        {
+          $('.stop_eye' + stop_id).addClass('hidden');
+          $('.stop_eye_slash' + stop_id).removeClass('hidden');
+        }
 
       });
   }
