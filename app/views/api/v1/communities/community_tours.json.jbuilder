@@ -70,7 +70,7 @@ json.tours @tours do |tour|
   # new_stops_arr
 
   json.tour_stop stops_arr.compact.each do |stop|
-    unless stop.stop_type == "elevator"
+    unless stop.stop_type == "elevator" || stop.display_stop
       json.name stop.name
       json.id stop.id
       json.type stop.stop_type

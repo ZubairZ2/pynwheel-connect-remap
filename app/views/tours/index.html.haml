@@ -160,7 +160,7 @@
                       %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
                         %td= orderVar
-                        %td
+                        %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
                           = stop.name
                         %td
                           -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
@@ -332,11 +332,13 @@
         {
           $('.stop_eye' + stop_id).removeClass('hidden');
           $('.stop_eye_slash' + stop_id).addClass('hidden');
+          $(".strike_" + stop_id).css("text-decoration", "");
         }
         else
         {
           $('.stop_eye' + stop_id).addClass('hidden');
           $('.stop_eye_slash' + stop_id).removeClass('hidden');
+          $(".strike_" + stop_id).css("text-decoration", "line-through");
         }
 
       });
