@@ -15,8 +15,8 @@
               - rn =  rand(9999)
               %a.preview-image{:href=>gallery_image.image? ? (gallery_image.crop_x.present? ? gallery_image.image.url(:large) + "?timestamp=#{rn}" : gallery_image.image.url(:large) + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>gallery_image.name}
                 = image_tag (gallery_image.crop_x.present? ? gallery_image.image.url(:large) + "?timestamp=#{rn}" : gallery_image.image.url(:large) + "?timestamp=#{rn}")
-          - unless gallery_image.is_video? || gallery_image.video.present?
-            = image_tag "exclamation-mark.png", class: "waring_exal #{(gallery_image.image.width < 400 && gallery_image.image.height < 400) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+          -#- unless gallery_image.is_video? || gallery_image.video.present?
+          -#  = image_tag "exclamation-mark.png", class: "waring_exal #{(gallery_image.image.width < 400 && gallery_image.image.height < 400) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
         .icons
           - unless gallery_image.is_video?
