@@ -71,7 +71,16 @@ json.tours @tours do |tour|
 
   json.tour_stop stops_arr.compact.each do |stop|
     unless stop.stop_type == "elevator"
-      json.name stop.name
+      if stop.stop_type == "unit"
+        u = Unit.find stop.stop_id
+        if u.present?
+          json.name u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
+        else
+          next
+        end
+      else
+        json.name stop.name
+      end
       json.id stop.id
       json.type stop.stop_type
     end

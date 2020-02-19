@@ -3377,3 +3377,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
 
 }
+.id_card
+{
+    transform: rotate(90deg);
+}

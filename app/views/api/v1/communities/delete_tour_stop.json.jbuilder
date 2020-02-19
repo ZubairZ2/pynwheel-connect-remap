@@ -22,7 +22,13 @@ json.tours @tours do |tour|
   ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
   ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
 
-  @community.is_sitemap ? sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: ts.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first rescue nil
+  if @community.is_sitemap
+    sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
+  else
+    ts.where(stop_type: "elevator").each do |last_elev|
+      sp = Path.where(map_path_from_id: last_elev.stop_id, map_path_to_id: nil)&.first unless sp.present? rescue nil
+    end
+  end
   if sp.blank?
     @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first rescue nil
     json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
@@ -32,6 +38,7 @@ json.tours @tours do |tour|
   stops_arr = []
   if @community.is_sitemap
     stops_arr = @community.tour.tour_stops
+    stop_count = stops_arr.count
   else
     temp_max_floor = nil
     min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
@@ -61,6 +68,9 @@ json.tours @tours do |tour|
       rescue
       end
     end
+    stop_count = stops_arr.compact.count
+    second_last = stops_arr.compact[stop_count - 3]
+    last_stop_desc = stops_arr.compact[stop_count - 2]
     blocked = []
     # begin
     # while (stops_arr.compact[stops_arr.compact.size - 1]).stop_type == "elevator"
@@ -115,7 +125,25 @@ json.tours @tours do |tour|
   end
   new_stops_arr
 
+  hit = true
+  counter = 0
+  json.navigation_title "First Stop: " + new_stops_arr[0].name if new_stops_arr[0].present?
   json.tour_stop new_stops_arr.compact do |stop|
+    # if counter == 0
+    #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
+    navigation_title = ""
+    if second_last.id == stop.id
+      navigation_title = "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
+      hit = false
+    elsif last_stop_desc.id == stop.id
+      navigation_title = "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
+    elsif new_stops_arr[counter + 1].present?
+      navigation_title = "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter].present? rescue ""
+    end
+    if (navigation_title.include? "elevator") || (navigation_title.include? "Elevator")
+      navigation_title = "Next Stop: Elevator"
+    end
+    json.navigation_title navigation_title
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
@@ -126,9 +154,11 @@ json.tours @tours do |tour|
       json.type stop.stop_type
     end
     if stop.stop_type == "unit"
+
       unit = Unit.find_by_id stop.stop_id
+      if unit.present?
       json.image unit.present? ? (unit.image.present? ? unit.image.url: (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.name  "Apartment "+unit.marketing_name
+      json.name  "Apartment "+ unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       lease_pricing = []
       if unit.lease_pricing.present?
@@ -154,8 +184,10 @@ json.tours @tours do |tour|
       stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
+      unit_amenities_hit = true
       json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
         if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot > 0)
+          unit_amenities_hit = false
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
@@ -183,15 +215,51 @@ json.tours @tours do |tour|
 
         end
       end
+      if unit_amenities_hit
+        unit_amenities_array = {
+            "x_plot" => 0,
+            "y_plot" => 0,
+            "name" => "No Image",
+            "image" => image_url("no_image.png"),
+            "stop_description" => nil,
+            "directional_text" => nil,
+            "gallery" => {"name" => "No Image",
+                          "image" => image_url("no_image.png"),
+                          "description" => nil,
+                          "directional_text" => nil }
+        }
+        json.unit_amenities unit_amenities_array
+      end
+      end
     elsif stop.stop_type == "elevator"
       elevator = Elevator.find_by_id stop.stop_id
       json.image elevator.image.present? ? elevator.image.url : asset_path("elev2.png")
-      json.stop_description elevator.description
-      json.name elevator.name
+      json.name "Elevator"#elevator.description
+      # json.name elevator.name
       json.directional_text elevator.directional_text
       json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
+      if new_stops_arr.compact[counter + 1].present?
+        next_stop = new_stops_arr.compact[counter + 1]
+        next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
+        if next_stop.is_a? Elevator
+          elevator_stop_description = ""
+          if hit
+            current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
+            elevator_stop_description = current_stop.floors.present? ? "Go to floor " + current_stop.floors.max.to_s : "" rescue ""
+          else
+            current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
+            elevator_stop_description =  current_stop.floors.present? ? "Go to floor " + current_stop.floors.min.to_s : "" rescue ""
+          end
+        else
+          elevator_stop_description =  next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : "" rescue ""
+        end
+
+      else
+        elevator_stop_description = "Go to floor " + min_floor.to_s
+      end
+      json.stop_description elevator_stop_description
       if elevator.elevator_galleries.count == 0
-        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description, "directional_text" => elevator.directional_text]
+        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator_stop_description, "directional_text" => elevator.directional_text]
       else
         # json.elevator_gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator.description]
 
@@ -274,6 +342,7 @@ json.tours @tours do |tour|
 
     # binding.pry
     i+=1
+    counter += 1
   end
 
 end
