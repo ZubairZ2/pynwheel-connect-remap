@@ -13,7 +13,7 @@
     %h5
       = link_to "< Back to All Galleries", community_galleries_path(@community), class: "btn mb-20",style: "background-color: #8f4a9b; color: white;"
     / Start Tabs Secttions
-    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs",:style => "margin-bottom: 70px;"}
       #myTabContent.tab-content
         / Start image-slide section
         #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
@@ -48,7 +48,7 @@
 / /.content
 / End Body right Section
 .row
-  .col-md-12
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
     .box-footer.mt-30.pt-15
       .row
         .col-lg-10

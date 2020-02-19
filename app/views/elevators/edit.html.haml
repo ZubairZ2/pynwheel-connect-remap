@@ -49,10 +49,6 @@
                 = f.text_field :floorplate_covering_range, :class=>"form-control elevator_edit_field", :placeholder=>"Floorplate Covering Range",:maxlength=>"70"
 
             = submit_tag 'Save', class: "hidden"
-          .form-group
-            .col-md-12
-              %button.btn-primary.done_btn{:onclick => "elevator_edit_goBack()"}
-                DONE
 
     %span.btn.btn-primary.btn-file
       %i.fa.fa-upload
@@ -88,6 +84,16 @@
         .divLoading.hidden
         #images-index1
           = render :partial=>'edit_elevator'
+
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-lg-12.col-md-12
+              %a.btn-primary.mb-20.done_btn{:href => "#{community_tours_path(current_community)}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 :javascript
   $('.elevator_edit_field').change(function(){
@@ -95,14 +101,4 @@
   });
   var community_id = #{params[:community_id]}
   var elevator_id = #{@elevator.id}
-  function elevator_edit_goBack()
-  {
-     if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
-  }
+

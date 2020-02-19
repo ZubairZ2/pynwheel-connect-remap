@@ -55,10 +55,6 @@
                   -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
                   = f.select :floor , f.object.amenityable.floors,{}, class: "form-control", placeholder: "Floor"
             = submit_tag 'Save', class: "hidden"
-          .form-group
-            .col-md-12
-              %button.btn-primary.done_btn{:onclick => "amenity_edit_goBack()"}
-                DONE
 
     %span.btn.btn-primary.btn-file
       %i.fa.fa-upload
@@ -94,6 +90,15 @@
         .divLoading.hidden
         #images-index1
           = render :partial=>'edit_amenity'
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-lg-12.col-md-12
+              %a.btn-primary.mb-20.done_btn{:href => "#{community_tours_path(current_community)}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 :javascript
   $('.amenity_edit_field').change(function(){
@@ -101,14 +106,3 @@
   });
   var community_id = #{params[:community_id]}
   var amenity_id = #{@amenity.id}
-  function amenity_edit_goBack()
-  {
-     if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
-  }
