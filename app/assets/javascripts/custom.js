@@ -600,15 +600,15 @@ function floorplan_names_order() {
     });
 }
 function showDataTables(){
-    // $('#miyazaki.unit_data_table').DataTable({
-    //     'aoColumnDefs': [{
-    //         'bSortable': false,
-    //         'aTargets': [8,10],
-    //     }],
-    //     "ordering": true,
-    //     "stateSave": true,
-    //     "paging": false
-    // });
+    $('#miyazaki.tour_user_table').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [1,4,5],
+        }],
+        "ordering": true,
+        "stateSave": true,
+        "paging": false
+    });
     $('#miyazaki.floorplan_data_table').DataTable({
         'aoColumnDefs': [{
             'bSortable': false,

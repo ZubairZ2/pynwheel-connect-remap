@@ -73,7 +73,7 @@ class ResmanStaticService < BaseService
         end
         unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
         unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           unit.effective_rent = 1.0 #Setting rent to avoid validation issues
           if u["EffectiveRent"].present?
           unit.effective_rent = u["EffectiveRent"]["Min"]
@@ -86,7 +86,7 @@ class ResmanStaticService < BaseService
         end
 
         if u["Availability"].present?
-          unless unit.availability_is_updated.present? && unit.availability_is_updated
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Unoccupied"
           end
 
@@ -95,18 +95,18 @@ class ResmanStaticService < BaseService
           day = u["Availability"]["VacateDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
         else
-          unless unit.availability_is_updated.present? && unit.availability_is_updated
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Occupied"
           end
         end
-        unless unit.available_is_updated.present? && unit.available_is_updated
+        unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           if unit.availability == "Occupied"
             unit.available = false
           else
             unit.available = true
           end
         end
-        unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
 
         end

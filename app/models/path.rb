@@ -12,5 +12,7 @@
 
 class Path < ApplicationRecord
 	belongs_to :map_path, polymorphic: true
+  belongs_to :map_path_to, polymorphic: true
+  belongs_to :map_path_from, polymorphic: true
 	has_many :path_points, dependent: :destroy
 end

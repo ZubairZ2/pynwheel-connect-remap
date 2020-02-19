@@ -107,7 +107,7 @@ class PsiStaticService < BaseService
       if u["Units"]["Unit"]["MarketRent"].present?
         unit.market_rent = u["Units"]["Unit"]["MarketRent"]
       end
-      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
         if u["Units"]["Unit"]["MarketRent"].present?
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         elsif u["EffectiveRent"].present?
@@ -124,15 +124,15 @@ class PsiStaticService < BaseService
       end
       unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
 
-      unless unit.availability_is_updated.present? && unit.availability_is_updated
+      unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
         unit.availability = u["Availability"]["VacancyClass"]
       end
 
-      unless unit.available_is_updated.present? && unit.available_is_updated
+      unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
         unit.available = false
       end
       if u["Availability"]["VacancyClass"] == "Unoccupied"
-        unless unit.available_is_updated.present? && unit.available_is_updated
+        unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           unit.available = true
         end
         year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
@@ -140,7 +140,7 @@ class PsiStaticService < BaseService
         day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
         vacateDate = Date.parse("#{year}-#{month}-#{day}")
       end
-      unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
         unit.available_date = vacateDate
       end
 
@@ -330,9 +330,13 @@ class PsiStaticService < BaseService
                   if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
                     unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
                     unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
+                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                     unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                    end
                   elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
+                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                     unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                    end
                   else
                     unit.effective_rent = 0.0
                   end
@@ -439,9 +443,13 @@ class PsiStaticService < BaseService
                       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
                         unit.min_effective_rent = us[1]["Rent"]["@attributes"]['MinRent'].to_f
                         unit.max_effective_rent = us[1]["Rent"]["@attributes"]['MaxRent'].to_f
-                        unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                          unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                        end
                       elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
-                        unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                          unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                        end
                       else
                         unit.effective_rent = 0.0
                       end

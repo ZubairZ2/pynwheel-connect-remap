@@ -2,6 +2,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   before_action :set_community, only: :email_favorites
   @@counter = 0
+  # $deleted_ids = []
 
   def test_panzoom
     puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'
@@ -98,13 +99,23 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def community_tours
     @community = Community.find params[:id]
+    @community.deleted_ids = []
+    @community.save
     @tours = Tour.where(community_id: params[:id])
+  end
+  
+  def delete_tour_stop
+    @community = Community.find params[:id]
+    delete_array = params[:stop_id].split(",") if params[:stop_id].present?
+    @community.deleted_ids = delete_array.present? ? delete_array : []
+    @community.save
+    @tours = Tour.where(id: params[:tour_id])
   end
 
   def user_saved_tour
-    @device_id = params[:device_id]
-    @tour_user = TourUser.find params[:id]
-    @tours = VisitedStop.where(tour_user_id: @tour_user.id,device_id: @device_id).group('tour_id').group('tour_key').count
+    # @device_id = params[:device_id]
+    @tour_user = TourUser.find params[:tour_user_id]
+    @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
   end
   def include_application_data
     @version = AppVersion.first.version

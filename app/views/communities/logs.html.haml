@@ -43,7 +43,7 @@
                     %td
                       = ind+=1
                     %td
-                      = f.whodunnit.present? ? (User.find f.whodunnit.to_i).email : "-"
+                      = f.whodunnit.present? ? (User.find f.whodunnit.to_i).email : "-" rescue f.object.split("email:")[1].split(" ")[0] rescue "Not Found"
                     %td
                       = get_logs_name(f.item_type,f.item_id,f)
                       -#= ( (f.item_type.classify.constantize.find_by(id: f.item_id).nil?) ? "fe" : (f.item_type.classify.constantize.find f.item_id).id )

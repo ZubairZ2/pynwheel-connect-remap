@@ -40,6 +40,10 @@ class RealPageSvcConnectionService < BaseService
                                   <tem:name>DateNeeded</tem:name>
                                   <tem:singlevalue>'+date_needed.to_s+'</tem:singlevalue>
                                 </tem:ListCriterion>
+                                <tem:ListCriterion>
+                                  <tem:name>IncludeRentMatrix</tem:name>
+                                  <tem:singlevalue>0</tem:singlevalue>
+                                </tem:ListCriterion>
                               </tem:listCriteria>
                               <tem:listCriteria>
                                 <tem:name>LeaseTerms</tem:name>

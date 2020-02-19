@@ -147,6 +147,18 @@
                   <% orderVar = 0 %>
                   <% if @tour_stops.present? %>
                     <% sortable_fetch(@tour_stops.order(:sort)) do |stop,index| %>
+                      <% if @tours.x_plot > 0 || @tours.y_plot > 0 %>
+                        <tr>
+                          <td>
+                            <%= orderVar = orderVar + 1 %>  
+                          </td>
+                          <td>
+                            Starting Point  
+                          </td>
+                          <td>
+                          </td>
+                        </tr>
+                      <% end %>
                       <tr id="<%= index %>">
                         <% orderVar = orderVar + 1 %>
                         <td>
@@ -469,23 +481,27 @@
     });
 
     
+    var arr = newArray();
     $("*#create_path").on("click", function(event){
+      arr.push(this.href)
+      if arr.length == 2{       
+        debugger;
+        $.ajax({
+          type: "POST",
+          url: this.href,
+          data: $(this).serialize(),
+          success: function(response) {
+            //update drawing path for so we can use that path id to save point
+            $("#drawing_path_for").val(response.path.id)
+            $('.stops').removeClass('animate-element')
+            $('#stop_'+response.path.map_path_id).addClass('animate-element')
+            $('html, body').animate({
+              scrollTop: $(".plot-image").offset().top
+            }, 500);
+          }
 
-      $.ajax({
-        type: "POST",
-        url: this.href,
-        data: $(this).serialize(),
-        success: function(response) {
-          //update drawing path for so we can use that path id to save point
-          $("#drawing_path_for").val(response.path.id)
-          $('.stops').removeClass('animate-element')
-          $('#stop_'+response.path.map_path_id).addClass('animate-element')
-          $('html, body').animate({
-            scrollTop: $(".plot-image").offset().top
-          }, 500);
-        }
-
-      });
+        });
+      } 
       event.preventDefault();
     });
 

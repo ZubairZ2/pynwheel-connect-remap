@@ -135,6 +135,7 @@
     $.post( "/communities/"+community_id+"/floorplates/"+floorplate_id_for_amenity+"/amenities/" + id + "/plot_amenity",
      { "x_plot": dx,
         "y_plot": dy,
+         "floor" : floor
      },
      function(data,status,xhr) {
        console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);

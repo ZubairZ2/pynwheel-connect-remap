@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  get 'tour_users/index'
+
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
 
   get 'community_groups/index'
@@ -128,6 +130,9 @@ Rails.application.routes.draw do
         get :edit_amenity_gallery_image
       end
     end
+    resources :tour_users do
+
+    end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
         post :plot_elevator
@@ -142,6 +147,8 @@ Rails.application.routes.draw do
           delete :remove_amenity
         end
       end
+      get :select_floor
+      post :select_floor
       get :plotexp
       get :grid_overlay
       post :adjust_marker_positions
@@ -233,6 +240,7 @@ Rails.application.routes.draw do
       end
       collection do
         post :save_starting_point
+        post :sort_stops
         post :save_tour_settings
         get :starting_point
         get :select_stops
@@ -329,6 +337,7 @@ Rails.application.routes.draw do
           get :test_panzoom
           get :unit_and_floorplan_data
           get :update_unit_floorplan_data
+          delete :delete_tour_stop
         end
         collection do
           post :login

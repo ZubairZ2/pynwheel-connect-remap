@@ -9,7 +9,11 @@
             %i.fa.fa-close
         .form-group
           %label{:for => "exampleInputEmail1"} Image Title
-          = f.text_field :name , class: "form-control", placeholder: "Name"    
+          = f.text_field :name , class: "form-control", placeholder: "Name"
+        - if !@community.is_sitemap && f.object.amenityable.present?
+          .form-group
+            %label{:for => "exampleInputEmail1"} Amenity floor
+            = f.select :floor , f.object.amenityable.floors,{}, class: "form-control", placeholder: "Floor"
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
             Apply Changes

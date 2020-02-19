@@ -2404,6 +2404,21 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   .slide-imgage-boxs .col-lg-3{
     width:33%;
   }
+  .email_div
+  {
+      margin-left: 10px !important;
+  }
+    .user_photo
+    {
+        margin-left: 44px !important;
+    }
+    .user_description
+    {
+        /*margin-left: 54px !important;*/
+        width: 85% !important;
+        margin-top: 30px !important;
+    }
+
 }
 
 @media only screen and (min-width: 1034px) and (max-width: 1280px)  {
@@ -2645,7 +2660,11 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   .modal-right{
     width: 99%;
   }
-
+  .email_div
+  {
+      margin-top: -50px !important;
+      margin-left: -70px !important;
+  }
 }
 @media (max-width:767px){
   .pop-over{
@@ -3253,4 +3272,108 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 }
 .popover.right .arrow:after {
     border-right-color: #000000;
+}
+.visitor_list
+{
+    margin-top: 1.6%;
+}
+.custom_label_color
+{
+    color: black;
+}
+/*-----Visitors Section-------*/
+.table-visitors{
+    background: #fff;
+    margin: 18px 15px 0 -264px;
+    box-shadow: 0 10px 15px #00000014;
+    height: 100%;
+}
+.table-visitors .heading{
+    background: #e6e6e6;
+}
+.table-visitors .heading h1{
+    font-size: 16px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #444444;
+    font-weight: bold;
+    line-height: 48px;
+    margin: 0;
+    padding: 0 15px;
+    text-transform: uppercase;
+}
+.visitors_inner_tables{
+    height: calc(100vh - 225px);
+    padding: 15px;
+    display: block;
+    overflow: auto;
+}
+.visitors_inner_tables table{
+    width: 100%;
+    font-family: "Open Sans";
+    font-size: 13px;
+}
+.visitors_inner_tables table td{
+    vertical-align: middle !important;
+}
+.visitors_inner_tables table td .visitor_img{
+    margin-right: 10px;
+}
+.visitors_inner_tables table td .link{
+    color: #3b8fd4;
+}
+.visitors_inner_tables table tr{
+    line-height: 64px;
+    margin-bottom: 8px;
+}
+.visitors_inner_tables table tr:nth-child(odd) {
+    background-color: #f6f6f6;
+}
+
+.top-title{
+    background-color: #e6e6e6;
+    padding: 15px 13px 13px 17px;
+}
+.sm-txt{
+    font-size: 14px;
+    padding-top: 3px;
+    padding-left: 20px;
+    padding-right: 10px;
+}
+.main-content{
+    padding-top: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.grey-card{
+    background-color: #f6f6f6;
+}
+.img-box{
+    width: 87px;
+    height: 87px;
+}
+.img-box-info{
+    padding-left: 15px;
+    padding-top: 6px;
+    padding-right: 15px;
+}
+.small-text{
+    font-size: 14px;
+}
+.id-card{
+    width: 123px;
+}
+.slider{
+    width: 543px;
+}
+.tpic{
+    width: 93px;
+    margin-right: 7px;
+}
+.unotes{
+    width: 340px;
+}
+.user_photo
+{
+
 }
