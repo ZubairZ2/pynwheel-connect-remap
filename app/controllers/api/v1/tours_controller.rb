@@ -31,6 +31,7 @@ class Api::V1::ToursController < ActionController::Base
     else
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
+        vs.image_bit = true
         vs.image = tempFile
         if vs.id_card.present? && vs.image.present?
           vs.id_selfie_mismatch = false
