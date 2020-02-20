@@ -38,7 +38,9 @@ json.tours @tours do |tour|
   stops_arr = []
   if @community.is_sitemap
     stops_arr = @community.tour.tour_stops
-    stop_count = stops_arr.count
+    stop_count = stops_arr.compact.count
+    second_last = stops_arr.compact[stop_count - 3]
+    last_stop_desc = stops_arr.compact[stop_count - 2]
   else
     temp_max_floor = nil
     min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
@@ -79,7 +81,6 @@ json.tours @tours do |tour|
     # end
     # rescue
     # end
-
     last_stop = stops_arr.compact[stops_arr.compact.size - 1]
 
     sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
