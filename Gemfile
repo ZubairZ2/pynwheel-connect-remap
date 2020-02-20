@@ -4,6 +4,7 @@ ruby '2.5.0'
 gem "letter_opener", :group => :development
 
 gem 'rest-client'
+gem 'browser'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rack-cors', require: 'rack/cors'
 gem 'rails', '~> 5.0.0'
