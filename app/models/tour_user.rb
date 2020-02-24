@@ -23,8 +23,11 @@ class TourUser < ApplicationRecord
   has_many :tour_histories, dependent: :destroy
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 
+  after_update :crop_user_image
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
-
+  def crop_user_image
+    image.recreate_versions!
+  end
 end
