@@ -248,6 +248,8 @@ GEM
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
+    pry-nav (0.3.0)
+      pry (>= 0.9.10, < 0.13.0)
     public_suffix (4.0.1)
     puma (3.11.4)
     puma_worker_killer (0.1.0)
@@ -434,6 +436,7 @@ DEPENDENCIES
   pg (~> 0.21)
   phony_rails
   pry
+  pry-nav
   puma
   puma_worker_killer
   rack-cors
