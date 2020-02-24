@@ -239,3 +239,24 @@
 -#                %img{:alt => "", :src => "upic.jpg"}/
 -#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
 -#    / main-content ends
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "visitor_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
+:javascript
+   function visitor_show_goBack()
+  {
+    if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
+  }

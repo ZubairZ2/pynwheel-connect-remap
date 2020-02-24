@@ -99,10 +99,20 @@
               .input-group-addon
                 %i
                 = d.text_field :secondary_color,class: "form-control menu-field",autocomplete: false                                   
-      .row
-        .col-md-12
-          .box-footer.mt-30.pt-15 
+    .row
+      .col-md-12
+        .box-footer.mt-30.pt-15
+          .row
+            .col-lg-10
+              .form-group{:style => "margin-bottom: 0px;"}
+                .col-lg-12.col-md-12
+                  %button.btn-primary.done_btn{:onclick => "font_page_goBack()",:style => "margin-left: -15px;"}
+                    DONE
 :javascript
   var background_color = "#{@community.design.menu.background_color}" 
   console.log(background_color);
   adjustMenuPositionOfLogoWithVerticalApp(#{current_community.is_vertical_app});
+  function menu_page_goBack()
+  {
+     window.location.reload();
+  }

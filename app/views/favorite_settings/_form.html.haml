@@ -26,7 +26,7 @@
         Changing the Email From address will change the "from" email address for the eBrochure.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.email_field :email_from, :class=>"form-control validate[required,custom[email]] favorite_setting_field", :placeholder=>"Email From"
+    = f.email_field :email_from, :class=>"form-control validate[custom[email]] favorite_setting_field", :placeholder=>"Email From"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Email Bcc
@@ -35,7 +35,7 @@
         Changing the Email Bcc address will change the email address that receives a copy of each eBrochure.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :email_bcc, :class=>"form-control favorite_setting_field", :placeholder=>"Email Bcc" ,:maxlength=>"150", :onchange => "function1()"
+    = f.text_field :email_bcc, :class=>"form-control validate[custom[email]] favorite_setting_field", :placeholder=>"Email Bcc" ,:maxlength=>"150", :onchange => "function1()"
 .form-group#email_body_div
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.auto_save
     Email Body
@@ -78,8 +78,14 @@
     -#    .checkbox
     -#      = f.check_box :handicap_accessible_logo
     -#      %label Handicap accessible logo
-
+%button.btn-primary.done_btn{:onclick => "favorite_goBack()"}
+  DONE
 :javascript
+  function favorite_goBack()
+  {
+    $('#favorite-settings-form').submit();
+    window.location.reload();
+  }
   $('.favorite_setting_field').change(function(){
     $('#favorite-settings-form').submit();
   });
