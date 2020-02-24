@@ -33,6 +33,7 @@ class Api::V1::ToursController < ActionController::Base
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.image_bit = true
         vs.image = tempFile
+        vs.croped = true
         if vs.id_card.present? && vs.image.present?
           vs.id_selfie_mismatch = false
           email_content = "Please verify user on the following link <br/> <a href='#{manual_selfie_match_url vs.id }' target='_blank'> Visitor's ID page </a>"
@@ -64,6 +65,7 @@ class Api::V1::ToursController < ActionController::Base
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.id_card = tempFile
+        vs.croped = true
         vs.save
       rescue => ex
         success = false;
