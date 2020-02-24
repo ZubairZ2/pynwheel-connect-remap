@@ -249,7 +249,7 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
-  if ("#{browser.safari?}" == "true" && "#{browser.device.mobile?}" == "true")
+  if ("#{browser.device.iphone?}" == "true")
   {
     $(".user_id_image").css("transform", "");
   }
