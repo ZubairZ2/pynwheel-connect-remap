@@ -44,7 +44,7 @@
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
                       - diff = (@tour_user.id_card.width - @tour_user.id_card.height)
-                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "my_class", :style => " width: 100px;  margin-left: 99px; margin-top: #{ @tour_user.croped ? diff / 24 : diff / 80}px; #{@tour_user.id_card.present? ? "transform: rotate(90deg);" : ""}"
+                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image", :style => " width: 100px;  margin-left: 99px; margin-top: #{ @tour_user.croped ? diff / 24 : diff / 80}px; #{@tour_user.id_card.present? ? "transform: rotate(90deg);" : ""}"
 
                   .row
                     %h4{:style => "margin-left: 45px"}
