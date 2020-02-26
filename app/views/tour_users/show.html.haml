@@ -51,7 +51,7 @@
                     %h4{:style => "margin-left: 45px"}
                       Alert
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
-                    - @alerts.each_with_index do |alert,index|
+                    - @alerts.order("id DESC").each_with_index do |alert,index|
                       - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                       .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                         .alert-div1{:style => "margin-top: 10px"}
