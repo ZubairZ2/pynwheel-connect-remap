@@ -51,7 +51,7 @@
                           .visitor_list.custom_label_color
                             #{user.tour_histories.last.arrived.to_date} #{user.tour_histories.last.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                         %td.col-lg-1
-                          = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "height: 75px; width: 75px; #{user.image.present? ? "transform: rotate(90deg);" : ""}"
+                          = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "height: 75px; width: 75px; #{user.image.present? ? "" : ""}"
                         %td
                           .col-lg-2.visitor_list
                             = link_to "#{(user.last_name.present? ? user.last_name + ", " : "") + (user.first_name.present? ? user.first_name : user.name)}","/communities/#{@community.id}/tour_users/#{user.id}",:class => "name-list"
@@ -115,7 +115,7 @@
 :javascript
   if ("#{browser.device.iphone?}" == "true")
   {
-    $(".user_id_image").css("transform", "");
+    $(".user_id_image").css("transform", "transform: rotate(90deg);");
   }
   function click_list(id)
   {
