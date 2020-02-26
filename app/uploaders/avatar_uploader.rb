@@ -70,6 +70,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
     if model.is_a? TourUser
       if model.image_bit
         manipulate! do |img|
+          img = img.auto_orient
           crop_w = img.columns.to_f - (img.columns.to_f / 100.0) * 49.5
           crop_h = img.rows.to_f - (img.rows.to_f / 100.0) * 5.73
           crop_x = img.rows.to_f - (img.rows.to_f / 100.0) * 58
@@ -80,6 +81,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
       end
       if !model.image_bit
         manipulate! do |img|
+          img = img.auto_orient
           crop_w = img.columns.to_f - (img.columns.to_f / 100.0) * 63.0
           crop_h = img.rows.to_f - (img.rows.to_f / 100.0) * 3.6
           crop_x = img.rows.to_f - (img.rows.to_f / 100.0) * 32.8
@@ -88,6 +90,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
           img
         end
       end
+
       resize_to_fit(1980, 1080)
     end
   end
