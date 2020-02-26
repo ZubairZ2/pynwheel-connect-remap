@@ -91,7 +91,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
         end
       end
 
-      resize_to_fit(1980, 1080)
+      # resize_to_fit(1980, 1080)
     end
   end
 
