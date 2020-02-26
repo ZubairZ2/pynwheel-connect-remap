@@ -167,7 +167,7 @@ www.google.com"
       community = visited_stops.last&.tour.community
       shared_tour_stops = {}
       stops = []
-      visited_stops.each_with_index do |x,i|
+      visited_stops.compact.each_with_index do |x,i|
         puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
         if x.stop_type != "elevator"
           descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
