@@ -28,6 +28,6 @@ class TourUser < ApplicationRecord
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
   def crop_user_image
-    # image.recreate_versions!
+    image.recreate_versions!
   end
 end
