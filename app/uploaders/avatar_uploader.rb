@@ -87,7 +87,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
           crop_w = (img.columns.to_f / 100.0) * 94.0
           crop_h = (img.rows.to_f / 100.0) * 36.0
           crop_x = (img.rows.to_f / 100.0) * 1.636
-          crop_y = (img.rows.to_f / 100.0) * 41.817
+          crop_y = (img.rows.to_f / 100.0) * 25.2
           img.crop!(crop_x, crop_y, crop_w, crop_h)
 
           img
