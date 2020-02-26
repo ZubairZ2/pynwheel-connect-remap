@@ -163,7 +163,7 @@ www.google.com"
       
       visited_stops = []
 
-      vs.sort.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
+      vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
       community = visited_stops.last&.tour.community
       shared_tour_stops = {}
       stops = []
