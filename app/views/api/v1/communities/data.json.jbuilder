@@ -1384,6 +1384,7 @@ json.apartments do
       else
         json.virtual_tour ""
       end
+      json.iframe_enable_for_3Dtour unit.iframe_enable_for_3Dtour
 
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
@@ -1490,6 +1491,7 @@ json.apartments do
     else
       json.virtual_tour ""
     end
+    json.iframe_enable_for_3Dtour floorplan.iframe_enable_for_3Dtour
 
     json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
@@ -1645,6 +1647,7 @@ json.additional_pages do
       end
       json.position webpage.position.present? ? webpage.position : 0
       json.display_on_homepage webpage.display_on_homepage.present? ? webpage.display_on_homepage : false
+      json.iframe_enable_for_3Dtour webpage.iframe_enable_for_3Dtour.present? ? webpage.iframe_enable_for_3Dtour : false
     end
   end
   if @community.imagepages.present?
