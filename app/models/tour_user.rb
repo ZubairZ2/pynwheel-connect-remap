@@ -30,4 +30,8 @@ class TourUser < ApplicationRecord
   def crop_user_image
     image.recreate_versions!
   end
+  attr_accessor :crop_image_bit
+  def crop_image_bit
+    @crop_image_bit
+  end
 end

@@ -32,6 +32,7 @@ class Api::V1::ToursController < ActionController::Base
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.image_bit = true
+        vs.crop_image_bit = true
         vs.image = tempFile
         vs.croped = true
         if vs.id_card.present? && vs.image.present?
@@ -66,6 +67,7 @@ class Api::V1::ToursController < ActionController::Base
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.id_card = tempFile
         vs.image_bit = false
+        vs.crop_image_bit = false
         vs.croped = true
         vs.save
       rescue => ex

@@ -68,7 +68,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
   def resize_id_card
     if model.is_a? TourUser
-      if model.image_bit
+      if model.crop_image_bit
         manipulate! do |img|
           img = img.auto_orient
           crop_w = (img.columns.to_f / 100.0) * 94.0
