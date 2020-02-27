@@ -32,7 +32,6 @@
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: fit-content;"}
                     .col-lg-2.col-md-2.col-sm-2.col-xs-2
-                      - diff2 = (@tour_user.id_card.width - @tour_user.id_card.height)
                       = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 115px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
                     .col-lg-3.col-md-3.col-sm-3.col-xs-3.email_div{:style => "margin-top: 15px; margin-left: -29px;"}
                       %strong
@@ -44,7 +43,6 @@
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
-                      - diff = (@tour_user.id_card.width - @tour_user.id_card.height)
                       = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
 
                   .row
