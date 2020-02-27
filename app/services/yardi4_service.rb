@@ -112,7 +112,7 @@ class Yardi4Service < BaseService
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,   ["yardi"]).map{|x| x.provider_unit_id}
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
-      unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][0][:IDValue])#.first_or_initialize
+      unit = Unit.find_by(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue])#.first_or_initialize
       if unit.present?
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
@@ -206,13 +206,13 @@ class Yardi4Service < BaseService
         @unit_record << unit.provider_unit_id
         unit.save(validate: false)
       else
-        unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][0][:IDValue]).first_or_initialize
+        unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue]).first_or_initialize
         unless unit.manual_override
           unit.property_id = property_id
           #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
-          unit.unit_type = u[:Units][:Unit][:Identification][0][0][:IDValue]
+          unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
           unless unit.name_is_updated.present? && unit.name_is_updated  && unit.manual_override
-            unit.marketing_name = u[:Units][:Unit][:Identification][0][0][:IDValue]
+            unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
           end
           unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated && unit.manual_override
             unit.floorplan_id = u[:Units][:Unit][:UnitType]

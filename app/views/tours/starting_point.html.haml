@@ -47,10 +47,10 @@
                 -#      %span.pl-15 Yes
 
                 = submit_tag 'Save', class: "hidden"
-              .form-group
-                .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                  %button.btn-primary.mb-20.done_btn{:onclick => "starting_point_goBack()",:style => "margin-top: 30px;"}
-                    DONE
+              -#.form-group
+              -#  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+              -#    %button.btn-primary.mb-20.done_btn{:onclick => "starting_point_goBack()",:style => "margin-top: 30px;"}
+              -#      DONE
 
     .box.box-info.add-plan
       .box-header
@@ -102,7 +102,7 @@
         -#  %a.btn.btn-danger{"data-name" => "sitemap's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => ""} RESET ALL PLOTS
       / /.box-header
       / form start
-      %form.form-horizontal
+      %form.form-horizontal{:style => "margin-bottom: 70px;"}
         .box-body.map-body-top
           .row
             .col-lg-9#container.p-0
@@ -152,6 +152,15 @@
               %label#newmsg Place marker for selected point on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "starting_point_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 :javascript
   var floor = null;
   $('.save-starting-point-field').change(function(){

@@ -31,9 +31,14 @@
 								.checkbox
 									= f.check_box :display_on_homepage, {:id => "display"}
 									%label Add to Home Page Menu
+						.col-md-3
+							.mt-25.mb-40
+								.checkbox
+									= f.check_box :iframe_enable_for_3Dtour, {:id => "iframe_enable_for_3Dtour"}
+									%label Iframe enable for URL
 						.col-md-4
 							.mt-25.mb-40
-								%label 
+								%label
 									Position
 								= f.select :position , options_for_select(display_position_on_homepage,f.object.position.present? ? f.object.position : ""),{},{class: "form-control",:id => "position"}
 				.modal-footer
