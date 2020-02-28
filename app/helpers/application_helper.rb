@@ -19,6 +19,7 @@ module ApplicationHelper
   def font_families
     options_with_style = []
     families = [
+        "AGaramondPro",
         "Abadi MT Condensed",
         "Minion Web",
         "Agency FB",
@@ -439,6 +440,7 @@ module ApplicationHelper
                   ["Futura Bk BT","ms-appx:/DesignTemplates/Expressionist/CutomFonts/FuturaBookBT.ttf#Futura"],
                   ["Gabriola","Gabriola"],
                   ["Gadugi","Gadugi"],
+                  ["AGaramondPro","AGaramondPro"],
                   ["Garamond","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Garamond.ttf#Garamond"],
                   ["Garamond MT","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Garamond MT.ttf#Garamond MT"],
                   ["Gautami","Gautami"],

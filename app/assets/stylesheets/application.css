@@ -56,3 +56,221 @@
 	border-radius: 10px;
 	display: none;
 }
+
+
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('AGaramondPro-Regular.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('AkzidenzGroteskBE-MdCn.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Aleo-Bold.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Aleo-Light.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Aleo-Regular.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Arial.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Baskerville.ttc');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('BASKVILL.TTF');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Beaufort-Regular.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Bodoni-mt.TTF');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('DIN Bold.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('DistrictPro-Demi.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('DistrictPro-Thin.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Futura Bk BT Book.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Georgia.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Gotham-Bold.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('GothamCond-Book.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('GothamCondensed-Medium.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('GothamCond-Light.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Gotham-Light.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('HelveticaNeueLTStd-LtEx.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('HelveticaNeueLTStd-MdEx.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Jura-DemiBold.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Jura-Regular.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Lato-Bold.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Lato-Light.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Lato-Regular.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Montserrat-Light.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Montserrat-Medium.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('MyriadPro-Cond.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('MyriadPro-Regular.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('NeutraDisp-Medium.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('OpenSans-Bold.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('OpenSans-Light.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('OpenSans-Regular.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('oswald.light.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Oswald-Regular.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('PlayfairDisplay-Regular.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('PlayfairDisplay-Regular.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Poppins-Light.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Poppins-Medium.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Poppins-SemiBold.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('ProximaNova-Bold.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('ProximaNovaCond-Regular.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('ProximaNova-Light.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('ProximaNova-Regular.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Raleway-Regular.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('RobotoCondensed-Regular.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Roboto-Medium.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('SourceSansPro-Regular.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('Tahoma.ttf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('ThrohandRegular-Roman.otf');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('TRAJANPRO3-REGULAR.OTF');
+}
+@font-face {
+	font-family: 'Bodoni MT';
+	src: url('TRAJANPRO-BOLD.OTF');
+}
