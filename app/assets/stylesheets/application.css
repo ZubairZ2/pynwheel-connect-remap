@@ -274,3 +274,27 @@
 	font-family: 'Trajan Pro Bold';
 	src: url('TRAJANPRO-BOLD.OTF');
 }
+@font-face {
+    font-family: 'Univers LT Std';
+    src: url('Univers LT Std 45 Light.ttf');
+}
+@font-face {
+    font-family: 'Lucida Fax';
+    src: url('LFAX.ttf');
+}
+@font-face {
+    font-family: 'Kievit';
+    src: url('kievit_regular.ttf');
+}
+@font-face {
+    font-family: 'Garamond MT';
+    src: url('Garamond MT.ttf');
+}
+@font-face {
+    font-family: 'Franklin Gothic Medium';
+    src: url('Franklin Gothic Medium.ttf');
+}
+@font-face {
+    font-family: 'Avenir LT Std 35 Light';
+    src: url('AvenirLTStd-Light.otf');
+}
