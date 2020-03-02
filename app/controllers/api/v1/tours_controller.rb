@@ -2,6 +2,10 @@ class Api::V1::ToursController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   # before_action :set_community, only: :email_favorites
   def save_user_data
+    rotation = true
+    unless request.env['HTTP_USER_AGENT'].downcase.match(/iphone/)
+      rotation = false
+    end
 
     tempFile = params[:image]
     # tempFile = tempFile.path
@@ -11,7 +15,7 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       begin
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key])
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: rotation)
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
