@@ -935,11 +935,11 @@ function readURLOnDesignPage(input, preview_element, button_name, screen_id, mai
 
 
 function set_primary_font_changes() {
-  $("#primary-font-text").css({"font-family": $('.primary_font_family').val(), "color": $('.primary_font_color').val(), "font-size": $('.primary_font_size').val(), "font-weight": $('.primary_font_weight').val(), "text-align": $('.primary_text_align').val()});
+  $("#primary-font-text").css({"font-family": $(".primary_font_family option:selected").text(), "color": $('.primary_font_color').val(), "font-size": $('.primary_font_size').val(), "font-weight": $('.primary_font_weight').val(), "text-align": $('.primary_text_align').val()});
 }
 
 function set_secondary_font_changes() {
-  $("#secondary-font-text").css({"font-family": $('.secondary_font_family').val(), "color": $('.secondary_font_color').val(), "font-size": $('.secondary_font_size').val(), "font-weight": $('.secondary_font_weight').val(), "text-align": $('.secondary_text_align').val()});
+  $("#secondary-font-text").css({"font-family": $(".primary_font_family option:selected").text(), "color": $('.secondary_font_color').val(), "font-size": $('.secondary_font_size').val(), "font-weight": $('.secondary_font_weight').val(), "text-align": $('.secondary_text_align').val()});
 }
 
 function readDesignPageLogoSrc(file) {
