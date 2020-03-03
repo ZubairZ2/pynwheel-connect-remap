@@ -939,7 +939,7 @@ function set_primary_font_changes() {
 }
 
 function set_secondary_font_changes() {
-  $("#secondary-font-text").css({"font-family": $(".primary_font_family option:selected").text(), "color": $('.secondary_font_color').val(), "font-size": $('.secondary_font_size').val(), "font-weight": $('.secondary_font_weight').val(), "text-align": $('.secondary_text_align').val()});
+  $("#secondary-font-text").css({"font-family": $(".secondary_font_family option:selected").text(), "color": $('.secondary_font_color').val(), "font-size": $('.secondary_font_size').val(), "font-weight": $('.secondary_font_weight').val(), "text-align": $('.secondary_text_align').val()});
 }
 
 function readDesignPageLogoSrc(file) {
