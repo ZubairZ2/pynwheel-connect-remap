@@ -437,7 +437,7 @@ module ApplicationHelper
         # ["Flexure","Flexure"],
         # ["Footlight MT","Footlight MT"],
         # ["Forte","Forte"],
-        ["Franklin Gothic","Franklin Gothic"],
+        # ["Franklin Gothic","Franklin Gothic"],
         ["Franklin Gothic Medium","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Franklin Gothic Medium.ttf#Franklin Gothic"],
         # ["FrankRuehl","FrankRuehl"],
         # ["FreesiaUPC","FreesiaUPC"],

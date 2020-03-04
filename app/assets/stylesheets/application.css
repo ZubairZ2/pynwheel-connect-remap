@@ -299,6 +299,10 @@
     src: url('Garamond MT.ttf');
 }
 @font-face {
+    font-family: 'Garamond';
+    src: url('Garamond.ttf');
+}
+@font-face {
     font-family: 'Franklin Gothic Medium';
     src: url('Franklin Gothic Medium.ttf');
 }
