@@ -353,7 +353,7 @@ module ApplicationHelper
         # ["Arial Special","Arial Special"],
         # ["Arial Unicode MS","Arial Unicode MS"],
         # ["Augsburger Initials","Augsburger Initials"],
-        ["Avenir LT Std 35 Light","ms-appx:/DesignTemplates/Expressionist/CutomFonts/AvenirLTStd-Light.otf#Avenir"],
+        # ["Avenir LT Std 35 Light","ms-appx:/DesignTemplates/Expressionist/CutomFonts/AvenirLTStd-Light.otf#Avenir"],
         ["Baskerville Old Face","ms-appx:/DesignTemplates/Expressionist/CutomFonts/BASKVILL.TTF#Baskerville"],
         ["BASKVILL","BASKVILL"],
         # ["Batang","Batang"],
