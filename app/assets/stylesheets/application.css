@@ -83,6 +83,10 @@
     src: url('Arial.ttf');
 }
 @font-face {
+    font-family: 'Avenir LT Std 35 Light';
+    src: url('AvenirLTStd-Light.otf');
+}
+@font-face {
     font-family: 'Baskerville Old Face';
     src: url('Baskerville.ttc');
 }
@@ -139,6 +143,10 @@
     src: url('Gotham-Light.otf');
 }
 @font-face {
+    font-family: 'Gill Sans MT';
+    src: url('GillSans.ttc');
+}
+@font-face {
     font-family: 'Helvetica Neue LT Std';
     src: url('HelveticaNeueLTStd-LtEx.otf');
 }
@@ -187,15 +195,15 @@
     src: url('NeutraDisp-Medium.otf');
 }
 @font-face {
-    font-family: 'OpenSans Bold';
+    font-family: 'Open Sans Bold';
     src: url('OpenSans-Bold.ttf');
 }
 @font-face {
-    font-family: 'OpenSans Light';
+    font-family: 'Open Sans Light';
     src: url('OpenSans-Light.ttf');
 }
 @font-face {
-    font-family: 'OpenSans Regular';
+    font-family: 'Open Sans Regular';
     src: url('OpenSans-Regular.ttf');
 }
 @font-face {

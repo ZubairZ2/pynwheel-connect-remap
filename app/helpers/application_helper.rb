@@ -455,7 +455,7 @@ module ApplicationHelper
         # ["Georgia Ref","Georgia Ref"],
         # ["Gigi","Gigi"],
         ["Gill Sans MT","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Gill Sans MT.ttf#Gill"],
-        ["Gill Sans MT Condensed","Gill Sans MT Condensed"],
+        # ["Gill Sans MT Condensed","Gill Sans MT Condensed"],
         # ["Gisha","Gisha"],
         # ["Gloucester","Gloucester"],
         ["Gotham Book","ms-appx:/Assets/Fonts/gotham_book.ttf#Gotham Book"],
