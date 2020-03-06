@@ -30,10 +30,10 @@
             .box.box-widget.panel-box.add-plan.pt-30
               .row
                 .col-lg-6
-                  .col-lg-12{:style => "background: #efefef; margin: 30px; height: fit-content;"}
+                  .col-lg-12{:style => "background: #efefef; margin: 30px; height: fit-content; display: inline-flex; align-items: center;"}
                     .col-lg-2.col-md-2.col-sm-2.col-xs-2
                       = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 115px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
-                    .col-lg-3.col-md-3.col-sm-3.col-xs-3.email_div{:style => "margin-top: 15px; margin-left: -29px;"}
+                    .col-lg-3.col-md-3.col-sm-3.col-xs-3.email_div{:style => " margin-left: -29px;"}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
                       %br
