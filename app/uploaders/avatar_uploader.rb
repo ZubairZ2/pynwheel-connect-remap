@@ -94,6 +94,12 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
       # resize_to_fit(1980, 1080)
     end
+    if model.is_a? VisitedStop
+      manipulate! do |img|
+        img = img.auto_orient
+        img
+      end
+    end
   end
 
   def crop
