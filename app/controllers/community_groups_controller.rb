@@ -16,10 +16,16 @@ class CommunityGroupsController < ApplicationController
     end
   end
   def edit
+    @uploader = HomePageVideo.new.video
+    @uploader.success_action_redirect = root_path
+
     @community_group = CommunityGroup.find params[:id]
+    @community_group.group_design.present? ? nil : @community_group.create_group_design
     @company = Company.find @community_group.company_id
   end
   def update
+    # params[:community_group][:background_image]
+    # byebug
     if params[:community_group][:name].present?
       @community_group = CommunityGroup.find params[:id]
       if @community_group.update(community_group_params)
@@ -87,6 +93,8 @@ class CommunityGroupsController < ApplicationController
   end
   private
   def community_group_params
-    params.require(:community_group).permit!
+    params.require(:community_group).permit(:name,:address,:code,:page_type,:page_name,:logo,:inactivate,:company_id,:menu_button_shade, :group_design_attributes => [:id,:logo_position,:button_border_color,
+    :button_shape, :button_width, :button_height, :button_spacing, :background_image, :button_color, :button_opacity, :button_border_side, :button_border_color, :button_border_opacity,
+    :button_border_thickness, :button_font_family, :button_font_size, :button_font_color,:bouncing_effecting, :video])
   end
 end

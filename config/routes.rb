@@ -46,6 +46,7 @@ Rails.application.routes.draw do
       get :add_community
       post :save_community
     end
+    resources :group_design
   end
   resources :communities do
     member do
