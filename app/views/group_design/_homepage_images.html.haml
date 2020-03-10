@@ -4,7 +4,7 @@
 .row.slide-imgage-boxs.sortable
   - @community_group.group_design.group_homepage_images.each do |home_page_image, id_tag|
     .col-lg-3{:id=> id_tag}
-      .slide-image
+      .slide-image 
         .image-box
           - rn =  rand(9999999999999999999999999)
           .images.galleryimage-home{:style=>"background: url(#{ (home_page_image.crop_x.present? ? home_page_image.image.url(:large) + "?timestamp=#{rn}" : home_page_image.image.url(:large) + "?timestamp=#{rn}")}); background-repeat: no-repeat;height: 210px;background-position: center center;background-size: cover;"}
