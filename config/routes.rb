@@ -46,7 +46,11 @@ Rails.application.routes.draw do
       get :add_community
       post :save_community
     end
-    resources :group_design
+    resources :group_design do
+      member do
+        post :save_home_page_images
+      end
+    end
   end
   resources :communities do
     member do

@@ -13,6 +13,9 @@ class GroupDesignController < ApplicationController
       render "edit"
     end
   end
+  def save_home_page_images
+
+  end
 
   private
 

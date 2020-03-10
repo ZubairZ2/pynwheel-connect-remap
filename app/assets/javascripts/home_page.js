@@ -669,6 +669,17 @@ function fetchHomePageImages(){
         console.log("home page images are fetched successfully.");
     });
 }
+function fetchGroupHomePageImages(){
+    var url = "/communities/"+community_id+"/home_page"
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "script"
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("home page images are fetched successfully.");
+    });
+}
 
 function fetchHomePageIcons(){
   var url = "/communities/"+community_id+"/homepage_icons"
@@ -823,6 +834,28 @@ function saveHomePageImage(){
       homePageImageDropzone.removeFile(file);
     }
   });
+}
+
+function saveGroupHomePageImage(){
+    var groupHomePageImageDropzone = new Dropzone("#group-home-page-image-upload-holder", { url: "/community_groups/"+community_group_id+"/group_design/"+group_design_id+"/save_home_page_images"});
+    Dropzone.options.homePageImageDropzone = {
+        uploadMultiple: true
+    };
+
+    groupHomePageImageDropzone.on("complete", function(file) {
+        console.log(file);
+        fetchGroupHomePageImages();
+    });
+
+    groupHomePageImageDropzone.on("addedfile", function(file) {
+        console.log(file.type);
+        $(".divLoading").removeClass("hidden");
+        if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
+            $(".divLoading").addClass("hidden");
+            $('#image-upload-warning').modal('show');
+            groupHomePageImageDropzone.removeFile(file);
+        }
+    });
 }
 
 function saveHomePageIcon(){

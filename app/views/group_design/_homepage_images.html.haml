@@ -20,25 +20,3 @@
 
         %h4= home_page_image.name
 
-
-.modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
-    .modal-content
-      .modal-body
-        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
-          %span{"aria-hidden" => "true"}
-            %i.fa.fa-close
-        #carousel-example-generic.carousel.slide
-          / Wrapper for slides
-          .carousel-inner{:style=>"height: 500px;"}
-            - @home_page_images.each_with_index do |home_page_image,index|
-              .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
-                = image_tag home_page_image.image.url(:large)
-                .carousel-caption
-                  = home_page_image.name
-
-          / Controls
-          %a.left.carousel-control{"data-slide" => "prev", :href => "#carousel-example-generic", :role => "button"}
-            %span.glyphicon.glyphicon-chevron-left
-          %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
-            %span.glyphicon.glyphicon-chevron-right
