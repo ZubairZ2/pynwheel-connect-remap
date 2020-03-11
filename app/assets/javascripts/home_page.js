@@ -13,9 +13,12 @@ $(document).ready(function(){
   //************************* Home Page Images Upload using dropzone plugin **************//
   if ($("#home-page-image-upload-holder").length){
     saveHomePageImage();
-  } 
+  }
+    if ($("#group-home-page-image-upload-holder").length){
+        saveGroupHomePageImage();
+    }
 
-  if ($("#home-page-icon-upload-holder").length){
+    if ($("#home-page-icon-upload-holder").length){
     saveHomePageIcon();
   } 
   //************************* Home Page Images Upload using dropzone plugin **************//
@@ -670,7 +673,7 @@ function fetchHomePageImages(){
     });
 }
 function fetchGroupHomePageImages(){
-    var url = "/communities/"+community_id+"/home_page"
+    var url = "/community_groups/"+community_group_id+"/group_design"
     $.ajax({
         url: url,
         type: "GET",
@@ -679,6 +682,7 @@ function fetchGroupHomePageImages(){
         $(".divLoading").addClass("hidden");
         console.log("home page images are fetched successfully.");
     });
+    window.location.reload();
 }
 
 function fetchHomePageIcons(){

@@ -1,4 +1,5 @@
 - content_for :title, "Add Community Group - Pynwheel"
+.divLoading.hidden
 %section.is-community-page
   .content
     .box.box-info.add-plan.mt-20
@@ -122,23 +123,7 @@
                     .input-group-addon
                       %i
                       = d.text_field :button_font_color , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.button_font_color.present? ? d.object.button_font_color : "#3B3B3B"
-              .form-group
-                %h4.mt-30
-                  Select Home Page Type
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Changing the Home Page Type will change whether the home page shows a video or slideshow.
-                  .row
-                    .col-lg-12
-                      .form-group
-                        .radio.radio-primary.pull-left
-                          %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>d.object.has_images_loop_type? ? true : false}
-                            %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
-                              Images
-                        .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
-                          %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>d.object.has_video_loop_type? ? true : false}
-                            %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
-                              Video
+
                       -#- if gables_theme(@community)
                       -#  = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
 
@@ -182,68 +167,187 @@
                   %span.btn.btn-default.black-button.btn-sm.btn-file#file-load
                     Select Image
                     = d.file_field :video
+              .form-group
+                %h4.mt-30
+                  Select Home Page Type
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Changing the Home Page Type will change whether the home page shows a video or slideshow.
+                  .row
+                    .col-lg-12
+                      .form-group
+                        .radio.radio-primary.pull-left
+                          %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>d.object.has_images_loop_type? ? false : false}
+                            %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
+                              Images
+                        .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
+                          %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>d.object.has_video_loop_type? ? true : true}
+                            %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
+                              Video
         .box-footer
           = link_to "CANCEL" , company_community_groups_path(Company. find @community_group.company_id), :class=>"btn btn-default pull-right"
           = d.submit "SUBMIT", :class=>"btn btn-success pull-right mr-10"
-  .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
-    #myTabContent.tab-content
-      #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+    .form-group
+      %h4.mt-30
+        Select Home Page Type
+        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
+          %span#propertyDetailNameText
+            Changing the Home Page Type will change whether the home page shows a video or slideshow.
         .row
           .col-lg-12
+            .form-group
+              .radio.radio-primary.pull-left
+                %input#upload_type{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>true}
+                  %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
+                    Images
+              .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
+                %input#upload_type1{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>false}
+                  %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
+                    Video
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+      #myTabContent.tab-content
+        #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+          .row
+            .col-lg-12
 
-            .title-home
-              %h4
-                Slide Show Images
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "slideShowImagePopover","data-content" => " "}
-                  %span#propertyDetailNameText
-                    Adding files will add images to the home page slide show. You can drag and drop the images below to rearrange them.
-                .br
+              .title-home
+                %h4
+                  Slide Show Images
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "slideShowImagePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Adding files will add images to the home page slide show. You can drag and drop the images below to rearrange them.
+                  .br
+                  %h4#slide_show_span
+                    Images will appear at a size of 1920 x 1080 px. Please note that images that are too small may appear pixelated.
+
+
+                %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#group-home-page-image-upload-holder').click();"}
+                  %i.fa.fa-plus-circle
+                  Add Files
+                  /   %input#home-page-images{:type => "file",:multiple=>"multiple"}
+                  -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 40px;"}
+                  -#  %i.fa.fa-plus-circle
+                  -#  DONE
+          .row
+            .col-lg-12
+              .pull-right
+          #images-index
+            = render 'group_design/homepage_images'
+        #video-slide.tab-pane.fade{:role => "tabpanel"}
+          .row
+            .col-lg-12
+              .title-home
+                %h4 Video Show
                 %h4#slide_show_span
-                  Images will appear at a size of 1920 x 1080 px. Please note that images that are too small may appear pixelated.
+                  Home Page video size limit is 500MB.
+
+                  / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
+                  -#%input#add_video{:type => "file",:multiple=>"multiple"}
+                %span.btn.btn-success.btn-file.text-UP#file-load1
+                  %i.fa.fa-plus-circle
+                  Add Video
+                %div{:style => "margin-left: 125px;"}
+                  %i.propertyDetailName.fa.fa-question-circle{:style => " margin-top: 10px;"}
+                    %span#propertyDetailNameText
+                      Adding a video file (MP4 files only) will change the video that appears on the the home page.
+                  /     = f.file_field :video
+                  -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 15px;"}
+                  -#  %i.fa.fa-plus-circle
+                  -#  DONE
 
 
-              %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#group-home-page-image-upload-holder').click();"}
-                %i.fa.fa-plus-circle
-                Add Files
-                /   %input#home-page-images{:type => "file",:multiple=>"multiple"}
-                -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 40px;"}
-                -#  %i.fa.fa-plus-circle
-                -#  DONE
-        .row
-          .col-lg-12
-            .pull-right
-        #images-index
-          = render 'group_design/homepage_images'
-      #video-slide.tab-pane.fade{:role => "tabpanel"}
-        .row
-          .col-lg-12
-            .title-home
-              %h4 Video Show
-              %h4#slide_show_span
-                Home Page video size limit is 500MB.
+          .slide-imgage-boxs
+            #videos-index
+            = render 'group_design/homepage_video'
 
-                / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
-                -#%input#add_video{:type => "file",:multiple=>"multiple"}
-              %span.btn.btn-success.btn-file.text-UP#file-load
-                %i.fa.fa-plus-circle
-                Add Video
-              %div{:style => "margin-left: 125px;"}
-                %i.propertyDetailName.fa.fa-question-circle{:style => " margin-top: 10px;"}
-                  %span#propertyDetailNameText
-                    Adding a video file (MP4 files only) will change the video that appears on the the home page.
-                /     = f.file_field :video
-                -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 15px;"}
-                -#  %i.fa.fa-plus-circle
-                -#  DONE
-
-
-        .slide-imgage-boxs
-          #videos-index
-          = render 'group_design/homepage_video'
-
-      -#= direct_upload_form_for @uploader, :id => "direct_form" do |f|
-      -#  = f.file_field :avatar, :id => "video_field",:class => "hidden"
-      -#  = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
-
+      = direct_upload_form_for @uploader, :id => "direct_form" do |f|
+        = f.file_field :avatar, :id => "video_field",:class => "hidden"
+        = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
+#edit-group-image.modal.fade.edit-image
 :javascript
-  var community_group_id = "#{@communty_group.id}"
+  var community_group_id = "#{@community_group.id}"
+  var group_design_id = "#{@group_design.id}"
+  $("#file-load1").on('click', function(e) {
+  alert("grgrg");
+    $('#video_field').click();
+  });
+  if(localStorage.getItem("image_radio") == "true" || localStorage.getItem("image_radio") == null)
+  {
+  debugger;
+    $('#video-slide').removeClass('active');
+    $('#video-slide').removeClass('in');
+    $('#image-slide').addClass('active');
+    $('#image-slide').addClass('in');
+    $("#upload_type").prop('checked',true)
+    $("#upload_type1").prop('checked',false)
+  }
+  else
+  {
+    $('#image-slide').removeClass('active');
+    $('#image-slide').removeClass('in');
+    $('#video-slide').addClass('active');
+    $('#video-slide').addClass('in');
+    $("#upload_type").prop('checked',false)
+    $("#upload_type1").prop('checked',true)
+  }
+
+  $("#upload_type").on('change', function(e) {
+    localStorage.setItem("image_radio", true);
+    localStorage.setItem("video_radio", false);
+      $('#image-slide').addClass('active');
+      $('#image-slide').addClass('in');
+      $('#video-slide').removeClass('active');
+      $('#video-slide').removeClass('in');
+  });
+  $("#upload_type1").on('change', function(e) {
+    localStorage.setItem("video_radio", true);
+    localStorage.setItem("image_radio", false);
+
+     $('#image-slide').removeClass('active');
+     $('#image-slide').removeClass('in');
+     $('#video-slide').addClass('active');
+     $('#video-slide').addClass('in');
+  });
+  $("#file-load-drop").on('drop', function(e) {
+    // $("#video_submit").click();
+  });
+  function dropHandler(e)
+  {
+    if (e.dataTransfer.files[0].size < 500000000)
+    {
+      if (e.dataTransfer.files[0].type == "video/mp4")
+      {
+        $(".divLoading").removeClass("hidden");
+        e.preventDefault();
+        console.log(e.dataTransfer);
+        video_field.files = e.dataTransfer.files;
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  }
+  $("#video_field").on('change', function(e) {
+    if (e.currentTarget.files[0].size < 500000000)
+    {
+      if (e.currentTarget.files[0].type == "video/mp4")
+      {
+        $(".divLoading").removeClass("hidden");
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  });

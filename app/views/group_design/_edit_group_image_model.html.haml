@@ -1,0 +1,21 @@
+.modal-dialog{:style=>" min-width: 250px !important;  width: fit-content;  height: fit-content; !important;"}
+  .modal-content
+    = form_for @group_homepage_image,url: update_home_page_images_community_group_group_design_path(@community_group.id,@group_design.id,home_page_image_id: @group_homepage_image.id),method: :put do |f|
+      .modal-body
+        .image-crop{:style=>"max-height: fit-content;"}
+          - rn =  rand(9999999999999999999999999)
+          = image_tag  (@group_homepage_image.crop_x.present? ? @group_homepage_image.image.url(:large) + "?timestamp=#{rn}": @group_homepage_image.image.url(:large) + "?timestamp=#{rn}"), id: "cropbox"
+          - %w[x y w h].each do |attribute|
+            = f.hidden_field "crop_#{attribute}"
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+        .form-group
+          %label{:for => "exampleInputEmail1"} Image Title
+          = f.text_field :name , class: "form-control", placeholder: "Name"
+        .form-group
+          %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
+            Apply Changes
+            %i.fa.fa-check
+        .clearfix
+}

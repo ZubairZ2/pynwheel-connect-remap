@@ -49,6 +49,10 @@ Rails.application.routes.draw do
     resources :group_design do
       member do
         post :save_home_page_images
+        get :show_image_in_modal
+        put :update_home_page_images
+        delete :delete_home_page_image
+        get :upload_video_direct
       end
     end
   end
