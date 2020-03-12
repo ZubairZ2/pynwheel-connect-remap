@@ -19,9 +19,11 @@ class CommunityGroup < ApplicationRecord
   has_paper_trail
   belongs_to :company
   has_many :communities
+  has_one :group_design, dependent: :destroy
 
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
+  # accepts_nested_attributes_for :group_design
   validates_uniqueness_of :name
 
   mount_base64_uploader :logo, AvatarUploader

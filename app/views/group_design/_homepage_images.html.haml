@@ -1,0 +1,42 @@
+.text-center.image-upload.home-page-drag-box#group-home-page-image-upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
+  %p Drop files here or click to upload.
+.row.slide-imgage-boxs.sortable_not
+  - @community_group.group_design.group_homepage_images.each do |home_page_image, id_tag|
+    .col-lg-3{:id=> id_tag}
+      .slide-image 
+        .image-box
+          - rn =  rand(9999999999999999999999999)
+          .images.galleryimage-home{:style=>"background: url(#{ (home_page_image.crop_x.present? ? home_page_image.image.url(:large) + "?timestamp=#{rn}" : home_page_image.image.url(:large) + "?timestamp=#{rn}")}); background-repeat: no-repeat;height: 210px;background-position: center center;background-size: cover;"}
+            %a.preview-image{:href=>home_page_image.image.url.present? ? (home_page_image.crop_x.present? ? home_page_image.image.url(:large) + "?timestamp=#{rn}" : home_page_image.image.url(:large) + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"#{home_page_image.name}"}
+
+          .icons
+            = link_to show_image_in_modal_community_group_group_design_path(@community_group.id,@group_design.id,home_page_image: home_page_image.id), remote: true do
+              %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+            %a.text-danger{"data-name"=>"Image","data-href" => "/community_groups/#{@community_group.id}/group_design/#{@group_design.id}/delete_home_page_image?home_page_image_id=#{home_page_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+              %i.fa.fa-close
+        = image_tag "exclamation-mark.png", class: "waring_exal #{(home_page_image.is_small) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+
+        %h4= home_page_image.name
+
+.modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-body
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+        #carousel-example-generic.carousel.slide
+          / Wrapper for slides
+          .carousel-inner{:style=>"height: 500px;"}
+            - @community_group.group_design.group_homepage_images.each_with_index do |home_page_image,index|
+              .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
+                = image_tag home_page_image.image.url(:large)
+                .carousel-caption
+                  = home_page_image.name
+
+          / Controls
+          %a.left.carousel-control{"data-slide" => "prev", :href => "#carousel-example-generic", :role => "button"}
+            %span.glyphicon.glyphicon-chevron-left
+          %a.right.carousel-control{"data-slide" => "next", :href => "#carousel-example-generic", :role => "button"}
+            %span.glyphicon.glyphicon-chevron-right

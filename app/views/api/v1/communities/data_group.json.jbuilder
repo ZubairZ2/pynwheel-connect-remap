@@ -5,6 +5,27 @@ json.page_name @community_group.page_name
 json.logo @community_group.logo.present? ? @community_group.logo.url : "No image"
 json.inactivate !@community_group.inactivate
 
+json.homepage_design do
+  json.logo_position @community_group.group_design.logo_position.present? ? @community_group.group_design.logo_position : "Centre"
+  json.button_border_color @community_group.group_design.button_border_color.present? ? @community_group.group_design.button_border_color : "#3B3B3B"
+  json.button_shape @community_group.group_design.button_shape.present? ? @community_group.group_design.button_shape : "Rectangular"
+  json.button_width @community_group.group_design.button_width.present? ? @community_group.group_design.button_width : "450px"
+  json.button_height @community_group.group_design.button_height.present? ? @community_group.group_design.button_height : "150px"
+  json.button_spacing  @community_group.group_design.button_spacing.present? ? @community_group.group_design.button_spacing : "10px"
+  # json.background_image @community_group.group_design.background_image.present? ? @community_group.group_design.background_image.url : "No Image"
+  json.button_color @community_group.group_design.button_color.present? ? @community_group.group_design.button_color : "#3B3B3B"
+  json.button_opacity @community_group.group_design.button_opacity.present? ? @community_group.group_design.button_opacity : "#3B3B3B"
+  json.button_border_side @community_group.group_design.button_border_side.present? ? @community_group.group_design.button_border_side : "All sides"
+  json.button_border_color @community_group.group_design.button_border_color.present? ? @community_group.group_design.button_border_color : "#3B3B3B"
+  json.button_border_opacity @community_group.group_design.button_border_opacity.present? ? @community_group.group_design.button_border_opacity : "100%"
+  json.button_border_thickness @community_group.group_design.button_border_thickness.present? ? @community_group.group_design.button_border_thickness : "0px"
+  json.button_font_family @community_group.group_design.button_font_family.present? ? @community_group.group_design.button_font_family : ""
+  json.button_font_size @community_group.group_design.button_font_size.present? ? @community_group.group_design.button_font_size : "18px"
+  json.button_font_color @community_group.group_design.button_font_color.present? ? @community_group.group_design.button_font_color : "#3B3B3B"
+  json.bouncing_effecting @community_group.group_design.bouncing_effecting.present? ? @community_group.group_design.bouncing_effecting : "none"
+  # json.homepage_video @community_group.video.present? ? @community_group.video.url : "No video"
+end
+
 json.community_group @communities do |co|
   @community = co
   json.menu_button_shade @community.menu_button_shade
