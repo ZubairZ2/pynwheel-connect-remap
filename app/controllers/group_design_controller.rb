@@ -62,6 +62,9 @@ class GroupDesignController < ApplicationController
     # end
     @uploader =  GroupHomepageVideo.new(params[:home_page_video])
     @group_design = GroupDesign.find params[:id]
+    if @group_design.group_homepage_video.present?
+      @group_design.group_homepage_video.destroy
+    end
     # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/home_page_video/video/11/1565361189-1565352260-Short_funny_clips.mp4"
     # file_key = "uploads/home_page_video/video/1403/#{SecureRandom.uuid}-#{params[:doc][:video]}"
     # @document = HomePageVideo.create(video: params[:doc][:video])
