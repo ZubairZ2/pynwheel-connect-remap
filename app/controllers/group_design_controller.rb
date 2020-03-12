@@ -8,14 +8,26 @@ class GroupDesignController < ApplicationController
     @uploader.success_action_redirect = upload_video_direct_community_group_group_design_url(@community_group.id,@group_design.id)
   end
   def update
-# byebug
+
+    @community_group = CommunityGroup.find params[:community_group_id]
     @group_design = GroupDesign.find params[:id]
     if @group_design.update(group_design_params)
-      redirect_to company_community_groups_path(@company), :notice => "Design updated successfully."
+      redirect_to company_community_groups_path(@community_group.company_id), :notice => "Design updated successfully."
     else
       flash[:error] = @community_group.errors.full_messages.join(',')
       render "edit"
     end
+  end
+  def delete_home_page_video
+    @homepage_video = GroupHomepageVideo.find params[:home_page_video_id].to_i
+    @homepage_video.destroy
+    redirect_to community_group_group_design_index_path(@community_group.id)
+  end
+  def destroy
+    @community_group = CommunityGroup.find params[:community_group_id]
+    @homepage_video = GroupHomepageVideo.find params[:home_page_video_id].to_i
+    @homepage_video.destroy
+    redirect_to community_group_group_design_index_path(@community_group.id)
   end
   def save_home_page_images
 

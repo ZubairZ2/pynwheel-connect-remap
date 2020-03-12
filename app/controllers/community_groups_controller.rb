@@ -7,8 +7,9 @@ class CommunityGroupsController < ApplicationController
   end
   def create
     @community_group = CommunityGroup.new(community_group_params)
+    @community_group.company_id = params[:company_id]
     if @community_group.save
-      @company = Company.find @community_group.company_id
+      @company = Company.find current_company.id
       redirect_to company_community_groups_path(@company)
     else
       flash[:error] = @community_group.errors.full_messages.join(',')
@@ -93,8 +94,9 @@ class CommunityGroupsController < ApplicationController
   end
   private
   def community_group_params
-    params.require(:community_group).permit(:name,:address,:code,:page_type,:page_name,:logo,:inactivate,:company_id,:menu_button_shade, :group_design_attributes => [:id,:logo_position,:button_border_color,
-    :button_shape, :button_width, :button_height, :button_spacing, :background_image, :button_color, :button_opacity, :button_border_side, :button_border_color, :button_border_opacity,
-    :button_border_thickness, :button_font_family, :button_font_size, :button_font_color,:bouncing_effecting, :video])
+    params.require(:community_group).permit!
+    # params.require(:community_group).permit(:name,:address,:code,:page_type,:page_name,:logo,:inactivate,:company_id,:menu_button_shade, :group_design_attributes => [:id,:logo_position,:button_border_color,
+    # :button_shape, :button_width, :button_height, :button_spacing, :background_image, :button_color, :button_opacity, :button_border_side, :button_border_color, :button_border_opacity,
+    # :button_border_thickness, :button_font_family, :button_font_size, :button_font_color,:bouncing_effecting, :video])
   end
 end

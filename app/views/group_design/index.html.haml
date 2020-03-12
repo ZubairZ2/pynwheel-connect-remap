@@ -1,12 +1,20 @@
-- content_for :title, "Add Community Group - Pynwheel"
+- content_for :title, "Design - Pynwheel"
 .divLoading.hidden
 %section.is-community-page
   .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-home
+        = @community_group.name.capitalize
+        %br
+          -if current_user.is_super_admin?
+            %small.text-primary
+              = @community_group.code
     .box.box-info.add-plan.mt-20
       .box-header
         %h3.box-title
-          Add
-          %span Community Group
+          Design
+          %span Home Page
 
       = form_for @group_design,:url=>"/community_groups/#{@community_group.id}/group_design/#{@community_group.group_design.id}",:html=>{:class=>"form-horizontal"} do |d|
         .box-body
@@ -133,57 +141,58 @@
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                       Bouncing effect
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = d.text_field :bouncing_effecting , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.bouncing_effecting.present? ? d.object.bouncing_effecting : "#3B3B3B"
+                      = d.select :bouncing_effecting , options_for_select(["bouncing effects","none"],d.object.bouncing_effecting.present? ? d.object.bouncing_effecting : "none"),{},{class: "form-control",id: ""}
 
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Background image
 
-                  -#%span
-                  -#  Upload logo for this community group.
-                  -#  %br/
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .image-box.video-box
-                    .images.height-200
-                      %a.preview-image{:href=>d.object.background_image.present? ? d.object.background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
-                        = image_tag d.object.background_image.present? ? d.object.background_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-community-group-homepage-background-image", :style => "max-height: 190px; max-width: 270px;"
-                  %span.btn.btn-default.black-button.btn-sm.btn-file
-                    Select Image
-                    = d.file_field :background_image
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Background Video
-
-                  -#%span
-                  -#  Upload logo for this community group.
-                  -#  %br/
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .image-box.video-box
-                    .images.height-200
-                      = image_tag d.object.video.present? ? d.object.video.url : "default.jpeg",:height=>"",:width=>"170",:id=>"group_design_homepage_video", :style => "max-height: 190px; max-width: 270px;"
-                  %span.btn.btn-default.black-button.btn-sm.btn-file#file-load
-                    Select Image
-                    = d.file_field :video
-              .form-group
-                %h4.mt-30
-                  Select Home Page Type
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Changing the Home Page Type will change whether the home page shows a video or slideshow.
-                  .row
-                    .col-lg-12
-                      .form-group
-                        .radio.radio-primary.pull-left
-                          %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>d.object.has_images_loop_type? ? false : false}
-                            %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
-                              Images
-                        .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
-                          %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>d.object.has_video_loop_type? ? true : true}
-                            %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
-                              Video
+              -#.form-group
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Background image
+              -#
+              -#    -#%span
+              -#    -#  Upload logo for this community group.
+              -#    -#  %br/
+              -#
+              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#    .image-box.video-box
+              -#      .images.height-200
+              -#        %a.preview-image{:href=>d.object.background_image.present? ? d.object.background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
+              -#          = image_tag d.object.background_image.present? ? d.object.background_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-community-group-homepage-background-image", :style => "max-height: 190px; max-width: 270px;"
+              -#    %span.btn.btn-default.black-button.btn-sm.btn-file
+              -#      Select Image
+              -#      = d.file_field :background_image
+              -#
+              -#.form-group
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Background Video
+              -#
+              -#    -#%span
+              -#    -#  Upload logo for this community group.
+              -#    -#  %br/
+              -#
+              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#    .image-box.video-box
+              -#      .images.height-200
+              -#        = image_tag d.object.video.present? ? d.object.video.url : "default.jpeg",:height=>"",:width=>"170",:id=>"group_design_homepage_video", :style => "max-height: 190px; max-width: 270px;"
+              -#    %span.btn.btn-default.black-button.btn-sm.btn-file#file-load
+              -#      Select Image
+              -#      = d.file_field :video
+              -#.form-group
+              -#  %h4.mt-30
+              -#    Select Home Page Type
+              -#    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
+              -#      %span#propertyDetailNameText
+              -#        Changing the Home Page Type will change whether the home page shows a video or slideshow.
+              -#    .row
+              -#      .col-lg-12
+              -#        .form-group
+              -#          .radio.radio-primary.pull-left
+              -#            %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>d.object.has_images_loop_type? ? false : false}
+              -#              %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
+              -#                Images
+              -#          .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
+              -#            %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>d.object.has_video_loop_type? ? true : true}
+              -#              %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
+              -#                Video
         .box-footer
           = link_to "CANCEL" , company_community_groups_path(Company. find @community_group.company_id), :class=>"btn btn-default pull-right"
           = d.submit "SUBMIT", :class=>"btn btn-success pull-right mr-10"
@@ -268,7 +277,6 @@
   var community_group_id = "#{@community_group.id}"
   var group_design_id = "#{@group_design.id}"
   $("#file-load1").on('click', function(e) {
-  alert("grgrg");
     $('#video_field').click();
   });
   if(localStorage.getItem("image_radio") == "true" || localStorage.getItem("image_radio") == null)

@@ -52,6 +52,7 @@ Rails.application.routes.draw do
         get :show_image_in_modal
         put :update_home_page_images
         delete :delete_home_page_image
+        delete :delete_home_page_video
         get :upload_video_direct
       end
     end
