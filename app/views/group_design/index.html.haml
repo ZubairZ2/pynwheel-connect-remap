@@ -27,6 +27,13 @@
                       Position of logo
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = d.select :logo_position , options_for_select(home_page_position_of_logo,d.object.logo_position.present? ? d.object.logo_position : "Centre"),{},{class: "form-control",id: ""}
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Size of logo
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :logo_size , options_for_select(home_page_logo_size,d.object.logo_size.present? ? d.object.logo_size : "487x160"),{},{class: "form-control",id: ""}
 
               .row
                 .col-lg-12
@@ -60,13 +67,22 @@
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = d.select :button_spacing , options_for_select(spacing_between_buttons_options,d.object.button_spacing.present? ? d.object.button_spacing : "10px"),{},{class: "form-control",id: ""}
 
-              .row
-                .col-lg-12
-                  .form-group.mt-30
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      Button border color
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = d.select :button_spacing , options_for_select(spacing_between_buttons_options,d.object.button_spacing.present? ? d.object.button_spacing : "10px"),{},{class: "form-control",id: ""}
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Button  color
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .input-group.colorpicker-style.hex-format-colorpicker
+                    .input-group-addon
+                      %i
+                      = d.text_field :button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.button_color.present? ? d.object.button_color : "#3B3B3B"
+
+              -#.row
+              -#  .col-lg-12
+              -#    .form-group.mt-30
+              -#      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#        Button  color
+              -#      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#        = d.select :button_color , options_for_select(spacing_between_buttons_options,d.object.button_color.present? ? d.object.button_color : "10px"),{},{class: "form-control",id: ""}
 
               .row
                 .col-lg-12
@@ -144,23 +160,23 @@
                       = d.select :bouncing_effecting , options_for_select(["bouncing effects","none"],d.object.bouncing_effecting.present? ? d.object.bouncing_effecting : "none"),{},{class: "form-control",id: ""}
 
 
-              -#.form-group
-              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#    Background image
-              -#
-              -#    -#%span
-              -#    -#  Upload logo for this community group.
-              -#    -#  %br/
-              -#
-              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              -#    .image-box.video-box
-              -#      .images.height-200
-              -#        %a.preview-image{:href=>d.object.background_image.present? ? d.object.background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
-              -#          = image_tag d.object.background_image.present? ? d.object.background_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-community-group-homepage-background-image", :style => "max-height: 190px; max-width: 270px;"
-              -#    %span.btn.btn-default.black-button.btn-sm.btn-file
-              -#      Select Image
-              -#      = d.file_field :background_image
-              -#
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Background image
+
+                  -#%span
+                  -#  Upload logo for this community group.
+                  -#  %br/
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .image-box.video-box
+                    .images.height-200
+                      %a.preview-image{:href=>d.object.background_image.present? ? d.object.background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
+                        = image_tag d.object.background_image.present? ? d.object.background_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-community-group-homepage-background-image", :style => "max-height: 190px; max-width: 270px;"
+                  %span.btn.btn-default.black-button.btn-sm.btn-file
+                    Select Image
+                    = d.file_field :background_image
+
               -#.form-group
               -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               -#    Background Video
@@ -318,6 +334,10 @@
   });
   $("#file-load-drop").on('drop', function(e) {
     // $("#video_submit").click();
+  });
+
+  $("#group_design_background_image").change(function(){
+      readCommunityGroupHomepageImageURL(this);
   });
   function dropHandler(e)
   {
