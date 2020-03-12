@@ -87,14 +87,6 @@
     src: url('AvenirLTStd-Light.otf');
 }
 @font-face {
-    font-family: 'Baskerville Old Face';
-    src: url('Baskerville.ttc');
-}
-@font-face {
-    font-family: 'BASKVILL';
-    src: url('BASKVILL.TTF');
-}
-@font-face {
     font-family: 'Beaufort';
     src: url('Beaufort-Regular.ttf');
 }
@@ -240,16 +232,16 @@
 }
 @font-face {
     font-family: 'Proxima Nova Regular';
-    src: url('ProximaNovaCond-Regular.otf');
+    src: url('ProximaNova-Regular.otf');
 }
 @font-face {
     font-family: 'Proxima Nova Light';
     src: url('ProximaNova-Light.otf');
 }
-@font-face {
+/* @font-face {
     font-family: 'Proxima Nova rg';
     src: url('ProximaNova-Regular.otf');
-}
+} */
 @font-face {
     font-family: 'Raleway Regular';
     src: url('Raleway-Regular.ttf');
@@ -307,6 +299,46 @@
     src: url('Franklin Gothic Medium.ttf');
 }
 @font-face {
-    font-family: 'Avenir LT Std 35 Light';
+    font-family: 'Avenir Medium';
+    src: url('Avenir.ttc');
+}
+@font-face {
+    font-family: 'Avenir Next Condensed Regular';
+    src: url('Avenir Next Condensed.ttc');
+}
+@font-face {
+    font-family: 'Avenir Next Semi Bold';
+    src: url('Avenir Next Condensed.ttc');
+}
+@font-face {
+    font-family: 'Bebas Neue regular';
+    src: url('BebasNeue-Regular.otf');
+}
+@font-face {
+    font-family: 'DIN Bold';
+    src: url('DIN Bold.otf');
+}
+@font-face {
+    font-family: 'Helvetica Neue thin';
+    src: url('HelveticaNeue.ttc');
+}
+@font-face {
+    font-family: 'Proxima Nova Condensed';
+    src: url('ProximaNovaCond-Regular.otf');
+}
+@font-face {
+    font-family: 'Proxima Nova Medium';
+    src: url('ProximaNova-medium');
+}
+@font-face {
+    font-family: 'Avenir Light';
     src: url('AvenirLTStd-Light.otf');
+}
+@font-face {
+    font-family: 'Bodoni MT Condensed';
+    src: url('Bofoni MT Condensed.ttf');
+}
+@font-face {
+    font-family: 'Baskerville';
+    src: url('Baskerville.ttc');
 }

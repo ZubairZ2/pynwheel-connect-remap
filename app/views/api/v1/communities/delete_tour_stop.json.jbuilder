@@ -222,7 +222,7 @@ json.tours @tours do |tour|
         end
       end
       if unit_amenities_hit
-        unit_amenities_array = {
+        unit_amenities_array = [
             "x_plot" => 0,
             "y_plot" => 0,
             "name" => "No Image",
@@ -233,7 +233,8 @@ json.tours @tours do |tour|
                           "image" => image_url("no_image.png"),
                           "description" => nil,
                           "directional_text" => nil }
-        }
+        ]
+        
         json.unit_amenities unit_amenities_array
       end
       end
