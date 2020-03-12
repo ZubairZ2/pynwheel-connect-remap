@@ -481,7 +481,7 @@ module ApplicationHelper
         # ["Haettenschweiler","Haettenschweiler"],
         # ["Harlow Solid Italic","Harlow Solid Italic"],
         # ["Harrington","Harrington"],
-        ["Helvetica Neue thin","Helvetica Neue thin"],
+        ["Helvetica Neue thin","ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue Thin.ttf#HelveticaNeue"],
         ["Helvetica Neue", "ms-appx:/DesignTemplates/Expressionist/CutomFonts/HelveticaNeue-Roman.otf#Helvetica Neue"],
         ["Helvetica Neue LT Std","ms-appx:/DesignTemplates/Expressionist/CutomFonts/helvetica-neue-lt-std-47-light-condensed.otf#Helvetica Neue LT Std"],
         ["Helvetica-Normal","ms-appx:/DesignTemplates/Expressionist/CutomFonts/Helvetica-Normal.ttf#Helvetica-Normal"],
