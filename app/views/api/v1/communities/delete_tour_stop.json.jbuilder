@@ -221,22 +221,22 @@ json.tours @tours do |tour|
 
         end
       end
-      if unit_amenities_hit
-        unit_amenities_array = [
-            "x_plot" => 0,
-            "y_plot" => 0,
-            "name" => "No Image",
-            "image" => image_url("no_image.png"),
-            "stop_description" => nil,
-            "directional_text" => nil,
-            "gallery" => {"name" => "No Image",
-                          "image" => image_url("no_image.png"),
-                          "description" => nil,
-                          "directional_text" => nil }
-        ]
-        
-        json.unit_amenities unit_amenities_array
-      end
+      # if unit_amenities_hit
+      #   unit_amenities_array = [
+      #       "x_plot" => 0,
+      #       "y_plot" => 0,
+      #       "name" => "No Image",
+      #       "image" => image_url("no_image.png"),
+      #       "stop_description" => nil,
+      #       "directional_text" => nil,
+      #       "gallery" => {"name" => "No Image",
+      #                     "image" => image_url("no_image.png"),
+      #                     "description" => nil,
+      #                     "directional_text" => nil }
+      #   ]
+      #
+      #   json.unit_amenities unit_amenities_array
+      # end
       end
     elsif stop.stop_type == "elevator"
       elevator = Elevator.find_by_id stop.stop_id
