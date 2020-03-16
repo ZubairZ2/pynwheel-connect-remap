@@ -3,7 +3,7 @@
   %p Drop files here or click to upload.
 .row.slide-imgage-boxs.sortable_not
   - @community_group.group_design.group_homepage_images.each do |home_page_image, id_tag|
-    .col-lg-3{:id=> id_tag}
+    .col-lg-3{:id=> id_tag, :style => "height: 310px"}
       .slide-image 
         .image-box
           - rn =  rand(9999999999999999999999999)

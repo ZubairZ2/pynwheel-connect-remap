@@ -12,7 +12,7 @@ class GroupDesignController < ApplicationController
     @community_group = CommunityGroup.find params[:community_group_id]
     @group_design = GroupDesign.find params[:id]
     if @group_design.update(group_design_params)
-      redirect_to company_community_groups_path(@community_group.company_id), :notice => "Design updated successfully."
+      redirect_to edit_community_group_path(@community_group), :notice => "Design updated successfully."
     else
       flash[:error] = @community_group.errors.full_messages.join(',')
       render "edit"
