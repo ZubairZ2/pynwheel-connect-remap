@@ -266,6 +266,20 @@ function saveLoopType(loop_type){
         console.log("success");
     });
 }
+function saveLoopTypeForGroup(loop_type){
+    var url = "/community_groups/"+community_group_id+"/group_design/" + group_design_id + "/set_loop_type";
+    $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "script",
+        data: {
+            loop_type: loop_type
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+}
 
 
 function saveAnimation(value){

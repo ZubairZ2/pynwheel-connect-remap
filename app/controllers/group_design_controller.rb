@@ -54,6 +54,12 @@ class GroupDesignController < ApplicationController
     @homepage_image.destroy
     redirect_to community_group_group_design_index_path(@community_group.id)
   end
+  def set_loop_type
+    @group_design = GroupDesign.find params[:id]
+    @group_design.loop_type = (params['loop_type'] == "true" ? "images" : "videos")
+    @group_design.save
+    render :json=>{"status"=>"sucdess"}
+  end
   def upload_video_direct
 
     # home = HomePageVideo.where(design_id: current_community.design.id).first
