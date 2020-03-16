@@ -24,6 +24,7 @@ json.homepage_design do
   json.button_font_color @community_group.group_design.button_font_color.present? ? @community_group.group_design.button_font_color : "#3B3B3B"  rescue "#3B3B3B"
   json.bouncing_effecting @community_group.group_design.bouncing_effecting.present? ? @community_group.group_design.bouncing_effecting : "none"  rescue "none"
   json.homepage_video @community_group.group_design.group_homepage_video.video.present? ? @community_group.group_design.group_homepage_video.video.url : "No video"   rescue "No video"
+  json.loop_type @community_group.group_design.loop_type.present? ? @community_group.group_design.loop_type : "images" rescue "images"
   begin
   json.homepage_images @community_group.group_design.group_homepage_images do |img|
     json.filename img.name.present? ? img.name : ""
