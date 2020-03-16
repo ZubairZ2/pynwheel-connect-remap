@@ -27,7 +27,7 @@ json.homepage_design do
   begin
   json.homepage_images @community_group.group_design.group_homepage_images do |img|
     json.image img.image
-    json.name img.name
+    json.filename img.name
   end
   rescue
     json.homepage_images []

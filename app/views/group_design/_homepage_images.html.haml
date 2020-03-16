@@ -15,7 +15,7 @@
               %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
             %a.text-danger{"data-name"=>"Image","data-href" => "/community_groups/#{@community_group.id}/group_design/#{@group_design.id}/delete_home_page_image?home_page_image_id=#{home_page_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
               %i.fa.fa-close
-        = image_tag "exclamation-mark.png", class: "waring_exal #{(home_page_image.is_small) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+        = image_tag "exclamation-mark.png", class: "waring_exal #{(home_page_image.is_small) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
         %h4= home_page_image.name
 
