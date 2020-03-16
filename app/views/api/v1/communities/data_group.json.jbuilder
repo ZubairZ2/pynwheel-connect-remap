@@ -4,7 +4,6 @@ json.page_type @community_group.page_type ? "map" : "menu"
 json.page_name @community_group.page_name
 json.logo @community_group.logo.present? ? @community_group.logo.url : "No image"
 json.inactivate !@community_group.inactivate
-logo_size
 json.homepage_design do
   json.logo_position @community_group.group_design.logo_position.present? ? @community_group.group_design.logo_position : "Centre" rescue "Centre"
   json.logo_position @community_group.group_design.logo_size.present? ? @community_group.group_design.logo_size : "487x160 rescue 487x160"
@@ -13,7 +12,7 @@ json.homepage_design do
   json.button_width @community_group.group_design.button_width.present? ? @community_group.group_design.button_width : "450px"  rescue "450px"
   json.button_height @community_group.group_design.button_height.present? ? @community_group.group_design.button_height : "150px"  rescue "150px"
   json.button_spacing  @community_group.group_design.button_spacing.present? ? @community_group.group_design.button_spacing : "10px"  rescue "10px"
-  json.background_image @community_group.group_design.background_image.present? ? @community_group.group_design.background_image.url : "No Image"  rescue "No Image"
+  json.button_image @community_group.group_design.background_image.present? ? @community_group.group_design.background_image.url : "No Image"  rescue "No Image"
   json.button_color @community_group.group_design.button_color.present? ? @community_group.group_design.button_color : "#3B3B3B"  rescue "#3B3B3B"
   json.button_opacity @community_group.group_design.button_opacity.present? ? @community_group.group_design.button_opacity : "#3B3B3B"  rescue "#3B3B3B"
   json.button_border_side @community_group.group_design.button_border_side.present? ? @community_group.group_design.button_border_side : "All sides"  rescue "All sides"
