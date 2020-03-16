@@ -210,7 +210,7 @@
               -#              %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
               -#                Video
         .box-footer
-          = link_to "CANCEL" , company_community_groups_path(Company. find @community_group.company_id), :class=>"btn btn-default pull-right"
+          = link_to "CANCEL" , edit_community_group_path(@community_group), :class=>"btn btn-default pull-right"
           = d.submit "SUBMIT", :class=>"btn btn-success pull-right mr-10"
     .form-group
       %h4.mt-30
