@@ -4,7 +4,7 @@
       .modal-body
         .image-crop{:style=>"max-height: fit-content;"}
           - rn =  rand(9999999999999999999999999)
-          = image_tag  (@group_homepage_image.crop_x.present? ? @group_homepage_image.image.url(:large) + "?timestamp=#{rn}": @group_homepage_image.image.url(:large) + "?timestamp=#{rn}"), id: "cropbox"
+          = image_tag  (@group_homepage_image.crop_x.present? ? @group_homepage_image.image.url(:large) + "?timestamp=#{rn}": @group_homepage_image.image.url(:large) + "?timestamp=#{rn}"), id: "cropbox",:height => "500px"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}

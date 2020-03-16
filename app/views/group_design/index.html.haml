@@ -222,11 +222,11 @@
           .col-lg-12
             .form-group
               .radio.radio-primary.pull-left
-                %input#upload_type{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>true}
+                %input#upload_type{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>@group_design.loop_type == "images" ? true : false}
                   %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
                     Images
               .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
-                %input#upload_type1{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>false}
+                %input#upload_type1{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>@group_design.loop_type == "videos"  ? true : false}
                   %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
                     Video
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
@@ -297,7 +297,6 @@
   });
   if(localStorage.getItem("image_radio") == "true" || localStorage.getItem("image_radio") == null)
   {
-  debugger;
     $('#video-slide').removeClass('active');
     $('#video-slide').removeClass('in');
     $('#image-slide').addClass('active');
@@ -316,6 +315,7 @@
   }
 
   $("#upload_type").on('change', function(e) {
+  saveLoopTypeForGroup(true)
     localStorage.setItem("image_radio", true);
     localStorage.setItem("video_radio", false);
       $('#image-slide').addClass('active');
@@ -324,6 +324,7 @@
       $('#video-slide').removeClass('in');
   });
   $("#upload_type1").on('change', function(e) {
+  saveLoopTypeForGroup(false)
     localStorage.setItem("video_radio", true);
     localStorage.setItem("image_radio", false);
 

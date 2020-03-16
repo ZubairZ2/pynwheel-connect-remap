@@ -26,8 +26,8 @@ json.homepage_design do
   json.homepage_video @community_group.group_design.group_homepage_video.video.present? ? @community_group.group_design.group_homepage_video.video.url : "No video"   rescue "No video"
   begin
   json.homepage_images @community_group.group_design.group_homepage_images do |img|
-    json.image img.image.url(:large)
     json.filename img.name.present? ? img.name : ""
+    json.url img.image.present? ? img.image.url : "No image"
   end
   rescue
     json.homepage_images []
