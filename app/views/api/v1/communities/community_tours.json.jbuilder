@@ -36,7 +36,7 @@ json.tours @tours do |tour|
         @community.tour.sort_hash[floor.to_s].each do |s_id|
           if (s_id.present?)
             stop = (TourStop.find_by_id(s_id))
-            stops_arr << stop if stop.display_stop
+            stops_arr << stop if stop.display_stop rescue next
           end
         end
       end
@@ -77,7 +77,7 @@ json.tours @tours do |tour|
       if stop.stop_type == "unit"
         u = Unit.find stop.stop_id
         if u.present?
-          json.name u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
+          json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
         else
           next
         end
