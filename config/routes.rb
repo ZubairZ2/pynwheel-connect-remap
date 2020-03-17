@@ -349,6 +349,7 @@ Rails.application.routes.draw do
       resources :tours,only: :index do
         collection do
           post :tour_user_login
+          post :start_tour_auto_message
         end
         member do
           post :tour_user_login
