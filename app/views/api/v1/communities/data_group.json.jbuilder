@@ -12,6 +12,7 @@ json.homepage_design do
   json.button_width @community_group.group_design.button_width.present? ? @community_group.group_design.button_width : "450px"  rescue "450px"
   json.button_height @community_group.group_design.button_height.present? ? @community_group.group_design.button_height : "150px"  rescue "150px"
   json.button_spacing  @community_group.group_design.button_spacing.present? ? @community_group.group_design.button_spacing : "10px"  rescue "10px"
+  json.display_button_image @community_group.group_design.display_button_image.present? ? @community_group.group_design.display_button_image : false  rescue false
   json.button_image @community_group.group_design.background_image.present? ? @community_group.group_design.background_image.url : "No Image"  rescue "No Image"
   json.button_color @community_group.group_design.button_color.present? ? @community_group.group_design.button_color : "#3B3B3B"  rescue "#3B3B3B"
   json.button_opacity @community_group.group_design.button_opacity.present? ? @community_group.group_design.button_opacity : "#3B3B3B"  rescue "#3B3B3B"

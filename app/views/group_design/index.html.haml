@@ -160,7 +160,18 @@
                       = d.select :bouncing_effecting , options_for_select(["bouncing effects","none"],d.object.bouncing_effecting.present? ? d.object.bouncing_effecting : "none"),{},{class: "form-control",id: ""}
 
 
+              -#%label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 18px;  color: #ee3b31;"}
               .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "margin-left: 0px"}
+                  Display button image
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = d.check_box :display_button_image, {class: ""}
+                    %label.label-primary{:for => "group_design_display_button_image"}
+                    %span.pl-15 Yes
+              .form-group.hidden#button_image_div
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Button image
 
@@ -339,6 +350,19 @@
 
   $("#group_design_background_image").change(function(){
       readCommunityGroupHomepageImageURL(this);
+  });
+  var display_button_image = "#{@group_design.display_button_image}"
+  if(display_button_image == "true"){
+    $('#button_image_div').removeClass('hidden');
+    }
+
+  $('#group_design_display_button_image').change(function(){
+    if($(this).is(':checked')){
+        $('#button_image_div').removeClass('hidden');
+      }
+    else{
+        $('#button_image_div').addClass('hidden');
+     }
   });
   function dropHandler(e)
   {
