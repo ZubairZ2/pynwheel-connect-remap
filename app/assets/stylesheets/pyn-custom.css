@@ -2404,10 +2404,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   .slide-imgage-boxs .col-lg-3{
     width:33%;
   }
-  .email_div
-  {
-      margin-left: 10px !important;
-  }
+  /*.email_div*/
+  /*{*/
+      /*margin-left: 10px !important;*/
+  /*}*/
     .user_photo
     {
         margin-left: 44px !important;
@@ -2547,6 +2547,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   #unitModal .modal-dialog{
     max-width: 96% !important;
   }
+    /*.email_div*/
+    /*{*/
+        /*margin-left: -20px !important;*/
+    /*}*/
 
 }
 @media (max-width:850px){
@@ -2660,13 +2664,31 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   .modal-right{
     width: 99%;
   }
-  .email_div
-  {
-      margin-top: -50px !important;
-      margin-left: -70px !important;
-  }
+  /*.email_div*/
+  /*{*/
+      /*position: absolute;*/
+      /*margin-top: -87px !important;*/
+      /*margin-left: -30px !important;*/
+  /*}*/
 }
 @media (max-width:767px){
+    .email_div
+    {
+
+    }
+    .name_div
+    {
+        display:unset !important;
+        float: left;
+    }
+    .user_id_image1
+    {
+        margin-left:unset !important;
+    }
+    .user_id_image2
+    {
+        margin-left:unset !important;
+    }
   .pop-over{
     left:0;
     top:25%;
