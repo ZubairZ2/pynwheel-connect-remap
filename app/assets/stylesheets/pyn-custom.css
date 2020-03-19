@@ -2680,6 +2680,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     {
         display:unset !important;
         float: left;
+        margin-left:unset !important;
     }
     .user_id_image1
     {
