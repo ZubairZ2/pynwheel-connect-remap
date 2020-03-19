@@ -74,7 +74,7 @@ json.tours @tours do |tour|
       if stop.stop_type == "unit"
         u = Unit.find stop.stop_id
         if u.present?
-          json.name u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
+          json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
         else
           next
         end
