@@ -6,7 +6,7 @@ json.logo @community_group.logo.present? ? @community_group.logo.url : "No image
 json.inactivate !@community_group.inactivate
 json.homepage_design do
   json.logo_position @community_group.group_design.present? ? (@community_group.group_design.logo_position.present? ? @community_group.group_design.logo_position : "Centre") : "Centre" rescue "Centre"
-  json.logo_position @community_group.group_design.present? ? (@community_group.group_design.logo_size.present? ? @community_group.group_design.logo_size : "487x160") : "487x160" rescue "Centre"
+  json.logo_size @community_group.group_design.present? ? (@community_group.group_design.logo_size.present? ? @community_group.group_design.logo_size : "487x160") : "487x160" rescue "Centre"
   json.button_border_color @community_group.group_design.present? ? (@community_group.group_design.button_border_color.present? ? @community_group.group_design.button_border_color : "#3B3B3B") : "#3B3B3B"  rescue "#3B3B3B"
   json.button_shape @community_group.group_design.present? ? (@community_group.group_design.button_shape.present? ? @community_group.group_design.button_shape : "Rectangular") : "Rectangular"  rescue "Rectangular"
   json.button_width @community_group.group_design.present? ? (@community_group.group_design.button_width.present? ? @community_group.group_design.button_width : "450px") : "450px"  rescue "450px"
