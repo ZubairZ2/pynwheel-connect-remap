@@ -59,13 +59,13 @@
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = d.select :button_height , options_for_select(button_height_options,d.object.button_height.present? ? d.object.button_height : "150px"),{},{class: "form-control",id: ""}
 
-              .row
-                .col-lg-12
-                  .form-group.mt-30
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      Button Spacing
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = d.select :button_spacing , options_for_select(spacing_between_buttons_options,d.object.button_spacing.present? ? d.object.button_spacing : "10px"),{},{class: "form-control",id: ""}
+              -#.row
+              -#  .col-lg-12
+              -#    .form-group.mt-30
+              -#      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#        Button Spacing
+              -#      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#        = d.select :button_spacing , options_for_select(spacing_between_buttons_options,d.object.button_spacing.present? ? d.object.button_spacing : "10px"),{},{class: "form-control",id: ""}
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
