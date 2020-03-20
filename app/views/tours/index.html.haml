@@ -100,10 +100,10 @@
             - amenity_arr = []
             - units.each do |unit|
               - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
-                %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
+                %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name}"}
 
                   %span.ml-5
-                    = unit.marketing_name
+                    = unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name
               -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
               -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
 
@@ -161,13 +161,17 @@
                         - orderVar = orderVar + 1
                         %td= orderVar
                         %td
-                          = stop.name
+                          - if stop.stop_type == "unit"
+                            - u = Unit.find stop.stop_id
+                            = u.building.present? ? (u.building + "-" + stop.name) : stop.name
+                          - else
+                            = stop.name
                         %td
                           -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
                           -#  %i.fa.fa-eye
 
                           - if stop.stop_type == "unit"
-                            - u = Unit.find stop.stop_id
+
                             = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
