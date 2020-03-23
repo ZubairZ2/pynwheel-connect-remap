@@ -36,7 +36,7 @@ class AmenitiesController < ApplicationController
     rescue => ex
     end
     if @amenity.update_attributes(amenity_params)
-      if params[:amenity][:access_code].present? || params[:amenity][:description].present? || params[:amenity][:name].present?
+      unless params[:amenity_modal].present?
         redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully"
       else
         redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
