@@ -11,6 +11,9 @@
           %label{:for => "exampleInputEmail1"} Image Title
           = f.text_field :name , class: "form-control", placeholder: "Name"
         .form-group
+          %label{:for => "video_link_button_label"} Video Link Button Label
+          = f.text_field :video_link_button_label , class: "form-control", placeholder: "Video link button label"
+        .form-group
           %label{:for => "video_link"} Video Link
           = f.text_field :video_link , class: "form-control", placeholder: "Video link"
         - if !@community.is_sitemap && f.object.amenityable.present?

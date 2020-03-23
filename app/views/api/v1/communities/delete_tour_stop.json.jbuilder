@@ -285,6 +285,7 @@ json.tours @tours do |tour|
       json.stop_description amenity.description
       json.name amenity.name
       json.directional_text amenity.directional_text
+      json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link
       json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       if amenity.amenity_galleries.count == 0

@@ -50,6 +50,11 @@
 
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Video Link Button Label
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.text_field :video_link_button_label, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link button label"
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Video Link
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :video_link, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link"
