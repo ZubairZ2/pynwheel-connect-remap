@@ -13,7 +13,7 @@
     %h5
       = link_to "< Back to All Galleries", community_galleries_path(@community), class: "btn mb-20",style: "background-color: #8f4a9b; color: white;"
     / Start Tabs Secttions
-    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs",:style => "margin-bottom: 70px;"}
       #myTabContent.tab-content
         / Start image-slide section
         #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
@@ -47,8 +47,28 @@
     / End Tabs Secttions
 / /.content
 / End Body right Section
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "show_gallery_image_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 #edit-image.modal.fade.edit-image
 :javascript
+  function show_gallery_image_goBack()
+  {
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
+  }
   var community_id = #{params[:community_id]}
   var gallery_id = #{params[:id]}
   $("#file-load1").on('click', function(e) {

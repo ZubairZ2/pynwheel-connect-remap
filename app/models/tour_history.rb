@@ -44,7 +44,7 @@ class TourHistory < ApplicationRecord
 
   	if self.left
   		@mail_content = get_alert_message('tour_has_ended')
-  		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"
+  		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"+ "<br><br>See Tour Summary <a href='https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers'>Click Here</a>"
   		send_email_sms_or_both @mail_content
       # community.deleted_ids = []
       community.save

@@ -19,7 +19,6 @@ class FloorplatesController < ApplicationController
 
   def create
     @floorplate = current_community.floorplates.new(floorplate_params)
-
     image = MiniMagick::Image.open(params[:floorplate][:image].path)
     if image.width < 1000 && image.height < 700
       flash[:error] = "Too small property map image"

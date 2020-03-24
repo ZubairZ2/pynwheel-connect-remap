@@ -100,10 +100,10 @@
             - amenity_arr = []
             - units.each do |unit|
               - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
-                %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
+                %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name}"}
 
                   %span.ml-5
-                    = unit.marketing_name
+                    = unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name
               -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
               -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
 
@@ -161,13 +161,17 @@
                         - orderVar = orderVar + 1
                         %td= orderVar
                         %td
-                          = stop.name
+                          - if stop.stop_type == "unit"
+                            - u = Unit.find stop.stop_id
+                            = u.building.present? ? (u.building + "-" + stop.name) : stop.name
+                          - else
+                            = stop.name
                         %td
                           -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
                           -#  %i.fa.fa-eye
 
                           - if stop.stop_type == "unit"
-                            - u = Unit.find stop.stop_id
+
                             = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
@@ -198,12 +202,12 @@
 
         .row
           .col-md-12
-            = link_to starting_point_community_tours_path(@community), {:style=>'font-weight:bold;', class: "btn btn-primary mb-20 mr-5"} do
+            = link_to starting_point_community_tours_path(@community), {:style=>'font-weight:bold;', class: "btn btn-primary mr-5"} do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
 
             - if !@community.is_sitemap
-              = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
+              = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
                 %i.fa.fa-plus-circle
                 ADD ELEVATOR
             -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
@@ -271,11 +275,23 @@
                 - @existing_path_points.each_with_index do |point, index|               
                   .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
 
-                
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-lg-12.col-md-12
+              %button.btn-primary.mb-20.done_btn{:onclick => "tour_setup_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 
               / End Panel left Side
         / /.content
 :javascript
+  function tour_setup_goBack()
+  {
+      window.location.reload();
+  }
   $(document).ready(function() {
   if (window.location.href.includes('floorNo'))
   {

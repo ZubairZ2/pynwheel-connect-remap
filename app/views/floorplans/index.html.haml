@@ -76,7 +76,15 @@
                 %img{:alt => "", :src => "/assets/upload-image.png", :style => "max-width:100%;", :title => ""}
                 %p.mt-10
                 Drag & Drop file to Upload
-
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "floorplan_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 #modal-to-add-floorplan-description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
