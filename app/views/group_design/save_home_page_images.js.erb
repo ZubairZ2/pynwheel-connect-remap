@@ -1,0 +1,15 @@
+$('#images-index').html("<%= escape_javascript render 'group_design/homepage_images' %>");
+var message = '<div class="alert alert-success">Image uploaded successfully.</div>'
+$('#flash-message').html(message);
+setTimeout(function() {
+    $('.alert').fadeOut('slow');
+}, 10000);
+//imageDragNdrop();
+$('.sortable').railsSortable();
+
+$('.preview-image').click(function(event){
+    event.preventDefault();
+    $(this).ekkoLightbox({
+        alwaysShowClose: true
+    });
+});

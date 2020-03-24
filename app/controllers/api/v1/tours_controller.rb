@@ -11,7 +11,7 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       begin
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key])
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false)
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
@@ -31,10 +31,13 @@ class Api::V1::ToursController < ActionController::Base
     else
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
+        vs.image_bit = true
+        vs.crop_image_bit = true
         vs.image = tempFile
+        vs.croped = true
         if vs.id_card.present? && vs.image.present?
           vs.id_selfie_mismatch = false
-          email_content = "Please verify user on the following link <br/> <a href='https://pynwheelapp.com/id_selfie_matching/#{vs.id}' target='_blank'> Visitor's ID page </a>"
+          email_content = "Please verify user on the following link <br/> <a href='https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }' target='_blank'> Visitor's ID page </a>"
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'arslan.mirza@intagleo.com')
@@ -63,6 +66,9 @@ class Api::V1::ToursController < ActionController::Base
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.id_card = tempFile
+        vs.image_bit = false
+        vs.crop_image_bit = false
+        vs.croped = true
         vs.save
       rescue => ex
         success = false;
@@ -95,7 +101,7 @@ class Api::V1::ToursController < ActionController::Base
         rescue => ex
         end
         if a1.present? && a2.present? && a3.present?
-          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key])
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false)
         end
         if vs.present?
           arr << true
@@ -105,6 +111,34 @@ class Api::V1::ToursController < ActionController::Base
       end
       render :json=> {:success=>true, :message => "success", :data => arr}
 
+    end
+  end
+  def start_tour_auto_message
+    begin
+      if params[:access_token] == "AC1097385e8559f1ad63"
+        to = params[:phone_number]
+        start_tour_auto_msg = "Thank you for choosing to tour our property!
+click here to start your tour
+https://apps.apple.com/us/app/self-tour/id1488907392"
+
+        prod_from = '+12017012957'
+        account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
+        auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
+        @client = Twilio::REST::Client.new(account_sid, auth_token)
+
+
+        message = @client.messages
+                      .create(
+                          body: start_tour_auto_msg,
+                          from: prod_from,
+                          to: to
+                      )
+        render :json=> {:success=>true, :message => "Message Sent"}
+      else
+        render :json=> {:success=>false, :message => "Message Not Sent", :error => "Invalid Token"}
+      end
+    rescue => ex
+      render :json=> {:success=>false, :message => "Message Not Sent", :error => ex}
     end
   end
   def tour_user_login

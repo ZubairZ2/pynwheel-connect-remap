@@ -29,12 +29,15 @@ json.tours @tours do |tour|
 
   stops_arr = []
   if @community.is_sitemap
-    stops_arr = @community.tour.tour_stops
+    stops_arr = @community.tour.tour_stops.where(display_stop: true)
   else
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
       if @community.tour.sort_hash[floor.to_s].present?
         @community.tour.sort_hash[floor.to_s].each do |s_id|
-          stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
+          if (s_id.present?)
+            stop = (TourStop.find_by_id(s_id))
+            stops_arr << stop if stop.display_stop rescue next
+          end
         end
       end
     end
