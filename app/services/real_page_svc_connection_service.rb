@@ -22,7 +22,6 @@ class RealPageSvcConnectionService < BaseService
                           xmlns:xsd="http://www.w3.org/2001/XMLSchema">
                           <soapenv:Header/>
                           <soapenv:Body>
-
                             <tem:getunitlist>
                               <tem:auth>
                                 <tem:pmcid>'+pmc_id+'</tem:pmcid>
@@ -51,7 +50,6 @@ class RealPageSvcConnectionService < BaseService
                                 <tem:singlevalue>12</tem:singlevalue>
                               </tem:listCriteria>
                             </tem:getunitlist>
-
                           </soapenv:Body>
                         </soapenv:Envelope>')
       return response.body

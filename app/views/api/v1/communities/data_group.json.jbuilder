@@ -4,6 +4,37 @@ json.page_type @community_group.page_type ? "map" : "menu"
 json.page_name @community_group.page_name
 json.logo @community_group.logo.present? ? @community_group.logo.url : "No image"
 json.inactivate !@community_group.inactivate
+json.homepage_design do
+  json.logo_position @community_group.group_design.present? ? (@community_group.group_design.logo_position.present? ? @community_group.group_design.logo_position : "Centre") : "Centre" rescue "Centre"
+  json.logo_size @community_group.group_design.present? ? (@community_group.group_design.logo_size.present? ? @community_group.group_design.logo_size : "487x160") : "487x160" rescue "Centre"
+  json.button_border_color @community_group.group_design.present? ? (@community_group.group_design.button_border_color.present? ? @community_group.group_design.button_border_color : "#3B3B3B") : "#3B3B3B"  rescue "#3B3B3B"
+  json.button_shape @community_group.group_design.present? ? (@community_group.group_design.button_shape.present? ? @community_group.group_design.button_shape : "Rectangular") : "Rectangular"  rescue "Rectangular"
+  json.button_width @community_group.group_design.present? ? (@community_group.group_design.button_width.present? ? @community_group.group_design.button_width : "450px") : "450px"  rescue "450px"
+  json.button_height @community_group.group_design.present? ? (@community_group.group_design.button_height.present? ? @community_group.group_design.button_height : "150px") : "150px"  rescue "150px"
+  json.button_spacing  @community_group.group_design.present? ? (@community_group.group_design.button_spacing.present? ? @community_group.group_design.button_spacing : "10px") : "10px"  rescue "10px"
+  json.display_button_image @community_group.group_design.present? ? (@community_group.group_design.display_button_image.present? ? @community_group.group_design.display_button_image : false) : false  rescue false
+  json.button_image @community_group.group_design.present? ? (@community_group.group_design.background_image.present? ? @community_group.group_design.background_image.url : "No Image") : "No Image"  rescue "No Image"
+  json.button_color @community_group.group_design.present? ? (@community_group.group_design.button_color.present? ? @community_group.group_design.button_color : "#3B3B3B") : "#3B3B3B"  rescue "#3B3B3B"
+  json.button_opacity @community_group.group_design.present? ? (@community_group.group_design.button_opacity.present? ? @community_group.group_design.button_opacity : "#3B3B3B") : "#3B3B3B" rescue "#3B3B3B"
+  json.button_border_side @community_group.group_design.present? ? (@community_group.group_design.button_border_side.present? ? @community_group.group_design.button_border_side : "All sides") : "All sides" rescue "All sides"
+  json.button_border_color @community_group.group_design.present? ? (@community_group.group_design.button_border_color.present? ? @community_group.group_design.button_border_color : "#3B3B3B") : "#3B3B3B" rescue "#3B3B3B"
+  json.button_border_opacity @community_group.group_design.present? ? (@community_group.group_design.button_border_opacity.present? ? @community_group.group_design.button_border_opacity : "100%") : "100%" rescue "100%"
+  json.button_border_thickness @community_group.group_design.present? ? (@community_group.group_design.button_border_thickness.present? ? @community_group.group_design.button_border_thickness : "0px") : "0px" rescue "0px"
+  json.button_font_family @community_group.group_design.present? ? (@community_group.group_design.button_font_family.present? ? @community_group.group_design.button_font_family : "") : ""  rescue ""
+  json.button_font_size @community_group.group_design.present? ? (@community_group.group_design.button_font_size.present? ? @community_group.group_design.button_font_size : "18px") : "18px"  rescue "18px"
+  json.button_font_color @community_group.group_design.present? ? (@community_group.group_design.button_font_color.present? ? @community_group.group_design.button_font_color : "#3B3B3B") : "#3B3B3B" rescue "#3B3B3B"
+  json.bouncing_effecting @community_group.group_design.present? ? (@community_group.group_design.bouncing_effecting.present? ? @community_group.group_design.bouncing_effecting : "none") : "none"  rescue "none"
+  json.homepage_video @community_group.group_design.present? ? (@community_group.group_design.group_homepage_video.video.present? ? @community_group.group_design.group_homepage_video.video.url : "No video") : "No video"  rescue "No video"
+  json.loop_type @community_group.group_design.present? ? (@community_group.group_design.loop_type.present? ? @community_group.group_design.loop_type : "images") : "images" rescue "images"
+  begin
+  json.homepage_images @community_group.group_design.group_homepage_images do |img|
+    json.filename img.name.present? ? img.name : ""
+    json.url img.image.present? ? img.image.url : "No image"
+  end
+  rescue
+    json.homepage_images []
+  end
+end
 
 json.community_group @communities do |co|
   @community = co
@@ -1407,6 +1438,7 @@ json.community_group @communities do |co|
         else
           json.virtual_tour ""
         end
+        # json.iframe_enable_for_3Dtour unit.iframe_enable_for_3Dtour
 
         json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
         json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
@@ -1513,6 +1545,7 @@ json.community_group @communities do |co|
       else
         json.virtual_tour ""
       end
+      # json.iframe_enable_for_3Dtour floorplan.iframe_enable_for_3Dtour
 
       json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
         json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
@@ -1665,6 +1698,7 @@ json.community_group @communities do |co|
         else
           json.url webpage.url
         end
+        # json.iframe_enable_for_3Dtour webpage.iframe_enable_for_3Dtour.present? ? webpage.iframe_enable_for_3Dtour : false
         json.position webpage.position.present? ? webpage.position : 0
         json.display_on_homepage webpage.display_on_homepage.present? ? webpage.display_on_homepage : false
       end

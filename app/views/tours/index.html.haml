@@ -134,7 +134,7 @@
                   %tr
                     %th{:width => "79"} Sr #
                     %th Tour Stop
-                    %th{:width => "100"} Actions
+                    %th{:width => "150"} Actions
                 %tbody.tour_sortable
                   - orderVar = 0
                   - if @community.is_sitemap || @community.floorplates.map{|f| f.floors}.flatten.sort.first == params[:floorNo].to_i
@@ -160,18 +160,24 @@
                       %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
                         %td= orderVar
-                        %td
+                        %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
                             = u.building.present? ? (u.building + "-" + stop.name) : stop.name
                           - else
                             = stop.name
+
                         %td
                           -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
                           -#  %i.fa.fa-eye
 
                           - if stop.stop_type == "unit"
 
+                            - u = Unit.find stop.stop_id
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
+                              %i.fa.fa-eye.icon_size
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                              %i.fa.fa-eye-slash.icon_size
                             = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
@@ -190,6 +196,11 @@
 
                           - elsif stop.stop_type == "amenity"
                             - amenity = Amenity.find stop.stop_id
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} #{stop.display_stop ? "" : "hidden"} text-warning ml-5" do
+                              %i.fa.fa-eye.icon_size
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                              %i.fa.fa-eye-slash.icon_size
+
                             = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
@@ -320,12 +331,36 @@
             array: arr,
             floor: "#{@floor}"
         }
-      }).done(function () {
+      }).done(function (data) {
         console.log("success");
       });
 
   });
+  function display_stop(stop_id)
+  {
+    event.preventDefault();
+    $.ajax({
+        url: "/communities/#{@community.id}/tours/display_stop",
+        type: "POST",
+        data: {
+            stop_id: stop_id ,
+        }
+      }).done(function (data) {
+        if (data.display == true)
+        {
+          $('.stop_eye' + stop_id).removeClass('hidden');
+          $('.stop_eye_slash' + stop_id).addClass('hidden');
+          $(".strike_" + stop_id).css("text-decoration", "");
+        }
+        else
+        {
+          $('.stop_eye' + stop_id).addClass('hidden');
+          $('.stop_eye_slash' + stop_id).removeClass('hidden');
+          $(".strike_" + stop_id).css("text-decoration", "line-through");
+        }
 
+      });
+  }
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
     

@@ -30,10 +30,10 @@
             .box.box-widget.panel-box.add-plan.pt-30
               .row
                 .col-lg-6
-                  .col-lg-12{:style => "background: #efefef; margin: 30px; height: 100px;"}
-                    .col-lg-2.col-md-2.col-sm-2.col-xs-2
-                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "my_class", :style => "height: 100%; width: 100px; margin-top: #{(@tour_user.id_card.width - @tour_user.id_card.height) / 80}px; margin-left: -48px; #{@tour_user.image.present? ? "transform: rotate(90deg);" : ""}"
-                    .col-lg-3.col-md-3.col-sm-3.col-xs-3.email_div{:style => "margin-top: 15px; margin-left: -29px;"}
+                  .col-lg-12.name_div{:style => "background: #efefef; margin: 30px; left: 17px;  width: 92%; display: inline-flex; align-items: center;"}
+                    .col-lg-3.col-md-3.col-sm-2.col-xs-6
+                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                    .col-lg-3.col-md-3.col-sm-3.col-xs-12.email_div{:style => " "}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
                       %br
@@ -43,12 +43,13 @@
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
-                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "my_class", :style => " width: 100px;  margin-left: 99px; margin-top: #{(@tour_user.id_card.width - @tour_user.id_card.height) / 80}px; #{@tour_user.id_card.present? ? "transform: rotate(90deg);" : ""}"
+                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+
                   .row
                     %h4{:style => "margin-left: 45px"}
                       Alert
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
-                    - @alerts.each_with_index do |alert,index|
+                    - @alerts.order("id DESC").each_with_index do |alert,index|
                       - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                       .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                         .alert-div1{:style => "margin-top: 10px"}
@@ -91,7 +92,10 @@
                             .col-lg-2.col-md-2.col-sm-6.col-xs-6.user_photo
                               User photo
                               %br
-                              = image_tag  stop_image.image.url, :class => "", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
+                              - if stop_image.is_rotated == true
+                                = image_tag  stop_image.image.url, :class => "", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
+                              - else
+                                = image_tag  stop_image.image.url, :class => "", :style => "height: 74px; width: 100px; margin-top: 8px; margin-left: 0px; "
                         - stop[1].each do |stop_decription|
                           - if stop_decription.description.present?
                             .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
@@ -249,6 +253,11 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
+   if ("#{browser.device.iphone?}" == "true")
+   {
+     $(".user_id_image1").css("transform", "transform: rotate(90deg);");
+     $(".user_id_image2").css("transform", "transform: rotate(90deg);");
+   }
    function visitor_show_goBack()
   {
     if (window.history.length == 1)

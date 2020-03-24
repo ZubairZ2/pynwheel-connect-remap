@@ -46,6 +46,17 @@ Rails.application.routes.draw do
       get :add_community
       post :save_community
     end
+    resources :group_design do
+      member do
+        post :save_home_page_images
+        get :show_image_in_modal
+        put :update_home_page_images
+        delete :delete_home_page_image
+        delete :delete_home_page_video
+        get :upload_video_direct
+        post :set_loop_type
+      end
+    end
   end
   resources :communities do
     member do
@@ -241,6 +252,7 @@ Rails.application.routes.draw do
       collection do
         post :save_starting_point
         post :sort_stops
+        post :display_stop
         post :save_tour_settings
         get :starting_point
         get :select_stops
