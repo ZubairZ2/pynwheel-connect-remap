@@ -29,7 +29,7 @@ json.tours @tours do |tour|
 
   stops_arr = []
   if @community.is_sitemap
-    stops_arr = @community.tour.tour_stops.where(display_stop: true)
+    stops_arr = @community.tour.tour_stops.where(display_stop: true).order(:sort)
   else
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
       if @community.tour.sort_hash[floor.to_s].present?
