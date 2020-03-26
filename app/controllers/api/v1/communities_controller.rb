@@ -98,8 +98,12 @@ class Api::V1::CommunitiesController < ActionController::Base
     @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
   end
   def lincoln_list_communities
-    company = Company.where('lower(name) = ?', 'lincoln')
-    @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      company = Company.where('lower(name) = ?', 'lincoln')
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
+    else
+      render :json=> {:success=>false, :message => "Invalid Token"}
+    end
   end
   def community_tours
     @community = Community.find params[:id]
