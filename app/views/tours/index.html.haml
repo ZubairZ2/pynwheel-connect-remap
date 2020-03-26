@@ -172,6 +172,7 @@
                           -#  %i.fa.fa-eye
 
                           - if stop.stop_type == "unit"
+
                             - u = Unit.find stop.stop_id
                             = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
                               %i.fa.fa-eye.icon_size

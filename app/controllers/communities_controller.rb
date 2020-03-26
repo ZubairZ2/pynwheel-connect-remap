@@ -21,6 +21,7 @@ class CommunitiesController < ApplicationController
 
   def create
     @community = current_company.communities.new(community_params)
+    @community.lincoln_app = true if current_company.name.downcase.include?("lincoln") rescue nil
     if @community.save
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
