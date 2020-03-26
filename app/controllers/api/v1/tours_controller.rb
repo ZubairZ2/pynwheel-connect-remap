@@ -151,6 +151,35 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
     end
   end
 
+  def start_tour_auto_message
+    begin
+      if params[:access_token] == "AC1097385e8559f1ad63"
+        to = params[:phone_number]
+        start_tour_auto_msg = "Thank you for choosing to tour our property!
+click here to start your tour
+https://apps.apple.com/us/app/self-tour/id1488907392"
+
+        prod_from = '+12017012957'
+        account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
+        auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
+        @client = Twilio::REST::Client.new(account_sid, auth_token)
+
+
+        message = @client.messages
+                      .create(
+                          body: start_tour_auto_msg,
+                          from: prod_from,
+                          to: to
+                      )
+        render :json=> {:success=>true, :message => "Message Sent"}
+      else
+        render :json=> {:success=>false, :message => "Message Not Sent", :error => "Invalid Token"}
+      end
+    rescue => ex
+      render :json=> {:success=>false, :message => "Message Not Sent", :error => ex}
+    end
+  end
+  
   def save_shared_tour
     shared_tour = SharedTour.new shared_tour_params
     if shared_tour.save

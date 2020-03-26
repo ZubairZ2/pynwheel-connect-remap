@@ -90,6 +90,8 @@ json.tours @tours do |tour|
         json.stop_description amenity.description
         json.name amenity.name
         json.directional_text amenity.directional_text
+        json.video_link_button_label amenity.video_link_button_label
+        json.video_link amenity.video_link
 
         # amenity.description = nil
         amenityGalleryArr = []
