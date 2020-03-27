@@ -1016,6 +1016,16 @@
                 %span.icon-upload
                   = image_tag "upload-image.png"
                   %p Drag &amp; Drop file to Upload
+
+      .row
+        .col-md-12
+          .box-footer.mt-30.pt-15
+            .row
+              .col-lg-10
+                .form-group{:style => "margin-bottom: 0px;"}
+                  .col-lg-12.col-md-12
+                    %button.btn-primary.done_btn{:onclick => "global_navigation_goBack()",:style => "margin-left: -15px;"}
+                      DONE
 :javascript 
   var global_nav_button_on_as_image = "#{current_community.design.global_nav_button_on_as_image}" 
   var global_nav_button_off_as_image = "#{current_community.design.global_nav_button_off_as_image}" 
@@ -1099,6 +1109,11 @@
     $('.neighborhood-bg-upload-fields').removeClass('hidden');
     
 
+  function global_navigation_goBack()
+  {
+    $('.global-navigation-form').submit();
+     window.location.reload();
+  }
   $('#community_design_attributes_expressionist_attributes_display_neighborhood_bg_image').change(function(){
     if($(this).is(':checked')){
         $('.neighborhood-bg-upload-fields').removeClass('hidden');

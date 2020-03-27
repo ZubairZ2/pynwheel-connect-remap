@@ -25,4 +25,19 @@
             Neighborhood Map marker style
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             -# = d.select :marker_style , options_for_select([["","fa fa-map-marker",{"data-icon"=>"fa fa-map-marker"}]],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
-            = d.select :marker_style , options_for_select(["Tear Drop","Circle"],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}       
+            = d.select :marker_style , options_for_select(["Tear Drop","Circle"],d.object.marker_style),{},{class: "form-control selectpicker map-marker-field"}
+
+
+    .row
+      .col-lg-10
+        .form-group
+          .col-lg-12.col-md-12
+            %button.btn-primary.done_btn{:onclick => "map_marker_goBack()",:style => "margin-top: 35px;"}
+              DONE
+
+:javascript
+  function map_marker_goBack()
+  {
+    $('.map-marker-form').submit();
+     window.location.reload();
+  }

@@ -48,6 +48,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
   end
 
   process :quality => 40
+  process :resize_id_card
 
   # process optimize: [{quality: 20, level: 7}]
   # resize_to_fit(500, 500)
@@ -64,6 +65,43 @@ class AvatarUploader < CarrierWave::Uploader::Base
   #   resize_to_limit(1920, 1080)
   #   #process resize_and_crop: 200
   # end
+
+  def resize_id_card
+    if model.is_a? TourUser
+      if model.crop_image_bit
+        manipulate! do |img|
+          img = img.auto_orient
+          crop_w = (img.columns.to_f / 100.0) * 94.0
+          crop_h = (img.rows.to_f / 100.0) * 49.6
+          crop_x = (img.rows.to_f / 100.0) * 0.0175
+          crop_y = (img.rows.to_f / 100.0) * 25.2
+          img.crop!(crop_x, crop_y, crop_w, crop_h)
+
+          img
+        end
+      else
+        manipulate! do |img|
+          img = img.auto_orient
+          crop_w = (img.columns.to_f / 100.0) * 95.0
+          crop_h = (img.rows.to_f / 100.0) * 35.63
+          crop_x = (img.rows.to_f / 100.0) * 1.45
+          crop_y = (img.rows.to_f / 100.0) * 41.27
+          img.crop!(crop_x, crop_y, crop_w, crop_h)
+
+          img
+        end
+      end
+
+      # resize_to_fit(1980, 1080)
+    end
+    if model.is_a? VisitedStop
+      manipulate! do |img|
+        img = img.auto_orient
+        img
+      end
+    end
+  end
+
   def crop
     if model.is_a? Floorplan
       if (model.image_bit.nil? ? false : model.image_bit) && model.crop_x.present?

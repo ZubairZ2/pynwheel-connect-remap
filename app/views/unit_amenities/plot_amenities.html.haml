@@ -10,7 +10,7 @@
         %br
           %small.text-primary
             = @community.code
-    = link_to "<Back to All Units", community_floorplans_path(@community), class: "btn btn-primary ", style: "background: #8f4a9c; color: white;"
+    = link_to "<Back to All Units", community_units_path(@community), class: "btn btn-primary ", style: "background: #8f4a9c; color: white;"
     %h4{:style => "color: grey;"}
       If no images appear in the list, there are no available images to plot.
     .box.box-info.add-plan
@@ -89,7 +89,7 @@
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
     ////////////// Amenity Grid
-    .box.box-widget.panel-box
+    .box.box-widget.panel-box{:style => "margin-bottom: 80px;"}
       .row
         .col-md-12
           %table.table.table-bordered.table-striped.table-hover.table-responsive
@@ -107,6 +107,15 @@
                       %td= orderVar
                       %td
                         = amenity.name
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "unit_plotting_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 #add-description.modal.fade.edit-image
 -##add_amenity_description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
 -#  .modal-dialog
@@ -143,3 +152,14 @@
   var unit_id_for_amenity = #{@sitemap.id}
   var amenity_type = "unit"
   $('.amenity_sortable_list').railsSortable();
+  function unit_plotting_goBack()
+  {
+     if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
+  }

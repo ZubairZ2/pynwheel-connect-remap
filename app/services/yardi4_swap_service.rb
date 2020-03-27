@@ -87,17 +87,17 @@ class Yardi4SwapService < BaseService
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][0][:IDValue])
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][:IDValue])
       if unit.count > 1
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][0][:IDValue],floorplan_id: Floorplan.find_by(name: u[:Units][:Unit][:FloorplanName]).provider_floorplan_id)
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: u[:Units][:Unit][:Identification][0][:IDValue],floorplan_id: Floorplan.find_by(name: u[:Units][:Unit][:FloorplanName]).provider_floorplan_id)
       end
       if unit.present?
         unit = unit.first
         unit.provider = "yardi_new"
-        unit.provider_unit_id = u[:Units][:Unit][:Identification][0][0][:IDValue]
+        unit.provider_unit_id = u[:Units][:Unit][:Identification][0][:IDValue]
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
-        unit.unit_type = u[:Units][:Unit][:Identification][0][0][:IDValue]
+        unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
         unit.floorplan_id = u[:Units][:Unit][:UnitType]
         unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
         unit.effective_rent = u[:Units][:Unit][:MarketRent]
@@ -140,7 +140,7 @@ class Yardi4SwapService < BaseService
         puts '++++++++++++++++++1', unit.errors.full_messages.join(',')
       else
         # unit = Unit.where(community_id: credentials.community_id).first
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][0][:IDValue])
+        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue])
         if dup.present?
           dup.destroy
         end
@@ -148,9 +148,9 @@ class Yardi4SwapService < BaseService
         unit.community_id = credentials.community_id
         unit.provider = "yardi_new"
         unit.property_id = property_id
-        unit.provider_unit_id = u[:Units][:Unit][:Identification][0][0][:IDValue]
-        unit.unit_type = u[:Units][:Unit][:Identification][0][0][:IDValue]
-        unit.marketing_name = u[:Units][:Unit][:Identification][0][0][:IDValue]
+        unit.provider_unit_id = u[:Units][:Unit][:Identification][0][:IDValue]
+        unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
+        unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
         unit.floorplan_id = u[:Units][:Unit][:UnitType]
         unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
         unit.effective_rent = u[:Units][:Unit][:MarketRent]

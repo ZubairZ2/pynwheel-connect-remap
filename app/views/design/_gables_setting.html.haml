@@ -393,6 +393,15 @@
                   = image_tag "upload-image.png"
                   %p Drag &amp; Drop file to Upload
 
+      .row
+        .col-md-12
+          .box-footer.mt-30.pt-15
+            .row
+              .col-lg-10
+                .form-group{:style => "margin-bottom: 0px;"}
+                  .col-lg-12.col-md-12
+                    %button.btn-primary.done_btn{:onclick => "gables_setting_goBack()",:style => "margin-left: -15px;"}
+                      DONE
 
       /---------------------------------------  End for background images ------------------------------------/
 
@@ -435,6 +444,10 @@
         $('.application-bg-image-gables-upload-fields').addClass('hidden');
      }
   });
+  function gables_setting_goBack()
+  {
+     window.location.reload();
+  }
   $('#community_design_attributes_gable_attributes_display_apartment_bg_image_gables').change(function(){
     if($(this).is(':checked')){
         $('.apartment-bg-image-gables-upload-fields').removeClass('hidden');

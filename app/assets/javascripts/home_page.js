@@ -13,9 +13,12 @@ $(document).ready(function(){
   //************************* Home Page Images Upload using dropzone plugin **************//
   if ($("#home-page-image-upload-holder").length){
     saveHomePageImage();
-  } 
+  }
+    if ($("#group-home-page-image-upload-holder").length){
+        saveGroupHomePageImage();
+    }
 
-  if ($("#home-page-icon-upload-holder").length){
+    if ($("#home-page-icon-upload-holder").length){
     saveHomePageIcon();
   } 
   //************************* Home Page Images Upload using dropzone plugin **************//
@@ -257,6 +260,20 @@ function saveLoopType(loop_type){
         dataType: "script",
         data: {
             community: {design_attributes: {id: design_id,loop_type: loop_type}}
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+}
+function saveLoopTypeForGroup(loop_type){
+    var url = "/community_groups/"+community_group_id+"/group_design/" + group_design_id + "/set_loop_type";
+    $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "script",
+        data: {
+            loop_type: loop_type
         }
     }).done(function(){
         $(".divLoading").addClass("hidden");
@@ -612,6 +629,28 @@ function saveAnimation(value){
       }
     }
   }
+function imageFloorplanAmenityDragNdrop(){
+    var amenity_image_upload_holder = document.getElementById('unit-amenity-image--upload-holder');
+    if (amenity_image_upload_holder){
+        amenity_image_upload_holder.ondrop = function (e) {
+            e.preventDefault();
+            files = e.dataTransfer.files;
+            if (files.length > 0){
+                for (var i = 0; i < files.length; i++) {
+                    if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                        readAmenityImageSrc(files[i],'unit');
+                    }
+                }
+            }
+            if(files.length == 1){
+                console.log('checking files length. if a single file is dragged and it is not an image then show alert message');
+                if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){
+                    $('#image-upload-warning').modal('show');
+                }
+            }
+        }
+    }
+}
 
   function imageSitemapAmenityDragNdrop(){
     var amenity_image_upload_holder = document.getElementById('sitemap-amenity-image--upload-holder');
@@ -646,6 +685,18 @@ function fetchHomePageImages(){
         $(".divLoading").addClass("hidden");
         console.log("home page images are fetched successfully.");
     });
+}
+function fetchGroupHomePageImages(){
+    var url = "/community_groups/"+community_group_id+"/group_design"
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "script"
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("home page images are fetched successfully.");
+    });
+    window.location.reload();
 }
 
 function fetchHomePageIcons(){
@@ -801,6 +852,28 @@ function saveHomePageImage(){
       homePageImageDropzone.removeFile(file);
     }
   });
+}
+
+function saveGroupHomePageImage(){
+    var groupHomePageImageDropzone = new Dropzone("#group-home-page-image-upload-holder", { url: "/community_groups/"+community_group_id+"/group_design/"+group_design_id+"/save_home_page_images"});
+    Dropzone.options.homePageImageDropzone = {
+        uploadMultiple: true
+    };
+
+    groupHomePageImageDropzone.on("complete", function(file) {
+        console.log(file);
+        fetchGroupHomePageImages();
+    });
+
+    groupHomePageImageDropzone.on("addedfile", function(file) {
+        console.log(file.type);
+        $(".divLoading").removeClass("hidden");
+        if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
+            $(".divLoading").addClass("hidden");
+            $('#image-upload-warning').modal('show');
+            groupHomePageImageDropzone.removeFile(file);
+        }
+    });
 }
 
 function saveHomePageIcon(){

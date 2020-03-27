@@ -13,7 +13,7 @@
       .box-header
         %h3.box-title
           VISITORS
-    .row
+    .row{:style => "margin-bottom: 70px;"}
       / Start Panel left Side
       .col-lg-12.col-md-12
         .row
@@ -51,7 +51,7 @@
                           .visitor_list.custom_label_color
                             #{user.tour_histories.last.arrived.to_date} #{user.tour_histories.last.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                         %td.col-lg-1
-                          = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "my_class", :style => "height: 75px; width: 75px; #{user.image.present? ? "transform: rotate(90deg);" : ""}"
+                          = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
                         %td
                           .col-lg-2.visitor_list
                             = link_to "#{(user.last_name.present? ? user.last_name + ", " : "") + (user.first_name.present? ? user.first_name : user.name)}","/communities/#{@community.id}/tour_users/#{user.id}",:class => "name-list"
@@ -103,9 +103,25 @@
 -#                %center
 -#                  %h3 No visitor for this community.
 -#
-
-
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "visitor_index_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 :javascript
+  if ("#{browser.device.iphone?}" == "true")
+  {
+    $(".user_id_image").css("transform", "transform: rotate(90deg);");
+  }
   function click_list(id)
   {
+  }
+  function visitor_index_goBack()
+  {
+      window.location.reload();
+
   }

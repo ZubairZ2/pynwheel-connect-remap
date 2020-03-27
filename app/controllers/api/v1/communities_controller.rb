@@ -92,10 +92,10 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def list_communities
-    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo).includes(:company)
+    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
   end
   def portico_list_communities
-    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo).includes(:company).self_tour_enabled_only
+    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
   end
   def community_tours
     @community = Community.find params[:id]
@@ -107,7 +107,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   def delete_tour_stop
     @community = Community.find params[:id]
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
-    @community.deleted_ids = delete_array.present? ? delete_array : []
+    te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
+    @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
     @community.save
     @tours = Tour.where(id: params[:tour_id])
   end
