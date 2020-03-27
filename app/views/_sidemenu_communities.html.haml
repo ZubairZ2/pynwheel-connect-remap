@@ -3,7 +3,7 @@
   / sidebar: style can be found in sidebar.less
   %section.sidebar
     / Sidebar user panel
-    %ul.sidebar-menu{"data-widget" => "tree"}
+    %ul.sidebar-menu{"data-widget" => "tree",:style => "margin-top: 25px;"}
       %li.treeview{:class=>"#{controller_name =='communities' || controller_name =='companies' || controller_name =='community_groups' ? 'active' : ''}"}
         %a{:href => "/"}
           %i.fa.fa-building-o

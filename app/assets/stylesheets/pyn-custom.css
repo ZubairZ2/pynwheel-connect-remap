@@ -14,7 +14,7 @@ textarea { resize: none; }
   background-color: transparent;
   padding:15px 0 5px 0;
   height:auto;
-  text-align:left;
+  /*text-align:left;*/
   margin-left:10px;
 }
 .ui-datepicker{ z-index: 9999 !important;}
@@ -155,7 +155,7 @@ textarea { resize: none; }
   font-size:15px;
 }
 .sidebar-mini.sidebar-collapse .main-header .logo{
-  text-align:center;
+  /*text-align:center;*/
   margin-left:0;
 }
 .search-box{
@@ -633,8 +633,8 @@ table.upload-image tr td{
   position: fixed;
   z-index: 100000;
   background-image: url('loader.gif');
-  background-color: #666;
-  opacity: 0.6;
+  background-color: #66666669;
+  opacity: 1;
   background-repeat: no-repeat;
   background-position: center;
   left: 0;
@@ -2734,6 +2734,24 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     {
         margin-right: 40px !important;
         margin-top: 50px !important;
+    }
+
+    .main-sidebar
+    {
+        margin-top: 95px !important;
+    }
+    .navbar-static-top
+    {
+        margin-top: -16px !important;
+    }
+    .main-header .logo .logo-lg
+    {
+        text-align: center !important;
+    }
+    .navbar-static-top
+    {
+        margin-top: 0px !important;
+        height: 60px !important;
     }
 }
 
