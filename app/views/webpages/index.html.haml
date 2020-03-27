@@ -455,8 +455,8 @@
   });
 
   var window_height = window.innerHeight;
-  var diff = (8000/($(window).width()) * -1);
-  var diffL = (2500/($(window).width()) * -1);
+  var diff = 0// (8000/($(window).width()) * -1);
+  var diffL = 0// (2500/($(window).width()) * -1);
   // diff = diff * 3.47;
   // diffL = diffL * 3.47;
   // alert($(window).width());
@@ -464,11 +464,26 @@
   {
     var ele = document.getElementsByClassName('fa-map-marker-alt');
     for (var i = 0; i < ele.length; i++ ) {
-
+      ele[i].style.fontSize = ($(window).width() * .76) / 30
       ele[i].style.marginTop = diff
       ele[i].style.marginLeft = diffL
-      ele[i].children[0].style.marginTop = diff
-      ele[i].children[0].style.marginLeft = diffL
+      ele[i].children[0].style.marginTop = 0
+      ele[i].children[0].style.marginLeft = 0
+      ele[i].children[0].style.left = ($(window).width() * .20) / 30
+      factor = 0
+      if ($(window).height() > 800)
+      {
+        factor = (($(window).height() ) / 800)
+      }
+      ele[i].children[0].style.top = ($(window).width() * .15) / 30 + factor
+      ele[i].children[0].style.fontSize = ($(window).width() * .20) / 30
+    }
+    var ele = document.getElementsByClassName('custom-icon');
+    for (var i = 0; i < ele.length; i++ ) {
+      ele[i].style.height = 12
+      ele[i].style.width = 12
+      ele[i].children[0].style.marginTop = 0
+      ele[i].children[0].style.fontSize = 6
     }
   }
   var slides_to_show = 14;
