@@ -166,8 +166,8 @@ json.tours @tours do |tour|
       json.image unit.present? ? (unit.image.present? ? unit.image.url: (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
       json.name  "Apartment "+ (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
-      json.virtual_tour_button_label unit.virtual_tour_button_label
-      json.virtual_tour_url unit.virtual_tour_url
+      json.video_link_button_label unit.virtual_tour_button_label
+      json.video_link unit.virtual_tour_url
       lease_pricing = []
       if unit.lease_pricing.present?
         str_split = unit.lease_pricing.split(';')
@@ -202,6 +202,7 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
           json.stop_description unit_amenity.description
           json.directional_text unit_amenity.directional_text
+          json.video_link unit.virtual_tour_url
           if unit_amenity.amenity_galleries.count == 0
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
             json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description, "directional_text" => unit_amenity.directional_text]
