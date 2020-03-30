@@ -166,6 +166,8 @@ json.tours @tours do |tour|
       json.image unit.present? ? (unit.image.present? ? unit.image.url: (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
       json.name  "Apartment "+ (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
+      json.virtual_tour_button_label unit.virtual_tour_button_label
+      json.virtual_tour_url unit.virtual_tour_url
       lease_pricing = []
       if unit.lease_pricing.present?
         str_split = unit.lease_pricing.split(';')
