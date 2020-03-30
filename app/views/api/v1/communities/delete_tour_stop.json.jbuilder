@@ -248,6 +248,8 @@ json.tours @tours do |tour|
       json.name "Elevator"#elevator.description
       # json.name elevator.name
       json.directional_text elevator.directional_text
+      json.video_link_button_label ""
+      json.video_link ""
       json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
       if new_stops_arr.compact[counter + 1].present?
         next_stop = new_stops_arr.compact[counter + 1]
