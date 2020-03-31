@@ -97,6 +97,7 @@ json.tours @tours do |tour|
         json.video_link_button_label amenity.video_link_button_label
         json.video_link amenity.video_link.present? ? amenity.video_link : ""
 
+        
         # amenity.description = nil
         amenityGalleryArr = []
         amenityGalleryArr << amenity
