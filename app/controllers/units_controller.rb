@@ -87,6 +87,14 @@ class UnitsController < ApplicationController
       if (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability)
         @unit.availability_is_updated = true
       end
+      if params[:unit][:modal_unit].present?
+        if params[:unit][:modal_unit] == "1"
+          TourStop.create(tour_id: @community.tour.id, stop_type: "unit", name: @unit.marketing_name, display_stop: true, stop_id: @unit.id)
+        else
+          ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
+          ts.destroy if ts.present?
+        end
+      end
 
       if params[:unit][:sold].present? && params[:unit][:sold] == "true"
         @unit.availability = "Occupied"

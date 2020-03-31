@@ -98,8 +98,9 @@
             = "- select unit -"
           %ul#imageselect2{:style => "display: none; z-index: 999;"}
             - amenity_arr = []
+            - stop_list = @tour_stops.map{|x| x.stop_id}
             - units.each do |unit|
-              - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
+              - if (!@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) ) #|| (unit.modal_unit && !stop_list.include?(unit.id))
                 %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name}"}
 
                   %span.ml-5
@@ -138,7 +139,7 @@
                 %tbody.tour_sortable
                   - orderVar = 0
                   - if @community.is_sitemap || @community.floorplates.map{|f| f.floors}.flatten.sort.first == params[:floorNo].to_i
-                    - if @tours.x_plot >= 0 || @tours.y_plot >= 0 
+                    - if (@tours.x_plot >= 0 || @tours.y_plot >= 0 )
                       %tr
                         %td
                           = orderVar = orderVar + 1
@@ -174,12 +175,14 @@
                           - if stop.stop_type == "unit"
 
                             - u = Unit.find stop.stop_id
-                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
-                              %i.fa.fa-eye.icon_size
-                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
-                              %i.fa.fa-eye-slash.icon_size
-                            = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
-                              %i.fa.fa-road.icon_size
+                            - unless u.modal_unit
+                              = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
+                                %i.fa.fa-eye.icon_size
+                              = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                                %i.fa.fa-eye-slash.icon_size
+                            - unless u.modal_unit  && ((u.x_plot + u.y_plot) < 1)
+                              = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
+                                %i.fa.fa-road.icon_size
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
@@ -206,8 +209,9 @@
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
-                          %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
-                            %i.fa.fa-trash.icon_size
+                          - unless u.present? && u.modal_unit
+                            %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                              %i.fa.fa-trash.icon_size
 
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
 
@@ -280,6 +284,7 @@
 
 
                   - else
+                    - next if (stop.y_plot + stop.x_plot) < 1
                     %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                 
                 /- binding.pry
