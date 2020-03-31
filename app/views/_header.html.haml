@@ -21,7 +21,7 @@
       %span.logo-lg{:style => "text-align: left;"}
         %img{:alt => "", :src => "/assets/pynwheel_connect_logo_v2.png", :title => "",:style => "width: 265px; height: 60px;"}
         .col-lg-12{:style => "text-align: center;"}
-          - unless (params[:controller] == "companies" && params[:action] == "index") || params[:controller] == "communities" && params[:action] == "index" || params[:controller] == "home" && params[:action] == "index"
+          - unless (params[:controller] == "companies" && params[:action] == "index") || params[:controller] == "communities" && params[:action] == "index" || params[:controller] == "home" && params[:action] == "index"  || params[:controller] == "community_groups" && params[:action] == "index"
             %span= current_company.name rescue ''
   %nav.navbar.navbar-static-top{:style => "height: 81px;"}
     / Sidebar toggle button
