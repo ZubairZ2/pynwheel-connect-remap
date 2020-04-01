@@ -50,7 +50,7 @@
       .box-header
         %h3.box-title
           Plot Units on Property Map
-        .btn-btn-danger.mt-10
+        .btn-btn-danger.mt-10.loader_class
           = link_to "MANAGE AMENITIES" , community_amenities_path(@community), :class=>"btn btn-success"
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} GRID OVERLAY
           - if current_user.is_super_admin?

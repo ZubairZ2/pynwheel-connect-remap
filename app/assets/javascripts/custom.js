@@ -28,6 +28,10 @@ $(document).ready(function(e){
       e.stopPropagation();
     })
 
+    $(".loader_class").click(function(e){
+        $(".divLoading").removeClass("hidden");
+    })
+
   $("#multiselect li").click(function(e){
     if ($(this).hasClass("active")){
       $(this).removeClass("active")
