@@ -137,6 +137,7 @@ json.tours @tours do |tour|
   json.tour_stop new_stops_arr.compact do |stop|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
+    next if (stop.latitude + stop.longitude) < 1
     navigation_title = ""
     if second_last.id == stop.id
       navigation_title = "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""

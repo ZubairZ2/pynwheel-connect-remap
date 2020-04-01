@@ -89,10 +89,19 @@ class UnitsController < ApplicationController
       end
       if params[:unit][:modal_unit].present?
         if params[:unit][:modal_unit] == "1"
-          TourStop.create(tour_id: @community.tour.id, stop_type: "unit", name: @unit.marketing_name, display_stop: true, stop_id: @unit.id)
+          ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
+          TourStop.create(tour_id: @community.tour.id, stop_type: "unit", name: @unit.marketing_name, display_stop: true, stop_id: @unit.id, latitude: @unit.x_plot, longitude: @unit.y_plot) unless ts.present?
         else
           ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
-          ts.destroy if ts.present?
+          if ts.present?
+            paths = Path.where(map_path_from_id: ts.stop_id)
+            paths.each do |path|
+              path.path_points.destroy_all
+              path.destroy if path.present?
+            end
+            ts.destroy
+          end
+
         end
       end
 
@@ -238,11 +247,20 @@ class UnitsController < ApplicationController
     @unit.x_plot = 0
     @unit.y_plot = 0
     @unit.floorplate_id = nil
-    ts = TourStop.find_by(stop_id: @unit.id)
-    if ts.present?
-      VisitedStop.where(tour_stop_id: ts.id).destroy_all
-      ts.destroy
+    ts = TourStop.find_by(stop_id: @unit.id) unless @unit.modal_unit
+    if @unit.modal_unit
+      if ts.present?
+        ts.latitude = 0
+        ts.longitude = 0
+        ts.save
+      end
+    else
+      if ts.present?
+        VisitedStop.where(tour_stop_id: ts.id).destroy_all
+        ts.destroy
+      end
     end
+
     if @unit.save(validate: false)
       redirect_to community_floorplate_plotexp_path(@community,@floorplate), notice: "The plot has been deleted successfully."
     else
