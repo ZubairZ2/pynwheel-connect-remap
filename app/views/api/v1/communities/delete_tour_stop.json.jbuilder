@@ -14,7 +14,10 @@ json.tours @tours do |tour|
   json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
 
   json.is_sitemap @community.is_sitemap
-  json.visual_id_verification tour.visual_id_verification
+  json.tour_setting do
+    json.visual_id_verification tour.visual_id_verification
+
+  end
   if @community.is_sitemap
     json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
