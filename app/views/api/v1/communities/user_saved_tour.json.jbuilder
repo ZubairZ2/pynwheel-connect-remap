@@ -1,6 +1,7 @@
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
+json.visual_id_verification @community.present? ? @community.tour.visual_id_verification : true
 last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
 @tours.each do |tour|
   if tour[0][1] == last_vs.tour_key
