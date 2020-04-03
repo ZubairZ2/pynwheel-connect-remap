@@ -362,6 +362,10 @@
       %b#popover-price
 
 :javascript
+  $(window).on('resize', function() {
+    $(".divLoading").removeClass("hidden");
+    window.location.reload();
+  });
   function iOSversion() {
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
@@ -377,8 +381,8 @@
       }, 500);
     }
   });
-  
-  
+
+
   $(".divLoading").removeClass("hidden");
   $(window).on( "orientationchange", function( event ) {
         $(".divLoading").removeClass("hidden");
@@ -480,10 +484,10 @@
     }
     var ele = document.getElementsByClassName('custom-icon');
     for (var i = 0; i < ele.length; i++ ) {
-      ele[i].style.height = (#{marker_font_size} / 2.5)
-      ele[i].style.width = (#{marker_font_size} / 2.5)
+      ele[i].style.height = (#{marker_font_size} / (1400 / $(window).width())  )
+      ele[i].style.width = (#{marker_font_size} / (1400 / $(window).width())  )
       ele[i].children[0].style.marginTop = 0
-      ele[i].children[0].style.fontSize = (#{marker_font_size} / 4)
+      ele[i].children[0].style.fontSize = (#{marker_font_size} / (2300 / $(window).width())  )
     }
   }
   var slides_to_show = 14;
