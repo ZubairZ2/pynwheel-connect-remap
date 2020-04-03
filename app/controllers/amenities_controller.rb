@@ -42,7 +42,11 @@ class AmenitiesController < ApplicationController
         redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
       end
     else
-      redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
+      unless params[:amenity_modal].present?
+        redirect_to edit_community_amenity_path(current_community,@amenity), alert: @amenity.errors.full_messages.join(',')
+      else
+        redirect_to community_amenities_path(current_community), alert: @amenity.errors.full_messages.join(',')
+      end
     end
   end
   def saveAmenityGallery

@@ -38,7 +38,20 @@ class Amenity < ApplicationRecord
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]
+  validate :url_validity
   # validate :image_size
+
+
+  def url_validity
+    require 'uri'
+    if video_link.present?
+      result = URI.open(video_link).status rescue ""
+      unless result.present?
+        errors[:base] << "Invalid URL."
+      end
+    end
+
+  end
   def image_size
     if image.size > 1.megabytes
       errors[:base] << "File can not be greater than 5MB"
