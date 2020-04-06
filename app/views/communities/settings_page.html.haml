@@ -59,7 +59,7 @@
                   = f.radio_button :billing_type, "monthly"
                   = f.label :billing_type, "Monthly", :value => "monthly"
 
-              - if @community.billing_type == "monthly"
+              - if @community.billing_type == "annual"
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Billing Month
@@ -127,7 +127,7 @@
                   = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Date Installed
+                  Subscription Start Date
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true

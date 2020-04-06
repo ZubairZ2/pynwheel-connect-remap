@@ -299,7 +299,7 @@ class CommunitiesController < ApplicationController
     worksheet.write(0, 12, "Data Provider",format)
     worksheet.write(0, 13, "Self Tour (Yes/No)",format)
     worksheet.write(0, 14, "Active/Inactive",format)
-    worksheet.write(0, 15, "Date Activated",format)
+    worksheet.write(0, 15, "Subscription Start Date",format)
     worksheet.write(0, 16, "Date Inactivated",format)
     worksheet.write(0, 17, "Billing Month",format)
     worksheet.write(0, 18, "Billing Rate",format)
@@ -335,7 +335,7 @@ class CommunitiesController < ApplicationController
         worksheet.write(row, 14, community.locked.present? ? (community.locked ? "Inactive" : "Active") : "Active",format1)
         worksheet.write(row, 15, community.date_activated,format1)
         worksheet.write(row, 16, community.date_inactivated,format1)
-        worksheet.write(row, 17, community.billing_type == "annual" ? "Annual" : "Monthly (#{community.billing_month})",format1)
+        worksheet.write(row, 17, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly",format1)
         worksheet.write(row, 18, community.billing_rate,format1)
 
         row = row + 1
