@@ -152,7 +152,7 @@
 
 - unless @neighborhood.new_record?
   .btn-btn-danger
-    = link_to community_neighborhood_locations_path(@community,@neighborhood),style: "font-family: unset;", class: "btn btn-success" do
+    = link_to community_neighborhood_locations_path(@community,@neighborhood),style: "font-family: unset;", class: "btn btn-success loader_class" do
       %i.fa.fa-plus-circle
       ADD PLACES
     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodAddPlacesPopover","data-content" => " "}
