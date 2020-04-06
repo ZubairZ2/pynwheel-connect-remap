@@ -16,7 +16,7 @@
         / /.box-body
         .box-footer
           = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
-          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"
+          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 loader_class"
 
 :javascript
   $(document).ready(function(e){
