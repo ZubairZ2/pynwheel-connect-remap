@@ -64,9 +64,9 @@
           %span.hidden#marker-color #{marker_color}
           %span.hidden#camera-margin #{camera_margin}
 
-        .btn-btn-danger.mt-10
-          = link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary"
-          = link_to "PLOT UNITS <i class='propertyDetailName fa fa-question-circle'><span id='propertyDetailNameText' style='font-weight: normal'>Click on 'Plot Units' to switch from plotting amenity images to plotting units.</span></i>".html_safe, plotexp_community_sitemaps_path(@community), class: "btn btn-primary"
+        .btn-btn-danger.mt-10.loader_class
+          = link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "loader_class btn btn-primary"
+          = link_to "PLOT UNITS <i class='propertyDetailName fa fa-question-circle'><span id='propertyDetailNameText' style='font-weight: normal'>Click on 'Plot Units' to switch from plotting amenity images to plotting units.</span></i>".html_safe, plotexp_community_sitemaps_path(@community), class: "loader_class btn btn-primary"
           %a.btn.btn-danger{"data-name" => "sitemap's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/remove_amenities_plot"} RESET ALL PLOTS
       / /.box-header
       / form start
