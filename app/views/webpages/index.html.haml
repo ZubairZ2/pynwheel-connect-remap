@@ -362,6 +362,10 @@
       %b#popover-price
 
 :javascript
+  $(window).on('resize', function() {
+    $(".divLoading").removeClass("hidden");
+    window.location.reload();
+  });
   function iOSversion() {
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
@@ -377,8 +381,8 @@
       }, 500);
     }
   });
-  
-  
+
+
   $(".divLoading").removeClass("hidden");
   $(window).on( "orientationchange", function( event ) {
         $(".divLoading").removeClass("hidden");
@@ -455,8 +459,8 @@
   });
 
   var window_height = window.innerHeight;
-  var diff = (8000/($(window).width()) * -1);
-  var diffL = (2500/($(window).width()) * -1);
+  var diff = 0// (8000/($(window).width()) * -1);
+  var diffL = 0// (2500/($(window).width()) * -1);
   // diff = diff * 3.47;
   // diffL = diffL * 3.47;
   // alert($(window).width());
@@ -464,11 +468,26 @@
   {
     var ele = document.getElementsByClassName('fa-map-marker-alt');
     for (var i = 0; i < ele.length; i++ ) {
-
-      ele[i].style.marginTop = diff
-      ele[i].style.marginLeft = diffL
-      ele[i].children[0].style.marginTop = diff
-      ele[i].children[0].style.marginLeft = diffL
+      ele[i].style.fontSize = ($(window).width() * .76) / 30 + ((#{fontsize} - 25) / 5)
+      ele[i].style.marginTop = diff - 3
+      ele[i].style.marginLeft = diffL + 1
+      ele[i].children[0].style.marginTop = -3
+      ele[i].children[0].style.marginLeft = 1
+      ele[i].children[0].style.left = ($(window).width() * .20) / 30 + ((#{fontsize} - 25) / 9)
+      factor = 0
+      if ($(window).height() > 800)
+      {
+        factor = (($(window).height() ) / 800)
+      }
+      ele[i].children[0].style.top = ($(window).width() * .15) / 30 + factor + ((#{fontsize} - 25) / 5)
+      ele[i].children[0].style.fontSize = ($(window).width() * .20) / 30 + ((#{fontsize} - 25) / 10)
+    }
+    var ele = document.getElementsByClassName('custom-icon');
+    for (var i = 0; i < ele.length; i++ ) {
+      ele[i].style.height = (#{marker_font_size} / (1400 / $(window).width())  )
+      ele[i].style.width = (#{marker_font_size} / (1400 / $(window).width())  )
+      ele[i].children[0].style.marginTop = 0
+      ele[i].children[0].style.fontSize = (#{marker_font_size} / (2300 / $(window).width())  )
     }
   }
   var slides_to_show = 14;
