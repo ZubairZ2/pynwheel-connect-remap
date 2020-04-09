@@ -74,8 +74,8 @@
   -#.col-sm-12.col-lg-3.col-md-3.col-xs-12
   -#  = f.radio_button :inactivate, false
   -#  = f.label :inactivate, "True", :value => "false"
--#- if params[:action] == "edit"
--#  = link_to "Design" , community_group_group_design_index_path(@community_group.id), :class=>"btn btn-success"
+- if params[:action] == "edit"
+  = link_to "Design" , community_group_group_design_index_path(@community_group.id), :class=>"btn btn-success"
 
 -#
 -#= f.fields_for :group_design do |d|
