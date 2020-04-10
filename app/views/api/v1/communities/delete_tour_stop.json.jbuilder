@@ -196,6 +196,17 @@ json.tours @tours do |tour|
         h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
         lease_pricing << h
       end
+      if unit.modal_unit
+        lease_pricing = []
+        tour.tour_stops.where(stop_type: "unit").each do |unit_stop|
+          unless @community.deleted_ids.include? unit_stop
+            modal_unit = Unit.find unit_stop.stop_id
+            pricing_str = {"pricing_option" => modal_unit.marketing_name + " $" + modal_unit.effective_rent.to_s} rescue next
+          end
+          lease_pricing << pricing_str
+        end
+        lease_pricing = lease_pricing.sort_by!(&:zip)
+      end
       stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
