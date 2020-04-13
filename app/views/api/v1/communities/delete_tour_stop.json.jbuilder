@@ -198,12 +198,12 @@ json.tours @tours do |tour|
       end
       if unit.modal_unit
         lease_pricing = []
-        tour.tour_stops.where(stop_type: "unit").each do |unit_stop|
-          unless @community.deleted_ids.include? unit_stop
-            modal_unit = Unit.find unit_stop.stop_id
-            pricing_str = {"pricing_option" => modal_unit.marketing_name + " $" + modal_unit.effective_rent.to_s} rescue next
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today) if unit.present?
+        @units.each do |floorplan_unit|
+          unless floorplan_unit.id == unit.id
+            pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_s} rescue next
+            lease_pricing << pricing_str
           end
-          lease_pricing << pricing_str
         end
         lease_pricing = lease_pricing.sort_by!(&:zip)
       end
