@@ -16,7 +16,6 @@
           SUMMARY
           %span
             #{@tour_user.name}
-        = link_to 'Delete User' , community_tour_user_path(@community, @tour_user), data: {:confirm => 'Are you sure you want to delete this visitor? This cannot be undone.'},  method: :delete,:class=>"btn btn-danger delete_tour_user_btn", :style=> "float: right;"
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
         -#%span{:style => "float: right;"}

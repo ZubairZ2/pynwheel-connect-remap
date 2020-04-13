@@ -21,6 +21,11 @@ class TourUsersController < ApplicationController
   def destroy
     @community = Community.find params[:community_id]
     @tour_user = TourUser.find params[:id]
+
+    @tour_user.tour_histories.delete_all
+    @tour_user.visited_stops.delete_all
+    @tour_user.schedual_tour.delete_all
+
     @tour_user.destroy
     redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
   end
