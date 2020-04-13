@@ -18,6 +18,13 @@ class TourUsersController < ApplicationController
     @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
   end
 
+  def destroy
+    @community = Community.find params[:community_id]
+    @tour_user = TourUser.find params[:id]
+    @tour_user.destroy
+    redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
+  end
+
   def breadCrumb
     add_breadcrumb "Home", root_path
   end
