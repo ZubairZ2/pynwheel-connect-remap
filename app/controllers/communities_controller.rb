@@ -21,6 +21,7 @@ class CommunitiesController < ApplicationController
 
   def create
     @community = current_company.communities.new(community_params)
+    @community.lincoln_app = true if current_company.name.downcase.include?("lincoln") rescue nil
     if @community.save
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
@@ -492,10 +493,17 @@ class CommunitiesController < ApplicationController
   end
   def save_tour_settings
     @community = Community.find params[:community_id]
+    @tour = @community.tour
     @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+    @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
+    @tour.marker_icon_size = params[:marker_icon_size]
     @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
     @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
     @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
+    @tour.save
+    @community.show_camera_button = params[:show_camera_button].present? ? true : false
+    @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)

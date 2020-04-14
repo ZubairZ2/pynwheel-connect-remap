@@ -10,6 +10,13 @@ json.tours @tours do |tour|
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
+  json.tour_setting do
+    json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
+    json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
+    json.show_camera_button @community.show_camera_button
+    json.visual_id_verification tour.visual_id_verification
+  end
+
   json.is_sitemap @community.is_sitemap
   if @community.is_sitemap
     json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
@@ -37,7 +44,6 @@ json.tours @tours do |tour|
   end
   stops_arr = []
   if @community.is_sitemap
-
     stops_arr = @community.tour.tour_stops.where(display_stop: true).order(:sort)
     stop_count = stops_arr.compact.count
     second_last = stops_arr.compact[stop_count - 3]
@@ -137,6 +143,7 @@ json.tours @tours do |tour|
   json.tour_stop new_stops_arr.compact do |stop|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
+    next if (stop.latitude + stop.longitude) < 1
     navigation_title = ""
     if second_last.id == stop.id
       navigation_title = "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
@@ -166,6 +173,8 @@ json.tours @tours do |tour|
       json.image unit.present? ? (unit.image.present? ? unit.image.url: (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
       json.name  "Apartment "+ (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
+      json.video_link_button_label unit.virtual_tour_button_label
+      json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
       lease_pricing = []
       if unit.lease_pricing.present?
         str_split = unit.lease_pricing.split(';')
@@ -187,6 +196,17 @@ json.tours @tours do |tour|
         h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
         lease_pricing << h
       end
+      if unit.modal_unit
+        lease_pricing = []
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today) if unit.present?
+        @units.each do |floorplan_unit|
+          unless floorplan_unit.id == unit.id
+            pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_s} rescue next
+            lease_pricing << pricing_str
+          end
+        end
+        lease_pricing = lease_pricing.sort_by!(&:zip)
+      end
       stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
@@ -200,6 +220,8 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
           json.stop_description unit_amenity.description
           json.directional_text unit_amenity.directional_text
+          json.video_link_button_label unit.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
             json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description, "directional_text" => unit_amenity.directional_text]
@@ -244,6 +266,8 @@ json.tours @tours do |tour|
       json.name "Elevator"#elevator.description
       # json.name elevator.name
       json.directional_text elevator.directional_text
+      json.video_link_button_label ""
+      json.video_link ""
       json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
       if new_stops_arr.compact[counter + 1].present?
         next_stop = new_stops_arr.compact[counter + 1]
@@ -292,6 +316,8 @@ json.tours @tours do |tour|
       json.stop_description amenity.description
       json.name amenity.name
       json.directional_text amenity.directional_text
+      json.video_link_button_label amenity.video_link_button_label
+      json.video_link amenity.video_link.present? ? amenity.video_link : ""
       json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       if amenity.amenity_galleries.count == 0
         json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description, "directional_text" => amenity.directional_text]

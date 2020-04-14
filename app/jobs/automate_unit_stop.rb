@@ -22,6 +22,7 @@ class AutomateUnitStop < ApplicationJob
             end
           else
             min_date = u.available_date - (Date.today )
+
             soonest_unit = u
           end
 

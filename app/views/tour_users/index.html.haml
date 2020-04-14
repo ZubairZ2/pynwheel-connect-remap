@@ -39,6 +39,9 @@
                     %th
                     %th
                       Visitor Details
+                    - if (current_user.is_super_admin?)
+                      %th
+                        Action
 
                 -#%a{:href => "/communities/#{@community.id}/tour_users/#{user.id}", :style => "display:block"}
                 -#  .list-group-item#item_list{:style => "background: #{index%2 == 1 ? "#e8e8e8" : ""}", :onclick => "click_list(#{user.id})"}
@@ -73,6 +76,11 @@
                         %td.col-lg-2
                           .visitor_list
                             = link_to 'Visitor Details' , community_tour_user_path(@community,user),:class=>"btn btn-default black-button loader_class"
+                        - if (current_user.is_super_admin?)
+                          %td
+                            %a.text-danger{"data-name"=>"visitor","data-href" => "/communities/#{@community.id}/tour_users/#{user.id}", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
+                              %i.fa.fa-trash.icon_size
+
 
 -#.content-wrapper
 -#  %section{:name => "visitors"}

@@ -95,7 +95,19 @@ class Api::V1::CommunitiesController < ActionController::Base
     @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
   end
   def portico_list_communities
-    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+    else
+      render :json=> {:success=>false, :message => "Invalid Token"}
+    end
+  end
+  def lincoln_list_communities
+    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      company = Company.where('lower(name) = ?', 'lincoln')
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
+    else
+      render :json=> {:success=>false, :message => "Invalid Token"}
+    end
   end
   def community_tours
     @community = Community.find params[:id]
@@ -115,6 +127,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def user_saved_tour
     # @device_id = params[:device_id]
+    @community = Community.find params[:community_id] if params[:community_id].present?
     @tour_user = TourUser.find params[:tour_user_id]
     @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
   end

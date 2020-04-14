@@ -4,7 +4,6 @@ namespace :automate do
     Community.where(self_tour: true).each do |community|
       auto = AutomateUnitStop.new
       auto.perform community
-
       # AutomateUnitStop.perform_async community
     end
   end
