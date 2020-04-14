@@ -12,14 +12,17 @@ class AutomateUnitStop < ApplicationJob
 
 
 
-        unless u.available_date < (Date.today - 1)
+        # byebug
+        next if u.modal_unit
+        unless u.available_date < (Date.today )
           if min_date.present?
-            if (u.available_date - (Date.today - 1)) < min_date
-              min_date = u.available_date - (Date.today - 1)
+            if (u.available_date - (Date.today)) <= min_date
+              min_date = u.available_date - (Date.today )
               soonest_unit = u
             end
           else
-            min_date = u.available_date - (Date.today - 1)
+            min_date = u.available_date - (Date.today )
+
             soonest_unit = u
           end
 
@@ -30,14 +33,24 @@ class AutomateUnitStop < ApplicationJob
           unless stop.present?
             if u.available
               TourStop.create(name: u.marketing_name,tour_id: community.tour.id, latitude:u.x_plot, longitude: u.y_plot, stop_id: u.id, stop_type: "unit",display_stop: false) if (u.x_plot + u.y_plot > 1)
+            else
+
+              stop.destroy unless u.available
             end
           else
-            stop.destroy unless u.available
+
           end
 
 
 
 
+        else
+          stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
+          if stop.present?
+            stop.display_stop = false
+            stop.save
+            stop.destroy if (!u.available || (u.available_date < Date.today ))
+          end
         end
 
 
