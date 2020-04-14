@@ -92,14 +92,16 @@ class UnitsController < ApplicationController
           ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
           TourStop.create(tour_id: @community.tour.id, stop_type: "unit", name: @unit.marketing_name, display_stop: true, stop_id: @unit.id, latitude: @unit.x_plot, longitude: @unit.y_plot) unless ts.present?
         else
-          ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
-          if ts.present?
-            paths = Path.where(map_path_from_id: ts.stop_id)
-            paths.each do |path|
-              path.path_points.destroy_all
-              path.destroy if path.present?
+          unless @unit.modal_unit == false
+            ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
+            if ts.present?
+              paths = Path.where(map_path_from_id: ts.stop_id)
+              paths.each do |path|
+                path.path_points.destroy_all
+                path.destroy if path.present?
+              end
+              ts.destroy
             end
-            ts.destroy
           end
 
         end
