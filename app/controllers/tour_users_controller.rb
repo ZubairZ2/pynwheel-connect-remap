@@ -26,7 +26,7 @@ class TourUsersController < ApplicationController
     @tour_user.visited_stops.delete_all
     @tour_user.schedual_tour.delete_all
 
-    @tour_user.destroy
+    # @tour_user.destroy
     redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
   end
 
