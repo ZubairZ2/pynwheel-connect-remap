@@ -1,6 +1,6 @@
 class AutomateUnitStop < ApplicationJob
   #queue_as :default
-  # include SuckerPunch::Job
+  include SuckerPunch::Job
 
   def perform(community)
     community.floorplans.each do |f|
