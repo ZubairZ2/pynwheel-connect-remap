@@ -232,8 +232,8 @@
           %span.hidden#right_margin #{right_margin}
           %span.hidden#marker_color #{marker_color}
 
-        .btn-btn-danger.mt-10.loader_class
-          = link_to "MANAGE AMENITIES <i class='propertyDetailName fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe , community_amenities_path(@community), :class=>"btn btn-success"
+        .btn-btn-danger.mt-10
+          = link_to "MANAGE AMENITIES <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe , community_amenities_path(@community), :class=>"btn btn-success loader_class"
 
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"}
             GRID OVERLAY
