@@ -27,8 +27,7 @@ class AutomateUnitStop < ApplicationJob
           end
 
 
-
-
+          
           stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
           unless stop.present?
             if u.available
