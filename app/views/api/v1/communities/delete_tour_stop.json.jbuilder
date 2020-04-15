@@ -167,7 +167,7 @@ json.tours @tours do |tour|
       json.name  "Apartment "+ (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       lease_pricing = []
-      if unit.lease_pricing.present?
+      if unit.lease_pricing.present? && !unit.modal_unit
         str_split = unit.lease_pricing.split(';')
         str_split.each do |ss|
           str = ss.split(':')
