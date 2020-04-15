@@ -33,6 +33,7 @@ json.tours @tours do |tour|
       json.type @tour.stop_type
       if @tour.stop_type == "unit"
         unit = Unit.find @tour.stop_id
+        json.unit_id unit.id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
         json.name "Apartment "+unit.marketing_name
         json.video_link_button_label unit.virtual_tour_button_label
