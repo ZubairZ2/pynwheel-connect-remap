@@ -483,10 +483,10 @@
     }
     var ele = document.getElementsByClassName('custom-icon');
     for (var i = 0; i < ele.length; i++ ) {
-      ele[i].style.height = (#{marker_font_size} / (1400 / $(window).width())  )
-      ele[i].style.width = (#{marker_font_size} / (1400 / $(window).width())  )
-      ele[i].children[0].style.marginTop = 0
-      ele[i].children[0].style.fontSize = (#{marker_font_size} / (2300 / $(window).width())  )
+      ele[i].style.height = (#{marker_font_size} / (1100 / $(window).width())  )
+      ele[i].style.width = (#{marker_font_size} / (1100 / $(window).width())  )
+      ele[i].children[0].style.marginTop = 1 * ( $(window).width() / 250)
+      ele[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / $(window).width())  )
     }
   }
   var slides_to_show = 14;

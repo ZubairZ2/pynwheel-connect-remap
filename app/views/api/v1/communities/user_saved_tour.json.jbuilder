@@ -32,6 +32,7 @@ json.tours @tours do |tour|
       # @tour = TourStop.find visited_stop[0]
       json.type @tour.stop_type
       if @tour.stop_type == "unit"
+        json.unit_id unit.id
         unit = Unit.find @tour.stop_id
         json.unit_id unit.id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
@@ -39,7 +40,7 @@ json.tours @tours do |tour|
         json.video_link_button_label unit.virtual_tour_button_label
         json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
         lease_pricing = []
-        if unit.lease_pricing.present?
+        if unit.lease_pricing.present? && !unit.modal_unit
           str_split = unit.lease_pricing.split(';')
           str_split.each do |ss|
             str = ss.split(':')
@@ -58,6 +59,17 @@ json.tours @tours do |tour|
         else
           h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
           lease_pricing << h
+        end
+        if unit.modal_unit
+          lease_pricing = []
+          @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today) if unit.present?
+          @units.each do |floorplan_unit|
+            unless floorplan_unit.id == unit.id
+              pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_s} rescue next
+              lease_pricing << pricing_str
+            end
+          end
+          lease_pricing = lease_pricing.sort_by!(&:zip)
         end
         stop_dat = {"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
         json.stop_data stop_dat
@@ -82,6 +94,15 @@ json.tours @tours do |tour|
             # json.image ag.image.url
             # json.description ag.description
           end
+          else
+            json.x_plot 0
+            json.y_plot 0
+            json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
+            json.stop_description ""
+            json.directional_text ""
+            json.video_link_button_label ""
+            json.video_link ""
+
           end
         end
         json.gallery @unit_gallery_arr do |ag|
