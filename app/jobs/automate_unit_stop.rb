@@ -4,7 +4,7 @@ class AutomateUnitStop < ApplicationJob
 
   def perform(community)
     community.floorplans.each do |f|
-      units = Unit.where(floorplan_id: f.provider_floorplan_id,community_id: community.id,available: true)
+      units = Unit.where(floorplan_id: f.provider_floorplan_id,community_id: community.id)
       min_date = nil
       soonest_unit = nil
       units.each do |u|
@@ -13,9 +13,10 @@ class AutomateUnitStop < ApplicationJob
 
 
         begin
+
           next if u.modal_unit
-          if u.available_date.present?
-            unless u.available_date < Date.today
+          if (u.available_date.present?) && (u.available)
+            unless (u.available_date < Date.today)
               if min_date.present?
                 if (u.available_date - Date.today) <= min_date
                   min_date = u.available_date - Date.today
@@ -39,7 +40,8 @@ class AutomateUnitStop < ApplicationJob
                   stop.destroy unless u.available
                 end
               else
-
+                stop.display_stop = false
+                stop.save
               end
 
 
