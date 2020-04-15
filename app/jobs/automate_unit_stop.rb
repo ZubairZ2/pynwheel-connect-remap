@@ -12,45 +12,58 @@ class AutomateUnitStop < ApplicationJob
 
 
 
-        # byebug
-        next if u.modal_unit
-        unless u.available_date < (Date.today )
-          if min_date.present?
-            if (u.available_date - (Date.today)) <= min_date
-              min_date = u.available_date - (Date.today )
-              soonest_unit = u
-            end
-          else
-            min_date = u.available_date - (Date.today )
+        begin
+          next if u.modal_unit
+          if u.available_date.present?
+            unless u.available_date < Date.today
+              if min_date.present?
+                if (u.available_date - Date.today) <= min_date
+                  min_date = u.available_date - Date.today
+                  soonest_unit = u
+                end
+              else
+                min_date = u.available_date - Date.today
 
-            soonest_unit = u
-          end
+                soonest_unit = u
+              end
 
 
 
 
-          stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
-          unless stop.present?
-            if u.available
-              TourStop.create(name: u.marketing_name,tour_id: community.tour.id, latitude:u.x_plot, longitude: u.y_plot, stop_id: u.id, stop_type: "unit",display_stop: false) if (u.x_plot + u.y_plot > 1)
+              stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
+              unless stop.present?
+                if u.available
+                  TourStop.create(name: u.marketing_name,tour_id: community.tour.id, latitude:u.x_plot, longitude: u.y_plot, stop_id: u.id, stop_type: "unit",display_stop: false) if (u.x_plot + u.y_plot > 1)
+                else
+
+                  stop.destroy unless u.available
+                end
+              else
+
+              end
+
+
+
+
             else
-
-              stop.destroy unless u.available
+              stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
+              if stop.present?
+                stop.display_stop = false
+                stop.save
+                stop.destroy if (!u.available || (u.available_date < Date.today ))
+              end
             end
+
+
           else
-
+            stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
+            if stop.present?
+              stop.display_stop = false
+              stop.save
+              stop.destroy if (!u.available || (u.available_date < Date.today ))
+            end
           end
-
-
-
-
-        else
-          stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
-          if stop.present?
-            stop.display_stop = false
-            stop.save
-            stop.destroy if (!u.available || (u.available_date < Date.today ))
-          end
+        rescue => ex
         end
 
 
