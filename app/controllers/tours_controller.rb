@@ -415,6 +415,10 @@ class ToursController < ApplicationController
     puts "<<<<<<<<<<< ID MISMATCH? #{@visitor.id_selfie_mismatch} >>>>>>>>>>"
     render  'visitor_profile'
   end
+  def test_automate
+    AutomateUnitStop.perform_async current_community
+    redirect_to community_tours_path(current_community)
+  end
 
   def flag_id_mismatch
     if params[:tour_user_id].present?

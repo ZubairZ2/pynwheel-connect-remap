@@ -262,6 +262,9 @@
               = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
                 %i.fa.fa-plus-circle
                 ADD ELEVATOR
+            = link_to test_automate_community_tours_path(current_community.id), class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
+              %i.fa.fa-plus-circle
+              Test Automate
             -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
             -#  %i.fa.fa-plus-circle
             -#  ADD PATH FOR STARTING POINT
