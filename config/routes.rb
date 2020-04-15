@@ -257,6 +257,7 @@ Rails.application.routes.draw do
         get :starting_point
         get :select_stops
         get :edit_amenity
+        get :test_automate
       end
       member do
         post :ajaxplotstartingpoint
