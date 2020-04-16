@@ -88,23 +88,22 @@ json.tours @tours do |tour|
             # json.image ag.image.url
             # json.description ag.description
           end
-          else
-            json.x_plot 0
-            json.y_plot 0
-            json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-            json.stop_description ""
-            json.directional_text ""
-            json.video_link_button_label ""
-            json.video_link ""
-
           end
         end
-        json.gallery @unit_gallery_arr do |ag|
-          json.name ag.name
-          json.image ag.image.url
-          json.description ag.description
-          json.directional_text ag.directional_text
+        if @unit_gallery_arr.present?
+          json.gallery @unit_gallery_arr do |ag|
+            json.name ag.name
+            json.image ag.image.url
+            json.description ag.description
+            json.directional_text ag.directional_text
+          end
+        else
+          json.name ""
+          json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
+          json.description ""
+          json.directional_text ""
         end
+
       elsif @tour.stop_type == "amenity"
         amenity = Amenity.find @tour.stop_id
         json.image amenity.image.present? ? amenity.image.url : "no image"
