@@ -10,6 +10,9 @@ json.tours @tours do |tour|
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
+  json.tour_setting do
+    json.show_camera_button show_camera_button
+  end
   json.is_sitemap @community.is_sitemap
   json.tour_setting do
     json.visual_id_verification tour.visual_id_verification
