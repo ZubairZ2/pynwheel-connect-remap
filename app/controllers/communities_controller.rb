@@ -493,10 +493,13 @@ class CommunitiesController < ApplicationController
   end
   def save_tour_settings
     @community = Community.find params[:community_id]
+    @tour = @community.tour
     @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+    @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
     @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
     @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
     @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
+    @tour.save
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)

@@ -11,6 +11,10 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.is_sitemap @community.is_sitemap
+  json.tour_setting do
+    json.visual_id_verification tour.visual_id_verification
+
+  end
   if @community.is_sitemap
     json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
