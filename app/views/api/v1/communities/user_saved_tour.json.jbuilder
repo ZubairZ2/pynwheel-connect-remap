@@ -103,10 +103,12 @@ json.tours @tours do |tour|
             json.directional_text ag.directional_text
           end
         else
-          json.name ""
-          json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-          json.description ""
-          json.directional_text ""
+          json.gallery do
+            json.name ""
+            json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
+            json.description ""
+            json.directional_text ""
+          end
         end
 
       elsif @tour.stop_type == "amenity"
