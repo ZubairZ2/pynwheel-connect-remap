@@ -35,6 +35,8 @@ json.tours @tours do |tour|
         unit = Unit.find @tour.stop_id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
         json.name "Apartment "+unit.marketing_name
+        json.video_link_button_label unit.virtual_tour_button_label
+        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
         lease_pricing = []
         if unit.lease_pricing.present?
           str_split = unit.lease_pricing.split(';')
@@ -67,6 +69,8 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
           json.stop_description unit_amenity.description
           json.directional_text unit_amenity.directional_text
+          json.video_link_button_label unit.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
 
           # unit_amenity.description = nil
           @unit_gallery_arr << unit_amenity
@@ -91,6 +95,8 @@ json.tours @tours do |tour|
         json.stop_description amenity.description
         json.name amenity.name
         json.directional_text amenity.directional_text
+        json.video_link_button_label amenity.video_link_button_label
+        json.video_link amenity.video_link.present? ? amenity.video_link : ""
 
         # amenity.description = nil
         amenityGalleryArr = []
