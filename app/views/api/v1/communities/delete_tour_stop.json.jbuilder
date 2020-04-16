@@ -144,6 +144,7 @@ json.tours @tours do |tour|
   json.tour_stop new_stops_arr.compact do |stop|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
+    next if (stop.latitude + stop.longitude) < 1
     navigation_title = ""
     if second_last.id == stop.id
       navigation_title = "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
@@ -195,6 +196,17 @@ json.tours @tours do |tour|
       else
         h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
         lease_pricing << h
+      end
+      if unit.modal_unit
+        lease_pricing = []
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today) if unit.present?
+        @units.each do |floorplan_unit|
+          unless floorplan_unit.id == unit.id
+            pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_s} rescue next
+            lease_pricing << pricing_str
+          end
+        end
+        lease_pricing = lease_pricing.sort_by!(&:zip)
       end
       stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat

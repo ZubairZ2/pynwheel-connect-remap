@@ -115,15 +115,22 @@
       %span#unit_sold_text
         This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.
 
-
-
-
   .col-sm-12.col-lg-2.col-md-2.col-xs-12
     = f.radio_button :sold, true, class: "settings-field"
     = f.label :sold, "Yes", :value => "true"
   .col-sm-12.col-lg-2.col-md-2.col-xs-12
     = f.radio_button :sold, false, class: "settings-field"
     = f.label :sold, "No", :value => "false"          
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Model Unit
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :modal_unit
+          %label Model unit
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
