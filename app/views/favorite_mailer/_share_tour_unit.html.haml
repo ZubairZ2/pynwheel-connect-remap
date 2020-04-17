@@ -196,4 +196,10 @@
                                       %tr
                                         %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                           %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
-                                            %a{:href => "#{unit.virtual_tour_url}"} #{unit.virtual_tour_button_label}
+                                            %b Video Link
+                                      %tr
+                                        %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                                          %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                                            %form{:action => "#{unit.virtual_tour_url}"}
+                                              %input{:type => "submit", :value => "#{unit.virtual_tour_button_label}", :style=> "font-size: 22px; background: #0e65d0; border-radius: 8px; color: white;"}/
+

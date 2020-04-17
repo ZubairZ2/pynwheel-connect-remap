@@ -32,12 +32,17 @@
                   - if img.video_link.present?
                     %tr
                       %td{:align => "center", :valign => "top"}
-                          %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
-                            %tr
-                              %td{:width => "100%"}
-                                %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
-                                  %tr
-                                    %td
-                                      %div{:style => "width:100%; overflow:hidden;"}
-                                        %a{:href => "#{img.video_link}"} #{unit.video_link_button_label}
-                                      
+                        %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                          %tr
+                            %td{:width => "100%"}
+                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                                %tr
+                                  %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                                    %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                                      %b Video Link
+                                %tr
+                                  %td{:style=> "text-align: center;"}
+                                    %div{:style => "width:100%; overflow:hidden;"}
+                                      %form{:action => "#{img.video_link}"}
+                                        %input{:type => "submit", :value => "#{img.video_link_button_label}", :style=> "font-size: 22px; background: #0e65d0; border-radius: 8px; color: white;"}/
+                        
