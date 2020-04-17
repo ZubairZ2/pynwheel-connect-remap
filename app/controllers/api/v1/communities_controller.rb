@@ -115,7 +115,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.save
     @tours = Tour.where(community_id: params[:id])
   end
-  
+
   def delete_tour_stop
     @community = Community.find params[:id]
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
