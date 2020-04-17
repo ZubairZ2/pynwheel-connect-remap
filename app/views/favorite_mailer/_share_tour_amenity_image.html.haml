@@ -28,3 +28,16 @@
                                 %td
                                   %div{:style => "width:100%; overflow:hidden;"}
                                     %img{:alt => "", :src => "#{img.image.url}", :width => "580", :height => "auto", :style => "max-width:580px; margin:auto;", :title => ""}/
+
+                  - if img.video_link.present?
+                    %tr
+                      %td{:align => "center", :valign => "top"}
+                          %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                            %tr
+                              %td{:width => "100%"}
+                                %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                                  %tr
+                                    %td
+                                      %div{:style => "width:100%; overflow:hidden;"}
+                                        %a{:href => "#{img.video_link}"} #{unit.video_link_button_label}
+                                      
