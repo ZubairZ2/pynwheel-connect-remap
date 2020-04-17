@@ -5,7 +5,7 @@ class MessagesController < ApplicationController
     # POST /message.json
     def create
         message = Message.create(text: params[:message])
-        # ActionCable.server.broadcast "chat", {message: render_message(message)}
+        ActionCable.server.broadcast "chat", {message: render_message(message)}
 
         # respond_to do |format|
         #     if @message.save
@@ -18,7 +18,7 @@ class MessagesController < ApplicationController
         # end
     end
 
-    # def render_message(message)
-    #     MessagesController.render(partial: 'message', locals: {message: message})
-    # end
+    def render_message(message)
+        MessagesController.render(partial: 'message', locals: {message: message})
+    end
 end
