@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-
+  mount ActionCable.server => '/cable'
   get 'tour_users/index'
 
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
