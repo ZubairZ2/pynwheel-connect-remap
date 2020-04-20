@@ -6,6 +6,7 @@ json.communities @communities do |community|
     json.company_name community.company.name
     json.latitude community.latitude
     json.longitude community.longitude
+    grgrgr
     json.address community.address
     json.logo community.logo.url
 
