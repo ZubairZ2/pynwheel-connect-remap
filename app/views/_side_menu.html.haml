@@ -142,7 +142,7 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
             %i.fa.fa-share
             %span Tour Scheduler Widget
-      - if (current_community.char_control || current_user.is_community_admin?)
+      - if (current_community.chat_control || current_user.is_community_admin?)
         %li
           %a{"data-toggle"=>"modal","data-target"=>"#share-chat-widget",:href => "##"}
             %i.fa.fa-share

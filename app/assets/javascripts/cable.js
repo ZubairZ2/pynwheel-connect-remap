@@ -4,11 +4,9 @@
 //= require action_cable
 //= require_self
 //= require_tree ./channels
-// if(($('meta[name=action-cable-url]')).length){
+if(($('meta[name=action-cable-url]')).length){
   (function() {
     this.App || (this.App = {});
-
-    App.cable = ActionCable.createConsumer('/cable');
-
+    App.cable = ActionCable.createConsumer("/cable");
   }).call(this);
-// }
+}
