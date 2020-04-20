@@ -65,11 +65,12 @@
                         %td.col-lg-2
                           .visitor_list
                             - if TourHistory.where(tour_user_id: user.id,lengthy_stay_email_sent: true,tour_id: @community.tour.id).present?
-                              = image_tag  "clock.png", :style => "height: 20px; width: 20px;  margin-left: 20px;"
+                              = image_tag  "clock.png", :style => "height: 20px; width: 20px;  margin-left: 20px;", "data-content" => "Lengthy Stay", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+
                             - if TourHistory.where(tour_user_id: user.id,id_mismatch: true,tour_id: @community.tour.id).present?
-                              = image_tag  "calender.png", :style => "height: 20px; width: 20px; margin-left: 20px;"
+                              = image_tag  "calender.png", :style => "height: 20px; width: 20px; margin-left: 20px;", "data-content" => "ID Mismatch", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - if TourHistory.where.not(tour_user_id: user.id,abandoned_tour_at_stop: true,tour_id: @community.tour.id).present?
-                              = image_tag  "open.png", :style => "height: 20px; width: 20px;  margin-left: 20px;"
+                              = image_tag  "open.png", :style => "height: 20px; width: 20px;  margin-left: 20px;", "data-content" => "Tour Abandoned", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                         %td.col-lg-2
                           .visitor_list
                             = link_to 'Visitor Details' , community_tour_user_path(@community,user),:class=>"btn btn-default black-button loader_class"
@@ -126,3 +127,4 @@
       window.location.reload();
 
   }
+  $('[data-toggle="visitor_popover"]').popover();
