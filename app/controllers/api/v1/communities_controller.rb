@@ -98,7 +98,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
       @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
     else
-      render :json=> {:success=>false, :message => "Invalid Token"}
+      @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
     end
   end
   def lincoln_list_communities
