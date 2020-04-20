@@ -416,7 +416,7 @@ class ToursController < ApplicationController
     render  'visitor_profile'
   end
   def test_automate
-    AutomateUnitStop.perform_async current_community
+    AutomateUnitStop.perform_async current_community if current_community.automate_unit_stop
     redirect_to community_tours_path(current_community)
   end
 
