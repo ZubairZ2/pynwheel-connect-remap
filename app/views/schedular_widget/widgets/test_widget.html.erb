@@ -274,6 +274,10 @@
         $("#scheduleMyTourSuccess").modal()
         $("html, body").animate({ scrollTop: 0 }, 600);
       }
+      else
+      {
+          $('.divLoading').addClass('hidden');
+      }
 
       $('#date_schedule_tour').click(function(){
         $('.divLoading').removeClass('hidden')
