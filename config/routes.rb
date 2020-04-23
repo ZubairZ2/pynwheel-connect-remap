@@ -31,6 +31,13 @@ Rails.application.routes.draw do
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
   
+  resources :chatrooms
+  resources :chats
+
+  namespace :chat_widget do
+    get '/chat_support', to: 'widgets#support_team_widget'
+  end
+
   resources :companies do
     resources :communities
     resources :community_groups
