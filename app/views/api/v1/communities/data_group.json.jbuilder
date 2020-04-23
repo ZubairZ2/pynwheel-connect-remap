@@ -15,7 +15,7 @@ json.homepage_design do
   json.display_button_image @community_group.group_design.present? ? (@community_group.group_design.display_button_image.present? ? @community_group.group_design.display_button_image : false) : false  rescue false
   json.button_image @community_group.group_design.present? ? (@community_group.group_design.background_image.present? ? @community_group.group_design.background_image.url : "No Image") : "No Image"  rescue "No Image"
   json.button_color @community_group.group_design.present? ? (@community_group.group_design.button_color.present? ? @community_group.group_design.button_color : "#3B3B3B") : "#3B3B3B"  rescue "#3B3B3B"
-  json.button_opacity @community_group.group_design.present? ? (@community_group.group_design.button_opacity.present? ? @community_group.group_design.button_opacity : "#3B3B3B") : "#3B3B3B" rescue "#3B3B3B"
+  json.button_opacity @community_group.group_design.present? ? (@community_group.group_design.button_opacity.present? ? @community_group.group_design.button_opacity : "100%") : "100%" rescue "100%"
   json.button_border_side @community_group.group_design.present? ? (@community_group.group_design.button_border_side.present? ? @community_group.group_design.button_border_side : "All sides") : "All sides" rescue "All sides"
   json.button_border_color @community_group.group_design.present? ? (@community_group.group_design.button_border_color.present? ? @community_group.group_design.button_border_color : "#3B3B3B") : "#3B3B3B" rescue "#3B3B3B"
   json.button_border_opacity @community_group.group_design.present? ? (@community_group.group_design.button_border_opacity.present? ? @community_group.group_design.button_border_opacity : "100%") : "100%" rescue "100%"
@@ -26,7 +26,7 @@ json.homepage_design do
   json.bouncing_effecting @community_group.group_design.present? ? (@community_group.group_design.bouncing_effecting.present? ? @community_group.group_design.bouncing_effecting : "none") : "none"  rescue "none"
   json.homepage_video @community_group.group_design.present? ? (@community_group.group_design.group_homepage_video.video.present? ? @community_group.group_design.group_homepage_video.video.url : "No video") : "No video"  rescue "No video"
   json.loop_type @community_group.group_design.present? ? (@community_group.group_design.loop_type.present? ? @community_group.group_design.loop_type : "images") : "images" rescue "images"
-  json.display_button_text @community_group.group_design.present? ? (@community_group.group_design.display_button_text.present? ? @community_group.group_design.display_button_text : true) : true rescue true
+  json.display_button_text @community_group.group_design.present? ? (@community_group.group_design.display_button_text) : true rescue true
   begin
   json.homepage_images @community_group.group_design.group_homepage_images do |img|
     json.filename img.name.present? ? img.name : ""
