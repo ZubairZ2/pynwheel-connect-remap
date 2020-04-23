@@ -128,7 +128,7 @@
                                         %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                           %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
                                             %b
-                                              Check Availability
+                                              Availability
                                               %br
                                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%", :style => "margin-top: 13px;"}
                                                 %tr
@@ -155,7 +155,7 @@
 
 
                   %tr
-                    - if unit.lease_pricing.present?
+                    - if unit.lease_pricing.present? && !unit.modal_unit
                       %td{:align => "center", :valign => "top"}
                         %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
                           %tr
@@ -201,5 +201,5 @@
                                         %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                           %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
                                             %form{:action => "#{unit.virtual_tour_url}"}
-                                              %input{:type => "submit", :value => "#{unit.virtual_tour_button_label}", :style=> "font-size: 22px; background: #0e65d0; border-radius: 8px; color: white;"}/
+                                              %input{:type => "submit", :value => "#{unit.virtual_tour_button_label}", :style=> "font-size: 26px; background: #008fd4; border-radius: 0px; color: white;"}/
 
