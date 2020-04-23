@@ -54,7 +54,7 @@ class ResmanSwapService < BaseService
       if unit.present?
         unit = unit.first
         unit.provider = "resman_new"
-        unit.provider_unit_id = u["Id"]
+        unit.provider_unit_id = u["Id"].gsub('*','-')
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         # unit.marketing_name = u["Id"]
@@ -83,7 +83,7 @@ class ResmanSwapService < BaseService
         unit.manually_updated = false
         unit.save(validate: false)
       else
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Id"])
+        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Id"].gsub('*','-'))
         if dup.present?
           dup.destroy
         end
@@ -91,7 +91,7 @@ class ResmanSwapService < BaseService
         unit = Unit.new
         unit.community_id = credentials.community_id
         unit.provider = "resman_new"
-        unit.provider_unit_id = u["Id"]
+        unit.provider_unit_id = u["Id"].gsub('*','-')
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         unit.marketing_name = u["Id"]

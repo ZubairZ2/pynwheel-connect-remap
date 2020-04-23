@@ -160,6 +160,18 @@
                       = d.select :bouncing_effecting , options_for_select(["bouncing effects","none"],d.object.bouncing_effecting.present? ? d.object.bouncing_effecting : "none"),{},{class: "form-control",id: ""}
 
 
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "margin-left: 0px"}
+                  Display button text
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = d.check_box :display_button_text, {class: ""}
+                    %label.label-primary{:for => "group_design_display_button_text"}
+                    %span.pl-15 Yes
+              
+
               -#%label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 18px;  color: #ee3b31;"}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "margin-left: 0px"}
