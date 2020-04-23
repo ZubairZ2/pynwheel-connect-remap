@@ -26,6 +26,7 @@ json.homepage_design do
   json.bouncing_effecting @community_group.group_design.present? ? (@community_group.group_design.bouncing_effecting.present? ? @community_group.group_design.bouncing_effecting : "none") : "none"  rescue "none"
   json.homepage_video @community_group.group_design.present? ? (@community_group.group_design.group_homepage_video.video.present? ? @community_group.group_design.group_homepage_video.video.url : "No video") : "No video"  rescue "No video"
   json.loop_type @community_group.group_design.present? ? (@community_group.group_design.loop_type.present? ? @community_group.group_design.loop_type : "images") : "images" rescue "images"
+  json.display_button_text @community_group.group_design.present? ? (@community_group.group_design.display_button_text.present? ? @community_group.group_design.display_button_text : true) : true rescue true
   begin
   json.homepage_images @community_group.group_design.group_homepage_images do |img|
     json.filename img.name.present? ? img.name : ""

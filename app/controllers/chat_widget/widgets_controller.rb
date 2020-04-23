@@ -17,13 +17,21 @@ class ChatWidget::WidgetsController < ApplicationController
     end
   end
 
-  def show_widget
-    # @community_id = params[:community_id]
-    @email = params[:email]
-    # flash[:success] = params[:message] if params[:message].present?
-    render :show_widget, layout: false
+  def tour_user_widget
+    # api hit
+    # take params, maintain db, session/cookies
+    @tour_id = 95
+    @tour_user_id = params[:tour_user]
+    cookies[:tour_user_id] = { value: @tour_user_id, expires:  12.hours.from_now }
+
+    render :tour_user_widget, layout: false
   end
 
+  def support_team_widget
+    @chatrooms = Chatroom.all
+    render :support_team_widget, layout: false
+  end
+  
   private
   
   def allow_iframe
