@@ -215,6 +215,10 @@
     <script type="text/javascript">
 
         $(document).ready(() => {
+            console.log('PUSHER_KEY', '<%= ENV["PUSHER_KEY"] %>')
+            console.log('PUSHER_APP_ID', '<%= ENV["PUSHER_APP_ID"] %>')
+            console.log('PUSHER_SECRET', '<%= ENV["PUSHER_SECRET"] %>')
+            console.log('PUSHER_CLUSTER', '<%= ENV["PUSHER_CLUSTER"] %>')
             
             var channel, loadAdminChat, pusher, updateAdminChat, updateAdminChatrooms;
             
