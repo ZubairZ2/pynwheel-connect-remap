@@ -8,6 +8,7 @@
     <title>Pynwheel | Dashboard</title>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
     <%= csrf_meta_tags %>
+    <script src="https://js.pusher.com/4.1/pusher.min.js"></script>
     <%= stylesheet_link_tag 'jquery.mCustomScrollbar.css' %>
     <%= stylesheet_link_tag 'slick.css' %>
     <%= stylesheet_link_tag    'application', media: 'all' %>
@@ -239,32 +240,66 @@
     </div>
     <script type="text/javascript">
 
-        var tour_id;
-        $(document).ready(function(){
+        (function() {
 
-            $("#MessageForm").on('submit', function(e){
-                $.ajax({
-                        type: "POST",
-                        url: "/messages",
-                        data: $(this).serialize(),
-                        cache: false,
+          $(document).ready((function(_this) {
+            console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+            return function() {
+              var channel, getChats, loadAdminChat, popupTrigger, popupWrapper, pusher, updateAdminChat, updateAdminChatrooms, updateChat;
 
-                        success: function(data){
-                            // tour_id = data.id;
-                        },
-                        fail: function(error){
-                            console.log(error)
-                        }
+              loadAdminChat = function(chatArray) {
+                $('.admin-chats').html("");
+                $('input#chatroom_id').val(chatArray.chats[0].chatroom_id);
+                $.map(chatArray.chats, function(chat) {
+                  $('.admin-chats').append("<div class=\"chat-bubble-wrapper d-block\">\n  <div class=\"chat-bubble bg-dark p-1 text-white my-1 d-inline-block\" style=\"min-width: 10rem;\">\n    <small class=\"chat-username\">" + chat.name + "</small>\n    <p class=\"m-0 chat-message\">" + chat.message + "</p>\n  </div>\n</div>");
                 });
-                e.preventDefault();
-            });
+              };
 
-            // $("#close").on('click', function(){
-            //     $("#scheduleMyTourSuccess").modal('hide')
-            //     // window.location.reload();
-            // });
+              $('body').on('ajax:success', '.sidebar-chat', function(data) {
+                var chat;
+                chat = data.detail[0];
+                loadAdminChat(chat);
+              });
 
-        });
+              updateAdminChat = function(chat) {
+                if (chat.chatroom_id === parseInt($('input#chatroom_id').val())) {
+                  $('.admin-chats').append("<div class=\"chat-bubble-wrapper d-block\">\n  <div class=\"chat-bubble bg-dark p-1 text-white my-1 d-inline-block\" style=\"min-width: 10rem;\">\n    <small class=\"chat-username\">" + chat.name + "</small>\n    <p class=\"m-0 chat-message\">" + chat.message + "</p>\n  </div>\n</div>");
+                }
+              };
+
+              updateAdminChatrooms = function(chatroom) {
+                console.log('called');
+
+              $('#support_sidebar').append("<div class=\"dashboard-sidebar-chat bg-info\">\n  <a class=\"sidebar-chat\" data-remote=\"true\" href=\"/chats/" + chatroom.id + "\">" + chatroom.email + "</a>\n</div>");
+              };
+
+              $('#admin-chat-form').on('ajax:success', function(data) {
+                var chat;
+                chat = data.detail[0];
+                $('#admin-chat-form')[0].reset();
+              });
+              
+
+              pusher = new Pusher( '<%= ENV["PUSHER_KEY"] %>' , {
+                cluster: '<%= ENV["PUSHER_CLUSTER"] %>',
+                encrypted: true
+              });
+
+              channel = pusher.subscribe('chat');
+
+              return channel.bind('new-chat', function(data) {
+                 updateAdminChat(data);
+              });
+
+              return channel.bind('new-chatroom', function(data) {
+                updateAdminChatrooms(data);
+              });
+
+
+            };
+          })(this));
+
+        }).call(this);
 
     </script>
 
