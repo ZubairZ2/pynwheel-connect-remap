@@ -15,9 +15,9 @@ class ChatsController < ApplicationController
         chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id])
         if chat.save
             message = serailize_message(chat)
-            render json: {messages: message, chatroom_id: chat.chatroom_id, meta: { stats: :OK, code: 200}}
+            render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
         else
-            render json: {messages: chat.full_messages.join(',') , meta: { stats: :Bad, code: 400}}
+            render json: {messages: chat.full_messages.join(',') , stats: :Bad, code: 400}
         end
 
     end
@@ -43,9 +43,9 @@ class ChatsController < ApplicationController
         chats = Chat.where("name = ? AND chatroom_id = ? AND id > ?", "Support Team", params[:chatroom_id], params[:last_msg_id]).order(created_at: :desc)
         if chats.present?
             message_history = serailize_messages(chats)
-            render json: {messages: message_history,chatroom_id: params[:chatroom_id],  meta: {stats: :OK, code: 200} }
+            render json: {messages: message_history,chatroom_id: params[:chatroom_id],  stats: :OK, code: 200 }
         else
-            render json: {messages: [],chatroom_id: params[:chatroom_id], meta: {stats: :OK, code: 200} }
+            render json: {messages: [],chatroom_id: params[:chatroom_id], stats: :OK, code: 200}
 
         end
 
