@@ -16,12 +16,12 @@ class ChatroomsController < ApplicationController
         if chatroom.present?
             messages = chatroom.chats.order(created_at: :desc).limit(20)
             message_history = serailize_messages(messages)
-            render json: {response: message_history,chatroom_id: chatroom.id,  meta: { stats: :OK, code: 200} }
+            render json: {messages: message_history,chatroom_id: chatroom.id,  meta: { stats: :OK, code: 200} }
         else
             chatroom = Chatroom.create(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
             chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" )
             message = serailize_message(chat)
-            render json: {response: message, chatroom_id: chatroom.id,  meta: { stats: :OK, code: 200} }
+            render json: {messages: message, chatroom_id: chatroom.id,  meta: { stats: :OK, code: 200} }
         end
     end
 
