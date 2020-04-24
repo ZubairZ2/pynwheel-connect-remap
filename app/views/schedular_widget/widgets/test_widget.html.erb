@@ -135,7 +135,7 @@
                   
 
                   <label>Phone Number *</label> 
-                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 %>
+                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number",id: "phoneNumber", maxlength: 15 , autocomplete:  "false" %>
                 </div>
               </div>
               <div class="clearfix"></div>
@@ -582,6 +582,10 @@
                   event.preventDefault();
               }
           });
+          const myInput = document.getElementById('phoneNumber');
+           myInput.onpaste = function(e) {
+             e.preventDefault();
+           }
 
         $("#scheduleMyTourForm").on('submit', function(e){
           $.ajax({
