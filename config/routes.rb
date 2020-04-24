@@ -42,7 +42,8 @@ Rails.application.routes.draw do
   
   resources :chatrooms
   resources :chats
-
+  get 'listening_message', to: 'chats#listening_message' 
+  
   resources :companies do
     resources :communities
     resources :community_groups
