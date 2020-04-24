@@ -8,18 +8,28 @@ class ChatsController < ApplicationController
     end
 
     def create
-        tour_user_name = (TourUser.find params[:tour_user_id]).name
-        if tour_user_name.nil?
-            tour_user_name = "You"
-        end
-        chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id])
-        if chat.save
-            message = serailize_message(chat)
-            render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
-        else
-            render json: {messages: chat.full_messages.join(',') , stats: :Bad, code: 400}
-        end
+        if params[:tour_user_id].present?
+            tour_user_name = (TourUser.find params[:tour_user_id]).name
+            if tour_user_name.nil?
+                tour_user_name = "You"
+            end
 
+            chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id])
+            if chat.save
+                message = serailize_message(chat)
+                render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
+            else
+                render json: {messages: chat.full_messages.join(',') , stats: :Bad, code: 400}
+            end
+        else
+            chat = Chat.new(chat_params)
+            if chat.save
+                message = serailize_message(chat)
+                render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
+            else
+                render json: {messages: chat.full_messages.join(',') , stats: :Bad, code: 400}
+            end
+        end
     end
 
     def new

@@ -195,19 +195,20 @@
                     <div class="type_msg">
                         <div class="input_msg_write">
 
-                            <form id="MessageForm">
-                              <%= hidden_field_tag :name, "Support Team" %>
-                              <%= hidden_field_tag :chatroom_id %>
-                              <%= text_field_tag :message,"", :class=>"write_msg", :placeholder=>"Type a message", required: 'required' %>
-                              <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
-                            </form>
+
+                             <%= form_for :chat, url: chats_path, format: :json, remote: true , html: { id: 'Support Team'} do |form| %>
+                                  <%= form.text_field :message, id: :message, class: "write_msg", required: true, placeholder: "Enter your message" %>
+                                  <%= form.hidden_field :name, id: :name, value: 'Support Team' %>
+                                  <%= form.hidden_field :chatroom_id, id: :chatroom_id %>
+                                 <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                              <% end %>
 
                         </div>
                     </div>
                 </div>
             </div>
 
-            <p class="text-center top_spac"> Design by <a target="_blank" href="#">Sunil Rajput</a></p>
+            <p class="text-center top_spac"> Powered by <a target="_blank" href="https://pynwheel-staging.herokuapp.com/">Pynwheels</a></p>
 
         </div>
       </div>
@@ -292,6 +293,73 @@
                         `)
                     }
                 }
+                else {
+                  // chk if the user even present in chat bar who is sending this message
+                  if ($('#support_sidebar').children().length == 0){
+                    // if there is no user add this userin side and show his message also
+                        $('#support_sidebar').append(`
+                          <div class="chat_list">
+                              <div class="chat_people">
+                                  <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                  <div class="chat_ib">
+                                      <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}"> <h5>${chat.tour_user.name}</h5> ${chat.tour_user.email}</a>
+                                  </div>
+                              </div>
+                          </div>`);
+                          // if there is only one user and being currently viewed, here's how update message form chatroom_id   
+                          var result = $('#support_sidebar').children().children().children().next().children().attr("href").split('/')
+                          var chat_room_id = result[result.length-1]
+                          $("#chatroom_id").val(chat_room_id)
+
+                          if(chat.name == "Support Team"){
+                                $('#msg_history').append(`
+                                    <div class="outgoing_msg">
+                                        <div class="sent_msg">
+                                            <p>${chat.message}</p>
+                                            <span class="time_date"> 11:01 AM    |    June 9</span> 
+                                        </div>
+                                    </div>
+                                `)
+                            }
+                            else {
+                                $('#msg_history').append(`
+                                    <div class="incoming_msg">
+                                        <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                        <div class="received_msg">
+                                            <div class="received_withd_msg">
+                                                <p>${chat.message}</p>
+                                                <span class="time_date"> 11:01 AM    |    June 9</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `)
+                            } 
+                  }
+                  else {
+                    // else if there are users, but not this one specifically send this message, just add it
+                    var is_user_in_present_sidebar = false
+              
+                    $('#support_sidebar').children().each(function () {
+                      var result = $(this).children().children().next().children().attr("href").split('/')
+                      var chat_room_id = result[result.length-1]
+                      if (chat_room_id == chat.chatroom_id){
+                          is_user_in_present_sidebar = true
+                      }
+                    });
+
+                    if (is_user_in_present_sidebar == false) {
+                      $('#support_sidebar').append(`
+                          <div class="chat_list">
+                              <div class="chat_people">
+                                  <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                  <div class="chat_ib">
+                                      <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}"> <h5>${chat.tour_user.name}</h5> ${chat.tour_user.email}</a>
+                                  </div>
+                              </div>
+                          </div>`);
+                    }
+                  }
+                }
             };
     
             // function to update the available chats in the sidebar
@@ -317,7 +385,7 @@
                             </div>
                         </div>`);
                     
-                    // if there is only one user and being currently viewed, here how update message form chatroom_id   
+                    // if there is only one user and being currently viewed, here's how update message form chatroom_id   
                     var result = $('#support_sidebar').children().children().children().next().children().attr("href").split('/')
                     var chat_room_id = result[result.length-1]
                     $("#chatroom_id").val(chat_room_id)
