@@ -183,8 +183,8 @@
                         %th Building
                         %th Range
                         %th Image
-
-                        %th Units
+                        - if @community.mdu
+                          %th Units
                         %th Amenities
                         %th
                           Actions
@@ -211,11 +211,12 @@
                             - else  
                               .drop-img.drop-img-left
 
-                          %td
-                            = link_to "Plot Units",community_floorplate_plotexp_path(current_community,f), :class=>"btn btn-default black-button"
-                            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplatePlotUnitsPopover","data-content" => " "}
-                              %span#propertyDetailNameText
-                                Add or change where unit markers appear on each floorplate. Each marker will represent the position of the unit marker on every floor. (For example, if the floorplate is for floors 2-4, units 201, 301, and 401 will be plotted at once, with one marker, and then appear on floors 2, 3, and 4 respectively.)
+                          -if @community.mdu
+                            %td
+                              = link_to "Plot Units",community_floorplate_plotexp_path(current_community,f), :class=>"btn btn-default black-button"
+                              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplatePlotUnitsPopover","data-content" => " "}
+                                %span#propertyDetailNameText
+                                  Add or change where unit markers appear on each floorplate. Each marker will represent the position of the unit marker on every floor. (For example, if the floorplate is for floors 2-4, units 201, 301, and 401 will be plotted at once, with one marker, and then appear on floors 2, 3, and 4 respectively.)
                           %td
                             - if f.range.include?('-')
                               = link_to community_floorplate_select_floor_path(current_community,f), remote: true do
