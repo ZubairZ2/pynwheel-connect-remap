@@ -103,7 +103,7 @@
         %h3.box-title
           COMPOSE TEXT/EMAILS
           %span
-    .row.hidden
+    .row
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30
           = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
