@@ -89,18 +89,5 @@ class ChatroomsController < ApplicationController
 
         return msgs_arr
     end
-    # def message_history
-    #     chatroom = Chatroom.where(name: params[:name] ,email: params[:email]).last
-    #     if params[:id] == "0"
-    #     messages = chatroom.chats.order(created_at: :desc).limit(20)
-    #     res = json_responce messages
-    #     render json: res
-    #     end
-    # end
-
-    private
-        def chatroom_params
-            params.require(:chatroom).permit(:tour_user_id, :tour_id)
-        end
 
 end

@@ -195,12 +195,11 @@
                     <div class="type_msg">
                         <div class="input_msg_write">
 
-
-                             <%= form_for :chat, url: chats_path, format: :json, remote: true , html: { id: 'Support Team'} do |form| %>
+                             <%= form_for :chat, url: chats_path, format: :json, remote: true , html: { id: 'Support-Team-Form'} do |form| %>
                                   <%= form.text_field :message, id: :message, class: "write_msg", required: true, placeholder: "Enter your message" %>
                                   <%= form.hidden_field :name, id: :name, value: 'Support Team' %>
                                   <%= form.hidden_field :chatroom_id, id: :chatroom_id %>
-                                 <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                                 <button class="msg_send_btn" type="button" id="Support-Team-Submit"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
                               <% end %>
 
                         </div>
@@ -216,15 +215,10 @@
     <script type="text/javascript">
 
         $(document).ready(() => {
-            console.log('PUSHER_KEY', '<%= ENV["PUSHER_KEY"] %>')
-            console.log('PUSHER_APP_ID', '<%= ENV["PUSHER_APP_ID"] %>')
-            console.log('PUSHER_SECRET', '<%= ENV["PUSHER_SECRET"] %>')
-            console.log('PUSHER_CLUSTER', '<%= ENV["PUSHER_CLUSTER"] %>')
             
             var channel, loadAdminChat, pusher, updateAdminChat, updateAdminChatrooms;
             
             loadAdminChatHelper = function(chat) {
-                console.log('loadAdminChatHelper   ', chat)
                 if(chat.name == "Support Team"){
                     $('#msg_history').append(`
                         <div class="outgoing_msg">
@@ -261,7 +255,9 @@
             $('body').on('ajax:success', '.sidebar-chat', function(xhr, data) {
                 $('#msg_history').html("")
                 if(data["chats"].length > 0){
+                    // first update chatroom_id  of form 
                     $("#chatroom_id").val(data["chats"][0].chatroom_id)
+                    
                     loadAdminChat(data["chats"]);
                 }
             });
@@ -294,9 +290,9 @@
                     }
                 }
                 else {
-                  // chk if the user even present in chat bar who is sending this message
+                  // chks after page reload when there is no data on chat menu
                   if ($('#support_sidebar').children().length == 0){
-                    // if there is no user add this userin side and show his message also
+                    // as it is the only tour user add him to sidebar and show his message also
                         $('#support_sidebar').append(`
                           <div class="chat_list">
                               <div class="chat_people">
@@ -306,10 +302,9 @@
                                   </div>
                               </div>
                           </div>`);
-                          // if there is only one user and being currently viewed, here's how update message form chatroom_id   
-                          var result = $('#support_sidebar').children().children().children().next().children().attr("href").split('/')
-                          var chat_room_id = result[result.length-1]
-                          $("#chatroom_id").val(chat_room_id)
+
+                          // as there is only one user and being currently viewed, so update id chatroom form   
+                          $("#chatroom_id").val(chat.chatroom_id)
 
                           if(chat.name == "Support Team"){
                                 $('#msg_history').append(`
@@ -337,17 +332,17 @@
                   }
                   else {
                     // else if there are users, but not this one specifically send this message, just add it
-                    var is_user_in_present_sidebar = false
+                    var is_user_present_in_sidebar = false
               
                     $('#support_sidebar').children().each(function () {
                       var result = $(this).children().children().next().children().attr("href").split('/')
                       var chat_room_id = result[result.length-1]
                       if (chat_room_id == chat.chatroom_id){
-                          is_user_in_present_sidebar = true
+                          is_user_present_in_sidebar = true
                       }
                     });
 
-                    if (is_user_in_present_sidebar == false) {
+                    if (is_user_present_in_sidebar == false) {
                       $('#support_sidebar').append(`
                           <div class="chat_list">
                               <div class="chat_people">
@@ -366,6 +361,7 @@
             updateAdminChatrooms = function(chatroom) {
                 var is_user_exists = false
                 
+                // check for if user already exists in sidebar
                 $('#support_sidebar').children().each(function () {
                     var result = $(this).children().children().next().children().attr("href").split('/')
                     var chat_room_id = result[result.length-1]
@@ -374,31 +370,36 @@
                     }
                 });
 
+                if ($('#support_sidebar').children().length == 0){
+                    // if there is only one user, so he is being currently viewed,then update chatroom_id  of form 
+                    $("#chatroom_id").val(chatroom.id)
+                }
+
                 if (is_user_exists == false) {
                     $('#support_sidebar').append(`
                         <div class="chat_list">
                             <div class="chat_people">
                                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                                 <div class="chat_ib">
-                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}"> <h5>${chatroom.name}</h5> ${chatroom.email}</a>
+                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}"> <h5>${chatroom.tour_user.name}</h5> ${chatroom.tour_user.email}</a>
                                 </div>
                             </div>
                         </div>`);
-                    
-                    // if there is only one user and being currently viewed, here's how update message form chatroom_id   
-                    var result = $('#support_sidebar').children().children().children().next().children().attr("href").split('/')
-                    var chat_room_id = result[result.length-1]
-                    $("#chatroom_id").val(chat_room_id)
                 }
             };
             
 
             // if admin's chat is successfully  sent, clear the chat input field
-            $('#admin-chat-form').on('ajax:success', function(data) {
-                var chat;
-                chat = data.detail[0];
-                $('#admin-chat-form')[0].reset();
+            $('#Support-Team-Form').keyup(function(e){
+                if(e.keyCode == 13)
+                {
+                    $('#Support-Team-Form').children('#message').val('')
+                }
             });
+
+            // $('#Support-Team-Form').on('click', function() {
+            //     $('#Support-Team-Form').children('#message').val('')
+            // });
 
             pusher = new Pusher('<%= ENV["PUSHER_KEY"] %>', {
                 cluster: '<%= ENV["PUSHER_CLUSTER"] %>',

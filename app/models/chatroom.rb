@@ -7,11 +7,14 @@ class Chatroom < ApplicationRecord
 
   def notify_pusher
       tour_user = self.tour_user
+
       data = {}
       data[:id] = self.id
-      data[:name] = tour_user.name
-      data[:email] = tour_user.email
-      data[:created_at] = tour_user.created_at     # although we will use client side time
+      data[:created_at] = self.created_at     # although we will use client side time
+
+      data[:tour_user] = {}
+      data[:tour_user][:name] = tour_user.name
+      data[:tour_user][:email] = tour_user.email
       #  tour_user.image.url
       #  Any tour data and its community needed
 
