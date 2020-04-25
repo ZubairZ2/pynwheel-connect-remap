@@ -43,18 +43,20 @@ class ChatroomsController < ApplicationController
             msg_obj = {}
             msg_obj[:_id] = msg.id
             msg_obj[:text] = msg.message
-            msg_obj[:createdAt] = msg.created_at.strftime("%H:%M")
+            msg_obj[:createdAt] = msg.client_date
             
             user_obj = {}
             if msg.name == "Support Team"
+                community = message.chatroom.tour.community
                 user_obj[:_id] = 0  # support team id
                 user_obj[:name] = msg.name
-                user_obj[:avatar] = 'https://ibb.co/F3JCMv8'
+                user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://media-exp1.licdn.com/dms/image/C4E0BAQF2vI6Vud9KMg/company-logo_200_200/0?e=2159024400&v=beta&t=JKGp_fdWXtyUaFDuqSkNe6uEBekaW0XmhTdleuxPYgo'
             
             else
+                tour_user = message.chatroom.tour_user
                 user_obj[:_id] = msg.chatroom.tour_user_id
                 user_obj[:name] = msg.name
-                user_obj[:avatar] = 'https://placeimg.com/140/140/any'
+                user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://media-exp1.licdn.com/dms/image/C4E0BAQF2vI6Vud9KMg/company-logo_200_200/0?e=2159024400&v=beta&t=JKGp_fdWXtyUaFDuqSkNe6uEBekaW0XmhTdleuxPYgo'
             end
             
             msg_obj[:user] = user_obj
@@ -70,18 +72,20 @@ class ChatroomsController < ApplicationController
         msg_obj = {}
         msg_obj[:_id] = message.id
         msg_obj[:text] = message.message
-        msg_obj[:createdAt] = message.created_at.strftime("%H:%M")
+        msg_obj[:createdAt] = message.client_date
         
         user_obj = {}
         if message.name == "Support Team"
+            community = message.chatroom.tour.community
             user_obj[:_id] = 0  # support team id
             user_obj[:name] = message.name
-            user_obj[:avatar] = 'https://ibb.co/F3JCMv8'
+            user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://media-exp1.licdn.com/dms/image/C4E0BAQF2vI6Vud9KMg/company-logo_200_200/0?e=2159024400&v=beta&t=JKGp_fdWXtyUaFDuqSkNe6uEBekaW0XmhTdleuxPYgo'
         
         else
+            tour_user = message.chatroom.tour_user
             user_obj[:_id] = message.chatroom.tour_user_id
             user_obj[:name] = message.name
-            user_obj[:avatar] = 'https://placeimg.com/140/140/any'
+            user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://media-exp1.licdn.com/dms/image/C4E0BAQF2vI6Vud9KMg/company-logo_200_200/0?e=2159024400&v=beta&t=JKGp_fdWXtyUaFDuqSkNe6uEBekaW0XmhTdleuxPYgo'
         end
         
         msg_obj[:user] = user_obj

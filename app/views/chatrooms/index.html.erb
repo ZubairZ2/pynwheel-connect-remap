@@ -199,6 +199,7 @@
                                   <%= form.text_field :message, id: :message, class: "write_msg", required: true, placeholder: "Enter your message" %>
                                   <%= form.hidden_field :name, id: :name, value: 'Support Team' %>
                                   <%= form.hidden_field :chatroom_id, id: :chatroom_id %>
+                                  <%= form.hidden_field :client_date, id: :client_date %>
                                  <button class="msg_send_btn" type="button" id="Support-Team-Submit"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
                               <% end %>
 
@@ -217,6 +218,7 @@
         $(document).ready(() => {
             
             var channel, loadAdminChat, pusher, updateAdminChat, updateAdminChatrooms;
+            $("#client_date").val(new Date())
             
             loadAdminChatHelper = function(chat) {
                 if(chat.name == "Support Team"){
@@ -387,9 +389,8 @@
                         </div>`);
                 }
             };
-            
 
-            // if admin's chat is successfully  sent, clear the chat input field
+            // clear the chat input field after sending message
             $('#Support-Team-Form').keyup(function(e){
                 if(e.keyCode == 13)
                 {
@@ -397,6 +398,9 @@
                 }
             });
 
+            $('#Support-Team-Submit').on('click', function(){    
+                console.log('aaaaaaaaaaaaaaa')
+            })
             // $('#Support-Team-Form').on('click', function() {
             //     $('#Support-Team-Form').children('#message').val('')
             // });

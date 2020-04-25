@@ -16,6 +16,7 @@ json.tours @tours do |tour|
     json.show_camera_button @community.show_camera_button
 
     json.visual_id_verification tour.visual_id_verification
+    json.chat_control @community.chat_control
   end
   json.is_sitemap @community.is_sitemap
   if @community.is_sitemap
