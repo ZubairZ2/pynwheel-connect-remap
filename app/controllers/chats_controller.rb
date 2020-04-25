@@ -74,13 +74,13 @@ class ChatsController < ApplicationController
             community = message.chatroom.tour.community
             user_obj[:_id] = 0  # support team id
             user_obj[:name] = message.name
-            user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://media-exp1.licdn.com/dms/image/C4E0BAQF2vI6Vud9KMg/company-logo_200_200/0?e=2159024400&v=beta&t=JKGp_fdWXtyUaFDuqSkNe6uEBekaW0XmhTdleuxPYgo'
+            user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
         
         else
             tour_user = message.chatroom.tour_user
             user_obj[:_id] = message.chatroom.tour_user_id
             user_obj[:name] = message.name
-            user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://media-exp1.licdn.com/dms/image/C4E0BAQF2vI6Vud9KMg/company-logo_200_200/0?e=2159024400&v=beta&t=JKGp_fdWXtyUaFDuqSkNe6uEBekaW0XmhTdleuxPYgo'
+            user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
         end
         
         msg_obj[:user] = user_obj
@@ -102,13 +102,13 @@ class ChatsController < ApplicationController
                 community = message.chatroom.tour.community
                 user_obj[:_id] = 0  # support team id
                 user_obj[:name] = msg.name
-                user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://media-exp1.licdn.com/dms/image/C4E0BAQF2vI6Vud9KMg/company-logo_200_200/0?e=2159024400&v=beta&t=JKGp_fdWXtyUaFDuqSkNe6uEBekaW0XmhTdleuxPYgo'
+                user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
             
             else
                 tour_user = message.chatroom.tour_user
                 user_obj[:_id] = msg.chatroom.tour_user_id
                 user_obj[:name] = msg.name
-                user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://media-exp1.licdn.com/dms/image/C4E0BAQF2vI6Vud9KMg/company-logo_200_200/0?e=2159024400&v=beta&t=JKGp_fdWXtyUaFDuqSkNe6uEBekaW0XmhTdleuxPYgo'
+                user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
             end
             
             msg_obj[:user] = user_obj
