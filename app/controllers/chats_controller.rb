@@ -15,7 +15,7 @@ class ChatsController < ApplicationController
                 tour_user_name = "You"
             end
 
-            chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id])
+            chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id], client_date: params[:client_date])
             if chat.save
                 message = serailize_message(chat)
                 render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
