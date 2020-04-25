@@ -99,13 +99,13 @@ class ChatsController < ApplicationController
             
             user_obj = {}
             if msg.name == "Support Team"
-                community = message.chatroom.tour.community
+                community = msg.chatroom.tour.community
                 user_obj[:_id] = 0  # support team id
                 user_obj[:name] = msg.name
                 user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
             
             else
-                tour_user = message.chatroom.tour_user
+                tour_user = msg.chatroom.tour_user
                 user_obj[:_id] = msg.chatroom.tour_user_id
                 user_obj[:name] = msg.name
                 user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
