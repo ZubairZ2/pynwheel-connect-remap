@@ -8,16 +8,29 @@ class ChatsController < ApplicationController
     end
 
     def create
-        tour_user_name = (TourUser.find params[:tour_user_id]).name
-        if tour_user_name.nil?
-            tour_user_name = "You"
-        end
-        chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id])
-        if chat.save
-            message = serailize_message(chat)
-            render json: {messages: message, chatroom_id: chat.chatroom_id, meta: { stats: :OK, code: 200}}
+        if params[:tour_user_id].present?
+            # message from tour user
+            tour_user_name = (TourUser.find params[:tour_user_id]).name
+            if tour_user_name.nil?
+                tour_user_name = "You"
+            end
+
+            chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id])
+            if chat.save
+                message = serailize_message(chat)
+                render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
+            else
+                render json: {messages: chat.full_messages.join(',') , stats: :Bad, code: 400}
+            end
         else
-            render json: {messages: chat.full_messages.join(',') , meta: { stats: :Bad, code: 400}}
+            # message from support
+            chat = Chat.new(chat_params)
+            if chat.save
+                message = serailize_message(chat)
+                render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
+            else
+                render json: {messages: chat.full_messages.join(',') , stats: :Bad, code: 400}
+            end
         end
 
     end
@@ -39,20 +52,17 @@ class ChatsController < ApplicationController
     end
 
     def listening_message
-        
         chats = Chat.where("name = ? AND chatroom_id = ? AND id > ?", "Support Team", params[:chatroom_id], params[:last_msg_id]).order(created_at: :desc)
         if chats.present?
             message_history = serailize_messages(chats)
             render json: {messages: message_history,chatroom_id: params[:chatroom_id],  meta: {stats: :OK, code: 200} }
         else
-            render json: {messages: [],chatroom_id: params[:chatroom_id], meta: {stats: :OK, code: 200} }
-
+            render json: {messages: [],chatroom_id: params[:chatroom_id], stats: :OK, code: 200}
         end
 
     end
 
     def serailize_message(message)
-
         msgs_arr = []
 
         msg_obj = {}
@@ -79,30 +89,29 @@ class ChatsController < ApplicationController
     end
 
     def serailize_messages(messages)
-
-            msgs_arr = []
-            messages.each do |msg|
-                msg_obj = {}
-                msg_obj[:_id] = msg.id
-                msg_obj[:text] = msg.message
-                msg_obj[:createdAt] = msg.created_at.strftime("%H:%M")
-                
-                user_obj = {}
-                if msg.name == "Support Team"
-                    user_obj[:_id] = 0  # support team id
-                    user_obj[:name] = msg.name
-                    user_obj[:avatar] = 'https://ibb.co/F3JCMv8'
-                
-                else
-                    user_obj[:_id] = msg.chatroom.tour_user_id
-                    user_obj[:name] = msg.name
-                    user_obj[:avatar] = 'https://placeimg.com/140/140/any'
-                end
-                
-                msg_obj[:user] = user_obj
-                msgs_arr << msg_obj
+        msgs_arr = []
+        messages.each do |msg|
+            msg_obj = {}
+            msg_obj[:_id] = msg.id
+            msg_obj[:text] = msg.message
+            msg_obj[:createdAt] = msg.created_at.strftime("%H:%M")
+            
+            user_obj = {}
+            if msg.name == "Support Team"
+                user_obj[:_id] = 0  # support team id
+                user_obj[:name] = msg.name
+                user_obj[:avatar] = 'https://ibb.co/F3JCMv8'
+            
+            else
+                user_obj[:_id] = msg.chatroom.tour_user_id
+                user_obj[:name] = msg.name
+                user_obj[:avatar] = 'https://placeimg.com/140/140/any'
             end
-            return msgs_arr
+            
+            msg_obj[:user] = user_obj
+            msgs_arr << msg_obj
+        end
+        return msgs_arr
     end
 
     private
