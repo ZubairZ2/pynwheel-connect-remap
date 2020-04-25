@@ -20,13 +20,13 @@
     <%= render '/font_awesome_v5' %>
     <style type="text/css">
 
-      .container{max-width:1170px; margin:auto;}
+      .container{max-width:1100px; margin:auto; background: #f8f8f8 none repeat scroll 0 0;}
       img{ max-width:100%;}
       .inbox_people {
         background: #f8f8f8 none repeat scroll 0 0;
         float: left;
         overflow: hidden;
-        width: 30%; border-right:1px solid #c4c4c4;
+        width: 27%; border-right:1px solid #c4c4c4;
       }
       .inbox_msg {
         background: #f8f8f8 none repeat scroll 0 0;
@@ -37,7 +37,7 @@
       .top_spac{ margin: 20px 0 0;}
 
 
-      .recent_heading {float: left; width:40%;}
+      .recent_heading {float: left;}
       .srch_bar {
         display: inline-block;
         text-align: right;
@@ -165,7 +165,7 @@
 
     <div class="modal fade" id="ChatSupport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="container">
-        <h3 class=" text-center">Messaging</h3>
+        <h3 class=" text-center">Chat Support</h3>
         <div class="messaging">
             <div class="inbox_msg">
                 <div class="inbox_people">
@@ -173,7 +173,7 @@
 
                     <div class="headind_srch">
                         <div class="recent_heading">
-                            <h4>Recent Chats</h4>
+                            <h4>Recent Tour Users</h4>
                         </div>
                     </div>
 
@@ -219,14 +219,14 @@
             
             var channel, loadAdminChat, pusher, updateAdminChat, updateAdminChatrooms;
             $("#client_date").val(new Date())
-            
+
             loadAdminChatHelper = function(chat) {
                 if(chat.name == "Support Team"){
                     $('#msg_history').append(`
                         <div class="outgoing_msg">
                             <div class="sent_msg">
                                 <p>${chat.message}</p>
-                                <span class="time_date"> 11:01 AM    |    June 9</span> 
+                                <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
                             </div>
                         </div>
                     `)
@@ -234,11 +234,11 @@
                 else {
                     $('#msg_history').append(`
                         <div class="incoming_msg">
-                            <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                            <div class="incoming_msg_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                             <div class="received_msg">
                                 <div class="received_withd_msg">
                                     <p>${chat.message}</p>
-                                    <span class="time_date"> 11:01 AM    |    June 9</span>
+                                    <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
                                 </div>
                             </div>
                         </div>
@@ -261,6 +261,9 @@
                     $("#chatroom_id").val(data["chats"][0].chatroom_id)
                     
                     loadAdminChat(data["chats"]);
+                    $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+                    // $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
+
                 }
             });
 
@@ -272,7 +275,7 @@
                             <div class="outgoing_msg">
                                 <div class="sent_msg">
                                     <p>${chat.message}</p>
-                                    <span class="time_date"> 11:01 AM    |    June 9</span> 
+                                    <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span> 
                                 </div>
                             </div>
                         `)
@@ -280,16 +283,17 @@
                     else {
                         $('#msg_history').append(`
                             <div class="incoming_msg">
-                                <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                <div class="incoming_msg_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                                 <div class="received_msg">
                                     <div class="received_withd_msg">
                                         <p>${chat.message}</p>
-                                        <span class="time_date"> 11:01 AM    |    June 9</span>
+                                        <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
                                     </div>
                                 </div>
                             </div>
                         `)
                     }
+                    $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
                 }
                 else {
                   // chks after page reload when there is no data on chat menu
@@ -298,7 +302,7 @@
                         $('#support_sidebar').append(`
                           <div class="chat_list">
                               <div class="chat_people">
-                                  <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                  <div class="chat_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                                   <div class="chat_ib">
                                       <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}"> <h5>${chat.tour_user.name}</h5> ${chat.tour_user.email}</a>
                                   </div>
@@ -313,7 +317,7 @@
                                     <div class="outgoing_msg">
                                         <div class="sent_msg">
                                             <p>${chat.message}</p>
-                                            <span class="time_date"> 11:01 AM    |    June 9</span> 
+                                            <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span> 
                                         </div>
                                     </div>
                                 `)
@@ -321,16 +325,17 @@
                             else {
                                 $('#msg_history').append(`
                                     <div class="incoming_msg">
-                                        <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                        <div class="incoming_msg_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                                         <div class="received_msg">
                                             <div class="received_withd_msg">
                                                 <p>${chat.message}</p>
-                                                <span class="time_date"> 11:01 AM    |    June 9</span>
+                                                <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
                                             </div>
                                         </div>
                                     </div>
                                 `)
                             } 
+                    $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
                   }
                   else {
                     // else if there are users, but not this one specifically send this message, just add it
@@ -348,13 +353,14 @@
                       $('#support_sidebar').append(`
                           <div class="chat_list">
                               <div class="chat_people">
-                                  <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                  <div class="chat_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                                   <div class="chat_ib">
                                       <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}"> <h5>${chat.tour_user.name}</h5> ${chat.tour_user.email}</a>
                                   </div>
                               </div>
                           </div>`);
                     }
+                    $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
                   }
                 }
             };
@@ -381,7 +387,7 @@
                     $('#support_sidebar').append(`
                         <div class="chat_list">
                             <div class="chat_people">
-                                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                <div class="chat_img"> <img src=${chatroom.tour_user.image} alt=${chatroom.tour_user.name}> </div>
                                 <div class="chat_ib">
                                     <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}"> <h5>${chatroom.tour_user.name}</h5> ${chatroom.tour_user.email}</a>
                                 </div>

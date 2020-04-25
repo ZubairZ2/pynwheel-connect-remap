@@ -37,6 +37,8 @@ class ChatroomsController < ApplicationController
     end
 
     def serailize_messages(messages)
+        community = messages.first.chatroom.tour.community
+        tour_user = messages.first.chatroom.tour_user
 
         msgs_arr = []
         messages.each do |msg|
@@ -47,16 +49,14 @@ class ChatroomsController < ApplicationController
             
             user_obj = {}
             if msg.name == "Support Team"
-                community = msg.chatroom.tour.community
-                user_obj[:_id] = 0  # support team id
+                user_obj[:_id] = 0  # support team id, no need of it
                 user_obj[:name] = msg.name
-                user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
+                user_obj[:avatar] = community.logo.present? ? community.logo.url : "/assets/logo-small.png"
             
             else
-                tour_user = msg.chatroom.tour_user
                 user_obj[:_id] = msg.chatroom.tour_user_id
                 user_obj[:name] = msg.name
-                user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
+                user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : "/assets/chat-tour-user.jpg"
             end
             
             msg_obj[:user] = user_obj
@@ -79,13 +79,13 @@ class ChatroomsController < ApplicationController
             community = message.chatroom.tour.community
             user_obj[:_id] = 0  # support team id
             user_obj[:name] = message.name
-            user_obj[:avatar] = community.logo.present? ? community.logo.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
+            user_obj[:avatar] = community.logo.present? ? community.logo.url : "/assets/logo-small.png"
         
         else
             tour_user = message.chatroom.tour_user
             user_obj[:_id] = message.chatroom.tour_user_id
             user_obj[:name] = message.name
-            user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : 'https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/community/logo/444/444-1587466364-0ff643e5-file.jpeg'
+            user_obj[:avatar] = tour_user.image.present? ? tour_user.image.url : "/assets/chat-tour-user.jpg"
         end
         
         msg_obj[:user] = user_obj

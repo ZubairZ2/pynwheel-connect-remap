@@ -15,6 +15,8 @@ class Chatroom < ApplicationRecord
       data[:tour_user] = {}
       data[:tour_user][:name] = tour_user.name
       data[:tour_user][:email] = tour_user.email
+      data[:tour_user][:image] = tour_user.image.present? ? tour_user.image.url : "/assets/chat-tour-user.jpg"
+      
       #  tour_user.image.url
       #  Any tour data and its community needed
 
