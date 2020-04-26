@@ -10,7 +10,7 @@ class Chatroom < ApplicationRecord
 
       data = {}
       data[:id] = self.id
-      data[:created_at] = self.created_at     # although we will use client side time
+      data[:created_at] = self.created_at
 
       data[:tour_user] = {}
       data[:tour_user][:name] = tour_user.name
