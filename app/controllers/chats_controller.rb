@@ -1,6 +1,6 @@
 class ChatsController < ApplicationController
     protect_from_forgery with: :null_session
-    skip_before_filter :authenticate_user!, :only => [:create,:show, :listening_message]
+    skip_before_action :authenticate_user!, :only => [:create,:show, :listening_message]
 
 
     def index

@@ -12,7 +12,10 @@ class Chat < ApplicationRecord
         data[:tour_user][:email] = tour_user.email
         data[:tour_user][:image] = tour_user.image.present? ? tour_user.image.url : "/assets/chat-tour-user.jpg"
       end 
-        
-      Pusher.trigger('chat', 'new-chat', data.as_json)
+      
+      community = self.chatroom.tour.community
+      channel_name = community.name.tr(" ", "_") + "_with_id_" + community.id.to_s
+
+      Pusher.trigger(channel_name, 'new-chat', data.as_json)
     end
 end

@@ -30,12 +30,6 @@ Rails.application.routes.draw do
   resources :messages do
   end
 
-  # namespace :chat_widget do
-  #   get 'widget', to: 'widgets#widget'
-  #   get 'show_widget', to: 'widgets#show_widget' 
-  #   get '/chat_support', to: 'widgets#support_team_widget'
-  # end 
-
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"

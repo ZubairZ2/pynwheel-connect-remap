@@ -1,9 +1,10 @@
 class ChatroomsController < ApplicationController
     protect_from_forgery with: :null_session
-    skip_before_filter :authenticate_user!, :only => [:create,:show]
+    skip_before_action :authenticate_user!, :only => [:create,:show]
 
     def index
         @chatroom = Chatroom.new
+        @listening_channels = current_user.communities.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
         render :index, layout: false
     end
 
