@@ -1,6 +1,8 @@
 class ChatroomsController < ApplicationController
     protect_from_forgery with: :null_session
+    skip_before_action :verify_authenticity_token
     skip_before_action :authenticate_user!, :only => [:create,:show]
+    after_action :allow_iframe
 
     def index
         @chatroom = Chatroom.new
@@ -94,5 +96,10 @@ class ChatroomsController < ApplicationController
 
         return msgs_arr
     end
-
+    
+    private
+  
+    def allow_iframe
+      response.headers.except! 'X-Frame-Options'
+    end
 end

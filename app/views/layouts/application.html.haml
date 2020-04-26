@@ -7,8 +7,6 @@
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
     = csrf_meta_tags
     = stylesheet_link_tag    'application', media: 'all'
-    - if user_signed_in?
-      = action_cable_meta_tag
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
     %script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
     %script{:async => "", :defer => "defer", :src => "https://cdn.rawgit.com/mahnunchik/markerclustererplus/master/dist/markerclusterer.min.js", :type => "text/javascript"}
