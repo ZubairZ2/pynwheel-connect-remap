@@ -17,6 +17,8 @@ json.tours @tours do |tour|
 
     json.visual_id_verification tour.visual_id_verification
     json.chat_control @community.chat_control
+    json.show_map @community.show_map
+    json.mdu @community.mdu
   end
   json.is_sitemap @community.is_sitemap
   if @community.is_sitemap
@@ -27,116 +29,129 @@ json.tours @tours do |tour|
     json.image @floorplate.image
 
   end
-  ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
-  ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
+  if @community.show_map
 
-  if @community.is_sitemap
-    sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
-  else
-    ts.where(stop_type: "elevator").each do |last_elev|
-      sp = Path.where(map_path_from_id: last_elev.stop_id, map_path_to_id: nil)&.first unless sp.present? rescue nil
+    ts = @community.mdu ? tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
+    ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
+
+    if @community.is_sitemap
+      sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
+    else
+      ts.where(stop_type: "elevator").each do |last_elev|
+        sp = Path.where(map_path_from_id: last_elev.stop_id, map_path_to_id: nil)&.first unless sp.present? rescue nil
+      end
     end
-  end
-  if sp.blank?
-    @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first rescue nil
-    json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
-  else
-    json.path_points sp.present? ? sp.path_points.reorder('id ASC') : []
-  end
-  stops_arr = []
-  if @community.is_sitemap
-    stops_arr = @community.tour.tour_stops.where(display_stop: true).order(:sort)
-    stop_count = stops_arr.compact.count
-    second_last = stops_arr.compact[stop_count - 3]
-    last_stop_desc = stops_arr.compact[stop_count - 2]
-  else
-    temp_max_floor = nil
-    min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
-    @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
 
-      begin
-        if @community.tour.sort_hash[floor.to_s].present?
-          arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
-          if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
-            begin
-              # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
-              next
+    if sp.blank?
+      @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first rescue nil
+      json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
+    else
+      json.path_points sp.present? ? sp.path_points.reorder('id ASC') : []
+    end
+    stops_arr = []  
+    if @community.is_sitemap
+
+      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      stop_count = stops_arr.compact.count
+      second_last = stops_arr.compact[stop_count - 3]
+      last_stop_desc = stops_arr.compact[stop_count - 2]
+    else
+      temp_max_floor = nil
+      min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
+      @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+
+        begin
+          if @community.tour.sort_hash[floor.to_s].present?
+            arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
+            if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
+              begin
+                # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
+                next
+                # end
+              rescue
+              end
+            end
+            temp_max_floor = floor
+            @community.tour.sort_hash[floor.to_s].each do |s_id|
+              # amenity_hit = true
+              # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
+              # if ts_ck.present?  && ts_ck.stop_type == "amenity"
+              #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
               # end
-            rescue
+              add_stop = TourStop.find_by_id(s_id)
+              if add_stop.present?
+                add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
+                stops_arr << add_stop if (add_stop.display_stop && add_mdu)
+              end
+              # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
             end
           end
-          temp_max_floor = floor
-          @community.tour.sort_hash[floor.to_s].each do |s_id|
-            # amenity_hit = true
-            # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
-            # if ts_ck.present?  && ts_ck.stop_type == "amenity"
-            #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
-            # end
-            add_stop = TourStop.find_by_id(s_id)
-            if add_stop.present?
-              stops_arr << add_stop if add_stop.display_stop
-            end
-            # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
+        rescue
+        end
+      end
+      stop_count = stops_arr.compact.count
+      second_last = stops_arr.compact[stop_count - 3]
+      last_stop_desc = stops_arr.compact[stop_count - 2]
+      blocked = []
+      # begin
+      # while (stops_arr.compact[stops_arr.compact.size - 1]).stop_type == "elevator"
+      #   blocked << stops_arr.compact[stops_arr.compact.size - 1].stop_id
+      #   stops_arr = stops_arr - [stops_arr[stops_arr.size - 1]]
+      # end
+      # rescue
+      # end
+      last_stop = stops_arr.compact[stops_arr.compact.size - 1]
+
+      sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
+      max_floor = sto.floors.max rescue (max_floor = temp_max_floor)
+      @plates = []
+      @ele_ = []
+      Floorplate.where(community_id: @community.id).each{|x| @plates << x}
+      @plates.each do |pl|
+        floor_pl = Floorplate.find pl
+        Elevator.where(floorplate_id: pl).map{|x| @ele_ << x}
+      end
+      while min_floor != max_floor do
+        begin
+          ele = @ele_.map{|x| x if x.floors.include?(max_floor)}.compact.first
+          max_floor = ele.floors.min
+          if stops_arr[stops_arr.size - 1].stop_id == ele.id
+            max_floor = max_floor - 1
+            next
           end
+          stops_arr << TourStop.find_by(stop_id: ele.id) unless blocked.include?(ele.id)
+        rescue
+          break
         end
-      rescue
       end
     end
-    stop_count = stops_arr.compact.count
-    second_last = stops_arr.compact[stop_count - 3]
-    last_stop_desc = stops_arr.compact[stop_count - 2]
-    blocked = []
-    # begin
-    # while (stops_arr.compact[stops_arr.compact.size - 1]).stop_type == "elevator"
-    #   blocked << stops_arr.compact[stops_arr.compact.size - 1].stop_id
-    #   stops_arr = stops_arr - [stops_arr[stops_arr.size - 1]]
-    # end
-    # rescue
-    # end
-    last_stop = stops_arr.compact[stops_arr.compact.size - 1]
+  
 
-    sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
-    max_floor = sto.floors.max rescue (max_floor = temp_max_floor)
-    @plates = []
-    @ele_ = []
-    Floorplate.where(community_id: @community.id).each{|x| @plates << x}
-    @plates.each do |pl|
-      floor_pl = Floorplate.find pl
-      Elevator.where(floorplate_id: pl).map{|x| @ele_ << x}
+
+    stops = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
+    all_stop_ids = stops_arr.compact.pluck(:id)
+    stops_except_deleted_ids = all_stop_ids - @community.deleted_ids
+    stops_except_deleted = []
+    stops_except_deleted_ids.each do |id|
+      stops_except_deleted << TourStop.find(id)
     end
-    while min_floor != max_floor do
-      begin
-        ele = @ele_.map{|x| x if x.floors.include?(max_floor)}.compact.first
-        max_floor = ele.floors.min
-        if stops_arr[stops_arr.size - 1].stop_id == ele.id
-          max_floor = max_floor - 1
-          next
-        end
-        stops_arr << TourStop.find_by(stop_id: ele.id) unless blocked.include?(ele.id)
-      rescue
-        break
+
+    new_stops_arr = []
+    last_element  = nil
+    stops_except_deleted.each do |x|
+      if last_element != x
+        new_stops_arr << x
       end
+      last_element = x
     end
+  else
+    json.path_points []
+    new_stops_arr = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
+    stop_count = new_stops_arr.count
+    second_last = new_stops_arr[stop_count - 2]
+    last_stop_desc = new_stops_arr[stop_count - 1]
   end
-
-
-  stops = tour.tour_stops
-  all_stop_ids = stops_arr.compact.pluck(:id)
-  stops_except_deleted_ids = all_stop_ids - @community.deleted_ids
-  stops_except_deleted = []
-  stops_except_deleted_ids.each do |id|
-    stops_except_deleted << TourStop.find(id)
-  end
-
-  new_stops_arr = []
-  last_element  = nil
-  stops_except_deleted.each do |x|
-    if last_element != x
-      new_stops_arr << x
-    end
-    last_element = x
-  end
-  new_stops_arr
+  
 
   hit = true
   counter = 0
@@ -145,6 +160,7 @@ json.tours @tours do |tour|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
     next if (stop.latitude + stop.longitude) < 1
+    # next if !@community.mdu && stop.stop_type == "unit"
     navigation_title = ""
     if second_last.id == stop.id
       navigation_title = "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
@@ -351,25 +367,27 @@ json.tours @tours do |tour|
     end
 
     @existing_path_points = []
-    if i == 0
-      @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
-      if path.blank?
-        path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
-        @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+    if @community.show_map
+      if i == 0
+        @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
+        path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
+        if path.blank?
+          path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
+          @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+        else
+          @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+        end
       else
-        @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+        path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
+        if path.blank?
+          path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
+          @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+        else
+          @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+        end
+        # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
       end
-    else
-      path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
-      if path.blank?
-        path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
-        @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-      else
-        @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-      end
-      # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
-    end
+    end  
 
     @existing_path_points.flatten!
     json.path_points @existing_path_points
