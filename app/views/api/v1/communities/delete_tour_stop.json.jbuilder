@@ -13,6 +13,8 @@ json.tours @tours do |tour|
   json.tour_setting do
     json.show_camera_button @community.show_camera_button
     json.visual_id_verification tour.visual_id_verification
+    json.show_map @community.show_map
+    json.mdu @community.mdu
   end
   json.is_sitemap @community.is_sitemap
   json.tour_setting do
@@ -77,7 +79,8 @@ json.tours @tours do |tour|
               # end
               add_stop = TourStop.find_by_id(s_id)
               if add_stop.present?
-                stops_arr << add_stop if add_stop.display_stop
+                add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
+                stops_arr << add_stop if (add_stop.display_stop && add_mdu)
               end
               # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
             end
@@ -144,8 +147,8 @@ json.tours @tours do |tour|
     json.path_points []
     new_stops_arr = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
     stop_count = new_stops_arr.count
-    second_last = new_stops_arr[stop_count - 3]
-    last_stop_desc = new_stops_arr[stop_count - 2]
+    second_last = new_stops_arr[stop_count - 2]
+    last_stop_desc = new_stops_arr[stop_count - 1]
   end
   
 

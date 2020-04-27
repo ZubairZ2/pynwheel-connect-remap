@@ -179,7 +179,7 @@
                             %i.fa.fa-road.icon_size
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
-                      - if @community.mdu && stop.stop_type == "unit"
+                      - if !@community.mdu && stop.stop_type == "unit"
                         - next
                       - unless @all_stops.include?(stop.stop_id) || stop.stop_type == "elevator"
                         - next
