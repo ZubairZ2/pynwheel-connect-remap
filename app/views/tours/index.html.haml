@@ -1,3 +1,110 @@
+:css
+  body {
+      color: #fff;
+      overflow-x: hidden;
+      height: 100%;
+      background-color: #000;
+      background-repeat: no-repeat
+  }
+  
+  .container-fluid {
+      margin-top: 80px;
+      margin-bottom: 80px
+  }
+  
+  .card {
+      background-color: #424242;
+      padding: 40px 10px
+  }
+  
+  .text-grey {
+      color: #9E9E9E
+  }
+  
+  .fa {
+      font-size: 25px;
+      cursor: pointer
+  }
+  
+  input,
+  select {
+      padding: 2px 6px;
+      border: none;
+      border-bottom: 1px solid #fff;
+      border-radius: none;
+      box-sizing: border-box;
+      color: #fff;
+      background-color: transparent;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-align: center !important
+  }
+  
+  input:focus,
+  select:focus {
+      -moz-box-shadow: none !important;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
+      border-bottom: 1px solid #00C853;
+      outline-width: 0
+  }
+  
+  select option {
+      background-color: #616161
+  }
+  
+  select option:focus {
+      background-color: #00C853 !important
+  }
+  
+  ::placeholder {
+      color: #fff;
+      opacity: 1
+  }
+  
+  :-ms-input-placeholder {
+      color: #fff
+  }
+  
+  ::-ms-input-placeholder {
+      color: #fff
+  }
+  
+  button:focus {
+      -moz-box-shadow: none !important;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
+      outline-width: 0
+  }
+  
+  .btn {
+      border-radius: 50px;
+      width: 120px
+  }
+  
+  .exit {
+      border: 1px solid #9E9E9E;
+      color: #9E9E9E;
+      background-color: transparent
+  }
+  
+  .exit:hover {
+      border: 1px solid #9E9E9E;
+      color: #000 !important;
+      background-color: #9E9E9E
+  }
+  
+  @media screen and (max-width: 768px) {
+      .mob {
+          width: 70%
+      }
+  
+      select.mob {
+          width: 50%
+      }
+  }
+
+
 - content_for :title, "Tour Setup Page - Pynwheel"
 .divLoading.hidden
 - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
@@ -68,6 +175,43 @@
             -#      %label.label-primary{:for => "show_notepad_button"}
             -#      %span.pl-15 Yes
             = submit_tag 'Save', class: "hidden"
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          VISITING HOURS
+          %span
+    .row
+      .col-md-12
+        .box.box-widget.panel-box.add-plan.pt-30
+          .container-fluid.px-1.px-sm-4.py-5.mx-auto
+            .row.d-flex.justify-content-center
+              .col-md-10.col-lg-9.col-xl-8
+                .card.border-0
+                  .row.px-3
+                    .col-sm-2
+                      %label.text-grey.mt-1.mb-3 Open Hours
+                    .col-sm-10.list
+                      .mb-2.row.justify-content-between.px-3
+                        %select.mb-2.mob
+                          %option{:value => "opt1"} Mon-Fri
+                          %option{:value => "opt2"} Sat-Sun
+                        .mob
+                          %label.text-grey.mr-1 From
+                          %input.ml-1{:name => "from", :type => "time"}/
+                        .mob.mb-2
+                          %label.text-grey.mr-4 To
+                          %input.ml-1{:name => "to", :type => "time"}/
+                        .mt-1.cancel.fa.fa-times.text-danger
+                  .row.px-3.mt-3
+                    .col-sm-2
+                    .col-sm-10
+                      .row.px-3
+                        .fa.fa-plus-circle.text-success.add
+                        %p.text-success.ml-3.add Add
+                  .row.px-3.mt-3.justify-content-center
+                    %button.btn.exit.mr-2 Cancel
+                    %button.btn.btn-success.ml-2 Done
+
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
         %h3.box-title
@@ -862,4 +1006,32 @@
       return  "<section class='connectingLines' style='left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -webkit-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg); z-index: 99999; background-color: #1c1c1d; position: absolute; height: 2px; '></section>";
     };
 
+  });
+
+  $(document).ready(function(){
+  
+  $('.add').click(function(){
+  $(".list").append(
+  '<div class="mb-2 row justify-content-between px-3">' +
+      '<select class="mob mb-2">' +
+          '<option value="opt1">Mon-Fri</option>' +
+          '<option value="opt2">Sat-Sun</option>' +
+          '</select>' +
+      '<div class="mob">' +
+          '<label class="text-grey mr-1">From</label>' +
+          '<input class="ml-1" type="time" name="from">' +
+          '</div>' +
+      '<div class="mob mb-2">' +
+          '<label class="text-grey mr-4">To</label>' +
+          '<input class="ml-1" type="time" name="to">' +
+          '</div>' +
+      '<div class="mt-1 cancel fa fa-times text-danger">' +
+          '</div>' +
+      '</div>');
+  });
+  
+  $(".list").on('click', '.cancel', function(){
+  $(this).parent().remove();
+  });
+  
   });
