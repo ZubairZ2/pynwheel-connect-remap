@@ -43,8 +43,15 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_out_path_for(resource_or_scope)
+    session["is_user_online"] = "No"
     new_user_session_path
   end
+
+  def after_sign_in_path_for(resource_or_scope)
+    session["is_user_online"] = "Yes"
+    root_url
+  end
+
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?
