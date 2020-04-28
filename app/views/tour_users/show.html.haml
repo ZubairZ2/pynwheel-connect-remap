@@ -25,13 +25,13 @@
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
     #ChatSupport.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
-      .container
+      .container_a
         %h3.text-center Chat logs
-        .messaging
-          .inbox_msg
-            .mesgs
-              #msg_history.msg_history
-          %p.text-center.top_spac
+        .messaging_a
+          .inbox_msg_a
+            .mesgs_a
+              #msg_history.msg_history_a
+          %p.text-center.top_spac_a
             Powered by
             %a{href: "https://pynwheel-staging.herokuapp.com/", target: "_blank"} Pynwheel
     .row
@@ -290,22 +290,22 @@
     loadAdminChatHelper = function(chat) {
         if(chat.name == "Support Team"){
             $('#msg_history').append(`
-                <div class="outgoing_msg">
-                    <div class="sent_msg">
+                <div class="outgoing_msg_a">
+                    <div class="sent_msg_a">
                         <p>${chat.message}</p>
-                        <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                        <span class="time_date_a"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
                     </div>
                 </div>
             `)
         }
         else {
             $('#msg_history').append(`
-                <div class="incoming_msg">
-                    <div class="incoming_msg_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
-                    <div class="received_msg">
-                        <div class="received_withd_msg">
+                <div class="incoming_msg_a">
+                    <div class="incoming_msg_img_a"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                    <div class="received_msg_a">
+                        <div class="received_withd_msg_a">
                             <p>${chat.message}</p>
-                            <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                            <span class="time_date_a"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
                         </div>
                     </div>
                 </div>
