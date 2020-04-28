@@ -6,7 +6,11 @@ class ChatroomsController < ApplicationController
 
     def index
         @chatroom = Chatroom.new
-        @listening_channels = current_user.communities.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
+        unless current_user.role == "Super admin"
+            @listening_channels = current_user.communities.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
+        else
+            @listening_channels = Community.all.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
+        end
         render :index, layout: false
     end
 
