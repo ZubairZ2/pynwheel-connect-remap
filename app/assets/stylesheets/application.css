@@ -25,6 +25,7 @@
  *= require multi-select
  *= require bootstrap-select
  *= require bootstrap-wysihtml5
+ *= require tour_users
  */
 @keyframes shadow-pulse
 {
