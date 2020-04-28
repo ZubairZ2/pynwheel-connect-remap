@@ -52,7 +52,7 @@ class ChatsController < ApplicationController
     end
 
     def show
-        @chats = Chat.where(chatroom_id: params[:id]).order(client_date: :desc)
+        @chats = Chat.where(chatroom_id: params[:id]).order(id: :asc)
         respond_to do |format|
             if @chats
                 format.json { render :chats, status: :ok }
