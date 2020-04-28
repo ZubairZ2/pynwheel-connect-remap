@@ -32,6 +32,19 @@ class ChatsController < ApplicationController
                 render json: {messages: chat.full_messages.join(',') , stats: :Bad, code: 400}
             end
         end
+
+        # if session["is_user_online"] == "Yes"
+        #     puts '---'*100
+        #     puts "yes user is online"
+        #     puts session["is_user_online"]
+        #     puts '---'*100
+        # else
+        #     puts '---'*100
+        #     puts "No user is online"
+        #     puts session["is_user_online"]
+        #     puts '---'*100
+        # end 
+
     end
 
     def new
