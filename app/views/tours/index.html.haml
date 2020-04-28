@@ -180,37 +180,38 @@
         %h3.box-title
           VISITING HOURS
           %span
-    .row
-      .col-md-12
-        .box.box-widget.panel-box.add-plan.pt-30
-          .container-fluid.px-1.px-sm-4.py-5.mx-auto
-            .row.d-flex.justify-content-center
-              .col-md-10.col-lg-9.col-xl-8
-                .card.border-0
+      .container-fluid.px-1.px-sm-4.py-5.mx-auto
+        .row.d-flex.justify-content-center
+          .col-md-10.col-lg-9.col-xl-8
+            .card.border-0
+              .row.px-3
+                .col-sm-2
+                  %label.text-grey.mt-1.mb-3 Open Hours
+                .col-sm-10.list
+                  .mb-2.row.justify-content-between.px-3
+                    %select.mb-2.mob
+                      %option{:value => "Monday"} Monday
+                      %option{:value => "Tuesday"} Tuesday
+                      %option{:value => "Wednesday"} Wednesday
+                      %option{:value => "Thursday"} Thursday
+                      %option{:value => "Friday"} Friday
+                      %option{:value => "Saturday"} Saturday
+                      %option{:value => "Sunday"} Sunday
+                    .mob
+                      %label.text-grey.mr-1 From
+                      %input.ml-1{:name => "from", :type => "time", :value => "09:00"}
+                    .mob.mb--
+                      %label.text-grey.mr-4 To
+                      %input.ml-1{:name => "to", :type => "time", :value => "17:00"}
+                    .mt-1.cancel.fa.fa-times.text-danger
+              .row.px-3.mt-3
+                .col-sm-2
+                .col-sm-10
                   .row.px-3
-                    .col-sm-2
-                      %label.text-grey.mt-1.mb-3 Open Hours
-                    .col-sm-10.list
-                      .mb-2.row.justify-content-between.px-3
-                        %select.mb-2.mob
-                          %option{:value => "opt1"} Mon-Fri
-                          %option{:value => "opt2"} Sat-Sun
-                        .mob
-                          %label.text-grey.mr-1 From
-                          %input.ml-1{:name => "from", :type => "time"}/
-                        .mob.mb-2
-                          %label.text-grey.mr-4 To
-                          %input.ml-1{:name => "to", :type => "time"}/
-                        .mt-1.cancel.fa.fa-times.text-danger
-                  .row.px-3.mt-3
-                    .col-sm-2
-                    .col-sm-10
-                      .row.px-3
-                        .fa.fa-plus-circle.text-success.add
-                        %p.text-success.ml-3.add Add
-                  .row.px-3.mt-3.justify-content-center
-                    %button.btn.exit.mr-2 Cancel
-                    %button.btn.btn-success.ml-2 Done
+                    .fa.fa-plus-circle.text-success.add
+                    %p.text-success.ml-3.add Add
+              .row.px-3.mt-3.justify-content-center
+                %button.btn.btn-success.ml-2 Save
 
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
