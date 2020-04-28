@@ -112,7 +112,7 @@
       .mesgs {
         float: left;
         padding: 30px 15px 0 25px;
-        width: 60%;
+        width: 70%;
       }
 
       .sent_msg p {
@@ -134,7 +134,7 @@
         color: #4c4c4c;
         font-size: 15px;
         min-height: 48px;
-        width: 100%;
+        width: 93%;
       }
 
       .type_msg {border-top: 1px solid #c4c4c4;position: relative;}
@@ -177,7 +177,16 @@
                     </div>
 
                     <div class="inbox_chat" id='support_sidebar'>
-
+                        <% @chatrooms.each do |chatroom| %>
+                            <div class="chat_list">
+                                <div class="chat_people">
+                                    <div class="chat_img"> <img src= <%= chatroom.tour_user.image.present? ?  chatroom.tour_user.image.url : @default_user_image %> alt= <%= chatroom.tour_user.name %> > </div>
+                                    <div class="chat_ib">
+                                        <a class="sidebar-chat" data-remote="true" href="/chats/<%= chatroom.id %>"> <h5> <%= chatroom.tour_user.name %> </h5> <%= chatroom.tour_user.email %> </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% end %>
                     </div>
 
                 </div>
@@ -185,7 +194,26 @@
                 <div class="mesgs">
 
                     <div class="msg_history" id="msg_history">
-
+                         <% @chatrooms.first.chats.each do |chat| %>
+                            <% if(chat.name == "Support Team") %>
+                                <div class="outgoing_msg">
+                                    <div class="sent_msg">
+                                        <p> <%=chat.message%> </p>
+                                        <span class="time_date"> <%= chat.client_date.present? ? chat.client_date.to_datetime.strftime("%l:%M %p | %b %d") : "Invalid date" %> </span>
+                                    </div>
+                                </div>
+                            <% else %>
+                                <div class="incoming_msg">
+                                    <div class="incoming_msg_img"> <img src= <%= @chatrooms.first.tour_user.image.present? ?  @chatrooms.first.tour_user.image.url : @default_user_image %> alt= <%= @chatrooms.first.tour_user.name %> > </div>
+                                    <div class="received_msg">
+                                        <div class="received_withd_msg">
+                                            <p> <%=chat.message%> </p>
+                                            <span class="time_date"> <%= chat.client_date.present? ? chat.client_date.to_datetime.strftime("%l:%M %p | %b %d") : "Invalid date" %> </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% end %>
+                        <% end %>
                     </div>
                     
                     <div class="type_msg">
@@ -215,6 +243,10 @@
             
             var channel, loadAdminChat, pusher, updateAdminChat, updateAdminChatrooms;
             $("#client_date").val(new Date())
+            var first_chat_id = <%= @chatrooms.present? ? @chatrooms.first.id : 0 %>
+
+            if(first_chat_id != 0)
+                $("#chatroom_id").val(first_chat_id)
 
             loadAdminChatHelper = function(chat) {
                 if(chat.name == "Support Team"){
@@ -261,6 +293,8 @@
                     // $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
 
                 }
+                $(".active_chat").removeClass('active_chat')
+                $(this).parent().parent().parent().addClass('active_chat')
             });
 
             // function to update admin's chat with new chat messages

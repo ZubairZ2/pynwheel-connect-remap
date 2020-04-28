@@ -5,12 +5,19 @@ class ChatroomsController < ApplicationController
     after_action :allow_iframe
 
     def index
-        @chatroom = Chatroom.new
-        unless current_user.role == "Super admin"
-            @listening_channels = current_user.communities.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
-        else
-            @listening_channels = Community.all.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
-        end
+        # if current_user.role == "Super admin"
+        #     @chatrooms = Chatroom.all.includes(:chats, :tour, :tour_user)
+        #     @listening_channels = Community.all.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
+        # else
+            all_communities = current_user.communities.map{|community| community.id}
+            if all_communities.include?(params[:community_id].to_i) || current_user.role == "Super admin"
+                community = Community.find params[:community_id]
+                @chatrooms = Chatroom.where(tour_id: community.tour.id).includes(:chats, :tour, :tour_user)
+                @listening_channels = [community.name.tr(" ", "_") + "_with_id_" + community.id.to_s]
+            end
+        # end
+        
+        @default_user_image =  "/assets/chat-tour-user.jpg"
         render :index, layout: false
     end
 
@@ -26,13 +33,13 @@ class ChatroomsController < ApplicationController
                 message_history = serailize_messages(messages)
                 render json: {messages: message_history,chatroom_id: chatroom.id,  stats: :OK, code: 200 }
             else
-                chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" )
+                chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: Time.now )
                 message = serailize_message(chat)
                 render json: {messages: message, chatroom_id: chatroom.id,  stats: :OK, code: 200 }
             end
         else
             chatroom = Chatroom.create(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
-            chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" )
+            chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: Time.now )
             message = serailize_message(chat)
             render json: {messages: message, chatroom_id: chatroom.id,  stats: :OK, code: 200 }
         end
