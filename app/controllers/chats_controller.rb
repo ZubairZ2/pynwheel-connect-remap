@@ -43,7 +43,7 @@ class ChatsController < ApplicationController
         #     puts "No user is online"
         #     puts session["is_user_online"]
         #     puts '---'*100
-        # end
+        # end 
 
     end
 
