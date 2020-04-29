@@ -210,7 +210,9 @@ json.tours @tours do |tour|
   json.tour_stop new_stops_arr.compact do |stop|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
-    next if (stop.latitude + stop.longitude) < 1
+    if @community.show_map
+      next if (stop.latitude + stop.longitude) < 1
+    end
     # next if !@community.mdu && stop.stop_type == "unit"
     navigation_title = ""
     if second_last.id == stop.id
