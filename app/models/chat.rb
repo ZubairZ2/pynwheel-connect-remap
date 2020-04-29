@@ -6,6 +6,7 @@ class Chat < ApplicationRecord
     def notify_pusher
       data = self.attributes
       tour_user = self.chatroom.tour_user
+      
       unless data[:name] == "Support Team"
         data[:tour_user] = {}
         data[:tour_user][:name] = tour_user.name
