@@ -58,13 +58,14 @@
                 Video Link
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :video_link, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link"
-            - if !@community.is_sitemap && f.object.amenityable.present?
+            - bool_check = @community.show_map ? f.object.amenityable.present? : true
+            - if !@community.is_sitemap && bool_check
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Floor
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
-                  = f.select :floor , f.object.amenityable.floors,{}, class: "form-control", placeholder: "Floor"
+                  = f.select :floor , (@community.show_map ? f.object.amenityable.floors : @community.floorplates.map{|f| f.floors}.flatten.sort),{}, class: "form-control amenity_edit_field", placeholder: "Floor"
             = submit_tag 'Save', class: "hidden"
 
     %span.btn.btn-primary.btn-file

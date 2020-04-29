@@ -145,11 +145,63 @@ json.tours @tours do |tour|
       last_element = x
     end
   else
+    stops_arr = []
+
+    ########------------------------ Sorting tour Stop in an array-----------------------
+    if @community.is_sitemap
+
+      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      stop_count = stops_arr.compact.count
+      second_last = stops_arr.compact[stop_count - 3]
+      last_stop_desc = stops_arr.compact[stop_count - 2]
+    else
+      temp_max_floor = nil
+      min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
+      @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+
+        begin
+          if @community.tour.sort_hash[floor.to_s].present?
+            arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
+            if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
+              begin
+                # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
+                next
+                # end
+              rescue
+              end
+            end
+            temp_max_floor = floor
+            @community.tour.sort_hash[floor.to_s].each do |s_id|
+              # amenity_hit = true
+              # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
+              # if ts_ck.present?  && ts_ck.stop_type == "amenity"
+              #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
+              # end
+              add_stop = TourStop.find_by_id(s_id)
+              if add_stop.present?
+              
+                add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
+                stops_arr << add_stop if (add_stop.display_stop && add_mdu)
+              end
+              # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
+            end
+          end
+        rescue
+        end
+      end
+      stop_count = stops_arr.compact.count
+      second_last = stops_arr.compact[stop_count - 2]
+      last_stop_desc = stops_arr.compact[stop_count - 1]
+      blocked = []
+      last_stop = stops_arr.compact[stops_arr.compact.size - 1]
+    end
+    #########-------------------- End tour stop sort-----------------------
+    new_stops_arr = stops_arr.compact
     json.path_points []
-    new_stops_arr = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
-    stop_count = new_stops_arr.count
-    second_last = new_stops_arr[stop_count - 2]
-    last_stop_desc = new_stops_arr[stop_count - 1]
+    # new_stops_arr = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
+    # stop_count = new_stops_arr.count
+    # second_last = new_stops_arr[stop_count - 2]
+    # last_stop_desc = new_stops_arr[stop_count - 1]
   end
   
 
@@ -159,7 +211,9 @@ json.tours @tours do |tour|
   json.tour_stop new_stops_arr.compact do |stop|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
-    next if (stop.latitude + stop.longitude) < 1
+    if @community.show_map
+      next if (stop.latitude + stop.longitude) < 1
+    end
     # next if !@community.mdu && stop.stop_type == "unit"
     navigation_title = ""
     if second_last.id == stop.id

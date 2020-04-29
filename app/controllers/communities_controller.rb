@@ -84,6 +84,7 @@ class CommunitiesController < ApplicationController
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       else
+        inner_check = true
 
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
@@ -92,24 +93,37 @@ class CommunitiesController < ApplicationController
         @community.date_activated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "0")
         @community.date_inactivated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "1")
         params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
+        if params[:community][:show_map].present?
+          if @community.show_map == false &&  params[:community][:show_map] == "1"
+            ts = TourStop.where(tour_id: @community.tour.id, latitude: nil,longitude: nil)
+            ts.destroy_all if ts.present?
 
-        if @community.update(community_params)
-          @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
-          if params[:community][:name].present?
-            format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
-          else
-            format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+            # if TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0).present?
+            #   format.html { redirect_to community_settings_page_path(current_community),error: 'Please remove tour stop that are not plotted on property map.' }
+            #   flash[:error] = "Please remove tour stop that are not plotted on property map."
+            #   inner_check = false
+            # end
           end
-          format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
-        else
-          flash[:error] = @community.errors.full_messages.join(',')
-          if params[:community][:name].present?
-            format.html { render :edit }
+        end
+        if inner_check
+          if @community.update(community_params)
+            @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
+            if params[:community][:name].present?
+              format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
+            else
+              format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+            end
+            format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
           else
-            format.html { render :settings_page }
+            flash[:error] = @community.errors.full_messages.join(',')
+            if params[:community][:name].present?
+              format.html { render :edit }
+            else
+              format.html { render :settings_page }
+            end
+            message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
+            format.js {render js: "$('#flash-message').html('#{message}')"}
           end
-          message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
-          format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       end
     end
