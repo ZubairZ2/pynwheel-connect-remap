@@ -440,6 +440,27 @@ class ToursController < ApplicationController
     render json: { message: message, status: status }
   end
 
+  def save_opening_hours
+
+    if params[:community_id].present?
+      i=1
+      day_key = 'day_' + i.to_s
+      from_key = 'from_' + i.to_s
+      to_key = 'to_' + i.to_s
+
+      while params[day_key].present?
+        times = current_community.opening_hours.find_or_create_by(day: params[day_key])
+        times.update(opening_time: params[from_key], closing_time: params[to_key])
+
+        i=i+1
+        day_key = 'day_' + i.to_s
+        from_key = 'from_' + i.to_s
+        to_key = 'to_' + i.to_s
+      end
+    end
+    
+  end
+
   def get_id_selfie_mismatch
     if params[:tour_user_id].present?
       tour_user = TourUser.find_by_id params[:tour_user_id]

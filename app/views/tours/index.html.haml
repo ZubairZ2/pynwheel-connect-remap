@@ -185,33 +185,31 @@
           .col-md-10.col-lg-9.col-xl-8
             .card.border-0
               .row.px-3
-                .col-sm-2
-                  %label.text-grey.mt-1.mb-3 Open Hours
-                .col-sm-10.list
-                  .mb-2.row.justify-content-between.px-3
-                    %select.mb-2.mob
-                      %option{:value => "Monday"} Monday
-                      %option{:value => "Tuesday"} Tuesday
-                      %option{:value => "Wednesday"} Wednesday
-                      %option{:value => "Thursday"} Thursday
-                      %option{:value => "Friday"} Friday
-                      %option{:value => "Saturday"} Saturday
-                      %option{:value => "Sunday"} Sunday
-                    .mob
-                      %label.text-grey.mr-1 From
-                      %input.ml-1{:name => "from", :type => "time", :value => "09:00"}
-                    .mob.mb--
-                      %label.text-grey.mr-4 To
-                      %input.ml-1{:name => "to", :type => "time", :value => "17:00"}
-                    .mt-1.cancel.fa.fa-times.text-danger
-              .row.px-3.mt-3
-                .col-sm-2
-                .col-sm-10
-                  .row.px-3
-                    .fa.fa-plus-circle.text-success.add
-                    %p.text-success.ml-3.add Add
-              .row.px-3.mt-3.justify-content-center
-                %button.btn.btn-success.ml-2 Save
+                = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
+                  .col-sm-10.list
+                    .mb-2.row.justify-content-between.px-3
+                      %select.mb-2.mob#day1{name: "day_1"}
+                        %option{value: "Monday"} Monday
+                        %option{value: "Tuesday"} Tuesday
+                        %option{value: "Wednesday"} Wednesday
+                        %option{value: "Thursday"} Thursday
+                        %option{value: "Friday"} Friday
+                        %option{value: "Saturday"} Saturday
+                        %option{value: "Sunday"} Sunday
+                      .mob
+                        %label.text-grey.mr-1 From
+                        %input.ml-1{name: "from_1", type: "time", value: "09:00"}/
+                      .mob.mb--
+                        %label.text-grey.mr-4 To
+                        %input.ml-1{name: "to_1", type: "time", value: "17:00"}/
+                      .mt-1.cancel.fa.fa-times.text-danger
+                      %input.btn.btn-large{type: "submit"}/
+                .row.px-3.mt-3
+                  .col-sm-2
+                  .col-sm-10
+                    .row.px-3
+                      .fa.fa-plus-circle.text-success.add
+                      %p.text-success.ml-3.add Add
 
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
@@ -1010,29 +1008,56 @@
   });
 
   $(document).ready(function(){
+  var current_day = 1
   
   $('.add').click(function(){
-  $(".list").append(
-  '<div class="mb-2 row justify-content-between px-3">' +
-      '<select class="mob mb-2">' +
-          '<option value="opt1">Mon-Fri</option>' +
-          '<option value="opt2">Sat-Sun</option>' +
-          '</select>' +
-      '<div class="mob">' +
-          '<label class="text-grey mr-1">From</label>' +
-          '<input class="ml-1" type="time" name="from">' +
-          '</div>' +
-      '<div class="mob mb-2">' +
-          '<label class="text-grey mr-4">To</label>' +
-          '<input class="ml-1" type="time" name="to">' +
-          '</div>' +
-      '<div class="mt-1 cancel fa fa-times text-danger">' +
-          '</div>' +
-      '</div>');
+    current_day = current_day + 1
+    $(".list").append(`
+        <div class="mb-2 row justify-content-between px-3">
+        <select class="mb-2 mob" id=day_${current_day} name=day_${current_day}>
+          <option value="Monday">Monday</option>
+          <option value="Tuesday">Tuesday</option>
+          <option value="Wednesday">Wednesday</option>
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+          <option value="Saturday">Saturday</option>
+          <option value="Sunday">Sunday</option>
+        </select>
+        <div class="mob">
+          <label class="text-grey mr-1">From</label>
+          <input class="ml-1" name="from_${current_day}" type="time" value="09:00">/</input>
+        </div>
+        <div class="mob mb--">
+          <label class="text-grey mr-4">To</label>
+          <input class="ml-1" name="to_${current_day}" type="time" value="17:00">/</input>
+        </div>
+        <div class="mt-1 cancel fa fa-times text-danger"></div>
+      </div>`);
   });
   
   $(".list").on('click', '.cancel', function(){
-  $(this).parent().remove();
+    $(this).parent().remove();
+
+    current_day = 0
+    $(".list").children().children('select').each(function(){
+      current_day = current_day + 1
+      $(this).attr("id", 'day_'+current_day);
+      $(this).attr("name", 'day_'+current_day);
+    })
+
+    current_day = 0
+    $(".list").children().children().children('input').each(function(i){
+      if (Math.floor(i%2 == 0)){
+        current_day = current_day + 1
+        $(this).attr("id", 'from_'+current_day);
+        $(this).attr("name", 'from_'+current_day);
+      }
+      else{
+        $(this).attr("id", 'to_'+current_day);
+        $(this).attr("name", 'to_'+current_day);
+      }
+    })
+
   });
   
   });
