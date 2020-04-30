@@ -96,7 +96,9 @@ class CommunitiesController < ApplicationController
         if params[:community][:show_map].present?
           if @community.show_map == false &&  params[:community][:show_map] == "1"
             ts = TourStop.where(tour_id: @community.tour.id, latitude: nil,longitude: nil)
+            ts1 = TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0)
             ts.destroy_all if ts.present?
+            ts1.destroy_all if ts1.present?
 
             # if TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0).present?
             #   format.html { redirect_to community_settings_page_path(current_community),error: 'Please remove tour stop that are not plotted on property map.' }

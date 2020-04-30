@@ -206,8 +206,9 @@
                         %td
                           Starting Point
                         %td
-                          = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
-                            %i.fa.fa-road.icon_size
+                          - if @community.show_map
+                            = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
+                              %i.fa.fa-road.icon_size
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       - if !@community.mdu && stop.stop_type == "unit"
@@ -244,18 +245,21 @@
                               = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
                                 %i.fa.fa-eye-slash.icon_size
                             - unless u.modal_unit  && ((u.x_plot + u.y_plot) < 1)
-                              = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
-                                %i.fa.fa-road.icon_size
+                              - if @community.show_map
+                                = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
+                                  %i.fa.fa-road.icon_size
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
                           - elsif stop.stop_type == "elevator" && !@community.is_sitemap
                             - if (elevator.floors.max.to_i == (@floor.to_i))
-                              = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "not_selected text-warning ml-5" do
-                                %i.fa.fa-road.icon_size
+                              - if @community.show_map
+                                = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "not_selected text-warning ml-5" do
+                                  %i.fa.fa-road.icon_size
                             - else
-                              = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
-                                %i.fa.fa-road.icon_size
+                              - if @community.show_map
+                                = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
+                                  %i.fa.fa-road.icon_size
 
                             = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
@@ -267,8 +271,9 @@
                             = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
                               %i.fa.fa-eye-slash.icon_size
 
-                            = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
-                              %i.fa.fa-road.icon_size
+                            - if @community.show_map
+                              = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
+                                %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
