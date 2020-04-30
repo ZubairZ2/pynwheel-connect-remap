@@ -70,6 +70,12 @@ Rails.application.routes.draw do
       post :selected_communities
     end
 
+    resources :remote_locks do
+      collection do
+        get :authorization_code
+      end
+    end
+
     post :save_gallery_settings
     post :save_tour_settings
     post :save_apartment_settings

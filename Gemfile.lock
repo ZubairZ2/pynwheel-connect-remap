@@ -238,6 +238,12 @@ GEM
     nokogiri (1.10.9)
       mini_portile2 (~> 2.4.0)
     nori (2.6.0)
+    oauth2 (1.4.4)
+      faraday (>= 0.8, < 2.0)
+      jwt (>= 1.0, < 3.0)
+      multi_json (~> 1.3)
+      multi_xml (~> 0.5)
+      rack (>= 1.2, < 3)
     orm_adapter (0.5.0)
     ox (2.13.2)
     paper_trail (10.3.1)
@@ -437,6 +443,7 @@ DEPENDENCIES
   mini_magick
   momentjs-rails (>= 2.9.0)
   newrelic_rpm
+  oauth2 (~> 1.4, >= 1.4.4)
   ox
   paper_trail
   pg (~> 0.21)
@@ -474,4 +481,4 @@ RUBY VERSION
    ruby 2.5.0p0
 
 BUNDLED WITH
-   1.16.6
+   2.1.4
