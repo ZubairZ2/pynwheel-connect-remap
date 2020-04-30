@@ -212,22 +212,32 @@ json.tours @tours do |tour|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
     if @community.show_map
-      next if (stop.latitude + stop.longitude) < 1
+      if (stop.latitude + stop.longitude) < 1
+        counter = counter + 1
+        next
+      end 
     else
-      next if stop.stop_type == "elevator"
+      if stop.stop_type == "elevator"
+        counter = counter + 1
+        next
+      end 
     end
     # next if !@community.mdu && stop.stop_type == "unit"
     navigation_title = ""
-    if second_last.id == stop.id
+    if second_last.present? && second_last.id == stop.id
       navigation_title = @community.show_map ? ("Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
       hit = false
-    elsif last_stop_desc.id == stop.id
+    elsif last_stop_desc.present? && last_stop_desc.id == stop.id
       navigation_title = @community.show_map ? ("Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Last Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
     elsif new_stops_arr[counter + 1].present?
       navigation_title = @community.show_map ? ("Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
     end
-    if (navigation_title.include? "elevator") || (navigation_title.include? "Elevator")
-      navigation_title = "Next Stop: Elevator"
+    begin
+      if (navigation_title.include? "elevator") || (navigation_title.include? "Elevator")
+        navigation_title = "Next Stop: Elevator"
+      end
+    rescue => e
+      navigation_title = ""
     end
     json.navigation_title navigation_title
     json.id stop.id
