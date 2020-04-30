@@ -151,8 +151,8 @@ json.tours @tours do |tour|
 
       stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       stop_count = stops_arr.compact.count
-      second_last = stops_arr.compact[stop_count - 3]
-      last_stop_desc = stops_arr.compact[stop_count - 2]
+      second_last = stops_arr.compact[stop_count - 2]
+      last_stop_desc = stops_arr.compact[stop_count - 1]
     else
       temp_max_floor = nil
       min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
@@ -212,16 +212,18 @@ json.tours @tours do |tour|
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
     if @community.show_map
       next if (stop.latitude + stop.longitude) < 1
+    else
+      next if stop.stop_type == "elevator"
     end
     # next if !@community.mdu && stop.stop_type == "unit"
     navigation_title = ""
     if second_last.id == stop.id
-      navigation_title = "Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
+      navigation_title = @community.show_map ? ("Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
       hit = false
     elsif last_stop_desc.id == stop.id
-      navigation_title = "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present? rescue ""
+      navigation_title = @community.show_map ? ("Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Last Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
     elsif new_stops_arr[counter + 1].present?
-      navigation_title = "Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter].present? rescue ""
+      navigation_title = @community.show_map ? ("Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
     end
     if (navigation_title.include? "elevator") || (navigation_title.include? "Elevator")
       navigation_title = "Next Stop: Elevator"
