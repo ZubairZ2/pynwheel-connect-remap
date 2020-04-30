@@ -30,8 +30,9 @@ class SchedualToursController < ApplicationController
     phone_number = make_phone
 
     tu = TourUser.find_by(email: params[:tour_user][:email])
+    
+    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
     tu.phone_number = phone_number if phone_number.present?
-    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless u.present?
 
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
@@ -148,11 +149,11 @@ class SchedualToursController < ApplicationController
       puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{params}---"
       # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
       
-      email_content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Thank you for scheduling your self-guided tour! We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>This phone</li></ul>Please download the Pynwheel self-guided tour app before you arrive: <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a> #{community.email_text}"
+      email_content = "<div style='vertical-align:middle; text-align:center'><img style='width: 100px; max-height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name.humanize}' /></div><br/>Thank you for scheduling your self-guided tour! We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on  <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>This phone</li></ul>Please download the Pynwheel self-guided tour app before you arrive: <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a> #{community.email_text}"
 
-      web_notification = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel App </a>"
+      web_notification = "<div style='vertical-align:middle; text-align:center'><img style='width: 100px; max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name.humanize}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel self-guided tour app before you arrive: <br/> <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel App </a>"
 
-      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(<b>#{community.name.humanize if community.present?}</b>) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. #{community.sms_text}"
+      sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(#{community.name.humanize if community.present?}) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. #{community.sms_text}"
 
       # delayed_day_before_content = "We look forward to having you visit our property at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>. <br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
 
@@ -168,8 +169,8 @@ class SchedualToursController < ApplicationController
 
       
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
-      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email)
-      
+      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email) if (community.alert_contact == "email" || community.alert_contact == "both")
+      sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
       {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
       
       # {email_content: email_content, web_notification: web_notification, sms_content: sms_content, delayed_day_before_content: delayed_day_before_content, delayed_hour_before_content: delayed_hour_before_content}
@@ -211,8 +212,8 @@ class SchedualToursController < ApplicationController
 
 
     def sms_notifire msg, to
+      
       to = to.delete(' ')
-      test_from = '+15005550006'
       prod_from = '+12017012957'
       account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
       auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
