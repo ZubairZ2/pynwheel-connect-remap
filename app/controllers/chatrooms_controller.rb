@@ -1,24 +1,29 @@
 class ChatroomsController < ApplicationController
     protect_from_forgery with: :null_session
     skip_before_action :verify_authenticity_token
-    skip_before_action :authenticate_user!, :only => [:create,:show]
+    skip_before_action :authenticate_user!
     after_action :allow_iframe
 
     def index
+        current_user = User.find params[:id] rescue ''
         # if current_user.role == "Super admin"
         #     @chatrooms = Chatroom.all.includes(:chats, :tour, :tour_user)
         #     @listening_channels = Community.all.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
         # else
-            all_communities = current_user.communities.map{|community| community.id}
-            if all_communities.include?(params[:community_id].to_i) || current_user.role == "Super admin"
-                community = Community.find params[:community_id]
-                @chatrooms = Chatroom.where(tour_id: community.tour.id).includes(:chats, :tour, :tour_user)
-                @listening_channels = [community.name.tr(" ", "_") + "_with_id_" + community.id.to_s]
+            if current_user.present?
+                all_communities = current_user.communities.map{|community| community.id}
+                if all_communities.include?(params[:community_id].to_i) || current_user.role == "Super admin"
+                    community = Community.find params[:community_id]
+                    @chatrooms = Chatroom.where(tour_id: community.tour.id).includes(:chats, :tour, :tour_user)
+                    @listening_channels = [community.name.tr(" ", "_") + "_with_id_" + community.id.to_s]
+
+                    @default_user_image =  "/assets/chat-tour-user.jpg"
+                    render :index, layout: false and return
+                end
             end
         # end
         
-        @default_user_image =  "/assets/chat-tour-user.jpg"
-        render :index, layout: false
+        render plain: "Unauthorized"
     end
 
     def new
