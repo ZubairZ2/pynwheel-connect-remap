@@ -38,10 +38,14 @@ class UnitsController < ApplicationController
     add_breadcrumb "Units", community_units_path(@community)
     add_breadcrumb "Edit Unit",edit_community_unit_path(@community,@unit)
     # Thread.new do
+   
+    # end
+  end
+
+  def load_devices
     access_token = generate_remotelock_token
     responce = RemoteLockService.new(current_community,current_user).get_deivces(access_token)
     RemoteLockService.new(current_community,current_user).update_deivces_in_db(responce, @unit)
-    # end
   end
 
   def update

@@ -47,7 +47,7 @@ class RemoteLockService < BaseService
             device_id = device["id"]
             
             if RemoteLock.find_by(device_id: device_id).nil?
-                RemoteLock.create(device_id: device_id, type: type, name: name, )
+                RemoteLock.create(device_id: device_id, type: type, name: name)
             end
         end
     end
