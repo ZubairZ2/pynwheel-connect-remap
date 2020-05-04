@@ -73,6 +73,7 @@ Rails.application.routes.draw do
     resources :remote_locks do
       collection do
         get :authorization_code
+        get :client_credentials
       end
     end
 

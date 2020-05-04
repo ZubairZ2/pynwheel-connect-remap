@@ -123,7 +123,7 @@ class RemoteLocksController < ApplicationController
         end
         
         def set_user
-            @edge_state_user = EdgeState.find_by(community_id: params[:community_id], user_id: params[:user_id])
+            @edge_state_user = EdgeState.find_by(community_id: params[:community_id], user_id: current_user.id)
         end
 
         def set_base_url
