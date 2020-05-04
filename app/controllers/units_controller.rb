@@ -42,7 +42,8 @@ class UnitsController < ApplicationController
     # end
   end
 
-  def load_devices
+  def load_remotelock_data
+    byebug
     access_token = generate_remotelock_token
     responce = RemoteLockService.new(current_community,current_user).get_deivces(access_token)
     RemoteLockService.new(current_community,current_user).update_deivces_in_db(responce, @unit)

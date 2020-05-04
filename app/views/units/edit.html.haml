@@ -28,3 +28,25 @@
       readSecondaryURL(this);
       
   });
+
+  $(document).ready(function(){
+    console.log('-------------------')
+      var unit_id = #{ @unit.id}
+      var unit_name = '#{ @unit.name}'
+      var community_id = #{ @community.id}
+
+      var params = {"unit_name": unit_name}
+      $.ajax({
+          type: 'POST',
+          url: '/communities/'+ community_id '/units/' + unit_id +'/load_remotelock_data',
+          dataType: 'json',
+          data: params,
+          cache: false,
+          success: function(data){
+            console.log('********************************************')
+          }
+          fail: function(error){
+            console.log(error)
+          }
+    });
+  });

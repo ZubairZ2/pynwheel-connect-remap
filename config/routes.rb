@@ -191,6 +191,7 @@ Rails.application.routes.draw do
         delete :remove_plot
         delete :remove_plot_from_floorplate
         post :adjust_position
+        post :load_remotelock_data
       end
       collection do
         post :set_floor
