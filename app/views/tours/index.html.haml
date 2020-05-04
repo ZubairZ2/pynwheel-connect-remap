@@ -110,30 +110,30 @@
             = f.hidden_field :community_id, value: @community.id
             .box-body
               .row
-                .col-lg-9.col-lg-offset-1
-                  .form-group
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      Sms Text
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
+                / .col-lg-9.col-lg-offset-1
+                /   .form-group
+                /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                /       Sms Text
+                /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                /       = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
                 .col-lg-9.col-lg-offset-1
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                       Email Text
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 5
-                / .col-lg-9.col-lg-offset-1
-                /   .form-group
-                /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                /       One Hour Confirmation Email Text
-                /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                /       = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 3
-                / .col-lg-9.col-lg-offset-1
-                /   .form-group
-                /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                /       One Day Confirmation Email Text
-                /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                /       = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 3
+                      = f.text_area :email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 3
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      One Hour Confirmation Email Text
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 3
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      One Day Confirmation Email Text
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 3
             /
               \/.box-body
             .box-footer
