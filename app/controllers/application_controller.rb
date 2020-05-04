@@ -43,12 +43,14 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_out_path_for(resource_or_scope)
-    session["is_user_online"] = "No"
+    if cookies[:community_id].present?
+      community = Community.find cookies[:community_id]
+      community.update_attributes(is_chat_login: false)
+    end
     new_user_session_path
   end
 
   def after_sign_in_path_for(resource_or_scope)
-    session["is_user_online"] = "Yes"
     root_url
   end
 

@@ -570,7 +570,9 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
+    cookies[:community_id] = params[:id]
     @community = Community.find params[:id]
+    @community.update_attributes(is_chat_login: true)
   end
 
   def community_params
