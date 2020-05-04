@@ -16,7 +16,11 @@ json.tours @tours do |tour|
     json.show_camera_button @community.show_camera_button
 
     json.visual_id_verification tour.visual_id_verification
-    json.chat_control @community.chat_control
+    if @community.is_chat_login
+      json.chat_control @community.chat_control
+    else
+      json.chat_control false
+    end
     json.show_map @community.show_map
     json.mdu @community.mdu
   end
