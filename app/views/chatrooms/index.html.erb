@@ -419,12 +419,21 @@
                     $('#Support-Team-Form').children('#message').val('')
                 }
             });
+            
+            $('#Support-Team-Form').keydown(function(e){
+                if(e.keyCode == 13)
+                {
+                    $('#client_date').val(new Date())
+                }
+            });
 
             $('#Support-Team-Submit').on('click', function(){
                 message = $('#message').val()
                 name = $('#name').val()
                 chatroom_id = $('#chatroom_id').val()
-                client_date = $('#client_date').val()
+                // client_date = $('#client_date').val()
+                client_date = new Date()
+
                 req_params = {"chat[message]": message, "chat[name]": name, "chat[chatroom_id]": chatroom_id, "chat[client_date]": client_date}
                 $('#Support-Team-Form').children('#message').val('')
                 $.ajax({
