@@ -42,7 +42,7 @@ class SchedualToursController < ApplicationController
         customer = Stripe::Customer.create email: params[:tour_user][:email],
                                            card: params[:tour_user][:card_token]
         Stripe::Charge.create customer: customer.id,
-                              amount: .50,
+                              amount: 50,
                               description: "Escrow Payment",
                               currency: 'usd'
       rescue Exception => e
