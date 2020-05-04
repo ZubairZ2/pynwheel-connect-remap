@@ -161,6 +161,7 @@ class SchedualToursController < ApplicationController
 
       # delayed_hour_before_content = "<a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br/>When you arrive at the property, open <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Pynwheel Self Tour </a> to start your tour."
 
+
       
       # day_before = 5.minutes.seconds
       # hour_before = 3.minutes.seconds
