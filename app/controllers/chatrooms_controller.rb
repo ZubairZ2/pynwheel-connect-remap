@@ -5,15 +5,15 @@ class ChatroomsController < ApplicationController
     after_action :allow_iframe
 
     def index
-        current_user = User.find params[:id] rescue ''
+        current_user = User.find_by_secure_id params[:id] rescue ''
+        community = Community.find_by_secure_id params[:token] rescue ''
         # if current_user.role == "Super admin"
         #     @chatrooms = Chatroom.all.includes(:chats, :tour, :tour_user)
         #     @listening_channels = Community.all.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
         # else
-            if current_user.present?
+            if current_user.present? and community.present?
                 all_communities = current_user.communities.map{|community| community.id}
-                if all_communities.include?(params[:community_id].to_i) || current_user.role == "Super admin"
-                    community = Community.find params[:community_id]
+                if all_communities.include?(community.id) || current_user.role == "Super admin"
                     @chatrooms = Chatroom.where(tour_id: community.tour.id).includes(:chats, :tour, :tour_user)
                     @listening_channels = [community.name.tr(" ", "_") + "_with_id_" + community.id.to_s]
 

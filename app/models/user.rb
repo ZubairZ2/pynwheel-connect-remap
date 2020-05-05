@@ -62,6 +62,9 @@ class User < ApplicationRecord
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
 
+  validates_uniqueness_of :secure_id
+
+  after_create :create_secure_id
 
   def all_companies
     Company.all.map(&:name).sort
@@ -84,5 +87,11 @@ class User < ApplicationRecord
 
   def is_community_manager?
     role == "Community manager"
+  end
+
+  def create_secure_id
+    number = (SecureRandom.random_number(9e50)).to_i
+    number = number.to_s
+    self.update_attributes(secure_id: number)
   end
 end
