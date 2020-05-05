@@ -38,13 +38,13 @@ class ChatroomsController < ApplicationController
                 message_history = serailize_messages(messages)
                 render json: {messages: message_history,chatroom_id: chatroom.id,  stats: :OK, code: 200 }
             else
-                chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: Time.now )
+                chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: DateTime.now.strftime("%a %b %d %Y %k:%M:%S") )
                 message = serailize_message(chat)
                 render json: {messages: message, chatroom_id: chatroom.id,  stats: :OK, code: 200 }
             end
         else
             chatroom = Chatroom.create(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
-            chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: Time.now )
+            chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: DateTime.now.strftime("%a %b %d %Y %k:%M:%S") )
             message = serailize_message(chat)
             render json: {messages: message, chatroom_id: chatroom.id,  stats: :OK, code: 200 }
         end
