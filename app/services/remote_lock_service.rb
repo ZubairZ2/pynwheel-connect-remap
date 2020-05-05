@@ -33,21 +33,23 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                                 'Accept' => 'application/vnd.lockstate+json; version=1' } )
 
-            return response.to_json
+            return response
         end
     end
 
-    def update_deivces_in_db(response,stop)
-        devices = response["data"]
-        # check for stop type and save result accordingly
+    def update_deivces_in_db(responce)
+        devices = responce["data"]
         devices.each do |device|
             type = device["type"]
             name = device["attributes"]["name"]
             serial_number = device["attributes"]["serial_number"]
             device_id = device["id"]
-            
-            if RemoteLock.find_by(device_id: device_id).nil?
-                RemoteLock.create(device_id: device_id, type: type, name: name)
+
+            rml = RemoteLock.find_by(device_id: device_id)
+            if rml.nil?
+                RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name)
+            elsif rml.remote_lock_type != type  or rml.name != name
+                rml.update_attributes(remote_lock_type: rml.type, name: rml.name)
             end
         end
     end

@@ -30,23 +30,47 @@
   });
 
   $(document).ready(function(){
-    console.log('-------------------')
       var unit_id = #{ @unit.id}
       var unit_name = '#{ @unit.name}'
       var community_id = #{ @community.id}
-
       var params = {"unit_name": unit_name}
       $.ajax({
           type: 'POST',
-          url: '/communities/'+ community_id '/units/' + unit_id +'/load_remotelock_data',
+          url: '/communities/'+ community_id + '/units/' + unit_id +'/load_remotelock_data',
           dataType: 'json',
+          
           data: params,
           cache: false,
           success: function(data){
-            console.log('********************************************')
-          }
+            locks = data['locks']
+            for (var item in locks) {
+              $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+            }
+            
+          },
           fail: function(error){
             console.log(error)
           }
     });
+
+    $("#remote_lock").change(function () {
+      if($('#remote_lock :selected').text() != "Select your option"){
+        if($('#remote_lock :selected').text() != $('#unit_provider_unit_id').val()){
+          $(this).addClass('lock_mismatch')
+          $("#update-btn").removeClass('hidden')
+          $("#a-lock").attr("href","new value");
+        }
+        else{
+          $(this).removeClass('lock_mismatch')
+          $("#update-btn").addClass('hidden')
+          $("#a-lock").attr("href","");
+        }
+      }
+    });
+
+  
+    $("#update-btn").on('click', function(){
+      console.log('---------------------------')
+    });
+    
   });
