@@ -519,7 +519,7 @@ class Community < ApplicationRecord
   end
 
   def create_secure_id
-    number = (SecureRandom.random_number(9e50)).to_i
+    number = (SecureRandom.random_number(9e20)).to_i
     number = number.to_s
     self.update_attributes(secure_id: number)
   end
