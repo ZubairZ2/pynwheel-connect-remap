@@ -7,6 +7,7 @@ class ChatroomsController < ApplicationController
     def index
         current_user = User.find_by_secure_id params[:id] rescue ''
         community = Community.find_by_secure_id params[:token] rescue ''
+        
         # if current_user.role == "Super admin"
         #     @chatrooms = Chatroom.all.includes(:chats, :tour, :tour_user)
         #     @listening_channels = Community.all.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
