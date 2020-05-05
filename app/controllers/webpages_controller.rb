@@ -3,7 +3,7 @@ class WebpagesController < ActionController::Base
 
   def index
     @floorplans = []
-    if cookies[:favorite_unit_ids] == nil
+    if cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]"
       cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
       cookies.permanent[:session_id] = SecureRandom.hex(8)
       Favorite.create(session_id: cookies[:session_id],unit_ids: [])
@@ -93,6 +93,9 @@ class WebpagesController < ActionController::Base
     cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
     favorite = Favorite.find_by_session_id(cookies[:session_id]) 
     favorite.unit_ids << params[:unit_id]
+    fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.create(community_id: @community.id) 
+    fs.favorite_unit << params[:unit_id]
+    fs.save
     favorite.save
   end
 
