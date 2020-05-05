@@ -225,7 +225,7 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
         puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"
         puts ex
       end
-
+      bhut
       email_content = "There are total tour stops, we need tour_user_id to get visited stops Please send that #{visited_stops.to_s}"
       # DelayedSchedulerMailerJob.perform_async("A Tour Shared With You", email_content, 'usman.khalid@intagleo.co.uk')
       render :json=> {:success=>true, :message => "success", :data => visited_stops}

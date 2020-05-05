@@ -7,6 +7,8 @@ namespace :delayed_email_notifications do
 	desc "This delayed email task is called every day by the Heroku scheduler add-on"
 
 	task :one_day_before => :environment do
+		default_url_options[:host] = 'https://pynwheel-staging.herokuapp.com' if Rails.env.development?
+		default_url_options[:host] = 'https://pynwheelapp.com' if Rails.env.production?
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Today Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	  # schedual_tours = SchedualTour.where('tour_date = ? AND daily_email_sent = ?', Date.today+1, false)
 	  schedual_tours = SchedualTour.where('tour_date > ? AND daily_email_sent = ?',Date.today, false)
