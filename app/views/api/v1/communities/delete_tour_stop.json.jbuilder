@@ -24,6 +24,7 @@ json.tours @tours do |tour|
     json.show_map @community.show_map
     json.mdu @community.mdu
   end
+  fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
   json.is_sitemap @community.is_sitemap
   if @community.is_sitemap
     json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
@@ -34,7 +35,6 @@ json.tours @tours do |tour|
 
   end
   if @community.show_map
-  fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
 
     ts = @community.mdu ? tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
     ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
