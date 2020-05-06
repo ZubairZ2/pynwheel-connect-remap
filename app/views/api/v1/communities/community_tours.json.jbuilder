@@ -21,7 +21,7 @@ json.tours @tours do |tour|
     json.image @floorplate.image
 
   end
-  fs = @community.favorite_stop
+  fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
   # @community.is_sitemap ? sp = Path.where(map_path_from_id: tour.tour_stops&.order(:sort)&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: tour.tour_stops.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first
   # if sp.blank?
   #   @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops&.order(:sort)&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops.where(stop_type: "elevator").first.stop_id)&.first

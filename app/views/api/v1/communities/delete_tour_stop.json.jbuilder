@@ -27,7 +27,7 @@ json.tours @tours do |tour|
     json.image @floorplate.image
 
   end
-  fs = @community.favorite_stop
+  fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
   ts = tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort)
   ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
 
