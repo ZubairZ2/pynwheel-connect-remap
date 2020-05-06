@@ -646,8 +646,8 @@
           $form = $(this);
           $form.find("input[type=submit]").prop("disabled", true);
           Stripe.card.createToken($form, stripeResponseHandler);
-          return false;
           $('#confirm_reservation').attr('disabled','disabled');
+          return false;
           
         });
 
