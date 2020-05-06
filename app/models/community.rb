@@ -90,6 +90,7 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
+  validates_uniqueness_of :secure_id
   validate :apartment_page_name_length_validate
   validate :gallery_page_name_length_validate
   # validate :unique_community_code_on_create, on: [:create]
@@ -97,6 +98,7 @@ class Community < ApplicationRecord
   after_create :set_default_theme
   after_create :create_default_gallery
   after_create :create_sms_email_content
+  after_create :create_secure_id
   validate :validate_page_position
 
   validates_with CodeValidatorOnUpdate , on: [:update]
@@ -515,6 +517,12 @@ class Community < ApplicationRecord
     self.sms_text = CommunityConstants::SMS_TEXT
     self.email_text = CommunityConstants::EMAIL_TEXT
     self.save
+  end
+
+  def create_secure_id
+    number = (SecureRandom.random_number(9e20)).to_i
+    number = number.to_s
+    self.update_attributes(secure_id: number)
   end
 
   def make_address
