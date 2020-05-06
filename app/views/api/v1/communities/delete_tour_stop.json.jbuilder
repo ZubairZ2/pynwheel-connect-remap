@@ -34,7 +34,7 @@ json.tours @tours do |tour|
 
   end
   if @community.show_map
-  fs = @community.favorite_stop
+  fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
 
     ts = @community.mdu ? tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
     ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
