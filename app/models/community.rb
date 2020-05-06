@@ -617,9 +617,9 @@ class Community < ApplicationRecord
       #   units << u
       end
       if item[:type] == 'unit'
-        fs.favorite_unit << item[:id]
+        fs.favorite_unit << item[:id] unless fs.favorite_unit.include?(item[:id])
       elsif item[:type] == 'amenity'
-        fs.favorite_amenity << item[:id]
+        fs.favorite_amenity << item[:id] unless fs.favorite_amenity.include?(item[:id])
       end
     end
     fs.save

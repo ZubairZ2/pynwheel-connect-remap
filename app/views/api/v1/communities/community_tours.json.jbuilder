@@ -21,6 +21,7 @@ json.tours @tours do |tour|
     json.image @floorplate.image
 
   end
+  fs = @community.favorite_stop
   # @community.is_sitemap ? sp = Path.where(map_path_from_id: tour.tour_stops&.order(:sort)&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: tour.tour_stops.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first
   # if sp.blank?
   #   @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops&.order(:sort)&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops.where(stop_type: "elevator").first.stop_id)&.first
@@ -80,11 +81,13 @@ json.tours @tours do |tour|
         u = Unit.find stop.stop_id
         if u.present?
           json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
+          json.is_favorite fs.favorite_unit.include?(stop.stop_id.to_s) ? true : false
         else
           next
         end
       else
         json.name stop.name
+        json.is_favorite fs.favorite_amenity.include?(stop.stop_id.to_s) ? true : false
       end
       json.id stop.id
       json.type stop.stop_type
