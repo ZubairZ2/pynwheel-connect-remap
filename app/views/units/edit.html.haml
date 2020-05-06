@@ -55,7 +55,8 @@
 
     $("#remote_lock").change(function () {
       if($('#remote_lock :selected').text() != "Select your option"){
-        if($('#remote_lock :selected').text() != $('#unit_provider_unit_id').val()){
+        var lock_name = $('#remote_lock :selected').text().replace(' (lock)','');
+        if(lock_name != $('#unit_provider_unit_id').val()){
           $(this).addClass('lock_mismatch')
           $("#update-btn").removeClass('hidden')
 
