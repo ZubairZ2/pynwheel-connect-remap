@@ -22,7 +22,7 @@ class RemoteLockService < BaseService
         end
     end
 
-    def get_deivces(access_token)
+    def get_all_deivces(access_token)
         if @edge_state_user.present?
             token_type = "Bearer"
             auth_header = token_type + " " + access_token
@@ -31,8 +31,46 @@ class RemoteLockService < BaseService
             
             response = HTTParty.get(url,
                 :headers => { 'Authorization' => auth_header,
-                                'Accept' => 'application/vnd.lockstate+json; version=1' } )
+                              'Accept' => 'application/vnd.lockstate+json; version=1' } )
 
+            return response
+        end
+    end
+
+    def get_device(access_token,device_id)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+
+            url = base_url + "/devices/" + device_id 
+            
+            response = HTTParty.get(url,
+                :headers => { 'Authorization' => auth_header,
+                              'Accept' => 'application/vnd.lockstate+json; version=1' } )
+            return response
+        end
+    end
+
+    def update_device(access_token,device_id,updated_device_data)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+
+            url = base_url + "/devices/" + device_id 
+            
+            response = HTTParty.put(url,
+                body: {
+                    attributes: {
+                        name: updated_device_data.name
+                    }
+                }.to_json,
+                :headers => { 'Authorization' => auth_header,
+                              'Accept' => 'application/vnd.lockstate+json; version=1',
+                              'Content-Type' => 'application/json'} )
+            puts "---"*50
+            puts response
+            puts "---"*50
+ 
             return response
         end
     end
@@ -49,7 +87,7 @@ class RemoteLockService < BaseService
             if rml.nil?
                 RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name)
             elsif rml.remote_lock_type != type  or rml.name != name
-                rml.update_attributes(remote_lock_type: rml.type, name: rml.name)
+                rml.update_attributes(remote_lock_type: type, name: name)
             end
         end
     end

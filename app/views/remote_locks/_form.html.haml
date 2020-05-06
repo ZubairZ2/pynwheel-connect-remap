@@ -1,0 +1,12 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name",:maxlength=>"9", :value=>''
+        %small Name should be same as of unit name
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :remote_lock_type, :class=>"form-control validate[required]", :placeholder=>"Lock Type", :value=> f.object.remote_lock_type
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.hidden_field :unit_id, :value=> @unit_id

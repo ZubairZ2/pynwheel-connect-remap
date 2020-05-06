@@ -58,19 +58,21 @@
         if($('#remote_lock :selected').text() != $('#unit_provider_unit_id').val()){
           $(this).addClass('lock_mismatch')
           $("#update-btn").removeClass('hidden')
-          $("#a-lock").attr("href","new value");
+
+          var unit_id = #{ @unit.id}
+          var unit_name = '#{ @unit.name}'
+          var community_id = #{ @community.id}
+          var id = $('#remote_lock :selected').val()
+          var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?unit_id=' + unit_id + '&unit_name=' + unit_name
+
+          $("#a-lock").attr("href",href);
         }
         else{
           $(this).removeClass('lock_mismatch')
           $("#update-btn").addClass('hidden')
-          $("#a-lock").attr("href","");
+          $("#a-lock").attr("href","#");
         }
       }
-    });
-
-  
-    $("#update-btn").on('click', function(){
-      console.log('---------------------------')
     });
     
   });

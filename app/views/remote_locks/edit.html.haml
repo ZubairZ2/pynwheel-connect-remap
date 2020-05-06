@@ -1,0 +1,21 @@
+- content_for :title, "Edit Remote Lock - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        .col-lg-12
+          %h3.box-title
+            = @remote_lock.remote_lock_type.capitalize + ' Details'
+            %span
+        .col-md-12
+          = link_to "<Back to #{@unit_name} Unit", edit_community_unit_path(current_community,@unit_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+      / /.box-header
+      / form start
+      = form_for @remote_lock,:url=>community_remote_lock_path(:id=>@device_id,:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render :partial=>'form',:locals=>{:f=>f}
+        / /.box-body
+        .box-footer
+          = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"

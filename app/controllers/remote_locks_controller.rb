@@ -1,11 +1,34 @@
 class RemoteLocksController < ApplicationController
     require 'oauth2'   
-    before_action :set_user, only: [:client_credentials, :get_deivces, :create_access_guest, :grant_access, :authorization_code]
-    before_action :set_base_url, only: [:client_credentials, :get_deivces, :create_access_guest, :grant_access, :authorization_code ]
+    before_action :set_user, only: [:client_credentials, :get_all_deivces, :create_access_guest, :grant_access, :authorization_code]
+    before_action :set_base_url, only: [:client_credentials, :get_all_deivces, :create_access_guest, :grant_access, :authorization_code ]
     skip_before_action :authenticate_user!
 
     def new
         @edge_state = EdgeState.new  
+    end
+
+    def edit
+        @device_id = params[:id]
+        @unit_id = params[:unit_id]
+        @unit_name = params[:unit_name]
+        # access_token = generate_remotelock_token
+        # responce = RemoteLockService.new(current_community,current_user).get_device(access_token,device_id)
+        @remote_lock = RemoteLock.find_by(device_id: @device_id)
+    end
+
+    def  update
+        unit_id = params[:remote_lock][:unit_id]
+        device_id = params[:id]
+
+        remote_lock = RemoteLock.find_by(device_id: device_id)
+        remote_lock.update_attributes(remote_lock_params)
+
+        access_token = generate_remotelock_token
+        responce = RemoteLockService.new(current_community,current_user).update_device(access_token, device_id ,remote_lock)
+
+        redirect_to edit_community_unit_path(current_community,unit_id), notice: "Remote Lock Updated Successfully" 
+        # redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully" 
     end
 
     def save_edgestate_credentails
@@ -128,5 +151,9 @@ class RemoteLocksController < ApplicationController
 
         def set_base_url
             @base_url = "https://api.remotelock.com"
+        end
+
+        def remote_lock_params
+            params.require(:remote_lock).permit!
         end
 end

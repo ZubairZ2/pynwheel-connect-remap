@@ -44,7 +44,7 @@ class UnitsController < ApplicationController
 
   def load_remotelock_data
     access_token = generate_remotelock_token
-    responce = RemoteLockService.new(current_community,current_user).get_deivces(access_token)
+    responce = RemoteLockService.new(current_community,current_user).get_all_deivces(access_token)
     RemoteLockService.new(current_community,current_user).update_deivces_in_db(responce)
     render json: {locks: RemoteLock.all}
   end
