@@ -13,13 +13,17 @@ class ChatroomsController < ApplicationController
         #     @listening_channels = Community.all.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
         # else
             if current_user.present? and community.present?
-                all_communities = current_user.communities.map{|community| community.id}
-                if all_communities.include?(community.id) || current_user.role == "Super admin"
-                    @chatrooms = Chatroom.where(tour_id: community.tour.id).includes(:chats, :tour, :tour_user)
-                    @listening_channels = [community.name.tr(" ", "_") + "_with_id_" + community.id.to_s]
+                if community.tour.present?
+                    all_communities = current_user.communities.map{|community| community.id}
+                    if all_communities.include?(community.id) || current_user.role == "Super admin"
+                        @chatrooms = Chatroom.where(tour_id: community.tour.id).includes(:chats, :tour, :tour_user)
+                        @listening_channels = [community.name.tr(" ", "_") + "_with_id_" + community.id.to_s]
 
-                    @default_user_image =  "/assets/chat-tour-user.jpg"
-                    render :index, layout: false and return
+                        @default_user_image =  "/assets/chat-tour-user.jpg"
+                        render :index, layout: false and return
+                    end
+                else
+                    render plain: "No tour exists" and return
                 end
             end
         # end
