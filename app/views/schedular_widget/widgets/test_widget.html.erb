@@ -648,9 +648,7 @@
           Stripe.card.createToken($form, stripeResponseHandler);
           return false;
           $('#confirm_reservation').attr('disabled','disabled');
-          setTimeout(function(){
-            $('#confirm_reservation').removeAttr('disabled');
-        }, 6000);
+          
         });
 
         stripeResponseHandler = function (status, response) {
