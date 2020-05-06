@@ -34,6 +34,7 @@ json.tours @tours do |tour|
 
   end
   if @community.show_map
+  fs = @community.favorite_stop
 
     ts = @community.mdu ? tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
     ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
@@ -248,6 +249,7 @@ json.tours @tours do |tour|
     json.x_plot stop.latitude
     json.y_plot stop.longitude
     json.unit_id stop.stop_id
+    json.is_favorite fs.favorite_unit.include?(stop.stop_id.to_s) ? true : false
     if params[:testing].present?
       if stop.stop_type == 'amenity' then json.type 'elevator' else json.type stop.stop_type end
     else
@@ -406,6 +408,7 @@ json.tours @tours do |tour|
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
       json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
+      json.is_favorite fs.favorite_amenity.include?(stop.stop_id.to_s) ? true : false
       if amenity.amenity_galleries.count == 0
         json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description, "directional_text" => amenity.directional_text]
       else

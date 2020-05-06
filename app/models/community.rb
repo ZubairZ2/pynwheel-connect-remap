@@ -76,6 +76,7 @@ class Community < ApplicationRecord
   has_many :floorplates, -> { order("number DESC") }, dependent: :destroy
   has_one :credential, dependent: :destroy
   has_one :design, dependent: :destroy
+  has_one :favorite_stop, dependent: :destroy
   has_one :sitemap, dependent: :destroy
   has_one :favorite_setting, dependent: :destroy
   has_one :neighborhood, dependent: :destroy
@@ -592,6 +593,7 @@ class Community < ApplicationRecord
   private
 
   def populate_favorites(items_objs)
+    fs = self.favorite_stop
     favorites = []
     units = Hash.new
     items_objs.each do |item|
@@ -614,7 +616,13 @@ class Community < ApplicationRecord
       #   u = Unit.new
       #   units << u
       end
+      if item[:type] == 'unit'
+        fs.favorite_unit << item[:id] unless fs.favorite_unit.include?(item[:id])
+      elsif item[:type] == 'amenity'
+        fs.favorite_amenity << item[:id] unless fs.favorite_amenity.include?(item[:id])
+      end
     end
+    fs.save
     return favorites , units
   end
   def validate_page_position
