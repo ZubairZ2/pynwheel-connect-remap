@@ -86,14 +86,16 @@ class WebpagesController < ActionController::Base
   end
 
   def save_favorite
-
-    array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
-    @unit = Unit.find params[:unit_id]
-    array << params[:unit_id]
-    cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
-    favorite = Favorite.find_by_session_id(cookies[:session_id]) 
-    favorite.unit_ids << params[:unit_id]
-    favorite.save
+    begin
+      array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
+      @unit = Unit.find params[:unit_id]
+      array << params[:unit_id]
+      cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
+      favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+      favorite.unit_ids << params[:unit_id]
+      favorite.save
+    rescue => ex
+    end
   end
 
   def delete_favorite
@@ -111,9 +113,12 @@ class WebpagesController < ActionController::Base
   end
 
   def favorites
-    @favorite = Favorite.find_by_session_id(cookies[:session_id])
-    @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
-    @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
+    begin
+      @favorite = Favorite.find_by_session_id(cookies[:session_id])
+      @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
+      @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
+    rescue => ex
+    end
   end
 
   def favorites_share_link
