@@ -617,10 +617,10 @@ class Community < ApplicationRecord
       #   units << u
       end
       if item[:type] == 'unit'
-        fs.user_favorites_unit[email_to] = [] if fs.user_favorites_unit[email_to] == nil
+        fs.user_favorites_unit[email_to] = [] #if fs.user_favorites_unit[email_to] == nil
         fs.user_favorites_unit[email_to] << item[:id] unless fs.user_favorites_unit[email_to].include?(item[:id])
       elsif item[:type] == 'amenity'
-        fs.user_favorites_amenity[email_to] = [] if fs.user_favorites_amenity[email_to] == nil
+        fs.user_favorites_amenity[email_to] = [] #if fs.user_favorites_amenity[email_to] == nil
         fs.user_favorites_amenity[email_to] << item[:id] unless fs.user_favorites_amenity[email_to].include?(item[:id])
       end
     end
