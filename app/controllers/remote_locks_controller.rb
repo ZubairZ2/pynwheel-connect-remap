@@ -10,15 +10,16 @@ class RemoteLocksController < ApplicationController
 
     def edit
         @device_id = params[:id]
-        @unit_id = params[:unit_id]
-        @unit_name = params[:unit_name]
+        @stop_id = params[:stop_id]
+        @stop_type = params[:stop_type]
+        @stop_name = params[:stop_name]
         # access_token = generate_remotelock_token
         # responce = RemoteLockService.new(current_community,current_user).get_device(access_token,device_id)
         @remote_lock = RemoteLock.find_by(device_id: @device_id)
     end
 
     def  update
-        unit_id = params[:remote_lock][:unit_id]
+        stop_id = params[:remote_lock][:stop_id]
         device_id = params[:id]
 
         remote_lock = RemoteLock.find_by(device_id: device_id)
@@ -27,128 +28,15 @@ class RemoteLocksController < ApplicationController
         access_token = generate_remotelock_token
         responce = RemoteLockService.new(current_community,current_user).update_device(access_token, device_id ,remote_lock)
 
-        redirect_to edit_community_unit_path(current_community,unit_id), notice: "Remote Lock Updated Successfully" 
+        if params[:remote_lock][:stop_type] == "unit"
+            redirect_to edit_community_unit_path(current_community,stop_id), notice: "Remote Lock Updated Successfully" 
+        elsif params[:remote_lock][:stop_type] == "amenity"
+            redirect_to edit_community_amenity_path(current_community,stop_id), notice: "Remote Lock Updated Successfully" 
+        end
         # redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully" 
-    end
-
-    def save_edgestate_credentails
-        @edge_state = EdgeState.new(edge_state_params)
-        if @edge_state.save
-            flash[:notice] = "Records saved successfully"
-            redirect_to companies_path
-        else
-            flash[:error] = @edge_state.errors.full_messages.join(',')
-            render :new
-        end
-    end
-
-    def client_credentials
-        if @edge_state_user.present?
-            base_url = "https://connect.remotelock.com/oauth/token"
-
-            response = HTTParty.post(base_url,
-                body: {
-                    client_id: @edge_state_user.client_id,
-                    client_secret: @edge_state_user.client_secret,
-                    grant_type: "client_credentials"
-                },
-                headers: { 'Content-Type' => 'application/x-www-form-urlencoded' } )
-
-            render json: response
-
-            # site_path = "https://connect.remotelock.com"
-            # redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'
-
-            # client = OAuth2::Client.new(
-            #     @edge_state_user.client_id,
-            #     @edge_state_user.client_secret,
-            #     :site   => site_path
-            # )
-
-            # auth_url = client.auth_code.authorize_url(:redirect_uri => redirect_uri)
-            # token = client.client_credentials.get_token
-
-        end
-    end
-
-    def get_deivces
-        if @edge_state_user.present?
-            access_token = request.headers['Authorization']
-            token_type = "Bearer"
-            auth_header = token_type + " " + access_token
-
-            url = @base_url + "/devices"
-
-            response = HTTParty.get(url,
-                :headers => { 'Authorization' => auth_header,
-                                'Accept' => 'application/vnd.lockstate+json; version=1' } )
-
-            # puts response["data"] # devices_list
-            render json: response
-        end
-    end
-
-    def create_access_guest
-        if @edge_state_user.present?
-            access_token = request.headers['Authorization']
-            token_type = "Bearer"
-            auth_header = token_type + " " + access_token
-
-            url = @base_url + "/access_persons"
-
-            response = HTTParty.post(url,
-                body: {
-                    type: "access_guest",
-                    attributes: {
-                        name: "Ali",
-                        email: "ali@gmail.com",
-                        department: "development",
-                        phone: "+92987654321",
-                        starts_at: "2020-01-02T16:04:00",
-                        ends_at: "2021-01-02T16:04:00",
-                        generate_pin: true
-                    }
-                }.to_json,
-                :headers => { 'Authorization' => auth_header,
-                                'Accept' => 'application/vnd.lockstate+json; version=1',
-                                'Content-Type' => 'application/json' } )
-            # puts response
-            render json: response
-        end
-    end
-
-    def grant_access
-        access_token = request.headers['Authorization']
-        token_type = "Bearer"
-        auth_header = token_type + " " + access_token
-
-        url = @base_url + "/access_persons"
-
-        response = HTTParty.post(url,
-            body: {
-                type: "access_user",
-                attributes: {
-                "accessible_id": "053994ef-ceed-455a-a5f7-7962261a722d",
-                "accessible_type": "lock"
-                }
-            }.to_json,
-            :headers => { 'Authorization' => auth_header,
-                            'Accept' => 'application/vnd.lockstate+json; version=1',
-                            'Content-Type' => 'application/json' } )
-        # puts response
-        render json: response
-
     end
     
     private
-        def edge_state_params
-            params.require(:edgestate).permit(:client_id, :client_secret, :user_id)
-        end
-        
-        def set_user
-            @edge_state_user = EdgeState.find_by(community_id: params[:community_id], user_id: current_user.id)
-        end
-
         def set_base_url
             @base_url = "https://api.remotelock.com"
         end

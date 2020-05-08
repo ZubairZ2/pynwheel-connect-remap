@@ -1,0 +1,33 @@
+- content_for :title, "Save EdgeState - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        .col-lg-12
+          %h3.box-title
+            = 'Save EdgeState Credentails'
+            %span
+        .col-md-12
+        -#   = link_to "<Back to #{@unit_name} Unit", edit_community_unit_path(current_community,@unit_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+      / /.box-header
+      / form start
+      = form_for :edgestate, :url=>community_edgestate_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                  .col-sm-6.col-lg-4.col-md-4.col-xs-12
+                    = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=>''
+                    %small Your client id of EdgeState Account
+                  .col-sm-6.col-lg-4.col-md-4.col-xs-12
+                    = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> ''
+                    %small Your client secret of EdgeState Account
+                  = f.hidden_field :user_id, :value=> current_user.id
+                  = f.hidden_field :community_id, :value=> current_community.id
+        / /.box-body
+        .box-footer
+          = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"

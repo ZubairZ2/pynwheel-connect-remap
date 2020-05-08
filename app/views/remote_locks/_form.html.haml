@@ -9,4 +9,6 @@
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :remote_lock_type, :class=>"form-control validate[required]", :placeholder=>"Lock Type", :value=> f.object.remote_lock_type
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.hidden_field :unit_id, :value=> @unit_id
+        = f.hidden_field :stop_id, :value=> @stop_id
+        = f.hidden_field :stop_type, :value=> @stop_type
+        = f.hidden_field :stop_name, :value=> @stop_name

@@ -77,6 +77,8 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :edgestate_accounts
+
     post :save_gallery_settings
     post :save_tour_settings
     post :save_apartment_settings
@@ -146,6 +148,7 @@ Rails.application.routes.draw do
       end
       member do
         get :edit_amenity_gallery_image
+        post :load_remotelock_data
       end
     end
     resources :tour_users do

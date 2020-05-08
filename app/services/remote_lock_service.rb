@@ -18,6 +18,7 @@ class RemoteLockService < BaseService
             puts '==='*50
             puts response["access_token"]
             puts '==='*50
+
             return response["access_token"]
         end
     end
@@ -32,6 +33,10 @@ class RemoteLockService < BaseService
             response = HTTParty.get(url,
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
+            
+            puts "---"*50
+            puts response
+            puts "---"*50
 
             return response
         end
@@ -47,6 +52,11 @@ class RemoteLockService < BaseService
             response = HTTParty.get(url,
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
+           
+            puts "---"*50
+            puts response
+            puts "---"*50
+            
             return response
         end
     end
@@ -75,19 +85,78 @@ class RemoteLockService < BaseService
         end
     end
 
-    def update_deivces_in_db(responce)
-        devices = responce["data"]
-        devices.each do |device|
-            type = device["type"]
-            name = device["attributes"]["name"]
-            serial_number = device["attributes"]["serial_number"]
-            device_id = device["id"]
+    def create_access_guest(access_token,tour_user)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
 
-            rml = RemoteLock.find_by(device_id: device_id)
-            if rml.nil?
-                RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name)
-            elsif rml.remote_lock_type != type  or rml.name != name
-                rml.update_attributes(remote_lock_type: type, name: name)
+            url = base_url + "/access_persons"
+            
+            response = HTTParty.post(url,
+                body: {
+                    type: "access_guest",
+                    attributes: {
+                        name: tour_user.name,
+                        email: tour_user.email,
+                        phone: tour_user.phone_number,
+                        starts_at: DateTime.now.iso8601.split('+')[0],
+                        ends_at: DateTime.now.end_of_day.iso8601.split('+')[0],
+                        generate_pin: true
+                    }
+                }.to_json,
+                :headers => { 'Authorization' => auth_header,
+                                'Accept' => 'application/vnd.lockstate+json; version=1',
+                                'Content-Type' => 'application/json' } )
+
+            puts "---"*50
+            puts response
+            puts "---"*50
+
+            return response
+        end
+    end
+    
+    def grant_access(access_token, access_person_id, accessible_id,accessible_type)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+
+            url = base_url + "/access_persons/#{access_person_id}/accesses"
+
+            response = HTTParty.post(url,
+                body: {
+                    attributes: {
+                        "accessible_id": accessible_id,
+                        "accessible_type": accessible_type
+                    }
+                }.to_json,
+                :headers => { 'Authorization' => auth_header,
+                                'Accept' => 'application/vnd.lockstate+json; version=1',
+                                'Content-Type' => 'application/json' } )
+            
+            puts "---"*50
+            puts response
+            puts "---"*50
+
+            return response
+        end
+    end
+
+    def update_deivces_in_db(responce)
+        if @edge_state_user.present?
+            devices = responce["data"]
+            devices.each do |device|
+                type = device["type"]
+                name = device["attributes"]["name"]
+                serial_number = device["attributes"]["serial_number"]
+                device_id = device["id"]
+
+                rml = RemoteLock.find_by(device_id: device_id)
+                if rml.nil?
+                    RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, edge_state_id: @edge_state_user.id)
+                elsif rml.remote_lock_type != type  or rml.name != name
+                    rml.update_attributes(remote_lock_type: type, name: name)
+                end
             end
         end
     end

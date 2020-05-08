@@ -114,6 +114,17 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.deleted_ids = []
     @community.save
     @tours = Tour.where(community_id: params[:id])
+    Thread.new do
+      users_ids = @community.users.ids
+      user = EdgeState.where(user_id: users_ids).last
+      # user = EdgeState.where(user_id: [1,50]).last  # -------- testing line
+      if user.present?
+        current_user = User.find user.user_id
+        tour_user = TourUser.find params[:tour_user_id]
+        access_token = RemoteLockService.new(@community,current_user).client_credentials
+        RemoteLockService.new(@community,current_user).create_access_guest(access_token,tour_user)
+      end
+    end
   end
   
   def delete_tour_stop
@@ -123,6 +134,29 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
     @community.save
     @tours = Tour.where(id: params[:tour_id])
+    
+    Thread.new do
+      allowed_ids = @community.tour.tour_stops.ids - @community.deleted_ids
+      allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
+      unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}
+
+      users_ids = @community.users.ids
+      user = EdgeState.where(user_id: users_ids).last
+      # user = EdgeState.where(user_id: [1,50]).last  # -------- testing line
+      if user.present?
+        current_user = User.find user.user_id
+        access_token = RemoteLockService.new(@community,current_user).client_credentials
+        locks = RemoteLock.where(name: unit_or_amentiy_names, edge_state_id: user.id).pluck(:device_id, :remote_lock_type)
+        # locks = RemoteLock.where(name: "A-202", edge_state_id: user.id).pluck(:device_id, :remote_lock_type)   # -------- testing line
+        if locks.present?
+          # tour_user_guest_id =  "5d1c3343-9566-464f-99e7-e49a99d03329" # -------- testing line
+          # tour_user_guest_id = remain to mainted here
+          locks.each do |lock|
+            RemoteLockService.new(@community,current_user).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+          end
+        end
+      end
+    end
   end
 
   def user_saved_tour

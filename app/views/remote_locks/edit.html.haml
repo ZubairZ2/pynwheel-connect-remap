@@ -8,7 +8,10 @@
             = @remote_lock.remote_lock_type.capitalize + ' Details'
             %span
         .col-md-12
-          = link_to "<Back to #{@unit_name} Unit", edit_community_unit_path(current_community,@unit_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+          - if @stop_type == 'unit'
+            = link_to "<Back to #{@stop_name} #{@stop_type}", edit_community_unit_path(current_community,@stop_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+          - elsif @stop_type == 'amenity'
+            = link_to "<Back to #{@stop_name} #{@stop_type}", edit_community_amenity_path(current_community,@stop_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
       / /.box-header
       / form start
       = form_for @remote_lock,:url=>community_remote_lock_path(:id=>@device_id,:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|

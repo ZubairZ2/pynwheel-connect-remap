@@ -38,7 +38,6 @@
           type: 'POST',
           url: '/communities/'+ community_id + '/units/' + unit_id +'/load_remotelock_data',
           dataType: 'json',
-          
           data: params,
           cache: false,
           success: function(data){
@@ -63,8 +62,10 @@
           var unit_id = #{ @unit.id}
           var unit_name = '#{ @unit.name}'
           var community_id = #{ @community.id}
+          var stop_type = "unit"
+          
           var id = $('#remote_lock :selected').val()
-          var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?unit_id=' + unit_id + '&unit_name=' + unit_name
+          var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + unit_id + '&stop_type=' + stop_type + '&stop_name=' + unit_name
 
           $("#a-lock").attr("href",href);
         }
