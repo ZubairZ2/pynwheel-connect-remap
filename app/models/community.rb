@@ -532,7 +532,7 @@ class Community < ApplicationRecord
 
   def email_favorites(params)
     email_to = params[:favorites][:email_to]
-    result = populate_favorites(params[:favorites][:items])
+    result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
     units = result[1] 
     puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
@@ -592,7 +592,7 @@ class Community < ApplicationRecord
 
   private
 
-  def populate_favorites(items_objs)
+  def populate_favorites(items_objs,email_to)
     fs = self.favorite_stop
     favorites = []
     units = Hash.new
@@ -617,9 +617,11 @@ class Community < ApplicationRecord
       #   units << u
       end
       if item[:type] == 'unit'
-        fs.favorite_unit << item[:id] unless fs.favorite_unit.include?(item[:id])
+        fs.user_favorites_unit[email_to] = [] if fs.user_favorites_unit[email_to] == nil
+        fs.user_favorites_unit[email_to] << item[:id] unless fs.user_favorites_unit[email_to].include?(item[:id])
       elsif item[:type] == 'amenity'
-        fs.favorite_amenity << item[:id] unless fs.favorite_amenity.include?(item[:id])
+        fs.user_favorites_amenity[email_to] = [] if fs.user_favorites_amenity[email_to] == nil
+        fs.user_favorites_amenity[email_to] << item[:id] unless fs.user_favorites_amenity[email_to].include?(item[:id])
       end
     end
     fs.save
