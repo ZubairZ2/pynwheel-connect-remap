@@ -66,7 +66,7 @@
                     The name of Remote lock from the dropdown list must be same as the name of amenity
                 %span Assign the lock to this amenity
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %select.form-control#remote_lock{name: "amenity[remote_lock]", required: ""}
+                %select.form-control#remote_lock{name: "remote_lock"}
                   %option{disabled: "disabled", selected: "selected", value: ""} Select your option
                   %option{value: "1"} AA-111
               %button#update-btn.btn.btn-primary.hidden{type: "button"}
@@ -156,7 +156,7 @@
     $("#remote_lock").change(function () {
       if($('#remote_lock :selected').text() != "Select your option"){
         var lock_name = $('#remote_lock :selected').text().replace(' (lock)','');
-        if(lock_name != $('#unit_provider_unit_id').val()){
+        if(lock_name != $('#amenity_name').val()){
           $(this).addClass('lock_mismatch')
           $("#update-btn").removeClass('hidden')
 

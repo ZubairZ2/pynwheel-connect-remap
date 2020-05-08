@@ -34,6 +34,10 @@ class AmenitiesController < ApplicationController
   
   def update
     @amenity = Amenity.find(params[:id])
+    if params[:remote_lock].present?
+      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
+      remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
+    end
     begin
       ts = TourStop.find_by(stop_id: @amenity.id)
       if ts.present? && params[:amenity][:name].present?

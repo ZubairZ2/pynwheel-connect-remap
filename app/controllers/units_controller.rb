@@ -50,7 +50,10 @@ class UnitsController < ApplicationController
   end
 
   def update
-
+    if params[:remote_lock].present?
+      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
+      remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: params[:unit][:provider_unit_id])
+    end
     respond_to do |format|
       ######## save item that updated
       if (params[:unit][:availability].present? && params[:unit][:availability] == "Unoccupied")

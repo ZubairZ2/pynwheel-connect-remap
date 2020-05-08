@@ -23,7 +23,7 @@ class RemoteLocksController < ApplicationController
         device_id = params[:id]
 
         remote_lock = RemoteLock.find_by(device_id: device_id)
-        remote_lock.update_attributes(remote_lock_params)
+        remote_lock.update_attributes(name: params[:remote_lock][:name], remote_lock_type: params[:remote_lock][:remote_lock_type])
 
         access_token = generate_remotelock_token
         responce = RemoteLockService.new(current_community,current_user).update_device(access_token, device_id ,remote_lock)
@@ -42,6 +42,8 @@ class RemoteLocksController < ApplicationController
         end
 
         def remote_lock_params
+            # not using it as this params also assign lock to previous unit, 
+            # but we should update lock only as update operation suggests unless required
             params.require(:remote_lock).permit!
         end
 end
