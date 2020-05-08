@@ -594,6 +594,7 @@ class Community < ApplicationRecord
 
   def populate_favorites(items_objs,email_to)
     fs = self.favorite_stop
+    fs = self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.create(community_id: self.id)
     favorites = []
     units = Hash.new
     items_objs.each do |item|
