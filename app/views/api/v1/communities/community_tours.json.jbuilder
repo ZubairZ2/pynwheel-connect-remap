@@ -21,7 +21,10 @@ json.tours @tours do |tour|
     json.image @floorplate.image
 
   end
-  fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
+  fs = @community.favorite_stop
+  
+  favorite_unit_array = (fs.present? ? fs.favorite_unit : []) + (fs.user_favorites_unit[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_unit[@tour_user.email] : [])
+  favorite_amenity_array = (fs.user_favorites_amenity[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_amenity[@tour_user.email] : [])
   # @community.is_sitemap ? sp = Path.where(map_path_from_id: tour.tour_stops&.order(:sort)&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: tour.tour_stops.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first
   # if sp.blank?
   #   @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops&.order(:sort)&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops.where(stop_type: "elevator").first.stop_id)&.first
@@ -81,13 +84,13 @@ json.tours @tours do |tour|
         u = Unit.find stop.stop_id
         if u.present?
           json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
-          json.is_favorite fs.favorite_unit.include?(stop.stop_id.to_s) ? true : false
+          json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
         else
           next
         end
       else
         json.name stop.name
-        json.is_favorite fs.favorite_amenity.include?(stop.stop_id.to_s) ? true : false
+        json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
       end
       json.id stop.id
       json.type stop.stop_type
