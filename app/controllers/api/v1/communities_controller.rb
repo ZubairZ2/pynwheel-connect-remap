@@ -122,7 +122,8 @@ class Api::V1::CommunitiesController < ActionController::Base
         current_user = User.find user.user_id
         tour_user = TourUser.find params[:tour_user_id]
         access_token = RemoteLockService.new(@community,current_user).client_credentials
-        RemoteLockService.new(@community,current_user).create_access_guest(access_token,tour_user)
+        responce = RemoteLockService.new(@community,current_user).create_access_guest(access_token,tour_user)
+        tour_user.update_attributes(edgestate_pin: responce["data"]["attributes"]["pin"])
       end
     end
   end
