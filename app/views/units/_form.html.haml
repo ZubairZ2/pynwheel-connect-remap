@@ -88,12 +88,14 @@
     Remote Lock
     %i.unit_manualoverride.fa.fa-question-circle
       %span#unit_manualoverride_text
-        The name of Remote lock from the dropdown list must be same as the Provider Unit ID
+        Name of Remote lock must be formatted like BuildingName-MarketingName
     %span Assign the lock to this unit
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     %select.form-control#remote_lock{name: "remote_lock"}
-      %option{disabled: "disabled", selected: "selected", value: ""} Select your option
-      %option{value: "1"} A-201
+      - if @assigned_lock.present?
+        %option{value: "#{@assigned_lock.device_id}" , selected: "selected"} #{@assigned_lock.name} (#{@assigned_lock.remote_lock_type})
+      - else
+        %option{disabled: "disabled", selected: "selected", value: ""} Select your option
   %button#update-btn.btn.btn-primary.hidden{type: "button"}
     %a#a-lock{href: "#"} Update selected lock
   

@@ -23,6 +23,7 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
+    @assigned_lock = @amenity.remote_locks.first
   end
 
   def load_remotelock_data

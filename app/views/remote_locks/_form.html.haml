@@ -5,9 +5,13 @@
     .row
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name",:maxlength=>"9", :value=>''
-        %small Name should be same as of unit name
+        - if @stop_type == 'unit'
+          %small format must as BuildingName-UnitName (Manual Override Required)
+        - elsif @stop_type == 'amenity'
+          %small format must as name of amenity (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :remote_lock_type, :class=>"form-control validate[required]", :placeholder=>"Lock Type", :value=> f.object.remote_lock_type
+        = f.text_field :remote_lock_type, :class=>"form-control validate[required]", :placeholder=>"Lock Type", :value=> f.object.remote_lock_type,  readonly: ''
+        %small type of the current lock (uneditable)
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.hidden_field :stop_id, :value=> @stop_id
         = f.hidden_field :stop_type, :value=> @stop_type
