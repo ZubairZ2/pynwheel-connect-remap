@@ -70,7 +70,7 @@
                   - if @assigned_lock.present?
                     %option{value: "#{@assigned_lock.device_id}" , selected: "selected"} #{@assigned_lock.name} (#{@assigned_lock.remote_lock_type})
                   - else
-                    %option{disabled: "disabled", selected: "selected", value: ""} Select your option
+                    %option{selected: "selected", value: ""} Select your option
               %button#update-btn.btn.btn-primary.hidden{type: "button"}
                 %a#a-lock{href: "#"} Update selected lock
               
@@ -158,6 +158,11 @@
         $("#update-btn").addClass('hidden')
         $("#a-lock").attr("href","#");
       }
+    }
+    else{
+        $('#remote_lock').removeClass('lock_mismatch')
+        $("#update-btn").addClass('hidden')
+        $("#a-lock").attr("href","#");
     }
   }
 

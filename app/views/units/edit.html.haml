@@ -56,6 +56,11 @@
         $("#a-lock").attr("href","#");
       }
     }
+    else{
+        $('#remote_lock').removeClass('lock_mismatch')
+        $("#update-btn").addClass('hidden')
+        $("#a-lock").attr("href","#");
+    }
   }
   
   $(document).ready(function(){
