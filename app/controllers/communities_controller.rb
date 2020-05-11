@@ -37,6 +37,9 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
+    Thread.new do
+      generate_remotelock_token
+    end
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page

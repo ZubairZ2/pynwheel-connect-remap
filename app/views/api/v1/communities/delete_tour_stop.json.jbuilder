@@ -248,12 +248,12 @@ json.tours @tours do |tour|
     rescue => e
       navigation_title = ""
     end
+    json.guest_pin "Use code #" + @tour_user.edgestate_pin + " to enter." 
     json.navigation_title navigation_title
     json.id stop.id
     json.x_plot stop.latitude
     json.y_plot stop.longitude
     json.unit_id stop.stop_id
-    json.guest_pin "Use code 2384 to enter."
     json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
     if params[:testing].present?
       if stop.stop_type == 'amenity' then json.type 'elevator' else json.type stop.stop_type end
@@ -412,7 +412,7 @@ json.tours @tours do |tour|
       json.directional_text amenity.directional_text
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
-      json.guest_pin "Use code 2384 to enter."
+      json.guest_pin "Use code #" + @tour_user.edgestate_pin + " to enter." 
       json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
       if amenity.amenity_galleries.count == 0
