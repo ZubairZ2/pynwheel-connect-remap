@@ -96,8 +96,8 @@
         %option{value: "#{@assigned_lock.device_id}" , selected: "selected"} #{@assigned_lock.name} (#{@assigned_lock.remote_lock_type})
       - else
         %option{selected: "selected", value: ""} Select your option
-  %button#update-btn.btn.btn-primary.hidden{type: "button"}
-    %a#a-lock{href: "#"} Update selected lock
+    %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
+      %a#a-lock.btn-text-color{href: "#"} Update selected lock
   
 
 .form-group
