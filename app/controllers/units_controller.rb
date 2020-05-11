@@ -44,7 +44,7 @@ class UnitsController < ApplicationController
     access_token = generate_remotelock_token
     responce = RemoteLockService.new(current_community,current_user).get_all_deivces(access_token)
     RemoteLockService.new(current_community,current_user).update_deivces_in_db(responce)
-    es = EdgeState.find_by(user_id: current_community.id, community_id: current_user.id)
+    es = EdgeState.find_by(user_id: current_user.id, community_id: current_community.id)
     if es.nil?
       render json: {locks: []}
     else
