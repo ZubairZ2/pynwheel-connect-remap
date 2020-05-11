@@ -60,6 +60,7 @@
 .lock_mismatch  {
     color: #ffffff !important;
     background-color: #e46d6d !important;
+}
 @font-face {
     font-family: 'GaramondPro';
     src: url('AGaramondPro-Regular.otf');
