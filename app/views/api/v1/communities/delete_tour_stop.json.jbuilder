@@ -158,6 +158,7 @@ json.tours @tours do |tour|
     if (navigation_title.include? "elevator") || (navigation_title.include? "Elevator")
       navigation_title = "Next Stop: Elevator"
     end
+    json.guest_pin @tour_user.edgestate_pin
     json.navigation_title navigation_title
     json.id stop.id
     json.x_plot stop.latitude
