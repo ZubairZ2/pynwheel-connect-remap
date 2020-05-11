@@ -75,9 +75,9 @@ class ApplicationController < ActionController::Base
 
   def generate_remotelock_token
       # do block will only execute in case of cache miss
-      token  = Rails.cache.fetch('access_token', expires_in: 1.8.hours.from_now) do
+      # token  = Rails.cache.fetch('access_token', expires_in: 1.8.hours.from_now) do
         RemoteLockService.new(current_community,current_user).client_credentials
-      end
+      # end
   end
   protected
 
