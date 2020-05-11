@@ -251,7 +251,7 @@
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   .grid-graph.hidden
-                  = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg",:style => "max-width: 100%;",:id => "img1"
                   - units = @units.sort_by{|u| u.marketing_name}
                   - coordinates_array = []
 
@@ -371,6 +371,38 @@
      {
       window.history.back();
      }
+  }
+  $('#map a').on('touchstart', function (e) {
+    e.stopImmediatePropagation();
+  });
+  var $area = document.getElementById('map');
+  window.pz = panzoom($area, 
+  {
+    bounds: true, contain: 'automatic', smoothScroll: false,
+    maxZoom: 5,
+    minZoom: 1,
+    zoomDoubleClickSpeed: 1,
+   
+    onTouch: function(e) {
+      // `e` - is current touch event.
+      // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
+      e.preventDefault();
+      // $(e.path[1]).click();
+      return false; // tells the library to not preventDefault.
+    }
+  });
+  var v = document.getElementById("img1")
+  if ($(window).width() < 1500)
+  {
+    var ele = document.getElementsByClassName('marker');
+    for (var i = 0; i < ele.length; i++ ) {
+      if (ele[i].dataset.vertical == "258")
+      {
+      }
+      ele[i].style.left = (((parseInt(ele[i].dataset.horizontal) / 1139) * v.width)-(lmargin+4)).toString() + "px"
+      ele[i].style.top = (((parseInt(ele[i].dataset.vertical) / 932) * v.height)-(rmargin+4)).toString() + "px"
+      
+    }
   }
   if (!#{current_user.welcome_sitemap_page})
     {
