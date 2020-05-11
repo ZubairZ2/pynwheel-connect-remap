@@ -105,13 +105,13 @@ class Yardi4StaticService < BaseService
   def save_yardi4_units(ils_units,property_id)
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
-      unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: u[:Units][:Unit][:Identification][0][:IDValue]).first_or_initialize
+      unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])).first_or_initialize
       unless unit.manual_override
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
-        unit.unit_type = u[:Units][:Unit][:Identification][0][:IDValue]
+        unit.unit_type = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
         unless unit.name_is_updated.present? && unit.name_is_updated  && unit.manual_override
-          unit.marketing_name = u[:Units][:Unit][:Identification][0][:IDValue]
+          unit.marketing_name = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
         end
         unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated && unit.manual_override
           unit.floorplan_id = u[:Units][:Unit][:UnitType]
