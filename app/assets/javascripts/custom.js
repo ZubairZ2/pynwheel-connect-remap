@@ -634,6 +634,15 @@ function showDataTables(){
         "stateSave": true,
         "paging": false
     });
+    $('#miyazaki.schedule_tour_table').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [5],
+        }],
+        "ordering": true,
+        "stateSave": true,
+        "paging": false
+    });
     $('#miyazaki.floorplan_data_table').DataTable({
         'aoColumnDefs': [{
             'bSortable': false,
