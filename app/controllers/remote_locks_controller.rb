@@ -13,8 +13,6 @@ class RemoteLocksController < ApplicationController
         @stop_id = params[:stop_id]
         @stop_type = params[:stop_type]
         @stop_name = params[:stop_name]
-        # access_token = generate_remotelock_token
-        # responce = RemoteLockService.new(current_community,current_user).get_device(access_token,device_id)
         @remote_lock = RemoteLock.find_by(device_id: @device_id)
     end
 
@@ -23,10 +21,10 @@ class RemoteLocksController < ApplicationController
         device_id = params[:id]
 
         remote_lock = RemoteLock.find_by(device_id: device_id)
-        remote_lock.update_attributes(name: params[:remote_lock][:name], remote_lock_type: params[:remote_lock][:remote_lock_type])
+        remote_lock.update_attributes(remote_lock_params)
 
         access_token = generate_remotelock_token
-        responce = RemoteLockService.new(current_community,current_user).update_device(access_token, device_id ,remote_lock)
+        responce = RemoteLockService.new(current_community).update_device(access_token, device_id ,remote_lock)
 
         if params[:remote_lock][:stop_type] == "unit"
             redirect_to edit_community_unit_path(current_community,stop_id), notice: "Remote Lock Updated Successfully" 
@@ -42,8 +40,7 @@ class RemoteLocksController < ApplicationController
         end
 
         def remote_lock_params
-            # not using it as this params also assign lock to previous unit, 
-            # but we should update lock only as update operation suggests unless required
+            # using it will also assign lock to the unit
             params.require(:remote_lock).permit!
         end
 end

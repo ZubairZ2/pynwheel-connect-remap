@@ -6,7 +6,7 @@
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name",:maxlength=>"9", :value=>''
         - if @stop_type == 'unit'
-          %small format must as BuildingName-UnitName (Manual Override Required)
+          %small n case building name present name must be formatted as BuildingName-MarketingName otherwise name must be same as unit marketing name (Manual Override Required)
         - elsif @stop_type == 'amenity'
           %small format must as name of amenity (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-4.col-xs-12

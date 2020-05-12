@@ -16,7 +16,7 @@ class EdgestateAccountsController < ApplicationController
                 render :new
             end
         else
-            @edge_state = EdgeState.find_by(community_id: current_community.id , user_id: current_user.id)
+            @edge_state = EdgeState.find_by(community_id: current_community.id)
             if @edge_state.update_attributes(edge_state_params)
                 flash[:notice] = "EdgeState credentails updated successfully"
                 redirect_to community_settings_page_path(current_community)
@@ -37,11 +37,11 @@ class EdgestateAccountsController < ApplicationController
 
     private
         def edge_state_params
-            params.require(:edgestate).permit(:client_id, :client_secret, :user_id, :community_id)
+            params.require(:edgestate).permit(:client_id, :client_secret, :community_id)
         end
 
         def set_user
-            @is_already_exists = EdgeState.find_by(community_id: current_community.id , user_id: current_user.id).present?
+            @is_already_exists = EdgeState.find_by(community_id: current_community.id).present?
         end
 
 end

@@ -1,7 +1,7 @@
 class RemoteLockService < BaseService
       
-    def initialize(community,user)
-        @edge_state_user = EdgeState.find_by(community_id: community.id, user_id: user.id)
+    def initialize(community)
+        @edge_state_user = EdgeState.find_by(community_id: community.id)
     end
     
     def client_credentials
@@ -116,6 +116,55 @@ class RemoteLockService < BaseService
         end
     end
     
+    def get_access_guest(access_token,guest_id)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+
+            url = base_url + "/access_persons/" + guest_id 
+            
+            response = HTTParty.get(url,
+                :headers => { 'Authorization' => auth_header,
+                              'Accept' => 'application/vnd.lockstate+json; version=1' } )
+           
+            puts "---"*50
+            puts response
+            puts "---"*50
+            
+            return response
+        end
+    end
+
+    def update_access_guest(access_token,guest_id,tour_user)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+
+            url = base_url + "/access_persons/" + guest_id 
+            
+            response = HTTParty.put(url,
+                body: {
+                    attributes: {
+                        name: tour_user.name,
+                        email: tour_user.email,
+                        phone: tour_user.phone_number,
+                        starts_at: DateTime.now.iso8601.split('+')[0],
+                        ends_at: DateTime.now.end_of_day.iso8601.split('+')[0],
+                        generate_pin: true
+                    }
+                }.to_json,
+                :headers => { 'Authorization' => auth_header,
+                              'Accept' => 'application/vnd.lockstate+json; version=1' ,
+                              'Content-Type' => 'application/json'} )
+           
+            puts "---"*50
+            puts response
+            puts "---"*50
+            
+            return response
+        end
+    end
+
     def grant_access(access_token, access_person_id, accessible_id,accessible_type)
         if @edge_state_user.present?
             token_type = "Bearer"

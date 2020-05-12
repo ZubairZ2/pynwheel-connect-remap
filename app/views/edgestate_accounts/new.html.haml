@@ -32,7 +32,6 @@
                   .col-sm-6.col-lg-8.col-md-4.col-xs-12
                     = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> ''
                     %small Your client secret of EdgeState Account
-                  = f.hidden_field :user_id, :value=> current_user.id
                   = f.hidden_field :community_id, :value=> current_community.id
         / /.box-body
         .box-footer
