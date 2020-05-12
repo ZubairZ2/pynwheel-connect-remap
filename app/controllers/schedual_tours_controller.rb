@@ -5,7 +5,7 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
-    @schedual_tours = SchedualTour.all
+    @schedual_tours = SchedualTour.where(community_id: @community.id).order('tour_time').order('tour_date')
   end
 
   # GET /schedual_tours/1
@@ -124,12 +124,20 @@ class SchedualToursController < ApplicationController
   # DELETE /schedual_tours/1
   # DELETE /schedual_tours/1.json
   def destroy
-    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
-    @schedual_tour.destroy
-    respond_to do |format|
-      format.html { redirect_to schedual_tours_url, notice: 'Schedual tour was successfully destroyed.' }
-      format.json { head :no_content }
+    if params[:delete_type].present? && params[:delete_type] == "page"
+      schedual_tour = SchedualTour.find params[:id]
+      schedual_tour.destroy
+      redirect_to community_schedual_tours_path(@community), notice: 'Schedual tour was successfully destroyed.'
+    else
+      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
+      @schedual_tour.destroy
+      respond_to do |format|
+        format.html { redirect_to schedual_tours_url, notice: 'Schedual tour was successfully destroyed.' }
+        format.json { head :no_content }
+      end
     end
+
+    
   end
 
   private

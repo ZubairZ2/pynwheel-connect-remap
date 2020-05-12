@@ -96,6 +96,11 @@ Rails.application.routes.draw do
     get :show_realpage_pricing_data
     post :save_temporary_image
     delete :delete_temporary_image
+    resources :schedual_tours do
+      # post :create_tour_user_from
+      # member do
+      # end
+    end
     resources :floorplans do
       resources :amenities,controller: "floorplan_amenities" do
         post :plot_amenity
