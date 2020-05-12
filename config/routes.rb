@@ -74,6 +74,15 @@ Rails.application.routes.draw do
       post :selected_communities
     end
 
+    resources :remote_locks do
+      collection do
+        get :authorization_code
+        get :client_credentials
+      end
+    end
+
+    resources :edgestate_accounts
+
     post :save_gallery_settings
     post :save_tour_settings
     post :save_apartment_settings
@@ -148,6 +157,7 @@ Rails.application.routes.draw do
       end
       member do
         get :edit_amenity_gallery_image
+        post :load_remotelock_data
       end
     end
     resources :tour_users do
@@ -193,6 +203,7 @@ Rails.application.routes.draw do
         delete :remove_plot
         delete :remove_plot_from_floorplate
         post :adjust_position
+        post :load_remotelock_data
       end
       collection do
         post :set_floor

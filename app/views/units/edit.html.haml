@@ -21,9 +21,106 @@
         / /.box-body
         .box-footer
           = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"
+
 :javascript
 
-
   $("#unit_secondary_image").change(function(){
-      readSecondaryURL(this);
+      readSecondaryURL(this);   
+  });
+
+  var unit_id = #{ @unit.id }
+  var unit_name = '#{ @unit.name }'
+  var building_name = '#{ @unit.building.present? ? @unit.building : '' }'
+  var community_id = #{ @community.id }
+  var lock_name_should_be
+
+  if (building_name.length > 0){
+    lock_name_should_be = building_name + '-' + unit_name
+  }
+  else{
+    lock_name_should_be = unit_name
+  }
+
+  var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
+  
+  var IsSelectedLockMatch = function(){
+    if($('#remote_lock :selected').text() != "Select your option"){
+      var lock_name = $('#remote_lock :selected').text().split(' ')[0]
+
+      var name_should_be
+      if($('#unit_building').val().length > 0){
+        name_should_be = $('#unit_building').val() + '-' + $('#unit_marketing_name').val()
+      }
+      else{
+        name_should_be = $('#unit_marketing_name').val()
+      }
+
+      if(lock_name != name_should_be){
+        $('#remote_lock').addClass('lock_mismatch')
+        $("#update-btn").removeClass('hidden')
+
+        var id = $('#remote_lock :selected').val()
+        var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + unit_id + '&stop_name=' + unit_name + '&stop_type=unit'
+
+        $("#a-lock").attr("href",href);
+      }
+      else{
+        $('#remote_lock').removeClass('lock_mismatch')
+        $("#update-btn").addClass('hidden')
+        $("#a-lock").attr("href","#");
+      }
+    }
+    else{
+        $('#remote_lock').removeClass('lock_mismatch')
+        $("#update-btn").addClass('hidden')
+        $("#a-lock").attr("href","#");
+    }
+  }
+  
+  $(document).ready(function(){
+      
+      var params = {"unit_name": unit_name}
+      $.ajax({
+        type: 'POST',
+        url: '/communities/'+ community_id + '/units/' + unit_id +'/load_remotelock_data',
+        dataType: 'json',
+        data: params,
+        cache: false,
+        success: function(data){
+          locks = data['locks']
+          for (var item in locks) {
+            if (assigned_lock_name != locks[item].name){
+              $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+            }
+          }
+          
+        },
+        fail: function(error){
+          console.log(error)
+        }
+      });
+
+
+      $("#remote_lock").change(function () {
+        IsSelectedLockMatch()
+      });
+
+      // on page reload if lock in assigned already
+      if(assigned_lock_name.length > 0 && assigned_lock_name != lock_name_should_be){
+        $('#remote_lock').addClass('lock_mismatch')
+        $("#update-btn").removeClass('hidden')
+
+        var id = $('#remote_lock :selected').val()
+        var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + unit_id + '&stop_name=' + unit_name + '&stop_type=unit'
+
+        $("#a-lock").attr("href",href);
+      }
+
+      $('#unit_building').keyup(function() {
+        IsSelectedLockMatch()
+      });
+
+      $('#unit_marketing_name').keyup(function() {
+        IsSelectedLockMatch()
+      });
   });
