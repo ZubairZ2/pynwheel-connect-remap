@@ -5,7 +5,7 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
-    @schedual_tours = SchedualTour.where(tour_id: @community.tour.id)
+    @schedual_tours = SchedualTour.where(community_id: @community.id).order('tour_time').order('tour_date')
   end
 
   # GET /schedual_tours/1
