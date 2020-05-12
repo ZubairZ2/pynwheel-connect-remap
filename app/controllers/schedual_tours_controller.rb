@@ -30,7 +30,7 @@ class SchedualToursController < ApplicationController
     phone_number = make_phone
 
     tu = TourUser.find_by(email: params[:tour_user][:email])
-    
+    # tu.name = params[:tour_user][:name] if tu.present?
     tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
     tu.phone_number = phone_number if phone_number.present?
 
@@ -69,9 +69,9 @@ class SchedualToursController < ApplicationController
   def create
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     
-    tour_date, tour_time, day_diff = get_tour_datetime_and_diff date
+    tour_time, day_diff = get_tour_datetime_and_diff date
 
-    @schedual_tour = SchedualTour.new(tour_date: tour_date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
+    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
 
     respond_to do |format|
       if @schedual_tour.save
@@ -89,9 +89,9 @@ class SchedualToursController < ApplicationController
   def update
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     
-    tour_date, tour_time, day_diff = get_tour_datetime_and_diff date
+    tour_time, day_diff = get_tour_datetime_and_diff date
 
-    @schedual_tour.update_attributes(tour_date: tour_date, tour_time: tour_time, day_diff: day_diff)
+    @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
     
     set_daily_email_sent = false
     set_daily_email_sent = true if day_diff >= 1
@@ -147,7 +147,7 @@ class SchedualToursController < ApplicationController
       tour_time = date.strftime("%l:%M %p")
       day_diff = (tour_date - server_current_date).to_i
 
-      [tour_date, tour_time, day_diff]
+      [tour_time, day_diff]
     end
 
     def send_email_and_other_notifications schedual_tour
