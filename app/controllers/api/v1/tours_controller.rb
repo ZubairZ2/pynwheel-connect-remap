@@ -144,7 +144,7 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
   end
   def tour_user_login
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
-    tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name]) if tu.blank?
+    tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name]) if tu.blank?
     if tu.present?
       render :json=> {:success=>true, :message => "User present", tour_user: tu}
     else
