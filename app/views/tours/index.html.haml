@@ -117,40 +117,42 @@
                 /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 /       = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
                 .col-lg-9.col-lg-offset-1
+                  %h4{:style => "margin-bottom: 50px;"}
+                    %b Optional: Add custom messaging to the standard automated text & email notifications. (Only applicable if the property is using the scheduler widget). Click on the question marks to see the standard notification messages.
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      Email Text
+                      Confirmation
                       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                         %span#propertyDetailNameText
                           This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is: 
                           Thank you for scheduling your self-guided tour! We look forward to having you at the property on <date> and <time>. When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive: (Links to app stores)
 
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 3
+                      = f.text_area :email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 .col-lg-9.col-lg-offset-1
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      One Hour Confirmation Email Text
 
-                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                        %span#propertyDetailNameText
-                          This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                          We look forward to having you visit our property at <time> tomorrow for your self-guided tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).
-
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 3
-                .col-lg-9.col-lg-offset-1
-                  .form-group
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      One Day Confirmation Email Text
-
+                      One Day Reminder
                       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                         %span#propertyDetailNameText
                           This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
                           Your self-guided tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.
 
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Email Text", :rows => 3
+                      = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+
+                      One Hour Reminder
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
+                          We look forward to having you visit our property at <time> tomorrow for your self-guided tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).
+
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
             /
               \/.box-body
             .box-footer
