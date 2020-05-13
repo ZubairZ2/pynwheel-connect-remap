@@ -9,6 +9,7 @@ namespace :delayed_email_notifications do
 	task :one_day_before => :environment do
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Today Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	  # schedual_tours = SchedualTour.where('tour_date = ? AND daily_email_sent = ?', Date.today+1, false)
+	  byebug
 	  schedual_tours = SchedualTour.where('tour_date > ? AND daily_email_sent = ?',Date.today, false)
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Today #{schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
 
@@ -31,13 +32,17 @@ namespace :delayed_email_notifications do
 			
 		tu = schedual_tour.tour_user
 	  	community = schedual_tour.community
-	  	
+	  	byebug
 	  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sending Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 			app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
 			android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
 			community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincolon Property Company Self Tour" : "Pynwheel Self Tour"
 			# content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/> We look forward to having you visit our property(<b>#{community.name.humanize if community.present?}</b>) at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour:<br><a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store </a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play </a>. <br><br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a> <br>#{community.one_day_email_text}"
-			content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name.humanize if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Make sure you have downloaded the Pynwheel Self Tour (or Lincolon Property Company Self Tour) app before you arrive. <br>iPhone Users: <a href=#{app_link} target='_blank'>Download #{community_text} from the App Store</a>. <br>Android Users: <a href=#{app_link} target='_blank'>Download #{community_text} from Google Play</a><br><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a> <br>#{community.one_day_email_text}"
+			content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive. <br>iPhone Users: <a href=#{app_link} target='_blank'>Download #{community_text} from the App Store</a>. <br>Android Users: <a href=#{app_link} target='_blank'>Download #{community_text} from Google Play</a><br><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a> <br>#{community.one_day_email_text}"
+			sms_content = "Don't forget! You have an appointment for a Self Tour tomorrow at #{community.name if community.present?} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.
+iPhone Users: Download #{community_text} from the App Store. #{app_link}
+Android Users: Download #{community_text} from Google Play. #{android_link}
+Change appointment #{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}"
 
 			# "Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name.humanize if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Make sure you have downloaded the Pynwheel Self Tour (or Lincolon Property Company Self Tour) app before you arrive. <br>iPhone Users: <a href=#{app_link} target='_blank'>Download #{community_text} from the App Store</a>. <br>Android Users: <a href=#{app_link} target='_blank'>Download #{community_text} from Google Play</a><br><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a> <br>#{community.one_day_email_text}"
 			# day_diff = (schedual_tour.day_diff-1)
@@ -46,6 +51,7 @@ namespace :delayed_email_notifications do
 			diff = (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(schedual_tour.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y"))) 
 			schedual_tour.update_columns(daily_email_sent: true) if diff == 1
 			DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email) if diff == 1
+			DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if diff == 1
 	  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		end
 
@@ -64,7 +70,6 @@ namespace :delayed_email_notifications do
 				
 				time_left_to_email * -1 if time_left_to_email < 0
 				puts "<<<<<<<<<<<<<<<<<<<<<<<<< TIME LEFT TO EMAIL #{time_left_to_email} >>>>>>>>>>>>>>>>>>>>>>"
-				
 				if time_left_to_email <= 60
 					tu = schedual_tour.tour_user
 			  	community = schedual_tour.community
@@ -74,11 +79,16 @@ namespace :delayed_email_notifications do
 					community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincolon Property Company Self Tour" : "Pynwheel Self Tour"
 					android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
 					# content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>We look forward to having you visit our property(<b>#{community.name.humanize if community.present?}</b>) at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}.<br/><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br/>When you arrive at the property, open: <br><a href=#{app_link} target='_blank'>Pynwheel Self Tour From App Store </a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play </a> to start your tour. <br>#{community.one_hour_email_text}"
-					content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Your self-guided tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>Open #{community_text} for iPhones <a href=#{app_link} target='_blank'>link</a><br>Open #{community_text} for Android <a href=#{app_link} target='_blank'>link</a> <br>#{community.one_hour_email_text}"
-					google_map = (community.latitude.present? && community.longitude.present?) ? "https://www.google.com/maps" : "https://www.google.com/maps/@#{community.latitude},#{community.longitude},21z"
+					content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Your self-guided tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>Open #{community_text} for iPhones <a href=#{app_link} target='_blank'>link</a><br>Open #{community_text} for Android <a href=#{android_link} target='_blank'>link</a> <br>#{community.one_hour_email_text}"
+					sms_content = "Your self-guided tour starts soon!
+Directions to Property  https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}
+When you arrive at the property, open the #{community_text} app to begin your tour.
+Open #{community_text} for iPhones #{app_link}
+Open #{community_text} for Android #{android_link}"
 					# "Your self-guided tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>Open #{community_text} for iPhones <a href=#{app_link} target='_blank'>link</a><br>Open #{community_text} for Android <a href=#{app_link} target='_blank'>link</a> <br>#{community.one_hour_email_text}"
 					schedual_tour.update_columns(hourly_email_sent: true)
 					DelayedSchedulerMailerJob.perform_async("Your self-guided tour starts soon!", content, tu.email)
+					DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number)
 			  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 			  end
 			end
