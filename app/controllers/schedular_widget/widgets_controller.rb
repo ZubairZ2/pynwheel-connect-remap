@@ -25,7 +25,7 @@ class SchedularWidget::WidgetsController < ApplicationController
 
   def change_tour_time_widget
     @schedule_tour = SchedualTour.find params[:id]
-    @community = Community.find schedule_tour.community_id
+    @community = Community.find @schedule_tour.community_id
   end
 
   private
