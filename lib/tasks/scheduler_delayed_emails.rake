@@ -10,7 +10,6 @@ namespace :delayed_email_notifications do
 		default_url_options[:host] = 'https://pynwheel-staging.herokuapp.com'
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Today Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	  # schedual_tours = SchedualTour.where('tour_date = ? AND daily_email_sent = ?', Date.today+1, false)
-	  byebug
 	  schedual_tours = SchedualTour.where('tour_date > ? AND daily_email_sent = ?',Date.today, false)
 	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Today #{schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
 
@@ -30,10 +29,10 @@ namespace :delayed_email_notifications do
 
 	  	schedual_tours.each do |schedual_tour|
 	  
-			
+			begin
+
 		tu = schedual_tour.tour_user
 	  	community = schedual_tour.community
-	  	byebug
 	  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sending Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 			app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
 			android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
@@ -55,6 +54,10 @@ Change appointment #{schedular_widget_change_tour_time_url(schedual_tour)}?datet
 			DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if diff == 1
 	  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		end
+	rescue => ex
+		puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+				puts ex.message
+	end
 
 	end
 
@@ -62,6 +65,8 @@ Change appointment #{schedular_widget_change_tour_time_url(schedual_tour)}?datet
 
 		schedual_tours.each do |schedual_tour|
 			
+			begin
+
 			if (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(schedual_tour.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y"))) == 0
 
 				tour_time = Time.parse(schedual_tour.tour_time.strftime("%k:%M"))
@@ -92,6 +97,10 @@ Open #{community_text} for Android #{android_link}"
 					DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number)
 			  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 			  end
+			end
+			rescue => ex
+				puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+				puts ex.message
 			end
 
 		end
