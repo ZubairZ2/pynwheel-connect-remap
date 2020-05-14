@@ -174,12 +174,32 @@
         .zero {
             background-color: #58ce77 !important;
         }
+        .notification {
+            color: white;
+            text-decoration: none;
+            padding: 15px 26px;
+            position: relative;
+            display: inline-block;
+            border-radius: 2px;
+        }
+        .notification .new_msgs {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 5px 10px;
+            border-radius: 50%;
+            background-color: red;
+            color: white;
+        }
     </style>
   </head>
   
   <body>
-  
-    <%= link_to("Chat Support", "url" , class: "btn btn-success btn-lg", data: { toggle: "modal", target: "#ChatSupport" }) %>
+    
+    <a class="btn btn-success btn-lg notification" data-toggle="modal" data-target="#ChatSupport" href="url">
+        <span>Chat Support</span>
+        <span class="new_msgs hidden" id="new_msgs"><i>!</i></span>
+    </a>
 
     <div class="modal fade" id="ChatSupport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="container">
@@ -292,6 +312,7 @@
         }
 
         $(document).ready(() => {
+            var chatroom_list = <%= raw @chatroom_list %>
             
             var channel, loadAdminChat, pusher, updateAdminChat, updateAdminChatrooms;
             $("#client_date").val(new Date())
@@ -299,6 +320,22 @@
 
             if(first_chat_id != 0)
                 $("#chatroom_id").val(first_chat_id)
+
+            show_notifi_on_widget = function(){
+                var hidden = true
+                for(var each in chatroom_list){
+                    var span_id = "#notifi_count_of_" + chatroom_list[each]
+                    if($(span_id).length>0){
+                        hidden = false
+                    }
+                }
+                if(hidden)
+                    $('#new_msgs').addClass('hidden')
+                else
+                    $('#new_msgs').removeClass('hidden')
+            }
+
+            show_notifi_on_widget()
 
             loadAdminChatHelper = function(chat) {
                 if(chat.name == "Support Team"){
@@ -350,6 +387,8 @@
 
                 var id = '#notifi_count_of_' + data["chats"][0].chatroom_id
                 $(id).remove()
+                show_notifi_on_widget()
+
             });
 
             // function to update admin's chat with new chat messages
@@ -410,6 +449,7 @@
                                 </div>
                             </div>`);
                 }
+                show_notifi_on_widget()
                 // else {
                 //     // chks after page reload when there is no data on chat menu
                 //     if ($('#support_sidebar').children().length == 0){
@@ -498,6 +538,8 @@
                             </div>
                         </div>`);
                 }
+
+                chatroom_list.push(chatroom.id)
             };
 
             // clear the chat input field after sending message

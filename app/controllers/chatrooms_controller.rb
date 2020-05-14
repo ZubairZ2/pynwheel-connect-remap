@@ -21,7 +21,7 @@ class ChatroomsController < ApplicationController
 
                         reset_unread_messages_for_1st_user(community, @chatrooms.first)
                         @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(community, chatroom) }
-
+                        @chatroom_list = @chatrooms.map{|c| c.id}
                         @default_user_image =  "/assets/chat-tour-user.jpg"
                         render :index, layout: false and return
                     end
