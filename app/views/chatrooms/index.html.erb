@@ -156,6 +156,24 @@
         height: 516px;
         overflow-y: auto;
       }
+
+        .badge {
+            display: inline-block;
+            min-width: 10px;
+            padding: 3px 7px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            background-color: #247dab;
+            border-radius: 10px;
+        }
+        .zero {
+            background-color: #58ce77 !important;
+        }
     </style>
   </head>
   
@@ -164,80 +182,114 @@
     <%= link_to("Chat Support", "url" , class: "btn btn-success btn-lg", data: { toggle: "modal", target: "#ChatSupport" }) %>
 
     <div class="modal fade" id="ChatSupport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="container">
-        <h3 class=" text-center">Chat Support</h3>
-        <div class="messaging">
-            <div class="inbox_msg">
-                <div class="inbox_people">
+        <div class="container">
+            <h3 class=" text-center">Chat Support</h3>
+            <div class="messaging">
+                <div class="inbox_msg">
+                    <div class="inbox_people">
 
-                    <div class="headind_srch">
-                        <div class="recent_heading">
-                            <h4>Recent Tour Users</h4>
-                        </div>
-                    </div>
-
-                    <div class="inbox_chat" id='support_sidebar'>
-                        <% @chatrooms.each do |chatroom| %>
-                            <div class="chat_list">
-                                <div class="chat_people">
-                                    <div class="chat_img"> <img src= <%= chatroom.tour_user.image.present? ?  chatroom.tour_user.image.url : @default_user_image %> alt= <%= chatroom.tour_user.name %> > </div>
-                                    <div class="chat_ib">
-                                        <a class="sidebar-chat" data-remote="true" href="/chats/<%= chatroom.id %>"> <h5> <%= chatroom.tour_user.name %> </h5> <%= chatroom.tour_user.email %> </a>
-                                    </div>
-                                </div>
+                        <div class="headind_srch">
+                            <div class="recent_heading">
+                                <h4>Recent Tour Users</h4>
                             </div>
-                        <% end %>
-                    </div>
+                        </div>
 
-                </div>
+                        <div class="inbox_chat" id='support_sidebar'>
+                            <% @chatrooms.each_with_index do |chatroom,index| %>
+                                <% if index == 0 %>
+                                    <div class="chat_list active_chat" id="chat_with_<%= chatroom.id %>">
+                                <% else %>
+                                    <div class="chat_list" id="chat_with_<%= chatroom.id %>">
+                                <% end %>
 
-                <div class="mesgs">
-
-                    <div class="msg_history" id="msg_history">
-                         <% @chatrooms.first.chats.each do |chat| %>
-                            <% if(chat.name == "Support Team") %>
-                                <div class="outgoing_msg">
-                                    <div class="sent_msg">
-                                        <p> <%=chat.message%> </p>
-                                        <span class="time_date"> <%= chat.client_date.present? ? chat.client_date.to_datetime.strftime("%l:%M %p | %b %d") : "Invalid date" %> </span>
-                                    </div>
-                                </div>
-                            <% else %>
-                                <div class="incoming_msg">
-                                    <div class="incoming_msg_img"> <img src= <%= @chatrooms.first.tour_user.image.present? ?  @chatrooms.first.tour_user.image.url : @default_user_image %> alt= <%= @chatrooms.first.tour_user.name %> > </div>
-                                    <div class="received_msg">
-                                        <div class="received_withd_msg">
-                                            <p> <%=chat.message%> </p>
-                                            <span class="time_date"> <%= chat.client_date.present? ? chat.client_date.to_datetime.strftime("%l:%M %p | %b %d") : "Invalid date" %> </span>
+                                <div class="chat_people">
+                                    <div class="chat_img"> <img src= <%= chatroom.tour_user.image.present? ?  chatroom.tour_user.image.url : @default_user_image %> alt= <%= chatroom.tour_user.name %> > </div>                                                                     
+                                        <div class="chat_ib">
+                                            <a class="sidebar-chat" data-remote="true" href="/chats/<%= chatroom.id %>" style="overflow: hidden;display: block; width: 100%;"> 
+                                                <p> 
+                                                    <span style="color: black;"> <%= chatroom.tour_user.name %> </span>
+                                                    <% @notifications.each do |notification|  %>
+                                                        <% if notification[0] ==  chatroom.id and notification[1]>0 and index != 0%>
+                                                            <span class="badge" id="notifi_count_of_<%= chatroom.id %>" style="float: right;"><%= notification[1] %></span>
+                                                        <% end %>
+                                                    <% end %>
+                                                </p>
+                                                <p> 
+                                                    <a> <%= chatroom.tour_user.email %> </a>
+                                                </p>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             <% end %>
-                        <% end %>
+                        </div>
+
                     </div>
-                    
-                    <div class="type_msg">
-                        <div class="input_msg_write">
 
-                            <%= form_for :chat, url: chats_path, format: :json, remote: true , html: { id: 'Support-Team-Form'} do |form| %>
-                                <%= form.text_field :message, id: :message, class: "write_msg", required: true, placeholder: "Enter your message" %>
-                                <%= form.hidden_field :name, id: :name, value: 'Support Team' %>
-                                <%= form.hidden_field :chatroom_id, id: :chatroom_id %>
-                                <%= form.hidden_field :client_date, id: :client_date %>
-                                <button class="msg_send_btn" type="button" id="Support-Team-Submit"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                    <div class="mesgs">
+
+                        <div class="msg_history" id="msg_history">
+                            <% if @chatrooms.present? %>
+                                <% @chatrooms.first.chats.each do |chat| %>
+                                    <% if(chat.name == "Support Team") %>
+                                        <div class="outgoing_msg">
+                                            <div class="sent_msg">
+                                                <p> <%=chat.message%> </p>
+                                                <span class="time_date"> <%= chat.client_date.present? ? chat.client_date.to_datetime.strftime("%l:%M %p | %b %d") : "Invalid date" %> </span>
+                                            </div>
+                                        </div>
+                                    <% else %>
+                                        <div class="incoming_msg">
+                                            <div class="incoming_msg_img"> <img src= <%= @chatrooms.first.tour_user.image.present? ?  @chatrooms.first.tour_user.image.url : @default_user_image %> alt= <%= @chatrooms.first.tour_user.name %> > </div>
+                                            <div class="received_msg">
+                                                <div class="received_withd_msg">
+                                                    <p> <%=chat.message%> </p>
+                                                    <span class="time_date"> <%= chat.client_date.present? ? chat.client_date.to_datetime.strftime("%l:%M %p | %b %d") : "Invalid date" %> </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% end %>
+                                <% end %>
                             <% end %>
+                        </div>
+                        
+                        <div class="type_msg">
+                            <div class="input_msg_write">
 
+                                <%= form_for :chat, url: chats_path, format: :json, remote: true , html: { id: 'Support-Team-Form'} do |form| %>
+                                    <%= form.text_field :message, id: :message, class: "write_msg", required: true, placeholder: "Enter your message" %>
+                                    <%= form.hidden_field :name, id: :name, value: 'Support Team' %>
+                                    <%= form.hidden_field :chatroom_id, id: :chatroom_id %>
+                                    <%= form.hidden_field :client_date, id: :client_date %>
+                                    <button class="msg_send_btn" type="button" id="Support-Team-Submit"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                                <% end %>
+
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <p class="text-center top_spac"> Powered by <a target="_blank" href="https://pynwheel-staging.herokuapp.com/">Pynwheel</a></p>
+
             </div>
-
-            <p class="text-center top_spac"> Powered by <a target="_blank" href="https://pynwheel-staging.herokuapp.com/">Pynwheel</a></p>
-
         </div>
-      </div>
     </div>
     <script type="text/javascript">
+
+        set_unread_messages_to_zero = function(chatroom_id){
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                cache: false,
+                url: '/mark_all_as_read/' + chatroom_id,
+                success: function(msg){
+                    console.log(msg)
+                },
+                fail: function(error){
+                    console.log(error)
+                }
+            });
+        }
 
         $(document).ready(() => {
             
@@ -290,11 +342,14 @@
                     
                     loadAdminChat(data["chats"]);
                     $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
-                    // $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
-
+                    
+                    set_unread_messages_to_zero(data["chats"][0].chatroom_id)
                 }
                 $(".active_chat").removeClass('active_chat')
                 $(this).parent().parent().parent().addClass('active_chat')
+
+                var id = '#notifi_count_of_' + data["chats"][0].chatroom_id
+                $(id).remove()
             });
 
             // function to update admin's chat with new chat messages
@@ -324,61 +379,91 @@
                         `)
                     }
                     $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
+
+                    // don't show unread count number for user currently communicated with
+                    // and set his all messages count by all support team users to zero
+                    set_unread_messages_to_zero(chat.chatroom_id)
                 }
-                else {
-                    // chks after page reload when there is no data on chat menu
-                    if ($('#support_sidebar').children().length == 0){
-                    // as it is the only tour user add him to sidebar and show his message also
-                        $('#support_sidebar').append(`
-                            <div class="chat_list">
+                else{
+                    var id = "#chat_with_" + chat.chatroom_id
+                    var span
+                    $('#support_sidebar').children(id).remove()
+                    if(chat.unread_count == 0){
+                        span = `<span class="badge zero" id="notifi_count_of_${chat.chatroom_id}" style="float: right; color: #58ce77">.</span>`
+                    }
+                    else{
+                        span = `<span class="badge" id="notifi_count_of_${chat.chatroom_id}" style="float: right;">${chat.unread_count}</span>`
+                    }
+                    $('#support_sidebar').prepend(`
+                            <div class="chat_list" id="chat_with_${chat.chatroom_id}">
                                 <div class="chat_people">
                                     <div class="chat_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                                     <div class="chat_ib">
-                                        <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}"> <h5>${chat.tour_user.name}</h5> ${chat.tour_user.email}</a>
-                                    </div>
+                                        <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}" style="overflow: hidden;display: block; width: 100%;"> 
+                                            <p> 
+                                                <span style="color: black;"> ${chat.tour_user.name} </span>
+                                                ${span}
+                                            </p>
+                                            <p> <a> ${chat.tour_user.email} </a> </p>
+                                        </a>
+                                    </div> 
                                 </div>
                             </div>`);
-
-                            // as there is only one user and being currently viewed, so update id chatroom form   
-
-                        $.ajax({
-                            type: 'GET',
-                            dataType: 'json',
-                            cache: false,
-                            url: '/chats/' + chat.chatroom_id,
-                            success: function(data){
-                                loadAdminChat(data["chats"]);
-                                $("#chatroom_id").val(chat.chatroom_id)
-                                $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
-                            }
-                        });
-                  }
-                  else {
-                    // else if there are users, but not this one specifically send this message, just add it
-                    var is_user_present_in_sidebar = false
-              
-                    $('#support_sidebar').children().each(function () {
-                      var result = $(this).children().children().next().children().attr("href").split('/')
-                      var chat_room_id = result[result.length-1]
-                      if (chat_room_id == chat.chatroom_id){
-                          is_user_present_in_sidebar = true
-                      }
-                    });
-
-                    if (is_user_present_in_sidebar == false) {
-                      $('#support_sidebar').append(`
-                          <div class="chat_list">
-                              <div class="chat_people">
-                                  <div class="chat_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
-                                  <div class="chat_ib">
-                                      <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}"> <h5>${chat.tour_user.name}</h5> ${chat.tour_user.email}</a>
-                                  </div>
-                              </div>
-                          </div>`);
-                    }
-                    $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
-                  }
                 }
+                // else {
+                //     // chks after page reload when there is no data on chat menu
+                //     if ($('#support_sidebar').children().length == 0){
+                //     // as it is the only tour user add him to sidebar and show his message also
+                //         $('#support_sidebar').append(`
+                //             <div class="chat_list">
+                //                 <div class="chat_people">
+                //                     <div class="chat_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                //                     <div class="chat_ib">
+                //                         <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}"> <h5>${chat.tour_user.name}</h5> ${chat.tour_user.email}</a>
+                //                     </div>
+                //                 </div>
+                //             </div>`);
+
+                //             // as there is only one user and being currently viewed, so update id chatroom form   
+
+                //         $.ajax({
+                //             type: 'GET',
+                //             dataType: 'json',
+                //             cache: false,
+                //             url: '/chats/' + chat.chatroom_id,
+                //             success: function(data){
+                //                 loadAdminChat(data["chats"]);
+                //                 $("#chatroom_id").val(chat.chatroom_id)
+                //                 $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+                //             }
+                //         });
+                //   }
+                //   else {
+                //     // else if there are users, but not this one specifically send this message, just add it
+                //     var is_user_present_in_sidebar = false
+              
+                //     $('#support_sidebar').children().each(function () {
+                //       var result = $(this).children().children().next().children().attr("href").split('/')
+                //       var chat_room_id = result[result.length-1]
+                //       if (chat_room_id == chat.chatroom_id){
+                //           is_user_present_in_sidebar = true
+                //       }
+                //     });
+
+                //     if (is_user_present_in_sidebar == false) {
+                //       $('#support_sidebar').append(`
+                //           <div class="chat_list">
+                //               <div class="chat_people">
+                //                   <div class="chat_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                //                   <div class="chat_ib">
+                //                       <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}"> <h5>${chat.tour_user.name}</h5> ${chat.tour_user.email}</a>
+                //                   </div>
+                //               </div>
+                //           </div>`);
+                //     }
+                //     $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
+                //   }
+                // }
             };
     
             // function to update the available chats in the sidebar
@@ -400,13 +485,16 @@
                 }
 
                 if (is_user_exists == false) {
-                    $('#support_sidebar').append(`
-                        <div class="chat_list">
+                    $('#support_sidebar').prepend(`
+                        <div class="chat_list" id="chat_with_${chatroom.id}">
                             <div class="chat_people">
                                 <div class="chat_img"> <img src=${chatroom.tour_user.image} alt=${chatroom.tour_user.name}> </div>
                                 <div class="chat_ib">
-                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}"> <h5>${chatroom.tour_user.name}</h5> ${chatroom.tour_user.email}</a>
-                                </div>
+                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}" style="overflow: hidden;display: block; width: 100%;"> 
+                                        <p> <span style="color: black;"> ${chatroom.tour_user.name} </span></p>
+                                        <p> <a> ${chatroom.tour_user.email} </a> </p>
+                                    </a>
+                                </div> 
                             </div>
                         </div>`);
                 }
