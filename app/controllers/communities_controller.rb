@@ -499,6 +499,7 @@ class CommunitiesController < ApplicationController
     @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
     @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
     @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
+    @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
     @tour.save
     @community.show_camera_button = params[:show_camera_button].present? ? true : false
     @community.show_notepad_button = params[:show_notepad_button].present? ? true : false

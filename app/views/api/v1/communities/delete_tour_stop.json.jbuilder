@@ -13,6 +13,7 @@ json.tours @tours do |tour|
   json.tour_setting do
     json.show_camera_button @community.show_camera_button
     json.visual_id_verification tour.visual_id_verification
+    json.dotted_line_color tour.dotted_line_color
   end
   json.is_sitemap @community.is_sitemap
   json.tour_setting do

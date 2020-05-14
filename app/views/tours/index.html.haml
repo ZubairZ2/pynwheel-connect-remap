@@ -58,6 +58,11 @@
                   = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
                   %label.label-primary{:for => "show_camera_button"}
                   %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Dotted line color
+              .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
             -#.form-group
             -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Show Notepad Button
