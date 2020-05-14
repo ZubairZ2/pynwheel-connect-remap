@@ -1,4 +1,5 @@
 class Chat < ApplicationRecord
+    acts_as_readable on: :created_at
     belongs_to :chatroom
   
     after_create :notify_pusher
@@ -17,6 +18,21 @@ class Chat < ApplicationRecord
       community = self.chatroom.tour.community
       channel_name = community.name.tr(" ", "_") + "_with_id_" + community.id.to_s
 
+      data[:unread_count] = send_notification
+
       Pusher.trigger(channel_name, 'new-chat', data.as_json)
+    end
+
+    def send_notification 
+      all_community_members = self.chatroom.tour.community.users
+      min_count = 99999
+      all_community_members.each do |user|
+        count = Chat.where("chatroom_id = ? AND  name != ? ", self.chatroom_id, "Support Team").unread_by(user).count
+        if count < min_count
+          min_count = count 
+        end
+      end
+
+      return min_count
     end
 end
