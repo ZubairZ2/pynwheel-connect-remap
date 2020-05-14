@@ -73,9 +73,9 @@ Change appointment #{schedular_widget_change_tour_time_url(schedual_tour)}?datet
 
 				time_left_to_email = (tour_time - server_time)/1.minute
 				
-				time_left_to_email * -1 if time_left_to_email < 0
+				time_left_to_email = time_left_to_email * -1 if time_left_to_email < 0
 				puts "<<<<<<<<<<<<<<<<<<<<<<<<< TIME LEFT TO EMAIL #{time_left_to_email} >>>>>>>>>>>>>>>>>>>>>>"
-				if time_left_to_email <= 60
+				if time_left_to_email <= 60 && time_left_to_email > 0
 					tu = schedual_tour.tour_user
 			  	community = schedual_tour.community
 			  	
