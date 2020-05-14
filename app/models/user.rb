@@ -49,6 +49,7 @@
 #
 
 class User < ApplicationRecord
+  acts_as_reader
   has_paper_trail
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
@@ -94,4 +95,8 @@ class User < ApplicationRecord
     number = number.to_s
     self.update_attributes(secure_id: number)
   end
+
+  # def self.reader_scope
+  #   where(role: "Community admin")
+  # end
 end

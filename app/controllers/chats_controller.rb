@@ -32,19 +32,6 @@ class ChatsController < ApplicationController
                 render json: {messages: chat.full_messages.join(',') , stats: :Bad, code: 400}
             end
         end
-
-        # if session["is_user_online"] == "Yes"
-        #     puts '---'*100
-        #     puts "yes user is online"
-        #     puts session["is_user_online"]
-        #     puts '---'*100
-        # else
-        #     puts '---'*100
-        #     puts "No user is online"
-        #     puts session["is_user_online"]
-        #     puts '---'*100
-        # end 
-
     end
 
     def new
@@ -70,7 +57,19 @@ class ChatsController < ApplicationController
         else
             render json: {messages: [],chatroom_id: params[:chatroom_id], stats: :OK, code: 200}
         end
+    end
 
+    def reset_unread_messages
+        # set all messages of incoming chatroom by all support team users to zero
+        chatroom = Chatroom.find params[:chatroom_id]
+        all_community_members = chatroom.tour.community.users
+        all_community_members.each do |user|
+            unread_messages = Chat.where("chatroom_id = ? AND  name != ? ",  chatroom.id, "Support Team").unread_by(user)
+            unread_messages.each do  |msg|
+                msg.mark_as_read! for: user
+            end
+        end
+        render json: {messages: "marked all as read"}
     end
 
     def serailize_message(message)

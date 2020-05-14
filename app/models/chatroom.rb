@@ -1,7 +1,7 @@
 class Chatroom < ApplicationRecord
   belongs_to :tour_user
   belongs_to :tour
-  has_many :chats
+  has_many :chats, dependent: :destroy
 
   after_create :notify_pusher
 
