@@ -114,92 +114,104 @@
 
                       
                   %tr
-                    - units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today)
-                    - if units.present?
-                      %td{:align => "center", :valign => "top"}
-                        %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
-                          %tr
-                            %td{:align => "center", :valign => "top"}
-                              %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "600"}
-                                %tr
-                                  %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "600"}
-                                    %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                    -# units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today)
+                    %td{:align => "center", :valign => "top"}
+                      %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
+                        %tr
+                          %td{:align => "center", :valign => "top"}
+                            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "600"}
+                              %tr
+                                %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "600"}
+                                  %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                                    %tr
                                       %tr
-                                        %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                                          %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
-                                            %b
-                                              Availability
-                                              %br
-                                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%", :style => "margin-top: 13px;"}
-                                                %tr
-                                                  %td.textContent{:align => "left", :style => "padding: 0px 0px; border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                    %b Unit Name
-                                                  %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                    %b Date
-                                                  %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                    %b Pricing
-                                                  %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                    %b Action
-                                                - units.each do |cu|
-                                                  %tr
-                                                    %td.textContent{:align => "left", :style => "padding: 0px 0px; border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                      %p #{cu.marketing_name}
-                                                    %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                      %p #{cu.available_date}
-                                                    %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                      %p #{cu.effective_rent}
-                                                    %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                      - if cu.availability_url.present?
-                                                        %a{:href => "#{cu.availability_url}"} Apply
+                                        - if unit.virtual_tour_url.present?
+                                          %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                                            %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                                              %form{:action => "#{unit.virtual_tour_url}"}
+                                                %input{:type => "submit", :value => "#{unit.virtual_tour_button_label}", :style=> "font-size: 26px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: 130px; height: 46px; float: left;"}/ 
+                                        - if unit.availability_url.present?
+                                          %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                                            %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                                              %form{:action => "#{unit.availability_url}"}
+                                                %input{:type => "submit", :value => "Apply", :style=> "font-size: 23px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: 130px; height: 46px;"}/
+                                             
 
+                  -#                      %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                  -#                        %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                  -#                          %b
+                  -#                            Availability
+                  -#                            %br
+                  -#                            %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%", :style => "margin-top: 13px;"}
+                  -#                              %tr
+                  -#                                %td.textContent{:align => "left", :style => "padding: 0px 0px; border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                  %b Unit Name
+                  -#                                %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                  %b Date
+                  -#                                %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                  %b Pricing
+                  -#                                %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                  %b Action
+                  -#                              - units.each do |cu|
+                  -#                                %tr
+                  -#                                  %td.textContent{:align => "left", :style => "padding: 0px 0px; border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                    %p #{cu.marketing_name}
+                  -#                                  %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                    %p #{cu.available_date}
+                  -#                                  %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                    %p #{cu.effective_rent}
+                  -#                                  %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                    - if cu.availability_url.present?
+                  -#                                      %a{:href => "#{cu.availability_url}"} Apply
+                  -#
+                  -#
+                  -#
+                  -#%tr
+                  -#  - if unit.lease_pricing.present? && !unit.modal_unit
+                  -#    %td{:align => "center", :valign => "top"}
+                  -#      %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
+                  -#        %tr
+                  -#          %td{:align => "center", :valign => "top"}
+                  -#            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "600"}
+                  -#              %tr
+                  -#                %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "600"}
+                  -#                  %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                  -#                    %tr
+                  -#                      %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                  -#                        %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                  -#                          %b
+                  -#                            Lease Pricing
+                  -#                            %br
+                  -#                            %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%", :style => "margin-top: 13px;"}
+                  -#                              %tr
+                  -#                                %td.textContent{:align => "left", :style => "padding: 0px 0px; border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                  %b Month
+                  -#                                %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                  %b Price
+                  -#                              - unit.lease_pricing.split(';').each do |u|
+                  -#                                %tr
+                  -#                                  %td.textContent{:align => "left", :style => "padding: 0px 0px; border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                    %p #{u.split(':')[0]}
+                  -#                                  %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
+                  -#                                    %p #{u.split(':')[1]}
 
-
-                  %tr
-                    - if unit.lease_pricing.present? && !unit.modal_unit
-                      %td{:align => "center", :valign => "top"}
-                        %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
-                          %tr
-                            %td{:align => "center", :valign => "top"}
-                              %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "600"}
-                                %tr
-                                  %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "600"}
-                                    %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
-                                      %tr
-                                        %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                                          %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
-                                            %b
-                                              Lease Pricing
-                                              %br
-                                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%", :style => "margin-top: 13px;"}
-                                                %tr
-                                                  %td.textContent{:align => "left", :style => "padding: 0px 0px; border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                    %b Month
-                                                  %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                    %b Price
-                                                - unit.lease_pricing.split(';').each do |u|
-                                                  %tr
-                                                    %td.textContent{:align => "left", :style => "padding: 0px 0px; border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                      %p #{u.split(':')[0]}
-                                                    %td.textContent{:align => "left", :style => "padding: 0px 0px;  border: solid; border-color: black; text-align: center;", :valign => "top"}
-                                                      %p #{u.split(':')[1]}
-
-                  %tr
-                    - if unit.lease_pricing.present?
-                      %td{:align => "center", :valign => "top"}
-                        %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
-                          %tr
-                            %td{:align => "center", :valign => "top"}
-                              %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "600"}
-                                %tr
-                                  %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "600"}
-                                    %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
-                                      %tr
-                                        %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                                          %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
-                                            %b Video Link
-                                      %tr
-                                        %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                                          %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
-                                            %form{:action => "#{unit.virtual_tour_url}"}
-                                              %input{:type => "submit", :value => "#{unit.virtual_tour_button_label}", :style=> "font-size: 26px; background: #008fd4; border-radius: 0px; color: white;"}/
+                  -#%tr
+                  -#  - if unit.lease_pricing.present?
+                  -#    %td{:align => "center", :valign => "top"}
+                  -#      %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
+                  -#        %tr
+                  -#          %td{:align => "center", :valign => "top"}
+                  -#            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "600"}
+                  -#              %tr
+                  -#                %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "600"}
+                  -#                  %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                  -#                    -#%tr
+                  -#                    -#  %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                  -#                    -#    %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                  -#                    -#      %b Video Link
+                  -#                    %tr
+                  -#                      %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
+                  -#                        %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
+                  -#                          %form{:action => "#{unit.virtual_tour_url}"}
+                  -#                            %input{:type => "submit", :value => "#{unit.virtual_tour_button_label}", :style=> "font-size: 26px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: 130px; height: 46px; float: left;"}/
 
