@@ -16,6 +16,7 @@ json.tours @tours do |tour|
     json.show_camera_button @community.show_camera_button
 
     json.visual_id_verification tour.visual_id_verification
+    json.dotted_line_color tour.dotted_line_color
     if @community.is_chat_login
       json.chat_control @community.chat_control
     else
@@ -23,6 +24,7 @@ json.tours @tours do |tour|
     end
     json.show_map @community.show_map
     json.mdu @community.mdu
+
   end
   fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
   
