@@ -129,8 +129,7 @@ class ChatroomsController < ApplicationController
           if count < min_count
             min_count = count 
           end
-        end
-  
+        end  
         [chatroom.id , min_count]
     end
 
