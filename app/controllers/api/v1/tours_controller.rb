@@ -187,8 +187,8 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       tu = TourUser.find_by(id: params[:tour_user_id])
       
            # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
-      
-      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id]).group(:tour_stop_id).count
+      last_stop = VisitedStop.where(tour_user_id: params[:tour_user_id],tour_id: params[:tour_id]).last
+      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id],tour_key: last_stop.tour_key).group(:tour_stop_id).count
 
       description_arr = []
       gallery_arr = []
