@@ -127,7 +127,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def user_saved_tour
     # @device_id = params[:device_id]
-    @community = Community.find params[:id] if params[:id].present?
+    @community = Community.find params[:community_id] if params[:community_id].present?
     @tour_user = TourUser.find params[:tour_user_id]
     @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
   end
