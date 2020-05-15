@@ -65,6 +65,7 @@
 class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
+  attr_readonly :uuid
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company

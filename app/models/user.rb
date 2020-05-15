@@ -50,6 +50,7 @@
 
 class User < ApplicationRecord
   acts_as_reader
+  attr_readonly :uuid
   has_paper_trail
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
