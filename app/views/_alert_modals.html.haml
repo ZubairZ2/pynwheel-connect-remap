@@ -82,7 +82,7 @@
         .modal-header
           Copy and paste the code below and share it with your web developer to add the chat widget to your website.
         .modal-body
-          %input.form-control#schedule-url{:value =>'<embed style="margin-top: 0px; overflow:scroll;"src="'+root_url+'chatrooms?id='+current_user.secure_id.to_s+'&token='+current_community.secure_id.to_s+'"width="100%" height="950px" />'}
+          %input.form-control#schedule-url{:value =>'<embed style="margin-top: 0px; overflow:scroll;"src="'+root_url+'chatrooms?id='+current_user.uuid.to_s+'&token='+current_community.uuid.to_s+'"width="100%" height="950px" />'}
 
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
