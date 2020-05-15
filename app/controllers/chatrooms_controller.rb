@@ -5,8 +5,8 @@ class ChatroomsController < ApplicationController
     after_action :allow_iframe
 
     def index
-        current_user = User.find_by_secure_id params[:id] rescue ''
-        community = Community.find_by_secure_id params[:token] rescue ''
+        current_user = User.find_by_uuid params[:id] rescue ''
+        community = Community.find_by_uuid params[:token] rescue ''
         
         # if current_user.role == "Super admin"
         #     @chatrooms = Chatroom.all.includes(:chats, :tour, :tour_user)

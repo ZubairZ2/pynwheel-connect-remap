@@ -63,9 +63,8 @@ class User < ApplicationRecord
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
 
-  validates_uniqueness_of :secure_id
-
-  after_create :create_secure_id
+  before_validation :gen_uuid, on: :create
+  validates :uuid, presence: true, uniqueness: true
 
   def all_companies
     Company.all.map(&:name).sort
@@ -90,10 +89,8 @@ class User < ApplicationRecord
     role == "Community manager"
   end
 
-  def create_secure_id
-    number = (SecureRandom.random_number(9e20)).to_i
-    number = number.to_s
-    self.update_attributes(secure_id: number)
+  def gen_uuid
+    self.uuid = SecureRandom.uuid
   end
 
   # def self.reader_scope
