@@ -196,6 +196,7 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       visited_stops = []
 
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
+      visited_stops = visited_stops.compact rescue visited_stops
       community = visited_stops.last&.tour.community
       shared_tour_stops = {}
       stops = []
