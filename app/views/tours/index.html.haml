@@ -185,7 +185,7 @@
           .col-md-10.col-lg-9.col-xl-8
             .card.border-0
               .row.px-3
-                = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
+                = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form', :id => '#schedule-submit'} do
                   .col-sm-10.list
                     .mb-2.row.justify-content-between.px-3
                       %select.mb-2.mob#day1{name: "day_1"}
@@ -203,7 +203,7 @@
                         %label.text-grey.mr-4 To
                         %input.ml-1{name: "to_1", type: "time", value: "17:00"}/
                       .mt-1.cancel.fa.fa-times.text-danger
-                      %input.btn.btn-large{type: "submit"}/
+                  %input.btn.btn-large#schedule-btn-submit{type: "submit"}/
                 .row.px-3.mt-3
                   .col-sm-2
                   .col-sm-10
@@ -1034,6 +1034,13 @@
         <div class="mt-1 cancel fa fa-times text-danger"></div>
       </div>`);
   });
+
+  $('#schedule-submit').submit(function( event ){
+    console.log('aaaaaaa')
+  })
+  $('#schedule-btn-submit').click(function( event ){
+    console.log('aaaaaaa')
+  })
   
   $(".list").on('click', '.cancel', function(){
     $(this).parent().remove();

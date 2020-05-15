@@ -458,7 +458,7 @@ class ToursController < ApplicationController
         to_key = 'to_' + i.to_s
       end
     end
-    
+    flash[:notice] = "Tour settings updated successfully."
   end
 
   def get_id_selfie_mismatch
