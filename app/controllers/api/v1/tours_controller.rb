@@ -187,8 +187,8 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       tu = TourUser.find_by(id: params[:tour_user_id])
       
            # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
-      
-      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id]).group(:tour_stop_id).count
+      last_stop = VisitedStop.where(tour_user_id: params[:tour_user_id],tour_id: params[:tour_id]).last
+      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id],tour_key: last_stop.tour_key).group(:tour_stop_id).count
 
       description_arr = []
       gallery_arr = []
@@ -196,6 +196,7 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       visited_stops = []
 
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
+      visited_stops = visited_stops.compact rescue visited_stops
       community = visited_stops.last&.tour.community
       shared_tour_stops = {}
       stops = []
@@ -237,7 +238,7 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
   def floorplan_units
     if params[:unit_id].present?
       unit = Unit.find_by_id(params[:unit_id])
-      @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today) if unit.present?
+      @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
       @units.each do |u|
         if u.community.is_sitemap?
           u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
