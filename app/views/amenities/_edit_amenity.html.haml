@@ -1,9 +1,9 @@
 .text-center.image-upload.home-page-drag-box#amenity-gallery-image-upload-holder
   = image_tag "upload-image.png",:class=>"drag-image-padding-top"
   %p Drag &amp; Drop Images to Upload
-  .row.slide-imgage-boxs{:style => "padding-top: 55px;"}
-    - @amenity.amenity_galleries.each do |amenity_gallery_image, id_tag|
-      .col-lg-3
+  .row.slide-imgage-boxs.sortable_amenity{:style => "padding-top: 55px;"}
+    - sortable_fetch(@amenity.amenity_galleries.order(:sort)) do |amenity_gallery_image, id_tag|
+      .col-lg-3{:id=> id_tag}
         .slide-image
           .image-box.video-box
             .images.height-200
