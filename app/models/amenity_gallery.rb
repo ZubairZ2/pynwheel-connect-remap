@@ -14,6 +14,8 @@
 
 class AmenityGallery < ApplicationRecord
   # has_paper_trail
+  include RailsSortable::Model
+  set_sortable :sort  
   belongs_to :amenity
   mount_base64_uploader :image, AvatarUploader
 end

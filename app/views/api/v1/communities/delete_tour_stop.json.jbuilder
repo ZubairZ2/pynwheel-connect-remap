@@ -326,7 +326,7 @@ json.tours @tours do |tour|
             amenityGalleryArr = []
             # unit_amenity.description = nil
             amenityGalleryArr << unit_amenity
-            unit_amenity.amenity_galleries.each do |amen|
+            unit_amenity.amenity_galleries.order(:sort).each do |amen|
               amenityGalleryArr << amen
             end
             json.gallery amenityGalleryArr do |ag|
@@ -425,7 +425,7 @@ json.tours @tours do |tour|
         amenityGalleryArr = []
         # amenity.description = nil
         amenityGalleryArr << amenity
-        amenity.amenity_galleries.each do |amen|
+        amenity.amenity_galleries.order(:sort).each do |amen|
           amenityGalleryArr << amen
         end
         json.gallery amenityGalleryArr do |ag|
