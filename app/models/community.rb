@@ -65,6 +65,7 @@
 class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
+  attr_readonly :uuid
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
@@ -92,7 +93,6 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
-  validates_uniqueness_of :secure_id
   validate :apartment_page_name_length_validate
   validate :gallery_page_name_length_validate
   # validate :unique_community_code_on_create, on: [:create]
@@ -100,8 +100,10 @@ class Community < ApplicationRecord
   after_create :set_default_theme
   after_create :create_default_gallery
   after_create :create_sms_email_content
-  after_create :create_secure_id
   validate :validate_page_position
+
+  before_validation :gen_uuid, on: :create
+  validates :uuid, presence: true, uniqueness: true
 
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
@@ -521,10 +523,8 @@ class Community < ApplicationRecord
     self.save
   end
 
-  def create_secure_id
-    number = (SecureRandom.random_number(9e20)).to_i
-    number = number.to_s
-    self.update_attributes(secure_id: number)
+  def gen_uuid
+    self.uuid = SecureRandom.uuid
   end
 
   def make_address

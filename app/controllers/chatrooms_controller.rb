@@ -5,8 +5,8 @@ class ChatroomsController < ApplicationController
     after_action :allow_iframe
 
     def index
-        current_user = User.find_by_secure_id params[:id] rescue ''
-        community = Community.find_by_secure_id params[:token] rescue ''
+        current_user = User.find_by_uuid params[:id] rescue ''
+        community = Community.find_by_uuid params[:token] rescue ''
         
         # if current_user.role == "Super admin"
         #     @chatrooms = Chatroom.all.includes(:chats, :tour, :tour_user)
@@ -21,7 +21,7 @@ class ChatroomsController < ApplicationController
 
                         reset_unread_messages_for_1st_user(community, @chatrooms.first)
                         @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(community, chatroom) }
-
+                        @chatroom_list = @chatrooms.map{|c| c.id}
                         @default_user_image =  "/assets/chat-tour-user.jpg"
                         render :index, layout: false and return
                     end
