@@ -166,9 +166,9 @@ class SchedualToursController < ApplicationController
       # DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
 
 
-      
+      community_mail = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Lucky you! Someone has scheduled a Self Tour at your property!<br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date}<br>Time: #{ime.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
-      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email)
+      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,@community.email)
       
       {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
       
