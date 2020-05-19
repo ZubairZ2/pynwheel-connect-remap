@@ -76,7 +76,7 @@ class SchedualToursController < ApplicationController
     after_30_mints = tour_time.to_time + 30.minutes
     before_30_mints, c = get_tour_datetime_and_diff before_30_mints
     after_30_mints, d = get_tour_datetime_and_diff after_30_mints
-
+ 
     count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).count
     if count < community.tour.max_tour_users.to_i
       @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
