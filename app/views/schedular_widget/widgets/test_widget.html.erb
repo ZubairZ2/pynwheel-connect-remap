@@ -72,6 +72,9 @@
         border-top: 4px solid #ef4d88;
     }
   }
+  .color-red{
+    color: red;
+  }
 </style>
 
 <%= javascript_include_tag "jsTimezoneDetect" %>
@@ -232,6 +235,7 @@
               <div class="clearfix"></div>
               <div class="form-group">
                 <label>Date/Time *</label>
+                <span class="hidden" id="not-visiting-hours"></span>
                 <%= text_field_tag :tour_time,"", :class=>"form-control datepickertime", :placeholder=>"Date/Time",:maxlength=>"15",:autocomplete=>"off", required: 'required' %>
                 <%= hidden_field_tag :community_id, @community_id %>
                 <%= hidden_field_tag :user_time_zone, value: nil %>
@@ -550,6 +554,7 @@
           creditCard: true
         });
 
+        var days_disabled = <%= @disable_day_of_week %>
         // $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
         $('.datepickertime').datetimepicker({
           
@@ -561,26 +566,65 @@
           showClear: true,
           showClose: true,
           useCurrent: true,
-          toolbarPlacement: "bottom"
-          
+          toolbarPlacement: "bottom",
+          daysOfWeekDisabled: days_disabled
         });
 
+        // $('.datepickertime').on('dp.change', function(e){ 
+        //   // e.date._d.getDay()
+        //   console.log(e.date._d.getDay())
+          
+        //   $('.datepickertime').datetimepicker({    
+        //       disabledTimeIntervals: [[moment({ h: 0 }), moment({ h: 8 })], [moment({ h: 18 }), moment({ h: 24 })]]
+        //     });
+        // })
+        function getMinutes(str) {
+            var time = str.split(':');
+            return time[0]*60+time[1]*1;
+        }
+        
         $("#scheduleMyTourForm").on('submit', function(e){
-          $.ajax({
-            type: "POST",
-            url: "/schedual_tours.json",
-            data: $(this).serialize(),
-            cache: false,
-            success: function(data){
-              tour_id = data.id;
+          var visiting_times = <%= raw @visiting_times %>
+          var selected_date = $(".datepickertime").val()
+          selected_day = moment(selected_date).format('dddd')
+          selected_time = moment(selected_date).format('HH:mm')
+          // debugger
+          for(var d_t in visiting_times){
+            if (selected_day == visiting_times[d_t][0]){
+              var start = getMinutes(visiting_times[d_t][1]);
+              var end = getMinutes(visiting_times[d_t][2]);
+              var selected = getMinutes(selected_time);
 
-              $("#scheduleMyTour").modal('hide');
-              $("#modalLoginForm").modal();
-            },
-            fail: function(error){
-              console.log(error)
+              if ((selected > start) && (selected < end)) {
+                $.ajax({
+                  type: "POST",
+                  url: "/schedual_tours.json",
+                  data: $(this).serialize(),
+                  cache: false,
+                  success: function(data){
+                    if(data.code != 400){
+                      tour_id = data.id;
+
+                      $("#scheduleMyTour").modal('hide');
+                      $("#modalLoginForm").modal();
+                      $("#not-visiting-hours").addClass('hidden')
+                    }
+                    else{
+                      $("#not-visiting-hours").removeClass('hidden')
+                      $("#not-visiting-hours").addClass('color-red').text(data.message)
+                    }
+                  },
+                  fail: function(error){
+                    console.log(error)
+                  }
+                });
+              }
+              else{
+                  $("#not-visiting-hours").removeClass('hidden')
+                  $("#not-visiting-hours").addClass('color-red').text('(visiting hours for ' +  visiting_times[d_t][0] + ' is from ' + visiting_times[d_t][1] + ' to ' + visiting_times[d_t][2]+')')
+              }
             }
-          });
+          }
           e.preventDefault();
         });
 

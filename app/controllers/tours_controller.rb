@@ -443,14 +443,15 @@ class ToursController < ApplicationController
   def save_opening_hours
 
     if params[:community_id].present?
+      OpeningHour.where(community_id: params[:community_id]).delete_all
+      
       i=1
       day_key = 'day_' + i.to_s
       from_key = 'from_' + i.to_s
       to_key = 'to_' + i.to_s
 
       while params[day_key].present?
-        times = current_community.opening_hours.find_or_create_by(day: params[day_key])
-        times.update(opening_time: params[from_key], closing_time: params[to_key])
+        times = current_community.opening_hours.create(day: params[day_key], opening_time: params[from_key], closing_time: params[to_key])
 
         i=i+1
         day_key = 'day_' + i.to_s

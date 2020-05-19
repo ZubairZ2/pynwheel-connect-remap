@@ -86,6 +86,7 @@ class Community < ApplicationRecord
   has_many :imagepages, dependent: :destroy
   has_many :amenities, dependent: :destroy
   has_many :opening_hours, dependent: :destroy
+  has_many :schedual_tours, dependent: :destroy
   has_one :tour, dependent: :destroy
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
