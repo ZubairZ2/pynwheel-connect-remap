@@ -336,7 +336,7 @@
           %span
     .row
       .col-md-12
-        .box.box-widget.panel-box.add-plan.pt-30
+        .box.box-widget.panel-box.add-plan.pt-30{style: "margin-top: 60px;"}
           = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
             = f.hidden_field :community_id, value: @community.id
             .box-body
