@@ -1,3 +1,142 @@
+:css
+  .container-fluid {
+      margin-left: 80px
+  }
+  
+  .text-grey {
+      color: #9E9E9E
+  }
+  
+  .fa {
+      font-size: 25px;
+      cursor: pointer
+  }
+  
+  input,
+  select {
+      padding: 2px 6px;
+      border: none;
+      border-bottom: 1px solid #bdb7b7;
+      border-radius: none;
+      box-sizing: border-box;
+      color: #000000;
+      background-color: transparent;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-align: center !important
+  }
+
+  input[type=time] {
+    border: none;
+    color: #2a2c2d;
+    font-size: 14px;
+    font-family: helvetica;
+    width: 150px;
+  }
+
+  
+
+  input[type=time]::-webkit-clear-button {
+    display: none;
+  }
+
+  input[type=time]::-webkit-inner-spin-button {
+    display: none;
+  }
+  
+  select option {
+      background-color: #616161
+  }
+  
+  select option:focus {
+      background-color: #00C853 !important
+  }
+  
+  ::placeholder {
+      color: #fff;
+      opacity: 1
+  }
+  
+  :-ms-input-placeholder {
+      color: #fff
+  }
+  
+  ::-ms-input-placeholder {
+      color: #fff
+  }
+  
+  button:focus {
+      -moz-box-shadow: none !important;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
+      outline-width: 0
+  }
+  
+  .btn {
+      border-radius: 50px;
+      width: 120px
+  }
+  
+  .exit {
+      border: 1px solid #9E9E9E;
+      color: #9E9E9E;
+      background-color: transparent
+  }
+  
+  .exit:hover {
+      border: 1px solid #9E9E9E;
+      color: #000 !important;
+      background-color: #9E9E9E
+  }
+  
+  @media screen and (max-width: 768px) {
+      .mob {
+          width: 70%
+      }
+  
+      select.mob {
+          width: 50%
+      }
+  }
+
+  .font-17{
+    font-size: 17px !important;
+  }
+
+  .p-20{
+      padding-left: 20px;
+      padding-bottom: 35px
+  }
+  .p-8{
+    padding: 8px;
+  }
+  .p-4{
+    padding: 4px;
+  }
+  .mr-20{
+    margin-right: 20px !important;
+  }
+  .mr-10{
+    margin-right: 10px !important;
+  }
+  .bg-grey{
+    background: #e3e3e3;
+  }
+
+  .pt-5{
+    padding-top: 5px !important;
+  }
+  .error-msg {
+    margin-left: 450px;
+    color: white;
+  }
+  .max-users {
+    width: 125px;
+    border-style: groove;
+    border-color: #d8d8d8;
+    border-width: 2px;
+  }
+
 - content_for :title, "Tour Setup Page - Pynwheel"
 .divLoading.hidden
 - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
@@ -85,7 +224,12 @@
                 Dotted line color
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
-            -#.form-group
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Max Tour At One Time
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %input.max-users{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
+            -#.form-groups
             -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Show Notepad Button
             -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -103,6 +247,88 @@
 
 
             = submit_tag 'Save', class: "hidden"
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          VISITING HOURS
+          %span
+      %i.fa.fa-check-circle#save_hours{ style: "color: green; display: none;"}
+      %i.fa.fa-check-circle#save_hours{ style: "color: white"}
+      %h4.error-msg#same-days same days exists
+      .container
+        .row
+          .col-lg-12
+            .row.p-20
+            
+              = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
+                .col-sm-12.list
+                  - @community.opening_hours.each_with_index do |current_day,index| 
+                    .row.p-8
+                      %select.font-17.pull-left.mr-20{id: "day_#{index+1}",name: "day_#{index+1}"}
+                        - if current_day.day == "Monday"
+                          %option{selected: "", value: "Monday"} Monday
+                        - else
+                          %option{value: "Monday"} Monday
+                        - if current_day.day == "Tuesday"
+                          %option{selected: "", value: "Tuesday"} Tuesday
+                        - else
+                          %option{value: "Tuesday"} Tuesday
+                        - if current_day.day == "Wednesday"
+                          %option{selected: "", value: "Wednesday"} Wednesday
+                        - else
+                          %option{value: "Wednesday"} Wednesday
+                        - if current_day.day == "Thursday"
+                          %option{selected: "", value: "Thursday"} Thursday
+                        - else
+                          %option{value: "Thursday"} Thursday
+                        - if current_day.day == "Friday"
+                          %option{selected: "", value: "Friday"} Friday
+                        - else
+                          %option{value: "Friday"} Friday
+                        - if current_day.day == "Saturday"
+                          %option{selected: "", value: "Saturday"} Saturday
+                        - else
+                          %option{value: "Saturday"} Saturday
+                        - if current_day.day == "Sunday"
+                          %option{selected: "", value: "Sunday"} Sunday
+                        - else
+                          %option{value: "Sunday"} Sunday
+                      .font-17.pull-left.mr-20
+                        .p-4.pull-left.mr-10
+                          %label.text-grey From
+                        %input.bg-grey{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
+                      .font-17.pull-left.mr-20
+                        .p-4.pull-left.mr-10
+                          %label.text-grey To
+                        %input.bg-grey{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
+                      .font-17.pt-5.cancel.fa.fa-times.text-danger
+                  - if @community.opening_hours.blank?
+                    .row.p-8
+                      %select.font-17.pull-left.mr-20#day_1{name: "day_1"}
+                        %option{selected: "", value: "Monday"} Monday
+                        %option{value: "Tuesday"} Tuesday
+                        %option{value: "Wednesday"} Wednesday
+                        %option{value: "Thursday"} Thursday
+                        %option{value: "Friday"} Friday
+                        %option{value: "Saturday"} Saturday
+                        %option{value: "Sunday"} Sunday
+                      .font-17.pull-left.mr-20
+                        .p-4.pull-left.mr-10
+                          %label.text-grey From
+                        %input.bg-grey{name: "from_1", type: "time", value: "09:00"}
+                      .font-17.pull-left.mr-20
+                        .p-4.pull-left.mr-10
+                          %label.text-grey To
+                        %input.bg-grey{name: "to_1", type: "time", value: "05:00"}
+                      .font-17.pt-5.cancel.fa.fa-times.text-danger
+                .col-lg-12.col-md-9
+                  .row
+                    %button.btn.btn-primary#add-btn
+                      %span.fa.fa-plus.font-17
+                        Add
+                    %input.btn.btn-large.btn-success.pull-right#schedule-btn-submit{type: "submit", value: "save"} 
+                
+
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
         %h3.box-title
@@ -947,4 +1173,107 @@
       return  "<section class='connectingLines' style='left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -webkit-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg); z-index: 99999; background-color: #1c1c1d; position: absolute; height: 2px; '></section>";
     };
 
+  });
+
+  $(document).ready(function(){
+
+    function hasDuplicates(array) {
+      var valuesSoFar = Object.create(null);
+      for (var i = 0; i < array.length; ++i) {
+          var value = array[i];
+          if (value in valuesSoFar) {
+              return true;
+          }
+          valuesSoFar[value] = true;
+      }
+      return false;
+    }
+
+    function append_new_day(){
+      $(".list").append(`
+        <div class="row p-8">
+          <select class="font-17 pull-left mr-20" id="day_${current_day}" name="day_${current_day}">
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+          </select>
+          
+          <div class="font-17 pull-left mr-20">
+            <div class="p-4 pull-left mr-10">
+              <label class="text-grey">From</label>
+            </div>
+            <input class="bg-grey" name="from_${current_day}" type="time" value="09:00">
+          </div>
+          
+          <div class="font-17 pull-left mr-20">
+            <div class="p-4 pull-left mr-10">
+              <label class="text-grey">To</label>
+            </div>
+            <input class="bg-grey" name="to_${current_day}" type="time" value="17:00">
+          </div>
+          
+          <div class="font-17 pt-5 cancel fa fa-times text-danger"></div>
+        </div>`);
+    }
+    var current_day = $(".list").children().length
+    
+  $('#add-btn').click(function(event){
+    current_day = current_day + 1
+    if ($(".list").children().length < 7)
+      append_new_day()
+    if ($(".list").children().length == 7)
+      $('#add-btn').hide()
+    event.preventDefault();
+  });
+
+  $('#schedule-btn-submit').click(function( event ){
+    var days = []
+    $(".list").children().children('select').each(function(){
+      var selected = '#' + $(this).attr('id') + ' :selected'
+      days.push($(selected).text())
+    })
+    if(hasDuplicates(days)){
+      event.preventDefault();
+      $("#same-days").css('color', 'red');
+      timer = setTimeout(function() {
+        $("#same-days").css('color', 'white');
+      }, 2000);
+    }
+    else{
+      $("#save_hours").show().delay(2000).fadeOut();
+    }
+  })
+
+  $(".list").on('click', '.cancel', function(){
+    if ($(".list").children().length > 1){
+    $(this).parent().remove();
+
+    current_day = 0
+    $(".list").children().children('select').each(function(){
+      current_day = current_day + 1
+      $(this).attr("id", 'day_'+current_day);
+      $(this).attr("name", 'day_'+current_day);
+    })
+
+    current_day = 0
+    $(".list").children().children().children('input').each(function(i){
+      if (Math.floor(i%2 == 0)){
+        current_day = current_day + 1
+        $(this).attr("id", 'from_'+current_day);
+        $(this).attr("name", 'from_'+current_day);
+      }
+      else{
+        $(this).attr("id", 'to_'+current_day);
+        $(this).attr("name", 'to_'+current_day);
+      }
+    })
+  }
+  if ($(".list").children().length < 7)
+      $('#add-btn').show()
+  });
+  
   });
