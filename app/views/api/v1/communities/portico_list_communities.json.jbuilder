@@ -7,7 +7,7 @@ json.communities @communities do |community|
     json.latitude community.latitude
     json.longitude community.longitude
     json.address community.address
-    json.logo community.logo.url
+    json.logo community.self_tour_logo.present? ? community.self_tour_logo : (community.logo.present? ? community.logo.url : "No Image")
 
   end
 end
