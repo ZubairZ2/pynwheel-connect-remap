@@ -129,12 +129,12 @@
                                           %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                             %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0; float: #{unit.virtual_tour_url.present? && unit.availability_url.present? ? "right" : "" };"}
                                               %form{:action => "#{unit.virtual_tour_url}"}
-                                                %input{:type => "submit", :value => "#{unit.virtual_tour_button_label}", :style=> "font-size: 26px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: 130px; height: 46px; float: left;"}/ 
+                                                %input{:type => "submit", :value => "#{unit.virtual_tour_button_label}", :style=> "font-size: 26px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: fit-content; height: 46px; float: left;"}/ 
                                         - if unit.availability_url.present?
                                           %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                             %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0; float: #{unit.virtual_tour_url.present? && unit.availability_url.present? ? "left" : "" };"}
                                               %form{:action => "#{unit.availability_url}"}
-                                                %input{:type => "submit", :value => "Apply", :style=> "font-size: 23px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: 130px; height: 46px;"}/
+                                                %input{:type => "submit", :value => "Floor plan availability", :style=> "font-size: 23px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: fit-content; height: 46px;"}/
                                              
 
                   -#                      %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
