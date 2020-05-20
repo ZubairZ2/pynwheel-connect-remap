@@ -12,7 +12,12 @@ json.data @units do |u|
         json.market_rent u.market_rent
         json.effective_rent u.effective_rent
         json.availability u.availability
-        json.available_date u.available_date < Date.today ? "Now" : u.available_date
+        begin
+                json.available_date u.available_date < Date.today ? "Now" : u.available_date.strftime("%m/%d")
+
+        rescue => ex
+                json.available_date "N/A"
+        end
         json.building u.building
         json.created_at u.created_at
         json.updated_at u.updated_at
