@@ -294,7 +294,7 @@ json.tours @tours do |tour|
       end
       if unit.modal_unit
         lease_pricing = []
-        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today) if unit.present?
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
         @units.each do |floorplan_unit|
           unless floorplan_unit.id == unit.id
             pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_s} rescue next

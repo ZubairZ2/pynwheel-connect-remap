@@ -257,7 +257,7 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       success = false
       message = 'Please provide unit_id'
     end
-    render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+    # render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
   end
 
   private
