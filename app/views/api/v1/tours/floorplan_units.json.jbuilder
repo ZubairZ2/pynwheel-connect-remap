@@ -28,6 +28,5 @@ json.data @units do |u|
         json.manual_override u.manual_override
         json.square_feet u.square_feet
         json.description u.description
-        
     
 end
