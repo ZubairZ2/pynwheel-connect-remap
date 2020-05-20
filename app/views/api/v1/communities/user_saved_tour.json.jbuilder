@@ -24,6 +24,7 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
   visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
+  json.tour_key last_vs.tour_key
 
   json.visited_tour visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop[0] rescue next
