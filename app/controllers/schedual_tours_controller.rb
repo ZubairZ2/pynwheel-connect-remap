@@ -101,7 +101,7 @@ class SchedualToursController < ApplicationController
         end
       end
     else
-      render json: {message: "max tour users limit reached fot the selected time", code: "400" }
+      render json: {message: "max tour users limit reached for the selected time", code: "400" }
     end
   end
 
