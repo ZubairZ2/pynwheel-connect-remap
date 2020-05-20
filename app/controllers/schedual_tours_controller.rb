@@ -78,9 +78,19 @@ class SchedualToursController < ApplicationController
     after_30_mints, d = get_tour_datetime_and_diff after_30_mints
 
     count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).count
-    if count < community.tour.max_tour_users.to_i
-      @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
+    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
 
+    if community.tour.max_tour_users.blank?
+      respond_to do |format|
+        if @schedual_tour.save
+          format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
+          format.json { render :show, status: :created, location: @schedual_tour }
+        else
+          format.html { render :new }
+          format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
+        end
+      end
+    elsif count < community.tour.max_tour_users.to_i
       respond_to do |format|
         if @schedual_tour.save
           format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }

@@ -606,6 +606,32 @@
             var time = str.split(':');
             return time[0]*60+time[1]*1;
         }
+        function schedual_my_tour(params_data){
+          $.ajax({
+            type: "POST",
+            url: "/schedual_tours.json",
+            data: params_data.serialize(),
+            cache: false,
+            success: function(data){
+              if(data.code != 400){
+                document.getElementById('sched_tour_id').value = data.id
+                tour_id = data.id;
+                $('.divLoading').addClass('hidden');
+
+                $("#scheduleMyTour").modal('hide');
+                $("#modalLoginForm").modal();
+                $("#not-visiting-hours").addClass('hidden')
+              }
+              else{
+                $("#not-visiting-hours").removeClass('hidden')
+                $("#not-visiting-hours").addClass('color-red').text(data.message)
+              }
+            },
+            fail: function(error){
+              console.log(error)
+            }
+          });
+        }
         
         $("#scheduleMyTourForm").on('submit', function(e){
 
@@ -614,43 +640,25 @@
           selected_day = moment(selected_date).format('dddd')
           selected_time = moment(selected_date).format('HH:mm')
           // debugger
-          for(var d_t in visiting_times){
-            if (selected_day == visiting_times[d_t][0]){
-              var start = getMinutes(visiting_times[d_t][1]);
-              var end = getMinutes(visiting_times[d_t][2]);
-              var selected = getMinutes(selected_time);
+          if(visiting_times.length > 0){
+            for(var d_t in visiting_times){
+              if (selected_day == visiting_times[d_t][0]){
+                var start = getMinutes(visiting_times[d_t][1]);
+                var end = getMinutes(visiting_times[d_t][2]);
+                var selected = getMinutes(selected_time);
 
-              if ((selected > start) && (selected < end)) {
-                $.ajax({
-                  type: "POST",
-                  url: "/schedual_tours.json",
-                  data: $(this).serialize(),
-                  cache: false,
-                  success: function(data){
-                    if(data.code != 400){
-                      document.getElementById('sched_tour_id').value = data.id
-                      tour_id = data.id;
-                      $('.divLoading').addClass('hidden');
-
-                      $("#scheduleMyTour").modal('hide');
-                      $("#modalLoginForm").modal();
-                      $("#not-visiting-hours").addClass('hidden')
-                    }
-                    else{
-                      $("#not-visiting-hours").removeClass('hidden')
-                      $("#not-visiting-hours").addClass('color-red').text(data.message)
-                    }
-                  },
-                  fail: function(error){
-                    console.log(error)
-                  }
-                });
-              }
-              else{
-                  $("#not-visiting-hours").removeClass('hidden')
-                  $("#not-visiting-hours").addClass('color-red').text('(visiting hours for ' +  visiting_times[d_t][0] + ' is from ' + visiting_times[d_t][1] + ' to ' + visiting_times[d_t][2]+')')
+                if ((selected > start) && (selected < end)) {
+                  schedual_my_tour($(this))
+                }
+                else{
+                    $("#not-visiting-hours").removeClass('hidden')
+                    $("#not-visiting-hours").addClass('color-red').text('(visiting hours for ' +  visiting_times[d_t][0] + ' is from ' + visiting_times[d_t][1] + ' to ' + visiting_times[d_t][2]+')')
+                }
               }
             }
+          }
+          else{
+            schedual_my_tour($(this))
           }
           e.preventDefault();
         });
