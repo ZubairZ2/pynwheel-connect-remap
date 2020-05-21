@@ -26,8 +26,12 @@
   .col-lg-12
     .form-group.logo-upload-bg.pt-15
       .select-logo.center-img.mb-20.mt-30.logo-upload-bg
-        .select-logo-logo.logo-container.logo-upload-container
+        .select-logo-logo.logo-container1.logo-upload-container
           - rn =  rand(9999999999999999999999999)
           %a.preview-image{:href=>current_community.self_tour_logo.present? ? current_community.self_tour_logo.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Logo"}
-            = image_tag current_community.self_tour_logo.present? ? current_community.self_tour_logo.url : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"preview-image-self-tour"
-            = image_tag "exclamation-mark.png", class: "waring_exal #{(current_community.self_tour_logo.present? ? (current_community.self_tour_logo.width < 200 && current_community.self_tour_logo.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+            .logo_container{:style => "position:relative;"}
+              = image_tag "logo_bg.jpeg",:height=>"100%",:width=>"100%"
+
+              = image_tag current_community.self_tour_logo.present? ? current_community.self_tour_logo.url : "default.jpeg",:width=>"120px%",:id=>"preview-image-self-tour",:style => "position:absolute; top: 45px; left: 85px; z-index: 1;"
+            
+            = image_tag "exclamation-mark.png", class: "waring_exal #{(current_community.self_tour_logo.present? ? (current_community.self_tour_logo.width < 200 && current_community.self_tour_logo.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#",:style => "position:absolute; top: 70px; left: 100px; z-index: 3;"
