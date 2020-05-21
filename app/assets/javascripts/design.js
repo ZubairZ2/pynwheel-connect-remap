@@ -20,6 +20,20 @@ $(document).ready(function () {
       }
     }
 
+      var design_page_self_tour_logo_upload_holder = document.getElementById('design-page-self-tour-logo-upload-holder');
+      if (design_page_self_tour_logo_upload_holder) {
+          design_page_self_tour_logo_upload_holder.ondrop = function (e) {
+              e.preventDefault();
+              files = e.dataTransfer.files;
+              if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+                  readDesignPageSelfTourLogoSrc(files[0]);
+              } else {
+                  console.log('file type is not allowed');
+                  $('#image-upload-warning').modal('show');
+              }
+          }
+      }
+
     var design_page_secondary_logo_upload_holder = document.getElementById('design-page-secondary-logo-upload-holder');
     if (design_page_secondary_logo_upload_holder) {
       design_page_secondary_logo_upload_holder.ondrop = function (e) {
@@ -685,6 +699,9 @@ $(document).ready(function () {
     readDesignPageSecondaryLogoSrcFromInput(this);
   });
 
+    $("#self_tour_logo").change(function () {
+        readDesignPageSelfTourLogoSrcFromInput(this);
+    });
   $("#secondary_page_background_image ").change(function () {
     readSecondaryBackgroundImageFromInput(this);
   });
@@ -943,14 +960,24 @@ function set_secondary_font_changes() {
 }
 
 function readDesignPageLogoSrc(file) {
-  $(".divLoading").removeClass("hidden");
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    $('#preview-image').attr('src', e.target.result);
-    $('#preview-image').parent().attr('href', e.target.result);
-    designPageLogo(e.target.result);
-  }
-  reader.readAsDataURL(file);
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#preview-image').attr('src', e.target.result);
+        $('#preview-image').parent().attr('href', e.target.result);
+        designPageLogo(e.target.result);
+    }
+    reader.readAsDataURL(file);
+}
+function readDesignPageSelfTourLogoSrc(file) {
+    $(".divLoading").removeClass("hidden");
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#preview-image-self-tour').attr('src', e.target.result);
+        $('#preview-image-self-tour').parent().attr('href', e.target.result);
+        designPageSelfTourLogo(e.target.result);
+    }
+    reader.readAsDataURL(file);
 }
 
 
@@ -1756,19 +1783,34 @@ function galleryImageOnSrc(file) {
 }
 
 function designPageLogo(src) {
-  $(".divLoading").removeClass("hidden");
-  var url = "/communities/" + community_id;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    dataType: "script",
-    data: {
-      community: {logo: src}
-    }
-  }).done(function () {
-    $(".divLoading").addClass("hidden");
-    console.log("success");
-  });
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {logo: src}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
+}
+function designPageSelfTourLogo(src) {
+    $(".divLoading").removeClass("hidden");
+    var url = "/communities/" + community_id;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        dataType: "script",
+        data: {
+            community: {self_tour_logo: src}
+        }
+    }).done(function () {
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+    });
 }
 
 function designPageSecondaryLogo(src) {
@@ -2433,35 +2475,66 @@ function designPageHomeScreenbutton(src, button, screen_id) {
 }
 
 function readDesignPageLogoSrcFromInput(input) {
-  if (input.files && input.files[0]) {
-    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
-        var reader = new FileReader();
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+            var reader = new FileReader();
 
-      reader.onload = function (e) {
-        $('#preview-image').attr('src', e.target.result);
-        $('#preview-image').parent().attr('href', e.target.result);
-        designPageLogo(e.target.result);
-      }
-
-      reader.readAsDataURL(input.files[0]);
-        var img = getHeightWidthLimit(input);
-        img.onload = function () {
-            if (this.width < image_height && this.height < image_width)
-            {
-                $(".waring_exal").removeClass("hidden");
+            reader.onload = function (e) {
+                $('#preview-image').attr('src', e.target.result);
+                $('#preview-image').parent().attr('href', e.target.result);
+                designPageLogo(e.target.result);
             }
-            else
-            {
-                $(".waring_exal").addClass("hidden");
-            }
-        };
 
-    } else {
-      $(input).val('');
-      $('#image-upload-warning').modal('show');
-      //console.log($(input).val());
+            reader.readAsDataURL(input.files[0]);
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_height && this.height < image_width)
+                {
+                    $(".waring_exal").removeClass("hidden");
+                }
+                else
+                {
+                    $(".waring_exal").addClass("hidden");
+                }
+            };
+
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
     }
-  }
+}
+function readDesignPageSelfTourLogoSrcFromInput(input) {
+    if (input.files && input.files[0]) {
+        if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#preview-image-self-tour').attr('src', e.target.result);
+                $('#preview-image-self-tour').parent().attr('href', e.target.result);
+                designPageSelfTourLogo(e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+            var img = getHeightWidthLimit(input);
+            img.onload = function () {
+                if (this.width < image_height && this.height < image_width)
+                {
+                    $(".waring_exal").removeClass("hidden");
+                }
+                else
+                {
+                    $(".waring_exal").addClass("hidden");
+                }
+            };
+
+        } else {
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
+    }
 }
 
 function readDesignPageSecondaryLogoSrcFromInput(input) {

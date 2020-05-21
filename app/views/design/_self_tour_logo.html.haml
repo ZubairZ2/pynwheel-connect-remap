@@ -1,0 +1,37 @@
+.row
+  .col-lg-12
+    .form-group
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+        Upload Self Tour Logo
+        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "primaryLogoPopover","data-content" => " "}
+          %span#propertyDetailNameText
+            Uploading a logo will change the logo that appears on the self tour application.
+        %span{:style => "font-size: 16px;"}
+          %p
+            Upload your self tour logo to be displayed in self tour app.
+          / %p
+          /   Image will appear at a size of 400 x 120 px. Please note that images that are too small may appear pixelated.
+    %span.btn.btn-primary.btn-file.ml-15
+      %i.fa.fa-upload
+      Upload File
+      = file_field_tag :self_tour_logo
+
+.text-center.drag-box.mt-15.image-upload#design-page-self-tour-logo-upload-holder
+  %span.icon-upload
+    = image_tag "upload-image.png"
+    %p Drag &amp; Drop file to Upload
+
+
+.row
+  .col-lg-12
+    .form-group.logo-upload-bg.pt-15
+      .select-logo.center-img.mb-20.mt-30.logo-upload-bg
+        .select-logo-logo.logo-container1.logo-upload-container
+          - rn =  rand(9999999999999999999999999)
+          %a.preview-image{:href=>current_community.self_tour_logo.present? ? current_community.self_tour_logo.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Logo"}
+            .logo_container{:style => "position:relative;"}
+              = image_tag "logo_bg.jpeg",:height=>"100%",:width=>"100%"
+
+              = image_tag current_community.self_tour_logo.present? ? current_community.self_tour_logo.url : "default.jpeg",:width=>"120px%",:id=>"preview-image-self-tour",:style => "position:absolute; top: 45px; left: 85px; z-index: 1;"
+            
+            = image_tag "exclamation-mark.png", class: "waring_exal #{(current_community.self_tour_logo.present? ? (current_community.self_tour_logo.width < 200 && current_community.self_tour_logo.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#",:style => "position:absolute; top: 70px; left: 100px; z-index: 3;"
