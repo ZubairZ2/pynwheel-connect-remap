@@ -1,17 +1,18 @@
 .text-center.image-upload.home-page-drag-box#amenity-gallery-image-upload-holder
   = image_tag "upload-image.png",:class=>"drag-image-padding-top"
   %p Drag &amp; Drop Images to Upload
-  .row.slide-imgage-boxs.sortable_amenity{:style => "padding-top: 55px;"}
-    - sortable_fetch(@amenity.amenity_galleries.order(:sort)) do |amenity_gallery_image, id_tag|
-      .col-lg-3{:id=> id_tag}
-        .slide-image
-          .image-box.video-box
-            .images.height-200
-              %a.preview-image{:href=>amenity_gallery_image.image? ? amenity_gallery_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Gallery Image"}
-                = image_tag amenity_gallery_image.image.url
-          .icons
-            = link_to edit_community_amenity_amenity_gallery_path(@community,@amenity,amenity_gallery_image), remote: true do
-              %i.fa.fa-pencil{"data-target" => "#edit-gallery-image", "data-toggle" => "modal"}
-            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/amenities/#{@amenity.id}/amenity_galleries/#{amenity_gallery_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip:;"}
-              %i.fa.fa-close
-          %h4= amenity_gallery_image.name
+
+.row.slide-imgage-boxs.sortable_amenity{:style => "padding-top: 55px; overflow-y: hidden;"}
+  - sortable_fetch(@amenity.amenity_galleries.order(:sort)) do |amenity_gallery_image, id_tag|
+    .col-lg-3{:id=> id_tag}
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            %a.preview-image{:href=>amenity_gallery_image.image? ? amenity_gallery_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Gallery Image"}
+              = image_tag amenity_gallery_image.image.url
+        .icons
+          = link_to edit_community_amenity_amenity_gallery_path(@community,@amenity,amenity_gallery_image), remote: true do
+            %i.fa.fa-pencil{"data-target" => "#edit-gallery-image", "data-toggle" => "modal"}
+          %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/amenities/#{@amenity.id}/amenity_galleries/#{amenity_gallery_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip:;"}
+            %i.fa.fa-close
+        %h4= amenity_gallery_image.name
