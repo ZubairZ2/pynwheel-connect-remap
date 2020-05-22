@@ -45,7 +45,9 @@ class SchedualToursController < ApplicationController
                               amount: 50,
                               description: "Escrow Payment",
                               currency: 'usd'
-
+        sleep 3                      
+        customer = Stripe::Customer.create email: params[:tour_user][:email],
+                                           card: params[:tour_user][:card_token]
         refund = Stripe::Refund.create({
           amount: 50,
           payment_intent: res["id"],
