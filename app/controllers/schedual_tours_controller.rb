@@ -41,10 +41,12 @@ class SchedualToursController < ApplicationController
       begin
         customer = Stripe::Customer.create email: params[:tour_user][:email],
                                            card: params[:tour_user][:card_token]
-        Stripe::Charge.create customer: customer.id,
+        res = Stripe::Charge.create customer: customer.id,
                               amount: 50,
                               description: "Escrow Payment",
                               currency: 'usd'
+        puts "%%%%%%%" *400
+        puts res                     
       rescue Exception => e
         flash[:error] = e.message
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
