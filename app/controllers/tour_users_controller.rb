@@ -51,4 +51,5 @@ class TourUsersController < ApplicationController
       end
     end
   end
+
 end
