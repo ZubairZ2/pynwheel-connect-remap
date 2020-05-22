@@ -45,8 +45,11 @@ class SchedualToursController < ApplicationController
                               amount: 50,
                               description: "Escrow Payment",
                               currency: 'usd'
-        puts "%%%%%%%" *400
-        puts res                     
+
+        refund = Stripe::Refund.create({
+          amount: 50,
+          payment_intent: res["id"],
+        })                      
       rescue Exception => e
         flash[:error] = e.message
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
