@@ -32,6 +32,7 @@ json.tours @tours do |tour|
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
       json.type @tour.stop_type
+      json.event_dateTime = @tour.event_time
       if @tour.stop_type == "unit"
         unit = Unit.find @tour.stop_id
         json.unit_id unit.id
