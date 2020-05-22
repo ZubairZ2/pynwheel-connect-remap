@@ -1,19 +1,15 @@
 :css
-  .container-fluid {
-      margin-left: 80px
-  }
-  
-  .text-grey {
+
+  .text-grey-v {
       color: #9E9E9E
   }
   
-  .fa {
+  .fa-v {
       font-size: 25px;
       cursor: pointer
   }
-  
-  input,
-  select {
+
+  .day-list {
       padding: 2px 6px;
       border: none;
       border-bottom: 1px solid #bdb7b7;
@@ -25,7 +21,6 @@
       letter-spacing: 1px;
       text-align: center !important
   }
-
   input[type=time] {
     border: none;
     color: #2a2c2d;
@@ -44,14 +39,6 @@
     display: none;
   }
   
-  select option {
-      background-color: #616161
-  }
-  
-  select option:focus {
-      background-color: #00C853 !important
-  }
-  
   ::placeholder {
       color: #fff;
       opacity: 1
@@ -65,72 +52,43 @@
       color: #fff
   }
   
-  button:focus {
-      -moz-box-shadow: none !important;
-      -webkit-box-shadow: none !important;
-      box-shadow: none !important;
-      outline-width: 0
-  }
-  
-  .btn {
+  .btn-v {
       border-radius: 50px;
       width: 120px
   }
-  
-  .exit {
-      border: 1px solid #9E9E9E;
-      color: #9E9E9E;
-      background-color: transparent
-  }
-  
-  .exit:hover {
-      border: 1px solid #9E9E9E;
-      color: #000 !important;
-      background-color: #9E9E9E
-  }
-  
-  @media screen and (max-width: 768px) {
-      .mob {
-          width: 70%
-      }
-  
-      select.mob {
-          width: 50%
-      }
-  }
 
-  .font-17{
+  .font-17-v{
     font-size: 17px !important;
   }
 
-  .p-20{
+  .p-20-v{
       padding-left: 20px;
       padding-bottom: 35px
   }
-  .p-8{
+  .p-8-v{
     padding: 8px;
   }
-  .p-4{
+  .p-4-v{
     padding: 4px;
   }
-  .mr-20{
+  .mr-20-v{
     margin-right: 20px !important;
   }
-  .mr-10{
+  .mr-10-v{
     margin-right: 10px !important;
   }
-  .bg-grey{
+  .bg-grey-v{
     background: #e3e3e3;
   }
 
-  .pt-5{
+  .pt-5-v{
     padding-top: 5px !important;
   }
-  .error-msg {
+  .error-msg-v {
     margin-left: 450px;
     color: white;
   }
-  .max-users {
+  .max-users-v {
     width: 125px;
     border-style: groove;
     border-color: #d8d8d8;
@@ -228,7 +186,7 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Max Tour At One Time
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %input.max-users{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
+                %input.day-list.max-users-v{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
             -#.form-groups
             -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Show Notepad Button
@@ -252,19 +210,19 @@
         %h3.box-title
           VISITING HOURS
           %span
-      %i.fa.fa-check-circle#save_hours{ style: "color: green; display: none;"}
-      %i.fa.fa-check-circle#save_hours{ style: "color: white"}
-      %h4.error-msg#same-days same days exists
+      %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: green; display: none;"}
+      %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: white"}
+      %h4.error-msg-v#same-days same days exists
       .container
         .row
           .col-lg-12
-            .row.p-20
+            .row.p-20-v
             
               = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
                 .col-sm-12.list
                   - @community.opening_hours.each_with_index do |current_day,index| 
-                    .row.p-8
-                      %select.font-17.pull-left.mr-20{id: "day_#{index+1}",name: "day_#{index+1}"}
+                    .row.p-8-v
+                      %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
                         - if current_day.day == "Monday"
                           %option{selected: "", value: "Monday"} Monday
                         - else
@@ -293,18 +251,18 @@
                           %option{selected: "", value: "Sunday"} Sunday
                         - else
                           %option{value: "Sunday"} Sunday
-                      .font-17.pull-left.mr-20
-                        .p-4.pull-left.mr-10
-                          %label.text-grey From
-                        %input.bg-grey{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
-                      .font-17.pull-left.mr-20
-                        .p-4.pull-left.mr-10
-                          %label.text-grey To
-                        %input.bg-grey{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
-                      .font-17.pt-5.cancel.fa.fa-times.text-danger
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v From
+                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v To
+                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
+                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                   - if @community.opening_hours.blank?
-                    .row.p-8
-                      %select.font-17.pull-left.mr-20#day_1{name: "day_1"}
+                    .row.p-8-v
+                      %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1"}
                         %option{selected: "", value: "Monday"} Monday
                         %option{value: "Tuesday"} Tuesday
                         %option{value: "Wednesday"} Wednesday
@@ -312,22 +270,22 @@
                         %option{value: "Friday"} Friday
                         %option{value: "Saturday"} Saturday
                         %option{value: "Sunday"} Sunday
-                      .font-17.pull-left.mr-20
-                        .p-4.pull-left.mr-10
-                          %label.text-grey From
-                        %input.bg-grey{name: "from_1", type: "time", value: "09:00"}
-                      .font-17.pull-left.mr-20
-                        .p-4.pull-left.mr-10
-                          %label.text-grey To
-                        %input.bg-grey{name: "to_1", type: "time", value: "05:00"}
-                      .font-17.pt-5.cancel.fa.fa-times.text-danger
-                .col-lg-12.col-md-9
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v From
+                        %input.day-list.bg-grey-v{name: "from_1", type: "time", value: "09:00"}
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v To
+                        %input.day-list.bg-grey-v{name: "to_1", type: "time", value: "05:00"}
+                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                .col-sm-12.col-lg-12.col-md-9.col-xs-12
                   .row
-                    %button.btn.btn-primary#add-btn
-                      %span.fa.fa-plus.font-17
-                        Add
-                    %input.btn.btn-large.btn-success.pull-right#schedule-btn-submit{type: "submit", value: "save"} 
-                
+                    .box-footer
+                      %button.btn.btn-primary#add-btn
+                        %span.fa.fa-v.fa-plus.font-17-v
+                          Add
+                      %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}       
 
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
@@ -1192,8 +1150,8 @@
 
     function append_new_day(){
       $(".list").append(`
-        <div class="row p-8">
-          <select class="font-17 pull-left mr-20" id="day_${current_day}" name="day_${current_day}">
+        <div class="row p-8-v">
+          <select class="day-list font-17-v pull-left mr-20-v" id="day_${current_day}" name="day_${current_day}">
             <option value="Monday">Monday</option>
             <option value="Tuesday">Tuesday</option>
             <option value="Wednesday">Wednesday</option>
@@ -1203,21 +1161,21 @@
             <option value="Sunday">Sunday</option>
           </select>
           
-          <div class="font-17 pull-left mr-20">
-            <div class="p-4 pull-left mr-10">
-              <label class="text-grey">From</label>
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">From</label>
             </div>
-            <input class="bg-grey" name="from_${current_day}" type="time" value="09:00">
+            <input class="day-list bg-grey-v" name="from_${current_day}" type="time" value="09:00">
           </div>
           
-          <div class="font-17 pull-left mr-20">
-            <div class="p-4 pull-left mr-10">
-              <label class="text-grey">To</label>
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">To</label>
             </div>
-            <input class="bg-grey" name="to_${current_day}" type="time" value="17:00">
+            <input class="day-list bg-grey-v" name="to_${current_day}" type="time" value="17:00">
           </div>
           
-          <div class="font-17 pt-5 cancel fa fa-times text-danger"></div>
+          <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger"></div>
         </div>`);
     }
     var current_day = $(".list").children().length
