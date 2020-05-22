@@ -19,7 +19,6 @@ class ChatroomsController < ApplicationController
                         @chatrooms = Chatroom.where(tour_id: community.tour.id).includes(:chats, :tour, :tour_user)
                         @listening_channels = [community.name.tr(" ", "_") + "_with_id_" + community.id.to_s]
 
-                        reset_unread_messages_for_1st_user(community, @chatrooms.first)
                         @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(community, chatroom) }
                         @chatroom_list = @chatrooms.map{|c| c.id}
                         @default_user_image =  "/assets/chat-tour-user.jpg"
@@ -132,16 +131,6 @@ class ChatroomsController < ApplicationController
         end
   
         [chatroom.id , min_count]
-    end
-
-    def reset_unread_messages_for_1st_user(community,chatroom)
-        all_community_members = community.users
-        all_community_members.each do |user|
-            unread_messages = Chat.where("chatroom_id = ? AND  name != ? ",  chatroom.id, "Support Team").unread_by(user)
-            unread_messages.each do  |msg|
-                msg.mark_as_read! for: user
-            end
-        end
     end
 
     private

@@ -196,12 +196,12 @@
   
   <body>
     
-    <a class="btn btn-success btn-lg notification" data-toggle="modal" data-target="#ChatSupport" href="url">
+    <a class="btn btn-success btn-lg notification" data-toggle="modal" data-target="#ChatSupport" href="url" id="widget-button">
         <span>Chat Support</span>
         <span class="new_msgs hidden" id="new_msgs"><i>!</i></span>
     </a>
 
-    <div class="modal fade" id="ChatSupport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal" id="ChatSupport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="container">
             <h3 class=" text-center">Chat Support</h3>
             <div class="messaging">
@@ -215,7 +215,7 @@
                         </div>
 
                         <div class="inbox_chat" id='support_sidebar'>
-                            <% @chatrooms.each_with_index do |chatroom,index| %>
+                            <% @chatrooms.order('id DESC').each_with_index do |chatroom,index| %>
                                 <% if index == 0 %>
                                     <div class="chat_list active_chat" id="chat_with_<%= chatroom.id %>">
                                 <% else %>
@@ -229,7 +229,7 @@
                                                 <p> 
                                                     <span style="color: black;"> <%= chatroom.tour_user.name %> </span>
                                                     <% @notifications.each do |notification|  %>
-                                                        <% if notification[0] ==  chatroom.id and notification[1]>0 and index != 0%>
+                                                        <% if notification[0] ==  chatroom.id and notification[1]>0%>
                                                             <span class="badge" id="notifi_count_of_<%= chatroom.id %>" style="float: right;"><%= notification[1] %></span>
                                                         <% end %>
                                                     <% end %>
@@ -250,7 +250,7 @@
 
                         <div class="msg_history" id="msg_history">
                             <% if @chatrooms.present? %>
-                                <% @chatrooms.first.chats.each do |chat| %>
+                                <% @chatrooms.last.chats.order('id ASC').each do |chat| %>
                                     <% if(chat.name == "Support Team") %>
                                         <div class="outgoing_msg">
                                             <div class="sent_msg">
@@ -303,7 +303,6 @@
                 cache: false,
                 url: '/mark_all_as_read/' + chatroom_id,
                 success: function(msg){
-                    console.log(msg)
                 },
                 fail: function(error){
                     console.log(error)
@@ -316,10 +315,24 @@
             
             var channel, loadAdminChat, pusher, updateAdminChat, updateAdminChatrooms;
             $("#client_date").val(new Date())
-            var first_chat_id = <%= @chatrooms.present? ? @chatrooms.first.id : 0 %>
+            var last_chat_id = <%= @chatrooms.present? ? @chatrooms.last.id : 0 %>
 
-            if(first_chat_id != 0)
-                $("#chatroom_id").val(first_chat_id)
+            if(last_chat_id != 0)
+                $("#chatroom_id").val(last_chat_id)
+
+            $("#widget-button").on('click', function(){
+                var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
+                set_unread_messages_to_zero(chatroom_id)
+            });
+
+            $("#ChatSupport").on('shown.bs.modal', function(){
+                $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+                var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
+                id = "#chat_with_" + chatroom_id
+                if($('#support_sidebar').children(id).find('span').length > 1)
+                    $('#support_sidebar').children(id).find('span').last().remove()
+                show_notifi_on_widget()
+            });
 
             show_notifi_on_widget = function(){
                 var hidden = true
@@ -419,9 +432,21 @@
                     }
                     $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
 
-                    // don't show unread count number for user currently communicated with
-                    // and set his all messages count by all support team users to zero
-                    set_unread_messages_to_zero(chat.chatroom_id)
+                    
+                    if ($('#ChatSupport').hasClass('in')){
+                        // don't show unread count number for user currently communicated with if modal is open
+                        // and set his all messages count by all support team users to zero
+                        set_unread_messages_to_zero(chat.chatroom_id)
+                    }
+                    else{
+                        id = "#chat_with_" + chat.chatroom_id
+                        span = `<span class="badge" id="notifi_count_of_${chat.chatroom_id}" style="float: right;">${chat.unread_count}</span>`
+                        if ($('#support_sidebar').children(id).find('span').length > 1)
+                            $('#support_sidebar').children(id).find('span').last().text(chat.unread_count)
+                        else
+                            $('#support_sidebar').children(id).find('span').parent().append(span)
+                        show_notifi_on_widget()
+                    }
                 }
                 else{
                     var id = "#chat_with_" + chat.chatroom_id
