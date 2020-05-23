@@ -4,7 +4,7 @@
   <head>
     <style type="text/css">
 
-      .container-chat{max-width:1100px; margin:auto; background: #f8f8f8 none repeat scroll 0 0;}
+      .container-chat{max-width:938px; margin-left: 285px; margin:auto; background: #f8f8f8 none repeat scroll 0 0;}
       .inbox_people {
         background: #f8f8f8 none repeat scroll 0 0;
         float: left;
@@ -62,7 +62,7 @@
         margin: 0;
         padding: 18px 16px 10px;
       }
-      .inbox_chat { height: 550px; overflow-y: scroll;}
+      .inbox_chat { height: 480px; overflow-y: scroll;}
 
       .active_chat{ background:#ebebeb;}
 
@@ -134,9 +134,9 @@
         top: 11px;
         width: 33px;
       }
-      .messaging { padding: 0 0 50px 0;}
+      .messaging { padding: 0 0 20px 0;}
       .msg_history {
-        height: 516px;
+        height: 440px;
         overflow-y: auto;
       }
 
@@ -185,7 +185,7 @@
     </a>
 
     <div class="modal" id="ChatSupport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="container container-chat">
+        <div class="container container-chat" style="margin-top: 10px;">
             <h3 class=" text-center">Chat Support</h3>
             <div class="messaging">
                 <div class="inbox_msg">
@@ -304,17 +304,21 @@
                 $("#chatroom_id").val(last_chat_id)
 
             $("#widget-button").on('click', function(){
-                var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
-                set_unread_messages_to_zero(chatroom_id)
+                if ($('.active_chat').length > 0) {
+                    var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
+                    set_unread_messages_to_zero(chatroom_id)
+                }
             });
 
             $("#ChatSupport").on('shown.bs.modal', function(){
-                $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
-                var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
-                id = "#chat_with_" + chatroom_id
-                if($('#support_sidebar').children(id).find('span').length > 1)
-                    $('#support_sidebar').children(id).find('span').last().remove()
-                show_notifi_on_widget()
+                if ($('.active_chat').length > 0) {
+                    $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+                    var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
+                    id = "#chat_with_" + chatroom_id
+                    if($('#support_sidebar').children(id).find('span').length > 1)
+                        $('#support_sidebar').children(id).find('span').last().remove()
+                    show_notifi_on_widget()
+                }
             });
 
             show_notifi_on_widget = function(){
@@ -391,6 +395,10 @@
             updateAdminChat = function(chat) {
                 if($("#chatroom_id").val() == chat.chatroom_id){
                     if(chat.name == "Support Team"){
+                        var id = "#chat_with_" +  chat.chatroom_id
+                        $(id).addClass('active_chat')
+                        if (chat.message == "Hello, how can we help you?")
+                            chat.client_date = new Date()
                         $('#msg_history').append(`
                             <div class="outgoing_msg">
                                 <div class="sent_msg">
