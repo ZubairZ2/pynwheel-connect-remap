@@ -338,6 +338,8 @@
             show_notifi_on_widget()
 
             loadAdminChatHelper = function(chat) {
+                if (chat.message == "Hello, how can we help you?")
+                    chat.client_date = new Date()
                 if(chat.name == "Support Team"){
                     $('#msg_history').append(`
                         <div class="outgoing_msg">
