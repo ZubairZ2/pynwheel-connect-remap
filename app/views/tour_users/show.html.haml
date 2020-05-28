@@ -109,7 +109,7 @@
                               User photo
                               %text{:style => "color: gray"}
                                 %br
-                                = stop_image.event_time.present? ? stop_image.event_time.strftime("%m/%d/%Y") : stop_image.created_at.strftime("%m/%d/%Y")
+                                = stop_image.event_date.present? ? stop_image.event_date.strftime("%m/%d/%Y") : stop_image.created_at.strftime("%m/%d/%Y")
                                 %br
                                 = stop_image.event_time.present? ? stop_image.event_time.strftime("%H:%M:%S") : stop_image.created_at.strftime("%H:%M:%S")
                               %br
@@ -123,7 +123,7 @@
                               User Notes
                               %text{:style => "color: gray"}
                                 %br
-                                = stop_decription.event_time.present? ? stop_decription.event_time.strftime("%m/%d/%Y") : stop_decription.created_at.strftime("%m/%d/%Y")
+                                = stop_decription.event_date.present? ? stop_decription.event_date.strftime("%m/%d/%Y") : stop_decription.created_at.strftime("%m/%d/%Y")
                                 %br
                                 = stop_decription.event_time.present? ? stop_decription.event_time.strftime("%H:%M:%S") : stop_decription.created_at.strftime("%H:%M:%S")
                               %br
