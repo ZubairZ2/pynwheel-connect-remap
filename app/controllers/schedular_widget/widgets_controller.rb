@@ -49,7 +49,7 @@ class SchedularWidget::WidgetsController < ApplicationController
     @community.opening_hours.each do |day_obj|
       message = []
       message[0] = day_obj.day
-      message[1] = '(visiting hours for ' +  day_obj.day + ' are from ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") +')'
+      message[1] = '(visiting hours for ' +  day_obj.day.downcase + ' are from ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") +')'
       @error_message << message
     end
     flash[:success] = params[:message] if params[:message].present?
