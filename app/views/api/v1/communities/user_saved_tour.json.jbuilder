@@ -31,7 +31,6 @@ json.tours @tours do |tour|
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
       json.type @tour.stop_type
-      json.event_dateTime = @tour.event_time
       if @tour.stop_type == "unit"
         unit = Unit.find @tour.stop_id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
@@ -116,26 +115,32 @@ json.tours @tours do |tour|
       end
       user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(image: nil)
       gallery_arr = []
+      gallery_arr_v1 = []
       user_gallery.each do |ud|
         obj = {}
         obj[:id] = ud.id
         obj[:image] = ud.image
         obj[:event_time] = ud.event_time
-        gallery_arr << obj
+        gallery_arr << ud.image
+        gallery_arr_v1 << obj
         # json.image ud.image.url
       end
       json.user_gallery gallery_arr
+      json.user_gallery_v1 gallery_arr_v1
       user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(description: nil)
       description_arr = []
+      description_arr_v1 = []
       user_notes.each do |un|
         obj = {}
         obj[:id] = un.id
         obj[:note] = un.description
         obj[:event_time] = un.event_time
-        description_arr << obj
+        description_arr << un.description
+        description_arr_v1 << obj
         # json.description un.description
       end
       json.notes description_arr
+      json.notes_v1 description_arr_v1
     end
   end
 
