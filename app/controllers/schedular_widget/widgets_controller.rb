@@ -45,6 +45,13 @@ class SchedularWidget::WidgetsController < ApplicationController
     end
 
     @visiting_times = @community.opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , day_obj.closing_time] }
+    @error_message = []
+    @community.opening_hours.each do |day_obj|
+      message = []
+      message[0] = day_obj.day
+      message[1] = '(visiting hours for ' +  day_obj.day + ' are from ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") +')'
+      @error_message << message
+    end
     flash[:success] = params[:message] if params[:message].present?
     render :test_widget, layout: false
   end
