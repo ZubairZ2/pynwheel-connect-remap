@@ -99,10 +99,19 @@
                               .col-lg-2.col-md-2.col-sm-6.col-xs-6
                                 Tour photo
                                 %br
+                                = " "
+                                %br
+                                = " "
+                                %br
                                 = image_tag  @stop.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
                                 - image_hit = false
                             .col-lg-2.col-md-2.col-sm-6.col-xs-6.user_photo
                               User photo
+                              %text{:style => "color: gray"}
+                                %br
+                                = stop_image.event_time.present? ? stop_image.event_time.strftime("%m/%d/%Y") : stop_image.created_at.strftime("%m/%d/%Y")
+                                %br
+                                = stop_image.event_time.present? ? stop_image.event_time.strftime("%H:%M:%S") : stop_image.created_at.strftime("%H:%M:%S")
                               %br
                               - if stop_image.is_rotated == true
                                 = image_tag  stop_image.image.url, :class => "", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
@@ -112,6 +121,11 @@
                           - if stop_decription.description.present?
                             .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
                               User Notes
+                              %text{:style => "color: gray"}
+                                %br
+                                = stop_decription.event_time.present? ? stop_decription.event_time.strftime("%m/%d/%Y") : stop_decription.created_at.strftime("%m/%d/%Y")
+                                %br
+                                = stop_decription.event_time.present? ? stop_decription.event_time.strftime("%H:%M:%S") : stop_decription.created_at.strftime("%H:%M:%S")
                               %br
                               .user_note{:style => "background: ;"}
                                 -##{stop_decription.description}
