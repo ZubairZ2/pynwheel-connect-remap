@@ -610,16 +610,16 @@
         $("#scheduleMyTourForm").on('submit', function(e){
 
           var visiting_times = <%= raw @visiting_times %>
+          var error_messages = <%= raw @error_message %>
           var selected_date = $(".datepickertime").val()
           selected_day = moment(selected_date).format('dddd')
           selected_time = moment(selected_date).format('HH:mm')
           // debugger
           for(var d_t in visiting_times){
             if (selected_day == visiting_times[d_t][0]){
-              var start = getMinutes(visiting_times[d_t][1].split(' ')[0]);
-              var end = getMinutes(visiting_times[d_t][2].split(' ')[0]);
+              var start = getMinutes(visiting_times[d_t][1]);
+              var end = getMinutes(visiting_times[d_t][2]);
               var selected = getMinutes(selected_time);
-              if (start >= end) end += getMinutes('12:00');
               if ((selected > start) && (selected < end)) {
                 $.ajax({
                   type: "POST",
@@ -648,7 +648,11 @@
               }
               else{
                   $("#not-visiting-hours").removeClass('hidden')
-                  $("#not-visiting-hours").addClass('color-red').text('(visiting hours for ' +  visiting_times[d_t][0] + ' are from ' + visiting_times[d_t][1] + ' to ' + visiting_times[d_t][2]+')')
+                  for(var each in error_messages){
+                    if (visiting_times[d_t][0] == error_messages[each][0]){
+                      $("#not-visiting-hours").addClass('color-red').text(error_messages[each][1])
+                    }
+                  }
               }
             }
           }

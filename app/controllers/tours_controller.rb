@@ -481,8 +481,6 @@ class ToursController < ApplicationController
       from_key = 'from_' + i.to_s
       to_key = 'to_' + i.to_s
 
-      params[from_key] = Time.parse(params[from_key]).strftime("%I:%M %p")
-      params[to_key] = Time.parse(params[to_key]).strftime("%I:%M %p")
       while params[day_key].present?
         times = current_community.opening_hours.create(day: params[day_key], opening_time: params[from_key], closing_time: params[to_key])
 
@@ -490,11 +488,6 @@ class ToursController < ApplicationController
         day_key = 'day_' + i.to_s
         from_key = 'from_' + i.to_s
         to_key = 'to_' + i.to_s
-
-        if params[day_key].present?
-          params[from_key] = Time.parse(params[from_key]).strftime("%I:%M %p")
-          params[to_key] = Time.parse(params[to_key]).strftime("%I:%M %p")
-        end
       end
     end
     flash[:notice] = "Tour settings updated successfully."
