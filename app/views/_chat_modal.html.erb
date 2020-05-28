@@ -2,15 +2,10 @@
 
 <html>
   <head>
-    <meta charset="utf-8"/>
-    <script src="https://js.pusher.com/4.1/pusher.min.js"></script>
-    <%= stylesheet_link_tag    'application', media: 'all' %>
-    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_include_tag 'moment' %>
     <style type="text/css">
 
-      .container{max-width:1100px; margin:auto; background: #f8f8f8 none repeat scroll 0 0;}
-      img{ max-width:100%;}
+      .container-chat{max-width:938px; margin-left: 285px; margin:auto; background: #f8f8f8 none repeat scroll 0 0;}
+      #img_id {max-width:100%;}
       .inbox_people {
         background: #f8f8f8 none repeat scroll 0 0;
         float: left;
@@ -68,7 +63,7 @@
         margin: 0;
         padding: 18px 16px 10px;
       }
-      .inbox_chat { height: 550px; overflow-y: scroll;}
+      .inbox_chat { height: 480px; overflow-y: scroll;}
 
       .active_chat{ background:#ebebeb;}
 
@@ -140,9 +135,9 @@
         top: 11px;
         width: 33px;
       }
-      .messaging { padding: 0 0 50px 0;}
+      .messaging { padding: 0 0 20px 0;}
       .msg_history {
-        height: 516px;
+        height: 440px;
         overflow-y: auto;
       }
 
@@ -175,7 +170,7 @@
             position: absolute;
             top: -10px;
             right: -10px;
-            padding: 5px 10px;
+            padding: 2px 9px;
             border-radius: 50%;
             background-color: red;
             color: white;
@@ -191,7 +186,7 @@
     </a>
 
     <div class="modal" id="ChatSupport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="container">
+        <div class="container container-chat" style="margin-top: 10px;">
             <h3 class=" text-center">Chat Support</h3>
             <div class="messaging">
                 <div class="inbox_msg">
@@ -212,13 +207,13 @@
                                 <% end %>
 
                                 <div class="chat_people">
-                                    <div class="chat_img"> <img src= <%= chatroom.tour_user.image.present? ?  chatroom.tour_user.image.url : @default_user_image %> alt= <%= chatroom.tour_user.name %> > </div>                                                                     
+                                    <div class="chat_img"> <img id="img_id" src= <%= chatroom.tour_user.image.present? ?  chatroom.tour_user.image.url : @default_user_image %> alt= <%= chatroom.tour_user.name %> > </div>                                                                     
                                         <div class="chat_ib">
                                             <a class="sidebar-chat" data-remote="true" href="/chats/<%= chatroom.id %>" style="overflow: hidden;display: block; width: 100%;"> 
                                                 <p> 
                                                     <span style="color: black;"> <%= chatroom.tour_user.name %> </span>
                                                     <% @notifications.each do |notification|  %>
-                                                        <% if notification[0] ==  chatroom.id and notification[1]>0%>
+                                                        <% if notification[0] ==  chatroom.id and notification[1]>0 and notification[1] != 99999%>
                                                             <span class="badge" id="notifi_count_of_<%= chatroom.id %>" style="float: right;"><%= notification[1] %></span>
                                                         <% end %>
                                                     <% end %>
@@ -249,7 +244,7 @@
                                         </div>
                                     <% else %>
                                         <div class="incoming_msg">
-                                            <div class="incoming_msg_img"> <img src= <%= @chatrooms.first.tour_user.image.present? ?  @chatrooms.first.tour_user.image.url : @default_user_image %> alt= <%= @chatrooms.first.tour_user.name %> > </div>
+                                            <div class="incoming_msg_img"> <img id="img_id" src= <%= @chatrooms.first.tour_user.image.present? ?  @chatrooms.first.tour_user.image.url : @default_user_image %> alt= <%= @chatrooms.first.tour_user.name %> > </div>
                                             <div class="received_msg">
                                                 <div class="received_withd_msg">
                                                     <p> <%=chat.message%> </p>
@@ -310,17 +305,21 @@
                 $("#chatroom_id").val(last_chat_id)
 
             $("#widget-button").on('click', function(){
-                var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
-                set_unread_messages_to_zero(chatroom_id)
+                if ($('.active_chat').length > 0) {
+                    var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
+                    set_unread_messages_to_zero(chatroom_id)
+                }
             });
 
             $("#ChatSupport").on('shown.bs.modal', function(){
-                $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
-                var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
-                id = "#chat_with_" + chatroom_id
-                if($('#support_sidebar').children(id).find('span').length > 1)
-                    $('#support_sidebar').children(id).find('span').last().remove()
-                show_notifi_on_widget()
+                if ($('.active_chat').length > 0) {
+                    $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+                    var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
+                    id = "#chat_with_" + chatroom_id
+                    if($('#support_sidebar').children(id).find('span').length > 1)
+                        $('#support_sidebar').children(id).find('span').last().remove()
+                    show_notifi_on_widget()
+                }
             });
 
             show_notifi_on_widget = function(){
@@ -353,7 +352,7 @@
                 else {
                     $('#msg_history').append(`
                         <div class="incoming_msg">
-                            <div class="incoming_msg_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                            <div class="incoming_msg_img"> <img id="img_id" src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                             <div class="received_msg">
                                 <div class="received_withd_msg">
                                     <p>${chat.message}</p>
@@ -397,6 +396,10 @@
             updateAdminChat = function(chat) {
                 if($("#chatroom_id").val() == chat.chatroom_id){
                     if(chat.name == "Support Team"){
+                        var id = "#chat_with_" +  chat.chatroom_id
+                        $(id).addClass('active_chat')
+                        if (chat.message == "Hello, how can we help you?")
+                            chat.client_date = new Date()
                         $('#msg_history').append(`
                             <div class="outgoing_msg">
                                 <div class="sent_msg">
@@ -409,7 +412,7 @@
                     else {
                         $('#msg_history').append(`
                             <div class="incoming_msg">
-                                <div class="incoming_msg_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                                <div class="incoming_msg_img"> <img id="img_id" src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                                 <div class="received_msg">
                                     <div class="received_withd_msg">
                                         <p>${chat.message}</p>
@@ -450,7 +453,7 @@
                     $('#support_sidebar').prepend(`
                             <div class="chat_list" id="chat_with_${chat.chatroom_id}">
                                 <div class="chat_people">
-                                    <div class="chat_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                                    <div class="chat_img"> <img id="img_id" src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                                     <div class="chat_ib">
                                         <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}" style="overflow: hidden;display: block; width: 100%;"> 
                                             <p> 
@@ -488,7 +491,7 @@
                     $('#support_sidebar').prepend(`
                         <div class="chat_list" id="chat_with_${chatroom.id}">
                             <div class="chat_people">
-                                <div class="chat_img"> <img src=${chatroom.tour_user.image} alt=${chatroom.tour_user.name}> </div>
+                                <div class="chat_img"> <img id="img_id" src=${chatroom.tour_user.image} alt=${chatroom.tour_user.name}> </div>
                                 <div class="chat_ib">
                                     <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}" style="overflow: hidden;display: block; width: 100%;"> 
                                         <p> <span style="color: black;"> ${chatroom.tour_user.name} </span></p>
@@ -562,6 +565,7 @@
 
         });
 
+          
     </script>
 
   </body>
