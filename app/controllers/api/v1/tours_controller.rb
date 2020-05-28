@@ -120,7 +120,12 @@ class Api::V1::ToursController < ActionController::Base
         to = params[:phone_number]
         start_tour_auto_msg = "Thank you for choosing to tour our property!
 click here to start your tour
-https://apps.apple.com/us/app/self-tour/id1488907392"
+iPhone Users:
+https://apps.apple.com/us/app/self-tour/id1488907392
+
+Android Users:
+https://play.google.com/store/apps/details?id=com.pynwheel.selftour
+"
 
         prod_from = '+12017012957'
         account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
