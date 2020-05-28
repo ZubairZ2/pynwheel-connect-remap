@@ -15,6 +15,7 @@ class ApplicationController < ActionController::Base
 		  @community ||= Community.find params[:id]
 	  end  	
   end
+  
   def info_for_paper_trail
     { community_id: (current_community.present? ? current_community.id : nil),company_id: (current_company.present? ? current_company.id : nil) }
   end
