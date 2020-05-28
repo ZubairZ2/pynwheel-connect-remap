@@ -99,7 +99,9 @@ class ApplicationController < ActionController::Base
         min_count = count 
       end
     end
-
+    if all_community_members.count == 0
+      min_count=0
+    end 
     [chatroom.id , min_count]
   end
   protected
