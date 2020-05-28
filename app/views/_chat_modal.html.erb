@@ -169,7 +169,7 @@
             position: absolute;
             top: -10px;
             right: -10px;
-            padding: 5px 10px;
+            padding: 2px 9px;
             border-radius: 50%;
             background-color: red;
             color: white;
@@ -212,7 +212,7 @@
                                                 <p> 
                                                     <span style="color: black;"> <%= chatroom.tour_user.name %> </span>
                                                     <% @notifications.each do |notification|  %>
-                                                        <% if notification[0] ==  chatroom.id and notification[1]>0%>
+                                                        <% if notification[0] ==  chatroom.id and notification[1]>0 and notification[1] != 99999%>
                                                             <span class="badge" id="notifi_count_of_<%= chatroom.id %>" style="float: right;"><%= notification[1] %></span>
                                                         <% end %>
                                                     <% end %>
