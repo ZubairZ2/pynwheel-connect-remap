@@ -28,6 +28,7 @@ json.tours @tours do |tour|
 
   json.visited_tour visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop[0] rescue next
+    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop[0])
     if @tour.stop_type != "elevator"
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
@@ -37,6 +38,7 @@ json.tours @tours do |tour|
         json.unit_id unit.id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
         json.name "Apartment "+unit.marketing_name
+        json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")
         json.video_link_button_label unit.virtual_tour_button_label
         json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
         lease_pricing = []
@@ -144,7 +146,7 @@ json.tours @tours do |tour|
         obj = {}
         obj[:id] = ud.id
         obj[:image] = ud.image
-        obj[:event_time] = ud.event_time
+        obj[:event_time] = (ud.event_date.present? ? ud.event_date.strftime("%m/%d/%Y") + " " : "") + (ud.event_time.present? ? ud.event_time.strftime("%H:%M:%S") : "")
         gallery_arr << ud.image
         gallery_arr_v1 << obj
         # json.image ud.image.url
@@ -158,7 +160,7 @@ json.tours @tours do |tour|
         obj = {}
         obj[:id] = un.id
         obj[:note] = un.description
-        obj[:event_time] = un.event_time
+        obj[:event_time] = (un.event_date.present? ? un.event_date.strftime("%m/%d/%Y") + " " : "") + (un.event_time.present? ? un.event_time.strftime("%H:%M:%S") : "")
         description_arr << un.description
         description_arr_v1 << obj
         # json.description un.description
