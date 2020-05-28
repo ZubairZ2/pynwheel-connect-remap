@@ -117,14 +117,22 @@ json.tours @tours do |tour|
       user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(image: nil)
       gallery_arr = []
       user_gallery.each do |ud|
-        gallery_arr << ud.image.url
+        obj = {}
+        obj[:id] = ud.id
+        obj[:image] = ud.image
+        obj[:event_time] = ud.event_time
+        gallery_arr << obj
         # json.image ud.image.url
       end
       json.user_gallery gallery_arr
       user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(description: nil)
       description_arr = []
       user_notes.each do |un|
-        description_arr << un.description
+        obj = {}
+        obj[:id] = un.id
+        obj[:note] = un.description
+        obj[:event_time] = un.event_time
+        description_arr << obj
         # json.description un.description
       end
       json.notes description_arr
