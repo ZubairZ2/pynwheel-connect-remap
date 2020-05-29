@@ -11,7 +11,7 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       begin
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false,event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]) : nil)
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false,event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]) : nil,event_date: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]) : nil)
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
@@ -98,11 +98,13 @@ class Api::V1::ToursController < ActionController::Base
       end
       stops.each do |stop_id|
         begin
-          a3 = TourStop.find stop_id.to_i
+          s_id , dateTime = stop_id.split('|')
+          a3 = TourStop.find s_id.to_i
+          _date = dateTime.present? ? DateTime.parse(dateTime) : nil
         rescue => ex
         end
         if a1.present? && a2.present? && a3.present?
-          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false)
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date)
         end
         if vs.present?
           arr << true
