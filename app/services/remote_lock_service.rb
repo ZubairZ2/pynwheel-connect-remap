@@ -15,9 +15,9 @@ class RemoteLockService < BaseService
                 },
                 headers: { 'Content-Type' => 'application/x-www-form-urlencoded' } )
 
-            puts '==='*50
-            puts response["access_token"]
-            puts '==='*50
+            # puts '==='*50
+            # puts response["access_token"]
+            # puts '==='*50
 
             return response["access_token"]
         end
@@ -34,9 +34,9 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
             
-            puts "---"*50
-            puts response
-            puts "---"*50
+            # puts "---"*50
+            # puts response
+            # puts "---"*50
 
             return response
         end
@@ -53,9 +53,9 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
            
-            puts "---"*50
-            puts response
-            puts "---"*50
+            # puts "---"*50
+            # puts response
+            # puts "---"*50
             
             return response
         end
@@ -77,9 +77,9 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1',
                               'Content-Type' => 'application/json'} )
-            puts "---"*50
-            puts response
-            puts "---"*50
+            # puts "---"*50
+            # puts response
+            # puts "---"*50
  
             return response
         end
@@ -108,9 +108,9 @@ class RemoteLockService < BaseService
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
 
-            puts "---"*50
-            puts response
-            puts "---"*50
+            # puts "---"*50
+            # puts response
+            # puts "---"*50
 
             return response
         end
@@ -127,14 +127,33 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
            
-            puts "---"*50
-            puts response
-            puts "---"*50
+            # puts "---"*50
+            # puts response
+            # puts "---"*50
             
             return response
         end
     end
 
+    def delete_access_guest(access_token,guest_id)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+
+            url = base_url + "/access_persons/" + guest_id 
+            
+            response = HTTParty.delete(url,
+                :headers => { 'Authorization' => auth_header,
+                              'Accept' => 'application/vnd.lockstate+json; version=1',
+                              'Content-Type' => 'application/json' } )
+           
+            # puts "---"*50
+            # puts response
+            # puts "---"*50
+            
+            return response
+        end
+    end
     def update_access_guest(access_token,guest_id,tour_user)
         if @edge_state_user.present?
             token_type = "Bearer"
@@ -157,9 +176,9 @@ class RemoteLockService < BaseService
                               'Accept' => 'application/vnd.lockstate+json; version=1' ,
                               'Content-Type' => 'application/json'} )
            
-            puts "---"*50
-            puts response
-            puts "---"*50
+            # puts "---"*50
+            # puts response
+            # puts "---"*50
             
             return response
         end
@@ -183,9 +202,9 @@ class RemoteLockService < BaseService
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
             
-            puts "---"*50
-            puts response
-            puts "---"*50
+            # puts "---"*50
+            # puts response
+            # puts "---"*50
 
             return response
         end
