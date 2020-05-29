@@ -96,6 +96,7 @@ json.tours @tours do |tour|
         json.image amenity.image.present? ? amenity.image.url : "no image"
         json.stop_description amenity.description
         json.name amenity.name
+        json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")
         json.directional_text amenity.directional_text
         json.video_link_button_label amenity.video_link_button_label
         json.video_link amenity.video_link.present? ? amenity.video_link : ""
