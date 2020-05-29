@@ -127,7 +127,6 @@ class Api::V1::CommunitiesController < ActionController::Base
           tour_user.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], edgestate_guest_id: response["data"]["id"])
         else
           # guest_id = tour_user.edgestate_guest_id
-          byebug
           RemoteLockService.new(@community).delete_access_guest(access_token,tour_user.edgestate_guest_id)
           response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user)
           tour_user.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], edgestate_guest_id: response["data"]["id"])
