@@ -159,6 +159,7 @@ Rails.application.routes.draw do
       member do
         get :edit_amenity_gallery_image
         post :load_remotelock_data
+        post :clear_locks
       end
     end
     resources :tour_users do
@@ -205,6 +206,7 @@ Rails.application.routes.draw do
         delete :remove_plot_from_floorplate
         post :adjust_position
         post :load_remotelock_data
+        post :clear_locks
       end
       collection do
         post :set_floor

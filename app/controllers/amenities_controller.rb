@@ -38,6 +38,12 @@ class AmenitiesController < ApplicationController
     end
   end
   
+  def clear_locks
+    amenity = Amenity.find params[:id]
+    amenity.remote_locks.delete_all
+    render json: {locks: amenity.remote_locks}
+  end
+
   def update
     @amenity = Amenity.find(params[:id])
     if params[:remote_lock].present?

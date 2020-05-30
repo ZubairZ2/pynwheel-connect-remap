@@ -42,6 +42,7 @@
   }
 
   var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
+  var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
   
   var IsSelectedLockMatch = function(){
     if($('#remote_lock :selected').text() != "Select your option"){
@@ -77,7 +78,23 @@
     }
   }
   
+  function clear_assigned_lock(){
+    $.ajax({
+      type: 'POST',
+      url: '/communities/'+ community_id + '/units/' + unit_id +'/clear_locks',
+      dataType: 'json',
+      cache: false,
+      success: function(data){
+        console.log(data)
+      },
+      fail: function(error){
+        console.log(error)
+      }
+    })
+  }
+
   $(document).ready(function(){
+      var assigned_lock_present = false
       
       var params = {"unit_name": unit_name}
       $.ajax({
@@ -89,11 +106,20 @@
         success: function(data){
           locks = data['locks']
           for (var item in locks) {
-            if (assigned_lock_name != locks[item].name){
+            if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type){
+              $('#remote_lock').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+              assigned_lock_present = true
+            }
+            else{
               $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
             }
           }
-          
+          if(assigned_lock_present == false){
+              $('#remote_lock').prepend(`<option value="" , selected="selected">Select your option</option>`)
+              clear_assigned_lock()
+          }
+          else
+            IsSelectedLockMatch()
         },
         fail: function(error){
           console.log(error)
@@ -103,18 +129,7 @@
 
       $("#remote_lock").change(function () {
         IsSelectedLockMatch()
-      });
-
-      // on page reload if lock in assigned already
-      if(assigned_lock_name.length > 0 && assigned_lock_name != lock_name_should_be){
-        $('#remote_lock').addClass('lock_mismatch')
-        $("#update-btn").removeClass('hidden')
-
-        var id = $('#remote_lock :selected').val()
-        var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + unit_id + '&stop_name=' + unit_name + '&stop_type=unit'
-
-        $("#a-lock").attr("href",href);
-      }
+      });      
 
       $('#unit_building').keyup(function() {
         IsSelectedLockMatch()

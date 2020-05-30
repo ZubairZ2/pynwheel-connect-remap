@@ -67,10 +67,6 @@
                 %span Assign the lock to this amenity
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 %select.form-control#remote_lock{name: "remote_lock"}
-                  - if @assigned_lock.present?
-                    %option{value: "#{@assigned_lock.device_id}" , selected: "selected"} #{@assigned_lock.name} (#{@assigned_lock.remote_lock_type})
-                  - else
-                    %option{selected: "selected", value: ""} Select your option
                 %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
                   %a#a-lock.btn-text-color{href: "#"} Update selected lock
             - bool_check = @community.show_map ? f.object.amenityable.present? : true
@@ -139,6 +135,7 @@
   var community_id = #{ @community.id}
 
   var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
+  var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
 
   var IsSelectedLockMatch = function(){
     if($('#remote_lock :selected').text() != "Select your option"){
@@ -166,8 +163,25 @@
     }
   }
 
+  function clear_assigned_lock(){
+    $.ajax({
+      type: 'POST',
+      url: '/communities/'+ community_id + '/amenities/' + amenity_id +'/clear_locks',
+      dataType: 'json',
+      cache: false,
+      success: function(data){
+        console.log(data)
+      },
+      fail: function(error){
+        console.log(error)
+      }
+    })
+  }
+
   $(document).ready(function(){
     var params = {"amenity_name": amenity_name}
+    var assigned_lock_present = false
+  
     $.ajax({
       type: 'POST',
       url: '/communities/'+ community_id + '/amenities/' + amenity_id +'/load_remotelock_data',
@@ -177,10 +191,20 @@
       success: function(data){
         locks = data['locks']
         for (var item in locks) {
-          if (assigned_lock_name != locks[item].name){
-            $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
-          }
+            if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type){
+              $('#remote_lock').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+              assigned_lock_present = true
+            }
+            else{
+              $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+            }
         }
+        if(assigned_lock_present == false){
+            $('#remote_lock').prepend(`<option value="" , selected="selected">Select your option</option>`)
+            clear_assigned_lock()
+        }
+        else
+          IsSelectedLockMatch()
       },
       fail: function(error){
         console.log(error)
@@ -195,15 +219,6 @@
       IsSelectedLockMatch()
     });
     
-    // on page reload if lock in assigned already
-    if(assigned_lock_name.length > 0 && assigned_lock_name != $('#amenity_name').val()){
-      $('#remote_lock').addClass('lock_mismatch')
-      $("#update-btn").removeClass('hidden')
-
-      var id = $('#remote_lock :selected').val()
-      var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + amenity_id + '&stop_name=' + amenity_name + '&stop_type=amenity'
-      $("#a-lock").attr("href",href);
-    }
   });
 
   var community_id = #{params[:community_id]}
