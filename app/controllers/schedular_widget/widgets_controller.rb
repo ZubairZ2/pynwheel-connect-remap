@@ -49,6 +49,7 @@ class SchedularWidget::WidgetsController < ApplicationController
       message[1] = '(visiting hours for ' +  day_obj.day + ' are from ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") +')'
       @error_message << message
     end
+    
     render :test_widget, layout: false
   end
 
