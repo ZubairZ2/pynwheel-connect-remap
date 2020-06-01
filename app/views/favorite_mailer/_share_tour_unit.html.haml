@@ -119,23 +119,19 @@
                       %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
                         %tr
                           %td{:align => "center", :valign => "top"}
-                            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "600"}
+                            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%;"}
                               %tr
-                                %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "600"}
-                                  %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
-                                    %tr
-                                      %tr
-                                        - if unit.virtual_tour_url.present?
-                                          %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                                            %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0; float: #{unit.virtual_tour_url.present? && unit.availability_url.present? ? "right" : "" };"}
-                                              %form{:action => "#{unit.virtual_tour_url}"}
-                                                %input{:type => "submit", :value => "#{unit.virtual_tour_button_label.upcase}", :style=> "font-size: 26px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: fit-content; height: 46px;"}/ 
-                                        - if unit.availability_url.present?
-                                          %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                                            %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0; float: #{unit.virtual_tour_url.present? && unit.availability_url.present? ? "left" : "" };"}
-                                              %form{:action => "#{unit.availability_url}"}
-                                                %input{:type => "submit", :value => "FLOOR PLAN AVAILABILITY", :style=> "font-size: 23px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: fit-content; height: 46px;"}/
-                                             
+                                - if unit.virtual_tour_url.present?
+                                  %td.textContent{:align => "left", :style => "padding-left: 140px;", :valign => "top"}
+                                    %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0; float: left"}
+                                      %form{:action => "#{unit.virtual_tour_url}"}
+                                        %input{:type => "submit", :value => "#{unit.virtual_tour_button_label.upcase}", :style=> "font-size: 17px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: fit-content; height: 46px; width: fit-content;"}/ 
+                                - if unit.availability_url.present?
+                                  %td.textContent{:align => "left", :style => "width: 250px", :valign => "top"}
+                                    %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0; float: right;"}
+                                      %form{:action => "#{unit.availability_url}"}
+                                        %input{:type => "submit", :value => "FLOOR PLAN AVAILABILITY", :style=> "font-size: 17px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: 250px;; height: 46px;"}/
+                                     
 
                   -#                      %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                   -#                        %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
