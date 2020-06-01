@@ -100,7 +100,7 @@ class Api::V1::ToursController < ActionController::Base
         begin
           s_id , dateTime = stop_id.split('|')
           a3 = TourStop.find s_id.to_i
-          _date = dateTime.present? ? DateTime.parse(dateTime) : nil
+          _date = dateTime.present? ? DateTime.parse(dateTime).strftime('%a, %d %b %Y %H:%M:%S') : nil
         rescue => ex
         end
         if a1.present? && a2.present? && a3.present?
