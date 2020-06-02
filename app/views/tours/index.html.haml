@@ -212,80 +212,76 @@
           %span
       %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: green; display: none;"}
       %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: white"}
-      %h4.error-msg-v#same-days same days exists
-      .container
+      %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same days exist
+      .box-body{style: "padding: 0px 20px !important;"}
         .row
-          .col-lg-12
-            .row.p-20-v
-            
-              = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
-                .col-sm-12.list
-                  - @community.opening_hours.each_with_index do |current_day,index| 
-                    .row.p-8-v
-                      %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
-                        - if current_day.day == "Monday"
-                          %option{selected: "", value: "Monday"} Monday
-                        - else
-                          %option{value: "Monday"} Monday
-                        - if current_day.day == "Tuesday"
-                          %option{selected: "", value: "Tuesday"} Tuesday
-                        - else
-                          %option{value: "Tuesday"} Tuesday
-                        - if current_day.day == "Wednesday"
-                          %option{selected: "", value: "Wednesday"} Wednesday
-                        - else
-                          %option{value: "Wednesday"} Wednesday
-                        - if current_day.day == "Thursday"
-                          %option{selected: "", value: "Thursday"} Thursday
-                        - else
-                          %option{value: "Thursday"} Thursday
-                        - if current_day.day == "Friday"
-                          %option{selected: "", value: "Friday"} Friday
-                        - else
-                          %option{value: "Friday"} Friday
-                        - if current_day.day == "Saturday"
-                          %option{selected: "", value: "Saturday"} Saturday
-                        - else
-                          %option{value: "Saturday"} Saturday
-                        - if current_day.day == "Sunday"
-                          %option{selected: "", value: "Sunday"} Sunday
-                        - else
-                          %option{value: "Sunday"} Sunday
-                      .font-17-v.pull-left.mr-20-v
-                        .p-4-v.pull-left.mr-10-v
-                          %label.text-grey-v From
-                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
-                      .font-17-v.pull-left.mr-20-v
-                        .p-4-v.pull-left.mr-10-v
-                          %label.text-grey-v To
-                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
-                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-                  - if @community.opening_hours.blank?
-                    .row.p-8-v
-                      %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1"}
+          .col-lg-12 
+            = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
+              .col-sm-12.list
+                - @community.opening_hours.each_with_index do |current_day,index| 
+                  .row.p-8-v
+                    %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
+                      - if current_day.day == "Monday"
                         %option{selected: "", value: "Monday"} Monday
+                      - else
+                        %option{value: "Monday"} Monday
+                      - if current_day.day == "Tuesday"
+                        %option{selected: "", value: "Tuesday"} Tuesday
+                      - else
                         %option{value: "Tuesday"} Tuesday
+                      - if current_day.day == "Wednesday"
+                        %option{selected: "", value: "Wednesday"} Wednesday
+                      - else
                         %option{value: "Wednesday"} Wednesday
+                      - if current_day.day == "Thursday"
+                        %option{selected: "", value: "Thursday"} Thursday
+                      - else
                         %option{value: "Thursday"} Thursday
+                      - if current_day.day == "Friday"
+                        %option{selected: "", value: "Friday"} Friday
+                      - else
                         %option{value: "Friday"} Friday
+                      - if current_day.day == "Saturday"
+                        %option{selected: "", value: "Saturday"} Saturday
+                      - else
                         %option{value: "Saturday"} Saturday
+                      - if current_day.day == "Sunday"
+                        %option{selected: "", value: "Sunday"} Sunday
+                      - else
                         %option{value: "Sunday"} Sunday
-                      .font-17-v.pull-left.mr-20-v
-                        .p-4-v.pull-left.mr-10-v
-                          %label.text-grey-v From
-                        %input.day-list.bg-grey-v{name: "from_1", type: "time", value: "09:00"}
-                      .font-17-v.pull-left.mr-20-v
-                        .p-4-v.pull-left.mr-10-v
-                          %label.text-grey-v To
-                        %input.day-list.bg-grey-v{name: "to_1", type: "time", value: "05:00"}
-                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-                .col-sm-12.col-lg-12.col-md-9.col-xs-12
-                  .row
-                    .box-footer
-                      %button.btn.btn-primary#add-btn
-                        %span.fa.fa-v.fa-plus.font-17-v
-                          Add
-                      %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}       
+                    .font-17-v.pull-left.mr-20-v
+                      .p-4-v.pull-left.mr-10-v
+                        %label.text-grey-v From
+                      %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
+                    .font-17-v.pull-left.mr-20-v
+                      .p-4-v.pull-left.mr-10-v
+                        %label.text-grey-v To
+                      %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
+                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                - if @community.opening_hours.blank?
+                  .row.p-8-v
+                    %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1"}
+                      %option{selected: "", value: "Monday"} Monday
+                      %option{value: "Tuesday"} Tuesday
+                      %option{value: "Wednesday"} Wednesday
+                      %option{value: "Thursday"} Thursday
+                      %option{value: "Friday"} Friday
+                      %option{value: "Saturday"} Saturday
+                      %option{value: "Sunday"} Sunday
+                    .font-17-v.pull-left.mr-20-v
+                      .p-4-v.pull-left.mr-10-v
+                        %label.text-grey-v From
+                      %input.day-list.bg-grey-v{name: "from_1", type: "time", value: "09:00"}
+                    .font-17-v.pull-left.mr-20-v
+                      .p-4-v.pull-left.mr-10-v
+                        %label.text-grey-v To
+                      %input.day-list.bg-grey-v{name: "to_1", type: "time", value: "05:00"}
+                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+      .box-footer{style: "padding-bottom: 20px;"}
+        %button.btn.btn-primary#add-btn
+          %span.fa.fa-v.fa-plus.font-17-v
+            Add
+        %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}       
 
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
