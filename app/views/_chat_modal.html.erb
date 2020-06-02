@@ -178,7 +178,10 @@
   </head>
   
   <body>
-    
+     <audio id="alarm">
+        <source src="/assets/notification.ogg" type="audio/ogg" allow="autoplay">
+    </audio>
+
     <a class="btn btn-success btn-lg notification" data-toggle="modal" data-target="#ChatSupport" href="url" id="widget-button">
         <span>Chat Support</span>
         <span class="new_msgs hidden" id="new_msgs"><i>!</i></span>
@@ -438,6 +441,7 @@
                             $('#support_sidebar').children(id).find('span').last().text(chat.unread_count)
                         else
                             $('#support_sidebar').children(id).find('span').parent().append(span)
+                        document.getElementById('alarm').play();
                         show_notifi_on_widget()
                     }
                 }
@@ -466,6 +470,7 @@
                                     </div> 
                                 </div>
                             </div>`);
+                    document.getElementById('alarm').play();
                 }
                 show_notifi_on_widget()
             };
