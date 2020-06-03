@@ -246,7 +246,7 @@
                                         </div>
                                     <% else %>
                                         <div class="incoming_msg">
-                                            <div class="incoming_msg_img"> <img src= <%= @chatrooms.first.tour_user.image.present? ?  @chatrooms.first.tour_user.image.url : @default_user_image %> alt= <%= @chatrooms.first.tour_user.name %> > </div>
+                                            <div class="incoming_msg_img"> <img src= <%= @chatrooms.last.tour_user.image.present? ?  @chatrooms.last.tour_user.image.url : @default_user_image %> alt= <%= @chatrooms.last.tour_user.name %> > </div>
                                             <div class="received_msg">
                                                 <div class="received_withd_msg">
                                                     <p> <%=chat.message%> </p>
