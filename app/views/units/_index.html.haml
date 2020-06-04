@@ -306,7 +306,7 @@
         Upload Image
       = form_tag set_image_community_units_path(@community), multipart: true do
         .modal-body.set-floor-modal-body
-          = file_field_tag 'image_file', :accept => 'image/jpeg',:required=>true, :id => "size_limit"
+          = file_field_tag 'image_file', :accept => 'image/*',:required=>true, :id => "size_limit"
           .row
             .col-md-4
               = check_box_tag 'select_all_units_for_image'
