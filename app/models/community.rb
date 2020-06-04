@@ -65,7 +65,7 @@
 class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
-  attr_readonly :uuid
+  # attr_readonly :uuid
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   belongs_to :company
@@ -104,8 +104,8 @@ class Community < ApplicationRecord
   after_create :create_sms_email_content
   validate :validate_page_position
 
-  before_validation :gen_uuid, on: :create
-  validates :uuid, presence: true, uniqueness: true
+  # before_validation :gen_uuid, on: :create
+  # validates :uuid, presence: true, uniqueness: true
 
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
@@ -525,9 +525,9 @@ class Community < ApplicationRecord
     self.save
   end
 
-  def gen_uuid
-    self.uuid = SecureRandom.uuid
-  end
+  # def gen_uuid
+  #   self.uuid = SecureRandom.uuid
+  # end
 
   def make_address
     address = ""
