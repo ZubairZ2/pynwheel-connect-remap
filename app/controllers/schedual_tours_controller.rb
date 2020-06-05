@@ -166,6 +166,7 @@ class SchedualToursController < ApplicationController
 iPhone Users: Download #{community_text} from the App Store #{app_link}
 
 Android Users: Download #{community_text} from Google Play #{app_link}
+#{community.email_text}
 "
       # sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(#{community.name.humanize if community.present?}) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. #{community.email_text}"
 
