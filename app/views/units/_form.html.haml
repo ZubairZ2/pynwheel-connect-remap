@@ -92,10 +92,6 @@
     %span Assign the lock to this unit
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     %select.form-control#remote_lock{name: "remote_lock"}
-      - if @assigned_lock.present?
-        %option{value: "#{@assigned_lock.device_id}" , selected: "selected"} #{@assigned_lock.name} (#{@assigned_lock.remote_lock_type})
-      - else
-        %option{selected: "selected", value: ""} Select your option
     %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
       %a#a-lock.btn-text-color{href: "#"} Update selected lock
   

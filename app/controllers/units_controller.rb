@@ -52,6 +52,12 @@ class UnitsController < ApplicationController
     end
   end
 
+  def clear_locks
+    unit = Unit.find params[:id]
+    unit.remote_locks.delete_all
+    render json: {locks: unit.remote_locks}
+  end
+
   def update
     if params[:remote_lock].present?
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])

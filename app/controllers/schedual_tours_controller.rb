@@ -37,19 +37,24 @@ class SchedualToursController < ApplicationController
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
     if tu.save
-      schedual_tour.update_attributes(tour_user_id: tu.id)
+      
       begin
         customer = Stripe::Customer.create email: params[:tour_user][:email],
                                            card: params[:tour_user][:card_token]
-        Stripe::Charge.create customer: customer.id,
+        res = Stripe::Charge.create customer: customer.id,
                               amount: 50,
                               description: "Escrow Payment",
                               currency: 'usd'
+        sleep 3                      
+        pay_back = Stripe::Refund.create({
+          charge: res[:id],
+        })                     
       rescue Exception => e
         flash[:error] = e.message
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
       end
+      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back[:id] : nil)
 
       begin
         sent_notifications = send_email_and_other_notifications schedual_tour
@@ -101,7 +106,7 @@ class SchedualToursController < ApplicationController
         end
       end
     else
-      render json: {message: "max tour users limit reached fot the selected time", code: "400" }
+      render json: {message: "max tour users limit reached for the selected time", code: "400" }
     end
   end
 
@@ -184,8 +189,8 @@ class SchedualToursController < ApplicationController
 
 
       community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincolon Property Company Self Tour" : "Pynwheel Self Tour"
-      web_notification = "<div style='vertical-align:middle; text-align:center'><img style='width: 100px; max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(<b>#{community.name if community.present?}</b>) on <b>#{schedual_tour.tour_date.strftime("%A, %d %b %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel Self Tour app before you arrive: <br/> <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store</a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour From Google Play</a>"
-      sms_content = "Thank you for scheduling your self-guided tour! We look forward to having you at #{community.name.humanize if community.present?} on #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. When you go to the property, you will need
+      web_notification = "<div style='vertical-align:middle; text-align:center'><img style='width: 100px; max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your reservation is confirmed. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A,%b %d %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel Self Tour app before you arrive: <br/> <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store</a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour From Google Play</a>"
+      sms_content = "Thank you for scheduling your self-guided tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} and #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. When you go to the property, you will need
 -A photo ID
 -Your mobile device with the #{community_text} app installed
 

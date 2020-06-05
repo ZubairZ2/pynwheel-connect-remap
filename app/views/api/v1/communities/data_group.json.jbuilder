@@ -1,4 +1,5 @@
 json.group_name @community_group.name
+json.compant_name @community_group.company.name
 json.group_address @community_group.address
 json.page_type @community_group.page_type ? "map" : "menu"
 json.page_name @community_group.page_name

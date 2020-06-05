@@ -250,7 +250,12 @@ json.tours @tours do |tour|
     rescue => e
       navigation_title = ""
     end
-    json.guest_pin "Use code #" + @tour_user.edgestate_pin.to_s + " to enter." rescue "defalut value"
+    rml = RemoteLock.find_by(stop_id: stop.stop_id)
+    if rml.present?
+      pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
+      json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+      json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+    end
     json.navigation_title navigation_title
     json.id stop.id
     json.x_plot stop.latitude
@@ -294,7 +299,7 @@ json.tours @tours do |tour|
       end
       if unit.modal_unit
         lease_pricing = []
-        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today) if unit.present?
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
         @units.each do |floorplan_unit|
           unless floorplan_unit.id == unit.id
             pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_s} rescue next
@@ -414,7 +419,12 @@ json.tours @tours do |tour|
       json.directional_text amenity.directional_text
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
-      json.guest_pin "Use code #" + @tour_user.edgestate_pin.to_s + " to enter." rescue "defalut value"
+      rml = RemoteLock.find_by(stop_id: stop.stop_id)
+      if rml.present?
+        pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
+        json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+        json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+      end
       json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
       if amenity.amenity_galleries.count == 0

@@ -11,7 +11,7 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       begin
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false)
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false,event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil,event_date: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil)
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
@@ -98,11 +98,13 @@ class Api::V1::ToursController < ActionController::Base
       end
       stops.each do |stop_id|
         begin
-          a3 = TourStop.find stop_id.to_i
+          s_id , dateTime = stop_id.split('|')
+          a3 = TourStop.find s_id.to_i
+          _date = dateTime.present? ? DateTime.parse(dateTime) : nil
         rescue => ex
         end
         if a1.present? && a2.present? && a3.present?
-          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false)
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date)
         end
         if vs.present?
           arr << true
@@ -120,7 +122,12 @@ class Api::V1::ToursController < ActionController::Base
         to = params[:phone_number]
         start_tour_auto_msg = "Thank you for choosing to tour our property!
 click here to start your tour
-https://apps.apple.com/us/app/self-tour/id1488907392"
+iPhone Users:
+https://apps.apple.com/us/app/self-tour/id1488907392
+
+Android Users:
+https://play.google.com/store/apps/details?id=com.pynwheel.selftour
+"
 
         prod_from = '+12017012957'
         account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
@@ -257,7 +264,9 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       success = false
       message = 'Please provide unit_id'
     end
-    render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+    unless params[:stringFormat].present? && params[:stringFormat] == "true"
+      render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+    end
   end
 
   private

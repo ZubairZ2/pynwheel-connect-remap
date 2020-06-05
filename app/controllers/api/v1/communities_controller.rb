@@ -116,27 +116,24 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.deleted_ids = []
     @community.save
     @tours = Tour.where(community_id: params[:id])
+    params[:current_time].present? ? current_time = params[:current_time] : current_time = DateTime.now
+    current_time = current_time.to_datetime
 
     edge_state = EdgeState.find_by(community_id: params[:id])
     if edge_state.present?
       Thread.new do
         tour_user = TourUser.find params[:tour_user_id]
         access_token = RemoteLockService.new(@community).client_credentials
-        unless tour_user.edgestate_guest_id.present?
-          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user)
+        prev_data = tour_user.as_guests.where(community_id: params[:id])
+        unless prev_data.present?
+          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
+          tour_user.as_guests.create(community_id: params[:id], edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
         else
-          guest_id = tour_user.edgestate_guest_id
-          response = RemoteLockService.new(@community).get_access_guest(access_token,guest_id)
-          if response["data"].present?
-            response = RemoteLockService.new(@community).update_access_guest(access_token,guest_id,tour_user)
-          else
-            response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user)
-          end
+          RemoteLockService.new(@community).delete_access_guest(access_token,prev_data.last.guest_id)
+          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
+          prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
         end
-        tour_user.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], edgestate_guest_id: response["data"]["id"])
       end
-    else
-      @tour_user.update_attributes(edgestate_pin: nil, edgestate_guest_id: nil)
     end
   end
 
@@ -161,7 +158,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           if stop[0] == "unit"
             unit = stop[0].classify.constantize.find stop[1]
             if unit.building.present?
-              name = unit.name + "-" + unit.building
+              name = unit.building + "-" + unit.name
             else
               name = unit.name
             end
@@ -174,10 +171,8 @@ class Api::V1::CommunitiesController < ActionController::Base
 
         access_token = RemoteLockService.new(@community).client_credentials
         locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
-        # locks = RemoteLock.where(name: "A-A-202", edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)   # -------- testing line
         if locks.present?
-          tour_user_guest_id = @tour_user.edgestate_guest_id rescue ''
-          # tour_user_guest_id =  "5d1c3343-9566-464f-99e7-e49a99d03329" # -------- testing line
+          tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
           locks.each do |lock|
             RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
           end

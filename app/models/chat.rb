@@ -32,7 +32,9 @@ class Chat < ApplicationRecord
           min_count = count 
         end
       end
-
+      if all_community_members.count == 0
+        min_count=0
+      end 
       return min_count
     end
 end
