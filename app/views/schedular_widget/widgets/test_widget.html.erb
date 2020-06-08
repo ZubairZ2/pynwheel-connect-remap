@@ -103,9 +103,11 @@
   </head>
   
   <body>
+    <div class="divLoading hidden"></div>
+
 		<%= link_to("Schedule a Visit", "url" , class: "btn btn-success btn-lg", data: { toggle: "modal", target: "#scheduleMyTour" }) %>
 
-	  <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
       <div class="modal-dialog" role="document">
         <section>
           <div class="Pyn_Modal">
@@ -113,6 +115,7 @@
             
             <%= form_for TourUser.new, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
 
+              <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
               <div class="form-group">
                 <label>Name *</label>
                 <%= f.text_field :name, class: "form-control", placeholder: "Name", required: 'required' %>
@@ -132,9 +135,10 @@
                   
 
                   <label>Phone Number *</label> 
-                  <%= f.text_field :phone_number, class: "form-control phoneNumber", placeholder: "Phone Number", required: 'required', maxlength: 15 %>
+                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 %>
                 </div>
               </div>
+              <p>A credit card is required to complete the reservation<br>Your credit card will not be charged at this time with the exception of a $0.50 charge for verification purposes.</p>
               <div class="clearfix"></div>
               <div class="form-group cardNumber">
                 <label>Credit Card Number</label>
@@ -215,7 +219,7 @@
 
 
               <div class="clearfix"></div>
-              <button class="btn_popup">Confirm My Reservation!</button>
+              <button id ="confirm_reservation" class="btn_popup">Confirm My Reservation!</button>
             <% end %>
           </div>
         </section>
@@ -237,7 +241,7 @@
                 <%= hidden_field_tag :user_time_zone, value: nil %>
               </div>
               <div class="clearfix"></div>
-              <button class="btn_popup">Schedule My Tour!</button>
+              <button class="btn_popup" id="date_schedule_tour">Schedule My Tour!</button>
             </form>
           </div>
         </section>
@@ -267,9 +271,21 @@
       <% flash[:success] = "" %>
       if(success){
         $("#modalLoginForm").modal('hide');
+        $('.divLoading').addClass('hidden')
         $("#scheduleMyTourSuccess").modal()
         $("html, body").animate({ scrollTop: 0 }, 600);
       }
+      else
+      {
+          $('.divLoading').addClass('hidden');
+      }
+
+      $('#date_schedule_tour').click(function(){
+        $('.divLoading').removeClass('hidden')
+      });
+
+      $('#confirm_reservation').click(function(){
+      });
 
       var tour_id;
       $(document).ready(function(){
@@ -561,9 +577,17 @@
           showClear: true,
           showClose: true,
           useCurrent: true,
-          toolbarPlacement: "bottom"
+          toolbarPlacement: "bottom",
+          stepping: 15
           
         });
+          $('.phoneNumber').keypress(function(event) {
+              if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
+                  ((event.which < 48 || event.which > 57) &&
+                      (event.which != 0 && event.which != 8))) {
+                  event.preventDefault();
+              }
+          });
 
         $("#scheduleMyTourForm").on('submit', function(e){
           $.ajax({
@@ -572,7 +596,9 @@
             data: $(this).serialize(),
             cache: false,
             success: function(data){
+              document.getElementById('sched_tour_id').value = data.id
               tour_id = data.id;
+              $('.divLoading').addClass('hidden');
 
               $("#scheduleMyTour").modal('hide');
               $("#modalLoginForm").modal();
@@ -622,6 +648,8 @@
           $form.find("input[type=submit]").prop("disabled", true);
           Stripe.card.createToken($form, stripeResponseHandler);
           return false;
+          $('#confirm_reservation').attr('disabled','disabled');
+          
         });
 
         stripeResponseHandler = function (status, response) {
@@ -668,6 +696,7 @@
 
         show_error = function (message) {
           alert(message);
+            $('.divLoading').addClass('hidden');
           // $('.alert').delay(5000).fadeOut(3000);
           return false;
         };

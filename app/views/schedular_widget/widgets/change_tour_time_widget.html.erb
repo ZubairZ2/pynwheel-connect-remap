@@ -103,7 +103,7 @@
       <div class="modal-dialog" role="document">
         <section>
           <div class="Pyn_Modal">
-            <p>Schedule a self-guided tour. Come at your convenience and tour the property, using your phone as a guide! </p>
+            <p>Select a date and time below to reschedule your Self Tour at <%= @community.name %></p>
             <form class="form_popup" id="scheduleMyTourForm">
               <div class="clearfix"></div>
               <div class="form-group">
@@ -156,7 +156,8 @@
           showClear: true,
           showClose: true,
           useCurrent: true,
-          toolbarPlacement: "bottom"
+          toolbarPlacement: "bottom",
+          stepping: 15
           
         });
         <% if params["datetime"].present? %>
