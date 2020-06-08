@@ -23,6 +23,9 @@ Rails.application.routes.draw do
   namespace :schedular_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
+    
+  end 
+  namespace :schedular do
     get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
     
   end 
