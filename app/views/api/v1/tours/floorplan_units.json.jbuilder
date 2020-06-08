@@ -2,6 +2,7 @@ json.success true
 json.message "success"
 json.data @units do |u|
         json.id u.id
+        json.availability_url u.availability_url.present? ? u.availability_url : ""
         json.community_id u.community_id
         json.provider u.provider
         json.property_id u.property_id
@@ -13,7 +14,7 @@ json.data @units do |u|
         json.effective_rent u.effective_rent
         json.availability u.availability
         begin
-                json.available_date u.available_date < Date.today ? "Now" : u.available_date.strftime("%m/%d")
+                json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%m").to_i.to_s + "/" + u.available_date.strftime("%d").to_i.to_s
 
         rescue => ex
                 json.available_date "N/A"
@@ -33,6 +34,6 @@ json.data @units do |u|
         json.manual_override u.manual_override
         json.square_feet u.square_feet
         json.description u.description
-        
+        json.update_apply u.provider == "resman" ? true : false
     
 end
