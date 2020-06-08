@@ -16,6 +16,7 @@ namespace :import do
 
     (1..number_of_pages).each do |page|
       Community.page(page).per(5).each do |community|
+        next if (community.locked.present? && community.locked)
         begin
           if Time.now.to_s(:time) >= "06:00" && Time.now.to_s(:time) <= "07:00"
             comun = Community.find community.id

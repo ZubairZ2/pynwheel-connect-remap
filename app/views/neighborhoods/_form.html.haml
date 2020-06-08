@@ -41,7 +41,7 @@
         Change the address to change the address of the property.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :address, :class=>"form-control validate[required]", :placeholder=>"Address", :maxlength=>"150", :value=> @neighborhood.address.present? ? @neighborhood.address : @community.make_address
+    = f.text_field :address, :class=>"form-control ", :placeholder=>"Address", :maxlength=>"150", :value=> @neighborhood.address.present? ? @neighborhood.address : @community.make_address
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Latitude
@@ -50,7 +50,7 @@
         The latitude and longitudinal position of the property is pre-populated by the property's address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :latitude, :class=>"form-control validate[required,custom[onlyLatitude]] neighborhood-form-field", :placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude", :value=> @neighborhood.latitude.present? ? @neighborhood.latitude : @community.latitude
+    = f.text_field :latitude, :class=>"form-control validate[custom[onlyLatitude]] neighborhood-form-field", :placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude", :value=> @neighborhood.latitude.present? ? @neighborhood.latitude : @community.latitude
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Longitude
@@ -59,7 +59,7 @@
         The latitude and longitudinal position of the property is pre-populated by the property's address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :longitude, :class=>"form-control validate[required,custom[onlyLongitude]] neighborhood-form-field", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude", :value=> @neighborhood.longitude.present? ? @neighborhood.longitude : @community.longitude
+    = f.text_field :longitude, :class=>"form-control validate[custom[onlyLongitude]] neighborhood-form-field", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude", :value=> @neighborhood.longitude.present? ? @neighborhood.longitude : @community.longitude
 - if current_user.is_super_admin?    
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -152,17 +152,27 @@
 
 - unless @neighborhood.new_record?
   .btn-btn-danger
-    = link_to community_neighborhood_locations_path(@community,@neighborhood),style: "font-family: unset;", class: "btn btn-success" do
+    = link_to community_neighborhood_locations_path(@community,@neighborhood),style: "font-family: unset;", class: "btn btn-success loader_class" do
       %i.fa.fa-plus-circle
       ADD PLACES
     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodAddPlacesPopover","data-content" => " "}
       %span#propertyDetailNameText
         Click on "Add Places" to add businesses to the results of the neighborhood map.
 
+  -#%a{:href => "javascript:history.back()",:onclick => "f1()"} Done
+  %button.btn-primary.done_btn{:onclick => "goBack()"}
+    DONE
+
+
 
 
 :javascript
+  function goBack()
+  {
+    $('.neighborhood-form').submit();
+    window.location.reload();
 
+  }
   $('#neighborhood_show_neighborhood').change(function(){
     if (!($(this).is(':checked')))
     {

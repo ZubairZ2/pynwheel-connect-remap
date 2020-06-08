@@ -65,7 +65,7 @@ class XmlStaticService < BaseService
           unit.floorplan_id = u["FloorplanID"]
         end
 
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           unit.effective_rent = 1.0 #Setting rent to avoid validation issues
           if u["EffectiveRent"]["Min"].present?
             unit.effective_rent = u["EffectiveRent"]["Min"]
@@ -80,12 +80,12 @@ class XmlStaticService < BaseService
         end
 
         if u["Availability"].present?
-          unless unit.availability_is_updated.present? && unit.availability_is_updated
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = u["Availability"]["VacancyClass"]
           end
 
           if u["Availability"]["VacancyClass"] == "Unoccupied"
-            unless unit.available_is_updated.present? && unit.available_is_updated
+            unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
               unit.available = true
             end
 
@@ -100,7 +100,7 @@ class XmlStaticService < BaseService
         end
         unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
         unit.square_feet = u["Unit"]["Information"]["MinSquareFeet"]
-        unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
         end
 

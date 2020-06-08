@@ -69,10 +69,10 @@ class ResmanService < BaseService
   end
   def save_resman_units(units,property_id,availability_url)
 
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id}
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id.gsub('*','-')}
     units.each do |u|
       vacateDate = ""
-      unit = Unit.find_by(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"])#.first_or_initialize
+      unit = Unit.find_by(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"].gsub('*','-'))#.first_or_initialize
       if unit.present?
 
         # unit.property_id = property_id
@@ -120,12 +120,12 @@ class ResmanService < BaseService
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
         # unit.manually_updated = false
         unit.availability_url = availability_url if availability_url.present?
-        @unit_record << unit.provider_unit_id
+        @unit_record << unit.provider_unit_id.gsub('*','-')
         unit.save(validate: false)
 
       else
         vacateDate = ""
-        unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize
+        unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"].gsub('*','-')).first_or_initialize
         unless unit.manual_override
           unit.property_id = property_id
           unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
@@ -190,7 +190,7 @@ class ResmanService < BaseService
       no_unit = nil
     end
     no_unit.each do |un|
-      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un.gsub('*','-'))
       unit.availability = "Occupied"
       unit.available = false
       unit.available_date = nil

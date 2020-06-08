@@ -1,7 +1,8 @@
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
-last_vs = VisitedStop.where(device_id: @device_id).last
+json.visual_id_verification @community.present? ? @community.tour.visual_id_verification : true
+@community.present? ? last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
 @tours.each do |tour|
   if tour[0][1] == last_vs.tour_key
     @tours = { [tour[0][0],tour[0][1]] => tour[1]}
@@ -22,10 +23,10 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
-  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
+  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
 
   json.visited_tour visited_stops do |visited_stop|
-    @tour = TourStop.find visited_stop[0]
+    @tour = TourStop.find visited_stop[0] rescue next
     if @tour.stop_type != "elevator"
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
@@ -34,6 +35,8 @@ json.tours @tours do |tour|
         unit = Unit.find @tour.stop_id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
         json.name "Apartment "+unit.marketing_name
+        json.video_link_button_label unit.virtual_tour_button_label
+        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
         lease_pricing = []
         if unit.lease_pricing.present?
           str_split = unit.lease_pricing.split(';')
@@ -66,6 +69,8 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
           json.stop_description unit_amenity.description
           json.directional_text unit_amenity.directional_text
+          json.video_link_button_label unit.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
 
           # unit_amenity.description = nil
           @unit_gallery_arr << unit_amenity
@@ -90,6 +95,8 @@ json.tours @tours do |tour|
         json.stop_description amenity.description
         json.name amenity.name
         json.directional_text amenity.directional_text
+        json.video_link_button_label amenity.video_link_button_label
+        json.video_link amenity.video_link.present? ? amenity.video_link : ""
 
         # amenity.description = nil
         amenityGalleryArr = []
@@ -106,14 +113,14 @@ json.tours @tours do |tour|
           json.directional_text ag.directional_text
         end
       end
-      user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,device_id: @device_id,tour_key: tour_key).where.not(image: nil)
+      user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(image: nil)
       gallery_arr = []
       user_gallery.each do |ud|
         gallery_arr << ud.image.url
         # json.image ud.image.url
       end
       json.user_gallery gallery_arr
-      user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,device_id: @device_id,tour_key: tour_key).where.not(description: nil)
+      user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(description: nil)
       description_arr = []
       user_notes.each do |un|
         description_arr << un.description

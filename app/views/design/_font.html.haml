@@ -99,4 +99,16 @@
     .row
       .col-md-12
         .box-footer.mt-30.pt-15
-          
+          .row
+            .col-lg-10
+              .form-group{:style => "margin-bottom: 0px;"}
+                .col-lg-12.col-md-12
+                  %button.btn-primary.done_btn{:onclick => "font_page_goBack()",:style => "margin-left: -15px;"}
+                    DONE
+
+
+:javascript
+  function font_page_goBack()
+  {
+     window.location.reload();
+  }

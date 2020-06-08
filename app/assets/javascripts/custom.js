@@ -28,6 +28,10 @@ $(document).ready(function(e){
       e.stopPropagation();
     })
 
+    $(".loader_class").click(function(e){
+        $(".divLoading").removeClass("hidden");
+    })
+
   $("#multiselect li").click(function(e){
     if ($(this).hasClass("active")){
       $(this).removeClass("active")
@@ -372,6 +376,27 @@ function readCommunityGroupLogoURL(input) {
         }
     }
 }
+function readCommunityGroupHomepageImageURL(input) {
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
+
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#preview-community-group-homepage-background-image').attr('src', e.target.result);
+                $('#preview-community-group-homepage-background-image').parent().attr('href', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+
+        }
+        else{
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
+    }
+}
 
 // preview image function including svg
 function readImageIncludingSVG(input) {  
@@ -600,15 +625,15 @@ function floorplan_names_order() {
     });
 }
 function showDataTables(){
-    // $('#miyazaki.unit_data_table').DataTable({
-    //     'aoColumnDefs': [{
-    //         'bSortable': false,
-    //         'aTargets': [8,10],
-    //     }],
-    //     "ordering": true,
-    //     "stateSave": true,
-    //     "paging": false
-    // });
+    $('#miyazaki.tour_user_table').DataTable({
+        'aoColumnDefs': [{
+            'bSortable': false,
+            'aTargets': [1,4,5],
+        }],
+        "ordering": true,
+        "stateSave": true,
+        "paging": false
+    });
     $('#miyazaki.floorplan_data_table').DataTable({
         'aoColumnDefs': [{
             'bSortable': false,

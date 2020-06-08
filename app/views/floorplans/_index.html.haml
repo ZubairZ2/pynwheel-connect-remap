@@ -67,7 +67,7 @@
                   %td{style: "color: #{f.bathroom_is_updated ? "#dd4a39" : ""}; "}= f.bathrooms
                   -#%td= raw(f.description)
                   %td
-                    = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button"
+                    = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button loader_class"
                   %td
                     - if f.standard_image_url.present?
                       .drop-img.drop-img-left{style: "color: #{f.manual_override ? "black" : ""};"}
@@ -77,7 +77,7 @@
                   %td
                     %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
 
-                      %i.fa.fa-edit.icon_size{style: "color: #{f.manual_override ? "" : ""};"}
+                      %i.fa.fa-edit.icon_size.loader_class{style: "color: #{f.manual_override ? "" : ""};"}
                     %a.text-danger{"data-name"=>"Floor plan","data-href" => "/communities/#{@community.id}/floorplans/#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                       %i.fa.fa-trash.icon_size{style: "color: #{f.manual_override ? "" : ""};"}
 
@@ -92,3 +92,8 @@
   setTimeout(function(){
       floorplan_names_order();
   }, 2000);
+  function floorplan_goBack()
+    {
+        window.location.reload();
+
+    }

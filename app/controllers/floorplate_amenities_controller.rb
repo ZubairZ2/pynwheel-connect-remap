@@ -52,11 +52,13 @@ class FloorplateAmenitiesController < ApplicationController
   # end
 
   def plot_amenity
+    puts params
     @amenity = Amenity.find (params[:amenity_id])
     @amenity.amenityable_type = "Floorplate"
     @amenity.amenityable_id = params[:floorplate_id]
     @amenity.x_plot = params[:x_plot]
     @amenity.y_plot = params[:y_plot]
+    @amenity.floor = params[:floor]
     if @amenity.save(validate: false)
       render json: {amenity: @amenity}, status: 200
     else
@@ -84,6 +86,7 @@ class FloorplateAmenitiesController < ApplicationController
   end
 
   def plot_amenities
+    @floor = params[:floor] if params[:floor].present?
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community,@floorplate)
     @sitemap = @floorplate
@@ -114,8 +117,12 @@ class FloorplateAmenitiesController < ApplicationController
       amenity.amenityable_type = nil
       amenity.amenityable_id = nil
       amenity.save(validate: false)
+      ts = TourStop.find_by(stop_id: amenity.id)
+      ts.destroy if ts.present?
+      Path.where(:map_path_to_id => amenity.id).destroy_all rescue ""
+      Path.where(:map_path_from_id => amenity.id).destroy_all rescue ""
     end
-    redirect_to plot_amenities_community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity plot have been deleted successfully."
+    redirect_to plot_amenities_community_floorplate_amenities_path(@community,@floorplate,floor: params[:floor]), notice: "Amenity plot have been deleted successfully."
   end
 
   private

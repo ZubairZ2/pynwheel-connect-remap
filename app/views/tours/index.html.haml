@@ -1,4 +1,5 @@
 - content_for :title, "Tour Setup Page - Pynwheel"
+.divLoading.hidden
 - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
 - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
 / Main content
@@ -39,13 +40,40 @@
                   = check_box_tag :show_tour_page, true, @community.show_tour_page, class: "show-tour-page"
                   %label.label-primary{:for => "show_tour_page"}
                   %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Visual id verification
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
+                  %label.label-primary{:for => "visual_id_verification"}
+                  %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Show Camera Button
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
+                  %label.label-primary{:for => "show_camera_button"}
+                  %span.pl-15 Yes
+            -#.form-group
+            -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            -#    Show Notepad Button
+            -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            -#    .TriSea-technologies-Switch
+            -#      %span.pr-15 No
+            -#      = check_box_tag :show_notepad_button, true, @community.show_notepad_button, class: "show-notepad-button"
+            -#      %label.label-primary{:for => "show_notepad_button"}
+            -#      %span.pl-15 Yes
             = submit_tag 'Save', class: "hidden"
-    #logo_header.box.box-info.add-plan.mt-50
+    #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
         %h3.box-title
-          COMPOSSE TEXT/EMAILS
+          COMPOSE TEXT/EMAILS
           %span
-    .row
+    .row.hidden
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30
           = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
@@ -68,6 +96,10 @@
               \/.box-body
             .box-footer
               = f.submit "Save", :class=>"btn btn-success pull-right mr-10"
+    - unless @community.is_sitemap
+      %h3 Select a Floor
+      - @community.floorplates.map{|f| f.floors}.flatten.sort.each do |f|
+        %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floor.present? ? (@floor.to_i == f ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
 
     .row
       / Start Panel left Side
@@ -79,7 +111,6 @@
           %ul#imageselect1{:style => "display: none; z-index: 999;"}
             - amenity_arr = []
             - @amenities.each do |amenity|
-              -#- byebug
               - if !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
                 %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
                   %a
@@ -95,12 +126,13 @@
             = "- select unit -"
           %ul#imageselect2{:style => "display: none; z-index: 999;"}
             - amenity_arr = []
+            - stop_list = @tour_stops.map{|x| x.stop_id}
             - units.each do |unit|
-              - if !@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0)
-                %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.marketing_name}"}
+              - if (!@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) ) #|| (unit.modal_unit && !stop_list.include?(unit.id))
+                %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name}"}
 
                   %span.ml-5
-                    = unit.marketing_name
+                    = unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name
               -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
               -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
 
@@ -126,87 +158,145 @@
         .box.box-widget.panel-box
           .row
             .col-md-12
-              %table.table.table-bordered.table-striped.table-hover.table-responsive
+              %table.table.table-bordered.table-striped.table-hover.table-responsive.stops_table
                 %thead
                   %tr
                     %th{:width => "79"} Sr #
                     %th Tour Stop
-                    %th{:width => "100"} Actions
-                %tbody.tour_sortable_disabled
+                    %th{:width => "150"} Actions
+                %tbody.tour_sortable
                   - orderVar = 0
+                  - if @community.is_sitemap || @community.floorplates.map{|f| f.floors}.flatten.sort.first == params[:floorNo].to_i
+                    - if (@tours.x_plot >= 0 || @tours.y_plot >= 0 )
+                      %tr
+                        %td
+                          = orderVar = orderVar + 1
+                        %td
+                          Starting Point
+                        %td
+                          = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
+                            %i.fa.fa-road.icon_size
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
-                      %tr{:id=> index}
+                      - unless @all_stops.include?(stop.stop_id) || stop.stop_type == "elevator"
+                        - next
+                      - if stop.stop_type == "elevator" && @community.is_sitemap
+                        - next
+                      - if !@community.is_sitemap && stop.stop_type == "elevator"
+                        - elevator = Elevator.find stop.stop_id
+                        - if (!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-"))
+                          - next
+                      %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
                         %td= orderVar
-                        %td
-                          = stop.name
+                        %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
+                          - if stop.stop_type == "unit"
+                            - u = Unit.find stop.stop_id
+                            = u.building.present? ? (u.building + "-" + stop.name) : stop.name
+                          - else
+                            = stop.name
+
                         %td
                           -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
                           -#  %i.fa.fa-eye
 
                           - if stop.stop_type == "unit"
+
                             - u = Unit.find stop.stop_id
-                            = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
-                              %i.fa.fa-road.icon_size
+                            - unless u.modal_unit
+                              = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
+                                %i.fa.fa-eye.icon_size
+                              = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                                %i.fa.fa-eye-slash.icon_size
+                            - unless u.modal_unit  && ((u.x_plot + u.y_plot) < 1)
+                              = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
+                                %i.fa.fa-road.icon_size
                             = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
-                          - elsif stop.stop_type == "elevator"
-                            - elevator = Elevator.find stop.stop_id
-                            = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do
-                              %i.fa.fa-road.icon_size
+                          - elsif stop.stop_type == "elevator" && !@community.is_sitemap
+                            - if (elevator.floors.max.to_i == (@floor.to_i))
+                              = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "not_selected text-warning ml-5" do
+                                %i.fa.fa-road.icon_size
+                            - else
+                              = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
+                                %i.fa.fa-road.icon_size
+
                             = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
-                          - else
+                          - elsif stop.stop_type == "amenity"
                             - amenity = Amenity.find stop.stop_id
-                            = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path",  class: "text-warning ml-5" do
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} #{stop.display_stop ? "" : "hidden"} text-warning ml-5" do
+                              %i.fa.fa-eye.icon_size
+                            = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
+                              %i.fa.fa-eye-slash.icon_size
+
+                            = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
-                          %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal"}
-                            %i.fa.fa-trash.icon_size
+                          - unless u.present? && u.modal_unit
+                            %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                              %i.fa.fa-trash.icon_size
 
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
 
         .row
           .col-md-12
-            = link_to starting_point_community_tours_path(@community), class: "btn btn-primary mb-20 mr-5" do
+            = link_to starting_point_community_tours_path(@community), {:style=>'font-weight:bold;', class: "btn btn-primary mr-5 loader_class"} do
               %i.fa.fa-plus-circle
               ADD STARTING POINT
-            = link_to create_elevator_path(@tours.id, params[:community_id]), class: "btn btn-primary mb-20 mr-5", id: "add-elevator-path" do
-              %i.fa.fa-plus-circle
-              ADD ELEVATOR
-            = link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
-              %i.fa.fa-plus-circle
-              ADD PATH FOR STARTING POINT
 
-        .row
+            - if !@community.is_sitemap
+              = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil), class: "btn btn-primary mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
+                %i.fa.fa-plus-circle
+                ADD ELEVATOR
+            -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
+            -#  %i.fa.fa-plus-circle
+            -#  ADD PATH FOR STARTING POINT
+
+
+        - if @tours.tour_stops.present?      
+          .row
+            .col-md-12
+              %h3{ style: 'color: #800000;' } Draw a Path Between Two Points:
+
+          .row
           .col-md-12
-            %h4 Elevator icon(three horizontal lines) will appear below after the page auto-refreshes.
-            %h4 Drag and drop the icon onto the correct postion on the map.          
+            %h4 Add a Starting Point: After you click "Add Staring Point" click the map in the location that your visitors will begin your tours.
+            %h4{:style => "display: inline"} Draw a Path between two stops: Choose two points from the list above by clicking on the "Way Finding" icon.
+            %i.fa.fa-road.icon_size
+            %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
+            %h4 Drag and drop the icon onto the correct postion on the map.         
+            %h4 To delete a point on the path, double-click the point. 
 
           -#.col-md-12
           -#  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do
           -#    %i.fa.fa-plus-circle
           -#    SELECT STOPS
 
+
 %section.is-floorplate
   .content
     %form.form-horizontal
       .box-body.map-body-top
         .row
+
           #container.col-lg-12.p-0
             .map-block{:style => "position: relative;"}
               / id map
               .plot-image
                 .grid-graph.hidden
-                = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", :onclick => "return false;"
-
-
-                = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg"
+                .container
+                  -#= form_tag community_tours_path(@community), {:class => 'tour_floor_form'} do
+                  -#  = hidden_field_tag "floorNo", 6, :class => "hidden_floor"
+                  - if @community.is_sitemap
+                    = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
+                  - elsif @sitemap.present? && (@floor.to_i == @community.floorplates.map{|f| f.floors}.flatten.min.to_i)
+                    = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
+                  = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg", :style => "margin-left: -15px;"
                 - community_units = @community_units
                 - coordinates_array = []
                 - path_point_coords = {}
@@ -216,22 +306,94 @@
                       %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
 
                   - elsif stop.class.to_s == "Elevator"
-                    %i.fa.fa-reorder.stops.elevatorstop{:id => "elevatorstop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+
+                    - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
+                      %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+
 
                   - else
-                    %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin}px; left: #{stop.x_plot - left_margin}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                    - next if (stop.y_plot + stop.x_plot) < 1
+                    %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                 
                 /- binding.pry
+                - @existing_path_points.each_with_index do |point, index|               
+                  .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
 
-                - @existing_path_points.each_with_index do |point, index|
-                  .path_point{:id => "point_#{point.id}", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
-
-
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-lg-12.col-md-12
+              %button.btn-primary.mb-20.done_btn{:onclick => "tour_setup_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 
               / End Panel left Side
         / /.content
 :javascript
+  function tour_setup_goBack()
+  {
+      window.location.reload();
+  }
+  $(document).ready(function() {
+  if (window.location.href.includes('floorNo'))
+  {
+    $('html, body').animate({ scrollTop: 800 });
+  }
+    var arr = [];
+    for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
+      if ($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1] != undefined)
+      {
+        if (!($('.stops_table').children("tbody").children("tr")[i].children[2].children[0].className.includes("not_selected")))
+        {
+          arr.push($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1]);
+        }
+      }
+    }
+    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0)
+    {
+      arr = []
+    }
+    $.ajax({
+        url: "/communities/#{@community.id}/tours/sort_stops",
+        type: "POST",
+        dataType: "script",
+        data: {
+            sitemap: "#{@community.is_sitemap}" ,
+            array: arr,
+            floor: "#{@floor}"
+        }
+      }).done(function (data) {
+        console.log("success");
+      });
 
+  });
+  function display_stop(stop_id)
+  {
+    event.preventDefault();
+    $.ajax({
+        url: "/communities/#{@community.id}/tours/display_stop",
+        type: "POST",
+        data: {
+            stop_id: stop_id ,
+        }
+      }).done(function (data) {
+        if (data.display == true)
+        {
+          $('.stop_eye' + stop_id).removeClass('hidden');
+          $('.stop_eye_slash' + stop_id).addClass('hidden');
+          $(".strike_" + stop_id).css("text-decoration", "");
+        }
+        else
+        {
+          $('.stop_eye' + stop_id).addClass('hidden');
+          $('.stop_eye_slash' + stop_id).removeClass('hidden');
+          $(".strike_" + stop_id).css("text-decoration", "line-through");
+        }
+
+      });
+  }
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
     
@@ -245,17 +407,66 @@
 
   });
 
-  $('.show-tour-page').change(function(){
-    $('.tour-settings-form').submit();
+  $('.stops_table').children("tbody").sortable({
+    stop: function (event, ui) {
+    var arr = [];
+    for (i = 0; i < this.children.length ; i++) {
+    //not_selected
+      if (!(this.children[i].children[2].children[0].className.includes("not_selected")))
+      {
+        arr.push(this.children[i].id.split("TourStop_")[1]);
+      }
+    }
+    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0)
+    {
+      arr = []
+    }
+
+        $.ajax({
+        url: "/communities/#{@community.id}/tours/sort_stops",
+        type: "POST",
+        dataType: "script",
+        data: {
+            sitemap: "#{@community.is_sitemap}" ,
+            array: arr,
+            floor: "#{@floor}"
+        }
+      }).done(function () {
+        console.log("success");
+      });
+    }
+  });
+
+  $('.floor_selection_btn').click(function(){
+    $('.hidden_floor').val(this.textContent);
+    $('.floor_submit_btn').click();
   });
   $('.tour_sortable').railsSortable();
   
   community_id = #{params[:community_id]}
   
-
   cords_arr = JSON.parse('#{raw(path_point_coords.to_json)}');
 
-
+  $('.floor_submit_btn').click(function () {
+    $('.floor_submit_btn').click();
+  });
+  // $('.floor_selection_btn111').click(function () {
+  //   var url = '/communities/' + community_id + '/tours';
+  //   $.ajax({
+  //     url: url,
+  //     type: "GET",
+  //     dataType: "script",
+  //     data: {
+  //       floorNo: this.textContent
+  //     }
+  //   }).done(function () {
+  //     $(".divLoading").addClass("hidden");
+  //     console.log("success");
+  //   });
+  //
+  //
+  //
+  // });
 
   $(document).ready(function(){
     var path_id;
@@ -265,19 +476,27 @@
     var point_size = 20;
     
     path_array = $(".path_point")
-    $(".plot-image").append(createLine($('.start-point'), path_array[0]))
-    for(i=0; i < path_array.length-1; i++){
-      $(".plot-image").append(createLine(path_array[i], path_array[i+1]))
+    if (path_array.length > 0){
+      $(".plot-image").append(createLine('#stop_'+document.getElementById($(".path_point")[0].id).getAttribute('value'), path_array[0]))
+      for(i=0; i < path_array.length-1; i++){
+        if (document.getElementById($(".path_point")[i].id).getAttribute('value')== document.getElementById($(".path_point")[i+1].id).getAttribute('value') && document.getElementById($(".path_point")[i].id).getAttribute('data')== document.getElementById($(".path_point")[i+1].id).getAttribute('data')){
+          $(".plot-image").append(createLine(path_array[i], path_array[i+1]))
+        }
+        else {
+          $(".plot-image").append(createLine('#stop_'+document.getElementById($(".path_point")[i+1].id).getAttribute('value'), path_array[i+1]))
+        }
+      }
     }
     
+    
     // add listner to prev points 
+
     $.each($("*.path_point"), function(i, existing_point){
-      // debugger
       id = $(existing_point).prop('id');
       dragElement(document.getElementById(id));
     });
 
-     $.each($("*.elevatorstop"), function(i, elevator){
+     $.each($("*.stop"), function(i, elevator){
        makeElevatorDragable(elevator);
      });
 
@@ -285,7 +504,14 @@
       mouseX = Math.round(ev.offsetX - point_size/2)
       mouseY = Math.round(ev.offsetY - point_size/2)
       neighbour_units =  detectNearestUnits()
-      savePoint(mouseX, mouseY, neighbour_units)
+      var len = $("i[class*='animate-element']").length + $("a[class*='animate-element']").length
+
+      if (len == 1){
+        alert("Please select two stops from table for which you want to draw path")
+      }
+      else {
+        savePoint(mouseX, mouseY, neighbour_units)
+      }
     });
 
 
@@ -321,9 +547,9 @@
        });
     }
     function savePoint(x, y, unit_ids){
-      //debugger
       if($("#drawing_path_for").val() == ""){
-        alert("Please select a Stop from table for which you want to draw path")
+
+        alert("Please select two stops from table for which you want to draw path")
         return false
       }
       $.post( "/save_path_point/",
@@ -337,9 +563,10 @@
         }
       );
     }
-
+    var start_point_array = []
+    var stop_point_array = []
     function drop_point_on_screen(db_data){
-            
+
       var size =  point_size.toString()+ 'px';
 
       id = "point_"+db_data.point.id.toString()
@@ -349,17 +576,37 @@
               .css('left', mouseX + 'px')
               .css('width', size)
               .css('height', size)
-
       $(".plot-image").append(path_point);
       path_array.push(path_point)
-      if(path_array.length == 1){
-        //debugger
-        line = createLine($(".start-point"), path_array[path_array.length-1])
+      start_point_array.push(db_data.line_start_point)
+      stop_point_array.push(db_data.line_stop_point)
+      
+      if(path_array.length == 1 && db_data.line_start_point != "" ){
+        line = createLine($('#stop_'+db_data.line_start_point), path_array[path_array.length-1])
         $(".plot-image").append(line)
       }
 
-      if(path_array.length > 1){
+      if(path_array.length > 1 && start_point_array[start_point_array.length - 1] == start_point_array[start_point_array.length - 2] && stop_point_array[stop_point_array.length - 1] == stop_point_array[stop_point_array.length - 2]){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
+        $(".plot-image").append(line)
+      }
+      else if(db_data.line_start_point == null){
+        line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
+        $(".plot-image").append(line) 
+      }
+      else if(path_array.length > 1 && db_data.line_start_point != "" && db_data.exist){
+        // debugger;
+        // te = path_array.sort(function(a, b) {
+        //   var compA = $(a).attr('id').toUpperCase();
+        //   var compB = $(b).attr('id').toUpperCase();
+        //   return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
+        // })
+        last_point = $.grep(path_array, function(e){ return e.id == "point_" + db_data.last_point.id; })[0];
+        line = createLine(last_point, path_array[path_array.length-1])
+        $(".plot-image").append(line)
+      }
+      else {
+        line = createLine($('#stop_'+db_data.line_start_point), path_array[path_array.length-1])
         $(".plot-image").append(line)
       }
 
@@ -431,7 +678,6 @@
       }
 
       function elementDrag(e) {
-        // debugger
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
@@ -465,7 +711,8 @@
           //update drawing path for so we can use that path id to save point
           $("#drawing_path_for").val(response.path.id)
           $('.stops').removeClass('animate-element')
-          $('#stop_'+response.path.map_path_id).addClass('animate-element')
+          $('.start-point').addClass('animate-element')
+          / $('#stop_'+response.path.map_path_id).addClass('animate-element')
           $('html, body').animate({
             scrollTop: $(".plot-image").offset().top
           }, 500);
@@ -476,23 +723,88 @@
     });
 
     
+    var arr = []
+    data = []
+    var highlights = []
+    var points = []
     $("*#create_path").on("click", function(event){
+      $('.stops').removeClass('animate-element')
+      $('.start-point').removeClass('animate-element')
+      arr.push(this.href)
+      var url1  = arr[0].substring(arr[0].lastIndexOf('/') + 1);
+      var stop_1_id = url1.split('?')[0]
+      var stop_1_type = url1.split('=')[1]
+      highlights.push(this)
+      if (highlights.length <= 2){
+        $(this).parent().parent().css('backgroundColor', '#D3D3D3');
+      }
+      else {
+        $(highlights[0]).parent().parent().css('backgroundColor', '');
+        $(highlights[1]).parent().parent().css('backgroundColor', '');
+        $(this).parent().parent().css('backgroundColor', '#D3D3D3');
+        highlights = []
+        highlights.push(this)
+      }
 
-      $.ajax({
-        type: "POST",
-        url: this.href,
-        data: $(this).serialize(),
-        success: function(response) {
-          //update drawing path for so we can use that path id to save point
-          $("#drawing_path_for").val(response.path.id)
-          $('.stops').removeClass('animate-element')
-          $('#stop_'+response.path.map_path_id).addClass('animate-element')
-          $('#elevatorstop_'+response.path.map_path_id).addClass('animate-element')
-          $('html, body').animate({
-            scrollTop: $(".plot-image").offset().top
-          }, 500);
-        }
-      });
+      $('#stop_'+url1.split('?')[0]).addClass('animate-element')
+      if (arr.length == 2) {
+        $('.path_point').hide();
+        $('.connectingLines').hide();
+        var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
+        var stop_2_id = url2.split('?')[0]
+        var stop_2_type = url2.split('=')[1]
+        
+        stop_ids = [stop_1_id, stop_2_id]
+        stop_types = [stop_1_type, stop_2_type]
+        $.ajax({
+          type: "POST",
+          url: this.href,
+          data: {stop_ids: stop_ids, stop_types: stop_types},
+          success: function(response) {
+            if (response.path_points.length > 0) {
+              for(i=0; i < response.path_points.length; i++){
+                id = "point_"+response.path_points[i].id
+                point = document.getElementById(id)
+                point.style.display="block";
+                points.push(point)
+                $(".plot-image").append(point);
+              }
+              if (response.path.map_path_from_id == null){
+                $(".plot-image").append(createLine($('.start-point'), points[points.length-1]))
+              }
+              else{
+                $(".plot-image").append(createLine('#stop_'+response.path.map_path_from_id, points[points.length-1]))
+              }
+              for(i=0; i < points.length-1; i++){
+                $(".plot-image").append(createLine(points[i], points[i+1]))
+              }
+              $('#stop_'+stop_1_id).addClass('animate-element')
+              $('#stop_'+stop_2_id).addClass('animate-element')
+              arr = []
+              points = []
+              var elmnt = document.getElementById('testimg');
+              elmnt.scrollIntoView({behavior: "smooth", inline: "nearest"});
+              $("#drawing_path_for").val(response.path.id)
+            }
+            else{
+              $("#drawing_path_for").val(response.path.id)
+              $('.start-point').removeClass('animate-element')
+              / $('.stops').removeClass('animate-element')
+              id = arr[0].substring(arr[0].lastIndexOf('/') + 1);
+              $('#stop_'+stop_1_id).addClass('animate-element')
+              $('#stop_'+stop_2_id).addClass('animate-element')
+              arr = []
+              $('html, body').animate({
+                scrollTop: $(".plot-image").offset().top
+              }, 500);
+            }
+            
+            //update drawing path for so we can use that path id to save point
+          }
+
+        });
+
+      }
       event.preventDefault();
     });
 

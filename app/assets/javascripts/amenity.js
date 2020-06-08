@@ -91,7 +91,7 @@ $(document).ready(function(){
           if (addmode) {
             // save plotting for each selected unit
             for (i=0; i<selected.length; i++) {
-              savePlot(selected[i][0], dx, dy);
+              savePlot(selected[i][0], dx, dy,floor);
             }
             var url = "";
             if (typeof floorplan_id !== 'undefined'){

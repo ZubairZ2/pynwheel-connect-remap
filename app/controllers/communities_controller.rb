@@ -21,6 +21,7 @@ class CommunitiesController < ApplicationController
 
   def create
     @community = current_company.communities.new(community_params)
+    @community.lincoln_app = true if current_company.name.downcase.include?("lincoln") rescue nil
     if @community.save
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
@@ -216,6 +217,7 @@ class CommunitiesController < ApplicationController
     render :json=>{"status"=>"Importing"}
   end
 
+  
   def test_connection
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
@@ -297,7 +299,7 @@ class CommunitiesController < ApplicationController
     worksheet.write(0, 12, "Data Provider",format)
     worksheet.write(0, 13, "Self Tour (Yes/No)",format)
     worksheet.write(0, 14, "Active/Inactive",format)
-    worksheet.write(0, 15, "Date Activated",format)
+    worksheet.write(0, 15, "Subscription Start Date",format)
     worksheet.write(0, 16, "Date Inactivated",format)
     worksheet.write(0, 17, "Billing Month",format)
     worksheet.write(0, 18, "Billing Rate",format)
@@ -333,7 +335,7 @@ class CommunitiesController < ApplicationController
         worksheet.write(row, 14, community.locked.present? ? (community.locked ? "Inactive" : "Active") : "Active",format1)
         worksheet.write(row, 15, community.date_activated,format1)
         worksheet.write(row, 16, community.date_inactivated,format1)
-        worksheet.write(row, 17, community.billing_type == "annual" ? "Annual" : "Monthly (#{community.billing_month})",format1)
+        worksheet.write(row, 17, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly",format1)
         worksheet.write(row, 18, community.billing_rate,format1)
 
         row = row + 1
@@ -491,10 +493,15 @@ class CommunitiesController < ApplicationController
   end
   def save_tour_settings
     @community = Community.find params[:community_id]
+    @tour = @community.tour
     @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+    @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
     @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
     @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
     @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
+    @tour.save
+    @community.show_camera_button = params[:show_camera_button].present? ? true : false
+    @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
@@ -550,7 +557,7 @@ class CommunitiesController < ApplicationController
 
   def community_params
     params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
-      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
+      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
         :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,

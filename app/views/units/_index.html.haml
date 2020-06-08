@@ -8,11 +8,11 @@
             .box-header
               %h3.box-title Units
       .col-md-12
-        %a.btn.btn-success{:href => "/communities/#{@community.id}/units/new",:style => "width: 140px;"}
+        %a.btn.btn-success.loader_class{:href => "/communities/#{@community.id}/units/new",:style => "width: 140px;"}
           %i.fa.fa-plus-circle
           ADD UNIT
       .col-md-12
-        .dropdown.mt-5.mb-20
+        .dropdown.mt-5
           %button.dropbtn.btn.btn-primary MASS OVERRIDES
           .dropdown-content.mass_override_dropdown
             %a{:href => "##",'data-target' =>'#modal-to-set-available', 'data-toggle' => 'modal'} Available
@@ -23,9 +23,13 @@
               %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
             %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Details
             %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
-        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitMassOverridePopover","data-content" => " "}
+        %i.propertyDetailName.mb-20.fa.fa-question-circle{ "data-toggle" => "unitMassOverridePopover","data-content" => " "}
           %span#propertyDetailNameText
             Use this button to change data for multiple units at once, such as availability, floor number, details, and images.
+      -#.col-lg-12.col-md-12.mb-20
+      -#  %button.btn-success.done_btn{:onclick => "unit_goBack()"}
+      -#    %i.fa.fa-plus-circle
+      -#    DONE
 
       .col-md-12
         %h4{:style => "margin-left: 3px; color: grey;"}
@@ -163,6 +167,16 @@
                       %a.text-danger{"data-name"=>"Unit","data-href" => "#{community_unit_path(@community,u)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                         %i.fa.fa-trash.icon_size
 
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "unit_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
+
 #modal-to-change-floor.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
@@ -292,7 +306,7 @@
         Upload Image
       = form_tag set_image_community_units_path(@community), multipart: true do
         .modal-body.set-floor-modal-body
-          = file_field_tag 'image_file', :accept => 'image/jpeg',:required=>true, :id => "size_limit"
+          = file_field_tag 'image_file', :accept => 'image/*',:required=>true, :id => "size_limit"
           .row
             .col-md-4
               = check_box_tag 'select_all_units_for_image'
@@ -309,6 +323,10 @@
 
   / End Panel left Side
   :javascript
+    function unit_goBack()
+    {
+      window.location.reload();
+    }
      $(document).ready(function(){
 
       $('.wysihtml5').each(function(i, elem) {

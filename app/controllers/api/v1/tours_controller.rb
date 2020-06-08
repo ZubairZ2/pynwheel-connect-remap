@@ -11,7 +11,7 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       begin
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key])
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false)
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
@@ -31,10 +31,14 @@ class Api::V1::ToursController < ActionController::Base
     else
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
+        vs.image_bit = true
+        vs.crop_image_bit = true
         vs.image = tempFile
+        vs.croped = true
         if vs.id_card.present? && vs.image.present?
           vs.id_selfie_mismatch = false
-          email_content = "Please verify user on the following link <br/> <a href='#{manual_selfie_match_url vs.id }' target='_blank'> Visitor's ID page </a>"
+          url = Rails.env.production? ? "https://pynwheelapp.com/id_selfie_matching/#{vs.id }" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }"
+          email_content = "Please verify user on the following link <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'arslan.mirza@intagleo.com')
@@ -63,6 +67,9 @@ class Api::V1::ToursController < ActionController::Base
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.id_card = tempFile
+        vs.image_bit = false
+        vs.crop_image_bit = false
+        vs.croped = true
         vs.save
       rescue => ex
         success = false;
@@ -95,7 +102,7 @@ class Api::V1::ToursController < ActionController::Base
         rescue => ex
         end
         if a1.present? && a2.present? && a3.present?
-          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key])
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false)
         end
         if vs.present?
           arr << true
@@ -107,8 +114,37 @@ class Api::V1::ToursController < ActionController::Base
 
     end
   end
+  def start_tour_auto_message
+    begin
+      if params[:access_token] == "AC1097385e8559f1ad63"
+        to = params[:phone_number]
+        start_tour_auto_msg = "Thank you for choosing to tour our property!
+click here to start your tour
+https://apps.apple.com/us/app/self-tour/id1488907392"
+
+        prod_from = '+12017012957'
+        account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
+        auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
+        @client = Twilio::REST::Client.new(account_sid, auth_token)
+
+
+        message = @client.messages
+                      .create(
+                          body: start_tour_auto_msg,
+                          from: prod_from,
+                          to: to
+                      )
+        render :json=> {:success=>true, :message => "Message Sent"}
+      else
+        render :json=> {:success=>false, :message => "Message Not Sent", :error => "Invalid Token"}
+      end
+    rescue => ex
+      render :json=> {:success=>false, :message => "Message Not Sent", :error => ex}
+    end
+  end
   def tour_user_login
-    tu = TourUser.find_by(email: params[:email])
+    tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
+    tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name]) if tu.blank?
     if tu.present?
       render :json=> {:success=>true, :message => "User present", tour_user: tu}
     else
@@ -116,14 +152,43 @@ class Api::V1::ToursController < ActionController::Base
     end
   end
 
+  def start_tour_auto_message
+    begin
+      if params[:access_token] == "AC1097385e8559f1ad63"
+        to = params[:phone_number]
+        start_tour_auto_msg = "Thank you for choosing to tour our property!
+click here to start your tour
+https://apps.apple.com/us/app/self-tour/id1488907392"
+
+        prod_from = '+12017012957'
+        account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
+        auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
+        @client = Twilio::REST::Client.new(account_sid, auth_token)
+
+
+        message = @client.messages
+                      .create(
+                          body: start_tour_auto_msg,
+                          from: prod_from,
+                          to: to
+                      )
+        render :json=> {:success=>true, :message => "Message Sent"}
+      else
+        render :json=> {:success=>false, :message => "Message Not Sent", :error => "Invalid Token"}
+      end
+    rescue => ex
+      render :json=> {:success=>false, :message => "Message Not Sent", :error => ex}
+    end
+  end
+  
   def save_shared_tour
     shared_tour = SharedTour.new shared_tour_params
     if shared_tour.save
       tu = TourUser.find_by(id: params[:tour_user_id])
       
            # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
-      
-      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], device_id: params[:device_id]).group(:tour_stop_id).count
+      last_stop = VisitedStop.where(tour_user_id: params[:tour_user_id],tour_id: params[:tour_id]).last
+      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id],tour_key: last_stop.tour_key).group(:tour_stop_id).count
 
       description_arr = []
       gallery_arr = []
@@ -131,15 +196,16 @@ class Api::V1::ToursController < ActionController::Base
       visited_stops = []
 
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
+      visited_stops = visited_stops.compact rescue visited_stops
       community = visited_stops.last&.tour.community
       shared_tour_stops = {}
       stops = []
-      visited_stops.each_with_index do |x,i|
+      visited_stops.compact.each_with_index do |x,i|
         puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
         if x.stop_type != "elevator"
-          descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(description: nil)
+          descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
 
-          images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key], device_id: params[:device_id]).where.not(image: nil)
+          images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(image: nil)
           gallery_arr = []
           
           images.each do |ud|
@@ -150,12 +216,12 @@ class Api::V1::ToursController < ActionController::Base
             description_arr << un.description
           end
 
-          stop = x.stop_type.classify.constantize.where(id: x.stop_id) if x.present?
+          stop = x.stop_type.classify.constantize.where(id: x.stop_id).order(:id) if x.present?
           shared_tour_stops[x.stop_id] = {stops: stop, description: description_arr, images: gallery_arr }
         end
       end
       begin
-        FavoriteMailer.email_shared_tour([shared_tour.email, 'arslan.mirza@intagleo.com'],shared_tour_stops,community).deliver_now
+        FavoriteMailer.email_shared_tour([shared_tour.email],shared_tour_stops,community).deliver_now
       rescue => ex
         puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"
         puts ex
@@ -172,7 +238,7 @@ class Api::V1::ToursController < ActionController::Base
   def floorplan_units
     if params[:unit_id].present?
       unit = Unit.find_by_id(params[:unit_id])
-      @units = Unit.where(floorplan_id: unit.floorplan_id,community_id: unit.community_id) if unit.present?
+      @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
       @units.each do |u|
         if u.community.is_sitemap?
           u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
@@ -191,7 +257,9 @@ class Api::V1::ToursController < ActionController::Base
       success = false
       message = 'Please provide unit_id'
     end
-    render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+    unless params[:stringFormat].present? && params[:stringFormat] == "true"
+      render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+    end
   end
 
   private

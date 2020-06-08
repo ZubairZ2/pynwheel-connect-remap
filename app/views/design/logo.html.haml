@@ -40,10 +40,22 @@
             / Start L>ogo Upload section
             #home.tab-pane.fade.active.in{:role => "tabpanel"}
               = render 'secondary_logo'
-
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-bottom: 0px;"}
+            .col-lg-12.col-md-12
+              %button.btn-primary.done_btn{:onclick => "logo_page_goBack()",:style => "margin-left: -15px;"}
+                DONE
 #crop-image.modal.fade.edit-image
 #crop-secondary-logo.modal.fade.edit-image
 :javascript
+  function logo_page_goBack()
+  {
+    window.location.reload();
+  }
   if (localStorage.getItem("logoCropped") == "1")
   {
     localStorage.setItem("logoCropped", "0");

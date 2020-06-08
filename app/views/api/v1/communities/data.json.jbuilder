@@ -41,6 +41,7 @@ json.ui_settigs do
   json.overlay_size (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_size.present? ? @community.design.expressionist.overlay_size : "18px") : "18px")
   json.overlay_text_position (@community.design.expressionist.present? ? (@community.design.expressionist.overlay_text_position.present? ? @community.design.expressionist.overlay_text_position : "Left") : "Left")
 
+  
   if @community.theme_name.include?('gables')
     json.property_map_color @community.design.present? ? (@community.design.property_map_color.present? ? @community.design.property_map_color : '#d37474') : '#d37474'
   elsif @community.temporary_theme_name == 'modernist'
@@ -120,7 +121,7 @@ json.ui_settigs do
       json.secondary_font_size @community.design.secondary_font_size
       json.secondary_font_weight @community.design.secondary_font_weight
       json.secondary_text_align @community.design.secondary_text_align
-      json.secondary_font_color @community.design.secondary_font_color
+      json.secondary_font_color @community.design.secondary_font_color.present? ? @community.design.secondary_font_color : "#FFFFFF"
     end
     json.menu do
       if @community.temporary_theme_name == 'modernist' && @community.is_vertical_app
@@ -1276,7 +1277,6 @@ json.homescreen do
     json.loop_type "images"
   end
 end
-
 json.apartments do
   if @community.has_floorplates?
     json.map_type "floorplates"
@@ -1339,7 +1339,11 @@ json.apartments do
       json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
       json.available unit.available
       json.sold unit.sold
-      json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+      if @community.theme_name == "modernist"
+        json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.floorplan.description+"</div>"  : nil)
+      else
+        json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+      end
       json.x_plot unit.x_plot
       json.y_plot unit.y_plot
       json.building unit.building
@@ -1379,6 +1383,7 @@ json.apartments do
       else
         json.virtual_tour ""
       end
+      # json.iframe_enable_for_3Dtour unit.iframe_enable_for_3Dtour
 
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
@@ -1485,6 +1490,7 @@ json.apartments do
     else
       json.virtual_tour ""
     end
+    # json.iframe_enable_for_3Dtour floorplan.iframe_enable_for_3Dtour
 
     json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
@@ -1514,6 +1520,7 @@ json.apartments do
           json.name amenity.name
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
+          json.floor amenity.floor
           json.floorplate_id floor
           json.id amenity.id
         end
@@ -1639,6 +1646,7 @@ json.additional_pages do
       end
       json.position webpage.position.present? ? webpage.position : 0
       json.display_on_homepage webpage.display_on_homepage.present? ? webpage.display_on_homepage : false
+      # json.iframe_enable_for_3Dtour webpage.iframe_enable_for_3Dtour.present? ? webpage.iframe_enable_for_3Dtour : false
     end
   end
   if @community.imagepages.present?

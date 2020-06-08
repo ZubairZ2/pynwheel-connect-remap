@@ -1,0 +1,271 @@
+- content_for :title, "Visitor Details Page - Pynwheel"
+/ Main content
+
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-image
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          SUMMARY
+          %span
+            #{@tour_user.name}
+        -#%span{:style => "float: right;"}
+        -#  #{Time.zone.now}
+        -#%span{:style => "float: right;"}
+        -#  = image_tag  image_url("unlock.png"), :style => "height: 20px; width: 20px;"
+        -#%span{:style => "float: right;"}
+        -#  #{Time.zone.now}
+    .row
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12
+            .box.box-widget.panel-box.add-plan.pt-30
+              .row
+                .col-lg-6
+                  .col-lg-12.name_div{:style => "background: #efefef; margin: 30px; left: 17px;  width: 92%; display: inline-flex; align-items: center;"}
+                    .col-lg-3.col-md-3.col-sm-2.col-xs-6
+                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                    .col-lg-3.col-md-3.col-sm-3.col-xs-12.email_div{:style => " "}
+                      %strong
+                        #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
+                      %br
+                      %a.mt-5
+                        #{@tour_user.email}
+                      %br
+                      .mt-5
+                        #{@tour_user.phone_number}
+                    .col-lg-6.col-md-6.col-sm-6.col-xs-6
+                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+
+                  .row
+                    %h4{:style => "margin-left: 45px"}
+                      Alert
+                  .col-lg-12{:style => "background: #efefef; margin: 30px"}
+                    - @alerts.order("id DESC").each_with_index do |alert,index|
+                      - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
+                      .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
+                        .alert-div1{:style => "margin-top: 10px"}
+                          = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;"
+                          - if alert.arrived.present?
+                            #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                        %br
+                        .alert-div2{:style => "margin-top: -10px"}
+                          = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;"
+                          #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+                        %br
+                        .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
+                          = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;"
+                          - if end_time.present?
+                            #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                  //Tour Tracking
+                  %h4{:style => "margin-left: 30px"}
+                    Tour Tracking Tour 1
+                  .col-lg-12.col-md-12.col-sm-12.col-xs-12{:style => "background: #efefef; margin: 30px"}
+                    = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :style => "height: 100%; width: 100%;"
+
+                .col-lg-6
+                  .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
+                    - @visited_stop.each do |stop|
+                      - @stop = TourStop.find stop[0].to_i rescue next
+                      - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
+                      .row
+                        - image_hit = true
+                        - stop[1].each do |stop_image|
+                          - if stop_image.image.present?
+                            - if image_hit
+                              .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
+                                %strong{:style => "font-size: 16px;"}
+                                  #{@stop.name}
+                              .col-lg-2.col-md-2.col-sm-6.col-xs-6
+                                Tour photo
+                                %br
+                                = image_tag  @stop.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
+                                - image_hit = false
+                            .col-lg-2.col-md-2.col-sm-6.col-xs-6.user_photo
+                              User photo
+                              %br
+                              - if stop_image.is_rotated == true
+                                = image_tag  stop_image.image.url, :class => "", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
+                              - else
+                                = image_tag  stop_image.image.url, :class => "", :style => "height: 74px; width: 100px; margin-top: 8px; margin-left: 0px; "
+                        - stop[1].each do |stop_decription|
+                          - if stop_decription.description.present?
+                            .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
+                              User Notes
+                              %br
+                              .user_note{:style => "background: ;"}
+                                -##{stop_decription.description}
+                                = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
+
+                    -#.col-lg-12{:style => "background: #efefef;  margin: 30px "}
+                    -#  .col-lg-12
+                    -#    Pool
+                    -#  .col-lg-2
+                    -#    Tour photo
+                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
+                    -#  .col-lg-2
+                    -#    User photo
+                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
+                    -#  .col-lg-8
+                    -#    User Notes
+                    -#    %br
+                    -#    jher gr grgr grag grgrgr grioghio grg r gr grugrbsg grugr grgrg
+                    -#.col-lg-12{:style => "background: #efefef;  margin: 30px"}
+                    -#  .col-lg-12
+                    -#    Pool
+                    -#  .col-lg-2
+                    -#    Tour photo
+                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
+                    -#  .col-lg-2
+                    -#    User photo
+                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
+                    -#  .col-lg-8
+                    -#    User Notes
+                    -#    %br
+                    -#    jher gr grgr grag grgrgr grioghio grg r gr grugrbsg grugr grgrg
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+-#%script{:crossorigin => "anonymous", :integrity => "sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n", :src => "https://code.jquery.com/jquery-3.4.1.slim.min.js"}
+-#%script{:crossorigin => "anonymous", :integrity => "sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo", :src => "https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"}
+-#%script{:crossorigin => "anonymous", :integrity => "sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6", :src => "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"}
+
+-#
+-#%head
+-#  %title Hello, world!
+-#%body
+-#  .content
+-#    .top-title
+-#      .row
+-#        .col-md-6
+-#          %strong SUMMARY
+-#          CYPHERS, JENNIFER
+-#        .col-md-6
+-#          .row
+-#            .sm-txt.ml-auto
+-#              10/18/19 2:40 PM
+-#            .sm-txt
+-#              10/19/19 4:39 PM
+-#    / top-title ends
+-#    .main-content
+-#      .row
+-#        .col-md-6
+-#        .col-md-6
+-#          %strong TOUR DETAILS
+-#          Shady Acres
+-#      .row.pt-2
+-#        .col-md-6
+-#          .grey-card
+-#            .row.ml-0.mr-0
+-#              .img-box
+-#                %img{:alt => "", :src => "assets/pic1.jpg"}/
+-#              .img-box-info
+-#                %p.mb-0
+-#                  %strong Cyphers, Jennifer
+-#                %p.email.mb-0.small-text
+-#                  %a{:href => ""} jennifer@pnywheel.com
+-#                %p.number.mb-0.small-text 303.640.3652
+-#              .id-card.mt-auto.mb-auto
+-#                %img{:alt => "", :src => "id.jpg"}/
+-#          / grey-card ends
+-#          .row.ml-0.mr-0.mt-3.mb-3
+-#            %strong Alerts
+-#          .grey-card.p-1.small-text
+-#            .row.pb-1
+-#              .col-md-6
+-#                10/10/19 2:38 PM
+-#              .col-md-6
+-#                10/10/19 2:38 PM
+-#            .row.pb-1
+-#              .col-md-6
+-#                1 hour 25 minutes
+-#              .col-md-6
+-#                1 hour 25 minutes
+-#            .row.pb-1
+-#              .col-md-6
+-#                10/19/19 4:03 PM
+-#              .col-md-6
+-#                10/19/19 4:03 PM
+-#          / grey-card ends
+-#          .row.ml-0.mr-0.mt-4.mb-3
+-#            %strong Tour Tracking
+-#            Shady Acres
+-#          .grey-card.p-1
+-#            .slider
+-#              %img{:alt => "", :src => "slider.jpg"}/
+-#          / grey-card ends
+-#        .col-md-6
+-#          .grey-card.p-1{:style => "height: 100%;"}
+-#            .row.ml-0.mr-0
+-#              %strong Pool
+-#            .row.ml-0.mr-0
+-#              .tpic Tour Photo
+-#              .tpic User Photo
+-#              .unotes User notes
+-#            .row.ml-0.mr-0.pb-1
+-#              .tpic
+-#                %img{:alt => "", :src => "tpic.jpg"}/
+-#              .tpic
+-#                %img{:alt => "", :src => "upic.jpg"}/
+-#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+-#            .row.ml-0.mr-0
+-#              %strong Courtyard
+-#            .row.ml-0.mr-0
+-#              .tpic Tour Photo
+-#              .tpic User Photo
+-#              .unotes User notes
+-#            .row.ml-0.mr-0.pb-1
+-#              .tpic
+-#                %img{:alt => "", :src => "tpic.jpg"}/
+-#              .tpic
+-#                %img{:alt => "", :src => "upic.jpg"}/
+-#              .unotes{:style => "background-color: #ffffff;"} N/A
+-#            .row.ml-0.mr-0
+-#              %strong Apartment B-104
+-#            .row.ml-0.mr-0
+-#              .tpic Tour Photo
+-#              .tpic User Photo
+-#              .unotes User notes
+-#            .row.ml-0.mr-0.pb-1
+-#              .tpic
+-#                %img{:alt => "", :src => "tpic.jpg"}/
+-#              .tpic
+-#                %img{:alt => "", :src => "upic.jpg"}/
+-#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+-#    / main-content ends
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "visitor_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
+:javascript
+   if ("#{browser.device.iphone?}" == "true")
+   {
+     $(".user_id_image1").css("transform", "transform: rotate(90deg);");
+     $(".user_id_image2").css("transform", "transform: rotate(90deg);");
+   }
+   function visitor_show_goBack()
+  {
+    if (window.history.length == 1)
+     {
+      window.location.reload();
+     }
+     else
+     {
+      window.history.back();
+     }
+  }

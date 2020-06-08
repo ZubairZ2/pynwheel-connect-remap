@@ -1,0 +1,128 @@
+- content_for :title, "Visitor Details Page - Pynwheel"
+.divLoading.hidden
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-image
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          VISITORS
+    .row{:style => "margin-bottom: 70px;"}
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12#outer_div
+            .box.box-widget.panel-box.add-plan.pt-30
+              - if @tour_users.count == 0
+                %h3{:style => "text-align: center; font-weight: bolder"}
+                  No Visitor To Display
+              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.tour_user_table
+                %thead
+                  %tr
+                    %th
+                      Arrived
+                    %th
+                      Image
+                    %th
+                      Name
+                    %th
+                      Email
+                    %th
+                      Phone
+                    %th
+                    %th
+                      Visitor Details
+
+                -#%a{:href => "/communities/#{@community.id}/tour_users/#{user.id}", :style => "display:block"}
+                -#  .list-group-item#item_list{:style => "background: #{index%2 == 1 ? "#e8e8e8" : ""}", :onclick => "click_list(#{user.id})"}
+                    .row.row1
+                %tbody
+                  - @tour_users.each_with_index  do |user,index|
+                    .row
+
+                      %tr
+                        %td.col-lg-2
+                          .visitor_list.custom_label_color
+                            #{user.tour_histories.last.arrived.to_date} #{user.tour_histories.last.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                        %td.col-lg-1
+                          = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
+                        %td
+                          .col-lg-2.visitor_list
+                            = link_to "#{(user.last_name.present? ? user.last_name + ", " : "") + (user.first_name.present? ? user.first_name : user.name)}","/communities/#{@community.id}/tour_users/#{user.id}",:class => "name-list"
+                        %td.col-lg-2
+                          .visitor_list
+                            = link_to "#{user.email}", "/communities/#{@community.id}/tour_users/#{user.id}"
+                        %td.col-lg-1
+                          .visitor_list
+                            #{user.phone_number}
+                        %td.col-lg-2
+                          .visitor_list
+                            - if TourHistory.where(tour_user_id: user.id,lengthy_stay_email_sent: true,tour_id: @community.tour.id).present?
+                              = image_tag  "clock.png", :style => "height: 20px; width: 20px;  margin-left: 20px;"
+                            - if TourHistory.where(tour_user_id: user.id,id_mismatch: true,tour_id: @community.tour.id).present?
+                              = image_tag  "calender.png", :style => "height: 20px; width: 20px; margin-left: 20px;"
+                            - if TourHistory.where.not(tour_user_id: user.id,abandoned_tour_at_stop: true,tour_id: @community.tour.id).present?
+                              = image_tag  "open.png", :style => "height: 20px; width: 20px;  margin-left: 20px;"
+                        %td.col-lg-2
+                          .visitor_list
+                            = link_to 'Visitor Details' , community_tour_user_path(@community,user),:class=>"btn btn-default black-button loader_class"
+
+-#.content-wrapper
+-#  %section{:name => "visitors"}
+-#    .clearfix
+-#    .table-visitors
+-#      .heading
+-#        %h1 Visitors
+-#      .visitors_inner_tables
+-#        .table-responsive
+-#          %table.table
+-#            %tbody
+-#              - if @tour_users.present?
+-#                - @tour_users.each do |visitor|
+-#                  %tr
+-#                    - tours = visitor.tour_histories
+-#                    %td= tours.present? ? Time.now : Time.now
+-#                    %td
+-#                      = image_tag visitor.image.url, :width => "75px",:height => "75px" if visitor.image.present?
+-#                      = link_to visitor.name, community_tour_user_path(@community, visitor)
+-#                    %td
+-#                      %a.link{:href => "#"}= visitor.email
+-#                    %td= image_tag visitor.id_card.present? ? visitor.id_card.url : ""
+-#                    %td
+-#                      = link_to image_tag("clock"), community_tour_user_path(@community, visitor)
+-#                    %td= link_to image_tag("calender"), community_tour_user_path(@community, visitor)
+-#                    %td= link_to image_tag("open"), community_tour_user_path(@community, visitor)
+-#                    %td{:width => "20%"}
+-#              - else
+-#                %center
+-#                  %h3 No visitor for this community.
+-#
+.row
+  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "visitor_index_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
+:javascript
+  if ("#{browser.device.iphone?}" == "true")
+  {
+    $(".user_id_image").css("transform", "transform: rotate(90deg);");
+  }
+  function click_list(id)
+  {
+  }
+  function visitor_index_goBack()
+  {
+      window.location.reload();
+
+  }
