@@ -4,8 +4,12 @@ json.email @tour_user.email
 json.visual_id_verification @community.present? ? @community.tour.visual_id_verification : true
 @community.present? ? last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
 @tours.each do |tour|
-  if tour[0][1] == last_vs.tour_key
-    @tours = { [tour[0][0],tour[0][1]] => tour[1]}
+  if last_vs.present?
+    if tour[0][1] == last_vs.tour_key
+      @tours = { [tour[0][0],tour[0][1]] => tour[1]}
+    end
+  else
+    @tours = nil
   end
 end
 # @tours = { [@tours.keys.last[0],@tours.keys.last[1]] => @tours.values.last}
