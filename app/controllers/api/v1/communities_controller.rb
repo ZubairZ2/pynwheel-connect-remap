@@ -109,22 +109,76 @@ class Api::V1::CommunitiesController < ActionController::Base
       render :json=> {:success=>false, :message => "Invalid Token"}
     end
   end
+
   def community_tours
     @tour_user = TourUser.find_by_id params[:tour_user_id]
     @community = Community.find params[:id]
     @community.deleted_ids = []
     @community.save
     @tours = Tour.where(community_id: params[:id])
+    params[:current_time].present? ? current_time = params[:current_time] : current_time = DateTime.now
+    current_time = current_time.to_datetime
+
+    edge_state = EdgeState.find_by(community_id: params[:id])
+    if edge_state.present?
+      Thread.new do
+        tour_user = TourUser.find params[:tour_user_id]
+        access_token = RemoteLockService.new(@community).client_credentials
+        prev_data = tour_user.as_guests.where(community_id: params[:id])
+        unless prev_data.present?
+          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
+          tour_user.as_guests.create(community_id: params[:id], edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        else
+          RemoteLockService.new(@community).delete_access_guest(access_token,prev_data.last.guest_id)
+          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
+          prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        end
+      end
+    end
   end
   
   def delete_tour_stop
-    @tour_user = TourUser.find_by_id params[:tour_user_id]
     @community = Community.find params[:id]
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
     te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
     @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
     @community.save
     @tours = Tour.where(id: params[:tour_id])
+    @tour_user = TourUser.find_by(id: params[:tour_user_id])
+  
+    edge_state = EdgeState.find_by(community_id: params[:id])
+    if edge_state.present?
+      Thread.new do
+        allowed_ids = @community.tour.tour_stops.ids - @community.deleted_ids
+        allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
+        
+        # unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}
+        unit_or_amenity_names = []
+        allowed_stops.each do |stop|
+          if stop[0] == "unit"
+            unit = stop[0].classify.constantize.find stop[1]
+            if unit.building.present?
+              name = unit.building + "-" + unit.name
+            else
+              name = unit.name
+            end
+            unit_or_amenity_names << name
+          elsif stop[0] == "amenity"
+            amentiy = (stop[0].classify.constantize.find stop[1]).name
+            unit_or_amenity_names << amentiy if amentiy.present?
+          end
+        end
+
+        access_token = RemoteLockService.new(@community).client_credentials
+        locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
+        if locks.present?
+          tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+          locks.each do |lock|
+            RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+          end
+        end
+      end
+    end
   end
 
   def user_saved_tour

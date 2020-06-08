@@ -23,10 +23,33 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
+    @assigned_lock = @amenity.remote_locks.first
+  end
+
+  def load_remotelock_data
+    access_token = generate_remotelock_token
+    responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
+    RemoteLockService.new(current_community).update_deivces_in_db(responce)
+    es = EdgeState.find_by(community_id: current_community.id)
+    if es.nil?
+      render json: {locks: []}
+    else
+      render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+    end
+  end
+  
+  def clear_locks
+    amenity = Amenity.find params[:id]
+    amenity.remote_locks.delete_all
+    render json: {locks: amenity.remote_locks}
   end
 
   def update
     @amenity = Amenity.find(params[:id])
+    if params[:remote_lock].present?
+      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
+      remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
+    end
     begin
       ts = TourStop.find_by(stop_id: @amenity.id)
       if ts.present? && params[:amenity][:name].present?

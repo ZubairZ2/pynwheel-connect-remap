@@ -37,10 +37,32 @@ class UnitsController < ApplicationController
   def edit
     add_breadcrumb "Units", community_units_path(@community)
     add_breadcrumb "Edit Unit",edit_community_unit_path(@community,@unit)
+    @assigned_lock = @unit.remote_locks.first
+  end
+
+  def load_remotelock_data
+    access_token = generate_remotelock_token
+    responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
+    RemoteLockService.new(current_community).update_deivces_in_db(responce)
+    es = EdgeState.find_by(community_id: current_community.id)
+    if es.nil?
+      render json: {locks: []}
+    else
+      render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+    end
+  end
+
+  def clear_locks
+    unit = Unit.find params[:id]
+    unit.remote_locks.delete_all
+    render json: {locks: unit.remote_locks}
   end
 
   def update
-
+    if params[:remote_lock].present?
+      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
+      remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: params[:unit][:marketing_name])
+    end
     respond_to do |format|
       ######## save item that updated
       if (params[:unit][:availability].present? && params[:unit][:availability] == "Unoccupied")

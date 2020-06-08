@@ -1,0 +1,62 @@
+- content_for :title, "Save EdgeState - Pynwheel"
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      .box-header
+        .col-lg-12
+          %h3.box-title
+            = 'EdgeState Credentails'
+            %span
+        .col-md-12
+        -#   = link_to "<Back to #{@unit_name} Unit", edit_community_unit_path(current_community,@unit_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+      / /.box-header
+      / form start
+      = form_for :edgestate, :url=>community_edgestate_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                  .col-sm-6.col-lg-8.col-md-4.col-xs-12
+                    = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=>''
+                    %small Your public client id of EdgeState Account
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .col-sm-6.col-lg-8.col-md-4.col-xs-12
+                    = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> ''
+                    %small Your client secret of EdgeState Account
+                  = f.hidden_field :community_id, :value=> current_community.id
+        / /.box-body
+        .box-footer
+          - if @is_already_exists
+            = f.submit "Update Account", :class=>"btn btn-info pull-right loader_class"
+          - else
+            = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+
+  #edgeState-info.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+    .modal-dialog
+      .modal-content
+        .modal-header
+          .h4 First, Create Your EdgeState Account
+        .modal-body
+          .h5 EdgeState is a third party service that allows to control locks remotely. While creating the account your have to follow their own procedure.
+          .h5 Procedure for registering Pynwheel Appilication in your Edgestate Account
+          %ol
+            %li.h5 During account creation: when you are asked to give redirect uri, you have to give the following url to allow pynwheel to maintain your locks.
+            %dl 
+              %dd.h5{style: "color:blue"} https://pynwheel-staging.herokuapp.com/
+            %li.h5 Kindly fill the given fields with your client-id and client-secret of EdgeState Account.
+          .h5 Pynwheel will never ask you to enter your credentails again.
+        .modal-footer
+          %a.btn.btn-primary.btn-ok{href: 'https://connect.remotelock.com/sign-up', target: :_blank} Go to EdgeState
+:javascript
+  $(document).ready(function(){
+      $('#edgeState-info').modal('show')
+  })

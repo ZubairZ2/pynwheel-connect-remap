@@ -30,7 +30,7 @@ class SchedualToursController < ApplicationController
     phone_number = make_phone
 
     tu = TourUser.find_by(email: params[:tour_user][:email])
-    
+    # tu.name = params[:tour_user][:name] if tu.present?
     tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
     tu.phone_number = phone_number if phone_number.present?
 
@@ -73,19 +73,40 @@ class SchedualToursController < ApplicationController
   # POST /schedual_tours.json
   def create
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
+
+    tour_time, day_diff = get_tour_datetime_and_diff date
     
-    tour_date, tour_time, day_diff = get_tour_datetime_and_diff date
+    community = Community.find params[:community_id]
+    before_30_mints = tour_time.to_time - 30.minutes
+    after_30_mints = tour_time.to_time + 30.minutes
+    before_30_mints, c = get_tour_datetime_and_diff before_30_mints
+    after_30_mints, d = get_tour_datetime_and_diff after_30_mints
 
-    @schedual_tour = SchedualTour.new(tour_date: tour_date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
+    count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).count
+    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
 
-    respond_to do |format|
-      if @schedual_tour.save
-        format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
-        format.json { render :show, status: :created, location: @schedual_tour }
-      else
-        format.html { render :new }
-        format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
+    if community.tour.max_tour_users.blank?
+      respond_to do |format|
+        if @schedual_tour.save
+          format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
+          format.json { render :show, status: :created, location: @schedual_tour }
+        else
+          format.html { render :new }
+          format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
+        end
       end
+    elsif count < community.tour.max_tour_users.to_i
+      respond_to do |format|
+        if @schedual_tour.save
+          format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
+          format.json { render :show, status: :created, location: @schedual_tour }
+        else
+          format.html { render :new }
+          format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
+        end
+      end
+    else
+      render json: {message: "max tour users limit reached for the selected time", code: "400" }
     end
   end
 
@@ -94,9 +115,9 @@ class SchedualToursController < ApplicationController
   def update
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     
-    tour_date, tour_time, day_diff = get_tour_datetime_and_diff date
+    tour_time, day_diff = get_tour_datetime_and_diff date
 
-    @schedual_tour.update_attributes(tour_date: tour_date, tour_time: tour_time, day_diff: day_diff)
+    @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
     
     set_daily_email_sent = false
     set_daily_email_sent = true if day_diff >= 1
@@ -152,7 +173,7 @@ class SchedualToursController < ApplicationController
       tour_time = date.strftime("%l:%M %p")
       day_diff = (tour_date - server_current_date).to_i
 
-      [tour_date, tour_time, day_diff]
+      [tour_time, day_diff]
     end
 
     def send_email_and_other_notifications schedual_tour
@@ -188,11 +209,12 @@ Android Users: Download #{community_text} from Google Play #{app_link}
 
       # DelayedSchedulerMailerJob.perform_in(day_before, "Your Tomorrow Tour", delayed_day_before_content, tu.email) if day_before.present?
       # DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
-
+    
 
       community_mail = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Lucky you! Someone has scheduled a Self Tour at your property!<br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
       DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
+
       sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
 
       {email_content: email_content, web_notification: web_notification, sms_content: sms_content}

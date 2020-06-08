@@ -65,6 +65,7 @@
 class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
+  attr_readonly :uuid
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
@@ -87,7 +88,11 @@ class Community < ApplicationRecord
   has_many :webpages, dependent: :destroy
   has_many :imagepages, dependent: :destroy
   has_many :amenities, dependent: :destroy
+  has_many :opening_hours, dependent: :destroy
+  has_many :schedual_tours, dependent: :destroy
   has_one :tour, dependent: :destroy
+  has_one :edge_state, dependent: :destroy
+
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id

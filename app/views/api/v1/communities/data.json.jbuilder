@@ -2,6 +2,7 @@ local_assets_base_url = "http://192.168.101.77:3000"
 random_numbers = []
 json.version @version
 json.data_provider @community.data_provider
+json.company_name @community.company.name
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
   if @community.temporary_theme_name.include?('gables') || @community.temporary_theme_name == 'modernist'

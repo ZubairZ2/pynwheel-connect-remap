@@ -72,6 +72,9 @@
         border-top: 4px solid #ef4d88;
     }
   }
+  .color-red{
+    color: red;
+  }
 </style>
 
 <%= javascript_include_tag "jsTimezoneDetect" %>
@@ -236,6 +239,7 @@
               <div class="clearfix"></div>
               <div class="form-group">
                 <label>Date/Time *</label>
+                <span class="hidden" id="not-visiting-hours"></span>
                 <%= text_field_tag :tour_time,"", :class=>"form-control datepickertime", :placeholder=>"Date/Time",:maxlength=>"15",:autocomplete=>"off", required: 'required' %>
                 <%= hidden_field_tag :community_id, @community_id %>
                 <%= hidden_field_tag :user_time_zone, value: nil %>
@@ -281,7 +285,7 @@
       }
 
       $('#date_schedule_tour').click(function(){
-        $('.divLoading').removeClass('hidden')
+        // $('.divLoading').removeClass('hidden')
       });
 
       $('#confirm_reservation').click(function(){
@@ -566,6 +570,7 @@
           creditCard: true
         });
 
+        var days_disabled = <%= @disable_day_of_week %>
         // $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
         $('.datepickertime').datetimepicker({
           
@@ -578,8 +583,8 @@
           showClose: true,
           useCurrent: true,
           toolbarPlacement: "bottom",
-          stepping: 15
-          
+          stepping: 15,
+          daysOfWeekDisabled: days_disabled
         });
           $('.phoneNumber').keypress(function(event) {
               if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
@@ -589,24 +594,78 @@
               }
           });
 
-        $("#scheduleMyTourForm").on('submit', function(e){
+        // $('.datepickertime').on('dp.change', function(e){ 
+        //   // e.date._d.getDay()
+        //   console.log(e.date._d.getDay())
+          
+        //   $('.datepickertime').datetimepicker({    
+        //       disabledTimeIntervals: [[moment({ h: 0 }), moment({ h: 8 })], [moment({ h: 18 }), moment({ h: 24 })]]
+        //     });
+        // })
+        function getMinutes(str) {
+            var time = str.split(':');
+            return time[0]*60+time[1]*1;
+        }
+        function schedual_my_tour(params_data){
           $.ajax({
             type: "POST",
             url: "/schedual_tours.json",
-            data: $(this).serialize(),
+            data: params_data.serialize(),
             cache: false,
             success: function(data){
-              document.getElementById('sched_tour_id').value = data.id
-              tour_id = data.id;
-              $('.divLoading').addClass('hidden');
+              if(data.code != 400){
+                document.getElementById('sched_tour_id').value = data.id
+                tour_id = data.id;
+                $('.divLoading').addClass('hidden');
 
-              $("#scheduleMyTour").modal('hide');
-              $("#modalLoginForm").modal();
+                $("#scheduleMyTour").modal('hide');
+                $("#modalLoginForm").modal();
+                $("#not-visiting-hours").addClass('hidden')
+              }
+              else{
+                $("#not-visiting-hours").removeClass('hidden')
+                $("#not-visiting-hours").addClass('color-red').text(data.message)
+              }
             },
             fail: function(error){
               console.log(error)
             }
           });
+        }
+        
+        $("#scheduleMyTourForm").on('submit', function(e){
+
+          var visiting_times = <%= raw @visiting_times %>
+          var error_messages = <%= raw @error_message %>
+          var selected_date = $(".datepickertime").val()
+          selected_day = moment(selected_date).format('dddd')
+          selected_time = moment(selected_date).format('HH:mm')
+          // debugger
+
+          if(visiting_times.length > 0){
+            for(var d_t in visiting_times){
+              if (selected_day == visiting_times[d_t][0]){
+                var start = getMinutes(visiting_times[d_t][1]);
+                var end = getMinutes(visiting_times[d_t][2]);
+                var selected = getMinutes(selected_time);
+
+                if ((selected > start) && (selected < end)) {
+                  schedual_my_tour($(this))
+                }
+                else{
+                  $("#not-visiting-hours").removeClass('hidden')
+                  for(var each in error_messages){
+                    if (visiting_times[d_t][0] == error_messages[each][0]){
+                      $("#not-visiting-hours").addClass('color-red').text(error_messages[each][1])
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else{
+            schedual_my_tour($(this))
+          }
           e.preventDefault();
         });
 
@@ -647,8 +706,8 @@
           $form = $(this);
           $form.find("input[type=submit]").prop("disabled", true);
           Stripe.card.createToken($form, stripeResponseHandler);
-          return false;
           $('#confirm_reservation').attr('disabled','disabled');
+          return false;
           
         });
 
