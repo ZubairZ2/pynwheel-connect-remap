@@ -178,7 +178,7 @@ json.tours @tours do |tour|
       json.video_link_button_label unit.virtual_tour_button_label
       json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
       lease_pricing = []
-      if unit.lease_pricing.present?
+      if unit.lease_pricing.present? && !unit.modal_unit
         str_split = unit.lease_pricing.split(';')
         str_split.each do |ss|
           str = ss.split(':')
