@@ -53,16 +53,16 @@
                       - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                       .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                         .alert-div1{:style => "margin-top: 10px"}
-                          = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;"
+                          = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                           - if alert.arrived.present?
                             #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                         %br
                         .alert-div2{:style => "margin-top: -10px"}
-                          = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;"
+                          = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                           #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
                         %br
                         .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
-                          = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;"
+                          = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                           - if end_time.present?
                             #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                   //Tour Tracking
@@ -269,3 +269,4 @@
       window.history.back();
      }
   }
+  $('[data-toggle="visitor_popover"]').popover();
