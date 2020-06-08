@@ -17,20 +17,20 @@
           SUMMARY
           %span
             #{@tour_user.name}
-        = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right", data: { toggle: "modal", target: "#ChatSupport" })
+        = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right", data: { toggle: "modal", target: "#ChatSupport_a" })
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
         -#%span{:style => "float: right;"}
         -#  = image_tag  image_url("unlock.png"), :style => "height: 20px; width: 20px;"
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
-    #ChatSupport.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+    #ChatSupport_a.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
       .container.container_a
         %h3.text-center Chat logs
         .messaging_a
           .inbox_msg_a
             .mesgs_a
-              #msg_history.msg_history_a
+              #msg_history_a.msg_history_a
           %p.text-center.top_spac_a
             Powered by
             %a{href: "https://pynwheel-staging.herokuapp.com/", target: "_blank"} Pynwheel
@@ -80,9 +80,33 @@
                   //Tour Tracking
                   %h4{:style => "margin-left: 30px"}
                     Tour Tracking Tour 1
-                  .col-lg-12.col-md-12.col-sm-12.col-xs-12{:style => "background: #efefef; margin: 30px"}
-                    = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :style => "height: 100%; width: 100%;"
+                  .col-sm-6.col-lg-4.col-md-3.col-xs-12
+                    = select :floorplates , :images , @community.floorplates.all.collect{|f| [ f.name, f.id ] },{}, class: "form-control"
+                  .col-sm-6.col-lg-4.col-md-3.col-xs-12
+                    = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived, f.id ] } << ["test", "test"],{}, class: "form-control"
+                  #container.col-lg-12.p-0
+                    - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
+                    - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
 
+                    .map-block{:style => "position: relative;height: 65%;"}
+                      = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :style => "height: 100%; width: 100%;"
+                      - if @existing_stops.present?
+                        - @existing_stops.flatten.each_with_index do |stop, index|
+                          - next if (stop.x_plot + stop.y_plot) < 1
+                          - if stop.class.to_s == "Amenity"
+                            %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
+                              %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
+
+                          - elsif stop.class.to_s == "Elevator"
+
+                            - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
+                              %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+
+
+                          - else
+                            - next if (stop.y_plot + stop.x_plot) < 1
+                            %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                      
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
                     - @visited_stop.each do |stop|
@@ -298,12 +322,13 @@
   $('[data-toggle="visitor_popover"]').popover();
   
   $('#chat-logs').on('click', function(){
+    if ($('#msg_history_a').children().length == 0){
     
     var loadAdminChat, loadAdminChatHelper;
     
     loadAdminChatHelper = function(chat) {
         if(chat.name == "Support Team"){
-            $('#msg_history').append(`
+            $('#msg_history_a').append(`
                 <div class="outgoing_msg_a">
                     <div class="sent_msg_a">
                         <p>${chat.message}</p>
@@ -313,9 +338,9 @@
             `)
         }
         else {
-            $('#msg_history').append(`
+            $('#msg_history_a').append(`
                 <div class="incoming_msg_a">
-                    <div class="incoming_msg_img_a"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                    <div class="incoming_msg_img_a"> <img id="img_id_a" src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                     <div class="received_msg_a">
                         <div class="received_withd_msg_a">
                             <p>${chat.message}</p>
@@ -343,8 +368,69 @@
           url: '/chats/' + chatroom_id,
           success: function(data){
               loadAdminChat(data["chats"]);
-              $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+              $("#msg_history_a").animate({ scrollTop: $('#msg_history_a').prop("scrollHeight")}, 1000);
           }
       });
-  }
+    }
+    }
   });
+  function change_image(){
+    if($('#floorplates_images :selected').text() != "Select your option"){
+      var floorplate_id = $('#floorplates_images :selected').val()
+      var community_id = #{ raw @community.id};
+
+      $.ajax({
+          type: 'GET',
+          dataType: 'json',
+          cache: false,
+          url: '/communities/' + community_id + '/floorplates/' + floorplate_id + '/floatplate_images',
+          success: function(data){
+            $(".my_class").attr('src', data.image_src)
+          },
+          fail: function(data){
+            console.log(data)
+          }
+      });
+    }
+  }
+
+  function plot_data(){
+    var tour_history_id = $('#tour_histories_dates :selected').val()
+    var floorplate_id = $('#floorplates_images :selected').val()
+    var community_id = #{ raw @community.id};
+    var tour_user_id = #{ raw @tour_user.id};
+    
+    $(".map-block").children('i').remove()
+    if(tour_history_id != "test"){
+      $.ajax({
+          type: 'GET',
+          dataType: 'json',
+          cache: false,
+          url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/lock_ploting?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
+          success: function(data){
+            console.log(data)
+            data.existing_stops.flat().forEach(draw_stop)
+          },
+          fail: function(data){
+            console.log(data)
+          }
+      });
+    }
+  }
+
+  function draw_stop(stop, index){
+    if(stop.x_plot + stop.y_plot > 1){
+      var left_margin =  #{ ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i }
+      var right_margin = #{ ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i }
+
+      $(".map-block").append(`<i class="fa fa-unlock-alt stops" id="stop_${stop.id}" style="font-size: 35px; position: absolute; top: ${stop.y_plot - right_margin + 6}px; left: ${stop.x_plot - left_margin + 3}px; height:25px; width: 25px; color: #d37474; margin-top: 3px; "></i>`)
+    }
+  }
+
+  $("#floorplates_images").change(function () {
+        change_image()
+        plot_data()
+  });
+  $("#tour_histories_dates").change(function () {
+        plot_data()
+  })

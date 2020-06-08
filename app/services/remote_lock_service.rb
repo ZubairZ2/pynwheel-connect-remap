@@ -210,13 +210,11 @@ class RemoteLockService < BaseService
         end
     end
 
-    def get_all_events(access_token)
+    def get_all_events(access_token,page)
         if @edge_state_user.present?
             token_type = "Bearer"
             auth_header = token_type + " " + access_token
-
-            url = base_url + "/events" 
-            
+            url = page > 1 ? base_url + "/events/?page="+ page.to_s : base_url + "/events" 
             response = HTTParty.get(url,
                 :headers => { 'Authorization' => auth_header} )
             
