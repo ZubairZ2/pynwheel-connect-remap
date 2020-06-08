@@ -135,7 +135,7 @@
                   
 
                   <label>Phone Number *</label> 
-                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number",id: "phoneNumber", maxlength: 15 , autocomplete:  "false" %>
+                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 %>
                 </div>
               </div>
               <p>A credit card is required to complete the reservation<br>Your credit card will not be charged at this time with the exception of a $0.50 charge for verification purposes.</p>
@@ -274,6 +274,10 @@
         $('.divLoading').addClass('hidden')
         $("#scheduleMyTourSuccess").modal()
         $("html, body").animate({ scrollTop: 0 }, 600);
+      }
+      else
+      {
+          $('.divLoading').addClass('hidden');
       }
 
       $('#date_schedule_tour').click(function(){
@@ -584,10 +588,6 @@
                   event.preventDefault();
               }
           });
-          const myInput = document.getElementById('phoneNumber');
-           myInput.onpaste = function(e) {
-             e.preventDefault();
-           }
 
         $("#scheduleMyTourForm").on('submit', function(e){
           $.ajax({

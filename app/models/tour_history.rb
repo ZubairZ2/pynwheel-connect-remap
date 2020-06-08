@@ -42,21 +42,19 @@ class TourHistory < ApplicationRecord
   		send_email_sms_or_both @mail_content
   	end
 
-  	if self.left && self.end_tour_email_sent == false
+  	if self.left
   		@mail_content = get_alert_message('tour_has_ended')
       url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers"
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"+ "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
-  		self.update_attributes(end_tour_email_sent: true)
-      send_email_sms_or_both @mail_content
+  		send_email_sms_or_both @mail_content
       # community.deleted_ids = []
       community.save
   	end
 
-  	if self.abandoned_tour_at_stop.present? && self.abandoned_tour_email_sent == false
+  	if self.abandoned_tour_at_stop.present?
   		@mail_content = get_alert_message('abandoned_tour_at_stop')
   		@mail_content[1] = "#{@mail_content.last} stop #{self.abandoned_tour_at_stop.to_s}"
-  		self.update_attributes(abandoned_tour_email_sent: true)
-      send_email_sms_or_both @mail_content
+  		send_email_sms_or_both @mail_content
       # community.deleted_ids = []
       community.save
   	end

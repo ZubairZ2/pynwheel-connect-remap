@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  mount ActionCable.server => '/cable'
+
   get 'tour_users/index'
 
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
@@ -30,11 +30,6 @@ Rails.application.routes.draw do
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
-  
-  resources :chatrooms
-  resources :chats
-  get 'listening_message', to: 'chats#listening_message' 
-  post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages' 
   
   resources :companies do
     resources :communities
@@ -267,7 +262,6 @@ Rails.application.routes.draw do
         get :starting_point
         get :select_stops
         get :edit_amenity
-        get :test_automate
       end
       member do
         post :ajaxplotstartingpoint
@@ -366,6 +360,7 @@ Rails.application.routes.draw do
           post :login
           get :list_communities
           get :portico_list_communities
+
           post :portico_list_communities
           post :lincoln_list_communities
           post :update_version

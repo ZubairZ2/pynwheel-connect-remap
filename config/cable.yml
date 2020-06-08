@@ -1,13 +1,9 @@
 development:
-  adapter: redis
+  adapter: async
 
 test:
-  adapter: redis
+  adapter: async
 
 production:
   adapter: redis
-  url: <%= ENV["REDISCLOUD_URL"] %>
-
-staging:
-  adapter: redis
-  url: <%= ENV["REDISCLOUD_URL"] %>
+  url: redis://localhost:6379/1

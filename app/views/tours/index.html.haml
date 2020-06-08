@@ -43,15 +43,7 @@
             
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Visual id verification
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
-                  %label.label-primary{:for => "visual_id_verification"}
-                  %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+
                 Show Camera Button
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
@@ -59,15 +51,15 @@
                   = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
                   %label.label-primary{:for => "show_camera_button"}
                   %span.pl-15 Yes
-            / .form-group
-            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            /     Visual id verification
-            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            /     .TriSea-technologies-Switch
-            /       %span.pr-15 No
-            /       = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
-            /       %label.label-primary{:for => "visual_id_verification"}
-            /       %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Visual id verification
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
+                  %label.label-primary{:for => "visual_id_verification"}
+                  %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Add Unit Stops Based in Availability
@@ -95,11 +87,14 @@
             -#      = check_box_tag :show_notepad_button, true, @community.show_notepad_button, class: "show-notepad-button"
             -#      %label.label-primary{:for => "show_notepad_button"}
             -#      %span.pl-15 Yes
+
+
             -#.form-group.mt-30
             -#  %label.col-sm-16.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Self Tour icon size
             -#  .col-sm-12.col-lg-6.col-md-6.col-xs-12
             -#    = select_tag :marker_icon_size , options_for_select(self_tour_icon_size,@community.tour.marker_icon_size ), :class => "form-control"
+
             = submit_tag 'Save', class: "hidden"
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
@@ -328,13 +323,6 @@
               -#  %i.fa.fa-plus-circle
               -#  ADD PATH FOR STARTING POINT
 
-              = link_to test_automate_community_tours_path(current_community.id), class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
-                %i.fa.fa-plus-circle
-                Test Automate
-            -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
-            -#  %i.fa.fa-plus-circle
-            -#  ADD PATH FOR STARTING POINT
-
 
           - if @tours.tour_stops.present?      
             .row
@@ -346,7 +334,7 @@
               %h4 Add a Starting Point: After you click "Add Staring Point" click the map in the location that your visitors will begin your tours.
               %h4{:style => "display: inline"} Draw a Path between two stops: Choose two points from the list above by clicking on the "Way Finding" icon.
               %i.fa.fa-road.icon_size
-              %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes.
+              %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
               %h4 Drag and drop the icon onto the correct postion on the map.         
               %h4 To delete a point on the path, double-click the point. 
 

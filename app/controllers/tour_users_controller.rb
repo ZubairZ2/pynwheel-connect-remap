@@ -16,8 +16,6 @@ class TourUsersController < ApplicationController
     @tour_user = TourUser.find params[:id]
     @visited_stop = VisitedStop.where(tour_id: @community.tour.id,tour_user_id: @tour_user.id).group_by(&:tour_stop_id)
     @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
-    chatroom = Chatroom.find_by(tour_user_id: params[:id])
-    @chatroom_id = chatroom.present? ? chatroom.id : 0
   end
 
   def destroy
@@ -28,7 +26,7 @@ class TourUsersController < ApplicationController
     @tour_user.visited_stops.delete_all
     @tour_user.schedual_tour.delete_all
 
-    # @tour_user.destroy
+    @tour_user.destroy
     redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
   end
 
