@@ -1,7 +1,7 @@
 .text-center.image-upload.home-page-drag-box#gallery-image-upload-holder
   = image_tag "upload-image.png",:class=>"drag-image-padding-top dz-message"
   %p Drop files here or click to Upload
-.row.slide-imgage-boxs.sortable.image_slide_view
+.row.slide-imgage-boxs.sortable.image_slide_view{:style => "overflow-y: hidden;"}
   -#- @gallery_images.reload()
   - sortable_fetch(@gallery_images) do |gallery_image, id_tag|
     .col-lg-2{:id=> id_tag}
