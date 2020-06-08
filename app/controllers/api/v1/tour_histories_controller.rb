@@ -13,6 +13,15 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
       tour_history.tour_user_id = params[:tour_user_id]
       
+      @tour = Tour.find params[:tour_id]
+      if !@tour.visual_id_verification
+        begin
+          tu = TourUser.find params[:tour_user_id]
+          tu.id_selfie_mismatch = false
+          tu.save
+        rescue => ex
+        end
+      end
       tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
       
       tour_history.community = set_community
