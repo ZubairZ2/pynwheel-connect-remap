@@ -110,6 +110,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
   def community_tours
+    @tour_user = TourUser.find_by_id params[:tour_user_id]
     @community = Community.find params[:id]
     @community.deleted_ids = []
     @community.save
@@ -117,6 +118,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   
   def delete_tour_stop
+    @tour_user = TourUser.find_by_id params[:tour_user_id]
     @community = Community.find params[:id]
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
     te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []

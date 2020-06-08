@@ -86,16 +86,17 @@ class WebpagesController < ActionController::Base
   end
 
   def save_favorite
-    begin
-      array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
-      @unit = Unit.find params[:unit_id]
-      array << params[:unit_id]
-      cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
-      favorite = Favorite.find_by_session_id(cookies[:session_id]) 
-      favorite.unit_ids << params[:unit_id]
-      favorite.save
-    rescue => ex
-    end
+
+    array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
+    @unit = Unit.find params[:unit_id]
+    array << params[:unit_id]
+    cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
+    favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+    favorite.unit_ids << params[:unit_id]
+    fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.create(community_id: @community.id) 
+    fs.favorite_unit << params[:unit_id] unless fs.favorite_unit.include?(params[:unit_id])
+    fs.save
+    favorite.save
   end
 
   def delete_favorite
@@ -104,6 +105,11 @@ class WebpagesController < ActionController::Base
 
     cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
     favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+    fs = @community.favorite_stop if @community.favorite_stop.present?
+    if fs.present?
+      fs.favorite_unit = fs.favorite_unit - [params[:unit_id]] if fs.favorite_unit.include?(params[:unit_id])
+      fs.save
+    end
     favorite.unit_ids.delete params[:unit_id]
     favorite.save
     updated_unit_ids = []

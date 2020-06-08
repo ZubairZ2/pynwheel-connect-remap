@@ -77,6 +77,7 @@ class Community < ApplicationRecord
   has_many :floorplates, -> { order("number DESC") }, dependent: :destroy
   has_one :credential, dependent: :destroy
   has_one :design, dependent: :destroy
+  has_one :favorite_stop, dependent: :destroy
   has_one :sitemap, dependent: :destroy
   has_one :favorite_setting, dependent: :destroy
   has_one :neighborhood, dependent: :destroy
@@ -532,7 +533,7 @@ class Community < ApplicationRecord
 
   def email_favorites(params)
     email_to = params[:favorites][:email_to]
-    result = populate_favorites(params[:favorites][:items])
+    result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
     units = result[1] 
     puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
@@ -592,7 +593,9 @@ class Community < ApplicationRecord
 
   private
 
-  def populate_favorites(items_objs)
+  def populate_favorites(items_objs,email_to)
+    fs = self.favorite_stop
+    fs = self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.create(community_id: self.id)
     favorites = []
     units = Hash.new
     items_objs.each do |item|
@@ -615,7 +618,15 @@ class Community < ApplicationRecord
       #   u = Unit.new
       #   units << u
       end
+      if item[:type] == 'unit'
+        fs.user_favorites_unit[email_to] = [] #if fs.user_favorites_unit[email_to] == nil
+        fs.user_favorites_unit[email_to] << item[:id] unless fs.user_favorites_unit[email_to].include?(item[:id])
+      elsif item[:type] == 'amenity'
+        fs.user_favorites_amenity[email_to] = [] #if fs.user_favorites_amenity[email_to] == nil
+        fs.user_favorites_amenity[email_to] << item[:id] unless fs.user_favorites_amenity[email_to].include?(item[:id])
+      end
     end
+    fs.save
     return favorites , units
   end
   def validate_page_position
