@@ -67,6 +67,7 @@ class Community < ApplicationRecord
   # mount_uploader :logo, AvatarUploader
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
+  mount_base64_uploader :self_tour_logo, AvatarUploader
   belongs_to :company
   belongs_to :community_group
   has_many :community_users, dependent: :destroy
