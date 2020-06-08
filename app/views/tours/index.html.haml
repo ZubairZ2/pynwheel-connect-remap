@@ -51,6 +51,7 @@
                   %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+
                 Show Camera Button
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
@@ -58,6 +59,28 @@
                   = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
                   %label.label-primary{:for => "show_camera_button"}
                   %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Visual id verification
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
+                  %label.label-primary{:for => "visual_id_verification"}
+                  %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Add Unit Stops Based in Availability
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
+                  %label.label-primary{:for => "automate_unit_stop"}
+                  %span.pl-15 Yes      
             -#.form-group
             -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Show Notepad Button
@@ -67,6 +90,14 @@
             -#      = check_box_tag :show_notepad_button, true, @community.show_notepad_button, class: "show-notepad-button"
             -#      %label.label-primary{:for => "show_notepad_button"}
             -#      %span.pl-15 Yes
+
+
+            -#.form-group.mt-30
+            -#  %label.col-sm-16.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            -#    Self Tour icon size
+            -#  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+            -#    = select_tag :marker_icon_size , options_for_select(self_tour_icon_size,@community.tour.marker_icon_size ), :class => "form-control"
+
             = submit_tag 'Save', class: "hidden"
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
@@ -222,13 +253,13 @@
                       %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
                         %td= orderVar
+
                         %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
                             = u.building.present? ? (u.building + "-" + stop.name) : stop.name
                           - else
                             = stop.name
-
                         %td
                           -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
                           -#  %i.fa.fa-eye
@@ -236,6 +267,7 @@
                           - if stop.stop_type == "unit"
 
                             - u = Unit.find stop.stop_id
+
                             - unless u.modal_unit
                               = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
                                 %i.fa.fa-eye.icon_size

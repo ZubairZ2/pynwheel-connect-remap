@@ -360,6 +360,7 @@ Rails.application.routes.draw do
           post :login
           get :list_communities
           get :portico_list_communities
+
           post :portico_list_communities
           post :lincoln_list_communities
           post :update_version
