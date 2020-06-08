@@ -13,6 +13,10 @@ json.tours @tours do |tour|
   json.is_sitemap @community.is_sitemap
   json.show_camera_button @community.show_camera_button
   json.show_notepad_button @community.show_notepad_button
+  json.tour_setting do
+    json.show_map @community.show_map
+    json.mdu @community.mdu
+  end
   if @community.is_sitemap
     json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
@@ -35,14 +39,14 @@ json.tours @tours do |tour|
 
   stops_arr = []
   if @community.is_sitemap
-    stops_arr = @community.tour.tour_stops.where(display_stop: true).order(:sort)
+    stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
   else
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
       if @community.tour.sort_hash[floor.to_s].present?
         @community.tour.sort_hash[floor.to_s].each do |s_id|
           if (s_id.present?)
             stop = (TourStop.find_by_id(s_id))
-            stops_arr << stop if stop.display_stop rescue next
+            stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
           end
         end
       end

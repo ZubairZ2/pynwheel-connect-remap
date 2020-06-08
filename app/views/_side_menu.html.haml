@@ -32,7 +32,7 @@
           = link_to community_design_index_path(current_community) do
             %i.fa.fa-tv
             %span Design
-      - if (current_user.is_super_admin? || current_user.is_community_admin? )
+      - if (current_user.is_super_admin? || current_user.is_community_admin? ) && current_community.mdu
         %li.loader_class{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
           %a{:href => "#{community_settings_path(current_community)}"}
             %i.fa.fa-gears
@@ -57,13 +57,13 @@
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu.property_map_intent_list{:style=>"#{controller_name =='elevators'? 'display: block' : ''}"}
-          - if (current_community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? ))
+          - if (current_community.is_sitemap && current_community.show_map && (current_user.is_super_admin? || current_user.is_community_admin? ))
             %li.loader_class{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
               %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
                 %i.fa.fa-map-marker
                 %span Property Map
                 %span.pull-right-container
-          - elsif (current_user.is_super_admin? || current_user.is_community_admin? )
+          - elsif current_community.show_map && (current_user.is_super_admin? || current_user.is_community_admin? )
             %li.loader_class{:class=>"#{controller_name =='floorplates' && params[:amenities].blank? ? 'active' : ''}"}
               %a{:href => "#{community_floorplates_path(current_community)}"}
                 %i.fa.fa-database
@@ -75,13 +75,13 @@
               = link_to community_amenities_path(current_community)  do
                 %i.fa.fa-plus-square
                 %span Amenity Images
-          - if (current_user.is_super_admin? || current_user.is_community_admin? )
+          - if (current_user.is_super_admin? || current_user.is_community_admin? ) && current_community.mdu
             %li.loader_class{:class=>"#{controller_name =='floorplans' || controller_name =='floorplan_amenities' ? 'active' : ''}"}
               %a{:href => "#{community_floorplans_path(current_community)}"}
                 %i.fa.fa-columns
                 %span Floor Plans
                 %span.pull-right-container
-          - if (current_user.is_super_admin? || current_user.is_community_admin? )
+          - if (current_user.is_super_admin? || current_user.is_community_admin? ) && current_community.mdu
             %li.loader_class{:class=>"#{controller_name =='units' ? 'active' : ''}"}
               = link_to community_units_path(current_community)  do
                 %i.fa.fa-laptop

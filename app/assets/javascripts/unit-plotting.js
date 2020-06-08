@@ -71,7 +71,7 @@
 
         $.post( "/communities/"+community_id+"/tours/" + id + "/ajaxplottourstoppoint",
             {
-
+                "floor": floor,
                 "tour_stop_id": id
             },
             function(data,status,xhr) {

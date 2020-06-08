@@ -84,6 +84,7 @@ class CommunitiesController < ApplicationController
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       else
+        inner_check = true
 
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
@@ -92,24 +93,39 @@ class CommunitiesController < ApplicationController
         @community.date_activated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "0")
         @community.date_inactivated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "1")
         params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
+        if params[:community][:show_map].present?
+          if @community.show_map == false &&  params[:community][:show_map] == "1"
+            ts = TourStop.where(tour_id: @community.tour.id, latitude: nil,longitude: nil)
+            ts1 = TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0)
+            ts.destroy_all if ts.present?
+            ts1.destroy_all if ts1.present?
 
-        if @community.update(community_params)
-          @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
-          if params[:community][:name].present?
-            format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
-          else
-            format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+            # if TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0).present?
+            #   format.html { redirect_to community_settings_page_path(current_community),error: 'Please remove tour stop that are not plotted on property map.' }
+            #   flash[:error] = "Please remove tour stop that are not plotted on property map."
+            #   inner_check = false
+            # end
           end
-          format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
-        else
-          flash[:error] = @community.errors.full_messages.join(',')
-          if params[:community][:name].present?
-            format.html { render :edit }
+        end
+        if inner_check
+          if @community.update(community_params)
+            @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
+            if params[:community][:name].present?
+              format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
+            else
+              format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+            end
+            format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
           else
-            format.html { render :settings_page }
+            flash[:error] = @community.errors.full_messages.join(',')
+            if params[:community][:name].present?
+              format.html { render :edit }
+            else
+              format.html { render :settings_page }
+            end
+            message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
+            format.js {render js: "$('#flash-message').html('#{message}')"}
           end
-          message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
-          format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       end
     end
@@ -561,7 +577,8 @@ class CommunitiesController < ApplicationController
 
   def community_params
     params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo,
-      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
+      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :show_map, :mdu, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
+
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
         :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
