@@ -22,7 +22,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         rescue => ex
         end
       end
-      tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
+      tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch rescue false
       
       tour_history.community = set_community
       if tour_history.save
