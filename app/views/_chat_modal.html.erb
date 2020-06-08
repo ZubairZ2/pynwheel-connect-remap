@@ -1,0 +1,579 @@
+<%= javascript_include_tag "jsTimezoneDetect" %>
+
+<html>
+  <head>
+    <style type="text/css">
+
+      .container-chat{max-width:938px; margin-left: 285px; margin:auto; background: #f8f8f8 none repeat scroll 0 0;}
+      .inbox_people {
+        background: #f8f8f8 none repeat scroll 0 0;
+        float: left;
+        overflow: hidden;
+        width: 27%; border-right:1px solid #c4c4c4;
+      }
+      .inbox_msg {
+        background: #f8f8f8 none repeat scroll 0 0;
+        border: 1px solid #c4c4c4;
+        clear: both;
+        overflow: hidden;
+      }
+      .top_spac{ margin: 20px 0 0;}
+
+
+      .recent_heading {float: left;}
+      .srch_bar {
+        display: inline-block;
+        text-align: right;
+        width: 60%; padding:
+      }
+      .headind_srch{ padding:10px 29px 10px 20px; overflow:hidden; border-bottom:1px solid #c4c4c4;}
+
+      .recent_heading h4 {
+        color: #05728f;
+        font-size: 21px;
+        margin: auto;
+      }
+      .srch_bar input{ border:1px solid #cdcdcd; border-width:0 0 1px 0; width:80%; padding:2px 0 4px 6px; background:none;}
+      .srch_bar .input-group-addon button {
+        background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
+        border: medium none;
+        padding: 0;
+        color: #707070;
+        font-size: 18px;
+      }
+      .srch_bar .input-group-addon { margin: 0 0 0 -27px;}
+
+      .chat_ib h5{ font-size:15px; color:#464646; margin:0 0 8px 0;}
+      .chat_ib h5 span{ font-size:13px; float:right;}
+      .chat_ib p{ font-size:14px; color:#989898; margin:auto}
+      .chat_img {
+        float: left;
+        width: 11%;
+      }
+      .chat_ib {
+        float: left;
+        padding: 0 0 0 15px;
+        width: 88%;
+      }
+
+      .chat_people{ overflow:hidden; clear:both;}
+      .chat_list {
+        border-bottom: 1px solid #c4c4c4;
+        margin: 0;
+        padding: 18px 16px 10px;
+      }
+      .inbox_chat { height: 480px; overflow-y: scroll;}
+
+      .active_chat{ background:#ebebeb;}
+
+      .incoming_msg_img {
+        display: inline-block;
+        width: 6%;
+      }
+      .received_msg {
+        display: inline-block;
+        padding: 0 0 0 10px;
+        vertical-align: top;
+        width: 92%;
+      }
+      .received_withd_msg p {
+        background: #ebebeb none repeat scroll 0 0;
+        border-radius: 3px;
+        color: #646464;
+        font-size: 14px;
+        margin: 0;
+        padding: 5px 10px 5px 12px;
+        width: 100%;
+      }
+      .time_date {
+        color: #747474;
+        display: block;
+        font-size: 12px;
+        margin: 8px 0 0;
+      }
+      .received_withd_msg { width: 57%;}
+      .mesgs {
+        float: left;
+        padding: 30px 15px 0 25px;
+        width: 70%;
+      }
+
+      .sent_msg p {
+        background: #05728f none repeat scroll 0 0;
+        border-radius: 3px;
+        font-size: 14px;
+        margin: 0; color:#fff;
+        padding: 5px 10px 5px 12px;
+        width:100%;
+      }
+      .outgoing_msg{ overflow:hidden; margin:26px 0 26px;}
+      .sent_msg {
+        float: right;
+        width: 46%;
+      }
+      .input_msg_write input {
+        background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
+        border: medium none;
+        color: #4c4c4c;
+        font-size: 15px;
+        min-height: 48px;
+        width: 93%;
+      }
+
+      .type_msg {border-top: 1px solid #c4c4c4;position: relative;}
+      .msg_send_btn {
+        background: #05728f none repeat scroll 0 0;
+        border: medium none;
+        border-radius: 50%;
+        color: #fff;
+        cursor: pointer;
+        font-size: 17px;
+        height: 33px;
+        position: absolute;
+        right: 0;
+        top: 11px;
+        width: 33px;
+      }
+      .messaging { padding: 0 0 20px 0;}
+      .msg_history {
+        height: 440px;
+        overflow-y: auto;
+      }
+
+        .badge {
+            display: inline-block;
+            min-width: 10px;
+            padding: 3px 7px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            background-color: #247dab;
+            border-radius: 10px;
+        }
+        .zero {
+            background-color: #58ce77 !important;
+        }
+        .notification {
+            color: white;
+            text-decoration: none;
+            padding: 15px 26px;
+            position: relative;
+            display: inline-block;
+            border-radius: 2px;
+        }
+        .notification .new_msgs {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 2px 9px;
+            border-radius: 50%;
+            background-color: red;
+            color: white;
+        }
+    </style>
+  </head>
+  
+  <body>
+     <audio id="alarm">
+        <source src="/assets/notification.ogg" type="audio/ogg" allow="autoplay">
+    </audio>
+
+    <a class="btn btn-success btn-lg notification" data-toggle="modal" data-target="#ChatSupport" href="url" id="widget-button">
+        <span>Chat Support</span>
+        <span class="new_msgs hidden" id="new_msgs"><i>!</i></span>
+    </a>
+
+    <div class="modal" id="ChatSupport" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="container container-chat" style="margin-top: 10px;">
+            <h3 class=" text-center">Chat Support</h3>
+            <div class="messaging">
+                <div class="inbox_msg">
+                    <div class="inbox_people">
+
+                        <div class="headind_srch">
+                            <div class="recent_heading">
+                                <h4>Recent Tour Users</h4>
+                            </div>
+                        </div>
+
+                        <div class="inbox_chat" id='support_sidebar'>
+                            <% @chatrooms.order('id DESC').each_with_index do |chatroom,index| %>
+                                <% if index == 0 %>
+                                    <div class="chat_list active_chat" id="chat_with_<%= chatroom.id %>">
+                                <% else %>
+                                    <div class="chat_list" id="chat_with_<%= chatroom.id %>">
+                                <% end %>
+
+                                <div class="chat_people">
+                                    <div class="chat_img"> <img src= <%= chatroom.tour_user.image.present? ?  chatroom.tour_user.image.url : @default_user_image %> alt= <%= chatroom.tour_user.name %> > </div>                                                                     
+                                        <div class="chat_ib">
+                                            <a class="sidebar-chat" data-remote="true" href="/chats/<%= chatroom.id %>" style="overflow: hidden;display: block; width: 100%;"> 
+                                                <p> 
+                                                    <span style="color: black;"> <%= chatroom.tour_user.name %> </span>
+                                                    <% @notifications.each do |notification|  %>
+                                                        <% if notification[0] ==  chatroom.id and notification[1]>0 and notification[1] != 99999%>
+                                                            <span class="badge" id="notifi_count_of_<%= chatroom.id %>" style="float: right;"><%= notification[1] %></span>
+                                                        <% end %>
+                                                    <% end %>
+                                                </p>
+                                                <p> 
+                                                    <a> <%= chatroom.tour_user.email %> </a>
+                                                </p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% end %>
+                        </div>
+
+                    </div>
+
+                    <div class="mesgs">
+
+                        <div class="msg_history" id="msg_history">
+                            <% if @chatrooms.present? %>
+                                <% @chatrooms.last.chats.order('id ASC').each do |chat| %>
+                                    <% if(chat.name == "Support Team") %>
+                                        <div class="outgoing_msg">
+                                            <div class="sent_msg">
+                                                <p> <%=chat.message%> </p>
+                                                <span class="time_date"> <%= chat.client_date.present? ? chat.client_date.to_datetime.strftime("%l:%M %p | %b %d") : "Invalid date" %> </span>
+                                            </div>
+                                        </div>
+                                    <% else %>
+                                        <div class="incoming_msg">
+                                            <div class="incoming_msg_img"> <img src= <%= @chatrooms.last.tour_user.image.present? ?  @chatrooms.last.tour_user.image.url : @default_user_image %> alt= <%= @chatrooms.last.tour_user.name %> > </div>
+                                            <div class="received_msg">
+                                                <div class="received_withd_msg">
+                                                    <p> <%=chat.message%> </p>
+                                                    <span class="time_date"> <%= chat.client_date.present? ? chat.client_date.to_datetime.strftime("%l:%M %p | %b %d") : "Invalid date" %> </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% end %>
+                                <% end %>
+                            <% end %>
+                        </div>
+                        
+                        <div class="type_msg">
+                            <div class="input_msg_write">
+
+                                <%= form_for :chat, url: chats_path, format: :json, remote: true , html: { id: 'Support-Team-Form'} do |form| %>
+                                    <%= form.text_field :message, id: :message, class: "write_msg", required: true, placeholder: "Enter your message" %>
+                                    <%= form.hidden_field :name, id: :name, value: 'Support Team' %>
+                                    <%= form.hidden_field :chatroom_id, id: :chatroom_id %>
+                                    <%= form.hidden_field :client_date, id: :client_date %>
+                                    <button class="msg_send_btn" type="button" id="Support-Team-Submit"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                                <% end %>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-center top_spac"> Powered by <a target="_blank" href="https://pynwheel-staging.herokuapp.com/">Pynwheel</a></p>
+
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+
+        set_unread_messages_to_zero = function(chatroom_id){
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                cache: false,
+                url: '/mark_all_as_read/' + chatroom_id,
+                success: function(msg){
+                },
+                fail: function(error){
+                    console.log(error)
+                }
+            });
+        }
+
+        $(document).ready(() => {
+            var chatroom_list = <%= raw @chatroom_list %>
+            
+            var channel, loadAdminChat, pusher, updateAdminChat, updateAdminChatrooms;
+            $("#client_date").val(new Date())
+            var last_chat_id = <%= @chatrooms.present? ? @chatrooms.last.id : 0 %>
+
+            if(last_chat_id != 0)
+                $("#chatroom_id").val(last_chat_id)
+
+            $("#widget-button").on('click', function(){
+                if ($('.active_chat').length > 0) {
+                    var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
+                    set_unread_messages_to_zero(chatroom_id)
+                }
+            });
+
+            $("#ChatSupport").on('shown.bs.modal', function(){
+                if ($('.active_chat').length > 0) {
+                    $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+                    var chatroom_id = $('.active_chat').find('a').attr('href').split('/')[2]
+                    id = "#chat_with_" + chatroom_id
+                    if($('#support_sidebar').children(id).find('span').length > 1)
+                        $('#support_sidebar').children(id).find('span').last().remove()
+                    show_notifi_on_widget()
+                }
+            });
+
+            show_notifi_on_widget = function(){
+                var hidden = true
+                for(var each in chatroom_list){
+                    var span_id = "#notifi_count_of_" + chatroom_list[each]
+                    if($(span_id).length>0){
+                        hidden = false
+                    }
+                }
+                if(hidden)
+                    $('#new_msgs').addClass('hidden')
+                else
+                    $('#new_msgs').removeClass('hidden')
+            }
+
+            show_notifi_on_widget()
+
+            loadAdminChatHelper = function(chat) {
+                if (chat.message == "Hello, how can we help you?")
+                    chat.client_date = new Date()
+                if(chat.name == "Support Team"){
+                    $('#msg_history').append(`
+                        <div class="outgoing_msg">
+                            <div class="sent_msg">
+                                <p>${chat.message}</p>
+                                <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                            </div>
+                        </div>
+                    `)
+                }
+                else {
+                    $('#msg_history').append(`
+                        <div class="incoming_msg">
+                            <div class="incoming_msg_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                            <div class="received_msg">
+                                <div class="received_withd_msg">
+                                    <p>${chat.message}</p>
+                                    <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                                </div>
+                            </div>
+                        </div>
+                    `)
+                }
+            };
+
+            // function for displaying chat messages that belong to chat selcted in the admin sidebar
+            loadAdminChat = function(chatArray) {
+                for (var item in chatArray) {
+                    loadAdminChatHelper(chatArray[item])
+                }
+            };
+
+            // if the available chat in the sidebar is clicked, call the function that displays it's messages
+            $('body').on('ajax:success', '.sidebar-chat', function(xhr, data) {
+                $('#msg_history').html("")
+                if(data["chats"].length > 0){
+                    // first update chatroom_id  of form 
+                    $("#chatroom_id").val(data["chats"][0].chatroom_id)
+                    
+                    loadAdminChat(data["chats"]);
+                    $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+                    
+                    set_unread_messages_to_zero(data["chats"][0].chatroom_id)
+                }
+                $(".active_chat").removeClass('active_chat')
+                $(this).parent().parent().parent().addClass('active_chat')
+
+                var id = '#notifi_count_of_' + data["chats"][0].chatroom_id
+                $(id).remove()
+                show_notifi_on_widget()
+
+            });
+
+            // function to update admin's chat with new chat messages
+            updateAdminChat = function(chat) {
+                if($("#chatroom_id").val() == chat.chatroom_id){
+                    if(chat.name == "Support Team"){
+                        var id = "#chat_with_" +  chat.chatroom_id
+                        $(id).addClass('active_chat')
+                        if (chat.message == "Hello, how can we help you?")
+                            chat.client_date = new Date()
+                        $('#msg_history').append(`
+                            <div class="outgoing_msg">
+                                <div class="sent_msg">
+                                    <p>${chat.message}</p>
+                                    <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span> 
+                                </div>
+                            </div>
+                        `)
+                    }
+                    else {
+                        $('#msg_history').append(`
+                            <div class="incoming_msg">
+                                <div class="incoming_msg_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                                <div class="received_msg">
+                                    <div class="received_withd_msg">
+                                        <p>${chat.message}</p>
+                                        <span class="time_date"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `)
+                    }
+                    $('#msg_history').scrollTop($('#msg_history')[0].scrollHeight);
+
+                    
+                    if ($('#ChatSupport').hasClass('in')){
+                        // don't show unread count number for user currently communicated with if modal is open
+                        // and set his all messages count by all support team users to zero
+                        set_unread_messages_to_zero(chat.chatroom_id)
+                    }
+                    else{
+                        id = "#chat_with_" + chat.chatroom_id
+                        span = `<span class="badge" id="notifi_count_of_${chat.chatroom_id}" style="float: right;">${chat.unread_count}</span>`
+                        if ($('#support_sidebar').children(id).find('span').length > 1)
+                            $('#support_sidebar').children(id).find('span').last().text(chat.unread_count)
+                        else
+                            $('#support_sidebar').children(id).find('span').parent().append(span)
+                        document.getElementById('alarm').play();
+                        show_notifi_on_widget()
+                    }
+                }
+                else{
+                    var id = "#chat_with_" + chat.chatroom_id
+                    var span
+                    $('#support_sidebar').children(id).remove()
+                    if(chat.unread_count == 0){
+                        span = `<span class="badge zero" id="notifi_count_of_${chat.chatroom_id}" style="float: right; color: #58ce77">.</span>`
+                    }
+                    else{
+                        span = `<span class="badge" id="notifi_count_of_${chat.chatroom_id}" style="float: right;">${chat.unread_count}</span>`
+                    }
+                    $('#support_sidebar').prepend(`
+                            <div class="chat_list" id="chat_with_${chat.chatroom_id}">
+                                <div class="chat_people">
+                                    <div class="chat_img"> <img src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                                    <div class="chat_ib">
+                                        <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}" style="overflow: hidden;display: block; width: 100%;"> 
+                                            <p> 
+                                                <span style="color: black;"> ${chat.tour_user.name} </span>
+                                                ${span}
+                                            </p>
+                                            <p> <a> ${chat.tour_user.email} </a> </p>
+                                        </a>
+                                    </div> 
+                                </div>
+                            </div>`);
+                    document.getElementById('alarm').play();
+                }
+                show_notifi_on_widget()
+            };
+    
+            // function to update the available chats in the sidebar
+            updateAdminChatrooms = function(chatroom) {
+                var is_user_exists = false
+                
+                // check for if user already exists in sidebar
+                $('#support_sidebar').children().each(function () {
+                    var result = $(this).children().children().next().children().attr("href").split('/')
+                    var chat_room_id = result[result.length-1]
+                    if (chat_room_id == chatroom.id){
+                        is_user_exists = true
+                    }
+                });
+
+                if ($('#support_sidebar').children().length == 0){
+                    // if there is only one user, so he is being currently viewed,then update chatroom_id  of form 
+                    $("#chatroom_id").val(chatroom.id)
+                }
+
+                if (is_user_exists == false) {
+                    $('#support_sidebar').prepend(`
+                        <div class="chat_list" id="chat_with_${chatroom.id}">
+                            <div class="chat_people">
+                                <div class="chat_img"> <img src=${chatroom.tour_user.image} alt=${chatroom.tour_user.name}> </div>
+                                <div class="chat_ib">
+                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}" style="overflow: hidden;display: block; width: 100%;"> 
+                                        <p> <span style="color: black;"> ${chatroom.tour_user.name} </span></p>
+                                        <p> <a> ${chatroom.tour_user.email} </a> </p>
+                                    </a>
+                                </div> 
+                            </div>
+                        </div>`);
+                }
+
+                chatroom_list.push(chatroom.id)
+            };
+
+            // clear the chat input field after sending message
+            $('#Support-Team-Form').keyup(function(e){
+                if(e.keyCode == 13)
+                {
+                    $('#Support-Team-Form').children('#message').val('')
+                }
+            });
+            
+            $('#Support-Team-Form').keydown(function(e){
+                if(e.keyCode == 13)
+                {
+                    $('#client_date').val(new Date())
+                }
+            });
+
+
+            $('#Support-Team-Submit').on('click', function(){
+                message = $('#message').val()
+                name = $('#name').val()
+                chatroom_id = $('#chatroom_id').val()
+                // client_date = $('#client_date').val()
+                client_date = new Date()
+
+                req_params = {"chat[message]": message, "chat[name]": name, "chat[chatroom_id]": chatroom_id, "chat[client_date]": client_date}
+                $('#Support-Team-Form').children('#message').val('')
+                $.ajax({
+                    type: 'POST',
+                    url: '/chats',
+                    dataType: 'json',
+                    data: req_params,
+                    cache: false,
+                    success: function(data){
+                        loadAdminChat(data["chats"]);
+                        $("#msg_history").animate({ scrollTop: $('#msg_history').prop("scrollHeight")}, 1000);
+                    }
+                });
+            })
+
+            pusher = new Pusher('<%= ENV["PUSHER_KEY"] %>', {
+                cluster: '<%= ENV["PUSHER_CLUSTER"] %>',
+                encrypted: true
+            });
+
+            var all_channels = <%= raw @listening_channels %>
+
+            for (var each_channel in all_channels) {
+                channel = pusher.subscribe(all_channels[each_channel]);
+                // console.log("listening to ", all_channels[each_channel])
+
+                channel.bind('new-chat', function(data) {
+                    return updateAdminChat(data);
+                });
+
+                channel.bind('new-chatroom', function(data) {
+                    return updateAdminChatrooms(data);
+                });
+            }
+
+        });
+
+          
+    </script>
+
+  </body>
+  
+</html>

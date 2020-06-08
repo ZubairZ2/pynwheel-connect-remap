@@ -16,7 +16,9 @@ Rails.application.configure do
   if Rails.root.join('tmp/caching-dev.txt').exist?
     config.action_controller.perform_caching = true
 
-    config.cache_store = :memory_store
+    # config.cache_store = :memory_store
+    config.cache_store = :redis_store
+    
     config.public_file_server.headers = {
       'Cache-Control' => 'public, max-age=172800'
     }
@@ -58,6 +60,8 @@ Rails.application.configure do
 
   config.action_mailer.delivery_method = :letter_opener
   
+  config.action_cable.mount_path = '/cable'
+
   # config.action_mailer.delivery_method = :smtp
 
   # config.action_mailer.smtp_settings = {

@@ -100,6 +100,9 @@ class Community < ApplicationRecord
   after_create :create_sms_email_content
   validate :validate_page_position
 
+  # before_validation :gen_uuid, on: :create
+  # validates :uuid, presence: true, uniqueness: true
+
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
   after_update :crop_image
@@ -517,6 +520,10 @@ class Community < ApplicationRecord
     self.email_text = CommunityConstants::EMAIL_TEXT
     self.save
   end
+
+  # def gen_uuid
+  #   self.uuid = SecureRandom.uuid
+  # end
 
   def make_address
     address = ""

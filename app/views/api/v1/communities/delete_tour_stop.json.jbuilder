@@ -25,7 +25,6 @@ json.tours @tours do |tour|
     json.show_map @community.show_map
     json.mdu @community.mdu
 
-  end
   fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
   
   favorite_unit_array = (fs.present? ? fs.favorite_unit : []) + (fs.user_favorites_unit[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_unit[@tour_user.email] : [])

@@ -30,6 +30,14 @@
     .navbar-custom-menu
       - if user_signed_in?
         %ul.nav.navbar-nav
+          - if current_community.present? and current_community.chat_control
+            %li.mt-5
+              %a.btn.mr-5.notification#widget-button{"data-name"=>"visitor", "data-target" => "#ChatSupport", "data-toggle" => "modal", "data-href" => "url", style: "background: #20a345; color:white;  height: 34px;padding-top: 7px; border-radius: 4px; margin-right: 14px;"}
+                %i.fa.fas.fa-comment.fa-lg
+                %span Chat Support
+                %span#new_msgs.new_msgs.hidden
+                  %i
+                    %b{style: "font-weight: 900;"} !
           %li.search-box.hidden
             / search form
             %form#sidebar-form.sidebar-form{:action => "#", :method => "get"}

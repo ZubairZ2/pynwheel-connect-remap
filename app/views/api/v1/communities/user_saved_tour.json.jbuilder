@@ -33,8 +33,8 @@ json.tours @tours do |tour|
       # @tour = TourStop.find visited_stop[0]
       json.type @tour.stop_type
       if @tour.stop_type == "unit"
-        json.unit_id unit.id
         unit = Unit.find @tour.stop_id
+        json.unit_id unit.id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
         json.name "Apartment "+unit.marketing_name
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")

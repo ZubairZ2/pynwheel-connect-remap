@@ -142,6 +142,11 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
             %i.fa.fa-share
             %span Tour Scheduler Widget
+      -# - if (current_community.chat_control)
+      -#   %li
+      -#     %a{"data-toggle"=>"modal","data-target"=>"#share-chat-widget",:href => "##"}
+      -#       %i.fa.fa-share
+      -#       %span Chat Widget
       - if (current_community.self_tour)
         %li.loader_class{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
           %a{:href => "#{community_tours_path(current_community)}"}
