@@ -483,7 +483,6 @@ json.tours @tours do |tour|
     @existing_path_points.flatten!
     json.path_points @existing_path_points
 
-
     # binding.pry
     i+=1
     counter += 1
