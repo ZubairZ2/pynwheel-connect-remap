@@ -2,7 +2,18 @@ json.success true
 json.message "success"
 json.data @units do |u|
         json.id u.id
-        json.availability_url u.availability_url.present? ? u.availability_url : ""
+        if u.provider == "resman"
+                begin
+                      j = u.availability_url.split('/')
+
+                        url = j[0]+"//"+j[2]+"/Portal/Access/ApplicantRegistration?accountID="+u.community.credential.resman_account_id+"&propertyID="+u.community.credential.resman_property_id+"&redirectUrl=https://"+ j[2]+"/"+j[3]+"/"+j[4]+"/Continue?accountID="+u.community.credential.resman_account_id+"&unit="+u.provider_unit_id+"&propertyID="+u.community.credential.resman_property_id + "&"
+                        json.availability_url url
+                rescue Exception => e
+                        json.availability_url ""
+                end
+        else
+                json.availability_url u.availability_url.present? ? u.availability_url : ""
+        end
         json.community_id u.community_id
         json.provider u.provider
         json.property_id u.property_id
