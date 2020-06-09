@@ -2,7 +2,7 @@ class AmenitiesController < ApplicationController
   before_action :authenticate_user!
   before_action :check_community
   add_breadcrumb "Home", :root_path
-
+  skip_before_action :load_tour_users_chats, only: [:load_remotelock_data, :clear_locks]
   def index
     @amenities = current_community.amenities.order(id: :desc)
     add_breadcrumb "Amenity Images", community_amenities_path(current_community)

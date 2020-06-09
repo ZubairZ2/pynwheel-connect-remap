@@ -3,6 +3,7 @@ class UnitsController < ApplicationController
   before_action :set_community
   before_action :check_community
   before_action :set_unit, only: [:edit,:update,:destroy]
+  skip_before_action :load_tour_users_chats, only: [:load_remotelock_data, :clear_locks]
   def index
     #@units = @community.units.page(params[:page]).per(10)
     @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
