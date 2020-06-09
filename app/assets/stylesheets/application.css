@@ -57,8 +57,17 @@
      border-radius: 10px;
      display: none;
  }
- 
- 
+ .lock_mismatch  {
+     color: #ffffff !important;
+     background-color: #e46d6d !important;
+ }
+ .update-lock  {
+     float: right;
+     margin-top: 5px;
+ }
+ .btn-text-color  {
+     color: #ffffff !important;
+ }
  @font-face {
      font-family: 'GaramondPro';
      src: url('AGaramondPro-Regular.otf');
