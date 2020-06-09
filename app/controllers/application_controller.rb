@@ -7,6 +7,7 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
   helper_method :current_company
+  before_action :load_tour_users_chats
   def current_community
   	if params[:community_id].present?
 	  	@community ||= Community.find params[:community_id]
@@ -44,8 +45,17 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_out_path_for(resource_or_scope)
+    if cookies[:community_id].present?
+      community = Community.find cookies[:community_id]
+      community.update_attributes(is_chat_login: false)
+    end
     new_user_session_path
   end
+
+  def after_sign_in_path_for(resource_or_scope)
+    root_url
+  end
+
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?

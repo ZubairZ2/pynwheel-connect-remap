@@ -137,17 +137,6 @@
                   = check_box_tag :show_tour_page, true, @community.show_tour_page, class: "show-tour-page"
                   %label.label-primary{:for => "show_tour_page"}
                   %span.pl-15 Yes
-            
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-
-                Show Camera Button
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
-                  %label.label-primary{:for => "show_camera_button"}
-                  %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Visual id verification
@@ -157,6 +146,24 @@
                   = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
                   %label.label-primary{:for => "visual_id_verification"}
                   %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Show Camera Button
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
+                  %label.label-primary{:for => "show_camera_button"}
+                  %span.pl-15 Yes
+            / .form-group
+            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            /     Visual id verification
+            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            /     .TriSea-technologies-Switch
+            /       %span.pr-15 No
+            /       = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
+            /       %label.label-primary{:for => "visual_id_verification"}
+            /       %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Add Unit Stops Based in Availability
@@ -190,12 +197,12 @@
             -#      %label.label-primary{:for => "show_notepad_button"}
             -#      %span.pl-15 Yes
 
-
             -#.form-group.mt-30
             -#  %label.col-sm-16.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Self Tour icon size
             -#  .col-sm-12.col-lg-6.col-md-6.col-xs-12
             -#    = select_tag :marker_icon_size , options_for_select(self_tour_icon_size,@community.tour.marker_icon_size ), :class => "form-control"
+
 
             = submit_tag 'Save', class: "hidden"
     .box.box-info.add-plan.mt-20#logo_header
@@ -270,11 +277,13 @@
                         %label.text-grey-v To
                       %input.day-list.bg-grey-v{name: "to_1", type: "time", value: "05:00"}
                     .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-      .box-footer{style: "padding-bottom: 20px;"}
-        %button.btn.btn-primary#add-btn
-          %span.fa.fa-v.fa-plus.font-17-v
-            Add
+              .asd{style: "padding-bottom: 20px;"}
+                %button.btn.btn-primary#add-btn{style: "margin-left: 10;"}
+                  %span.fa.fa-v.fa-plus.font-17-v
+                    Add
+                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}       
         %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}       
+                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}       
 
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
@@ -502,6 +511,13 @@
               -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
               -#  %i.fa.fa-plus-circle
               -#  ADD PATH FOR STARTING POINT
+
+              = link_to test_automate_community_tours_path(current_community.id), class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
+                %i.fa.fa-plus-circle
+                Test Automate
+            -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
+            -#  %i.fa.fa-plus-circle
+            -#  ADD PATH FOR STARTING POINT
 
 
 

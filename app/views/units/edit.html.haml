@@ -46,7 +46,8 @@
   
   var IsSelectedLockMatch = function(){
     if($('#remote_lock :selected').text() != "Select your option"){
-      var lock_name = $('#remote_lock :selected').text().split(' ')[0]
+      var index = $('#remote_lock :selected').text().lastIndexOf(" ");
+      var lock_name = $('#remote_lock :selected').text().substring(0, index);
 
       var name_should_be
       if($('#unit_building').val().length > 0){

@@ -37,9 +37,6 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
-    Thread.new do
-      generate_remotelock_token
-    end
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
@@ -580,7 +577,9 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
+    cookies[:community_id] = params[:id]
     @community = Community.find params[:id]
+    @community.update_attributes(is_chat_login: true)
   end
 
   def community_params

@@ -50,6 +50,7 @@
 
 class User < ApplicationRecord
   acts_as_reader
+  # attr_readonly :uuid
   has_paper_trail
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
@@ -63,6 +64,8 @@ class User < ApplicationRecord
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
 
+  # before_validation :gen_uuid, on: :create
+  # validates :uuid, presence: true, uniqueness: true
 
   def all_companies
     Company.all.map(&:name).sort
@@ -86,4 +89,12 @@ class User < ApplicationRecord
   def is_community_manager?
     role == "Community manager"
   end
+
+  # def gen_uuid
+  #   self.uuid = SecureRandom.uuid
+  # end
+
+  # def self.reader_scope
+  #   where(role: "Community admin")
+  # end
 end

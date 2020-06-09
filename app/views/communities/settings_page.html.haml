@@ -190,6 +190,15 @@
                       = f.check_box :touchscreen_app
                       %label.label-primary{:for => "community_touchscreen_app"}
                       %span.pl-15 Yes
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Chat Control
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :chat_control
+                    %label.label-primary{:for => "community_chat_control"}
+                    %span.pl-15 Yes
               -#- if current_user.is_super_admin?
               -#  .form-group
               -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

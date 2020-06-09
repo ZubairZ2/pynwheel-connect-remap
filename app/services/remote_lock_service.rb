@@ -91,7 +91,18 @@ class RemoteLockService < BaseService
             auth_header = token_type + " " + access_token
 
             url = base_url + "/access_persons"
+
+            if current_time.to_s.count('-') == 2                            # GMT +
+                start_time = current_time.iso8601.split('+')[0]
+                ends_time = (current_time + 90.minutes).iso8601.split('+')[0]
+            elsif current_time.to_s.count('-') == 3                         # GMT -
+                char_pos = current_time.iso8601.to_s.rindex('-')
+                index = char_pos - 1
+                start_time = current_time.iso8601.to_s.slice(0..index)
+                ends_time = (current_time + 90.minutes).iso8601.to_s.slice(0..index)
+            end
             
+
             response = HTTParty.post(url,
                 body: {
                     type: "access_guest",
@@ -99,8 +110,8 @@ class RemoteLockService < BaseService
                         name: tour_user.name,
                         email: tour_user.email,
                         phone: tour_user.phone_number,
-                        starts_at: current_time.iso8601.split('+')[0],
-                        ends_at: (current_time + 90.minutes).iso8601.split('+')[0],
+                        starts_at: start_time,
+                        ends_at: ends_time,
                         generate_pin: true
                     }
                 }.to_json,
@@ -202,9 +213,9 @@ class RemoteLockService < BaseService
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
             
-            # puts "---"*50
-            # puts response
-            # puts "---"*50
+            puts "---"*50
+            puts response
+            puts "---"*50
 
             return response
         end

@@ -139,7 +139,8 @@
 
   var IsSelectedLockMatch = function(){
     if($('#remote_lock :selected').text() != "Select your option"){
-      var lock_name = $('#remote_lock :selected').text().replace(' (lock)','');
+      var index = $('#remote_lock :selected').text().lastIndexOf(" ");
+      var lock_name = $('#remote_lock :selected').text().substring(0, index);
 
       if(lock_name != $('#amenity_name').val()){
         $('#remote_lock').addClass('lock_mismatch')
