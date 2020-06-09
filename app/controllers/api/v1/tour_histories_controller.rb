@@ -12,7 +12,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
       tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
       tour_history.tour_user_id = params[:tour_user_id]
-      
       @tour = Tour.find params[:tour_id]
       if !@tour.visual_id_verification
         begin
@@ -24,9 +23,21 @@ class Api::V1::TourHistoriesController < ActionController::Base
       end
       tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch rescue false
       
+      tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
+      
       tour_history.community = set_community
+      chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
+      if chatroom.present?
+        if params[:last_msg_id].present?
+          count = Chat.where("name = ? AND chatroom_id = ? AND id > ?", "Support Team", chatroom.id, params[:last_msg_id]).count
+        else
+          count = 0
+        end
+      else
+        count = 0
+      end
       if tour_history.save
-        render :json=> {:success=>true, :message => "success", :data => tour_history}
+        render :json=> {:success=>true, :message => "success", :un_read_msgs_count=> count, :data => tour_history}
       else
         render :json=> {:success=>false, :message => "tour history was not saved, please try again."}
       end
