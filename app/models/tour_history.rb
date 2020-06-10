@@ -74,16 +74,38 @@ class TourHistory < ApplicationRecord
 				access_token = RemoteLockService.new(community).client_credentials
 				page = 1
 
-				while page < 5 do
+				while page <= 5 do
 					responce = RemoteLockService.new(community).get_all_events(access_token,page)
 
 					responce["data"].each do |event|
 						if event["type"] == "unlocked_event" or event["type"] == "locked_event"
 							if event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded"
 								# if event["attributes"]["associated_resource_name"] == self.tour_user.name and event["attributes"]["pin"] == "5705"
-								if event["attributes"]["associated_resource_id"] == as_guests_data.guest_id
-									# occurred_at = (event["attributes"]["occurred_at"].to_datetime - 5.hours)
-									occurred_at = (event["attributes"]["occurred_at"].to_datetime)
+								if event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == as_guests_data.guest_id
+									occurred_at = (event["attributes"]["occurred_at"].to_datetime - 5.hours) # remote is using "America/Chicago" timezone that's why -5 hours
+									# occurred_at = (event["attributes"]["occurred_at"].to_datetime)
+
+									puts '---'*50
+									puts occurred_at
+									puts start_time
+									puts end_time
+									puts '---'*50
+									
+									if occurred_at >= start_time and occurred_at <= end_time
+
+										event_type = event["type"]
+										lock_id = event["attributes"]["publisher_id"]
+										lock_type = event["attributes"]["publisher_type"]
+										rml = RemoteLock.find_by(device_id: lock_id) 
+
+										self.lock_histories.create(event: event_type, occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id)
+									end
+								elsif event["attributes"]["associated_resource_name"] == self.tour_user.name and event["attributes"]["method"] == "pin" and event["attributes"]["pin"].present?
+									# this check is for testing because remote locks set expires user data after some time causing not showing their ids
+									# it might cause error - stay alert
+
+									occurred_at = (event["attributes"]["occurred_at"].to_datetime - 5.hours) # remote is using "America/Chicago" timezone that's why -5 hours
+									# occurred_at = (event["attributes"]["occurred_at"].to_datetime)
 
 									puts '---'*50
 									puts occurred_at

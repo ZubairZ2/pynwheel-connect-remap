@@ -22,25 +22,27 @@ class TourUsersController < ApplicationController
 
     unit_ids = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit").map{|x| x.stop_id}.uniq
     amenity_ids = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity").map{|x| x.stop_id}.uniq
-    @existing_stops = []
+
     unless @community.is_sitemap
       units = @community.floorplates.first.units.where(id: unit_ids)
       amenities = @community.floorplates.first.amenities.where(id: amenity_ids)
     end
+
+    @existing_stops = []
     @existing_stops << units if units.present?
     @existing_stops << amenities if amenities.present?
 
-    # testing lines
-    unless amenities.present?
-      puts '------------------ testing line amenities --------------------'
-      @existing_stops << Amenity.where(amenityable_type: "Floorplate", id: [297, 1360, 1022, 1023])
-    end
+    # # testing lines
+    # unless amenities.present?
+    #   puts '------------------ testing line amenities --------------------'
+    #   @existing_stops << Amenity.where(amenityable_type: "Floorplate", id: [297, 1360, 1022, 1023])
+    # end
     
-    # testing lines
-    unless units.present?
-      puts '------------------ testing line units --------------------'
-      @existing_stops << (Floorplate.find 265).units
-    end
+    # # testing lines
+    # unless units.present?
+    #   puts '------------------ testing line units --------------------'
+    #   @existing_stops << (Floorplate.find 265).units
+    # end
     # touruser_remotelock_data
     # @tour_user.tour_histories.last.update_attributes(arrived: "2020-06-08 13:50:01".to_datetime, left: "2020-06-08 14:40:01")
   end
@@ -107,17 +109,17 @@ class TourUsersController < ApplicationController
     @existing_stops << units if units.present?
     @existing_stops << amenities if amenities.present?
 
-    # testing lines
-    unless amenities.present?
-      puts '------------------ testing line amenities --------------------'
-      @existing_stops << Amenity.where(amenityable_type: "Floorplate", id: [297, 1360, 1022, 1023])
-    end
+    # # testing lines
+    # unless amenities.present?
+    #   puts '------------------ testing line amenities --------------------'
+    #   @existing_stops << Amenity.where(amenityable_type: "Floorplate", id: [297, 1360, 1022, 1023])
+    # end
 
-    # testing lines
-    unless units.present?
-      puts '------------------ testing line units --------------------'
-      @existing_stops << (Floorplate.find 265).units
-    end
+    # # testing lines
+    # unless units.present?
+    #   puts '------------------ testing line units --------------------'
+    #   @existing_stops << (Floorplate.find 265).units
+    # end
 
     render json: {existing_stops: @existing_stops}, status: 200
   end
