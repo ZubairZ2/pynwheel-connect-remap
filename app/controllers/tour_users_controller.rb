@@ -42,6 +42,7 @@ class TourUsersController < ApplicationController
       @existing_stops << (Floorplate.find 265).units
     end
     # touruser_remotelock_data
+    # @tour_user.tour_histories.last.update_attributes(arrived: "2020-06-08 13:50:01".to_datetime, left: "2020-06-08 14:40:01")
   end
 
   def touruser_remotelock_data
