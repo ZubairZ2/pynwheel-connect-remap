@@ -10,9 +10,9 @@ json.visual_id_verification @community.present? ? @community.tour.visual_id_veri
 # end
 # @tours = { [@tours.keys.last[0],@tours.keys.last[1]] => @tours.values.last}
 # @tours = @tours.last
-tour = @tour
+tours = [@tour]
 tour_key = @last_vs.tour_key
-json.tours do tour
+json.tours tours do |tour|
   # tour_key = tour[0][1]
   # tour = Tour.find tour[0][0]
   @community = Community.find tour.community_id
@@ -32,6 +32,7 @@ json.tours do tour
 
     @tour = TourStop.find visited_stop rescue next
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop,description: nil, image: nil).last
+    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
     if @tour.stop_type != "elevator"
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
@@ -40,7 +41,7 @@ json.tours do tour
         unit = Unit.find @tour.stop_id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
         json.name "Apartment "+unit.marketing_name
-        json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")
+        json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label unit.virtual_tour_button_label
         json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
         lease_pricing = []
@@ -100,7 +101,7 @@ json.tours do tour
         json.image amenity.image.present? ? amenity.image.url : "no image"
         json.stop_description amenity.description
         json.name amenity.name
-        json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")
+        json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "") rescue ""
         json.directional_text amenity.directional_text
         json.video_link_button_label amenity.video_link_button_label
         json.video_link amenity.video_link.present? ? amenity.video_link : ""
@@ -127,7 +128,7 @@ json.tours do tour
         obj = {}
         obj[:id] = ud.id
         obj[:image] = ud.image
-        obj[:event_time] = (ud.event_date.present? ? ud.event_date.strftime("%m/%d/%Y") + " " : "") + (ud.event_time.present? ? ud.event_time.strftime("%H:%M:%S") : "")
+        obj[:event_time] = (ud.event_date.present? ? ud.event_date.strftime("%m/%d/%Y") + " " : "") + (ud.event_time.present? ? ud.event_time.strftime("%H:%M:%S") : "")  rescue ""
         gallery_arr << ud.image
         gallery_arr_v1 << obj
         # json.image ud.image.url
