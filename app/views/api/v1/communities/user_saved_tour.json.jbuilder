@@ -11,7 +11,7 @@ json.visual_id_verification @community.present? ? @community.tour.visual_id_veri
 # @tours = { [@tours.keys.last[0],@tours.keys.last[1]] => @tours.values.last}
 # @tours = @tours.last
 tours = [@tour]
-tour_key = @last_vs.tour_key
+tour_key = @last_vs.tour_key rescue nil
 json.tours tours do |tour|
   # tour_key = tour[0][1]
   # tour = Tour.find tour[0][0]
