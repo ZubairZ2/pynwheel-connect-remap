@@ -129,7 +129,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     # @device_id = params[:device_id]
     @community = Community.find params[:community_id] if params[:community_id].present?
     @tour_user = TourUser.find params[:tour_user_id]
-    @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
+    @tour = @community.tour
+    
+    @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
+    # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
+    @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
+    # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.tour.id,tour_key: last_vs.tour_key)
+    # @tours = @tours.map{|h| h}[-4..-1].to_h
   end
   def include_application_data
     @version = AppVersion.first.version
