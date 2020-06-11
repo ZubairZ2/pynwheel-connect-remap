@@ -20,17 +20,26 @@ class TourUsersController < ApplicationController
     chatroom = Chatroom.find_by(tour_user_id: params[:id])
     @chatroom_id = chatroom.present? ? chatroom.id : 0
 
-    unit_ids = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit").map{|x| x.stop_id}.uniq
-    amenity_ids = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity").map{|x| x.stop_id}.uniq
+    # ------------ locks ploting on the map ---------------- #
+    @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit")
+    @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity")
+    
+    unit_ids = @visited_units_history.map{|x| x.stop_id}.uniq
+    amenity_ids = @visited_amenities_history.map{|x| x.stop_id}.uniq
 
     unless @community.is_sitemap
       units = @community.floorplates.first.units.where(id: unit_ids)
       amenities = @community.floorplates.first.amenities.where(id: amenity_ids)
+
+      @visited_units_history = @visited_units_history.where(stop_id: units.ids)
+      @visited_amenities_history = @visited_amenities_history.where(stop_id: amenities.ids)
     end
 
     @existing_stops = []
     @existing_stops << units if units.present?
     @existing_stops << amenities if amenities.present?
+
+    # ------------ evnets history below the maps ---------------- #
 
     # # testing lines
     # unless amenities.present?
@@ -97,17 +106,24 @@ class TourUsersController < ApplicationController
     tour_history_id = params[:tour_history_id]
     floorplate_id = params[:floorplate_id]
 
-    unit_ids = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit").map{|x| x.stop_id}.uniq
-    amenity_ids = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity").map{|x| x.stop_id}.uniq
+    visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit")
+    visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity")
+    
+    unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
+    amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
     
     unless @community.is_sitemap
       units = (Floorplate.find floorplate_id).units.where(id: unit_ids)
       amenities = (Floorplate.find floorplate_id).amenities.where(id: amenity_ids)
     end
 
-    @existing_stops = []
-    @existing_stops << units if units.present?
-    @existing_stops << amenities if amenities.present?
+    existing_stops = []
+    existing_stops << units if units.present?
+    existing_stops << amenities if amenities.present?
+
+    lock_histories = []
+    lock_histories << visited_units_history if visited_units_history.present?
+    lock_histories << visited_amenities_history if visited_amenities_history.present?
 
     # # testing lines
     # unless amenities.present?
@@ -121,7 +137,7 @@ class TourUsersController < ApplicationController
     #   @existing_stops << (Floorplate.find 265).units
     # end
 
-    render json: {existing_stops: @existing_stops}, status: 200
+    render json: {existing_stops: existing_stops, lock_histories: lock_histories}, status: 200
   end
 
   def destroy

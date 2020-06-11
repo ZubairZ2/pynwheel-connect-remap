@@ -84,29 +84,37 @@
                     = select :floorplates , :images , @community.floorplates.all.collect{|f| [ f.name, f.id ] },{}, class: "form-control"
                   .col-sm-6.col-lg-4.col-md-3.col-xs-12
                     = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived, f.id ] } << ["test", "test"],{}, class: "form-control"
-                  #container.col-lg-12.p-0
+                  #container.col-sm-12.col-lg-12.col-md-12.col-xs-12
                     - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
 
-                    .map-block{:style => "position: relative;height: 65%;"}
-                      = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :style => "height: 100%; width: 100%;"
-                      - if @existing_stops.present?
-                        - @existing_stops.flatten.each_with_index do |stop, index|
-                          - next if (stop.x_plot + stop.y_plot) < 1
-                          - if stop.class.to_s == "Amenity"
-                            %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
-                              %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
+                    .asdasd{:style => "position: relative;"}
+                      = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :id => "floorplane_img", :style => "height: 100%; width: 100%;"
+                      -# - if @existing_stops.present?
+                        -# - @existing_stops.flatten.each_with_index do |stop, index|
+                          -# - next if (stop.x_plot + stop.y_plot) < 1
+                          -# - if stop.class.to_s == "Amenity"
+                            -# %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
+                              -# %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
 
-                          - elsif stop.class.to_s == "Elevator"
+                          -# - elsif stop.class.to_s == "Elevator"
 
-                            - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
-                              %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                            -# - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
+                              -# %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
 
-                          - else
-                            - next if (stop.y_plot + stop.x_plot) < 1
-                            %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
-                      
+                          -# - else
+                            -# - next if (stop.y_plot + stop.x_plot) < 1
+                            -# %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                  .col-lg-12.p-0#unlock_history
+                    - @visited_units_history.each_with_index do |unit, index|
+                      - if unit.event == "unlocked_event" 
+                        %h5 #{unit.stop_name} opened at #{unit.occured_at.strftime("%l:%M %p")} 
+                    - @visited_amenities_history.each_with_index do |amenity, index|
+                      - if amenity.event == "unlocked_event" 
+                        %h5 #{amenity.stop_name} opened at #{amenity.occured_at.strftime("%l:%M %p")} 
+
+
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
                     - @visited_stop.each do |stop|
@@ -400,7 +408,6 @@
     var community_id = #{ raw @community.id};
     var tour_user_id = #{ raw @tour_user.id};
     
-    $(".map-block").children('i').remove()
     if(tour_history_id != "test"){
       $.ajax({
           type: 'GET',
@@ -409,7 +416,10 @@
           url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/lock_ploting?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
           success: function(data){
             console.log(data)
+            $(".asdasd").children('i').remove()
+            $("#unlock_history").children('h5').remove()
             data.existing_stops.flat().forEach(draw_stop)
+            data.lock_histories.flat().forEach(draw_history)
           },
           fail: function(data){
             console.log(data)
@@ -423,8 +433,12 @@
       var left_margin =  #{ ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i }
       var right_margin = #{ ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i }
 
-      $(".map-block").append(`<i class="fa fa-unlock-alt stops" id="stop_${stop.id}" style="font-size: 35px; position: absolute; top: ${stop.y_plot - right_margin + 6}px; left: ${stop.x_plot - left_margin + 3}px; height:25px; width: 25px; color: #d37474; margin-top: 3px; "></i>`)
+   //   $(".asdasd").append(`<i class="fa fa-unlock-alt stops" id="stop_${stop.id}" style="font-size: 35px; position: absolute; top: ${stop.y_plot - right_margin + 6}px; left: ${stop.x_plot - left_margin + 3}px; height:25px; width: 25px; color: #d37474; margin-top: 3px; "></i>`)
     }
+  }
+
+  function draw_history(stop, index){
+      $("#unlock_history").append(`<h5>${stop.stop_name} opened at ${moment(stop.occured_at).format("LT")}</h5>`)
   }
 
   $("#floorplates_images").change(function () {

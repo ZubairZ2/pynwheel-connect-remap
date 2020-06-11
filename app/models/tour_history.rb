@@ -91,7 +91,7 @@ class TourHistory < ApplicationRecord
 									puts end_time
 									puts '---'*50
 									
-									if occurred_at >= start_time and occurred_at <= end_time
+									# if occurred_at >= start_time and occurred_at <= end_time
 
 										event_type = event["type"]
 										lock_id = event["attributes"]["publisher_id"]
@@ -99,7 +99,7 @@ class TourHistory < ApplicationRecord
 										rml = RemoteLock.find_by(device_id: lock_id) 
 
 										self.lock_histories.create(event: event_type, occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id)
-									end
+									# end
 								elsif event["attributes"]["associated_resource_name"] == self.tour_user.name and event["attributes"]["method"] == "pin" and event["attributes"]["pin"].present?
 									# this check is for testing because remote locks set expires user data after some time causing not showing their ids
 									# it might cause error - stay alert
