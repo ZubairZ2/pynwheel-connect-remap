@@ -68,6 +68,10 @@
 .btn-text-color  {
     color: #ffffff !important;
 }
+#lock_histories_style{
+    font-size: x-large;
+    color: red;
+}
 @font-face {
     font-family: 'GaramondPro';
     src: url('AGaramondPro-Regular.otf');
