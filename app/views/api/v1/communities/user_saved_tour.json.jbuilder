@@ -17,6 +17,7 @@ json.tours tours do |tour|
   # tour = Tour.find tour[0][0]
   @community = Community.find tour.community_id
   json.id tour.id
+  json.tour_key tour_key
   json.community_id tour.community_id
   json.name tour.name
   json.latitude tour.latitude
