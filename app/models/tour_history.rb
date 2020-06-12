@@ -124,6 +124,27 @@ class TourHistory < ApplicationRecord
 									end
 								end
 							end
+						elsif event["type"] == "access_person_synced_event"
+							if event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded"
+								if event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == as_guests_data.guest_id
+									occurred_at = (event["attributes"]["occurred_at"].to_datetime - 5.hours) # remote is using "America/Chicago" timezone that's why -5 hours
+									# occurred_at = (event["attributes"]["occurred_at"].to_datetime)
+
+									puts '<<<'*50
+									puts occurred_at
+									puts start_time
+									puts end_time
+									puts '>>>'*50
+									
+									event_type = event["type"]
+									lock_id = event["attributes"]["publisher_id"]
+									lock_type = event["attributes"]["publisher_type"]
+									rml = RemoteLock.find_by(device_id: lock_id) 
+
+									self.lock_histories.create(event: event_type, occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id)
+
+								end
+							end
 						end
 					end
 					page = page + 1
