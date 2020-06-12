@@ -79,36 +79,40 @@
                             #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                   //Tour Tracking
                   %h4{:style => "margin-left: 30px"}
-                    Tour Tracking Tour 1
-                  .col-sm-6.col-lg-6.col-md-3.col-xs-12
-                    = select :floorplates , :images , @community.floorplates.all.collect{|f| [ f.name, f.id ] },{}, class: "form-control"
-                  .col-sm-6.col-lg-6.col-md-3.col-xs-12
-                    = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived, f.id ] } << ["testing", "testing"],{}, class: "form-control"
-                  #container.col-sm-12.col-lg-12.col-md-12.col-xs-12
-                    - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
-                    - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
+                    Tour Tracking
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "margin-top: 10px;margin-left: 15px;margin-right: 15px;"}
+                    - unless @community.is_sitemap
+                      .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-left: 0px;"}
+                        = select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
+                      .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-right: 0;"}
+                        = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                    - else
+                      .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
+                        = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
+                    -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
+                    -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
 
-                    .asdasd{:style => "position: relative;"}
-                      = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :id => "floorplane_img", :style => "height: 100%; width: 100%;"
-                      -# - if @existing_stops.present?
-                        -# - @existing_stops.flatten.each_with_index do |stop, index|
-                          -# - next if (stop.x_plot + stop.y_plot) < 1
-                          -# - if stop.class.to_s == "Amenity"
-                            -# %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
-                              -# %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
+                    = image_tag @community.is_sitemap ? @community.sitemap.image : @community.floorplates.all.order("id ASC").first.image, :class => "my_class", :id => "floorplane_img", :style => "height: 100%; width: 100%;"
+                    -# - if @existing_stops.present?
+                      -# - @existing_stops.flatten.each_with_index do |stop, index|
+                        -# - next if (stop.x_plot + stop.y_plot) < 1
+                        -# - if stop.class.to_s == "Amenity"
+                          -# %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
+                            -# %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
 
-                          -# - elsif stop.class.to_s == "Elevator"
+                        -# - elsif stop.class.to_s == "Elevator"
 
-                            -# - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
-                              -# %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                          -# - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
+                            -# %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
 
-                          -# - else
-                            -# - next if (stop.y_plot + stop.x_plot) < 1
-                            -# %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                        -# - else
+                          -# - next if (stop.y_plot + stop.x_plot) < 1
+                          -# %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                   .col-lg-12.p-0
-                    .col-lg-3
-                    .col-lg-9#unlock_history
+                    .col-lg-4
+                    .col-lg-8#unlock_history
                       - @visited_units_history.each_with_index do |unit, index|
                         - if unit.event == "unlocked_event" 
                           %h5#lock_histories_style
@@ -306,7 +310,7 @@
 -#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
 -#    / main-content ends
 .row
-  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+  .col-md-12{:style => "/*position: absolute; */ bottom: 51px;"}
     .box-footer.mt-30.pt-15
       .row
         .col-lg-10
@@ -387,7 +391,7 @@
     }
   });
   function change_image(){
-    if($('#floorplates_images :selected').text() != "Select your option"){
+    if($('#floorplates_images :selected').text() != "Select the Floorplate"){
       var floorplate_id = $('#floorplates_images :selected').val()
       var community_id = #{ raw @community.id};
 
@@ -407,28 +411,35 @@
   }
 
   function plot_data(){
+    var is_sitemap = #{ @community.is_sitemap};
     var tour_history_id = $('#tour_histories_dates :selected').val()
-    var floorplate_id = $('#floorplates_images :selected').val()
+    if (is_sitemap == false)
+      var floorplate_id = $('#floorplates_images :selected').val()
+    else
+      var floorplate_id = 0
     var community_id = #{ raw @community.id};
     var tour_user_id = #{ raw @tour_user.id};
     
-    if(tour_history_id != "testing"){
+    if((is_sitemap == false && tour_history_id != "" && floorplate_id != "") || (is_sitemap == true && tour_history_id != "")){
       $.ajax({
           type: 'GET',
           dataType: 'json',
           cache: false,
           url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/lock_ploting?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
           success: function(data){
-            console.log(data)
             $(".asdasd").children('i').remove()
             $("#unlock_history").children('h5').remove()
-            data.existing_stops.flat().forEach(draw_stop)
+            // data.existing_stops.flat().forEach(draw_stop)
             data.lock_histories.flat().forEach(draw_history)
           },
           fail: function(data){
             console.log(data)
           }
       });
+    }
+    else{
+      $(".asdasd").children('i').remove()
+      $("#unlock_history").children('h5').remove()
     }
   }
 

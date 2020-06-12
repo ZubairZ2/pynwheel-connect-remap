@@ -28,11 +28,14 @@ class TourUsersController < ApplicationController
     amenity_ids = @visited_amenities_history.map{|x| x.stop_id}.uniq
 
     unless @community.is_sitemap
-      units = @community.floorplates.first.units.where(id: unit_ids)
-      amenities = @community.floorplates.first.amenities.where(id: amenity_ids)
+      units = @community.floorplates.all.order("id ASC").first.units.where(id: unit_ids)
+      amenities = @community.floorplates.all.order("id ASC").first.amenities.where(id: amenity_ids)
 
       @visited_units_history = @visited_units_history.where(stop_id: units.ids)
       @visited_amenities_history = @visited_amenities_history.where(stop_id: amenities.ids)
+    else
+      units = @community.units.where(id: unit_ids)
+      amenities = @community.amenities.where(id: amenity_ids)
     end
 
     @existing_stops = []
@@ -105,22 +108,27 @@ class TourUsersController < ApplicationController
   end
 
   def lock_ploting
+    community_id = params[:community_id]
     tour_user_id = params[:tour_user_id]
     tour_history_id = params[:tour_history_id]
     floorplate_id = params[:floorplate_id]
 
+    community = Community.find community_id
     visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit")
     visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity")
     
     unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
     amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
     
-    unless @community.is_sitemap
+    unless community.is_sitemap
       units = (Floorplate.find floorplate_id).units.where(id: unit_ids)
       amenities = (Floorplate.find floorplate_id).amenities.where(id: amenity_ids)
 
       visited_units_history = visited_units_history.where(stop_id: units.ids)
       visited_amenities_history = visited_amenities_history.where(stop_id: amenities.ids)
+    else
+      units = community.units.where(id: unit_ids)
+      amenities = community.amenities.where(id: amenity_ids)
     end
 
     existing_stops = []
