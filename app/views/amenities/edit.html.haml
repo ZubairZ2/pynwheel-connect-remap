@@ -58,17 +58,18 @@
                 Video Link
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :video_link, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link"
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Remote Lock
-                %i.unit_manualoverride.fa.fa-question-circle
-                  %span#unit_manualoverride_text
-                    Name of Remote lock must be same as amenity name
-                %span Assign the lock to this amenity
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %select.form-control#remote_lock{name: "remote_lock"}
-                %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
-                  %a#a-lock.btn-text-color{href: "#"} Update selected lock
+            - if EdgeState.find_by(community_id: @community.id).present?
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Remote Lock
+                  %i.unit_manualoverride.fa.fa-question-circle
+                    %span#unit_manualoverride_text
+                      Name of Remote lock must be same as amenity name
+                  %span Assign the lock to this amenity
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  %select.form-control#remote_lock{name: "remote_lock"}
+                  %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
+                    %a#a-lock.btn-text-color{href: "#"} Update selected lock
             - bool_check = @community.show_map ? f.object.amenityable.present? : true
             - if !@community.is_sitemap && bool_check  
               .form-group
@@ -201,7 +202,7 @@
         }
         if(assigned_lock_present == false){
             $('#remote_lock').prepend(`<option value="" , selected="selected">Select your option</option>`)
-            clear_assigned_lock()
+            // clear_assigned_lock()
         }
         else
           IsSelectedLockMatch()
