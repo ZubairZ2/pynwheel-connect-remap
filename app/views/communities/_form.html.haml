@@ -161,19 +161,14 @@
   $(document).on('change', '.address_fields1', function() {
   if ($('#address').val() != "" && $('#city').val() != "" && $('#states').val() != "" )
   {
-  $.ajax({
-    url: "/communities/#{current_community.id}/make_cordinate",
-    type: "post",
-    data: {address : $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val()},
-    success: function(data) {
-      if (data.cord != null)
+  var g = "#{Geocoder.coordinates('2925 S. High St. Denver co')}"
+    if (g != null)
       {
-        document.getElementById('latitude').value = data.cord[0];
-        document.getElementById('longitude').value = data.cord[1];
+        g = g.replace('[','').replace(']','').split(',')
+        document.getElementById('latitude').value = g[0];
+        document.getElementById('longitude').value = g[1];
       }
-    },
-    error: function(data) {}
-  })}
+  }
     });
 
   if (!#{current_user.welcome_property_details_page})
