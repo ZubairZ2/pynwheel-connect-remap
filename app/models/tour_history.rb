@@ -47,11 +47,11 @@ class TourHistory < ApplicationRecord
   		@mail_content = get_alert_message('tour_has_ended')
       url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers"
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"+ "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
-  		self.update_attributes(end_tour_email_sent: true)
-		touruser_remotelock_data(self.arrived,self.left)
+
+		touruser_remotelock_data
 		property = (Tour.find self.tour_id).community
 		assigned_pin = self.tour_user.as_guests.find_by(community_id: property.id).edgestate_pin
-		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, self.arrived, self.left, assigned_pin) if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, assigned_pin) if self.tour_user.name == "humza4142@gmail.com"
 		send_email_sms_or_both @mail_content
 		# community.deleted_ids = []
 		community.save
@@ -59,99 +59,51 @@ class TourHistory < ApplicationRecord
 
   	if self.abandoned_tour_at_stop.present? && self.abandoned_tour_email_sent == false
   		@mail_content = get_alert_message('abandoned_tour_at_stop')
-  		@mail_content[1] = "#{@mail_content.last} stop #{self.abandoned_tour_at_stop.to_s}"
-		self.update_attributes(abandoned_tour_email_sent: true)
-		touruser_remotelock_data(self.arrived,self.lengthy_stay)
+		  @mail_content[1] = "#{@mail_content.last} stop #{self.abandoned_tour_at_stop.to_s}"
+		  
+		touruser_remotelock_data
 		property = (Tour.find self.tour_id).community
 		assigned_pin = self.tour_user.as_guests.find_by(community_id: property.id).edgestate_pin
-		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, self.arrived, self.lengthy_stay, assigned_pin) if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, assigned_pin) if self.tour_user.name == "humza4142@gmail.com"
 	    send_email_sms_or_both @mail_content
 	    # community.deleted_ids = []
 	    community.save
   	end
   end
   
-	def touruser_remotelock_data(start_time,end_time)
+	def touruser_remotelock_data
+		
 		community = (Tour.find self.tour_id).community
 		as_guests_data = self.tour_user.as_guests.find_by(community_id: community.id)
+
 		if as_guests_data.present?
 			Thread.new do
-				
 				access_token = RemoteLockService.new(community).client_credentials
-				page = 1
 
+				page = 1
 				while page <= 5 do
 					responce = RemoteLockService.new(community).get_all_events(access_token,page)
-
 					responce["data"].each do |event|
-						if event["type"] == "unlocked_event" or event["type"] == "locked_event"
-							if event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded"
-								# if event["attributes"]["associated_resource_name"] == self.tour_user.name and event["attributes"]["pin"] == "5705"
-								if event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == as_guests_data.guest_id
-									occurred_at = (event["attributes"]["occurred_at"].to_datetime - 5.hours) # remote is using "America/Chicago" timezone that's why -5 hours
-									# occurred_at = (event["attributes"]["occurred_at"].to_datetime)
+						if active_user_exists(event,as_guests_data.guest_id)
 
-									puts '---'*50
-									puts occurred_at
-									puts start_time
-									puts end_time
-									puts '---'*50
-									
-									# if occurred_at >= start_time and occurred_at <= end_time
-
-										event_type = event["type"]
-										lock_id = event["attributes"]["publisher_id"]
-										lock_type = event["attributes"]["publisher_type"]
-										rml = RemoteLock.find_by(device_id: lock_id) 
-
-										self.lock_histories.create(event: event_type, occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id)
-									# end
-								elsif event["attributes"]["associated_resource_name"] == self.tour_user.name and event["attributes"]["method"] == "pin" and event["attributes"]["pin"].present?
-									# this check is for testing because remote locks set expires user data after some time causing not showing their ids
-									# it might cause error - stay alert
-
-									occurred_at = (event["attributes"]["occurred_at"].to_datetime - 5.hours) # remote is using "America/Chicago" timezone that's why -5 hours
-									# occurred_at = (event["attributes"]["occurred_at"].to_datetime)
-
-									puts '---'*50
-									puts occurred_at
-									puts start_time
-									puts end_time
-									puts '---'*50
-									
-									if occurred_at >= start_time and occurred_at <= end_time
-
-										event_type = event["type"]
-										lock_id = event["attributes"]["publisher_id"]
-										lock_type = event["attributes"]["publisher_type"]
-										rml = RemoteLock.find_by(device_id: lock_id) 
-
-										self.lock_histories.create(event: event_type, occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id)
-									end
-								end
-							end
-						elsif event["type"] == "access_person_synced_event"
-							if event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded"
-								if event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == as_guests_data.guest_id
-									occurred_at = (event["attributes"]["occurred_at"].to_datetime - 5.hours) # remote is using "America/Chicago" timezone that's why -5 hours
-									# occurred_at = (event["attributes"]["occurred_at"].to_datetime)
-
-									puts '<<<'*50
-									puts occurred_at
-									puts start_time
-									puts end_time
-									puts '>>>'*50
-									
-									event_type = event["type"]
-									lock_id = event["attributes"]["publisher_id"]
-									lock_type = event["attributes"]["publisher_type"]
-									rml = RemoteLock.find_by(device_id: lock_id) 
-
-									self.lock_histories.create(event: event_type, occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id)
-
-								end
-							end
+							occurred_at = event["attributes"]["occurred_at"].to_datetime.utc
+							rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
+							self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id) if rml.present?
+						
+						elsif expire_user_exists(event, tour_user.name, as_guests_data.edgestate_pin)
+							
+							occurred_at = event["attributes"]["occurred_at"].to_datetime.utc
+							rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
+							self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id) if rml.present?
+				
+						elsif sync_events_exists(event,as_guests_data.guest_id) # just for testing
+							
+							occurred_at = event["attributes"]["occurred_at"].to_datetime.utc
+							rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
+							self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id) if rml.present?
+						
 						end
+					
 					end
 					page = page + 1
 				end
@@ -218,5 +170,15 @@ class TourHistory < ApplicationRecord
   	ActionController::Base.helpers.distance_of_time_in_words self.arrived, self.left
   end
 
+  def active_user_exists(event,guest_id)
+    return (event["type"] == "unlocked_event" and event["attributes"]["source"] == "user" and  event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)
+  end
+  
+  def expire_user_exists(event,name,pin)
+    return (event["type"] == "unlocked_event" and event["attributes"]["source"] == "user" and  event["attributes"]["status"] == "succeeded" and  event["attributes"]["associated_resource_name"] == name and event["attributes"]["method"] == "pin" and event["attributes"]["pin"] == pin)
+  end
 
+  def sync_events_exists(event,guest_id)
+    return (event["type"] == "access_person_synced_event" and event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)
+  end
 end

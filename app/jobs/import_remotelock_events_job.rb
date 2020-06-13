@@ -1,7 +1,7 @@
 class ImportRemotelockEventsJob < ApplicationJob
   include SuckerPunch::Job
 
-  def perform(tour_user, tour_history, arrived, left, assigned_pin)
+  def perform(tour_user, tour_history, assigned_pin)
 		community = (Tour.find tour_history.tour_id).community
 		as_guests_data = tour_user.as_guests.find_by(community_id: community.id)
 
