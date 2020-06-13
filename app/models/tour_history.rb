@@ -49,9 +49,10 @@ class TourHistory < ApplicationRecord
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"+ "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
   		self.update_attributes(end_tour_email_sent: true)
 		touruser_remotelock_data(self.arrived,self.left)
-      send_email_sms_or_both @mail_content
-      # community.deleted_ids = []
-      community.save
+		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, self.arrived, self.left) if self.tour_user.name == "humza4142@gmail.com"
+		send_email_sms_or_both @mail_content
+		# community.deleted_ids = []
+		community.save
   	end
 
   	if self.abandoned_tour_at_stop.present? && self.abandoned_tour_email_sent == false
@@ -59,9 +60,10 @@ class TourHistory < ApplicationRecord
   		@mail_content[1] = "#{@mail_content.last} stop #{self.abandoned_tour_at_stop.to_s}"
 		self.update_attributes(abandoned_tour_email_sent: true)
 		touruser_remotelock_data(self.arrived,self.lengthy_stay)
-      send_email_sms_or_both @mail_content
-      # community.deleted_ids = []
-      community.save
+		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, self.arrived, self.lengthy_stay) if self.tour_user.name == "humza4142@gmail.com"
+	    send_email_sms_or_both @mail_content
+	    # community.deleted_ids = []
+	    community.save
   	end
   end
   
