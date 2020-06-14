@@ -51,7 +51,11 @@ class TourHistory < ApplicationRecord
 		touruser_remotelock_data
 		property = (Tour.find self.tour_id).community
 		assigned_pin = self.tour_user.as_guests.find_by(community_id: property.id).edgestate_pin
-		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, assigned_pin) if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, assigned_pin) # if self.tour_user.name == "humza4142@gmail.com"
+		
+		email_content = "Events for #{self.tour_user.name} with id #{self.tour_user.id} are about to import in pynwheel and tour history id is #{self.id}"
+		DelayedSchedulerMailerJob.perform_in(3400, "Remote Lock Events", email_content, "humza4142@gmail.com","History is about to import","200 seconds are remaning","humza4142@gmail.com") if (community.alert_contact == "email" || community.alert_contact == "both")
+		
 		send_email_sms_or_both @mail_content
 		# community.deleted_ids = []
 		community.save
@@ -64,8 +68,12 @@ class TourHistory < ApplicationRecord
 		touruser_remotelock_data
 		property = (Tour.find self.tour_id).community
 		assigned_pin = self.tour_user.as_guests.find_by(community_id: property.id).edgestate_pin
-		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, assigned_pin) if self.tour_user.name == "humza4142@gmail.com"
-	    send_email_sms_or_both @mail_content
+		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, assigned_pin) # if self.tour_user.name == "humza4142@gmail.com"
+		
+		email_content = "Events for #{self.tour_user.name} with id #{self.tour_user.id} are about to import in pynwheel and tour history id is #{self.id}"
+		DelayedSchedulerMailerJob.perform_in(3400, "Remote Lock Events", email_content, "humza4142@gmail.com","History is about to import","200 seconds are remaning","humza4142@gmail.com") if (community.alert_contact == "email" || community.alert_contact == "both")
+		
+		send_email_sms_or_both @mail_content
 	    # community.deleted_ids = []
 	    community.save
   	end
