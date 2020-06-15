@@ -4,7 +4,8 @@ class ImportRemotelockEventsJob < ApplicationJob
   def perform(tour_user, tour_history, assigned_pin)
 		community = (Tour.find tour_history.tour_id).community
 		as_guests_data = tour_user.as_guests.find_by(community_id: community.id)
-
+    tour_history.lock_histories.destroy_all
+    
     if as_guests_data.present?
       access_token = RemoteLockService.new(community).client_credentials
 

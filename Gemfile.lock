@@ -97,6 +97,7 @@ GEM
       execjs
     coffee-script-source (1.12.2)
     concurrent-ruby (1.1.6)
+    connection_pool (2.2.3)
     countries (3.0.1)
       i18n_data (~> 0.10.0)
       sixarm_ruby_unaccent (~> 1.1)
@@ -278,6 +279,8 @@ GEM
     rack (2.2.2)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
+    rack-protection (2.0.8.1)
+      rack
     rack-test (0.6.3)
       rack (>= 1.0)
     rails (5.0.7.2)
@@ -347,6 +350,11 @@ GEM
       nokogiri (>= 1.4.0)
       nori (~> 2.4)
       wasabi (~> 3.4)
+    sidekiq (5.2.7)
+      connection_pool (~> 2.2, >= 2.2.2)
+      rack (>= 1.5.0)
+      rack-protection (>= 1.5.0)
+      redis (>= 3.3.5, < 5)
     sixarm_ruby_unaccent (1.2.0)
     socksify (1.7.1)
     spring (2.1.0)
@@ -479,6 +487,7 @@ DEPENDENCIES
   roo (~> 2.7.0)
   sass-rails (~> 5.0)
   savon (~> 2.11.0)
+  sidekiq
   spring
   spring-watcher-listen (~> 2.0.0)
   stackprof

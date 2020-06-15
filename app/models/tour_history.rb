@@ -43,7 +43,7 @@ class TourHistory < ApplicationRecord
   		send_email_sms_or_both @mail_content
   	end
 
-  	if self.left && self.end_tour_email_sent == false
+  	if self.left
   		@mail_content = get_alert_message('tour_has_ended')
       url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers"
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"+ "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
@@ -51,27 +51,35 @@ class TourHistory < ApplicationRecord
 		touruser_remotelock_data
 		property = (Tour.find self.tour_id).community
 		assigned_pin = self.tour_user.as_guests.find_by(community_id: property.id).edgestate_pin
-		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, assigned_pin) # if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsJob.perform_in(30.minute.seconds.to_i, self.tour_user, self, assigned_pin) # if self.tour_user.name == "humza4142@gmail.com"
+		# ImportRemotelockEventsWorker.perform_at(30.minutes.from_now, self.tour_user, self, assigned_pin) # if self.tour_user.name == "humza4142@gmail.com"
 		
-		email_content = "Events for #{self.tour_user.name} with id #{self.tour_user.id} are about to import in pynwheel and tour history id is #{self.id}"
-		DelayedSchedulerMailerJob.perform_in(3400, "Remote Lock Events", email_content, "humza4142@gmail.com","History is about to import","200 seconds are remaning","humza4142@gmail.com") if (community.alert_contact == "email" || community.alert_contact == "both")
+		email_content = "Events for #{self.tour_user.name} with tour id #{self.tour_user.id} are about to import in pynwheel,while the tour history id is #{self.id} and the assigned pin is #{assigned_pin}"
+		puts '<<<<<<<<<<<<<<<<<<<<<<<<<< ======================================== >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.'
+		DelayedSchedulerMailerJob.perform_in(1.5.minute.seconds.to_i, "Remote Lock Events", email_content, "humza4142@gmail.com","History will import","1710 seconds are remaning","humza4142@gmail.com") if (community.alert_contact == "email" || community.alert_contact == "both")
+		puts '<<<<<<<<<<<<<<<<<<<<<<<<<< ======================================== >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.'
+		# DelayedSchedulerMailerJob.perform_in(28.minute.seconds.to_i, "Remote Lock Events", email_content, "humza4142@gmail.com","History is about to import","120 seconds are remaning","humza4142@gmail.com") if (community.alert_contact == "email" || community.alert_contact == "both")
 		
 		send_email_sms_or_both @mail_content
 		# community.deleted_ids = []
 		community.save
   	end
 
-  	if self.abandoned_tour_at_stop.present? && self.abandoned_tour_email_sent == false
+  	if self.abandoned_tour_at_stop.present?
   		@mail_content = get_alert_message('abandoned_tour_at_stop')
 		  @mail_content[1] = "#{@mail_content.last} stop #{self.abandoned_tour_at_stop.to_s}"
 		  
 		touruser_remotelock_data
 		property = (Tour.find self.tour_id).community
 		assigned_pin = self.tour_user.as_guests.find_by(community_id: property.id).edgestate_pin
-		ImportRemotelockEventsJob.perform_in(3600, self.tour_user, self, assigned_pin) # if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsJob.perform_in(30.minute.seconds.to_i, self.tour_user, self, assigned_pin) # if self.tour_user.name == "humza4142@gmail.com"
+		# ImportRemotelockEventsWorker.perform_at(30.minutes.from_now, self.tour_user, self, assigned_pin) # if self.tour_user.name == "humza4142@gmail.com"
 		
-		email_content = "Events for #{self.tour_user.name} with id #{self.tour_user.id} are about to import in pynwheel and tour history id is #{self.id}"
-		DelayedSchedulerMailerJob.perform_in(3400, "Remote Lock Events", email_content, "humza4142@gmail.com","History is about to import","200 seconds are remaning","humza4142@gmail.com") if (community.alert_contact == "email" || community.alert_contact == "both")
+		email_content = "Events for #{self.tour_user.name} with tour id #{self.tour_user.id} are about to import in pynwheel,while the tour history id is #{self.id} and the assigned pin is #{assigned_pin}"
+		puts '<<<<<<<<<<<<<<<<<<<<<<<<<< ======================================== >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.'
+		DelayedSchedulerMailerJob.perform_in(1.5.minute.seconds.to_i, "Remote Lock Events", email_content, "humza4142@gmail.com","History will import","1710 seconds are remaning","humza4142@gmail.com") if (community.alert_contact == "email" || community.alert_contact == "both")
+		puts '<<<<<<<<<<<<<<<<<<<<<<<<<< ======================================== >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.'
+		# DelayedSchedulerMailerJob.perform_in(28.minute.seconds.to_i, "Remote Lock Events", email_content, "humza4142@gmail.com","History is about to import","120 seconds are remaning","humza4142@gmail.com") if (community.alert_contact == "email" || community.alert_contact == "both")
 		
 		send_email_sms_or_both @mail_content
 	    # community.deleted_ids = []

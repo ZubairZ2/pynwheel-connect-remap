@@ -21,8 +21,8 @@ class TourUsersController < ApplicationController
     @chatroom_id = chatroom.present? ? chatroom.id : 0
 
     # ------------ locks ploting on the map ---------------- #
-    @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit")
-    @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity")
+    @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "unlocked_event")
+    @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
     
     unit_ids = @visited_units_history.map{|x| x.stop_id}.uniq
     amenity_ids = @visited_amenities_history.map{|x| x.stop_id}.uniq
@@ -41,9 +41,8 @@ class TourUsersController < ApplicationController
     @existing_stops = []
     @existing_stops << units if units.present?
     @existing_stops << amenities if amenities.present?
-
+ 
     # ------------ evnets history below the maps ---------------- #
-
     # # testing lines
     # unless amenities.present?
     #   puts '------------------ testing line amenities --------------------'
@@ -57,6 +56,13 @@ class TourUsersController < ApplicationController
     # end
     # touruser_remotelock_data
     # @tour_user.tour_histories.last.update_attributes(arrived: "2020-06-08 13:50:01".to_datetime, left: "2020-06-08 14:40:01")
+    tour_history = TourHistory.find 3999
+		ImportRemotelockEventsWorker.perform_at(10.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsWorker.perform_at(100.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsWorker.perform_at(300.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsWorker.perform_at(900.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
+		ImportRemotelockEventsWorker.perform_at(1500.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
+    puts '====================='
   end
 
   def touruser_remotelock_data
@@ -114,8 +120,8 @@ class TourUsersController < ApplicationController
     floorplate_id = params[:floorplate_id]
 
     community = Community.find community_id
-    visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit")
-    visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity")
+    visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit", event: "unlocked_event")
+    visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity", event: "unlocked_event")
     
     unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
     amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
