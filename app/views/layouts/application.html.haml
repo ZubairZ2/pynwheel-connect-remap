@@ -20,7 +20,8 @@
     = favicon_link_tag 'logo-small.png'
   %body.hold-transition.skin-blue.sidebar-mini{:id => "#{controller_name == "home" || controller_name == "companies" || (controller_name == "community_groups" &&  params[:action] == "index") || (controller_name == "tours" &&  action_name == "id_selfie_matching") ? "no-sidemenu" : ""}"}
     .wrapper
-      = render partial: "/header"
+      - unless params[:controller] == "tour_users" && params[:action]== "show" && !current_user.present?
+        = render partial: "/header"
       - unless controller_name == "home" || controller_name == "companies" || controller_name == "community_groups"|| controller_name == "group_design" || (controller_name == "tours" &&  action_name == "id_selfie_matching")
         - if (controller_name == "communities" && sidemenu_communities_actions.include?(params[:action])) &&  user_signed_in?
           = render partial: "/sidemenu_communities"
@@ -32,11 +33,13 @@
         - if controller_name == "community_groups" && params[:action] != "index"
           = render partial: "/sidemenu_communities"
         = render partial: "/messages"
-        = render partial: "/breadcrumbs"
+        - unless params[:controller] == "tour_users" && params[:action]== "show"  &&  !current_user.present?
+          = render partial: "/breadcrumbs"
         = yield
       = render partial: "/footer"
       = render partial: "/delete_confirmation_modal"
-      = render partial: "/alert_modals"
+      - unless params[:controller] == "tour_users" && params[:action]== "show"  &&  !current_user.present?
+        = render partial: "/alert_modals"
       - if @community.present? and @community.chat_control
         = render partial: "/chat_modal"
 

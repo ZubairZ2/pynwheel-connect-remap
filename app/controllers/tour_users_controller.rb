@@ -1,6 +1,7 @@
 class TourUsersController < ApplicationController
   before_action :check_community
   before_action :breadCrumb
+  skip_before_action :authenticate_user!, :only => [:show]
 
   def index
     add_breadcrumb "All Visitors", '#'
@@ -36,6 +37,7 @@ class TourUsersController < ApplicationController
     add_breadcrumb "Home", root_path
   end
   def check_community
+    return if params[:controller] == "tour_users" && params[:action]== "show"
     unless current_user.is_super_admin?
       if params[:community_id].present?
         all_ids = []
