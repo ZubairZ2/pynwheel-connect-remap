@@ -23,20 +23,20 @@
 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :address, :class=>"form-control",rows:5, :placeholder=>"Address"
+    = f.text_area :address, :class=>"form-control address_fields1",rows:5, :placeholder=>"Address", :id => "address"
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-3.col-md-4.col-xs-12
-        = f.text_field :city, :class=>"form-control address_fields", :placeholder=>"City",:maxlength=>"20"
+        = f.text_field :city, :class=>"form-control address_fields1", :placeholder=>"City",:maxlength=>"20", :id => "city"
         %small City
       .col-sm-6.col-lg-3.col-md-4.col-xs-12
-        = f.text_field :state, :class=>"form-control address_fields", :placeholder=>"State",:maxlength=>"20"
+        = f.text_field :state, :class=>"form-control address_fields1", :placeholder=>"State",:maxlength=>"20", :id => "states"
         %small State
       .col-sm-6.col-lg-3.col-md-4.col-xs-12
-        = f.text_field :zip, :class=>"form-control address_fields", :placeholder=>"Zip",:maxlength=>"10"
+        = f.text_field :zip, :class=>"form-control address_fields1", :placeholder=>"Zip",:maxlength=>"10"
         %small Zip
       -#.col-sm-6.col-lg-3.col-md-4.col-xs-12
       -#  = f.text_field :phone, :class=>"form-control address_fields", :placeholder=>"Phone",:maxlength=>"15"
@@ -157,6 +157,20 @@
 -#      %span.pl-15 Yes
 
 :javascript
+  
+  $(document).on('change', '.address_fields1', function() {
+  if ($('#address').val() != "" && $('#city').val() != "" && $('#states').val() != "" )
+  {
+  var g = "#{Geocoder.coordinates('2925 S. High St. Denver co')}"
+    if (g != null)
+      {
+        g = g.replace('[','').replace(']','').split(',')
+        document.getElementById('latitude').value = g[0];
+        document.getElementById('longitude').value = g[1];
+      }
+  }
+    });
+
   if (!#{current_user.welcome_property_details_page})
   {
     $('[data-toggle="propertyDetailNamePopover"]').popover({
