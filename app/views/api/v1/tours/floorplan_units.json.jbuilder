@@ -11,7 +11,7 @@ json.data @units do |u|
                 rescue Exception => e
                         json.availability_url ""
                 end
-        elsif u.provider == "resman"
+        elsif u.provider == "psi"
             json.availability_url u.availability_url_deep_linking.present? ? u.availability_url_deep_linking : availability_url
         else
                 json.availability_url u.availability_url.present? ? u.availability_url : ""
