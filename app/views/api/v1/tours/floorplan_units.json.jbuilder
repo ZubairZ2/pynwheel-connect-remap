@@ -12,7 +12,7 @@ json.data @units do |u|
                         json.availability_url ""
                 end
         elsif u.provider == "psi"
-            json.availability_url u.availability_url_deep_linking.present? ? u.availability_url_deep_linking : availability_url
+            json.availability_url u.availability_url_deep_linking.present? ? u.availability_url_deep_linking : u.availability_url
         else
                 json.availability_url u.availability_url.present? ? u.availability_url : ""
         end
