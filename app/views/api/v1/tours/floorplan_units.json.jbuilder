@@ -11,6 +11,8 @@ json.data @units do |u|
                 rescue Exception => e
                         json.availability_url ""
                 end
+        elsif u.provider == "psi"
+            json.availability_url u.availability_url_deep_linking.present? ? u.availability_url_deep_linking : availability_url
         else
                 json.availability_url u.availability_url.present? ? u.availability_url : ""
         end
@@ -45,6 +47,6 @@ json.data @units do |u|
         json.manual_override u.manual_override
         json.square_feet u.square_feet
         json.description u.description
-        json.update_apply u.provider == "resman" ? true : false
+        json.update_apply (u.provider == "resman" || u.provider == "psi") ? true : false
     
 end
