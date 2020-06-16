@@ -8,7 +8,7 @@
           Settings
           %span Community
         = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
-      = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal"} do |f|
+      = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal form_class"} do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
@@ -199,6 +199,25 @@
                     = f.check_box :chat_control
                     %label.label-primary{:for => "community_chat_control"}
                     %span.pl-15 Yes
+              .form-group#access_restrictions
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Restrict Access
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :restrict_access
+                    %label.label-primary{:for => "community_restrict_access"}
+                    %span.pl-15 Yes
+              .form-group#allowed_emails
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Allowed Emails
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AlloweEmails","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enter the comma separated emails, only users with these emails are allowed to visit your community in mobile app
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_area :allowed_emails, :value => @community.allowed_emails.collect(&:email).join(", ") , :id=>"emails_allowed", :class=>"form-control", rows:5, :placeholder=>"Emails"
+
               -#- if current_user.is_super_admin?
               -#  .form-group
               -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -275,3 +294,40 @@
     event.preventDefault();
   }
   });
+  
+  if ($("#community_self_tour").is(":checked") == false){
+    $("#access_restrictions").addClass("hidden")
+    $("#allowed_emails").addClass("hidden")
+  }
+
+  if ($("#community_restrict_access").is(":checked") == false){
+    $("#allowed_emails").addClass("hidden")
+  }
+
+  $('#community_self_tour').change(function() {
+    if ($("#community_self_tour").is(":checked")){
+      $("#access_restrictions").removeClass("hidden")
+      if ($("#community_restrict_access").is(":checked"))
+        $("#allowed_emails").removeClass("hidden")
+    }
+    else{
+      $("#access_restrictions").addClass("hidden")
+      $("#allowed_emails").addClass("hidden")
+    }
+  })
+
+  $('#community_restrict_access').change(function() {
+    if ($("#community_restrict_access").is(":checked"))
+      $("#allowed_emails").removeClass("hidden")
+    else
+      $("#allowed_emails").addClass("hidden")
+  })
+
+  $(".form_class").submit(function(){
+    if ($("#community_self_tour").is(":checked") == false){
+      $("#community_restrict_access").prop('checked', false);
+    }
+    if ($("#community_restrict_access").is(":checked") == false)
+      $("#emails_allowed").val('')
+  });
+  

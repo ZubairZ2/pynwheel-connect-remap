@@ -153,7 +153,13 @@ Android Users:
   def tour_user_login
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
     tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name]) if tu.blank?
+    community = Community.find_by_id params[:community_id]
+    allow = true
     if tu.present?
+      if community.present? and community.restrict_access
+        allow = false unless community.allowed_emails.pluck(:email).include?(tu.email)
+      end
+      render :json=> {:success=>false, :message => "You are not allowed to visit this community"} and return if allow == false
       render :json=> {:success=>true, :message => "User present", tour_user: tu}
     else
       render :json=> {:success=>false, :message => "User not present"}
