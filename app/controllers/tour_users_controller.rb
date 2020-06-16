@@ -43,75 +43,16 @@ class TourUsersController < ApplicationController
     @existing_stops << amenities if amenities.present?
  
     # ------------ evnets history below the maps ---------------- #
-    # # testing lines
     # unless amenities.present?
     #   puts '------------------ testing line amenities --------------------'
     #   @existing_stops << Amenity.where(amenityable_type: "Floorplate", id: [297, 1360, 1022, 1023])
     # end
     
-    # # testing lines
     # unless units.present?
     #   puts '------------------ testing line units --------------------'
     #   @existing_stops << (Floorplate.find 265).units
     # end
-    # touruser_remotelock_data
-    # @tour_user.tour_histories.last.update_attributes(arrived: "2020-06-08 13:50:01".to_datetime, left: "2020-06-08 14:40:01")
-    tour_history = TourHistory.find 3999
-		ImportRemotelockEventsWorker.perform_at(10.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
-		ImportRemotelockEventsWorker.perform_at(100.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
-		ImportRemotelockEventsWorker.perform_at(300.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
-		ImportRemotelockEventsWorker.perform_at(900.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
-		ImportRemotelockEventsWorker.perform_at(1500.seconds.from_now, tour_history.tour_user.id.to_s, tour_history.id.to_s, "3517") # if self.tour_user.name == "humza4142@gmail.com"
-    puts '====================='
-  end
-
-  def touruser_remotelock_data
-    as_guests_data = @tour_user.as_guests.find_by(community_id: @community.id)
-    if as_guests_data.present? and @tour_user.id == 74
-      tour_history = TourHistory.find 3725
-    unless tour_history.lock_histories.present?
-      # tour_history = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
-      # start_time = tour_history.last.arrived
-      # end_time = tour_history.last.left # needs update for lengthy stay
-
-      access_token = RemoteLockService.new(@community).client_credentials
-      page = 1
-
-      while page < 5 do
-      responce = RemoteLockService.new(@community).get_all_events(access_token,page)
-      # binding.pry
-
-      responce["data"].each do |event|
-        # get all the lock/unlock events
-        if event["type"] == "unlocked_event" or event["type"] == "locked_event" 
-          # get successfull events by source = user
-          if event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded"
-            # get events of only this tour_user
-            # if event["attributes"]["associated_resource_id"] == as_guests_data.guest_id
-              # puts '---'*50
-              # puts event["attributes"]["occurred_at"].to_datetime
-              # puts '---'*50
-              # binding.pry
-              # get events if it lies b/w the time range of this tour_user
-              if event["attributes"]["pin"] == "3517"
-                # binding.pry
-                event_type = event["type"]
-                occurred_at = event["attributes"]["occurred_at"].to_datetime - 5.hours
-                lock_id = event["attributes"]["publisher_id"]
-                lock_type = event["attributes"]["publisher_type"]
-                rml = RemoteLock.find_by(device_id: lock_id) 
-
-                tour_history.lock_histories.create(event: event_type, occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: @tour_user.id)
-              end
-            # end
-          end
-        end
-      end
-      page = page + 1
-      end
-    end
-    end
-  end
+ end
 
   def lock_ploting
     community_id = params[:community_id]
@@ -145,13 +86,11 @@ class TourUsersController < ApplicationController
     lock_histories << visited_units_history if visited_units_history.present?
     lock_histories << visited_amenities_history if visited_amenities_history.present?
 
-    # # testing lines
     # unless amenities.present?
     #   puts '------------------ testing line amenities --------------------'
     #   @existing_stops << Amenity.where(amenityable_type: "Floorplate", id: [297, 1360, 1022, 1023])
     # end
 
-    # # testing lines
     # unless units.present?
     #   puts '------------------ testing line units --------------------'
     #   @existing_stops << (Floorplate.find 265).units
