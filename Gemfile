@@ -26,6 +26,7 @@ gem 'time_difference'
 source 'https://rails-assets.org' do
   gem 'rails-assets-jsTimezoneDetect'
 end
+gem 'geocoder'
 gem 'amoeba'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'

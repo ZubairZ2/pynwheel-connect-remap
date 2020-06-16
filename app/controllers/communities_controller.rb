@@ -194,6 +194,10 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Landing page button uploaded successfully.</div>'
     end
   end
+  def make_cordinate
+    address = Geocoder.coordinates(params[:address])
+    render :json=>{"cord"=> address }
+  end
   def change_expressionist_default
     # d = Community.find(params[:community_id]).design
     # com = Community.find(params[:community_id]).design.expressionist
