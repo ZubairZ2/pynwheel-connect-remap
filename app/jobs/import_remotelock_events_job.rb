@@ -2,8 +2,8 @@ class ImportRemotelockEventsJob < ApplicationJob
   include SuckerPunch::Job
 
   def perform(tour_user, tour_history, assigned_pin)
-		community = (Tour.find tour_history.tour_id).community
-		as_guests_data = tour_user.as_guests.find_by(community_id: community.id)
+		community = (Tour.find_by_id tour_history.tour_id).community
+		as_guests_data = tour_user.as_guests.find_by(community_id: community.id) if community.present?
     tour_history.lock_histories.destroy_all
     
     if as_guests_data.present?
