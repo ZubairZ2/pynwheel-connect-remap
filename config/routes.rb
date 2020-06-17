@@ -164,7 +164,7 @@ Rails.application.routes.draw do
       end
     end
     resources :tour_users do
-
+        get :lock_ploting
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
@@ -185,6 +185,7 @@ Rails.application.routes.draw do
       get :plotexp
       get :grid_overlay
       post :adjust_marker_positions
+      get :floatplate_images
     end
     resources :units do
       resources :amenities,controller: "unit_amenities" do

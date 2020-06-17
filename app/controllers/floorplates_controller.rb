@@ -3,6 +3,8 @@ class FloorplatesController < ApplicationController
   before_action :check_community
   before_action :authenticate_user!
   before_action :set_floorplate, only: [:edit,:update,:destroy]
+  skip_before_action :load_tour_users_chats, only: [:floatplate_images]
+  
   def index
     @floorplates = current_community.floorplates.order(id: :desc)
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
@@ -198,6 +200,14 @@ class FloorplatesController < ApplicationController
     end
   end
 
+  def floatplate_images
+    floorplate = Floorplate.find params[:floorplate_id]
+    if floorplate.image_url.present?
+      render json: {image_src: floorplate.image_url}, status: 200
+    else
+      render json: {image_src: nil}, status: 400
+    end
+  end
   private
 
   def floorplate_params

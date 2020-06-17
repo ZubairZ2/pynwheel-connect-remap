@@ -15,9 +15,9 @@ class RemoteLockService < BaseService
                 },
                 headers: { 'Content-Type' => 'application/x-www-form-urlencoded' } )
 
-            # puts '==='*50
-            # puts response["access_token"]
-            # puts '==='*50
+            puts '==='*50
+            puts response["access_token"]
+            puts '==='*50
 
             return response["access_token"]
         end
@@ -170,7 +170,7 @@ class RemoteLockService < BaseService
             token_type = "Bearer"
             auth_header = token_type + " " + access_token
 
-            url = base_url + "/access_persons/" + guest_id 
+            url = base_url + 
             
             response = HTTParty.put(url,
                 body: {
@@ -221,6 +221,22 @@ class RemoteLockService < BaseService
         end
     end
 
+    def get_all_events(access_token,page)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+            url = page > 1 ? base_url + "/events/?page="+ page.to_s : base_url + "/events" 
+            response = HTTParty.get(url,
+                :headers => { 'Authorization' => auth_header} )
+            
+            puts "---"*50
+            puts response
+            puts "---"*50
+
+            return response
+        end
+    end
+    
     def update_deivces_in_db(responce)
         if @edge_state_user.present?
             available_ids = []
