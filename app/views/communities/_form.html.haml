@@ -161,7 +161,7 @@
   $(document).on('change', '.address_fields1', function() {
 
    $.ajax({
-    url: "/communities/#{current_community.id}/make_cordinate",
+    url: "/communities/#{Community.last.id}/make_cordinate",
     type: "post",
     data: {address : $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val()},
     success: function(data) {
