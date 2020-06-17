@@ -199,6 +199,7 @@ class PsiService < BaseService
           unit.available_date = vacateDate
         end
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
+        unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
         url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
       
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
@@ -275,6 +276,7 @@ class PsiService < BaseService
           unit.building = building.present? ? building.gsub("Building ", "") : ""
         end
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
+        unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
         url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
       
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
