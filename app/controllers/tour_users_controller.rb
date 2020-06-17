@@ -9,6 +9,7 @@ class TourUsersController < ApplicationController
     @tour_users = []
     user_ids.each {|x| @tour_users << TourUser.find_by_id(x)}
   end
+  
   def show
     @community = Community.find params[:community_id]
     add_breadcrumb "All Visitors", community_tour_users_path(@community)
