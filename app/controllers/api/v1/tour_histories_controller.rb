@@ -23,8 +23,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
       end
       tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch rescue false
       
-      tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch
-      
       tour_history.community = set_community
       chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
       if chatroom.present?
