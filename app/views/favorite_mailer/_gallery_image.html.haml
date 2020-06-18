@@ -33,7 +33,10 @@
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                                 %tr
                                   %td
-                                    %video{:autobuffer => "autobuffer", :controls => "controls", :src => img.video.url, :style => "width: 100%;"}
+                                    %video{:controls => "", :poster => "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg", :src => img.video.url, :width => "100%"}
+                                      %a{:href => img.video.url}
+                                        %img{:src => "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg", :width => "100%"}/
+                                      / %video{:autobuffer => "autobuffer", :controls => "controls", :src => img.video.url, :style => "width: 100%;"}
 
                                       / %img{:alt => "", :src => "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg", :width => "580", :height => "400"}/
                                 /= img.image.file.filename          
