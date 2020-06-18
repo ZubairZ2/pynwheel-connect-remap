@@ -275,8 +275,9 @@ json.tours @tours do |tour|
       unit = Unit.find_by_id stop.stop_id
       if unit.present?
       json.image unit.present? ? (unit.image.present? ? unit.image.url: (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.name  "Apartment "+ (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
+      json.name (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
+      json.directional_text unit.stop_description.present? ? unit.stop_description : "" 
       json.video_link_button_label unit.virtual_tour_button_label
       json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
       lease_pricing = []
