@@ -41,7 +41,7 @@ json.tours tours do |tour|
       if @tour.stop_type == "unit"
         unit = Unit.find @tour.stop_id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-        json.name "Apartment "+unit.marketing_name
+        json.name unit.marketing_name
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label unit.virtual_tour_button_label
         json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
