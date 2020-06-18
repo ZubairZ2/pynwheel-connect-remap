@@ -9,8 +9,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.tour_id = params[:tour_id].to_i if params[:tour_id].present?
 
       tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
-      tour_history.my_time_zone = params[:time_zone].to_s if params[:time_zone].present?
-
+      if params[:time_zone].present?
+        tour_history.my_time_zone = params[:time_zone].to_s rescue nil
+      end
       tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
       tour_history.tour_user_id = params[:tour_user_id]
       @tour = Tour.find params[:tour_id]
