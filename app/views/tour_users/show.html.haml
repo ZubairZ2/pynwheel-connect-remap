@@ -67,9 +67,9 @@
                         .alert-div1{:style => "margin-top: 10px"}
                           = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                           - if alert.arrived.present?
-                            - if alert.timezone.present?
+                            - if alert.my_time_zone.present?
                               - begin 
-                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone(alert.timezone).strftime("%I:%M %p")}
+                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
                               - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone 
                                 #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                             - else
@@ -82,9 +82,9 @@
                         .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
                           = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                           - if end_time.present?
-                            - if alert.timezone.present?
+                            - if alert.my_time_zone.present?
                               - begin
-                                #{end_time.to_date} #{end_time.in_time_zone(alert.timezone).strftime("%I:%M %p")}
+                                #{end_time.to_date} #{end_time.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
                               - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
                                 #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                             - else
@@ -98,14 +98,14 @@
                         = select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
                       .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-right: 0;"}
                         - begin
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.timezone.present? ? [f.arrived.in_time_zone(f.timezone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                         - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
                           = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
 
                     - else
                       .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
                         - begin
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.timezone.present? ? [f.arrived.in_time_zone(f.timezone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                         - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
                           = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
