@@ -8,7 +8,7 @@ class ImportRemotelockEventsJob < ApplicationJob
     
     if as_guests_data.present?
       email_content = "Events for #{tour_user.name} with tour id #{tour_user.id} are imported in pynwheel as a backgroubjob, while the tour history id is #{tour_history.id} and the assigned pin is #{assigned_pin}" if tour_user.present? and tour_user.as_guests.present?
-  		DelayedSchedulerMailerJob.perform_async("Remote Lock Events", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, its ran in callback","humza4142@gmail.com") if tour_user.present? and tour_user.as_guests.present?
+  		DelayedSchedulerMailerJob.perform_async("Remote Lock Events, BackGroud Job", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, BackGroud Job, its ran in  BackGroud Job","humza4142@gmail.com") if tour_user.present? and tour_user.as_guests.present?
 
       access_token = RemoteLockService.new(community).client_credentials
 
@@ -18,19 +18,19 @@ class ImportRemotelockEventsJob < ApplicationJob
         responce["data"].each do |event|
           if active_user_exists(event,as_guests_data.guest_id)  
 
-            occurred_at = event["attributes"]["occurred_at"].to_datetime.utc
+            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"])
             rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
             tour_history.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: tour_user.id)
           
           elsif expire_user_exists(event, tour_user.name, assigned_pin)
             
-            occurred_at = event["attributes"]["occurred_at"].to_datetime.utc
+            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"])
             rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
             tour_history.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: tour_user.id)
  
           elsif sync_events_exists(event,as_guests_data.guest_id) # just for testing
             
-            occurred_at = event["attributes"]["occurred_at"].to_datetime.utc
+            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"])
             rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
             tour_history.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: tour_user.id)
           
