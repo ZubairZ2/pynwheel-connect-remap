@@ -222,10 +222,13 @@ Android Users:
         if u.community.is_sitemap?
           u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
             image.url(:svg_for_metro) : u.community.sitemap.image.url
+          @sitemap_image_url = u.sitemap_image_url
+
         else
           floorplate = Floorplate.find_by_id(u.floorplate_id)
           floorplate_image = floorplate.image.url if floorplate.present?
           u.sitemap_image_url = floorplate_image
+          @sitemap_image_url = floorplate_image
         end
         u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
       end

@@ -43,6 +43,7 @@ json.data @units do |u|
         json.updated_by_admin u.updated_by_admin
         json.available u.available
         json.sold u.sold
+        json.sitemap_image_url @sitemap_image_url
         json.manually_updated u.manually_updated
         json.manual_override u.manual_override
         json.square_feet u.square_feet
