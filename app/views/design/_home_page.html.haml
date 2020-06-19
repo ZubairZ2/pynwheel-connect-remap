@@ -252,7 +252,7 @@
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Font Family
+              = link_to "Font Family",  asset_path("font_style.pdf"), target: "_blank"
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = e.select :home_page_button_font_family , options_for_select(font_families,e.object.home_page_button_font_family),{},{class: "form-control home-page-field"}
       .row.global_navigation_sub_heading
