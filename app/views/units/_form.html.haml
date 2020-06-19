@@ -67,6 +67,11 @@
 -#      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
 -#      %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
 -#      %span.pl-15 Yes
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Access Code
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
 
 .form-group#unit_virtual_tour_button_label_field
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

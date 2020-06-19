@@ -258,6 +258,13 @@ json.tours @tours do |tour|
       else
         json.guest_pin ''
       end
+    else
+      _stop_ = Unit.find_by_id stop.stop_id
+      if _stop_.present? and _stop_.access_code.present?
+        json.guest_pin "Use code " + _stop_.access_code + " to enter."
+      else
+        json.guest_pin ''
+      end
     end
     json.navigation_title navigation_title
     json.id stop.id
@@ -429,6 +436,13 @@ json.tours @tours do |tour|
           pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
           json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
           json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+        else
+          json.guest_pin ''
+        end
+      else
+        _stop_ = Amenity.find_by_id stop.stop_id
+        if _stop_.present? and _stop_.access_code.present?
+          json.guest_pin "Use code " + _stop_.access_code + " to enter."
         else
           json.guest_pin ''
         end
