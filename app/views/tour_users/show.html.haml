@@ -472,7 +472,9 @@
   }
 
   function draw_history(stop, index){
-      $("#unlock_history").append(`<h5 id="lock_histories_style" > <i class="fa fa-unlock-alt"></i> ${stop.stop_name} unlocked at ${moment(stop.occured_at).format("LT")}</h5>`)
+      var time = stop.occured_at
+      var occured_time = moment(time).zone(time);
+      $("#unlock_history").append(`<h5 id="lock_histories_style" > <i class="fa fa-unlock-alt"></i> ${stop.stop_name} unlocked at ${occured_time.format("LT")}</h5>`)
   }
 
   $("#floorplates_images").change(function () {
