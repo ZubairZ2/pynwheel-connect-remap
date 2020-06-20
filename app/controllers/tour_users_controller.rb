@@ -21,8 +21,8 @@ class TourUsersController < ApplicationController
     @chatroom_id = chatroom.present? ? chatroom.id : 0
 
     # ------------ locks ploting on the map ---------------- #
-    @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit")
-    @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity")
+    @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "unlocked_event")
+    @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
     
     unit_ids = @visited_units_history.map{|x| x.stop_id}.uniq
     amenity_ids = @visited_amenities_history.map{|x| x.stop_id}.uniq
@@ -61,8 +61,8 @@ class TourUsersController < ApplicationController
     floorplate_id = params[:floorplate_id]
 
     community = Community.find community_id
-    visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit")
-    visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity")
+    visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit", event: "unlocked_event")
+    visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity", event: "unlocked_event")
     
     unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
     amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
