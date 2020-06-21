@@ -139,7 +139,8 @@
                       - @visited_amenities_history.each_with_index do |amenity, index|
                         - if amenity.event == "unlocked_event" 
                           %h5#lock_histories_style 
-                            %i.fa.fa-unlock-alt #{amenity.stop_name} unlocked at #{amenity.occured_at.strftime("%l:%M %p")} 
+                            %i.fa.fa-unlock-alt
+                            #{amenity.stop_name} unlocked at #{amenity.occured_at.strftime("%l:%M %p")}
 
 
                 .col-lg-6
