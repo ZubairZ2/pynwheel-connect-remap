@@ -191,6 +191,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
     # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
     @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
+    
+    current_datetime = params[:current_time].present? ? params[:current_time].to_datetime.strftime('%d/%m/%Y %l:%M %p') : DateTime.now.strftime('%d/%m/%Y %l:%M %p')
+    current_time = current_datetime.to_datetime.strftime('%l:%M %p')
+    current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
+    current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
+    @scheduled_tour = SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ? and end_time >= ? and tour_time <= ?', @community.id, @tour_user.id, current_tour.tour_date, current_tour.tour_time, current_tour.tour_time) if @community.present? and @tour_user.present?
+    
     # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.tour.id,tour_key: last_vs.tour_key)
     # @tours = @tours.map{|h| h}[-4..-1].to_h
   end
