@@ -19,7 +19,7 @@ var MyWidgetJS = {
   load: function() {
     var $elem, $iframe;
     $elem = $('#my-widget');
-    var url = "http://192.168.101.199:3000/schedular_widget/widget";
+    var url = "http://192.168.101.199:3000/scheduler_widget/widget";
     if ($elem.length > 0) {
       $elem.empty();
       $iframe = $('<iframe>').attr('src',  url)

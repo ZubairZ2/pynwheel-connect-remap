@@ -1,4 +1,4 @@
-class SchedularWidget::WidgetsController < ApplicationController
+class SchedulerWidget::WidgetsController < ApplicationController
 	skip_before_action :verify_authenticity_token
   skip_before_action :authenticate_user!
   after_action :allow_iframe
@@ -16,6 +16,7 @@ class SchedularWidget::WidgetsController < ApplicationController
       end
     end
   end
+
 
   def test_widget
     @community_id = params[:community_id]

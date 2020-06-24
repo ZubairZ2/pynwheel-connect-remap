@@ -10,12 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-
-ActiveRecord::Schema.define(version: 20191108160331) do
+ActiveRecord::Schema.define(version: 20200619082937) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-  enable_extension "pg_stat_statements"
 
   create_table "additional_images", force: :cascade do |t|
     t.string   "image"
@@ -39,13 +37,21 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.datetime "updated_at",   null: false
   end
 
+  create_table "allowed_emails", force: :cascade do |t|
+    t.string   "email"
+    t.integer  "community_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["community_id"], name: "index_allowed_emails_on_community_id", using: :btree
+  end
+
   create_table "amenities", force: :cascade do |t|
     t.string   "provider_amenity_id"
     t.string   "amenty_type"
     t.text     "description"
     t.integer  "unit_id"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.datetime "created_at",                                     null: false
+    t.datetime "updated_at",                                     null: false
     t.string   "name"
     t.string   "image"
     t.integer  "x_plot"
@@ -57,6 +63,9 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.integer  "sort"
     t.string   "access_code"
     t.string   "directional_text"
+    t.integer  "floor"
+    t.string   "video_link"
+    t.string   "video_link_button_label", default: "PLAY VIDEO"
     t.index ["amenityable_type", "amenityable_id"], name: "index_amenities_on_amenityable_type_and_amenityable_id", using: :btree
   end
 
@@ -68,6 +77,7 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
     t.string   "directional_text"
+    t.integer  "sort"
     t.index ["amenity_id"], name: "index_amenity_galleries_on_amenity_id", using: :btree
   end
 
@@ -77,6 +87,36 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.datetime "updated_at",                         null: false
     t.integer  "neighborhood_counter"
     t.integer  "counter_limit",        default: 500
+  end
+
+  create_table "as_guests", force: :cascade do |t|
+    t.integer  "community_id"
+    t.string   "guest_id"
+    t.string   "edgestate_pin"
+    t.integer  "tour_user_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.index ["community_id"], name: "index_as_guests_on_community_id", using: :btree
+    t.index ["tour_user_id"], name: "index_as_guests_on_tour_user_id", using: :btree
+  end
+
+  create_table "chatrooms", force: :cascade do |t|
+    t.integer  "tour_user_id"
+    t.integer  "tour_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["tour_id"], name: "index_chatrooms_on_tour_id", using: :btree
+    t.index ["tour_user_id"], name: "index_chatrooms_on_tour_user_id", using: :btree
+  end
+
+  create_table "chats", force: :cascade do |t|
+    t.string   "message"
+    t.string   "name"
+    t.integer  "chatroom_id"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.string   "client_date"
+    t.index ["chatroom_id"], name: "index_chats_on_chatroom_id", using: :btree
   end
 
   create_table "communities", force: :cascade do |t|
@@ -94,35 +134,33 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.boolean  "locked"
     t.string   "data_provider"
     t.integer  "company_id"
-    t.datetime "created_at",                                            null: false
-    t.datetime "updated_at",                                            null: false
+    t.datetime "created_at",                                                    null: false
+    t.datetime "updated_at",                                                    null: false
     t.string   "theme_name"
     t.string   "website"
     t.string   "code"
-    t.boolean  "is_sitemap",                     default: true
+    t.boolean  "is_sitemap",                         default: true
     t.string   "secondary_logo"
-    t.boolean  "show_gallery",                   default: true
-    t.string   "gallery_page_name",              default: "Gallery"
-    t.boolean  "show_apartment",                 default: true
-    t.string   "apartment_page_name",            default: "Apartments"
-    t.boolean  "equal_housing_opportunity_logo", default: true
-    t.boolean  "handicap_accessible_logo",       default: true
-    t.boolean  "display_rent",                   default: true
-    t.boolean  "display_sitemap",                default: true
-    t.boolean  "display_floorplan_gallery",      default: true
-    t.boolean  "display_unit_on_homepage",       default: true
-    t.boolean  "display_gallery_on_homepage",    default: true
+    t.boolean  "show_gallery",                       default: true
+    t.string   "gallery_page_name",                  default: "Gallery"
+    t.boolean  "show_apartment",                     default: true
+    t.string   "apartment_page_name",                default: "Apartments"
+    t.boolean  "equal_housing_opportunity_logo",     default: true
+    t.boolean  "handicap_accessible_logo",           default: true
+    t.boolean  "display_rent",                       default: true
+    t.boolean  "display_sitemap",                    default: true
+    t.boolean  "display_floorplan_gallery",          default: true
+    t.boolean  "display_unit_on_homepage",           default: true
+    t.boolean  "display_gallery_on_homepage",        default: true
     t.string   "realpage_pricing_data"
-    t.boolean  "realpage_pricing_data_uploaded", default: true
-    t.boolean  "powered_by_btn",                 default: true
+    t.boolean  "realpage_pricing_data_uploaded",     default: true
+    t.boolean  "powered_by_btn",                     default: true
+    t.boolean  "is_vertical_app",                    default: false
     t.string   "entrata_exception_logs"
-    t.boolean  "is_vertical_app",                default: false
     t.boolean  "show_tour_page"
-    t.boolean  "display_available_date",         default: true
-    t.boolean  "show_gesture_icons"
-    t.boolean  "self_tour",                      default: false
-    t.integer  "alert_contact",                  default: 2
-    t.integer  "community_group_id"
+    t.boolean  "display_available_date",             default: true
+    t.boolean  "show_gesture_icons",                 default: true
+    t.boolean  "self_tour",                          default: false
     t.float    "crop_x"
     t.float    "crop_y"
     t.float    "crop_w"
@@ -131,16 +169,47 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.float    "crop_y_secondary"
     t.float    "crop_w_secondary"
     t.float    "crop_h_secondary"
+    t.integer  "community_group_id"
+    t.integer  "alert_contact",                      default: 2
     t.boolean  "floorplan_name_order"
     t.boolean  "image_bit"
-    t.boolean  "do_crop",                        default: false
-    t.boolean  "do_crop_secondary",              default: false
+    t.boolean  "do_crop",                            default: false
+    t.boolean  "do_crop_secondary",                  default: false
     t.integer  "number_of_units"
-    t.boolean  "tour_setup_visible",             default: false
-    t.boolean  "master_community",               default: false
+    t.boolean  "tour_setup_visible",                 default: false
+    t.boolean  "master_community",                   default: false
     t.text     "sms_text"
     t.text     "email_text"
-    t.string   "menu_button_shade",              default: "light"
+    t.string   "menu_button_shade",                  default: "light"
+    t.integer  "neighborhood_request_counter",       default: 0
+    t.integer  "neighborhood_request_counter_limit", default: 300
+    t.boolean  "limit_200_hit",                      default: false
+    t.boolean  "limit_400_hit",                      default: false
+    t.boolean  "show_property_map_key",              default: true
+    t.string   "show_property_map_key_text",         default: "Available Home"
+    t.boolean  "show_amenity_key",                   default: true
+    t.string   "show_amenity_key_text",              default: "Amenity Image"
+    t.string   "billing_type",                       default: "annual"
+    t.string   "billing_month",                      default: ""
+    t.decimal  "billing_rate"
+    t.date     "date_installed"
+    t.date     "date_activated"
+    t.date     "date_inactivated"
+    t.integer  "deleted_ids",                        default: [],                            array: true
+    t.boolean  "touchscreen_app",                    default: true
+    t.boolean  "lincoln_app",                        default: false
+    t.boolean  "show_camera_button",                 default: true
+    t.boolean  "show_notepad_button",                default: true
+    t.boolean  "automate_unit_stop",                 default: false
+    t.boolean  "chat_control",                       default: false
+    t.boolean  "show_map",                           default: true
+    t.boolean  "mdu",                                default: true
+    t.string   "one_day_email_text"
+    t.string   "one_hour_email_text"
+    t.boolean  "is_chat_login"
+    t.string   "self_tour_logo"
+    t.boolean  "self_tour_logo_cropped",             default: false
+    t.boolean  "restrict_access",                    default: false
     t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
   end
@@ -149,13 +218,14 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "name"
     t.string   "address"
     t.string   "code"
-    t.boolean  "page_type",  default: false
+    t.boolean  "page_type",         default: false
     t.string   "page_name"
     t.string   "logo"
-    t.boolean  "inactivate", default: false
+    t.boolean  "inactivate",        default: false
     t.integer  "company_id"
-    t.datetime "created_at",                 null: false
-    t.datetime "updated_at",                 null: false
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
+    t.string   "menu_button_shade", default: "light"
     t.index ["company_id"], name: "index_community_groups_on_company_id", using: :btree
   end
 
@@ -381,6 +451,15 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.datetime "updated_at",          null: false
   end
 
+  create_table "edge_states", force: :cascade do |t|
+    t.string   "client_id"
+    t.string   "client_secret"
+    t.integer  "community_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.index ["community_id"], name: "index_edge_states_on_community_id", using: :btree
+  end
+
   create_table "elevator_galleries", force: :cascade do |t|
     t.integer  "elevator_id"
     t.string   "image"
@@ -440,6 +519,8 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "application_background_image"
     t.boolean  "display_application_background_image",             default: false
     t.string   "application_background_color"
+    t.string   "button_on_bg_color_opacity"
+    t.string   "application_background_color_opacity"
     t.boolean  "display_apartment_nav_bg_image",                   default: false
     t.string   "apartment_nav_bg_image"
     t.boolean  "display_gallery_nav_bg_image",                     default: false
@@ -448,8 +529,6 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "favourities_nav_bg_image"
     t.boolean  "display_additional_pages_nav_bg_image",            default: false
     t.string   "additional_pages_nav_bg_image"
-    t.string   "button_on_bg_color_opacity"
-    t.string   "application_background_color_opacity"
     t.string   "apartment_nav_bg_color"
     t.string   "gallery_nav_bg_color"
     t.string   "favourities_nav_bg_color"
@@ -501,6 +580,12 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "global_nav_button_icon_size"
     t.boolean  "display_neighborhood_bg_image"
     t.string   "neighborhood_bg_image"
+    t.string   "overlay_text"
+    t.string   "overlay_font"
+    t.string   "overlay_size"
+    t.string   "overlay_color"
+    t.string   "overlay_opacity"
+    t.string   "overlay_text_position"
   end
 
   create_table "favorite_images", force: :cascade do |t|
@@ -525,6 +610,17 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.boolean  "equal_housing_opportunity_logo", default: true
     t.boolean  "handicap_accessible_logo",       default: true
     t.index ["community_id"], name: "index_favorite_settings_on_community_id", using: :btree
+  end
+
+  create_table "favorite_stops", force: :cascade do |t|
+    t.text     "favorite_unit",          default: [],              array: true
+    t.text     "favorite_amenity",       default: [],              array: true
+    t.integer  "community_id"
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
+    t.json     "user_favorites_unit",    default: {}
+    t.json     "user_favorites_amenity", default: {}
+    t.index ["community_id"], name: "index_favorite_stops_on_community_id", using: :btree
   end
 
   create_table "favorites", force: :cascade do |t|
@@ -596,6 +692,7 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.boolean  "image_bit"
     t.boolean  "do_crop",                           default: false
     t.boolean  "do_crop_secondary",                 default: false
+    t.boolean  "iframe_enable_for_3Dtour",          default: true
   end
 
   create_table "floorplates", force: :cascade do |t|
@@ -680,6 +777,56 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.index ["gallery_id"], name: "index_gallery_images_on_gallery_id", using: :btree
   end
 
+  create_table "group_designs", force: :cascade do |t|
+    t.string   "logo_position"
+    t.string   "button_shape"
+    t.string   "button_width"
+    t.string   "button_height"
+    t.string   "button_spacing"
+    t.string   "background_image"
+    t.string   "button_color"
+    t.string   "button_opacity"
+    t.string   "button_border_side"
+    t.string   "button_border_color"
+    t.string   "button_border_opacity"
+    t.string   "button_border_thickness"
+    t.string   "button_font_family"
+    t.string   "button_font_size"
+    t.string   "button_font_color"
+    t.integer  "community_group_id"
+    t.datetime "created_at",                                 null: false
+    t.datetime "updated_at",                                 null: false
+    t.string   "bouncing_effecting"
+    t.string   "video"
+    t.string   "loop_type",               default: "images"
+    t.string   "logo_size"
+    t.boolean  "display_button_image",    default: false
+    t.boolean  "display_button_text",     default: true
+    t.index ["community_group_id"], name: "index_group_designs_on_community_group_id", using: :btree
+  end
+
+  create_table "group_homepage_images", force: :cascade do |t|
+    t.string   "image"
+    t.string   "name"
+    t.boolean  "is_small"
+    t.float    "crop_x"
+    t.float    "crop_y"
+    t.float    "crop_w"
+    t.float    "crop_h"
+    t.integer  "group_design_id"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.index ["group_design_id"], name: "index_group_homepage_images_on_group_design_id", using: :btree
+  end
+
+  create_table "group_homepage_videos", force: :cascade do |t|
+    t.string   "video"
+    t.integer  "group_design_id"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.index ["group_design_id"], name: "index_group_homepage_videos_on_group_design_id", using: :btree
+  end
+
   create_table "home_page_images", force: :cascade do |t|
     t.string   "image"
     t.string   "name"
@@ -695,6 +842,7 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "thumb_image_url"
     t.string   "large_image_url"
     t.boolean  "do_crop",            default: false
+    t.boolean  "is_small",           default: false
   end
 
   create_table "home_page_videos", force: :cascade do |t|
@@ -765,6 +913,20 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.index ["neighborhood_id"], name: "index_locations_on_neighborhood_id", using: :btree
   end
 
+  create_table "lock_histories", force: :cascade do |t|
+    t.string   "event"
+    t.datetime "occured_at"
+    t.integer  "stop_id"
+    t.string   "stop_name"
+    t.string   "stop_type"
+    t.integer  "tour_user_id"
+    t.integer  "tour_history_id"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.index ["tour_history_id"], name: "index_lock_histories_on_tour_history_id", using: :btree
+    t.index ["tour_user_id"], name: "index_lock_histories_on_tour_user_id", using: :btree
+  end
+
   create_table "main_screens", force: :cascade do |t|
     t.string   "appartments_button"
     t.string   "galleries_button"
@@ -796,6 +958,14 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "horizontal_menu_position"
     t.string   "navigation_text_color"
     t.string   "navigation_background_color"
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.string   "text"
+    t.integer  "community_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["community_id"], name: "index_messages_on_community_id", using: :btree
   end
 
   create_table "neighborhoods", force: :cascade do |t|
@@ -830,6 +1000,16 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "opening_hours", force: :cascade do |t|
+    t.string   "day"
+    t.string   "opening_time"
+    t.string   "closing_time"
+    t.integer  "community_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["community_id"], name: "index_opening_hours_on_community_id", using: :btree
+  end
+
   create_table "path_points", force: :cascade do |t|
     t.integer  "x_plot"
     t.integer  "y_plot"
@@ -845,8 +1025,38 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "name"
     t.integer  "map_path_id"
     t.string   "map_path_type"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+    t.string   "map_path_to_type"
+    t.integer  "map_path_to_id"
+    t.string   "map_path_from_type"
+    t.integer  "map_path_from_id"
+    t.index ["map_path_from_type", "map_path_from_id"], name: "index_paths_on_map_path_from_type_and_map_path_from_id", using: :btree
+    t.index ["map_path_to_type", "map_path_to_id"], name: "index_paths_on_map_path_to_type_and_map_path_to_id", using: :btree
+  end
+
+  create_table "read_marks", force: :cascade do |t|
+    t.string   "readable_type"
+    t.integer  "readable_id"
+    t.string   "reader_type"
+    t.integer  "reader_id"
+    t.datetime "timestamp"
+    t.index ["readable_type", "readable_id"], name: "index_read_marks_on_readable_type_and_readable_id", using: :btree
+    t.index ["reader_id", "reader_type", "readable_type", "readable_id"], name: "read_marks_reader_readable_index", unique: true, using: :btree
+    t.index ["reader_type", "reader_id"], name: "index_read_marks_on_reader_type_and_reader_id", using: :btree
+  end
+
+  create_table "remote_locks", force: :cascade do |t|
+    t.string   "remote_lock_type"
+    t.string   "name"
+    t.integer  "edge_state_id"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.string   "device_id"
+    t.integer  "stop_id"
+    t.string   "stop_type"
+    t.string   "stop_name"
+    t.index ["edge_state_id"], name: "index_remote_locks_on_edge_state_id", using: :btree
   end
 
   create_table "schedual_tours", force: :cascade do |t|
@@ -861,6 +1071,8 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.boolean  "daily_email_sent",  default: false
     t.string   "user_time_zone"
     t.integer  "day_diff"
+    t.string   "charge_id"
+    t.string   "pay_back_id"
     t.index ["tour_id"], name: "index_schedual_tours_on_tour_id", using: :btree
     t.index ["tour_user_id"], name: "index_schedual_tours_on_tour_user_id", using: :btree
   end
@@ -923,11 +1135,34 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.boolean  "id_mismatch"
     t.integer  "abandoned_tour_at_stop"
     t.integer  "tour_user_id"
-    t.datetime "created_at",                              null: false
-    t.datetime "updated_at",                              null: false
+    t.datetime "created_at",                                null: false
+    t.datetime "updated_at",                                null: false
     t.datetime "lengthy_stay"
-    t.boolean  "lengthy_stay_email_sent", default: false
+    t.boolean  "lengthy_stay_email_sent",   default: false
+    t.integer  "tour_id"
+    t.boolean  "end_tour_email_sent",       default: false
+    t.boolean  "abandoned_tour_email_sent", default: false
+    t.string   "my_time_zone"
     t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id", using: :btree
+  end
+
+  create_table "tour_path_points", force: :cascade do |t|
+    t.integer  "x_plot"
+    t.integer  "y_plot"
+    t.integer  "path_from_id"
+    t.integer  "tour_path_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["tour_path_id"], name: "index_tour_path_points_on_tour_path_id", using: :btree
+  end
+
+  create_table "tour_paths", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "floor"
+    t.integer  "tour_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tour_id"], name: "index_tour_paths_on_tour_id", using: :btree
   end
 
   create_table "tour_stops", force: :cascade do |t|
@@ -936,10 +1171,11 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.decimal  "longitude"
     t.integer  "stop_id"
     t.string   "stop_type"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string   "name"
     t.integer  "sort"
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
+    t.string   "name"
+    t.boolean  "display_stop", default: true
     t.index ["tour_id"], name: "index_tour_stops_on_tour_id", using: :btree
   end
 
@@ -955,6 +1191,9 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.boolean  "id_selfie_mismatch", default: false, null: false
     t.string   "first_name"
     t.string   "last_name"
+    t.boolean  "image_bit",          default: false
+    t.boolean  "croped",             default: false
+    t.string   "secure_random"
   end
 
   create_table "tours", force: :cascade do |t|
@@ -963,10 +1202,15 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.decimal  "latitude"
     t.decimal  "longitude"
     t.string   "image"
-    t.datetime "created_at",               null: false
-    t.datetime "updated_at",               null: false
-    t.integer  "x_plot",       default: 0
-    t.integer  "y_plot",       default: 0
+    t.datetime "created_at",                               null: false
+    t.datetime "updated_at",                               null: false
+    t.integer  "x_plot",                 default: 0
+    t.integer  "y_plot",                 default: 0
+    t.json     "sort_hash",              default: "{}",    null: false
+    t.boolean  "visual_id_verification", default: true
+    t.string   "marker_icon_size"
+    t.string   "dotted_line_color",      default: "green"
+    t.string   "max_tour_users"
     t.index ["community_id"], name: "index_tours_on_community_id", using: :btree
   end
 
@@ -988,7 +1232,6 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.integer  "x_plot",                            default: 0
     t.integer  "y_plot",                            default: 0
     t.integer  "floorplate_id"
-    t.integer  "lease_term",                        default: 12
     t.string   "image"
     t.integer  "floor"
     t.string   "standard_image_url"
@@ -1019,6 +1262,10 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.float    "min_effective_rent"
     t.float    "avg_effective_rent"
     t.string   "sitemap_image_url"
+    t.boolean  "iframe_enable_for_3Dtour",          default: true
+    t.boolean  "modal_unit",                        default: false
+    t.string   "availability_url_deep_linking"
+    t.string   "access_code"
   end
 
   create_table "users", force: :cascade do |t|
@@ -1048,10 +1295,10 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.integer  "invitations_count",             default: 0
     t.integer  "company_id"
     t.string   "company_name"
+    t.boolean  "welcome_prompt",                default: false
     t.string   "community_logs"
     t.string   "entrata_list_logs"
     t.string   "entrata_function_logs"
-    t.boolean  "welcome_prompt",                default: false
     t.boolean  "welcome_property_details_page", default: false
     t.boolean  "welcome_logo_page",             default: false
     t.boolean  "welcome_homepage_page",         default: false
@@ -1065,6 +1312,7 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.boolean  "welcome_favorite_page",         default: false
     t.boolean  "welcome_additional_page",       default: false
     t.boolean  "welcome_gallery_page",          default: false
+    t.boolean  "welcome_floorplate_plot_page",  default: true
     t.index ["email"], name: "index_users_on_email", unique: true, using: :btree
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, using: :btree
     t.index ["invitations_count"], name: "index_users_on_invitations_count", using: :btree
@@ -1089,11 +1337,13 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "image"
     t.integer  "tour_stop_id"
     t.string   "description"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
     t.integer  "tour_id"
     t.string   "device_id"
     t.string   "tour_key"
+    t.boolean  "is_rotated",   default: true
+    t.time     "event_time"
     t.index ["tour_user_id"], name: "index_visited_stops_on_tour_user_id", using: :btree
   end
 
@@ -1101,41 +1351,60 @@ ActiveRecord::Schema.define(version: 20191108160331) do
     t.string   "name"
     t.string   "url"
     t.integer  "community_id"
-    t.datetime "created_at",                          null: false
-    t.datetime "updated_at",                          null: false
-    t.boolean  "hide_page",           default: false
+    t.datetime "created_at",                               null: false
+    t.datetime "updated_at",                               null: false
+    t.boolean  "hide_page",                default: false
     t.boolean  "display_on_homepage"
     t.integer  "position"
+    t.boolean  "iframe_enable_for_3Dtour", default: false
     t.index ["community_id"], name: "index_webpages_on_community_id", using: :btree
   end
 
   add_foreign_key "additional_images", "imagepages"
+  add_foreign_key "allowed_emails", "communities"
   add_foreign_key "amenity_galleries", "amenities"
+  add_foreign_key "as_guests", "communities"
+  add_foreign_key "as_guests", "tour_users"
+  add_foreign_key "chatrooms", "tour_users"
+  add_foreign_key "chatrooms", "tours"
+  add_foreign_key "chats", "chatrooms"
   add_foreign_key "communities", "companies"
   add_foreign_key "community_groups", "companies"
   add_foreign_key "community_users", "communities"
   add_foreign_key "community_users", "users"
   add_foreign_key "credentials", "communities"
+  add_foreign_key "edge_states", "communities"
   add_foreign_key "elevator_galleries", "elevators"
   add_foreign_key "elevators", "communities"
   add_foreign_key "elevators", "floorplates"
   add_foreign_key "elevators", "sitemaps"
   add_foreign_key "favorite_images", "favorite_settings"
   add_foreign_key "favorite_settings", "communities"
+  add_foreign_key "favorite_stops", "communities"
   add_foreign_key "galleries", "communities"
   add_foreign_key "gallery_images", "communities"
   add_foreign_key "gallery_images", "galleries"
+  add_foreign_key "group_designs", "community_groups"
+  add_foreign_key "group_homepage_images", "group_designs"
+  add_foreign_key "group_homepage_videos", "group_designs"
   add_foreign_key "homepage_icons", "designs"
   add_foreign_key "imagepages", "communities"
   add_foreign_key "locations", "neighborhoods"
+  add_foreign_key "lock_histories", "tour_histories"
+  add_foreign_key "lock_histories", "tour_users"
+  add_foreign_key "messages", "communities"
   add_foreign_key "neighborhoods", "communities"
   add_foreign_key "neighbour_units", "path_points"
+  add_foreign_key "opening_hours", "communities"
+  add_foreign_key "remote_locks", "edge_states"
   add_foreign_key "schedual_tours", "tour_users"
   add_foreign_key "schedual_tours", "tours"
   add_foreign_key "sitemaps", "communities"
   add_foreign_key "stop_details", "tour_stops"
   add_foreign_key "stop_galleries", "tour_stops"
   add_foreign_key "tour_histories", "tour_users"
+  add_foreign_key "tour_path_points", "tour_paths"
+  add_foreign_key "tour_paths", "tours"
   add_foreign_key "tour_stops", "tours"
   add_foreign_key "tours", "communities"
   add_foreign_key "visited_stops", "tour_users"
