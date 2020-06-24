@@ -135,11 +135,13 @@
                       - @visited_units_history.each_with_index do |unit, index|
                         - if unit.event == "unlocked_event" 
                           %h5#lock_histories_style
-                            %i.fa.fa-unlock-alt #{unit.stop_name} unlocked at #{unit.occured_at.strftime("%l:%M %p")} 
+                            %i.fa.fa-unlock-alt
+                            #{unit.stop_name} unlocked at #{unit.occured_at.strftime("%l:%M %p")}
                       - @visited_amenities_history.each_with_index do |amenity, index|
                         - if amenity.event == "unlocked_event" 
                           %h5#lock_histories_style 
-                            %i.fa.fa-unlock-alt #{amenity.stop_name} unlocked at #{amenity.occured_at.strftime("%l:%M %p")} 
+                            %i.fa.fa-unlock-alt
+                            #{amenity.stop_name} unlocked at #{amenity.occured_at.strftime("%l:%M %p")}
 
 
                 .col-lg-6
@@ -472,7 +474,9 @@
   }
 
   function draw_history(stop, index){
-      $("#unlock_history").append(`<h5 id="lock_histories_style" > <i class="fa fa-unlock-alt"></i> ${stop.stop_name} unlocked at ${moment(stop.occured_at).format("LT")}</h5>`)
+      var time = stop.occured_at
+      var occured_time = moment(time).zone(time);
+      $("#unlock_history").append(`<h5 id="lock_histories_style" > <i class="fa fa-unlock-alt"></i> ${stop.stop_name} unlocked at ${occured_time.format("LT")}</h5>`)
   }
 
   $("#floorplates_images").change(function () {

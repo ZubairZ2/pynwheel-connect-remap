@@ -17,20 +17,19 @@ class ImportRemotelockEventsJob < ApplicationJob
         responce = RemoteLockService.new(community).get_all_events(access_token,page)
         responce["data"].each do |event|
           if active_user_exists(event,as_guests_data.guest_id)  
-
-            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"])
+            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
             rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
             tour_history.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: tour_user.id)
           
           elsif expire_user_exists(event, tour_user.name, assigned_pin)
             
-            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"])
+            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
             rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
             tour_history.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: tour_user.id)
  
           elsif sync_events_exists(event,as_guests_data.guest_id) # just for testing
             
-            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"])
+            occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
             rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
             tour_history.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: tour_user.id)
           
