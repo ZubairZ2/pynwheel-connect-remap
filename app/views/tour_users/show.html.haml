@@ -17,7 +17,8 @@
           SUMMARY
           %span
             #{@tour_user.name}
-        = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right", data: { toggle: "modal", target: "#ChatSupport_a" })
+        - unless @chatroom_id == 0 
+          = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right", data: { toggle: "modal", target: "#ChatSupport_a" })
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
         -#%span{:style => "float: right;"}
