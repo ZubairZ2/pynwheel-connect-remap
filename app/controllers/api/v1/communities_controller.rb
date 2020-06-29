@@ -206,7 +206,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
     SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ? and end_time >= ? and tour_time <= ?', community_id, tour_user_id, current_tour.tour_date, current_tour.tour_time, current_tour.tour_time)
   end
-
+ 
   def is_tour_in_visiting_hours(time_param,community)
     current_time = time_param.to_datetime.strftime("%H:%M")
     current_day = current_time.to_datetime.strftime('%A')
