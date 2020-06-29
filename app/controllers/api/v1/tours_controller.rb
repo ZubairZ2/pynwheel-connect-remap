@@ -44,7 +44,6 @@ class Api::V1::ToursController < ActionController::Base
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'kashif.aslam@intagleo.com')
-
         end
         puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{vs.valid?}"
         vs.save!(validate: false)
