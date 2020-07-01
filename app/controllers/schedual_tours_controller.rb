@@ -66,7 +66,7 @@ class SchedualToursController < ApplicationController
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
-    redirect_to schedular_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: schedual_tour.community_id) and return
+    redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: schedual_tour.community_id) and return
 
   end
   # POST /schedual_tours
