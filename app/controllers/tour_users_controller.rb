@@ -18,7 +18,7 @@ class TourUsersController < ApplicationController
     @tour_user = TourUser.find params[:id]
     @visited_stop = VisitedStop.where(tour_id: @community.tour.id,tour_user_id: @tour_user.id).group_by(&:tour_stop_id)
     @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
-    chatroom = Chatroom.find_by(tour_user_id: params[:id])
+    chatroom = Chatroom.find_by(tour_user_id: params[:id], tour_id: @community.tour.id)
     @chatroom_id = chatroom.present? ? chatroom.id : 0
 
     # ------------ locks ploting on the map ---------------- #
@@ -103,10 +103,21 @@ class TourUsersController < ApplicationController
   def destroy
     @community = Community.find params[:community_id]
     @tour_user = TourUser.find params[:id]
+    @tour = @community.tour
 
-    @tour_user.tour_histories.delete_all
-    @tour_user.visited_stops.delete_all
-    @tour_user.schedual_tour.delete_all
+    tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @tour.id).includes(:lock_histories)
+    lock_histories_ids = tour_histories.all.map{|x| x.lock_histories.ids}.flatten
+    LockHistory.where(id: lock_histories_ids).delete_all
+
+    if @tour_user.chatrooms.find_by(tour_id: @tour.id).present?
+      @tour_user.chatrooms.find_by(tour_id: @tour.id).chats.delete_all
+      @tour_user.chatrooms.find_by(tour_id: @tour.id).delete
+    end
+
+    @tour_user.as_guests.find_by(community_id: @community.id).delete if @tour_user.as_guests.find_by(community_id: @community.id).present?
+    @tour_user.tour_histories.where(tour_id: @tour.id).delete_all
+    @tour_user.visited_stops.where(tour_id: @tour.id).delete_all
+    @tour_user.schedual_tours.where(community_id: @community.id).delete_all
 
     # @tour_user.destroy
     redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
