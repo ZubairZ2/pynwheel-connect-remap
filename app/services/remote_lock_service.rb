@@ -226,6 +226,54 @@ class RemoteLockService < BaseService
         end
     end
     
+    def create_igloo_guests(access_token,tour_user,igloo_lock_id,current_time)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+
+            url = base_url + "/igloo_guests"
+            response = HTTParty.post(url,
+                body: {
+                    type: "igloo_guest",
+                    attributes: {
+                        igloo_lock_id: igloo_lock_id,
+                        name: tour_user.name,
+                        email: tour_user.email,
+                        starts_at: current_time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        ends_at: (current_time + 2.hours).strftime("%Y-%m-%dT%H:%M:%S"),
+                    }
+                }.to_json,
+                :headers => { 'Authorization' => auth_header,
+                                'Accept' => 'application/vnd.lockstate+json; version=1',
+                                'Content-Type' => 'application/json' } )
+
+            puts "---"*50
+            puts response
+            puts "---"*50
+
+            return response
+        end
+    end
+
+    def delete_igloo_guests(access_token,igloo_guest_id)
+        if @edge_state_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+
+            url = base_url + "/igloo_guests/" + igloo_guest_id           
+            response = HTTParty.delete(url,
+                :headers => { 'Authorization' => auth_header,
+                              'Accept' => 'application/vnd.lockstate+json; version=1',
+                              'Content-Type' => 'application/json' } )
+
+            puts "---"*50
+            puts response
+            puts "---"*50
+
+            return response
+        end
+    end
+
     def update_deivces_in_db(responce)
         if @edge_state_user.present?
             available_ids = []

@@ -125,6 +125,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         tour_user = TourUser.find params[:tour_user_id]
         access_token = RemoteLockService.new(@community).client_credentials
         prev_data = tour_user.as_guests.where(community_id: params[:id])
+        # ----------- creating a guest for remote lock (type = locks) ----------------- #
         unless prev_data.present?
           response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
           tour_user.as_guests.create(community_id: params[:id], edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
@@ -133,6 +134,37 @@ class Api::V1::CommunitiesController < ActionController::Base
           response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
           prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
         end
+        # ------------ creating guest and granting access for igloo lock -------------------------------- #
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+        allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
+
+        unit_or_amenity_names = []
+        allowed_stops.each do |stop|
+          if stop[0] == "unit"
+            unit = stop[0].classify.constantize.find_by_id stop[1]
+            if unit.building.present?
+              name = unit.building + "-" + unit.name
+            else
+              name = unit.name
+            end
+            unit_or_amenity_names << name if unit.present?
+          elsif stop[0] == "amenity"
+            amentiy = stop[0].classify.constantize.find_by_id stop[1]
+            unit_or_amenity_names << amentiy.name if amentiy.present?
+          end
+        end
+
+        locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id, remote_lock_type: "igloo_lock").pluck(:device_id)
+        if locks.present?
+          igloo_guest_ids = @tour_user.igloo_guests.where(community_id: @community.id, status: "active").map{|x| x.guest_id} rescue ''
+          locks.each do |lock|
+              response = RemoteLockService.new(@community).create_igloo_guests(access_token, @tour_user, lock ,current_time)
+              @tour_user.igloo_guests.create(community_id: @community.id, guest_type: response["data"]["type"],  guest_code: response["data"]["attributes"]["code"], guest_id: response["data"]["id"], status: "active")
+          end
+          igloo_guest_ids.map{ |guest_id| RemoteLockService.new(@community).delete_igloo_guests(access_token, guest_id) unless guest_id == ''}
+          IglooGuest.where(guest_id: igloo_guest_ids).update_all(status: 'deleted')
+        end
+        
       end
     end
   end
@@ -145,27 +177,30 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.save
     @tours = Tour.where(id: params[:tour_id])
     @tour_user = TourUser.find_by(id: params[:tour_user_id])
-  
+    current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
+    current_time = current_time.to_datetime
+
     edge_state = EdgeState.find_by(community_id: params[:id])
     if edge_state.present?
       Thread.new do
-        allowed_ids = @community.tour.tour_stops.ids - @community.deleted_ids
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+        allowed_ids = stops_arr.ids - @community.deleted_ids
         allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
-        
+
         # unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}
         unit_or_amenity_names = []
         allowed_stops.each do |stop|
           if stop[0] == "unit"
-            unit = stop[0].classify.constantize.find stop[1]
+            unit = stop[0].classify.constantize.find_by_id stop[1]
             if unit.building.present?
               name = unit.building + "-" + unit.name
             else
               name = unit.name
             end
-            unit_or_amenity_names << name
+            unit_or_amenity_names << name if unit.present?
           elsif stop[0] == "amenity"
-            amentiy = (stop[0].classify.constantize.find stop[1]).name
-            unit_or_amenity_names << amentiy if amentiy.present?
+            amentiy = stop[0].classify.constantize.find_by_id stop[1]
+            unit_or_amenity_names << amentiy.name if amentiy.present?
           end
         end
 
