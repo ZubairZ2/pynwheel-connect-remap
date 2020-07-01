@@ -20,7 +20,6 @@
         .box.box-widget.panel-box.add-plan.pt-30
           = form_for @amenity,url: community_amenity_path(current_community,@amenity),method: :put do |f|
             = hidden_field_tag "community_id", @community.id
-
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Name
@@ -28,19 +27,21 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :name, :class=>"form-control amenity_edit_field", :placeholder=>"Name",:maxlength=>"30"
 
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Description
+            .row
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
+                  Description
 
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :description, :class=>"form-control amenity_edit_field", :placeholder=>"Description",:maxlength=>"70"
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                  = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
 
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Directional Text
+            .row
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
+                  Directional Text
 
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :directional_text, :class=>"form-control amenity_edit_field", :placeholder=>"Directional Text",:maxlength=>"70"
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                  = f.text_area :directional_text, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Directional Text"
 
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -182,7 +183,7 @@
   $(document).ready(function(){
     var params = {"amenity_name": amenity_name}
     var assigned_lock_present = false
-  
+     
     $.ajax({
       type: 'POST',
       url: '/communities/'+ community_id + '/amenities/' + amenity_id +'/load_remotelock_data',

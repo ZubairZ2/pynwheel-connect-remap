@@ -307,7 +307,14 @@ json.tours @tours do |tour|
         end
         lease_pricing = lease_pricing.sort_by!(&:zip)
       end
-      stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
+      unit_stop_description = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
+      if unit_stop_description.size < 140
+        show_long_description = false
+      else
+        show_long_description = true
+      end
+
+      stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..139] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
@@ -318,7 +325,18 @@ json.tours @tours do |tour|
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
-          json.stop_description unit_amenity.description
+
+          unit_amenity_stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+          if unit_amenity_stop_description.size < 140
+            json.show_long_description false
+          json.stop_description unit_amenity_stop_description
+          else
+            json.show_long_description true
+          json.stop_description unit_amenity_stop_description[0..139]
+          end
+
+          json.long_stop_description unit_amenity.description
+
           json.directional_text unit_amenity.directional_text
           json.video_link_button_label unit.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
@@ -413,9 +431,27 @@ json.tours @tours do |tour|
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
-      json.stop_description amenity.description
+      stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
+      if stop_description.size < 140
+        json.show_long_description false
+        json.stop_description stop_description
+      else
+        json.show_long_description true
+        json.stop_description stop_description[0..139]
+      end
+      json.long_stop_description amenity.description
+
       json.name amenity.name
-      json.directional_text amenity.directional_text
+      directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
+      if directional_text.size < 140
+        json.show_long_directional_text false
+      json.directional_text directional_text
+      else
+        json.show_long_directional_text true
+      json.directional_text directional_text[0..139]
+      end
+      json.long_directional_text amenity.directional_text
+
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
       rml = RemoteLock.find_by(stop_id: stop.stop_id)
