@@ -341,8 +341,20 @@ json.tours @tours do |tour|
           json.video_link_button_label unit.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
+            stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+            if stop_description.size < 140
+              show_long_description = false
+            else
+              show_long_description = true
+            end
+            directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
+            if directional_text.size < 140
+              show_directional_text = false
+            else
+              show_directional_text = true
+            end
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
-            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description, "directional_text" => unit_amenity.directional_text]
+            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => show_long_description ? stop_description[0..139] : stop_description,"show_long_description" => show_long_description ,"long_description" => unit.description, "directional_text" => show_directional_text ? directional_text[0..139] : directional_text,"show_long_directional_text" => show_directional_text,"long_directional_text" => unit_amenity.directional_text]
           else
 
             amenityGalleryArr = []
@@ -354,8 +366,25 @@ json.tours @tours do |tour|
             json.gallery amenityGalleryArr do |ag|
               json.name ag.name
               json.image ag.image.url
-              json.description ag.description
-              json.directional_text ag.directional_text
+              stop_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+              if stop_description.size < 140
+                json.show_long_description false
+                json.description stop_description
+              else
+                json.show_long_description true
+                json.description stop_description[0..139]
+              end
+              json.long_description ag.description
+
+              stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
+              if stop_description.size < 140
+                json.show_long_directional_text false
+                json.directional_text stop_description
+              else
+                json.show_long_directional_text true
+                json.directional_text stop_description[0..139]
+              end              
+              json.long_directional_text ag.directional_text
             end
           end
 
@@ -463,7 +492,21 @@ json.tours @tours do |tour|
       json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
       if amenity.amenity_galleries.count == 0
-        json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description, "directional_text" => amenity.directional_text]
+
+        stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
+        if stop_description.size < 140
+          show_long_description = false
+        else
+          show_long_description = true
+        end
+        directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
+        if directional_text.size < 140
+          show_directional_text = false
+        else
+          show_directional_text = true
+        end
+
+        json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image","show_long_description" => show_long_description, "description" => show_long_description ? stop_description[0..139] : stop_description,"long_stop_description" => amenity.description,"show_long_directional_text" => show_directional_text, "directional_text" => show_directional_text ? directional_text[0..139] : directional_text,"long_directional_text" => amenity.directional_text]
       else
         # json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
 
@@ -477,8 +520,27 @@ json.tours @tours do |tour|
           json.name ag.name
           json.type "unit_stop"
           json.image ag.image.url
-          json.description ag.description
-          json.directional_text ag.directional_text
+
+
+          stop_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          if stop_description.size < 140
+            json.show_long_description false
+            json.description stop_description
+          else
+            json.show_long_description true
+            json.description stop_description[0..139]
+          end
+          json.long_description ag.description
+
+          stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
+          if stop_description.size < 140
+            json.show_long_directional_text false
+            json.directional_text stop_description
+          else
+            json.show_long_directional_text true
+            json.directional_text stop_description[0..139]
+          end 
+
         end
       end
     end
