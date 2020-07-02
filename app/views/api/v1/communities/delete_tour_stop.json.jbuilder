@@ -352,7 +352,16 @@ json.tours @tours do |tour|
 
           json.long_stop_description styling_start + unit_amenity.description + styling_end
 
-          json.directional_text unit_amenity.directional_text
+          unit_amenity_directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
+          if unit_amenity_directional_text.size < description_limit
+            json.show_long_directional_text false
+          json.directional_text unit_amenity_directional_text
+          else
+            json.show_long_directional_text true
+          json.directional_text unit_amenity_directional_text[0..description_limit - 1]
+          end
+
+          json.long_directional_text styling_start + unit_amenity.directional_text + styling_end
           json.video_link_button_label unit.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
