@@ -127,11 +127,12 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.deleted_ids = []
     @community.save
     @tours = Tour.where(community_id: params[:id])
+    scheduled_tour = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
     params[:current_time].present? ? current_time = params[:current_time] : current_time = DateTime.now
     current_time = current_time.to_datetime
 
     edge_state = EdgeState.find_by(community_id: params[:id])
-    if edge_state.present?
+    if edge_state.present? and scheduled_tour.present?
       Thread.new do
         tour_user = TourUser.find params[:tour_user_id]
         access_token = RemoteLockService.new(@community).client_credentials
@@ -156,9 +157,10 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.save
     @tours = Tour.where(id: params[:tour_id])
     @tour_user = TourUser.find_by(id: params[:tour_user_id])
+    @scheduled_tour = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
   
     edge_state = EdgeState.find_by(community_id: params[:id])
-    if edge_state.present?
+    if edge_state.present? and @scheduled_tour.present?
       Thread.new do
         allowed_ids = @community.tour.tour_stops.ids - @community.deleted_ids
         allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
@@ -201,9 +203,26 @@ class Api::V1::CommunitiesController < ActionController::Base
     @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
     # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
     @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
+    
+    @scheduled_tour = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
     # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.tour.id,tour_key: last_vs.tour_key)
     # @tours = @tours.map{|h| h}[-4..-1].to_h
   end
+
+  def is_tour_scheduled(time_param,community_id,tour_user_id)
+    current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')
+    current_time = current_datetime.to_datetime.strftime('%l:%M %p')
+    current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
+    current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
+    SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ? and end_time >= ? and tour_time <= ?', community_id, tour_user_id, current_tour.tour_date, current_tour.tour_time, current_tour.tour_time)
+  end
+ 
+  def is_tour_in_visiting_hours(time_param,community)
+    current_time = time_param.to_datetime.strftime("%H:%M")
+    current_day = current_time.to_datetime.strftime('%A')
+    community.opening_hours.where('day = ? and opening_time <= ? and closing_time >= ?', current_day, current_time, current_time)
+  end
+
   def include_application_data
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])
