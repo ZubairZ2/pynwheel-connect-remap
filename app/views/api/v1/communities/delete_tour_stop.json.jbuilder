@@ -249,22 +249,31 @@ json.tours @tours do |tour|
     rescue => e
       navigation_title = ""
     end
-    rml = RemoteLock.find_by(stop_id: stop.stop_id)
-    if rml.present?
-      if @tour_user.present? and @tour_user.as_guests.present?
-        pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
-        json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
-        json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+    if @scheduled_tour.present?
+      rml = RemoteLock.find_by(stop_id: stop.stop_id)
+      if rml.present?
+        if @tour_user.present? and @tour_user.as_guests.present?
+          igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id)
+          if igloo_guest.nil? 
+            pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
+            json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+            # json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+          else
+            json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+          end
+        else
+          json.guest_pin ''
+        end
       else
-        json.guest_pin ''
+        _stop_ = Unit.find_by_id stop.stop_id
+        if _stop_.present? and _stop_.access_code.present?
+          json.guest_pin "Use code " + _stop_.access_code + " to enter."
+        else
+          json.guest_pin ''
+        end
       end
     else
-      _stop_ = Unit.find_by_id stop.stop_id
-      if _stop_.present? and _stop_.access_code.present?
-        json.guest_pin "Use code " + _stop_.access_code + " to enter."
-      else
-        json.guest_pin ''
-      end
+      json.guest_pin ''
     end
     json.navigation_title navigation_title
     json.id stop.id
@@ -430,22 +439,31 @@ json.tours @tours do |tour|
       json.directional_text amenity.directional_text
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
-      rml = RemoteLock.find_by(stop_id: stop.stop_id)
-      if rml.present?
-        if @tour_user.present? and @tour_user.as_guests.present?
-          pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
-          json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
-          json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+      if @scheduled_tour.present?
+        rml = RemoteLock.find_by(stop_id: stop.stop_id)
+        if rml.present?
+          if @tour_user.present? and @tour_user.as_guests.present?
+            igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id)
+            if igloo_guest.nil? 
+              pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
+              json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+              # json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+            else
+              json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+            end
+          else
+            json.guest_pin ''
+          end
         else
-          json.guest_pin ''
+          _stop_ = Amenity.find_by_id stop.stop_id
+          if _stop_.present? and _stop_.access_code.present?
+            json.guest_pin "Use code " + _stop_.access_code + " to enter."
+          else
+            json.guest_pin ''
+          end
         end
       else
-        _stop_ = Amenity.find_by_id stop.stop_id
-        if _stop_.present? and _stop_.access_code.present?
-          json.guest_pin "Use code " + _stop_.access_code + " to enter."
-        else
-          json.guest_pin ''
-        end
+        json.guest_pin ''
       end
       json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
