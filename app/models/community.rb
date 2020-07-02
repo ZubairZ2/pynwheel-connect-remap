@@ -76,6 +76,7 @@ class Community < ApplicationRecord
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
   has_many :floorplates, -> { order("number DESC") }, dependent: :destroy
+  has_many :allowed_emails, dependent: :destroy
   has_one :credential, dependent: :destroy
   has_one :design, dependent: :destroy
   has_one :favorite_stop, dependent: :destroy
