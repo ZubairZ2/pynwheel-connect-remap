@@ -1,8 +1,8 @@
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
-json.visual_id_verification @community.present? ? @community.tour.visual_id_verification : true
-json.on_time @scheduled_tour.present? ? true : false
+json.visual_id_verification @scheduled_tour.present? ? (@community.present? ? @community.tour.visual_id_verification : true) : false
+json.virtual_tour @scheduled_tour.present? ? true : false
 
 # @tours.each do |tour|
 #   if tour[0][1] == last_vs.tour_key
