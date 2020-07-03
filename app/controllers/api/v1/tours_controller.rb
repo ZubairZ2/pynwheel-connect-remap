@@ -160,8 +160,8 @@ Android Users:
       if community.present? and community.restrict_access
         allow = false unless community.allowed_emails.pluck(:email).include?(tu.email)
       end
-      render :json=> {:success=>false, :message => "You are not allowed to visit this community"} and return if allow == false
-      render :json=> {:success=>true, :message => "User present", tour_user: tu}
+      render :json=> {:success=>true, :message => "User present", tour_user: tu, allowed_email: false} and return if allow == false
+      render :json=> {:success=>true, :message => "User present", tour_user: tu, allowed_email: true}
     else
       render :json=> {:success=>false, :message => "User not present"}
     end
