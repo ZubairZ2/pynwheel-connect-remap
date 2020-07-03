@@ -115,6 +115,7 @@ class TourUsersController < ApplicationController
     end
 
     @tour_user.as_guests.find_by(community_id: @community.id).delete if @tour_user.as_guests.find_by(community_id: @community.id).present?
+    @tour_user.igloo_guests.where(community_id: @community.id).delete_all if @tour_user.igloo_guests.find_by(community_id: @community.id).present?
     @tour_user.tour_histories.where(tour_id: @tour.id).delete_all
     @tour_user.visited_stops.where(tour_id: @tour.id).delete_all
     @tour_user.schedual_tours.where(community_id: @community.id).delete_all
