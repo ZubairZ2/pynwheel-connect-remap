@@ -32,19 +32,19 @@ class TourHistory < ApplicationRecord
 
   def send_update_notifications
   	if time_difference >= 60 && self.lengthy_stay_email_sent == false
-  		@mail_content = get_alert_message('lengthy_stay')
+  		@mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "Visitor is on site for more than"] #get_alert_message('lengthy_stay')
   		@mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
       self.update_attributes(lengthy_stay_email_sent: true)
   		send_email_sms_or_both @mail_content
   	end
 
   	if self.id_mismatch
-  		@mail_content = get_alert_message('id_mismatch')
+  		@mail_content = ["id_mismatch", "The photo ID/selfie were flagged as a mis-match"] #get_alert_message('id_mismatch')
   		send_email_sms_or_both @mail_content
   	end
 
   	if self.left
-  		@mail_content = get_alert_message('tour_has_ended')
+  		@mail_content = ["tour_has_ended", "A Pynwheel Self Tour has ended for:"] #get_alert_message('tour_has_ended')
       url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers"
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"+ "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
@@ -63,7 +63,8 @@ class TourHistory < ApplicationRecord
   	end
 
   	if self.abandoned_tour_at_stop.present?
-  		@mail_content = get_alert_message('abandoned_tour_at_stop')
+
+  		@mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
 
 		@mail_content[1] = "#{@mail_content.last} stop #{self.abandoned_tour_at_stop.to_s}"
 		  
@@ -83,7 +84,6 @@ class TourHistory < ApplicationRecord
   end
   
 	def touruser_remotelock_data
-		
 		community = (Tour.find_by_id self.tour_id).community
 		as_guests_data = self.tour_user.as_guests.find_by(community_id: community.id)
 
