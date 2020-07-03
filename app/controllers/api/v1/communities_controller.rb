@@ -279,7 +279,7 @@ class Api::V1::CommunitiesController < ActionController::Base
  
   def is_tour_in_visiting_hours(time_param,community)
     current_time = time_param.to_datetime.strftime("%H:%M")
-    current_day = current_time.to_datetime.strftime('%A')
+    current_day = time_param.to_datetime.strftime('%A')
     community.opening_hours.where('day = ? and opening_time <= ? and closing_time >= ?', current_day, current_time, current_time)
   end
 
