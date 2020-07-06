@@ -6,7 +6,7 @@ class RemoteLockService < BaseService
     
     def client_credentials
         if @edge_state_user.present?
-            auth_url = "https://connect.remotelock.com/oauth/token"
+            auth_url = "https://pynwheel.remotelock.com/oauth/token"
             response = HTTParty.post(auth_url,
                 body: {
                     client_id: @edge_state_user.client_id,
