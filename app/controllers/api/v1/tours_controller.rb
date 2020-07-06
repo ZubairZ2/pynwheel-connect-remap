@@ -153,7 +153,7 @@ Android Users:
   end
   def tour_user_login
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
-    tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name]) if tu.blank?
+    tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name]) if tu.blank?
     community = Community.find_by_id params[:community_id]
     allow = true
     if tu.present?
