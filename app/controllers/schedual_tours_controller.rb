@@ -275,16 +275,20 @@ Android Users: Download #{community_text} from Google Play #{app_link}
     end
 
     def make_phone
-      user_phone = params[:tour_user][:phone_number].sub(/^[0]+/,'')
-      user_phone = trim_leading('\+', user_phone) if user_phone.starts_with? '+'
+      begin
+        user_phone = params[:tour_user][:phone_number].sub(/^[0]+/,'')
+        user_phone = trim_leading('\+', user_phone) if user_phone.starts_with? '+'
 
-      c = ISO3166::Country.new(params[:country_code])
-      if user_phone.starts_with? c.country_code
-        user_phone = "+#{user_phone}"
-      else
-        user_phone = "+#{c.country_code}#{user_phone}"
+        c = ISO3166::Country.new(params[:country_code])
+        if user_phone.starts_with? c.country_code
+          user_phone = "+#{user_phone}"
+        else
+          user_phone = "+#{c.country_code}#{user_phone}"
+        end
+        user_phone
+      rescue => ex
+        ""
       end
-      user_phone
     end
 
     def trim_leading chr, str
