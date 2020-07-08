@@ -66,7 +66,7 @@ class TourHistory < ApplicationRecord
 
   		@mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
 
-		@mail_content[1] = "#{@mail_content.last} stop #{self.abandoned_tour_at_stop.to_s}"
+		@mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}"
 		  
 		touruser_remotelock_data
 		tour = (Tour.find_by_id self.tour_id)
