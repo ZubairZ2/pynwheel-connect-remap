@@ -117,7 +117,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       company = Company.where('lower(name) = ?', 'lincoln')
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     else
-      render :json=> {:success=>false, :message => "Invalid Token"}
+      company = Company.where('lower(name) = ?', 'lincoln')
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     end
   end
 
