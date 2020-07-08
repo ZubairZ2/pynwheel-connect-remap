@@ -6,7 +6,7 @@ class RemoteLockService < BaseService
     
     def client_credentials
         if @edge_state_user.present?
-            auth_url = "https://connect.remotelock.com/oauth/token"
+            auth_url = "https://pynwheel.remotelock.com/oauth/token"
             response = HTTParty.post(auth_url,
                 body: {
                     client_id: @edge_state_user.client_id,
@@ -295,7 +295,7 @@ class RemoteLockService < BaseService
                 serial_number = device["attributes"]["serial_number"]
                 device_id = device["id"]
 
-                rml = RemoteLock.find_by(device_id: device_id)
+                rml = RemoteLock.find_by(device_id: device_id, edge_state_id: @edge_state_user.id)
                 if rml.nil?
                     rml = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, edge_state_id: @edge_state_user.id)
                 elsif rml.remote_lock_type != type  or rml.name != name
@@ -303,7 +303,7 @@ class RemoteLockService < BaseService
                 end
                 available_ids << rml.id
             end
-            RemoteLock.where.not(id: available_ids).delete_all
+            RemoteLock.where(edge_state_id: @edge_state_user.id).where.not(id: available_ids).delete_all
         end
     end
 
