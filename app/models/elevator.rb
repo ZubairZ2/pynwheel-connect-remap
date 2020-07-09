@@ -13,7 +13,17 @@ class Elevator < ApplicationRecord
   scope :plotted_elevators, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   def floors
     floors = []
-    if floorplate_covering_range[0] == "-"
+    h = floorplate_covering_range
+    if h.count('-') == 2 # when input is like "-1-5"
+      h = h[0] + h[1..h.size - 1].sub('-','.')
+      arr = h.split('.')
+      for n in arr[0].to_i..arr[1].to_i
+        floors << n
+        
+      end
+      floors
+    else
+      if floorplate_covering_range[0] == "-"
       floors << floorplate_covering_range.to_i
     elsif floorplate_covering_range.include? '-'
       arr = floorplate_covering_range.split('-')
@@ -29,5 +39,7 @@ class Elevator < ApplicationRecord
       floors << floorplate_covering_range.to_i
     end
     floors
+    end
+    
   end
 end
