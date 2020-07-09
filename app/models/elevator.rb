@@ -19,7 +19,6 @@ class Elevator < ApplicationRecord
       arr = h.split('.')
       for n in arr[0].to_i..arr[1].to_i
         floors << n
-        
       end
       floors
     else
