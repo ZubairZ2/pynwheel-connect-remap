@@ -597,6 +597,7 @@
         / /.content
 :javascript
   var floor = #{raw @floor}
+  var min_floor = #{@community.floorplates.map{|f| f.floors}.flatten.min}
   function tour_setup_goBack()
   {
       window.location.reload();
@@ -616,7 +617,7 @@
         }
       }
     }
-    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0)
+    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0 && floor != min_floor)
     {
       arr = []
     }

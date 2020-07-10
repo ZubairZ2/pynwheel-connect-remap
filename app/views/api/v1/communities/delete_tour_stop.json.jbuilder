@@ -222,10 +222,14 @@ json.tours @tours do |tour|
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
     if @community.show_map
+      begin
       if (stop.latitude + stop.longitude) < 1
         counter = counter + 1
         next
       end 
+    rescue => err
+      next unless stop.stop_type == "elevator"
+    end
     else
       if stop.stop_type == "elevator"
         counter = counter + 1
@@ -249,30 +253,34 @@ json.tours @tours do |tour|
     rescue => e
       navigation_title = ""
     end
-    if @scheduled_tour.present?
-      rml = RemoteLock.find_by(stop_id: stop.stop_id)
-      if rml.present?
-        if @tour_user.present? and @tour_user.as_guests.present?
-          igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id)
-          if igloo_guest.nil? 
-            pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
-            json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
-            # json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+    begin
+      if @scheduled_tour.present?
+        rml = RemoteLock.find_by(stop_id: stop.stop_id)
+        if rml.present?
+          if @tour_user.present? and @tour_user.as_guests.present?
+            igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id)
+            if igloo_guest.nil? 
+              pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
+              json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+              # json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+            else
+              json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+            end
           else
-            json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+            json.guest_pin ''
           end
         else
-          json.guest_pin ''
+          _stop_ = Unit.find_by_id stop.stop_id
+          if _stop_.present? and _stop_.access_code.present?
+            json.guest_pin "Use code " + _stop_.access_code + " to enter."
+          else
+            json.guest_pin ''
+          end
         end
       else
-        _stop_ = Unit.find_by_id stop.stop_id
-        if _stop_.present? and _stop_.access_code.present?
-          json.guest_pin "Use code " + _stop_.access_code + " to enter."
-        else
-          json.guest_pin ''
-        end
+        json.guest_pin ''
       end
-    else
+    rescue => pin
       json.guest_pin ''
     end
     json.navigation_title navigation_title
