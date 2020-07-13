@@ -273,6 +273,7 @@
         // -new Date().getTimezoneOffset()/60;
       })
       var success = "<%= flash[:success]  %>";
+      var credit_card_required = <%= @credit_card_required %>
       // debugger
       <% flash[:success] = "" %>
       if(success){
@@ -561,7 +562,6 @@
         //     date: true,
         //     datePattern: ['m', 'y']
         // });
-        var credit_card_required = <%= @credit_card_required %>
         if(credit_card_required == true){
         var cleave = new Cleave('#card_verification', {
             numericOnly: true,
@@ -699,7 +699,7 @@
 
       });
 
-
+      if(credit_card_required == true){
       jQuery(function ($) {
         var show_error, stripeResponseHandler;
         // debugger
@@ -709,7 +709,7 @@
           $form = $(this);
           $form.find("input[type=submit]").prop("disabled", true);
           Stripe.card.createToken($form, stripeResponseHandler);
-          $('#confirm_reservation').attr('disabled','disabled');
+          // $('#confirm_reservation').attr('disabled','disabled');
           return false;
           
         });
@@ -763,7 +763,7 @@
           return false;
         };
       });
-
+      }
     </script>
 
     <script type="text/javascript">
