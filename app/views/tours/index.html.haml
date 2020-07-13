@@ -597,11 +597,12 @@
         / /.content
 :javascript
   var floor = #{raw @floor}
-  var min_floor = #{@community.floorplates.map{|f| f.floors}.flatten.min}
   function tour_setup_goBack()
   {
       window.location.reload();
   }
+  var min_floor = #{@community.is_sitemap ? 99999 : @community.floorplates.map{|f| f.floors}.flatten.min rescue 99999}
+
   $(document).ready(function() {
   if (window.location.href.includes('floorNo'))
   {
