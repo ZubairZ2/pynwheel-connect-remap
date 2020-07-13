@@ -258,7 +258,7 @@ json.tours @tours do |tour|
         rml = RemoteLock.find_by(stop_id: stop.stop_id)
         if rml.present?
           if @tour_user.present? and @tour_user.as_guests.present?
-            igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id)
+            igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
             if igloo_guest.nil? 
               pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
               json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
@@ -451,7 +451,7 @@ json.tours @tours do |tour|
         rml = RemoteLock.find_by(stop_id: stop.stop_id)
         if rml.present?
           if @tour_user.present? and @tour_user.as_guests.present?
-            igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id)
+            igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
             if igloo_guest.nil? 
               pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
               json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
