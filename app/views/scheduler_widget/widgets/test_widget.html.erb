@@ -138,9 +138,10 @@
                   
 
                   <label>Phone Number *</label> 
-                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 %>
+                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required' %>
                 </div>
               </div>
+              <% if @credit_card_required %>
               <p>A credit card is required to complete the reservation<br>Your credit card will not be charged at this time with the exception of a $0.50 charge for verification purposes.</p>
               <div class="clearfix"></div>
               <div class="form-group cardNumber">
@@ -218,6 +219,7 @@
 
                   <button type="submit">Submit Payment</button>
                 <% end %>
+              <% end %>
               <% end %>
 
 
@@ -559,7 +561,8 @@
         //     date: true,
         //     datePattern: ['m', 'y']
         // });
-
+        var credit_card_required = <%= @credit_card_required %>
+        if(credit_card_required == true){
         var cleave = new Cleave('#card_verification', {
             numericOnly: true,
             blocks: [3],
@@ -569,7 +572,7 @@
         var cleaveCrediCard = new Cleave('#tour_user_credit_card_number', {
           creditCard: true
         });
-
+        }
         var days_disabled = <%= @disable_day_of_week %>
         // $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
         $('.datepickertime').datetimepicker({
