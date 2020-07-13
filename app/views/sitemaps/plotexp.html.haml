@@ -14,10 +14,10 @@
     .box.box-info.add-plan
       .box-header
         %h3.box-title
-          PROPERTY MAP PAGE (Garden Style Property)
+          INTERACTIVE MAP (Garden Style Property)
     .row
       .col-md-12
-        - if @community.pynwheel_touch.nil? ? true : @community.pynwheel_touch
+        - if @community.touchscreen_app
 
           .box.box-widget.panel-box.add-plan.pt-30
             = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
