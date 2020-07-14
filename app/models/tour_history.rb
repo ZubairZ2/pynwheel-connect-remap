@@ -132,11 +132,19 @@ class TourHistory < ApplicationRecord
   
   def send_email_sms_or_both mail_content
   	if community.alert_contact == "email"
-  		send_email mail_content[0], mail_content[1]
+		if mail_content[0] == "#{community.name} has been visited"
+			send_email_without_humanize mail_content[0], mail_content[1]
+		else
+			send_email mail_content[0], mail_content[1]
+		end
   	elsif community.alert_contact == "phone"
   		send_sms mail_content[1]
   	else
-  		send_email mail_content[0], mail_content[1]
+		if mail_content[0] == "#{community.name} has been visited"
+			send_email_without_humanize mail_content[0], mail_content[1]
+		else
+			send_email mail_content[0], mail_content[1]
+		end
   		send_sms mail_content[1]
   	end
   end
@@ -166,6 +174,14 @@ class TourHistory < ApplicationRecord
 
 		end
   end
+
+	def send_email_without_humanize subj, body
+		begin
+			NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
+		rescue
+
+		end
+	end
 
 	def send_sms_tour_user message_body
 		begin
