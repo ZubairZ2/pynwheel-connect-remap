@@ -189,14 +189,50 @@
                   %span.pl-15 Yes 
             .div_checklist.hidden{:style => "margin-left: 60px;"}
               .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
                   Display name
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :show_first_name, true, @tour_setting.show_first_name, class: "show_first_name"
-                    %label.label-primary{:for => "show_first_name"}
-                    %span.pl-15 Yes 
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :show_first_name, true, @tour_setting.show_first_name
+                        %label Inactivate
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
+                  Display phone
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :show_phone, true,@tour_setting.show_phone
+                        %label Inactivate
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
+                  Display desired bedroom
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom
+                        %label Inactivate
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
+                  Display desired move in date
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date
+                        %label Inactivate                              
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display name
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_first_name, true, @tour_setting.show_first_name, class: "show_first_name"
+              /       %label.label-primary{:for => "show_first_name"}
+              /       %span.pl-15 Yes 
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /     Display last name
@@ -206,15 +242,15 @@
               /       = check_box_tag :show_last_name, true, @tour_setting.show_last_name, class: "show_last_name"
               /       %label.label-primary{:for => "show_last_name"}
               /       %span.pl-15 Yes 
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Display phone
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :show_phone, true, @tour_setting.show_phone, class: "show_phone"
-                    %label.label-primary{:for => "show_phone"}
-                    %span.pl-15 Yes 
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display phone
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_phone, true, @tour_setting.show_phone, class: "show_phone"
+              /       %label.label-primary{:for => "show_phone"}
+              /       %span.pl-15 Yes 
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /     Display email
@@ -224,24 +260,24 @@
               /       = check_box_tag :show_email, true, @tour_setting.show_email, class: "show_email"
               /       %label.label-primary{:for => "show_email"}
               /       %span.pl-15 Yes   
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Display desired bedroom
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom, class: "show_desired_bedroom"
-                    %label.label-primary{:for => "show_desired_bedroom"}
-                    %span.pl-15 Yes   
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Display desired move in date
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date, class: "show_desired_move_in_date"
-                    %label.label-primary{:for => "show_desired_move_in_date"}
-                    %span.pl-15 Yes       
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display desired bedroom
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom, class: "show_desired_bedroom"
+              /       %label.label-primary{:for => "show_desired_bedroom"}
+              /       %span.pl-15 Yes   
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display desired move in date
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date, class: "show_desired_move_in_date"
+              /       %label.label-primary{:for => "show_desired_move_in_date"}
+              /       %span.pl-15 Yes       
                        
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15

@@ -235,6 +235,13 @@ json.tours @tours do |tour|
         next
       end 
     end
+    if stop.stop_type == 'unit' and @community.show_desired_bedroom
+      unit = Unit.find_by_id stop.stop_id
+      unless unit.floorplan.bedroom = @tour.tour_setting.desired_bedroom
+        counter = counter + 1
+        next
+      end
+    end
     # next if !@community.mdu && stop.stop_type == "unit"
     navigation_title = ""
     if second_last.present? && second_last.id == stop.id
