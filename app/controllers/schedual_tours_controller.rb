@@ -33,6 +33,7 @@ class SchedualToursController < ApplicationController
     # tu.name = params[:tour_user][:name] if tu.present?
     tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
     tu.phone_number = phone_number if phone_number.present?
+    tu.desired_bedroom = params[:desired_bedroom]
 
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
