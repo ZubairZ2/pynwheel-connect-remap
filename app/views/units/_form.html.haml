@@ -99,6 +99,9 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Details
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+      %span#propertyDetailNameText
+        This description will appear above the image. Only the first 95 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
@@ -106,6 +109,9 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Directional Text
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+      %span#propertyDetailNameText
+        This description will appear above the image. Only the first 95 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
