@@ -1,5 +1,5 @@
 i = 0
-description_limit = 95
+description_limit = 90
 styling_start = '<div style="font-family: gotham; color: white;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
