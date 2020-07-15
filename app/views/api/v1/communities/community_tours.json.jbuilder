@@ -87,6 +87,12 @@ json.tours @tours do |tour|
       if stop.stop_type == "unit"
         u = Unit.find stop.stop_id
         if u.present?
+          
+          if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
+            unless u.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
+              next
+            end
+          end
           json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
           json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
         else

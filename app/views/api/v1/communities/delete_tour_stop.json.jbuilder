@@ -94,7 +94,22 @@ json.tours @tours do |tour|
               add_stop = TourStop.find_by_id(s_id)
               if add_stop.present?
                 add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                stops_arr << add_stop if (add_stop.display_stop && add_mdu)
+                if add_stop.stop_type == "unit"
+                  u = Unit.find add_stop.stop_id
+
+                end
+                bedroom_flag = true
+                #---------------- bedroom check
+                
+                if add_stop.stop_type == "unit" and @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
+                  unit = Unit.find_by_id add_stop.stop_id
+
+                  unless unit.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
+                    bedroom_flag = false
+                  end
+                end
+                #--------------------
+                stops_arr << add_stop if (add_stop.display_stop && add_mdu && bedroom_flag)
               end
               # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
             end
@@ -234,18 +249,6 @@ json.tours @tours do |tour|
         counter = counter + 1
         next
       end 
-    end
-    begin
-      
-      if stop.stop_type == 'unit' and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
-        unit = Unit.find_by_id stop.stop_id
-
-        unless unit.floorplan.bedrooms == @tour_user.desired_bedroom
-          counter = counter + 1
-          next
-        end
-      end
-    rescue => ex
     end
     # next if !@community.mdu && stop.stop_type == "unit"
     navigation_title = ""
