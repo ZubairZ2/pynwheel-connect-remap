@@ -172,9 +172,9 @@
               <% if current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_desired_bedroom == true) : false %>
               <div class="">
                  
-                <label>Desired Bedroom</label> 
+                <label>Desired Bedroom Size</label> 
                 <span class="hidden" id="bedroom"></span>
-                <%= number_field_tag :desired_bedroom,nil, :class=>"form-control ",:maxlength=>"2", :max=>"15"%>
+                <%= number_field_tag :desired_bedroom,nil, :class=>"form-control ",:maxlength=>"2", :max=>"15", :min => "0"%>
                
                   
               </div>
