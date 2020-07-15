@@ -12,8 +12,10 @@
           = image_tag "exclamation-mark.png", class: "waring_exal #{(amenity.image.width < 350 && amenity.image.height < 300) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
         .icons
-          = link_to edit_community_amenity_path(@community,amenity), remote: true do 
-            %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+          -# = link_to edit_community_amenity_path(@community,amenity), remote: true do 
+          -#   %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+          = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
+            %i.fa.fa-pencil
           %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/amenities/#{amenity.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip:;"} 
             %i.fa.fa-close
         %h4= amenity.name
