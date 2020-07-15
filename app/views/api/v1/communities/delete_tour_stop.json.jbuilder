@@ -65,6 +65,21 @@ json.tours @tours do |tour|
     if @community.is_sitemap
 
       stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      if stops_arr.present? and @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
+        stops_arr1 = []
+        stops_arr.each do |add_stop|
+          if add_stop.stop_type == "unit"
+            unit = Unit.find_by_id add_stop.stop_id
+
+            if unit.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
+              stops_arr1 << add_stop
+            end
+          else
+            stops_arr1 << add_stop
+          end
+          stops_arr = stops_arr1
+        end
+      end
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 3]
       last_stop_desc = stops_arr.compact[stop_count - 2]
