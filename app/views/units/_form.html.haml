@@ -100,13 +100,13 @@
       %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
         %a#a-lock.btn-text-color{href: "#"} Update selected lock
   
+- if @community.touchscreen_app
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Details
 
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Details
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
