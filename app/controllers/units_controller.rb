@@ -2,7 +2,7 @@ class UnitsController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
-  before_action :set_unit, only: [:edit,:update,:destroy]
+  before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image]
   skip_before_action :load_tour_users_chats, only: [:load_remotelock_data, :clear_locks]
   def index
     #@units = @community.units.page(params[:page]).per(10)
@@ -38,6 +38,9 @@ class UnitsController < ApplicationController
   def edit
     add_breadcrumb "Units", community_units_path(@community)
     add_breadcrumb "Edit Unit",edit_community_unit_path(@community,@unit)
+    @amenities = @unit.amenities.order(id: :desc)
+    @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
+    @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
     @assigned_lock = @unit.remote_locks.first
   end
 
@@ -205,6 +208,18 @@ class UnitsController < ApplicationController
     redirect_to community_units_path(:community_id=>@community.id)
   end
 
+  def remove_pri_scnd_image
+    if params[:image] == "primary"
+      @unit.remove_image!
+      @unit.standard_image_url = nil
+      @unit.save
+    elsif params[:image] == "secondary"
+      @unit.remove_secondary_image!
+      @unit.save
+    end
+    redirect_to :back, notice: "Image removed successfully."
+  end
+  
   def ajaxplotunit
     unit = @community.units.where(floorplate_id: nil,provider_unit_id: params[:id])
     if unit.present?
@@ -401,6 +416,12 @@ class UnitsController < ApplicationController
     # flash[:notice] = "Image is uploaded for units successfully."
     redirect_to :back, notice: "Image is uploaded for units successfully."
   end
+  
+  def set_amenities_for_units
+    UploadAmenityForUnit.perform_async @community, params[:type_ids], params[:image], params[:name]
+    render json: {success: "success"}
+  end
+
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?

@@ -20,13 +20,13 @@ class UnitAmenitiesController < ApplicationController
   def update
     @amenity = @unit.amenities.find(params[:id])
     if @amenity.update_attributes(amenity_params)
-      redirect_to community_unit_amenities_path(@community,@unit), notice: "Amenity updated successfully"
+      redirect_to edit_community_unit_path(@community,@unit), notice: "Unit amenity updated successfully"
     else
       add_breadcrumb "Units", community_unit_path(current_community)
       add_breadcrumb "Amenities", community_unit_amenities_path(current_community,@unit)
       add_breadcrumb "Edit Amenity",edit_community_unit_amenity_path(current_community,@unit,@amenity)
       flash[:error] = @amenity.errors.full_messages.join(',')
-      render :edit
+      render 'units/edit'
     end
   end
   def plot_amenity
@@ -119,9 +119,9 @@ class UnitAmenitiesController < ApplicationController
   def destroy
     @amenity = @unit.amenities.find (params[:id])
     if @amenity.destroy
-      redirect_to community_unit_amenities_path(@community,@unit), notice: "Amenity deleted successfully"
+      redirect_to edit_community_unit_path(@community,@unit), notice: "Unit amenity deleted successfully"
     else
-      redirect_to community_unit_amenities_path(@community,@unit), error: @amenity.errors.full_messages.join(',')
+      redirect_to edit_community_unit_path(@community,@unit), error: @amenity.errors.full_messages.join(',')
     end
   end
   private
