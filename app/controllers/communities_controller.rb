@@ -542,6 +542,7 @@ class CommunitiesController < ApplicationController
     @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
     @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
 
+
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
