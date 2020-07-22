@@ -208,6 +208,24 @@
                     = f.check_box :restrict_access
                     %label.label-primary{:for => "community_restrict_access"}
                     %span.pl-15 Yes
+              / .form-group#access_restrictions
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /     Scheduler Widget
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = f.check_box :scheduler_widget
+              /       %label.label-primary{:for => "community_scheduler_widget"}
+              /       %span.pl-15 Yes
+              / .form-group#access_restrictions
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /     Pynwheel Widget
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = f.check_box :pynwheel_touch
+              /       %label.label-primary{:for => "community_pynwheel_touch"}
+              /       %span.pl-15 Yes            
               .form-group#allowed_emails
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Allowed Emails
