@@ -134,7 +134,7 @@
                   Show "Start Tour" in Pynwheel Touch
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
                     %span#propertyDetailNameText
-                      If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
+                      When this is set to "on" there will be a "Start Tour" button in your Pynwheel Touch app. When touched, the user will enter their cell phone number or scan a QR code and receive a link to download / open the Self Tour app.
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -144,10 +144,13 @@
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Scheduler Widget
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :scheduler_widget, true, @community.scheduler_widget, class: "scheduler_widget"
+                  = check_box_tag :scheduler_widget, true, @community.scheduler_widget.present? ? @community.scheduler_widget : true , class: "scheduler_widget"
                   %label.label-primary{:for => "scheduler_widget"}
                   %span.pl-15 Yes
             .form-group
