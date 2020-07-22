@@ -168,6 +168,15 @@
                   = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
                   %label.label-primary{:for => "show_camera_button"}
                   %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Credit Card Required
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :credit_card_required, true, @community.tour.credit_card_required, class: "credit-card-required"
+                  %label.label-primary{:for => "credit_card_required"}
+                  %span.pl-15 Yes
             / .form-group
             /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             /     Visual id verification
