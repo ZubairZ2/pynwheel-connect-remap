@@ -23,7 +23,6 @@ class TourHistory < ApplicationRecord
   after_update :send_update_notifications
 
 
-
   private
 
   def send_arrival_notifications
