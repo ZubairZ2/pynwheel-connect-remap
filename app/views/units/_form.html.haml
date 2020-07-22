@@ -186,19 +186,20 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     -#.select-img.mb-20
     -#  .select-img-img
-    .slide-image
-      .image-box.video-box
-        .images.height-200
-          %a.preview-image{:href=>f.object.secondary_image.present? ? f.object.secondary_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
-            = image_tag f.object.secondary_image.present? ? f.object.secondary_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
-        = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-      - if f.object.secondary_image.present?
-        .icons
-          %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=secondary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-            %i.fa.fa-close
-    %span.btn.btn-default.black-button.btn-sm.btn-file
-      Select Image
-      = f.file_field :secondary_image
+    .col-lg-5.col-md-5.col-sm-6.col-xs-6
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            %a.preview-image{:href=>f.object.secondary_image.present? ? f.object.secondary_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
+              = image_tag f.object.secondary_image.present? ? f.object.secondary_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
+          = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+        - if f.object.secondary_image.present?
+          .icons
+            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=secondary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+              %i.fa.fa-close
+      %span.btn.btn-default.black-button.btn-sm.btn-file
+        Select Image
+        = f.file_field :secondary_image
 :javascript
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){

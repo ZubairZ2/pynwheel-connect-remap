@@ -20,6 +20,7 @@ class UnitAmenitiesController < ApplicationController
   def update
     @amenity = @unit.amenities.find(params[:id])
     if @amenity.update_attributes(amenity_params)
+      Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(name: amenity_params[:name], description: amenity_params[:description]) if @amenity.mass_upload_id.present?
       redirect_to edit_community_unit_path(@community,@unit), notice: "Unit amenity updated successfully"
     else
       add_breadcrumb "Units", community_unit_path(current_community)
@@ -36,8 +37,8 @@ class UnitAmenitiesController < ApplicationController
     @amenity.x_plot = params[:x_plot]
     @amenity.y_plot = params[:y_plot]
     if @amenity.save(validate: false)
-      PlotAmenityForUnit.perform_async(@amenity, params[:unit_id], params[:x_plot], params[:y_plot])  if @amenity.mass_upload_id.present?
       render json: {amenity: @amenity}, status: 200
+      Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot]) if @amenity.mass_upload_id.present?
     else
       render json: {}, status: 404
     end
@@ -107,6 +108,7 @@ class UnitAmenitiesController < ApplicationController
     @amenity = Amenity.find params[:id]
     @amenity.description = params[:description]
     if @amenity.save
+      Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(description: params[:description]) if @amenity.mass_upload_id.present?
       redirect_to plot_amenities_community_unit_amenities_path(@community,@unit),notice: "Amenity description updated successfully."
     else
       redirect_to plot_amenities_community_unit_amenities_path(@community,@unit)
