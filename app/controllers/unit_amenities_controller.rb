@@ -36,13 +36,18 @@ class UnitAmenitiesController < ApplicationController
     @amenity.x_plot = params[:x_plot]
     @amenity.y_plot = params[:y_plot]
     if @amenity.save(validate: false)
+      PlotAmenityForUnit.perform_async(@amenity, params[:unit_id], params[:x_plot], params[:y_plot])  if @amenity.mass_upload_id.present?
       render json: {amenity: @amenity}, status: 200
     else
       render json: {}, status: 404
     end
   end
   def create
-    @unit.amenities.create(image: params[:src],name: params[:name])
+    if params[:image_id] == '0'
+      @unit.amenities.create(image: params[:src],name: params[:name])
+    else
+      @unit.amenities.create(image: params[:src],name: params[:name], mass_upload_id: params[:image_id])
+    end
     @amenities = @unit.amenities.order(id: :desc)
   end
   def plot_amenities

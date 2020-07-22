@@ -147,12 +147,15 @@ $(document).ready(function(){
       files = $("#units-amenities-images").prop("files")
     
       if(units.length > 0){
+        var image_ids = []
+        for(var i=0; i<files.length; i++)
+          image_ids.push(create_UUID())
 
         // current unit amenties will added through ajax
         if(is_current_unit_marked()){
           for (var i = 0; i < files.length; i++) {
               if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
-                  readAmenityImageSrc(files[i],'unit');
+                  readAmenityImageSrc(files[i],'unit',image_ids[i]);
               }
           }
           if(files.length == 1){
@@ -168,7 +171,7 @@ $(document).ready(function(){
           if(units[i].value != unit_id)
             units_arr.push(units[i].value)
         }
-        var images = readAmenitiesImages(files,units_arr,'unit')
+        var images = readAmenitiesImages(files,units_arr,'unit',image_ids)
 
         $("#units-amenities-images").val('');
         $("#modal-to-set-image").modal('hide');
@@ -430,6 +433,16 @@ function saveAnimation(value){
     reader.readAsDataURL(file);
   }
 
+  function create_UUID(){
+    var dt = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+  }
+  
   function is_current_unit_marked()
   {
     var marked_units = $('#unit_ids_').closest('form').find('input:checkbox:checked')
@@ -442,28 +455,28 @@ function saveAnimation(value){
     return false;
   }
 
-  function readImageOneByOne(file,type_ids,type){
+  function readImageOneByOne(file,type_ids,type,image_id){
     var reader = new FileReader();  
     reader.onload = function(e) { 
         var src = e.target.result;
-        AmenitiesImage(e.target.result, file.name, type_ids, type);
+        AmenitiesImage(e.target.result, file.name, type_ids, type, image_id);
     }
     reader.readAsDataURL(file);
   }
   
-  function readAmenitiesImages(files,type_ids,type)
+  function readAmenitiesImages(files,type_ids,type,image_ids)
   {
     for(var i=0; i < files.length; i++) {
       if (!files[i].type.match('image')) continue;  //only pics allowed
-      readImageOneByOne(files[i],type_ids,type)
+      readImageOneByOne(files[i],type_ids,type,image_ids[i])
     }
   }
 
-  function readAmenityImageSrc(file,type){
+  function readAmenityImageSrc(file,type,image_id=0){
     $(".divLoading").removeClass("hidden");
     var reader = new FileReader();
     reader.onload = function (e) {
-      AmenityImage(e.target.result,file.name,type);
+      AmenityImage(e.target.result,file.name,type,image_id);
     }
     reader.readAsDataURL(file);
   }
@@ -485,7 +498,7 @@ function saveAnimation(value){
     reader.readAsDataURL(file);
   }
 
-  function AmenitiesImage(src,name,type_ids,type){
+  function AmenitiesImage(src,name,type_ids,type,image_id){
     var amenityId = 0;
     if (type == "unit")
       var url = "/communities/"+community_id+"/units/"+unit_id+"/set_amenities_for_units"
@@ -508,7 +521,8 @@ function saveAnimation(value){
             name: name,
             image: src,
             type_ids: type_ids,
-            amenityId: amenityId
+            amenityId: amenityId,
+            image_id: image_id
         }
     }).done(function(){
         $(".divLoading").addClass("hidden");
@@ -516,7 +530,8 @@ function saveAnimation(value){
         if (type == "community"){location.reload();}
     });
   }
-  function AmenityImage(src,name,type){
+
+  function AmenityImage(src,name,type,image_id=0){
     var amenityId = 0;
     if (type == "floorplate")
       var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/amenities"
@@ -540,7 +555,8 @@ function saveAnimation(value){
         data: {
             name: name,
             src: src,
-            amenityId: amenityId
+            amenityId: amenityId,
+            image_id: image_id
         }
     }).done(function(){
         $(".divLoading").addClass("hidden");

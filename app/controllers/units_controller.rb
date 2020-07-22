@@ -418,7 +418,7 @@ class UnitsController < ApplicationController
   end
   
   def set_amenities_for_units
-    UploadAmenityForUnit.perform_async @community, params[:type_ids], params[:image], params[:name]
+    UploadAmenityForUnit.perform_async @community, params[:type_ids], params[:image], params[:name], params[:image_id]
     render json: {success: "success"}
   end
 
