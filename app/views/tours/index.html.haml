@@ -171,6 +171,15 @@
                   = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
                   %label.label-primary{:for => "show_camera_button"}
                   %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Credit Card Required
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :credit_card_required, true, @community.tour.credit_card_required, class: "credit-card-required"
+                  %label.label-primary{:for => "credit_card_required"}
+                  %span.pl-15 Yes
             / .form-group
             /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             /     Visual id verification
@@ -354,6 +363,17 @@
 
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+                  .col-lg-9.col-lg-offset-1
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                        Thank you message
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            This message will be sent to tour users after tour will end.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+
               /
                 \/.box-body
               .box-footer
