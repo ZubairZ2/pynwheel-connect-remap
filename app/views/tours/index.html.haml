@@ -150,7 +150,7 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :scheduler_widget, true, @community.scheduler_widget.present? ? @community.scheduler_widget : true , class: "scheduler_widget"
+                  = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget  , class: "scheduler_widget"
                   %label.label-primary{:for => "scheduler_widget"}
                   %span.pl-15 Yes
             .form-group
