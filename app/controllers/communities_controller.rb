@@ -53,14 +53,16 @@ class CommunitiesController < ApplicationController
     if params[:community][:secondary_image]
       @community.crop_x_secondary = nil
     end
-    if params[:community][:allowed_emails].present?
-      @community.allowed_emails.destroy_all
-      allowed_emails = params[:community][:allowed_emails].split(',').map(&:lstrip)
-      allowed_emails.each do |email|
-        @community.allowed_emails.create(email: email)
+    if params[:community][:restrict_access].present?
+      if params[:community][:allowed_emails].present?
+        @community.allowed_emails.destroy_all
+        allowed_emails = params[:community][:allowed_emails].split(',').map(&:lstrip)
+        allowed_emails.each do |email|
+          @community.allowed_emails.create(email: email)
+        end
+      else
+        @community.allowed_emails.destroy_all
       end
-    else
-      @community.allowed_emails.destroy_all
     end
     @community.image_bit = nil
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
