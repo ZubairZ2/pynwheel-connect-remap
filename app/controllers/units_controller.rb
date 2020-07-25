@@ -142,7 +142,11 @@ class UnitsController < ApplicationController
         if @unit.update(unit_params)
           set_manually_updated_column
           PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
-          format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          if params[:floorNo].nil?
+            format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          else
+            format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+          end
           format.json { respond_with_bip(@unit) }
         else
           flash[:error] = @unit.errors.full_messages.join(',')
@@ -154,7 +158,11 @@ class UnitsController < ApplicationController
           @unit.update(unit_params)
           set_manually_updated_column
           PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id ,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
-          format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          if params[:floorNo].nil?
+            format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          else
+            format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+          end
           format.json { respond_with_bip(@unit) }
         else
           if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name ) || (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id) ||(params[:unit][:effective_rent].present? && params[:unit][:effective_rent] != @unit.effective_rent.to_i.to_s) || (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability) || (params[:unit][:building].present? && params[:unit][:building] != @unit.building) || (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date.to_s) ||(params[:unit][:square_feet].present? && params[:unit][:square_feet] != @unit.square_feet.to_i.to_s) || (params[:unit][:available].present? && params[:unit][:available] != @unit.available) || (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold.to_s) || (params[:unit][:floor].present? && params[:unit][:floor].to_i != @unit.floor) || (params[:unit][:provider_unit_id].present? && params[:unit][:provider_unit_id] != @unit.provider_unit_id)
@@ -166,7 +174,11 @@ class UnitsController < ApplicationController
             @unit.update(unit_params)
             set_manually_updated_column
             PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
-            format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+            if params[:floorNo].nil?
+              format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+            else
+              format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+            end
             format.json { respond_with_bip(@unit) }
           end
 

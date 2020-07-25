@@ -121,7 +121,7 @@
         .col-lg-10
           .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %a.btn-primary.mb-20.done_btn{:href => "#{community_tours_path(current_community)}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+              %a.btn-primary.mb-20.done_btn{:href => "#{params[:floorNo].nil? ? community_tours_path(current_community) : community_tours_path(current_community) << '?floorNo=' + params[:floorNo]}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 

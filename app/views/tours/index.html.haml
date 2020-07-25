@@ -499,7 +499,7 @@
                               - if @community.show_map
                                 = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                                   %i.fa.fa-road.icon_size
-                            = link_to edit_community_unit_path(@community,u),  class: "text-success ml-5" do
+                            = link_to edit_community_unit_path(@community,u)  << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}" ,  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
                           - elsif stop.stop_type == "elevator" && !@community.is_sitemap
@@ -512,7 +512,7 @@
                                 = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
                                   %i.fa.fa-road.icon_size
 
-                            = link_to edit_community_elevator_path(@community, elevator), class: "text-success ml-5" do
+                            = link_to edit_community_elevator_path(@community, elevator) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
                           - elsif stop.stop_type == "amenity"
@@ -525,7 +525,7 @@
                             - if @community.show_map
                               = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
                                 %i.fa.fa-road.icon_size
-                            = link_to edit_community_amenity_path(@community,amenity), class: "text-success ml-5" do
+                            = link_to edit_community_amenity_path(@community,amenity) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
 
                           - unless u.present? && u.modal_unit

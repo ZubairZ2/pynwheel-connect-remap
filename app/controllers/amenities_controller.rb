@@ -50,15 +50,15 @@ class AmenitiesController < ApplicationController
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
       remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
     end
-    begin
-      ts = TourStop.find_by(stop_id: @amenity.id)
-      if ts.present? && params[:amenity][:name].present?
-        ts.name = params[:amenity][:name]
-        ts.save
-      end
-    rescue => ex
-    end
     if @amenity.update_attributes(amenity_params)
+      begin
+        ts = TourStop.find_by(stop_id: @amenity.id)
+        if ts.present? && params[:amenity][:name].present?
+          ts.name = params[:amenity][:name]
+          ts.save
+        end
+      rescue => ex
+      end
       unless params[:amenity_modal].present?
         redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully"
       else
