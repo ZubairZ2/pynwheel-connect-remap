@@ -177,16 +177,27 @@
                   = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
                   %label.label-primary{:for => "automate_unit_stop"}
                   %span.pl-15 Yes 
-
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Add fields to the registration page
+                Scheduler Widget
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :show_checklist, true, @tour_setting.show_checklist, class: "show_checklist"
-                  %label.label-primary{:for => "show_checklist"}
-                  %span.pl-15 Yes 
+                  = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget, class: "scheduler_widget"
+                  %label.label-primary{:for => "scheduler_widget"}
+                  %span.pl-15 Yes      
+            / .form-group
+            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            /     Add fields to the registration page
+            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            /     .TriSea-technologies-Switch
+            /       %span.pr-15 No
+            /       = check_box_tag :show_checklist, true, @tour_setting.show_checklist, class: "show_checklist"
+            /       %label.label-primary{:for => "show_checklist"}
+            /       %span.pl-15 Yes 
             .div_checklist.hidden{:style => "margin-left: 60px;"}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
@@ -195,7 +206,7 @@
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
-                        = check_box_tag :show_first_name, true, @tour_setting.show_first_name
+                        = check_box_tag :show_first_name, true, @tour_setting.show_first_name.nil? ? true :  @tour_setting.show_first_name
                         %label name
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
@@ -204,7 +215,7 @@
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
-                        = check_box_tag :show_phone, true,@tour_setting.show_phone
+                        = check_box_tag :show_phone, true, @tour_setting.show_phone.nil? ? true : @tour_setting.show_phone
                         %label phone
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
@@ -213,7 +224,7 @@
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
-                        = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom
+                        = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom.nil? ? true : @tour_setting.show_desired_bedroom
                         %label desired bedroom
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
@@ -222,8 +233,17 @@
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
-                        = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date
-                        %label desired move in date                              
+                        = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date.nil? ? true : @tour_setting.show_desired_move_in_date
+                        %label desired move in date    
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
+                  Credit Card Required
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
+                        %label credit card required                                        
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /     Display name
@@ -702,15 +722,7 @@
   {
       window.location.reload();
   }
-  $('#show_checklist').change(function(){
-    if($(this).is(':checked')){
-        $('.div_checklist').removeClass('hidden');
-      }
-    else{
-        $('.div_checklist').addClass('hidden');
-     }
-  });
-  var div_checklist = "#{@tour_setting.show_checklist}"
+  var div_checklist = "#{@community.scheduler_widget.nil? ? true : @community.scheduler_widget}"
   if(div_checklist == "true")
     $('.div_checklist').removeClass('hidden');
   $(document).ready(function() {

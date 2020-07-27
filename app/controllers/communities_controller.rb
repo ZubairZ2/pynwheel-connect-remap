@@ -526,9 +526,11 @@ class CommunitiesController < ApplicationController
     @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
     @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
     @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
+    @tour.credit_card_required = params[:credit_card_required].present? ? true : false
     @tour.save
     @community.show_camera_button = params[:show_camera_button].present? ? true : false
     @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+    @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
     @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
     @tour_setting = @tour.tour_setting
     @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false

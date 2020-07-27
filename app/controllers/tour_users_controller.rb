@@ -1,7 +1,7 @@
 class TourUsersController < ApplicationController
   before_action :check_community
   before_action :breadCrumb
-  skip_before_action :authenticate_user!, :only => [:show]
+  # skip_before_action :authenticate_user!, :only => [:show]
 
   def index
     add_breadcrumb "All Visitors", '#'

@@ -2,7 +2,7 @@ var image_height = 200;
 var image_width = 200;
 $(document).ready(function () {
   $('.amenity_edit_wysihtml5').each(function(i, elem) {
-        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
         events: {
         change: function() {
             $('.edit_amenity').submit();

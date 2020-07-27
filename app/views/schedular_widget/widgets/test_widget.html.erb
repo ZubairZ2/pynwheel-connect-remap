@@ -119,7 +119,7 @@
             <%= form_for TourUser.new, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
 
               <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
-              <% unless current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_first_name == false) : false %>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_first_name.nil? ? true : current_community.tour.tour_setting.show_first_name) %>
               <div class="form-group">
                 <label>Name *</label>
                 <%= f.text_field :name, class: "form-control", placeholder: "Name", required: 'required' %>
@@ -129,7 +129,7 @@
                 <label>Email Address *</label>
                 <%= f.email_field :email, class: "form-control", placeholder: "Email Address", required: 'required' %>
               </div>
-              <% unless current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_phone == false) : false %>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_phone.nil? ? true : current_community.tour.tour_setting.show_phone) %>
               <div class="form-group">
                 <div class="inner_phn_wrap">
                  
@@ -169,7 +169,7 @@
                 <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
               </div>
 
-              <% if current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_desired_bedroom == true) : false %>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.tour.tour_setting.show_desired_bedroom) %>
               <div class="">
                  
                 <label>Desired Bedroom Size</label> 
@@ -180,7 +180,7 @@
               </div>
               <% end %> 
 
-              <% if current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_desired_move_in_date == true) : false %>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date ) %>
               <div class="form-group">
                 <label>Desired Move-in Date</label>
                 <span class="hidden" id="move-in-date"></span>
