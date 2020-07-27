@@ -60,13 +60,13 @@ class AmenitiesController < ApplicationController
       rescue => ex
       end
       unless params[:amenity_modal].present?
-        redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully"
+        redirect_to params[:floorNo].nil? ? edit_community_amenity_path(current_community,@amenity) : edit_community_amenity_path(current_community,@amenity) << '?floorNo=' + params[:floorNo] , notice: "Amenity updated successfully"
       else
         redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
       end
     else
       unless params[:amenity_modal].present?
-        redirect_to edit_community_amenity_path(current_community,@amenity), alert: @amenity.errors.full_messages.join(',')
+        redirect_to params[:floorNo].nil? ? edit_community_amenity_path(current_community,@amenity) : edit_community_amenity_path(current_community,@amenity) << '?floorNo=' + params[:floorNo] , alert: @amenity.errors.full_messages.join(',')
       else
         redirect_to community_amenities_path(current_community), alert: @amenity.errors.full_messages.join(',')
       end
