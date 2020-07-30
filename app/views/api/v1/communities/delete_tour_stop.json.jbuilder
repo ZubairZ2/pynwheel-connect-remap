@@ -357,7 +357,6 @@ json.tours @tours do |tour|
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
             json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description, "directional_text" => unit_amenity.directional_text]
           else
-
             amenityGalleryArr = []
             # unit_amenity.description = nil
             amenityGalleryArr << unit_amenity
