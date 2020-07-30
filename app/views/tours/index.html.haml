@@ -213,6 +213,15 @@
                   Max Tour At One Time
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
+                In 15 minute increments (ie, 10:00, 10:15, 10:30)
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .row
+                  .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                    .checkbox
+                      = check_box_tag :time_intervel, true, @tour_setting.time_intervel == "15 min" ? true : false
+                      %label 15 min intervel
             -#.form-groups
             -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Show Notepad Button
