@@ -238,7 +238,7 @@
           %span
       %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: green; display: none;"}
       %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: white"}
-      %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same days exist
+      %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same time exist
       .box-body{style: "padding: 0px 20px !important;"}
         .row
           .col-lg-12 
@@ -278,11 +278,11 @@
                     .font-17-v.pull-left.mr-20-v
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v From
-                      %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
+                      %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
                     .font-17-v.pull-left.mr-20-v
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v To
-                      %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
+                      %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
                     .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                 - if @community.opening_hours.blank?
                   .row.p-8-v
@@ -1170,14 +1170,29 @@
 
   $(document).ready(function(){
 
-    function hasDuplicates(array) {
+    function hasDuplicates(array,times_hash) {
       var valuesSoFar = Object.create(null);
       for (var i = 0; i < array.length; ++i) {
-          var value = array[i];
-          if (value in valuesSoFar) {
-              return true;
+          if(times_hash[array[i]].length > 1)
+          {
+            var check_index = times_hash[array[i]];
+            for(var j = 0; j < check_index.length ;j++)
+            {
+              for(var k = 0; k < check_index.length ;k++)
+              {
+                if( j!=k )
+                {
+                if(check_index[j].split('-')[0] <= check_index[k].split('-')[0] && check_index[j].split('-')[1] >= check_index[k].split('-')[0])
+                {return true;}
+                if(check_index[j].split('-')[0] <= check_index[k].split('-')[1] && check_index[j].split('-')[1] >= check_index[k].split('-')[1])
+                {return true;}
+
+
+                }
+
+              }
+            }
           }
-          valuesSoFar[value] = true;
       }
       return false;
     }
@@ -1225,11 +1240,21 @@
 
   $('#schedule-btn-submit').click(function( event ){
     var days = []
+    var times_list = $(".bg-grey-v")
+    var times_hash = {}
+    var i = 0;
     $(".list").children().children('select').each(function(){
       var selected = '#' + $(this).attr('id') + ' :selected'
-      days.push($(selected).text())
+      var day_ = $(selected).text()
+      if(times_hash[day_] == undefined)
+      {
+        times_hash[day_] = []
+      } 
+      times_hash[day_].push(times_list[i].value +'-'+ times_list[i+1].value);
+      days.push(day_);
+      i += 2;
     })
-    if(hasDuplicates(days)){
+    if(hasDuplicates(days,times_hash)){
       event.preventDefault();
       $("#same-days").css('color', 'red');
       timer = setTimeout(function() {
