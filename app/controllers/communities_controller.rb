@@ -534,11 +534,15 @@ class CommunitiesController < ApplicationController
     @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
     @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
     @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
+    @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
     @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
+    @tour.credit_card_required = params[:credit_card_required].present? ? true : false
     @tour.save
     @community.show_camera_button = params[:show_camera_button].present? ? true : false
     @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+    @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
     @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
+
 
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
@@ -596,7 +600,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,
+    params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,

@@ -27,9 +27,8 @@ test/
 
 .ruby-gemset
 .ruby-version
-
+/db/schema.rb
 # Ignore Byebug command history file.
 .byebug_history
 config/database.yml
-
 config/application.yml

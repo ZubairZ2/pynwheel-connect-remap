@@ -21,7 +21,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
   def test_widget
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
-    
+    @credit_card_required =  @community.tour.credit_card_required
     if @community.opening_hours.present?
       @disable_day_of_week = [0,1,2,3,4,5,6]
       @community.opening_hours.each do |rcd|
