@@ -56,7 +56,10 @@ Rails.application.configure do
   # config.active_job.queue_adapter     = :resque
   # config.active_job.queue_name_prefix = "pynwheel-cms_#{Rails.env}"
   config.action_mailer.perform_caching = false
-
+  config.after_initialize do
+    ActiveRecord::Base.logger = Rails.logger.clone
+    ActiveRecord::Base.logger.level = Logger::ERROR
+  end
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
