@@ -6,7 +6,7 @@ class TourUsersController < ApplicationController
   def index
     add_breadcrumb "All Visitors", '#'
     @community = Community.find params[:community_id]
-    user_ids = TourHistory.where(tour_id: @community.tour.present? ? @community.tour.id : nil).order('arrived desc').map{|x| x.tour_user_id}.uniq
+    user_ids = current_user.is_view_visitor_details_page? ? TourHistory.where(tour_id: @community.tour.present? ? @community.tour.id : nil,tour_user_id: TourUser.find_by(email: current_user.email).id).order('arrived desc').map{|x| x.tour_user_id}.uniq : TourHistory.where(tour_id: @community.tour.present? ? @community.tour.id : nil).order('arrived desc').map{|x| x.tour_user_id}.uniq
     @tour_users = []
     user_ids.each {|x| @tour_users << TourUser.find_by_id(x)}
   end
@@ -19,6 +19,9 @@ class TourUsersController < ApplicationController
     @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
     chatroom = Chatroom.find_by(tour_user_id: params[:id])
     @chatroom_id = chatroom.present? ? chatroom.id : 0
+    if current_user.is_view_visitor_details_page? && @tour_user.email != current_user.email
+      redirect_to root_path
+    end
   end
 
   def destroy

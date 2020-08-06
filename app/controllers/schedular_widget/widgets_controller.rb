@@ -20,6 +20,7 @@ class SchedularWidget::WidgetsController < ApplicationController
   def test_widget
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
+    @bedroom_list = @community.floorplans.map{|x| x.bedrooms.to_i}.uniq
     
     if @community.opening_hours.present?
       @disable_day_of_week = [0,1,2,3,4,5,6]

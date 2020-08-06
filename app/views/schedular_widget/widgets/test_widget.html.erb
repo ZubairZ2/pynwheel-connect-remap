@@ -174,7 +174,7 @@
                  
                 <label>Desired Bedroom Size</label> 
                 <span class="hidden" id="bedroom"></span>
-                <%= number_field_tag :desired_bedroom,nil, :class=>"form-control ",:maxlength=>"2", :max=>"15", :min => "0"%>
+                <%= select_tag :desired_bedroom, options_for_select( @bedroom_list), :class=>"form-control " %>
                
                   
               </div>

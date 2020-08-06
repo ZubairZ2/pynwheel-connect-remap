@@ -199,51 +199,37 @@
             /       %label.label-primary{:for => "show_checklist"}
             /       %span.pl-15 Yes 
             .div_checklist.hidden{:style => "margin-left: 60px;"}
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  Display name
+              .form-group{:style => "height: 190px; margin-top: -50px;"}
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
                         = check_box_tag :show_first_name, true, @tour_setting.show_first_name.nil? ? true :  @tour_setting.show_first_name
-                        %label name
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  Display phone
+                        %label Name
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
                         = check_box_tag :show_phone, true, @tour_setting.show_phone.nil? ? true : @tour_setting.show_phone
-                        %label phone
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  Display desired bedroom
+                        %label Phone
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
                         = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom.nil? ? true : @tour_setting.show_desired_bedroom
-                        %label desired bedroom
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  Display desired move in date
+                        %label Desired bedrooms
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
                         = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date.nil? ? true : @tour_setting.show_desired_move_in_date
-                        %label desired move in date    
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  Credit Card Required
+                        %label Desired move-in date    
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .row
                     .col-sm-6.col-lg-6.col-md-4.col-xs-12
                       .checkbox
                         = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
-                        %label credit card required                                        
+                        %label Credit card required                                        
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /     Display name
