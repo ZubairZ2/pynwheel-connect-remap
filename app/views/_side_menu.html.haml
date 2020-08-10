@@ -158,11 +158,16 @@
           %a{:href => "#{community_tours_path(current_community)}"}
             %i.fa.fa-plane
             %span Tour Setup
-      - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? || current_user.is_view_visitor_details_page?
         %li.loader_class{:class=>"#{controller_name =='tour_users' ? 'active' : ''}"}
           %a{:href => "#{community_tour_users_path(current_community)}"}
             %i.fa.fa-sticky-note-o
             %span Visitor Details
+      - if (current_community.self_tour && current_user.is_super_admin?) || current_user.is_view_visitor_details_page?
+        %li.loader_class{:class=>"#{controller_name =='schedual_tours' ? 'active' : ''}"}
+          %a{:href => "#{community_schedual_tours_path(current_community)}"}
+            %i.fa.fa-sticky-note-o
+            %span Scheduled Tours      
       - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
         %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
           %a{:href => "#{community_logs_path(current_community)}"}

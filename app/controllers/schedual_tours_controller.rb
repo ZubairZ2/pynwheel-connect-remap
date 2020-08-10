@@ -5,7 +5,7 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
-    @schedual_tours = SchedualTour.where(community_id: @community.id).order('tour_time').order('tour_date')
+    @schedual_tours = current_user.is_view_visitor_details_page? ? SchedualTour.where(tour_user_id: (TourUser.find_by(email: current_user.email).id),community_id: @community.id).order('tour_time').order('tour_date') : SchedualTour.where(community_id: @community.id).order('tour_time').order('tour_date') rescue ""
   end
 
   # GET /schedual_tours/1
