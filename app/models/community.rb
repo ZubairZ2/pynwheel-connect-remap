@@ -387,7 +387,7 @@ class Community < ApplicationRecord
   end
 
   def entrata_send_mits_leads(tour_user, current_time)
-    EntrataSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, current_time
+    PsiSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, current_time
   end
 
   def select_resman_provider

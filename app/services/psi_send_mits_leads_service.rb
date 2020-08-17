@@ -1,4 +1,4 @@
-class EntrataSendMitsLeadsService < BaseService
+class PsiSendMitsLeadsService < BaseService
   def perform(tour_user, current_time)
       property_ids = credentials.property_id.split(',') rescue []
       property_ids.each do |property_id|
