@@ -377,9 +377,19 @@ class Community < ApplicationRecord
     ImportRealpageSvcStaticDataJob.perform_async credential.attributes.to_json
     # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
-  def create_realpage_gci
-    CreateRealpageGciJob.perform_async credential.attributes.to_json
+
+  def realpage_insert_prospect(tour_user)
+    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user
   end
+
+  def realpage_get_leasing_agents
+    RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json
+  end
+
+  def entrata_send_mits_leads(tour_user, current_time)
+    EntrataSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, current_time
+  end
+
   def select_resman_provider
 
     ImportResmanStaticDataJob.perform_async credential.attributes.to_json

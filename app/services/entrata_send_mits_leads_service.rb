@@ -1,0 +1,81 @@
+class EntrataSendMitsLeadsService < BaseService
+    def perform(tour_user, current_time)
+        property_ids = credentials.property_id.split(',') rescue []
+        property_ids.each do |property_id|
+
+          if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+              url = credentials.entrata_url
+          else
+              url = "https://"+credentials.entrata_url+".entrata.com/api/leads"
+          end
+
+          password = credentials.password
+          username = credentials.username
+          last_update_date = current_time.strftime("%Y-%m-%dT%H:%M:%S")
+          phone_number = tour_user.phone_number.present? ? tour_user.phone_number : ""
+          tour_data = scheduled_tour(current_time, credentials.community_id, tour_user.id)
+          desired_bedroom = tour_data.desired_bedroom.present? ? tour_data.desired_bedroom : "" rescue ""
+          desired_move_in_date = tour_data.desired_move_in_date.present? ? tour_data.desired_move_in_date.strftime("%m/%d/%Y") : "" rescue ""
+          
+          response = HTTParty.post(url,
+                                  :body => {
+                                      "auth": {
+                                          "type": "basic",
+                                          "password": password,
+                                          "username": username
+                                      },
+                                      "method": {
+                                          "name": "sendMitsLeads",
+                                          "params": {
+                                            "propertyId": property_id,
+                                            "doNotSendConfirmationEmail": "0",
+                                            "isWaitList": "0",
+                                            "Prospects": {
+                                              "Prospect": [
+                                                {
+                                                  "TransactionData": {
+                                                      "OriginatingLeadSource": "Phone Book",
+                                                      "InternetListingService": "Pynwheel"
+                                                  },
+                                                  "LastUpdateDate": last_update_date,
+                                                  "LeasingAgentId": "",
+                                                  "Customers": {
+                                                    "Customer": {
+                                                      "Name": {
+                                                        "FirstName": tour_user.first_name,
+                                                        "LastName": tour_user.last_name
+                                                      },
+                                                      "phone": {"personalPhoneNumber": phone_number},
+                                                      "Email": tour_user.email
+                                                    }
+                                                  },
+                                                  "customerPreferences": {
+                                                      "desiredMoveInDate": desired_move_in_date,
+                                                      "desiredNumBedrooms": desired_bedroom
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                  }.to_json,
+                                  :headers => { 'Content-Type' => 'application/json' } )
+          response =  JSON.parse(response.body)
+
+          puts '---'*50
+          puts response
+          puts '---'*50  
+
+          if response["response"]["code"] == 200
+          end
+        end
+    end
+
+    def scheduled_tour(time, community_id,tour_user_id)
+        current_datetime = time.strftime('%d/%m/%Y %l:%M %p')
+        current_time = current_datetime.to_datetime.strftime('%l:%M %p')
+        current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
+        current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
+        SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ? and end_time >= ? and tour_time <= ?', community_id, tour_user_id, current_tour.tour_date, current_tour.tour_time, current_tour.tour_time).last
+    end
+end
