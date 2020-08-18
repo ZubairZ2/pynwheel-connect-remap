@@ -172,9 +172,9 @@
               <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.tour.tour_setting.show_desired_bedroom) %>
               <div class="">
                  
-                <label>Desired Bedroom Size</label> 
+                <label>Desired Number of Bedrooms</label>
                 <span class="hidden" id="bedroom"></span>
-                <%= select_tag :desired_bedroom, options_for_select( @bedroom_list), :class=>"form-control " %>
+                <%= select_tag :desired_bedroom, options_for_select( @bedroom_list.sort), include_blank: true, :class=>"form-control " %>
                
                   
               </div>
