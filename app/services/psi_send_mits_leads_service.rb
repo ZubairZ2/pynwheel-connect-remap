@@ -31,7 +31,7 @@ class PsiSendMitsLeadsService < BaseService
                                         "name": "sendMitsLeads",
                                         "params": {
                                           "propertyId": property_id,
-                                          "doNotSendConfirmationEmail": "0",
+                                          "doNotSendConfirmationEmail": "1",
                                           "isWaitList": "0",
                                           "Prospects": {
                                             "Prospect": [
