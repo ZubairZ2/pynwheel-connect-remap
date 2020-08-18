@@ -67,14 +67,14 @@ class RealPageInsertProspectService < BaseService
                 prospect_response = prospect_response - [prospect_response[0]]
             
                 if prospect_response[1][:message] == "SUCCESS"
-                    puts '---'*50
-                    puts prospect_response
-                    puts '---'*50  
-                    
                     community = Community.find community_id
                     prospect = Prospect.find_or_initialize_by(community_id: community.id, data_provider: community.data_provider, tour_user_id: guest.id)
                     prospect.data = prospect_response
                     prospect.save
+
+                    puts '---'*50
+                    puts prospect_response
+                    puts '---'*50 
                 end
 
             rescue => e

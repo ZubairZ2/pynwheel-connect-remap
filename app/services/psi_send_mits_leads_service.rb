@@ -1,5 +1,5 @@
 class PsiSendMitsLeadsService < BaseService
-  def perform(tour_user, current_time)
+  def perform(tour_user, tour_time, end_time, visited_stops)
       property_ids = credentials.property_id.split(',') rescue []
       property_ids.each do |property_id|
 
@@ -11,14 +11,15 @@ class PsiSendMitsLeadsService < BaseService
 
         password = credentials.password
         username = credentials.username
-        last_update_date = current_time.strftime("%Y-%m-%dT%H:%M:%S")
+
         first_name = tour_user.first_name.present? ? tour_user.first_name : tour_user.name
         last_name = tour_user.last_name.present? ? tour_user.last_name : 'missing'
         phone_number = tour_user.phone_number.present? ? tour_user.phone_number : ""
-        tour_data = scheduled_tour(current_time, credentials.community_id, tour_user.id)
+
+        tour_data = scheduled_tour(tour_time, credentials.community_id, tour_user.id)
         desired_bedroom = tour_data.desired_bedroom.present? ? tour_data.desired_bedroom : "" rescue ""
         desired_move_in_date = tour_data.desired_move_in_date.present? ? tour_data.desired_move_in_date.strftime("%m/%d/%Y") : "" rescue ""
-        
+
         response = HTTParty.post(url,
                                 :body => {
                                     "auth": {
@@ -39,7 +40,7 @@ class PsiSendMitsLeadsService < BaseService
                                                     "OriginatingLeadSource": "Phone Book",
                                                     "InternetListingService": "Pynwheel"
                                                 },
-                                                "LastUpdateDate": last_update_date,
+                                                "LastUpdateDate": end_time.strftime("%Y-%m-%dT%H:%M:%S"),
                                                 "LeasingAgentId": "",
                                                 "Customers": {
                                                   "Customer": {
@@ -61,6 +62,17 @@ class PsiSendMitsLeadsService < BaseService
                                                     "DesiredNumBedrooms": {
                                                       "@attributes": {"Exact": desired_bedroom}
                                                     }
+                                                },
+                                                "events": {
+                                                  "event": [
+                                                    {
+                                                      "type": "Self Tour",
+                                                      "date": tour_time.strftime("%m/%d/%Y"),
+                                                      "timeFrom": tour_time.strftime("%I:%M %P"),
+                                                      "timeTo": end_time.strftime("%I:%M %P"),
+                                                      "TourVisitedStops": visited_stops
+                                                    }
+                                                  ]
                                                 }
                                               }
                                             ]

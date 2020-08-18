@@ -386,8 +386,8 @@ class Community < ApplicationRecord
     RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json
   end
 
-  def entrata_send_mits_leads(tour_user, current_time)
-    PsiSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, current_time
+  def entrata_send_mits_leads(tour_user, tour_time, end_time, visited_stops)
+    PsiSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, tour_time, end_time, visited_stops
   end
 
   def select_resman_provider

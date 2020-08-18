@@ -65,7 +65,7 @@ class TourHistory < ApplicationRecord
 		send_email_sms_or_both @complete_tour_content
 		send_email_sms_or_both_to_touruser @thank_you_content
 		# community.deleted_ids = []
-		save_prospect
+		save_prospect(self.left)
 		community.save
   	end
 
@@ -87,17 +87,40 @@ class TourHistory < ApplicationRecord
 		send_email_sms_or_both @mail_content
 		send_email_sms_or_both_to_touruser @thank_you_content
 		# community.deleted_ids = []
-		save_prospect
+		save_prospect(self.lengthy_stay)
 	    community.save
   	end
   end
 	  
-	def save_prospect
-		puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
-		current_time = self.arrived.in_time_zone(self.my_time_zone)
-		@community.realpage_insert_prospect(self.tour_user)
-		@community.entrata_send_mits_leads(self.tour_user, current_time)
-		puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
+	def save_prospect(endtime)
+		end_time = endtime.in_time_zone(self.my_time_zone)
+		tour_time = self.arrived.in_time_zone(self.my_time_zone)
+		visited_stops = []
+		
+		current_tour = VisitedStop.where(tour_user_id: self.tour_user_id, tour_id: self.tour_id).last
+		tour_key = current_tour.tour_key if current_tour.present?
+		if tour_key.present?
+			tour_stop_ids = VisitedStop.where(tour_key: tour_key).pluck(:tour_stop_id)
+			tour_stops = TourStop.where(id: tour_stop_ids).pluck(:stop_type, :stop_id)
+
+			tour_stops.each do |stop|
+				if stop[0] == "unit"
+					unit = stop[0].classify.constantize.find_by_id stop[1]
+					if unit.building.present?
+						name = unit.building + "-" + unit.name
+					else
+						name = unit.name
+					end
+					visited_stops << name if unit.present?
+				elsif stop[0] == "amenity"
+					amentiy = stop[0].classify.constantize.find_by_id stop[1]
+					visited_stops << amentiy.name if amentiy.present?
+				end
+			end
+		end
+		
+		@community.realpage_insert_prospect(self.tour_user) if @community.data_provider == "realpagesvc"
+		@community.entrata_send_mits_leads(self.tour_user, tour_time, end_time, visited_stops) if @community.data_provider == "psi"
 	end
 
 	def touruser_remotelock_data
