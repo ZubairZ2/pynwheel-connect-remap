@@ -12,6 +12,8 @@ class PsiSendMitsLeadsService < BaseService
         password = credentials.password
         username = credentials.username
         last_update_date = current_time.strftime("%Y-%m-%dT%H:%M:%S")
+        first_name = tour_user.first_name.present? ? tour_user.first_name : tour_user.name
+        last_name = tour_user.last_name.present? ? tour_user.last_name : 'missing'
         phone_number = tour_user.phone_number.present? ? tour_user.phone_number : ""
         tour_data = scheduled_tour(current_time, credentials.community_id, tour_user.id)
         desired_bedroom = tour_data.desired_bedroom.present? ? tour_data.desired_bedroom : "" rescue ""
@@ -42,8 +44,8 @@ class PsiSendMitsLeadsService < BaseService
                                                 "Customers": {
                                                   "Customer": {
                                                     "Name": {
-                                                      "FirstName": tour_user.first_name,
-                                                      "LastName": tour_user.last_name
+                                                      "FirstName": first_name,
+                                                      "LastName": last_name
                                                     },
                                                     "Phone": [
                                                       {
@@ -71,8 +73,8 @@ class PsiSendMitsLeadsService < BaseService
         response =  JSON.parse(response.body)
         
         if response["response"]["code"] == 200
-          community = Community.find community_id
-          prospect = Prospect.find_or_initialize_by(community_id: community.id, data_provider: community.data_provider, tour_user_id: guest.id)
+          community = Community.find credentials.community_id
+          prospect = Prospect.find_or_initialize_by(community_id: community.id, data_provider: community.data_provider, tour_user_id: tour_user.id)
           prospect.data = response["response"]["result"]
           prospect.save
 
