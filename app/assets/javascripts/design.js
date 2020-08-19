@@ -4,12 +4,37 @@ $(document).ready(function () {
   $('.amenity_edit_wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
         events: {
+            load:function(){
+                var wysihtml5Editor = $('#amenity_description').data("wysihtml5").editor;
+                var t = wysihtml5Editor.getValue();
+                t1 = t.substr(0, 90)
+                t2 = t.substr(90, t.length)
+                t1 = t1.fontcolor("red");
+                wysihtml5Editor.setValue(t1 + t2);
+            },
         change: function() {
             $('.edit_amenity').submit();
         }
         }
         });
       });
+    $('.amenity_edit_directional_wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+            events: {
+                load:function(){
+                    var wysihtml5Editor = $('#amenity_directional_text').data("wysihtml5").editor;
+                    var t = wysihtml5Editor.getValue();
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
+                    t1 = t1.fontcolor("red");
+                    wysihtml5Editor.setValue(t1 + t2);
+                },
+                change: function() {
+                    $('.edit_amenity').submit();
+                }
+            }
+        });
+    });
     $('[data-toggle="popover"]').popover();
   if ($('.is-home-page')[0]) {
     showTabsAccordingToTheme(selected_theme);
