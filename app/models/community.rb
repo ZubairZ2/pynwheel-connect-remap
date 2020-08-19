@@ -382,10 +382,26 @@ class Community < ApplicationRecord
     RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user
   end
 
+  def realpage_insert_activity(tour_user)
+    RealPageInsertActivityJob.perform_async credential.attributes.to_json, tour_user
+  end
+
+  def realpage_insert_unit_shown(tour_user)
+    RealPageInsertUnitShownJob.perform_async credential.attributes.to_json, tour_user
+  end
+
+  def realpage_insert_follow_up(tour_user)
+    RealPageInsertFollowUpJob.perform_async credential.attributes.to_json, tour_user
+  end
+
   def realpage_get_leasing_agents
     RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json
   end
 
+  def real_page_get_activity_types
+    RealPageGetActivityTypesJob.perform_async credential.attributes.to_json
+  end
+  
   def entrata_send_mits_leads(tour_user, tour_time, end_time, visited_stops)
     PsiSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, tour_time, end_time, visited_stops
   end

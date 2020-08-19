@@ -1,0 +1,102 @@
+class RealPageInsertFollowUpService < BaseService
+    def perform(tour_user, tour_time, end_time)
+        insert_follow_up(tour_user, tour_time, end_time)
+    end
+
+    def insert_follow_up(guest, tour_time, end_time)
+        site_ids = credentials.site_id.split(',') rescue []
+        site_ids.each do |site_id|
+            begin
+                url = REALPAGE_URL
+                soap_action = REALPAGE_INSERT_FOLLOW_UP_ACTION
+                username = REALPAGESVC_USERNAME
+                password = REALPAGESVC_PASSWORD
+                license_key = REALPAGESVC_LICENSE_KEY
+                pmc_id = credentials.pmc_id
+           
+                community_id = credentials.community_id
+                
+                community = Community.find community_id
+                prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
+                
+                if prospect.present?
+                    guest_card_id = prospect.data[0]["Guestcard"]["NewID"] != "0" ? prospect.data[0]["Guestcard"]["NewID"] : prospect.data[0]["Guestcard"]["ID"]
+                end
+                
+                task_duration_start = tour_time.strftime("%Y-%m-%dT%H-%M-%S")
+                task_duration_end = end_time.strftime("%Y-%m-%dT%H-%M-%S")
+                task_category_cd = "R0000003"           # General appointment
+                task_id =  "0"                          # For new task
+                agent_id = "0"                          # requires addional api call, already implemented but call not working yet
+
+                if guest_card_id.present?
+                    response = HTTParty.post(
+                        url,
+                        :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+                        :body => '<soapenv:Envelope
+                            xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                            xmlns:tem="http://tempuri.org/">
+                            <soapenv:Header/>
+                            <soapenv:Body>
+                                <tem:insertunitshown>
+                                    <tem:auth>
+                                        <tem:pmcid>'+pmc_id+'</tem:pmcid>
+                                        <tem:siteid>'+site_id+'</tem:siteid>
+                                        <tem:username>'+username+'</tem:username>
+                                        <tem:password>'+password+'</tem:password>
+                                        <tem:licensekey>'+license_key+'</tem:licensekey>
+                                        <tem:system>OneSite</tem:system>
+                                    </tem:auth>
+                                    <tem:unitshown>
+                                        <tem:guestcardid>'+guest_card_id+'</tem:guestcardid>
+                                        <tem:agentid>'+agent_id+'</tem:agentid>
+                                        <tem:taskdurationstart>'+task_duration_start+'</tem:taskdurationstart>
+                                        <tem:taskdurationend>'+task_duration_end+'</tem:taskdurationend>
+                                        <tem:taskcategorycd>'+task_category_cd+'</tem:taskcategorycd>
+                                        <tem:taskid>'+task_id+'</tem:taskid>
+                                    </tem:unitshown>
+                                </tem:insertunitshown>
+                            </soapenv:Body>
+                        </soapenv:Envelope>')
+                
+                    # binding.pry
+                   
+                    puts '---'*50
+                    puts response
+                    puts '---'*50 
+
+                    result = Ox.load(response.body, mode: :hash)
+
+                    # prospect_response = result[:"s:Envelope"][1][:"s:Body"][1][:insertprospectResponse][1][:insertprospectResult][:InsertProspectResponse]
+                    # prospect_response = prospect_response - [prospect_response[0]]
+                
+                    # if prospect_response[1][:message] == "SUCCESS"
+                    #     community = Community.find community_id
+                    #     prospect = Prospect.find_or_initialize_by(community_id: community.id, data_provider: community.data_provider, tour_user_id: guest.id)
+                    #     prospect.data = prospect_response
+                    #     prospect.save
+
+                    #     puts '---'*50
+                    #     puts prospect_response
+                    #     puts '---'*50 
+                    # end
+                else
+                    cred = Credential.find credentials.id
+                    cred.data_error_message = "missing guest card id for #{cred.community.data_provider}. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+                    PaperTrail.enabled = false
+                    cred.save
+                    PaperTrail.enabled = true
+                end
+            rescue => e
+                begin
+                cred = Credential.find credentials.id
+                cred.data_error_message = "inserting follow up in #{cred.community.data_provider} is not working. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+                PaperTrail.enabled = false
+                cred.save
+                PaperTrail.enabled = true
+                rescue => err
+                end
+            end
+        end
+    end
+end

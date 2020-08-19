@@ -9,11 +9,11 @@ class RealPageInsertProspectService < BaseService
             begin
                 url = REALPAGE_URL
                 soap_action = REALPAGE_INSERT_PROSPECT
-                pmc_id = credentials.pmc_id
-                #site_id = credentials.site_id
                 username = REALPAGESVC_USERNAME
                 password = REALPAGESVC_PASSWORD
                 license_key = REALPAGESVC_LICENSE_KEY
+                pmc_id = credentials.pmc_id
+                
                 community_id = credentials.community_id
                 phone_number = guest.phone_number.present? ? guest.phone_number : ''
                 first_name = guest.first_name.present? ? guest.first_name : guest.name

@@ -1,21 +1,26 @@
-class RealPageGetLeasingAgentsService < BaseService
+class RealPageGetActivityTypesService < BaseService
     def perform
-        get_leasing_agents
+        get_activity_types
     end
 
-    def get_leasing_agents
+    def get_activity_types
         site_ids = credentials.site_id.split(',') rescue []
         site_ids.each do |site_id|
           begin
             url = REALPAGE_URL
-            soap_action = REALPAGE_LEASING_AGENT_ACTION
+            soap_action = REALPAGE_ACTIVITY_TYPES_ACTION
             pmc_id = credentials.pmc_id
             #site_id = credentials.site_id
             username = REALPAGESVC_USERNAME
             password = REALPAGESVC_PASSWORD
             license_key = REALPAGESVC_LICENSE_KEY
             community_id = credentials.community_id
- 
+
+            puts '-----------------------'
+            puts credentials.pmc_id
+            puts site_id
+            puts '-----------------------'
+            
             response = HTTParty.post(
                 url,
                 :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -24,7 +29,7 @@ class RealPageGetLeasingAgentsService < BaseService
                             xmlns:tem=“http://tempuri.org/”>
                             <soapenv:Header/>
                             <soapenv:Body>
-                                <tem:getleasingagentsbyproperty>
+                                <tem:getactivitytypes>
                                     <tem:auth>
                                         <tem:pmcid>'+pmc_id+'</tem:pmcid>
                                         <tem:siteid>'+site_id+'</tem:siteid>
@@ -33,10 +38,12 @@ class RealPageGetLeasingAgentsService < BaseService
                                         <tem:licensekey>'+license_key+'</tem:licensekey>
                                         <tem:system>OneSite</tem:system>
                                     </tem:auth>
-                                </tem:getleasingagentsbyproperty>
+                                </tem:getactivitytypes>
                             </soapenv:Body>
                         </soapenv:Envelope>')
         
+            binding.pry
+            
             puts '---'*50
             puts response
             puts '---'*50
