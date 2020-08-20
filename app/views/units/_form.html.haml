@@ -112,6 +112,7 @@
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
+    %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
 -#.form-group
 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 -#    Available
@@ -202,12 +203,21 @@
                     wysihtml5Editor.setValue(t1 + t2);
                 },
                 load: function(){
+                    $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+                        var text_split = $('.unit_directional_text').text().split(" ")
+                        var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                        $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                    });
                     var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
                     var t = wysihtml5Editor.getValue();
                     t1 = t.substr(0, 90)
                     t2 = t.substr(90, t.length)
                     t1 = t1.fontcolor("red");
                     wysihtml5Editor.setValue(t1 + t2);
+                    var text_split = $('.unit_directional_text').text().split(" ")
+                    var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                    $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+
                 }
             }
         });

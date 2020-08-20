@@ -37,7 +37,7 @@
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
                   = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
-
+                  %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
             .row
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
@@ -48,7 +48,7 @@
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
                   = f.text_area :directional_text, :class=>"form-control amenity_edit_field amenity_edit_directional_wysihtml5", :placeholder=>"Directional Text"
-
+                  %span.amenity_directional_text_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Access Code
