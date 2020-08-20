@@ -10,23 +10,17 @@ class RealPageGetActivityTypesService < BaseService
             url = REALPAGE_URL
             soap_action = REALPAGE_ACTIVITY_TYPES_ACTION
             pmc_id = credentials.pmc_id
-            #site_id = credentials.site_id
             username = REALPAGESVC_USERNAME
             password = REALPAGESVC_PASSWORD
             license_key = REALPAGESVC_LICENSE_KEY
             community_id = credentials.community_id
 
-            puts '-----------------------'
-            puts credentials.pmc_id
-            puts site_id
-            puts '-----------------------'
-            
             response = HTTParty.post(
                 url,
                 :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
                 :body => '<soapenv:Envelope
-                            xmlns:soapenv=“http://schemas.xmlsoap.org/soap/envelope/”
-                            xmlns:tem=“http://tempuri.org/”>
+                            xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                            xmlns:tem="http://tempuri.org/">
                             <soapenv:Header/>
                             <soapenv:Body>
                                 <tem:getactivitytypes>
@@ -41,13 +35,30 @@ class RealPageGetActivityTypesService < BaseService
                                 </tem:getactivitytypes>
                             </soapenv:Body>
                         </soapenv:Envelope>')
-        
-            binding.pry
             
-            puts '---'*50
-            puts response
-            puts '---'*50
-
+            result = Ox.load(response.body, mode: :hash)
+            type = nil
+            begin
+              result[:"s:Envelope"][1][:"s:Body"][1][:getactivitytypesResponse][1][:getactivitytypesResult][:GetActivityTypes][1][:Contents][:PicklistItem].each do |type_data|
+                if type_data[:Text] == "Self-guided - Tour" or type_data[:Text] == "Self-guided" or type_data[:Text] == "Tour"
+                  type = type_data
+                  break
+                elsif type_data[:Text] == "Visit"
+                  type = type_data
+                  break
+                else
+                  type = result[:"s:Envelope"][1][:"s:Body"][1][:getactivitytypesResponse][1][:getactivitytypesResult][:GetActivityTypes][1][:Contents][:PicklistItem][0]
+                end
+              end
+            rescue => e
+                begin
+                  type = result[:"s:Envelope"][1][:"s:Body"][1][:getactivitytypesResponse][1][:getactivitytypesResult][:GetActivityTypes][1][:Contents][:PicklistItem][0]
+                rescue => e
+                  type = ''
+                end
+            end
+            puts type
+            return type  
           rescue => e
             begin
               cred = Credential.find credentials.id
@@ -57,7 +68,6 @@ class RealPageGetActivityTypesService < BaseService
               PaperTrail.enabled = true
             rescue => err
             end
-            #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
           end
         end
     end

@@ -71,10 +71,6 @@ class RealPageInsertProspectService < BaseService
                     prospect = Prospect.find_or_initialize_by(community_id: community.id, data_provider: community.data_provider, tour_user_id: guest.id)
                     prospect.data = prospect_response
                     prospect.save
-
-                    puts '---'*50
-                    puts prospect_response
-                    puts '---'*50 
                 end
 
             rescue => e

@@ -1,9 +1,9 @@
 class RealPageInsertUnitShownService < BaseService
-    def perform(tour_user, tour_time, visited_stops)
-        insert_unit_shown(tour_user, tour_time, visited_stops)
+    def perform(tour_user, tour_time, visited_stops, leasing_agent, activity_id)
+        insert_unit_shown(tour_user, tour_time, visited_stops, leasing_agent, activity_id)
     end
 
-    def insert_unit_shown(guest, activity_date, unit_shown)
+    def insert_unit_shown(guest, activity_date, unit_shown, leasing_agent, activity_id)
         site_ids = credentials.site_id.split(',') rescue []
         site_ids.each do |site_id|
             begin
@@ -16,6 +16,8 @@ class RealPageInsertUnitShownService < BaseService
 
                 community_id = credentials.community_id
                 activity_date = activity_date.strftime("%Y-%m-%d")
+                agent_id = leasing_agent[:Value]  
+                # unit_shown =unit_shown.count
                
                 community = Community.find community_id
                 prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
@@ -24,9 +26,6 @@ class RealPageInsertUnitShownService < BaseService
                     guest_card_id = prospect.data[0]["Guestcard"]["NewID"] != "0" ? prospect.data[0]["Guestcard"]["NewID"] : prospect.data[0]["Guestcard"]["ID"]
                 end
                 
-                activity_id = nil             # remaining
-                agent_id = '0'                # requires addional api call, already implemented but call not working yet
-
                 if guest_card_id.present? and activity_id.present?
                     response = HTTParty.post(
                         url,
@@ -49,34 +48,17 @@ class RealPageInsertUnitShownService < BaseService
                                         <tem:guestcardid>'+guest_card_id+'</tem:guestcardid>
                                         <tem:activityid>'+activity_id+'</tem:activityid>
                                         <tem:activitydate>'+activity_date+'</tem:activitydate>
-                                        <tem:unitnumber>'+unit_shown+'</tem:unitnumber>
                                         <tem:agentid>'+agent_id+'</tem:agentid>
                                     </tem:unitshown>
                                 </tem:insertunitshown>
                             </soapenv:Body>
                         </soapenv:Envelope>')
-                
-                    # binding.pry
-                   
+                        
                     puts '---'*50
                     puts response
                     puts '---'*50 
 
-                    result = Ox.load(response.body, mode: :hash)
-
-                    # prospect_response = result[:"s:Envelope"][1][:"s:Body"][1][:insertprospectResponse][1][:insertprospectResult][:InsertProspectResponse]
-                    # prospect_response = prospect_response - [prospect_response[0]]
-                    
-                    # if prospect_response[1][:message] == "SUCCESS"
-                    #     community = Community.find community_id
-                    #     prospect = Prospect.find_or_initialize_by(community_id: community.id, data_provider: community.data_provider, tour_user_id: guest.id)
-                    #     prospect.data = prospect_response
-                    #     prospect.save
-
-                    #     puts '---'*50
-                    #     puts prospect_response
-                    #     puts '---'*50 
-                    # end
+                    # <tem:unitnumber>dsf</tem:unitnumber> 
                 else
                     cred = Credential.find credentials.id
                     cred.data_error_message = "missing guest card id or activity id for #{cred.community.data_provider}. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."

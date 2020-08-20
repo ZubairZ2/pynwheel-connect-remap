@@ -10,7 +10,6 @@ class RealPageGetLeasingAgentsService < BaseService
             url = REALPAGE_URL
             soap_action = REALPAGE_LEASING_AGENT_ACTION
             pmc_id = credentials.pmc_id
-            #site_id = credentials.site_id
             username = REALPAGESVC_USERNAME
             password = REALPAGESVC_PASSWORD
             license_key = REALPAGESVC_LICENSE_KEY
@@ -20,8 +19,8 @@ class RealPageGetLeasingAgentsService < BaseService
                 url,
                 :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
                 :body => '<soapenv:Envelope
-                            xmlns:soapenv=“http://schemas.xmlsoap.org/soap/envelope/”
-                            xmlns:tem=“http://tempuri.org/”>
+                            xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                            xmlns:tem="http://tempuri.org/">
                             <soapenv:Header/>
                             <soapenv:Body>
                                 <tem:getleasingagentsbyproperty>
@@ -36,21 +35,20 @@ class RealPageGetLeasingAgentsService < BaseService
                                 </tem:getleasingagentsbyproperty>
                             </soapenv:Body>
                         </soapenv:Envelope>')
-        
-            puts '---'*50
-            puts response
-            puts '---'*50
 
+            result = Ox.load(response.body, mode: :hash)
+            agent = result[:"s:Envelope"][1][:"s:Body"][1][:getleasingagentsbypropertyResponse][1][:getleasingagentsbypropertyResult][:GetLeasingAgentsByProperty][1][:Contents][:PicklistItem][0] rescue ""         
+            puts agent
+            return agent
           rescue => e
             begin
               cred = Credential.find credentials.id
-              cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+              cred.data_error_message = "Get Leasing Agents from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
               PaperTrail.enabled = false
               cred.save
               PaperTrail.enabled = true
             rescue => err
             end
-            #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
           end
         end
     end
