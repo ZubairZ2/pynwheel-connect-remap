@@ -189,19 +189,20 @@
             /       = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
             /       %label.label-primary{:for => "visual_id_verification"}
             /       %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Add Unit Stops Based in Availability
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                  %span#propertyDetailNameText
-                    Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
+            - if current_user.is_super_admin?
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Add Unit Stops Based in Availability
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
 
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
-                  %label.label-primary{:for => "automate_unit_stop"}
-                  %span.pl-15 Yes      
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
+                    %label.label-primary{:for => "automate_unit_stop"}
+                    %span.pl-15 Yes      
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Dotted line color
