@@ -316,21 +316,21 @@
           %span
     .row
       .col-md-12
-        - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
-          .box.box-widget.panel-box.add-plan.pt-30{style: "margin-top: 60px;"}
-            = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
-              = f.hidden_field :community_id, value: @community.id
-              .box-body
-                .row
-                  / .col-lg-9.col-lg-offset-1
-                  /   .form-group
-                  /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  /       Sms Text
-                  /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  /       = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
+        .box.box-widget.panel-box.add-plan.pt-30{style: "margin-top: 60px;"}
+          = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
+            = f.hidden_field :community_id, value: @community.id
+            .box-body
+              .row
+                / .col-lg-9.col-lg-offset-1
+                /   .form-group
+                /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                /       Sms Text
+                /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                /       = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
+                %h4.col-lg-9.col-lg-offset-1{:style => "margin-bottom: 50px;"}
+                  %b Optional: Add custom messaging to the standard automated text & email notification(s).
+                - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )    
                   .col-lg-9.col-lg-offset-1
-                    %h4{:style => "margin-bottom: 50px;"}
-                      %b Optional: Add custom messaging to the standard automated text & email notifications. (Only applicable if the property is using the scheduler widget). Click on the question marks to see the standard notification messages.
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                         Confirmation
@@ -363,21 +363,21 @@
 
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-                  .col-lg-9.col-lg-offset-1
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                        Thank you message
-                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                          %span#propertyDetailNameText
-                            This message will be sent to tour users after tour will end.
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Thank you message
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          This message will be sent to tour users after tour will end.
 
-                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                        = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
 
-              /
-                \/.box-body
-              .box-footer
-                = f.submit "Save", :class=>"btn btn-success pull-right mr-10"
+            /
+              \/.box-body
+            .box-footer
+              = f.submit "Save", :class=>"btn btn-success pull-right mr-10"
     - unless @community.is_sitemap
       %h3 Select a Floor
       - @community.floorplates.map{|f| f.floors}.flatten.sort.each do |f|
