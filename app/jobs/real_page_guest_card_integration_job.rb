@@ -3,9 +3,6 @@ class RealPageGuestCardIntegrationJob < ApplicationJob
   
     def perform(credentials, tour_user, tour_time, end_time, available_stops, visited_stops)
 
-        real_page_insert_prospect_service = RealPageInsertProspectService.new(JSON.parse(credentials))
-        real_page_insert_prospect_service.perform(tour_user)
-
         real_page_get_leasing_agents_service = RealPageGetLeasingAgentsService.new(JSON.parse(credentials))
         leasing_agent = real_page_get_leasing_agents_service.perform
         
