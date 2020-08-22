@@ -62,7 +62,7 @@ class SchedualToursController < ApplicationController
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
       end
       community = Community.find_by_id params[:community_id]
-      community.realpage_insert_prospect(tu) if community.present? and community.data_provider == "psi"
+      community.realpage_insert_prospect(tu) if community.present? and community.data_provider == "realpagesvc"
 
       # sms_notifire notification_content, params[:tour_user][:phone_number]
     else
