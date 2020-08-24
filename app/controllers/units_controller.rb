@@ -148,6 +148,13 @@ class UnitsController < ApplicationController
           format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           format.json { respond_with_bip(@unit) }
         else
+          # incase of failure, redering to edit will require the edit page @varaibles
+          @amenities = @unit.amenities.order(:sort)
+          @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
+          @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
+          @assigned_lock = @unit.remote_locks.first
+          @latch_lock = @unit.latch_locks.first
+
           flash[:error] = @unit.errors.full_messages.join(',')
           format.html { render :action => "edit" }
           format.json { respond_with_bip(@unit) }
@@ -162,6 +169,14 @@ class UnitsController < ApplicationController
         else
           if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name ) || (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id) ||(params[:unit][:effective_rent].present? && params[:unit][:effective_rent] != @unit.effective_rent.to_i.to_s) || (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability) || (params[:unit][:building].present? && params[:unit][:building] != @unit.building) || (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date.to_s) ||(params[:unit][:square_feet].present? && params[:unit][:square_feet] != @unit.square_feet.to_i.to_s) || (params[:unit][:available].present? && params[:unit][:available] != @unit.available) || (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold.to_s) || (params[:unit][:floor].present? && params[:unit][:floor].to_i != @unit.floor) || (params[:unit][:provider_unit_id].present? && params[:unit][:provider_unit_id] != @unit.provider_unit_id)
             @unit.errors[:base] << "Please set manual override field first"
+
+            # incase of failure, redering to edit will require the edit page @varaibles
+            @amenities = @unit.amenities.order(:sort)
+            @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
+            @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
+            @assigned_lock = @unit.remote_locks.first
+            @latch_lock = @unit.latch_locks.first
+            
             flash[:error] = @unit.errors.full_messages.join(',')
             format.html { render :action => "edit" }
             format.json { respond_with_bip(@unit) }

@@ -44,9 +44,9 @@
               .mt-35
                 %span.btn.btn-success.btn-file
                   %i.fa.fa-plus-circle
-                  ADD IMAGE
+                  Add image to this unit
                   %input#unit-amenity-images{:multiple => "multiple", :type => "file"}
-                %button.dropbtn.btn.btn-primary{"data-target" => "#modal-to-set-image", "data-toggle" => "modal"} MASS OVERRIDES
+                %button.dropbtn.btn.btn-primary{"data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Add images to multiple units
               .divLoading.hidden
           #images-index-unit
             = render :partial=>'edit'
@@ -66,10 +66,11 @@
                 = check_box_tag 'select_all_units_for_image'
                 %label Select all
             .row
-              - @units.each do |unit|
-                .col-md-3.pt-5.pb-5
-                  = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
-                  = h unit.marketing_name
+              - if @units.present?
+                - @units.each do |unit|
+                  .col-md-3.pt-5.pb-5
+                    = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
+                    = h unit.marketing_name
           .modal-footer
             = submit_tag 'Submit',:class=>"btn btn-success"
             %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
@@ -201,3 +202,12 @@
   {
     $('#amenity_image').show();
   }
+
+  $('#select_all_units_for_image').change(function(){
+    if($(this).is(':checked')){
+      $('.image-checkbox').prop('checked',true)
+    }
+    else{
+      $('.image-checkbox').prop('checked',false)
+    }
+  });
