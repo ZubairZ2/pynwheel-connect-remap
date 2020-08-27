@@ -18,13 +18,11 @@ namespace :import do
       Community.page(page).per(5).each do |community|
         next if (community.locked.present? && community.locked)
         begin
-          if Time.now.to_s(:time) >= "06:00" && Time.now.to_s(:time) <= "07:00"
-            comun = Community.find community.id
-            comun.neighborhood_request_counter = 0
-            comun.limit_200_hit = false
-            comun.limit_400_hit = false
-            comun.save(validate:false)
-          end
+          comun = Community.find community.id
+          comun.neighborhood_request_counter = 0
+          comun.limit_200_hit = false
+          comun.limit_400_hit = false
+          comun.save(validate:false)
         rescue => ex
 
         end
