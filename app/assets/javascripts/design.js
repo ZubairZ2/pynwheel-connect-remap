@@ -18,7 +18,7 @@ $(document).ready(function () {
 
                 t1 = t.substr(0, 90)
                 t2 = t.substr(90, t.length)
-                t1 = t1.fontcolor("red");
+                t2 = t2.fontcolor("red");
                 wysihtml5Editor.setValue(t1 + t2);
                 var text_split = $('.amenity_description_count').text().split(" ")
                 var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -48,7 +48,7 @@ $(document).ready(function () {
                     var t = wysihtml5Editor.getValue();
                     t1 = t.substr(0, 90)
                     t2 = t.substr(90, t.length)
-                    t1 = t1.fontcolor("red");
+                    t2 = t2.fontcolor("red");
                     wysihtml5Editor.setValue(t1 + t2);
                     var text_split = $('.amenity_directional_text_count').text().split(" ")
                     var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
