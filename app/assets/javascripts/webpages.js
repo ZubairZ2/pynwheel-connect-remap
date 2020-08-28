@@ -85,7 +85,8 @@ $(window).bind('load', function () {
     });
     /////////////////////////////////////////
     $('#market_rent').change(function () {
-      showMarkers();
+      console.log('market_rent is changed')
+      showMarkers(true);
     });
     $('#square_feet').change(function () {
       showMarkers();
@@ -444,14 +445,15 @@ function setFilters() {
 
 }
 
-function showMarkers() {
+function showMarkers(market_rent_change = false) {
   // console.log('showing units on the basis of filters');
 
   $('.marker').addClass('hidden');
   $('.hidden-units').empty();
 
-
   var units_to_display = select_units_according_to_filters(current_units)
+  set_prices_according_to_units_to_display(units_to_display, market_rent_change)
+
   if (!(has_floorplate == 'true')) {
     var min_rent = Math.min.apply(Math, units_to_display.map(function (o) {
       return o.market_rent;
@@ -566,6 +568,37 @@ function disabled_enabled_anchors() {
   }
 }
 
+function set_prices_according_to_units_to_display(floorplate_units, is_market_rent_change_called){
+  console.log('ooouttttttt')
+  if (!is_market_rent_change_called){
+    console.log('iiiiiiiiinnnnn')
+    var units_market_rent = []
+    if (floorplate_units.length > 0) {
+      for (var i = 0; i < floorplate_units.length; i++) {
+        units_market_rent.push(parseFloat(floorplate_units[i]['market_rent']))
+      }
+
+      min_market_rent = Math.min.apply(Math, units_market_rent);
+      max_market_rent = Math.max.apply(Math, units_market_rent);
+      partition = Math.ceil((max_market_rent - min_market_rent) / 3)
+      end_value = 0
+
+      $('#market_rent').children().remove();
+      $('#market_rent').append(`<option value=""> Select Max Price </option>`)
+
+      for(var i=0 ; i<3 && floorplate_units.length > i; i++){
+        end_value = end_value + partition
+        text = Math.ceil(min_market_rent + end_value)
+        val = min_market_rent + "-" + text
+        $('#market_rent').append(`<option value="${val}"> ${text} </option>`)
+      }
+    }
+    else{
+      $('#market_rent').children().remove();
+      $('#market_rent').append(`<option value=""> Select Max Price </option>`)
+    }
+  }
+}
 
 function select_units_according_to_filters(floorplate_units) {
   var bedroom_base_units = [];
