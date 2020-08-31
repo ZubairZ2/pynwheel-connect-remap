@@ -62,7 +62,8 @@ class SchedualToursController < ApplicationController
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
       end
       community = Community.find_by_id params[:community_id]
-      community.realpage_insert_prospect(tu) if community.present? and community.data_provider == "realpagesvc"
+      desired_move_in_date = schedual_tour.desired_move_in_date.present? ? schedual_tour.desired_move_in_date : "" rescue ""
+      community.realpage_insert_prospect(tu, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
 
       # sms_notifire notification_content, params[:tour_user][:phone_number]
     else

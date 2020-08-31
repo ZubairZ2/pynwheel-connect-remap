@@ -35,9 +35,17 @@ class RealPageGetLeasingAgentsService < BaseService
                                 </tem:getleasingagentsbyproperty>
                             </soapenv:Body>
                         </soapenv:Envelope>')
-
             result = Ox.load(response.body, mode: :hash)
-            agent = result[:"s:Envelope"][1][:"s:Body"][1][:getleasingagentsbypropertyResponse][1][:getleasingagentsbypropertyResult][:GetLeasingAgentsByProperty][1][:Contents][:PicklistItem][0] rescue ""         
+            begin
+              agents = result[:"s:Envelope"][1][:"s:Body"][1][:getleasingagentsbypropertyResponse][1][:getleasingagentsbypropertyResult][:GetLeasingAgentsByProperty][1][:Contents][:PicklistItem]
+              if agents.include?({:Value=>"0", :Text=>"House"})
+                agent = {:Value=>"0", :Text=>"House"}
+              else
+                agent = nil
+              end
+            rescue => e
+              agent = {:Value=>"0", :Text=>"House"}
+            end
             puts agent
             return agent
           rescue => e

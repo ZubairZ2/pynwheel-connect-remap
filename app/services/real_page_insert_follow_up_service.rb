@@ -20,6 +20,9 @@ class RealPageInsertFollowUpService < BaseService
                 prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
                 
                 if prospect.present?
+                    puts '-------------------------------  prospect present in insert follow up ------------------------------------'
+                    puts "prospect is present"
+                    puts '------------------------------------------------------------------------------------'
                     guest_card_id = prospect.data[0]["Guestcard"]["NewID"] != "0" ? prospect.data[0]["Guestcard"]["NewID"] : prospect.data[0]["Guestcard"]["ID"]
                 end
                 
@@ -30,6 +33,9 @@ class RealPageInsertFollowUpService < BaseService
                 agent_id = leasing_agent[:Value]
 
                 if guest_card_id.present?
+                    puts '-------------------------------  guest_card_id  in insert follow up ------------------------------------'
+                    puts guest_card_id
+                    puts '------------------------------------------------------------------------------------'
                     response = HTTParty.post(
                         url,
                         :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -58,9 +64,10 @@ class RealPageInsertFollowUpService < BaseService
                             </soapenv:Body>
                         </soapenv:Envelope>')
                    
-                    puts '---'*50
+                    puts '-------------------------------  response insert follow up  ------------------------------------'
                     puts response
-                    puts '---'*50 
+                    puts '------------------------------------------------------------------------------------'
+                    
 
                 else
                     cred = Credential.find credentials.id

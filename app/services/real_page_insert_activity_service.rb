@@ -24,10 +24,16 @@ class RealPageInsertActivityService < BaseService
                 prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
                 
                 if prospect.present?
+                    puts '-------------------------------  prospect present in insert activity ------------------------------------'
+                    puts "prospect is present"
+                    puts '------------------------------------------------------------------------------------'
                     guest_card_id = prospect.data[0]["Guestcard"]["NewID"] != "0" ? prospect.data[0]["Guestcard"]["NewID"] : prospect.data[0]["Guestcard"]["ID"]
                 end
-      
+
                 if guest_card_id.present? and agent_id.present? and activity_type_id.present?
+                    puts '-------------------------------  guest_card_id  in insert activity ------------------------------------'
+                    puts guest_card_id
+                    puts '------------------------------------------------------------------------------------'
                     response = HTTParty.post(
                         url,
                         :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -53,7 +59,11 @@ class RealPageInsertActivityService < BaseService
                                     </tem:insertactivity>
                                 </soapenv:Body>
                                 </soapenv:Envelope>')
-                
+                    
+                    puts '-------------------------------  response insert activity  ------------------------------------'
+                    puts response
+                    puts '------------------------------------------------------------------------------------'
+                    
                     result = Ox.load(response.body, mode: :hash)
                     
                     # <tem:unitid>'+stops_name.to_s+'</tem:unitid>

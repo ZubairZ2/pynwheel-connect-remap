@@ -1,9 +1,9 @@
 class RealPageInsertProspectService < BaseService
-    def perform(tour_user)
-        insert_prospect(tour_user)
+    def perform(tour_user, tour_time)
+        insert_prospect(tour_user, tour_time)
     end
 
-    def insert_prospect(guest)
+    def insert_prospect(guest, tour_time)
         site_ids = credentials.site_id.split(',') rescue []
         site_ids.each do |site_id|
             begin
@@ -18,6 +18,19 @@ class RealPageInsertProspectService < BaseService
                 phone_number = guest.phone_number.present? ? guest.phone_number : ''
                 first_name = guest.first_name.present? ? guest.first_name : guest.name
                 last_name = guest.last_name.present? ? guest.last_name : 'missing'
+
+                begin
+                    if tour_time.instance_of? Date
+                        desired_move_in_date = tour_time
+                    else
+                        tour_data = scheduled_tour(tour_time, community_id, guest.id)
+                        desired_bedroom = tour_data.desired_bedroom.present? ? tour_data.desired_bedroom : "" rescue ""
+                        desired_move_in_date = tour_data.desired_move_in_date.present? ? tour_data.desired_move_in_date.strftime("%Y-%m-%d") : "" rescue ""
+                    end
+                rescue Exception => e
+                    desired_bedroom = ""
+                    desired_move_in_date = ""
+                end
                 
                 response = HTTParty.post(
                     url,
@@ -55,6 +68,10 @@ class RealPageInsertProspectService < BaseService
                                         <tem:ExtensionData/>
                                     </tem:Prospect>
                                 </tem:prospects>
+                                <tem:preferences>
+                                    <tem:dateneeded>' + desired_move_in_date + '</tem:dateneeded>   
+                                    <tem:ExtensionData/>
+                                </tem:preferences>
                                 <tem:ExtensionData/>
                             </tem:guestcard>
                         </tem:insertprospect>
@@ -84,5 +101,13 @@ class RealPageInsertProspectService < BaseService
                 end
             end
         end
+    end
+
+    def scheduled_tour(time, community_id,tour_user_id)
+        current_datetime = time.strftime('%d/%m/%Y %l:%M %p')
+        current_time = current_datetime.to_datetime.strftime('%l:%M %p')
+        current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
+        current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
+        SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ? and end_time >= ? and tour_time <= ?', community_id, tour_user_id, current_tour.tour_date, current_tour.tour_time, current_tour.tour_time).last
     end
 end

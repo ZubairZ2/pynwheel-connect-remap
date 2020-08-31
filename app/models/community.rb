@@ -378,8 +378,8 @@ class Community < ApplicationRecord
     # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
 
-  def realpage_insert_prospect(tour_user)
-    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user
+  def realpage_insert_prospect(tour_user, tour_time)
+    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, tour_time
   end
 
   def realpage_insert_activity(tour_user)
