@@ -270,6 +270,20 @@ class Api::V1::CommunitiesController < ActionController::Base
     # @tours = @tours.map{|h| h}[-4..-1].to_h
   end
 
+  def tour_configrations
+    @community = Community.find params[:id] if params[:id].present?
+    @tour_user = TourUser.find params[:tour_user_id]
+    @tour = @community.tour
+    @last_vs = @community.present? ? VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).last : VisitedStop.where(tour_user_id: @tour_user.id).last
+    @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
+
+    if params[:current_time].present? and @community.present?
+      @visiting_hours = is_tour_in_visiting_hours(params[:current_time], @community)
+      @scheduled_tour = is_tour_scheduled(params[:current_time], @community.id, tour_user_id)
+    end
+
+  end
+
   def is_tour_scheduled(time_param,community_id,tour_user_id)
     current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')
     current_time = current_datetime.to_datetime.strftime('%l:%M %p')

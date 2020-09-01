@@ -371,6 +371,7 @@ Rails.application.routes.draw do
           get :data_group
           get :community_tours
           post :user_saved_tour
+          get :tour_configrations
           get :ios_data
           get :minimum_data
           post :email_favorites
