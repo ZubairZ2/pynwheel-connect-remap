@@ -13,6 +13,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.my_time_zone = params[:time_zone].to_s rescue nil
       end
       tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
+      tour_history.active_app = params[:active_app] if params[:active_app].present?
       tour_history.tour_user_id = params[:tour_user_id]
       @tour = Tour.find params[:tour_id]
       if !@tour.visual_id_verification
