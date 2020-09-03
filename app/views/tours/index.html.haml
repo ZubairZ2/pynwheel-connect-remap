@@ -143,6 +143,27 @@
                     %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Only allow scheduled tours
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Unscheduled and early or late arrived guests before or after the scheduled time will get proper customizable messages.
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :only_scheduled_tour, true, @community.tour.only_scheduled_tour , class: "only_scheduled_tour"
+                  %label.label-primary{:for => "only_scheduled_tour"}
+                  %span.pl-15 Yes
+            .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
+              .form-group.hidden#grace_time_period
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .font-size-15{style: "float: left; padding-right: 30px;"}
+                        Grace time period
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %input.day-list.max-users-v{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Scheduler Widget
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
                   %span#propertyDetailNameText
@@ -196,7 +217,6 @@
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                     %span#propertyDetailNameText
                       Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
-
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -223,14 +243,11 @@
             -#      = check_box_tag :show_notepad_button, true, @community.show_notepad_button, class: "show-notepad-button"
             -#      %label.label-primary{:for => "show_notepad_button"}
             -#      %span.pl-15 Yes
-
             -#.form-group.mt-30
             -#  %label.col-sm-16.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Self Tour icon size
             -#  .col-sm-12.col-lg-6.col-md-6.col-xs-12
             -#    = select_tag :marker_icon_size , options_for_select(self_tour_icon_size,@community.tour.marker_icon_size ), :class => "form-control"
-
-
             = submit_tag 'Save', class: "hidden"
     .box.box-info.add-plan.mt-20#logo_header
       .box-header
@@ -320,6 +337,7 @@
         .box.box-widget.panel-box.add-plan.pt-30{style: "margin-top: 60px;"}
           = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
             = f.hidden_field :community_id, value: @community.id
+            = f.hidden_field :optional_mails, value: "optional_mails"
             .box-body
               .row
                 / .col-lg-9.col-lg-offset-1
@@ -370,10 +388,33 @@
                       Thank you message
                       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                         %span#propertyDetailNameText
-                          This message will be sent to tour users after tour will end.
+                          This message will be sent to guest after tour will end.
 
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+                - if current_community.tour.only_scheduled_tour
+                  .col-lg-9.col-lg-offset-1
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                        Arrive too early alert
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            This message will be sent in case guest starts tour before the scheduled time + grace period.Standard text that is (In the meantime, would you like to take a virtual tour?) will be added at the end of this meesage in the mobile app
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        = f.text_area :arrive_too_early_alert, :value=> @community.arrive_too_early_alert.nil? ? "Your tour is scheduled for <date>, <time>. You will be able start your tour <grace time> minutes before that time." : @community.arrive_too_early_alert , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+
+                  .col-lg-9.col-lg-offset-1
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                        Arrive too late alert
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            This message will be sent in case guest starts tour after the scheduled time + grace period. Standard text that is (In the meantime, would you like to take a virtual tour?) will be added at the end of this meesage in the mobile app
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        = f.text_area :arrive_too_late_alert, :value=> @community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for <date>, <time>." : @community.arrive_too_late_alert , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+
 
             /
               \/.box-body
@@ -646,6 +687,20 @@
   {
     $('html, body').animate({ scrollTop: 800 });
   }
+
+  if ($("#only_scheduled_tour").is(":checked") == true){
+    $("#grace_time_period").removeClass("hidden")
+  }
+
+  $('#only_scheduled_tour').change(function() {
+    if ($("#only_scheduled_tour").is(":checked")){
+      $("#grace_time_period").removeClass("hidden")
+    }
+    else{
+      $("#grace_time_period").addClass("hidden")
+    }
+  })
+
     var arr = [];
     for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
       if ($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1] != undefined)
@@ -772,7 +827,6 @@
   //
   //
   // });
-
   $(document).ready(function(){
     var path_id;
     
@@ -795,7 +849,6 @@
     
     
     // add listner to prev points 
-
     $.each($("*.path_point"), function(i, existing_point){
       id = $(existing_point).prop('id');
       dragElement(document.getElementById(id));
