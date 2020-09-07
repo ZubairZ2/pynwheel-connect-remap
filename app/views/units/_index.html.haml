@@ -21,6 +21,7 @@
             %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
             - unless @community.is_sitemap
               %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
+              %a{:href => '##',"data-target" => "#modal-to-change-building", "data-toggle" => "modal"} Add Buildings
             %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Details
             %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
         %i.propertyDetailName.mb-20.fa.fa-question-circle{ "data-toggle" => "unitMassOverridePopover","data-content" => " "}
@@ -197,6 +198,26 @@
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+#modal-to-change-building.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Set Building
+      = form_tag set_building_community_units_path(@community) do  
+        .modal-body.set-building-modal-body
+          = text_field_tag :building, nil,:class=>"form-control mb-20 validate[required]",:placeholder=>"Enter Building"
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_building'
+              %label Select all
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'building-checkbox'
+                = h unit.marketing_name  
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel          
 #modal-to-set-available-date.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
@@ -413,6 +434,14 @@
       }
       else{
         $('.floor-checkbox').prop('checked',false)
+      }
+    });
+    $('#select_all_units_for_building').change(function(){
+      if($(this).is(':checked')){
+        $('.building-checkbox').prop('checked',true)
+      }
+      else{
+        $('.building-checkbox').prop('checked',false)
       }
     });
 
