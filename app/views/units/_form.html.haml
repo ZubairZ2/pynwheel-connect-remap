@@ -169,6 +169,12 @@
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :image
+    .col-lg-1
+      - if  f.object.image.present?
+        .icon
+          = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
+            %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+              Crop
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -189,6 +195,12 @@
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :secondary_image
+    .col-lg-1
+      - if  f.object.image.present?
+        .icon
+          = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
+            %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+              Crop
 :javascript
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){
