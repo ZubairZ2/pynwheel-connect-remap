@@ -203,6 +203,12 @@ Rails.application.routes.draw do
         end
       end
       member do
+        get :show_unit_image_in_modal
+        put :crop_unit_image
+        get :show_unit_secondary_image_in_modal
+        put :crop_unit_secondary_image
+      end
+      member do
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
         delete :remove_plot
