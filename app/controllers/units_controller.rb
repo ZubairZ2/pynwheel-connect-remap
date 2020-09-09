@@ -10,6 +10,71 @@ class UnitsController < ApplicationController
     @communities = current_company.communities
     add_breadcrumb "Units", community_units_path(@community)
   end
+  def show_unit_image_in_modal
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:id]
+  end
+
+  def crop_unit_image
+    # com = Community.find 2140
+    #
+    @community = Community.find params["community_id"]
+    @unit = Unit.find params["id"]
+    # byebug
+    # com.logo = @floorplan.image
+    # @floorplan.image = Amenity.last.image
+    # @floorplan.save
+    # @floorplan.image = com.logo
+    # @floorplan.save
+    # @community = Community.find params["community_id"]
+    # @floorplan = Floorplan.find params["id"]
+    if @unit.crop_x == params[:unit][:crop_x].to_f
+      @unit.do_crop = false
+    else
+      @unit.do_crop = true
+    end
+    if params[:unit][:crop_h].to_f == 0 && params[:unit][:crop_w].to_f == 0
+      @unit.do_crop = false
+    end
+    @unit.crop_x = params[:unit][:crop_x]
+    @unit.crop_y = params[:unit][:crop_y]
+    @unit.crop_w = params[:unit][:crop_w]
+    @unit.crop_h = params[:unit][:crop_h]
+    @unit.image_bit = true
+    @unit.save
+    # PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+
+    redirect_to edit_community_unit_path(@community,@unit)
+    # render :json=> {:success=>false}
+  end
+
+  def show_unit_secondary_image_in_modal
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:id]
+  end
+  def crop_unit_secondary_image
+    @community = Community.find params["community_id"]
+    @unit = Unit.find params["id"]
+    if @unit.crop_x_secondary == params[:unit][:crop_x].to_f
+      @unit.do_crop_secpndary = false
+    else
+      @unit.do_crop_secpndary = true
+    end
+    if params[:unit][:crop_h].to_f == 0 && params[:unit][:crop_w].to_f == 0
+      @unit.do_crop_secpndary = false
+    end
+    @unit.crop_x_secondary = params[:unit][:crop_x]
+    @unit.crop_y_secondary = params[:unit][:crop_y]
+    @unit.crop_w_secondary = params[:unit][:crop_w]
+    @unit.crop_h_secondary = params[:unit][:crop_h]
+    @unit.image_bit = false
+
+    @unit.save
+    # PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+
+    redirect_to edit_community_unit_path(@community,@unit)
+    # render :json=> {:success=>false}
+  end
 
   def new
     @unit = @community.units.new

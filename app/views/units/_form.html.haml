@@ -169,12 +169,11 @@
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :image
-    .col-lg-1
-      - if  f.object.image.present?
-        .icon
-          = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
-            %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-              Crop
+    - if  f.object.image.present? && f.object.image.content_type != 'image/svg+xml'
+      .icon
+        = link_to show_unit_image_in_modal_community_unit_path(), remote: true do
+          %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+            Crop
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -195,12 +194,11 @@
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
       = f.file_field :secondary_image
-    .col-lg-1
-      - if  f.object.image.present?
-        .icon
-          = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
-            %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-              Crop
+    - if  f.object.secondary_image.present? && f.object.secondary_image.content_type != 'image/svg+xml'
+      .icon
+        = link_to show_unit_secondary_image_in_modal_community_unit_path(), remote: true do
+          %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+            crop
 :javascript
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){
@@ -208,4 +206,10 @@
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
   })
+  if (localStorage.getItem("floorplanCropped") == "1")
+  {
+    localStorage.setItem("floorplanCropped", "0");
+    location.reload(true);
+  }
+
 

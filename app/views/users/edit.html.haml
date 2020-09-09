@@ -14,4 +14,14 @@
               
         .box-footer
           = link_to "CANCEL", company_employees_path(current_company), :class=>"btn btn-default pull-right"
-          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right"                   
+          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right"
+  #crop-floorplan-secondary-image.modal.fade.edit-image
+  #crop-floorplan-image.modal.fade.edit-image
+:javascript
+
+  $("#floorplan_image").change(function(){
+    readURL(this);
+  });
+  $("#floorplan_secondary_image").change(function(){
+    readSecondaryURL(this);
+  });
