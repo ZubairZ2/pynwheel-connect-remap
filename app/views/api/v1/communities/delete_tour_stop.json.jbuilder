@@ -288,14 +288,13 @@ json.tours @tours do |tour|
     end
     begin
       if @scheduled_tour.present?
-        rml = RemoteLock.find_by(stop_id: stop.stop_id)
+        rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
         if rml.present?
-          if @tour_user.present? and @tour_user.as_guests.present?
+          if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
             igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
             if igloo_guest.nil? 
               pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
               json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
-              # json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
             else
               json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
             end
@@ -601,9 +600,9 @@ json.tours @tours do |tour|
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
       if @scheduled_tour.present?
-        rml = RemoteLock.find_by(stop_id: stop.stop_id)
+        rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
         if rml.present?
-          if @tour_user.present? and @tour_user.as_guests.present?
+          if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
             igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
             if igloo_guest.nil? 
               pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
