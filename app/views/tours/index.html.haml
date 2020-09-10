@@ -178,18 +178,6 @@
             /       = check_box_tag :show_checklist, true, @tour_setting.show_checklist, class: "show_checklist"
             /       %label.label-primary{:for => "show_checklist"}
             /       %span.pl-15 Yes 
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Only allow scheduled tours
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
-                  %span#propertyDetailNameText
-                    Unscheduled and early or late arrived guests before or after the scheduled time will get proper customizable messages.
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :only_scheduled_tour, true, @community.tour.only_scheduled_tour , class: "only_scheduled_tour"
-                  %label.label-primary{:for => "only_scheduled_tour"}
-                  %span.pl-15 Yes
             .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
               .form-group.hidden#grace_time_period
                 .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{style:"margin-right: -35px;"}
@@ -516,29 +504,6 @@
                           This message will be sent to guest after tour will end.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-                - if current_community.tour.only_scheduled_tour
-                  .col-lg-9.col-lg-offset-1
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                        Arrive too early alert
-                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                          %span#propertyDetailNameText
-                            This message will be sent in case guest starts tour before the scheduled time + grace period.Standard text that is (In the meantime, would you like to take a virtual tour?) will be added at the end of this meesage in the mobile app
-
-                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                        = f.text_area :arrive_too_early_alert, :value=> @community.arrive_too_early_alert.nil? ? "Your tour is scheduled for <date>, <time>. You will be able start your tour <grace time> minutes before that time." : @community.arrive_too_early_alert , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-
-                  .col-lg-9.col-lg-offset-1
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                        Arrive too late alert
-                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                          %span#propertyDetailNameText
-                            This message will be sent in case guest starts tour after the scheduled time + grace period. Standard text that is (In the meantime, would you like to take a virtual tour?) will be added at the end of this meesage in the mobile app
-
-                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                        = f.text_area :arrive_too_late_alert, :value=> @community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for <date>, <time>." : @community.arrive_too_late_alert , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-
 
             /
               \/.box-body
@@ -835,19 +800,6 @@
   {
     $('html, body').animate({ scrollTop: 800 });
   }
-
-  if ($("#only_scheduled_tour").is(":checked") == true){
-    $("#grace_time_period").removeClass("hidden")
-  }
-
-  $('#only_scheduled_tour').change(function() {
-    if ($("#only_scheduled_tour").is(":checked")){
-      $("#grace_time_period").removeClass("hidden")
-    }
-    else{
-      $("#grace_time_period").addClass("hidden")
-    }
-  })
 
     var arr = [];
     for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
