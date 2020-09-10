@@ -16,7 +16,7 @@ json.tours @tours do |tour|
   json.tour_setting do
     json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
     json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
-    json.show_camera_button @in_visiting_hours == true ? @community.show_camera_button : false
+    json.show_camera_button @in_visiting_hours.present? ? @community.show_camera_button : false
     json.dotted_line_color @community.tour.dotted_line_color rescue "green"
     json.visual_id_verification tour.visual_id_verification
     if @community.is_chat_login
@@ -425,7 +425,7 @@ json.tours @tours do |tour|
       next
     end
     begin
-      if @in_visiting_hours
+      if @in_visiting_hours.present?
         rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
         if rml.present?
           if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
@@ -797,8 +797,8 @@ json.tours @tours do |tour|
 
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
-      
-      if @in_visiting_hours
+
+      if @in_visiting_hours.present?
         rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
         if rml.present?
           if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
