@@ -327,6 +327,7 @@ json.tours @tours do |tour|
     else
       json.type stop.stop_type
     end
+    #//////////////////////////////////////////////////////////////-------------Unit portion---------------- ///////////////////////////////////////////////////////////////
     if stop.stop_type == "unit"
 
       unit = Unit.find_by_id stop.stop_id
@@ -392,6 +393,39 @@ json.tours @tours do |tour|
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
+      #////////////////////////////////////////// Unit Amenities NOTT Plotted ////////////////////////////////////////////
+      json.unit_unploted_amenities @unit_amenities.order(:sort) do |unit_amenity|
+        if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot == 0)
+          unit_amenities_hit = false
+          json.x_plot unit_amenity.x_plot
+          json.y_plot unit_amenity.y_plot
+          json.name unit_amenity.name
+          json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
+          json.stop_description unit_amenity.description
+          json.directional_text unit_amenity.directional_text
+          json.video_link_button_label unit.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
+          if unit_amenity.amenity_galleries.count == 0
+            # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
+            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description, "directional_text" => unit_amenity.directional_text]
+          else
+            amenityGalleryArr = []
+            # unit_amenity.description = nil
+            amenityGalleryArr << unit_amenity
+            unit_amenity.amenity_galleries.order(:sort).each do |amen|
+              amenityGalleryArr << amen
+            end
+            json.gallery amenityGalleryArr do |ag|
+              json.name ag.name
+              json.image ag.image.url
+              json.description ag.description
+              json.directional_text ag.directional_text
+            end
+          end
+
+        end
+      end
+      #///////////////////////////////////////// Unit amenities Plotted ///////////////////////////////////
       json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
         if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot > 0)
           unit_amenities_hit = false

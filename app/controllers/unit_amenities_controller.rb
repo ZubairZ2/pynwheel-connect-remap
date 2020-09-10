@@ -5,7 +5,7 @@ class UnitAmenitiesController < ApplicationController
   before_action :set_community_and_unit
 
   def index
-    @amenities = @unit.amenities.order(id: :desc)
+    @amenities = @unit.amenities.order(:sort)
     # add_breadcrumb "Units", community_unit_path(current_community)
     # add_breadcrumb "Manage Images", community_unit_amenities_path(current_community,@unit)
     @community = Community.find params[:community_id]
