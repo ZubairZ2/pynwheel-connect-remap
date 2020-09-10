@@ -797,6 +797,7 @@ json.tours @tours do |tour|
 
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
+      
       if @in_visiting_hours
         rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
         if rml.present?
