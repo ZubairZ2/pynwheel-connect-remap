@@ -13,7 +13,7 @@
             = link_to "Manage Unit Tour", community_unit_amenities_path(@community,@unit), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
       / /.box-header
       / form start
-      = form_for @unit,:url=>community_unit_path(:id=>@unit.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
+      = form_for @unit,:url=> params[:floorNo].nil? ? community_unit_path(:id=>@unit.id,:community_id=>@community.id) : community_unit_path(:id=>@unit.id,:community_id=>@community.id) <<  '?floorNo=' + params[:floorNo] ,:html=>{:class=>"form-horizontal"} do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
