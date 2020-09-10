@@ -1320,6 +1320,8 @@
     function hasDuplicates(array,times_hash) {
       var valuesSoFar = Object.create(null);
       for (var i = 0; i < array.length; ++i) {
+                if(times_hash[array[i]][0].split('-')[0] >= times_hash[array[i]][0].split('-')[1])
+                {return true;}
           if(times_hash[array[i]].length > 1)
           {
             var check_index = times_hash[array[i]];
