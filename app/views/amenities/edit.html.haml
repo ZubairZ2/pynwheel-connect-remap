@@ -23,38 +23,13 @@
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Name
-
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :name, :class=>"form-control amenity_edit_field", :placeholder=>"Name",:maxlength=>"30"
-
-            .row
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
-                  Description
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-                  = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
-                  %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
-            .row
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
-                  Directional Text
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-                  = f.text_area :directional_text, :class=>"form-control amenity_edit_field amenity_edit_directional_wysihtml5", :placeholder=>"Directional Text"
-                  %span.amenity_directional_text_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Access Code
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
-
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Video Link Button Label
@@ -77,6 +52,7 @@
                   %select.form-control#remote_lock{name: "remote_lock"}
                   %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
                     %a#a-lock.btn-text-color{href: "#"} Update selected lock
+
             - bool_check = @community.show_map ? f.object.amenityable.present? && f.object.amenityable_type == "Floorplate" : true
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -89,8 +65,23 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Floor
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
                   = f.select :floor , (f.object.amenityable.floors.flatten.uniq.sort),{:include_blank => true}, class: "form-control amenity_edit_field", placeholder: "Floor"
+
+                  -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
+            - if @community.self_tour
+              .row
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
+                    Description
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                    = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
+              .row
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
+                    Directional Text
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                    = f.text_area :directional_text, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Directional Text"
+                    
             = submit_tag 'Save', class: "hidden"
 
     %span.btn.btn-primary.btn-file
