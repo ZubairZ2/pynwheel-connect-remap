@@ -58,7 +58,7 @@ class User < ApplicationRecord
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
   #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
-  ROLES = ["Community admin", "Community manager",["Pynwheel admin","Super admin"]]
+  ROLES = ["Community admin", "Community manager",["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"]]
   ROLES_ADMIN = [ "Community manager"]   
   belongs_to :company
   has_many :community_users,dependent: :destroy
@@ -88,6 +88,10 @@ class User < ApplicationRecord
 
   def is_community_manager?
     role == "Community manager"
+  end
+
+  def is_view_visitor_details_page?
+    role == "visitor_detail_page"
   end
 
   # def gen_uuid

@@ -1,6 +1,66 @@
 var image_height = 200;
 var image_width = 200;
 $(document).ready(function () {
+  $('.amenity_edit_wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+        events: {
+            load:function(){
+                $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+                  if (wysihtml5Editor.getValue() != "")
+                  {
+                    var text_split = $('.amenity_description_count').text().split(" ")
+                    var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                    $('.amenity_description_count').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                  }
+                });
+                var wysihtml5Editor = $('#amenity_description').data("wysihtml5").editor;
+                var t = wysihtml5Editor.getValue();
+
+                t1 = t.substr(0, 90)
+                t2 = t.substr(90, t.length)
+                t2 = t2.fontcolor("red");
+                wysihtml5Editor.setValue(t1 + t2);
+                var text_split = $('.amenity_description_count').text().split(" ")
+                var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                $('.amenity_description_count').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+
+            },
+        change: function() {
+            $('.edit_amenity').submit();
+        }
+        }
+        });
+      });
+    $('.amenity_edit_directional_wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+            events: {
+                load:function(){
+                    $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+                      if (wysihtml5Editor.getValue() != "")
+                        {
+                        var text_split = $('.amenity_directional_text_count').text().split(" ");
+                        // jQuery('#amenity_directional_text').text().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace('&nbsp;','').length
+                        var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                        $('.amenity_directional_text_count').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                      }
+                    });
+                    var wysihtml5Editor = $('#amenity_directional_text').data("wysihtml5").editor;
+                    var t = wysihtml5Editor.getValue();
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
+                    t2 = t2.fontcolor("red");
+                    wysihtml5Editor.setValue(t1 + t2);
+                    var text_split = $('.amenity_directional_text_count').text().split(" ")
+                    var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                    $('.amenity_directional_text_count').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+
+                },
+                change: function() {
+                    $('.edit_amenity').submit();
+                }
+            }
+        });
+    });
     $('[data-toggle="popover"]').popover();
   if ($('.is-home-page')[0]) {
     showTabsAccordingToTheme(selected_theme);

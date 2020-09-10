@@ -205,6 +205,128 @@
                     %span.pl-15 Yes      
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Add Unit Stops Based in Availability
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
+                  %label.label-primary{:for => "automate_unit_stop"}
+                  %span.pl-15 Yes 
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Scheduler Widget
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget, class: "scheduler_widget"
+                  %label.label-primary{:for => "scheduler_widget"}
+                  %span.pl-15 Yes      
+            / .form-group
+            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            /     Add fields to the registration page
+            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            /     .TriSea-technologies-Switch
+            /       %span.pr-15 No
+            /       = check_box_tag :show_checklist, true, @tour_setting.show_checklist, class: "show_checklist"
+            /       %label.label-primary{:for => "show_checklist"}
+            /       %span.pl-15 Yes 
+            .div_checklist.hidden{:style => "margin-left: 60px;"}
+              %label Select Fields for Schedule Widget:
+              .form-group{:style => "height: 190px; margin-top: ;"}
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :show_first_name, true, @tour_setting.show_first_name.nil? ? true :  @tour_setting.show_first_name
+                        %label Name
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :show_phone, true, @tour_setting.show_phone.nil? ? true : @tour_setting.show_phone
+                        %label Phone
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom.nil? ? true : @tour_setting.show_desired_bedroom
+                        %label Desired bedrooms
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date.nil? ? true : @tour_setting.show_desired_move_in_date
+                        %label Desired move-in date    
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
+                        %label Credit card required                                        
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display name
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_first_name, true, @tour_setting.show_first_name, class: "show_first_name"
+              /       %label.label-primary{:for => "show_first_name"}
+              /       %span.pl-15 Yes 
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display last name
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_last_name, true, @tour_setting.show_last_name, class: "show_last_name"
+              /       %label.label-primary{:for => "show_last_name"}
+              /       %span.pl-15 Yes 
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display phone
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_phone, true, @tour_setting.show_phone, class: "show_phone"
+              /       %label.label-primary{:for => "show_phone"}
+              /       %span.pl-15 Yes 
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display email
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_email, true, @tour_setting.show_email, class: "show_email"
+              /       %label.label-primary{:for => "show_email"}
+              /       %span.pl-15 Yes   
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display desired bedroom
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom, class: "show_desired_bedroom"
+              /       %label.label-primary{:for => "show_desired_bedroom"}
+              /       %span.pl-15 Yes   
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Display desired move in date
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date, class: "show_desired_move_in_date"
+              /       %label.label-primary{:for => "show_desired_move_in_date"}
+              /       %span.pl-15 Yes       
+                       
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Dotted line color
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
@@ -641,6 +763,9 @@
   }
   var min_floor = #{@community.is_sitemap ? 99999 : @community.floorplates.map{|f| f.floors}.flatten.min rescue 99999}
 
+  var div_checklist = "#{@community.scheduler_widget.nil? ? true : @community.scheduler_widget}"
+  if(div_checklist == "true")
+    $('.div_checklist').removeClass('hidden');
   $(document).ready(function() {
   if (window.location.href.includes('floorNo'))
   {

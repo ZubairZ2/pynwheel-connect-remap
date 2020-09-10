@@ -20,6 +20,7 @@ class Tour < ApplicationRecord
   has_many :chatrooms, dependent: :destroy
 
   has_one :path, as: :map_path
+  has_one :tour_setting
   has_many :path_points, through: :path
 
 end

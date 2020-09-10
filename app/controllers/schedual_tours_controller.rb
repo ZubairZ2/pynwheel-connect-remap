@@ -5,7 +5,7 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
-    @schedual_tours = SchedualTour.where(community_id: @community.id).order('tour_time').order('tour_date')
+    @schedual_tours = SchedualTour.where(community_id: @community.id).order('tour_time').order('tour_date') rescue ""
   end
 
   # GET /schedual_tours/1
@@ -33,6 +33,7 @@ class SchedualToursController < ApplicationController
     # tu.name = params[:tour_user][:name] if tu.present?
     tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
     tu.phone_number = phone_number if phone_number.present?
+    tu.desired_bedroom = params[:desired_bedroom]
 
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
@@ -54,7 +55,7 @@ class SchedualToursController < ApplicationController
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
       end
-      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back[:id] : nil)
+      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back[:id] : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom])
 
       begin
         sent_notifications = send_email_and_other_notifications schedual_tour
@@ -275,16 +276,20 @@ Android Users: Download #{community_text} from Google Play #{app_link}
     end
 
     def make_phone
-      user_phone = params[:tour_user][:phone_number].sub(/^[0]+/,'')
-      user_phone = trim_leading('\+', user_phone) if user_phone.starts_with? '+'
+      begin
+        user_phone = params[:tour_user][:phone_number].sub(/^[0]+/,'')
+        user_phone = trim_leading('\+', user_phone) if user_phone.starts_with? '+'
 
-      c = ISO3166::Country.new(params[:country_code])
-      if user_phone.starts_with? c.country_code
-        user_phone = "+#{user_phone}"
-      else
-        user_phone = "+#{c.country_code}#{user_phone}"
+        c = ISO3166::Country.new(params[:country_code])
+        if user_phone.starts_with? c.country_code
+          user_phone = "+#{user_phone}"
+        else
+          user_phone = "+#{c.country_code}#{user_phone}"
+        end
+        user_phone
+      rescue => ex
+        ""
       end
-      user_phone
     end
 
     def trim_leading chr, str

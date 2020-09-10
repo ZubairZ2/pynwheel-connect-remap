@@ -1,7 +1,7 @@
 
 %header.main-header
   / Logo
-  - if current_user.is_community_manager?
+  - if current_user.is_community_manager? || current_user.is_view_visitor_details_page?
     %a.logo{:href => '#'}
       / mini logo for sidebar mini 50x50 pixels
       %span.logo-mini
@@ -30,7 +30,7 @@
     .navbar-custom-menu
       - if user_signed_in?
         %ul.nav.navbar-nav
-          - if current_community.present? and current_community.chat_control
+          - if current_community.present? and current_community.chat_control and !current_user.is_view_visitor_details_page?
             %li.mt-5
               %a.btn.mr-5.notification#widget-button{"data-name"=>"visitor", "data-target" => "#ChatSupport", "data-toggle" => "modal", "data-href" => "url", style: "background: #20a345; color:white;  height: 34px;padding-top: 7px; border-radius: 4px; margin-right: 14px;"}
                 %i.fa.fas.fa-comment.fa-lg
@@ -51,6 +51,7 @@
             %li.mt-5
               = link_to "Account Report" , community_account_report_path(current_community) , :class=>"btn mr-5", style: "background: #138fd4; color:white;  height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"
           - if current_community.present? and current_community.touchscreen_app
+
             %li.mt-5
               %input#publish_changes{:type => "button", :value => "How to Publish Changes" ,:class => "btn btn-primary"}/
           %li.hidden

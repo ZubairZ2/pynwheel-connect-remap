@@ -545,7 +545,18 @@ class CommunitiesController < ApplicationController
     @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
     @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
 
+    @tour_setting = @tour.tour_setting
+    @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
+    @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
+    @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
+    @tour_setting.show_last_name = params[:show_last_name].present? ? params[:show_last_name] : false
+    @tour_setting.show_phone = params[:show_phone].present? ? params[:show_phone] : false
+    @tour_setting.show_email = params[:show_email].present? ? params[:show_email] : false
+    @tour_setting.show_desired_bedroom = params[:show_desired_bedroom].present? ? params[:show_desired_bedroom] : false
+    @tour_setting.show_desired_move_in_date = params[:show_desired_move_in_date].present? ? params[:show_desired_move_in_date] : false 
 
+    @tour_setting.save
+    
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
