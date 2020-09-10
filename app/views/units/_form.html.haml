@@ -99,25 +99,28 @@
       %select.form-control#remote_lock{name: "remote_lock"}
       %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
         %a#a-lock.btn-text-color{href: "#"} Update selected lock
-  
+
 - if @community.touchscreen_app
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Details
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+        %span#propertyDetailNameText
+          This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+- if @community.self_tour
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Directional Text
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+        %span#propertyDetailNameText
+          This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
 
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Directional Text
-    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-      %span#propertyDetailNameText
-        This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
-    %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
+      %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
 -#.form-group
 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 -#    Available
