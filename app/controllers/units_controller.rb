@@ -16,18 +16,8 @@ class UnitsController < ApplicationController
   end
 
   def crop_unit_image
-    # com = Community.find 2140
-    #
     @community = Community.find params["community_id"]
     @unit = Unit.find params["id"]
-    # byebug
-    # com.logo = @floorplan.image
-    # @floorplan.image = Amenity.last.image
-    # @floorplan.save
-    # @floorplan.image = com.logo
-    # @floorplan.save
-    # @community = Community.find params["community_id"]
-    # @floorplan = Floorplan.find params["id"]
     if @unit.crop_x == params[:unit][:crop_x].to_f
       @unit.do_crop = false
     else
@@ -41,7 +31,7 @@ class UnitsController < ApplicationController
     @unit.crop_w = params[:unit][:crop_w]
     @unit.crop_h = params[:unit][:crop_h]
     @unit.image_bit = true
-    @unit.save
+    @unit.save!
     # PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
     redirect_to edit_community_unit_path(@community,@unit)
@@ -125,6 +115,13 @@ class UnitsController < ApplicationController
   end
 
   def update
+    if params[:unit][:image]
+      @unit.crop_x = nil
+    end
+    if params[:unit][:secondary_image]
+      @unit.crop_x_secondary = nil
+    end
+    @unit.image_bit = nil
     if params[:remote_lock].present?
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
       remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: params[:unit][:marketing_name])
