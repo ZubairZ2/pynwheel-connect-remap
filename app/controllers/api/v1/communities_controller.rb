@@ -199,6 +199,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     @tour_user = TourUser.find_by(id: params[:tour_user_id])
     @scheduled_tour = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
 
+    @building_list = @floor_list = []
+
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+
     current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
     current_time = current_time.to_datetime
 
