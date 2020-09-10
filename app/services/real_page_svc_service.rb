@@ -563,6 +563,7 @@ class RealPageSvcService < BaseService
           end
         end
 
+
       rescue => e
         begin
           cred = Credential.find credentials.id
