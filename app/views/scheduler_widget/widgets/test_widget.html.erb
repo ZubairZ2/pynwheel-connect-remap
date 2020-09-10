@@ -670,6 +670,8 @@
           var visiting_times = <%= raw @visiting_times %>
           var error_messages = <%= raw @error_message %>
           var selected_date = $(".datepickertime").val()
+          var matched = false
+          var error
           selected_day = moment(selected_date).format('dddd')
           selected_time = moment(selected_date).format('HH:mm')
           // debugger
@@ -681,19 +683,22 @@
                 var end = getMinutes(visiting_times[d_t][2]);
                 var selected = getMinutes(selected_time);
 
-                if ((selected > start) && (selected < end)) {
+                if ((selected >= start) && (selected <= end)) {
+                  matched = true
                   schedual_my_tour($(this))
                 }
                 else{
                   $("#not-visiting-hours").removeClass('hidden')
                   for(var each in error_messages){
                     if (visiting_times[d_t][0] == error_messages[each][0]){
-                      $("#not-visiting-hours").addClass('color-red').text(error_messages[each][1])
+                      error = error_messages[each][1]
                     }
                   }
                 }
               }
             }
+            if (matched == false)
+              $("#not-visiting-hours").addClass('color-red').text(error)
           }
           else{
             schedual_my_tour($(this))
