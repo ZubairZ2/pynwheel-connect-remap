@@ -310,30 +310,31 @@ class Api::V1::CommunitiesController < ActionController::Base
     @tour = @community.tour
     
     stops_arr = []
-      if @community.is_sitemap
-        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
-      else
-        @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
-          if @community.tour.sort_hash[floor.to_s].present?
-            @community.tour.sort_hash[floor.to_s].each do |s_id|
-              if (s_id.present?)
-                stop = (TourStop.find_by_id(s_id))
-                stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
-              end
+    if @community.is_sitemap
+      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+    else
+      @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+        if @community.tour.sort_hash[floor.to_s].present?
+          @community.tour.sort_hash[floor.to_s].each do |s_id|
+            if (s_id.present?)
+              stop = (TourStop.find_by_id(s_id))
+              stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
             end
           end
         end
       end
+    end
 
-      stops_arr = stops_arr.compact.map{|x| x.id}.uniq
-      
-      un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
-      @visited_stops = []
-      stops_arr.each do |val|
-        if un_ordered_visited_stops.include?(val)
-          @visited_stops << val
-        end
+    stops_arr = stops_arr.compact.map{|x| x.id}.uniq
+
+    un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
+    @visited_stops = []
+    stops_arr.each do |val|
+      if un_ordered_visited_stops.include?(val)
+        @visited_stops << val
       end
+    end
+ 
     # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
     @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
     
