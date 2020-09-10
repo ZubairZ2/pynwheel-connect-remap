@@ -52,7 +52,7 @@ class UnitsController < ApplicationController
       render json: {locks: RemoteLock.where(edge_state_id: es.id)}
     end
   end
-
+ 
   def clear_locks
     unit = Unit.find params[:id]
     unit.remote_locks.delete_all
