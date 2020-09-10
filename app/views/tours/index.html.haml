@@ -178,12 +178,7 @@
             /       = check_box_tag :show_checklist, true, @tour_setting.show_checklist, class: "show_checklist"
             /       %label.label-primary{:for => "show_checklist"}
             /       %span.pl-15 Yes 
-            .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
-              .form-group.hidden#grace_time_period
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{style:"margin-right: -35px;"}
-                  Grace period
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  %input.day-list.max-users-v{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}
+            
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Scheduler Widget
