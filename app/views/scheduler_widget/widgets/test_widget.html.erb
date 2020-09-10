@@ -297,6 +297,7 @@
         document.getElementById('user_time_zone').value = jstz.determine().name();
         // -new Date().getTimezoneOffset()/60;
       })
+      var steps = <%= @stepping %>
       var success = "<%= flash[:success]  %>";
       var credit_card_required = <%= @credit_card_required %>
       // debugger
@@ -611,7 +612,7 @@
           showClose: true,
           useCurrent: true,
           toolbarPlacement: "bottom",
-          stepping: 15,
+          stepping: steps,
           daysOfWeekDisabled: days_disabled
         });
         $('.datepicker').datepicker({

@@ -365,6 +365,7 @@
       %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: green; display: none;"}
       %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: white"}
       %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same time exists or invalid time
+
       .box-body{style: "padding: 0px 20px !important;"}
         .row
           .col-lg-12 
@@ -1369,6 +1370,11 @@
                 {
                   return true;
                 }
+
+                if(check_index[j].split('-')[0] <= check_index[k].split('-')[0] && check_index[j].split('-')[1] >= check_index[k].split('-')[0])
+                {return true;}
+                if(check_index[j].split('-')[0] <= check_index[k].split('-')[1] && check_index[j].split('-')[1] >= check_index[k].split('-')[1])
+                {return true;}
 
 
                 }
