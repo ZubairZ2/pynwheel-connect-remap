@@ -21,6 +21,7 @@ class CommunitiesController < ApplicationController
 
   def create
     @community = current_company.communities.new(community_params)
+    @community.lincoln_app = true if current_company.name.downcase.include?("lincoln") rescue nil
     if @community.save
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
@@ -51,6 +52,17 @@ class CommunitiesController < ApplicationController
     end
     if params[:community][:secondary_image]
       @community.crop_x_secondary = nil
+    end
+    if params[:community][:restrict_access].present?
+      if params[:community][:allowed_emails].present?
+        @community.allowed_emails.destroy_all
+        allowed_emails = params[:community][:allowed_emails].split(',').map(&:lstrip)
+        allowed_emails.each do |email|
+          @community.allowed_emails.create(email: email)
+        end
+      else
+        @community.allowed_emails.destroy_all
+      end
     end
     @community.image_bit = nil
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
@@ -83,6 +95,7 @@ class CommunitiesController < ApplicationController
           format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       else
+        inner_check = true
 
         if @community.company_id != params[:community][:company_id].to_i
           # @community.community_group_id = nil
@@ -91,24 +104,39 @@ class CommunitiesController < ApplicationController
         @community.date_activated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "0")
         @community.date_inactivated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "1")
         params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
+        if params[:community][:show_map].present?
+          if @community.show_map == false &&  params[:community][:show_map] == "1"
+            ts = TourStop.where(tour_id: @community.tour.id, latitude: nil,longitude: nil)
+            ts1 = TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0)
+            ts.destroy_all if ts.present?
+            ts1.destroy_all if ts1.present?
 
-        if @community.update(community_params)
-          @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
-          if params[:community][:name].present?
-            format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
-          else
-            format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+            # if TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0).present?
+            #   format.html { redirect_to community_settings_page_path(current_community),error: 'Please remove tour stop that are not plotted on property map.' }
+            #   flash[:error] = "Please remove tour stop that are not plotted on property map."
+            #   inner_check = false
+            # end
           end
-          format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
-        else
-          flash[:error] = @community.errors.full_messages.join(',')
-          if params[:community][:name].present?
-            format.html { render :edit }
+        end
+        if inner_check
+          if @community.update(community_params)
+            @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
+            if params[:community][:name].present?
+              format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
+            else
+              format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
+            end
+            format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
           else
-            format.html { render :settings_page }
+            flash[:error] = @community.errors.full_messages.join(',')
+            if params[:community][:name].present?
+              format.html { render :edit }
+            else
+              format.html { render :settings_page }
+            end
+            message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
+            format.js {render js: "$('#flash-message').html('#{message}')"}
           end
-          message = '<div class="alert alert-warning">'+@community.errors.full_messages.join(',')+'</div>'
-          format.js {render js: "$('#flash-message').html('#{message}')"}
         end
       end
     end
@@ -145,6 +173,8 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Logo updated successfully.</div>'
     elsif params[:community][:secondary_logo].present?
       '<div class="alert alert-success">Home Page Logo updated successfully.</div>'
+    elsif params[:community][:self_tour_logo].present?
+      '<div class="alert alert-success">Home Page Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
       # elsif params[:overlay_tab].present?
@@ -174,6 +204,10 @@ class CommunitiesController < ApplicationController
     elsif params[:community][:design_attributes][:home_screen_attributes].present?
       '<div class="alert alert-success">Landing page button uploaded successfully.</div>'
     end
+  end
+  def make_cordinate
+    address = Geocoder.coordinates(params[:address])
+    render :json=>{"cord"=> address }
   end
   def change_expressionist_default
     # d = Community.find(params[:community_id]).design
@@ -216,6 +250,7 @@ class CommunitiesController < ApplicationController
     render :json=>{"status"=>"Importing"}
   end
 
+  
   def test_connection
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
@@ -297,7 +332,7 @@ class CommunitiesController < ApplicationController
     worksheet.write(0, 12, "Data Provider",format)
     worksheet.write(0, 13, "Self Tour (Yes/No)",format)
     worksheet.write(0, 14, "Active/Inactive",format)
-    worksheet.write(0, 15, "Date Activated",format)
+    worksheet.write(0, 15, "Subscription Start Date",format)
     worksheet.write(0, 16, "Date Inactivated",format)
     worksheet.write(0, 17, "Billing Month",format)
     worksheet.write(0, 18, "Billing Rate",format)
@@ -333,7 +368,7 @@ class CommunitiesController < ApplicationController
         worksheet.write(row, 14, community.locked.present? ? (community.locked ? "Inactive" : "Active") : "Active",format1)
         worksheet.write(row, 15, community.date_activated,format1)
         worksheet.write(row, 16, community.date_inactivated,format1)
-        worksheet.write(row, 17, community.billing_type == "annual" ? "Annual" : "Monthly (#{community.billing_month})",format1)
+        worksheet.write(row, 17, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly",format1)
         worksheet.write(row, 18, community.billing_rate,format1)
 
         row = row + 1
@@ -491,10 +526,26 @@ class CommunitiesController < ApplicationController
   end
   def save_tour_settings
     @community = Community.find params[:community_id]
+    @tour = @community.tour
     @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+    @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
+    @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
+    @tour.marker_icon_size = params[:marker_icon_size]
     @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
     @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
     @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
+    @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
+    @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
+    @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
+    @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
+    @tour.credit_card_required = params[:credit_card_required].present? ? true : false
+    @tour.save
+    @community.show_camera_button = params[:show_camera_button].present? ? true : false
+    @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+    @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
+    @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
+
+
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
@@ -545,14 +596,16 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
+    cookies[:community_id] = params[:id]
     @community = Community.find params[:id]
+    @community.update_attributes(is_chat_login: true)
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,
-      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :self_tour, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
+    params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
-        :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
+      :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
         :futurist_property_map_marker_color, :expressionist_property_map_marker_color, :panther_property_map_marker_color, :futurist_amenity_map_marker_color,:expressionist__amenity_map_marker_color,
         :panther_amenity_map_marker_color,:futurist_property_map_size,:expressionist_property_map_size,:panther_property_map_size,:modernist_property_map_size, :futurist_amenity_map_size, :expressionist_amenity_map_size, :panther_amenity_map_size, :modernist_amenity_map_size,

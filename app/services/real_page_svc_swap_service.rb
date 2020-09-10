@@ -438,7 +438,10 @@ class RealPageSvcSwapService < BaseService
               end
               #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
               unit.floor = u[:UnitDetails][:FloorNumber] rescue nil
-              if u[:Availability][:AvailableDate].present?
+              if u[:Availability][:MadeReadyDate].present?
+                madeReadyDate = u[:Availability][:MadeReadyDate].split("/")[1] + "/" + u[:Availability][:MadeReadyDate].split("/")[0] + "/" + u[:Availability][:MadeReadyDate].split("/")[2]
+                unit.available_date = madeReadyDate
+              elsif u[:Availability][:AvailableDate].present?
                 availableDate = u[:Availability][:AvailableDate].split("/")[1] + "/" + u[:Availability][:AvailableDate].split("/")[0] + "/" + u[:Availability][:AvailableDate].split("/")[2]
                 unit.available_date = availableDate
               end
@@ -504,7 +507,10 @@ class RealPageSvcSwapService < BaseService
                 unit.floor = u[:UnitDetails][:FloorNumber] rescue nil
               end
               unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
-                if u[:Availability][:AvailableDate].present?
+                if u[:Availability][:MadeReadyDate].present?
+                  madeReadyDate = u[:Availability][:MadeReadyDate].split("/")[1] + "/" + u[:Availability][:MadeReadyDate].split("/")[0] + "/" + u[:Availability][:MadeReadyDate].split("/")[2]
+                  unit.available_date = madeReadyDate
+                elsif u[:Availability][:AvailableDate].present?
                   availableDate = u[:Availability][:AvailableDate].split("/")[1] + "/" + u[:Availability][:AvailableDate].split("/")[0] + "/" + u[:Availability][:AvailableDate].split("/")[2]
                   unit.available_date = availableDate
                 end

@@ -5,10 +5,10 @@
     .mt-35
     .box.box-widget.panel-box{ :style => "padding: 10px" }
       .row
-        .col-md-6{:style => "transform:rotate(90deg);-ms-transform: rotate(90deg);-o-transform: rotate(90deg);-moz-transform: rotate(90deg);-webkit-transform: rotate(90deg); margin: 102px 0;"}
-          = image_tag @visitor.image.present? ? @visitor.image.url : "default.jpeg",:height=>"100%", :width=>"100%"
-        .col-md-6{:style => "transform:rotate(90deg);-ms-transform: rotate(90deg);-o-transform: rotate(90deg);-moz-transform: rotate(90deg);-webkit-transform: rotate(90deg); margin: 102px 0;"}
-          = image_tag @visitor.id_card.present? ? @visitor.id_card.url : "default.jpeg",:height=>"100%",:width=>"100%"
+        .col-md-6{:style => " margin: 102px 0;"}
+          = image_tag @visitor.image.present? ? @visitor.image.url : "default.jpeg",:width=>"550px"
+        .col-md-6{:style => " margin: 102px 0;"}
+          = image_tag @visitor.id_card.present? ? @visitor.id_card.url : "default.jpeg",:width=>"550px"
       %hr
       .row
         .col-md-6

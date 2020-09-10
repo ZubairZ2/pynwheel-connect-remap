@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-
+  mount ActionCable.server => '/cable'
   get 'tour_users/index'
 
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
@@ -20,16 +20,22 @@ Rails.application.routes.draw do
   
   get 'tours/index'
 
-  namespace :schedular_widget do
+  namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
-    get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
+    # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
     
   end 
+  get 'scheduler/change_schedule_tour_time/:id', to: 'scheduler_widget/widgets#change_tour_time_widget', as: :change_tour_time
 
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
+  
+  resources :chatrooms
+  resources :chats
+  get 'listening_message', to: 'chats#listening_message' 
+  post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages' 
   
   resources :companies do
     resources :communities
@@ -46,6 +52,17 @@ Rails.application.routes.draw do
       get :add_community
       post :save_community
     end
+    resources :group_design do
+      member do
+        post :save_home_page_images
+        get :show_image_in_modal
+        put :update_home_page_images
+        delete :delete_home_page_image
+        delete :delete_home_page_video
+        get :upload_video_direct
+        post :set_loop_type
+      end
+    end
   end
   resources :communities do
     member do
@@ -58,6 +75,15 @@ Rails.application.routes.draw do
       post :invitation_communities
       post :selected_communities
     end
+
+    resources :remote_locks do
+      collection do
+        get :authorization_code
+        get :client_credentials
+      end
+    end
+
+    resources :edgestate_accounts
 
     post :save_gallery_settings
     post :save_tour_settings
@@ -74,6 +100,7 @@ Rails.application.routes.draw do
     get :clone_community
     get :change_expressionist_default
     get :test_connection
+    post :make_cordinate
     get :account_report
     get :psi_pricing_test_connection
     get :psi_space_configuration_test_connection
@@ -81,6 +108,11 @@ Rails.application.routes.draw do
     get :show_realpage_pricing_data
     post :save_temporary_image
     delete :delete_temporary_image
+    resources :schedual_tours do
+      # post :create_tour_user_from
+      # member do
+      # end
+    end
     resources :floorplans do
       resources :amenities,controller: "floorplan_amenities" do
         post :plot_amenity
@@ -128,10 +160,12 @@ Rails.application.routes.draw do
       end
       member do
         get :edit_amenity_gallery_image
+        post :load_remotelock_data
+        post :clear_locks
       end
     end
     resources :tour_users do
-
+        get :lock_ploting
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
@@ -152,6 +186,7 @@ Rails.application.routes.draw do
       get :plotexp
       get :grid_overlay
       post :adjust_marker_positions
+      get :floatplate_images
     end
     resources :units do
       resources :amenities,controller: "unit_amenities" do
@@ -173,6 +208,8 @@ Rails.application.routes.draw do
         delete :remove_plot
         delete :remove_plot_from_floorplate
         post :adjust_position
+        post :load_remotelock_data
+        post :clear_locks
       end
       collection do
         post :set_floor
@@ -233,6 +270,9 @@ Rails.application.routes.draw do
     end
 
     resources :tours, only: :index do
+      collection do
+        post :save_opening_hours
+      end
       resources :tour_stops do
         member do
           delete :resetTourStopPoint
@@ -241,10 +281,12 @@ Rails.application.routes.draw do
       collection do
         post :save_starting_point
         post :sort_stops
+        post :display_stop
         post :save_tour_settings
         get :starting_point
         get :select_stops
         get :edit_amenity
+        get :test_automate
       end
       member do
         post :ajaxplotstartingpoint
@@ -343,6 +385,8 @@ Rails.application.routes.draw do
           post :login
           get :list_communities
           get :portico_list_communities
+          post :portico_list_communities
+          post :lincoln_list_communities
           post :update_version
         end
       end

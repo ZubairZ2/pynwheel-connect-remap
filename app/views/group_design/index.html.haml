@@ -1,0 +1,418 @@
+- content_for :title, "Design - Pynwheel"
+.divLoading.hidden
+%section.is-community-page
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-home
+        = @community_group.name.capitalize
+        %br
+          -if current_user.is_super_admin?
+            %small.text-primary
+              = @community_group.code
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Design
+          %span Home Page
+
+      = form_for @group_design,:url=>"/community_groups/#{@community_group.id}/group_design/#{@community_group.group_design.id}",:html=>{:class=>"form-horizontal"} do |d|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Position of logo
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :logo_position , options_for_select(home_page_position_of_logo,d.object.logo_position.present? ? d.object.logo_position : "Centre"),{},{class: "form-control",id: ""}
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Size of logo
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :logo_size , options_for_select(home_page_logo_size,d.object.logo_size.present? ? d.object.logo_size : "487x160"),{},{class: "form-control",id: ""}
+
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button shape
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape.present? ? d.object.button_shape : "Rectangular"),{},{class: "form-control",id: ""}
+
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button width
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_width , options_for_select(home_page_button_width,d.object.button_width.present? ? d.object.button_width : "450px"),{},{class: "form-control",id: ""}
+
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button height
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_height , options_for_select(button_height_options,d.object.button_height.present? ? d.object.button_height : "150px"),{},{class: "form-control",id: ""}
+
+              -#.row
+              -#  .col-lg-12
+              -#    .form-group.mt-30
+              -#      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#        Button Spacing
+              -#      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#        = d.select :button_spacing , options_for_select(spacing_between_buttons_options,d.object.button_spacing.present? ? d.object.button_spacing : "10px"),{},{class: "form-control",id: ""}
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Button  color
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .input-group.colorpicker-style.hex-format-colorpicker
+                    .input-group-addon
+                      %i
+                      = d.text_field :button_color , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.button_color.present? ? d.object.button_color : "#3B3B3B"
+
+              -#.row
+              -#  .col-lg-12
+              -#    .form-group.mt-30
+              -#      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#        Button  color
+              -#      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#        = d.select :button_color , options_for_select(spacing_between_buttons_options,d.object.button_color.present? ? d.object.button_color : "10px"),{},{class: "form-control",id: ""}
+
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button opacity
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_opacity , options_for_select(opacity_options,d.object.button_opacity.present? ? d.object.button_opacity : "100%"),{},{class: "form-control",id: ""}
+
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button border side
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_border_side , options_for_select(border_options,d.object.button_border_side.present? ? d.object.button_border_side : "All sides"),{},{class: "form-control",id: ""}
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Button border color
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .input-group.colorpicker-style.hex-format-colorpicker
+                    .input-group-addon
+                      %i
+                      = d.text_field :button_border_color , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.button_border_color.present? ? d.object.button_border_color : "#3B3B3B"
+
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button border opacity
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_border_opacity , options_for_select(opacity_options,d.object.button_border_opacity.present? ? d.object.button_border_opacity : "100%"),{},{class: "form-control",id: ""}
+
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button border thickness
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_border_thickness , options_for_select(global_navigation_border_thickness_space,d.object.button_border_thickness.present? ? d.object.button_border_thickness : "0px"),{},{class: "form-control",id: ""}
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button font family
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_font_family , options_for_select(font_families,d.object.button_font_family),{},{class: "form-control",id: ""}
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Button font size
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :button_font_size , options_for_select(font_sizes,d.object.button_font_size.present? ? d.object.button_font_size : "18px"),{},{class: "form-control",id: ""}
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Button font color
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .input-group.colorpicker-style.hex-format-colorpicker
+                    .input-group-addon
+                      %i
+                      = d.text_field :button_font_color , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.button_font_color.present? ? d.object.button_font_color : "#3B3B3B"
+
+                      -#- if gables_theme(@community)
+                      -#  = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
+
+              .row
+                .col-lg-12
+                  .form-group.mt-30
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Bouncing effect
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = d.select :bouncing_effecting , options_for_select(["bouncing effects","none"],d.object.bouncing_effecting.present? ? d.object.bouncing_effecting : "none"),{},{class: "form-control",id: ""}
+
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "margin-left: 0px"}
+                  Display button text
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = d.check_box :display_button_text, {class: ""}
+                    %label.label-primary{:for => "group_design_display_button_text"}
+                    %span.pl-15 Yes
+              
+
+              -#%label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.global_navigation_heading{:style => "font-size: 18px;  color: #ee3b31;"}
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "margin-left: 0px"}
+                  Display button image
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = d.check_box :display_button_image, {class: ""}
+                    %label.label-primary{:for => "group_design_display_button_image"}
+                    %span.pl-15 Yes
+              .form-group.hidden#button_image_div
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Button image
+
+                  -#%span
+                  -#  Upload logo for this community group.
+                  -#  %br/
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .image-box.video-box
+                    .images.height-200
+                      %a.preview-image{:href=>d.object.background_image.present? ? d.object.background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
+                        = image_tag d.object.background_image.present? ? d.object.background_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-community-group-homepage-background-image", :style => "max-height: 190px; max-width: 270px;"
+                  %span.btn.btn-default.black-button.btn-sm.btn-file
+                    Select Image
+                    = d.file_field :background_image
+
+              -#.form-group
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Background Video
+              -#
+              -#    -#%span
+              -#    -#  Upload logo for this community group.
+              -#    -#  %br/
+              -#
+              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#    .image-box.video-box
+              -#      .images.height-200
+              -#        = image_tag d.object.video.present? ? d.object.video.url : "default.jpeg",:height=>"",:width=>"170",:id=>"group_design_homepage_video", :style => "max-height: 190px; max-width: 270px;"
+              -#    %span.btn.btn-default.black-button.btn-sm.btn-file#file-load
+              -#      Select Image
+              -#      = d.file_field :video
+              -#.form-group
+              -#  %h4.mt-30
+              -#    Select Home Page Type
+              -#    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
+              -#      %span#propertyDetailNameText
+              -#        Changing the Home Page Type will change whether the home page shows a video or slideshow.
+              -#    .row
+              -#      .col-lg-12
+              -#        .form-group
+              -#          .radio.radio-primary.pull-left
+              -#            %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>d.object.has_images_loop_type? ? false : false}
+              -#              %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
+              -#                Images
+              -#          .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
+              -#            %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>d.object.has_video_loop_type? ? true : true}
+              -#              %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
+              -#                Video
+        .box-footer
+          = link_to "CANCEL" , edit_community_group_path(@community_group), :class=>"btn btn-default pull-right"
+          = d.submit "SUBMIT", :class=>"btn btn-success pull-right mr-10"
+    .form-group
+      %h4.mt-30
+        Select Home Page Type
+        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
+          %span#propertyDetailNameText
+            Changing the Home Page Type will change whether the home page shows a video or slideshow.
+        .row
+          .col-lg-12
+            .form-group
+              .radio.radio-primary.pull-left
+                %input#upload_type{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>@group_design.loop_type == "images" ? true : false}
+                  %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
+                    Images
+              .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
+                %input#upload_type1{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>@group_design.loop_type == "videos"  ? true : false}
+                  %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
+                    Video
+    .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
+      #myTabContent.tab-content
+        #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
+          .row
+            .col-lg-12
+
+              .title-home
+                %h4
+                  Slide Show Images
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "slideShowImagePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Adding files will add images to the home page slide show. You can drag and drop the images below to rearrange them.
+                  .br
+                  %h4#slide_show_span
+                    Images will appear at a size of 1920 x 1080 px. Please note that images that are too small may appear pixelated.
+
+
+                %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#group-home-page-image-upload-holder').click();"}
+                  %i.fa.fa-plus-circle
+                  Add Files
+                  /   %input#home-page-images{:type => "file",:multiple=>"multiple"}
+                  -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 40px;"}
+                  -#  %i.fa.fa-plus-circle
+                  -#  DONE
+          .row
+            .col-lg-12
+              .pull-right
+          #images-index
+            = render 'group_design/homepage_images'
+        #video-slide.tab-pane.fade{:role => "tabpanel"}
+          .row
+            .col-lg-12
+              .title-home
+                %h4 Video Show
+                %h4#slide_show_span
+                  Home Page video size limit is 500MB.
+
+                  / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
+                  -#%input#add_video{:type => "file",:multiple=>"multiple"}
+                %span.btn.btn-success.btn-file.text-UP#file-load1
+                  %i.fa.fa-plus-circle
+                  Add Video
+                %div{:style => "margin-left: 125px;"}
+                  %i.propertyDetailName.fa.fa-question-circle{:style => " margin-top: 10px;"}
+                    %span#propertyDetailNameText
+                      Adding a video file (MP4 files only) will change the video that appears on the the home page.
+                  /     = f.file_field :video
+                  -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 15px;"}
+                  -#  %i.fa.fa-plus-circle
+                  -#  DONE
+
+
+          .slide-imgage-boxs
+            #videos-index
+            = render 'group_design/homepage_video'
+
+      = direct_upload_form_for @uploader, :id => "direct_form" do |f|
+        = f.file_field :avatar, :id => "video_field",:class => "hidden"
+        = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
+#edit-group-image.modal.fade.edit-image
+:javascript
+  var community_group_id = "#{@community_group.id}"
+  var group_design_id = "#{@group_design.id}"
+  $("#file-load1").on('click', function(e) {
+    $('#video_field').click();
+  });
+  if(localStorage.getItem("image_radio") == "true" || localStorage.getItem("image_radio") == null)
+  {
+    $('#video-slide').removeClass('active');
+    $('#video-slide').removeClass('in');
+    $('#image-slide').addClass('active');
+    $('#image-slide').addClass('in');
+    $("#upload_type").prop('checked',true)
+    $("#upload_type1").prop('checked',false)
+  }
+  else
+  {
+    $('#image-slide').removeClass('active');
+    $('#image-slide').removeClass('in');
+    $('#video-slide').addClass('active');
+    $('#video-slide').addClass('in');
+    $("#upload_type").prop('checked',false)
+    $("#upload_type1").prop('checked',true)
+  }
+
+  $("#upload_type").on('change', function(e) {
+  saveLoopTypeForGroup(true)
+    localStorage.setItem("image_radio", true);
+    localStorage.setItem("video_radio", false);
+      $('#image-slide').addClass('active');
+      $('#image-slide').addClass('in');
+      $('#video-slide').removeClass('active');
+      $('#video-slide').removeClass('in');
+  });
+  $("#upload_type1").on('change', function(e) {
+  saveLoopTypeForGroup(false)
+    localStorage.setItem("video_radio", true);
+    localStorage.setItem("image_radio", false);
+
+     $('#image-slide').removeClass('active');
+     $('#image-slide').removeClass('in');
+     $('#video-slide').addClass('active');
+     $('#video-slide').addClass('in');
+  });
+  $("#file-load-drop").on('drop', function(e) {
+    // $("#video_submit").click();
+  });
+
+  $("#group_design_background_image").change(function(){
+      readCommunityGroupHomepageImageURL(this);
+  });
+  var display_button_image = "#{@group_design.display_button_image}"
+  if(display_button_image == "true"){
+    $('#button_image_div').removeClass('hidden');
+    }
+
+  $('#group_design_display_button_image').change(function(){
+    if($(this).is(':checked')){
+        $('#button_image_div').removeClass('hidden');
+      }
+    else{
+        $('#button_image_div').addClass('hidden');
+     }
+  });
+  function dropHandler(e)
+  {
+    if (e.dataTransfer.files[0].size < 500000000)
+    {
+      if (e.dataTransfer.files[0].type == "video/mp4")
+      {
+        $(".divLoading").removeClass("hidden");
+        e.preventDefault();
+        console.log(e.dataTransfer);
+        video_field.files = e.dataTransfer.files;
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  }
+  $("#video_field").on('change', function(e) {
+    if (e.currentTarget.files[0].size < 500000000)
+    {
+      if (e.currentTarget.files[0].type == "video/mp4")
+      {
+        $(".divLoading").removeClass("hidden");
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  });

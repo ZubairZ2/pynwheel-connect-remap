@@ -7,6 +7,7 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
   helper_method :current_company
+  before_action :load_tour_users_chats
   def current_community
   	if params[:community_id].present?
 	  	@community ||= Community.find params[:community_id]
@@ -14,6 +15,7 @@ class ApplicationController < ActionController::Base
 		  @community ||= Community.find params[:id]
 	  end  	
   end
+  
   def info_for_paper_trail
     { community_id: (current_community.present? ? current_community.id : nil),company_id: (current_company.present? ? current_company.id : nil) }
   end
@@ -43,8 +45,17 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_out_path_for(resource_or_scope)
+    if cookies[:community_id].present?
+      community = Community.find cookies[:community_id]
+      community.update_attributes(is_chat_login: false)
+    end
     new_user_session_path
   end
+
+  def after_sign_in_path_for(resource_or_scope)
+    root_url
+  end
+
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?
@@ -63,6 +74,45 @@ class ApplicationController < ActionController::Base
       end
     end
   end
+
+  def generate_remotelock_token
+      # do block will only execute in case of cache miss
+      # token  = Rails.cache.fetch('access_token', expires_in: 1.8.hours.from_now) do
+        RemoteLockService.new(current_community).client_credentials
+      # end
+  end
+
+  def load_tour_users_chats
+    if current_user.present? and @community.present? and @community.chat_control
+      if @community.tour.present?
+          all_communities = current_user.communities.map{|community| community.id}
+          if all_communities.include?(@community.id) || current_user.role == "Super admin"
+              @chatrooms = Chatroom.where(tour_id: @community.tour.id).includes(:chats, :tour, :tour_user)
+              @listening_channels = [@community.name.tr(" ", "_") + "_with_id_" + @community.id.to_s]
+
+              @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }
+              @chatroom_list = @chatrooms.map{|c| c.id}
+              @default_user_image =  "/assets/chat-tour-user.jpg"
+          end
+      end
+    end
+  end
+  
+  def notifications_by_chatroom(community,chatroom)
+    all_community_members = community.users
+    min_count = 99999
+    all_community_members.each do |user|
+      count = Chat.where("chatroom_id = ? AND  name != ? ", chatroom.id, "Support Team").unread_by(user).count
+      if count < min_count
+        min_count = count 
+      end
+    end
+    if all_community_members.count == 0
+      min_count=0
+    end 
+    [chatroom.id , min_count]
+  end
+  
   protected
 
   def layout_by_resource

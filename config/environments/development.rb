@@ -21,9 +21,8 @@ Rails.application.configure do
       'Cache-Control' => 'public, max-age=172800'
     }
   else
-    config.action_controller.perform_caching = false
-
-    config.cache_store = :null_store
+    config.action_controller.perform_caching = true
+    config.cache_store = :memory_store
   end
 
   # config.time_zone = 'Eastern Time (US & Canada)'
@@ -46,7 +45,10 @@ Rails.application.configure do
 
   # Suppress logger output for asset requests.
   config.assets.quiet = true
-
+  config.after_initialize do
+    ActiveRecord::Base.logger = Rails.logger.clone
+    ActiveRecord::Base.logger.level = Logger::ERROR
+  end
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
 

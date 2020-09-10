@@ -60,7 +60,7 @@ class ResmanStaticService < BaseService
   def save_resman_units(units,property_id)
     units.each do |u|
       vacateDate = ""
-      unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize
+      unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"].gsub('*','-')).first_or_initialize
       unless unit.manual_override
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]

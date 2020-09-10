@@ -11,6 +11,12 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.is_sitemap @community.is_sitemap
+  json.show_camera_button @community.show_camera_button
+  json.show_notepad_button @community.show_notepad_button
+  json.tour_setting do
+    json.show_map @community.show_map
+    json.mdu @community.mdu
+  end
   if @community.is_sitemap
     json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
 
@@ -19,6 +25,10 @@ json.tours @tours do |tour|
     json.image @floorplate.image
 
   end
+  fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
+  
+  favorite_unit_array = (fs.present? ? fs.favorite_unit : []) + (fs.user_favorites_unit[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_unit[@tour_user.email] : [])
+  favorite_amenity_array = (fs.user_favorites_amenity[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_amenity[@tour_user.email] : [])
   # @community.is_sitemap ? sp = Path.where(map_path_from_id: tour.tour_stops&.order(:sort)&.last&.stop_id, map_path_to_id: nil)&.first : sp = Path.where(map_path_from_id: tour.tour_stops.where(stop_type: "elevator").first.stop_id, map_path_to_id: nil)&.first
   # if sp.blank?
   #   @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops&.order(:sort)&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: tour.tour_stops.where(stop_type: "elevator").first.stop_id)&.first
@@ -29,12 +39,15 @@ json.tours @tours do |tour|
 
   stops_arr = []
   if @community.is_sitemap
-    stops_arr = @community.tour.tour_stops
+    stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
   else
     @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
       if @community.tour.sort_hash[floor.to_s].present?
         @community.tour.sort_hash[floor.to_s].each do |s_id|
-          stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
+          if (s_id.present?)
+            stop = (TourStop.find_by_id(s_id))
+            stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+          end
         end
       end
     end
@@ -70,16 +83,18 @@ json.tours @tours do |tour|
   # new_stops_arr
 
   json.tour_stop stops_arr.compact.each do |stop|
-    unless stop.stop_type == "elevator"
+    unless stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1)
       if stop.stop_type == "unit"
         u = Unit.find stop.stop_id
         if u.present?
           json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
+          json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
         else
           next
         end
       else
         json.name stop.name
+        json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
       end
       json.id stop.id
       json.type stop.stop_type

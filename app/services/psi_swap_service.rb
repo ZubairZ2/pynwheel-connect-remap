@@ -109,6 +109,11 @@ class PsiSwapService < BaseService
         end
         unit.available_date = vacateDate
         building = u["Units"]["Unit"]["BuildingName"]
+        unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
+        url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
+      
+        unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
+      
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
       else
@@ -155,6 +160,11 @@ class PsiSwapService < BaseService
           day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
         end
+        unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
+        url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
+      
+        unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
+      
         unit.available_date = vacateDate
         building = u["Units"]["Unit"]["BuildingName"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""

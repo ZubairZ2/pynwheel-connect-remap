@@ -65,8 +65,10 @@
 class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
+  # attr_readonly :uuid
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
+  mount_base64_uploader :self_tour_logo, AvatarUploader
   belongs_to :company
   belongs_to :community_group
   has_many :community_users, dependent: :destroy
@@ -74,8 +76,10 @@ class Community < ApplicationRecord
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
   has_many :floorplates, -> { order("number DESC") }, dependent: :destroy
+  has_many :allowed_emails, dependent: :destroy
   has_one :credential, dependent: :destroy
   has_one :design, dependent: :destroy
+  has_one :favorite_stop, dependent: :destroy
   has_one :sitemap, dependent: :destroy
   has_one :favorite_setting, dependent: :destroy
   has_one :neighborhood, dependent: :destroy
@@ -85,7 +89,13 @@ class Community < ApplicationRecord
   has_many :webpages, dependent: :destroy
   has_many :imagepages, dependent: :destroy
   has_many :amenities, dependent: :destroy
+  has_many :as_guests, dependent: :destroy
+  has_many :igloo_guests, dependent: :destroy
+  has_many :opening_hours, dependent: :destroy
+  has_many :schedual_tours, dependent: :destroy
   has_one :tour, dependent: :destroy
+  has_one :edge_state, dependent: :destroy
+
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
   validates_uniqueness_of :name, scope: :company_id
@@ -98,6 +108,9 @@ class Community < ApplicationRecord
   after_create :create_sms_email_content
   validate :validate_page_position
 
+  # before_validation :gen_uuid, on: :create
+  # validates :uuid, presence: true, uniqueness: true
+
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
   after_update :crop_image
@@ -109,7 +122,6 @@ class Community < ApplicationRecord
   # validates :phone, phony_plausible: true
 
   has_many :elevators, dependent: :destroy
-
 
 
 
@@ -516,6 +528,10 @@ class Community < ApplicationRecord
     self.save
   end
 
+  # def gen_uuid
+  #   self.uuid = SecureRandom.uuid
+  # end
+
   def make_address
     address = ""
     address = self.address if self.address.present?
@@ -531,7 +547,7 @@ class Community < ApplicationRecord
 
   def email_favorites(params)
     email_to = params[:favorites][:email_to]
-    result = populate_favorites(params[:favorites][:items])
+    result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
     units = result[1] 
     puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
@@ -591,7 +607,9 @@ class Community < ApplicationRecord
 
   private
 
-  def populate_favorites(items_objs)
+  def populate_favorites(items_objs,email_to)
+    fs = self.favorite_stop
+    fs = self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.create(community_id: self.id)
     favorites = []
     units = Hash.new
     items_objs.each do |item|
@@ -614,7 +632,15 @@ class Community < ApplicationRecord
       #   u = Unit.new
       #   units << u
       end
+      if item[:type] == 'unit'
+        fs.user_favorites_unit[email_to] = [] #if fs.user_favorites_unit[email_to] == nil
+        fs.user_favorites_unit[email_to] << item[:id] unless fs.user_favorites_unit[email_to].include?(item[:id])
+      elsif item[:type] == 'amenity'
+        fs.user_favorites_amenity[email_to] = [] #if fs.user_favorites_amenity[email_to] == nil
+        fs.user_favorites_amenity[email_to] << item[:id] unless fs.user_favorites_amenity[email_to].include?(item[:id])
+      end
     end
+    fs.save
     return favorites , units
   end
   def validate_page_position

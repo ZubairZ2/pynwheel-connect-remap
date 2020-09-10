@@ -21,10 +21,27 @@ class TourUser < ApplicationRecord
 
   has_many :visited_stops, dependent: :destroy
   has_many :tour_histories, dependent: :destroy
+  has_many :schedual_tours, dependent: :destroy
+  has_many :chatrooms, dependent: :destroy
+  has_many :as_guests, dependent: :destroy
+  has_many :igloo_guests, dependent: :destroy
+  has_many :lock_histories, dependent: :destroy
+  
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 
+  after_update :crop_user_image
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
-
+  def crop_user_image
+    begin
+      image.recreate_versions! if image.present?
+    rescue => exception
+      
+    end
+  end
+  attr_accessor :crop_image_bit
+  def crop_image_bit
+    @crop_image_bit
+  end
 end

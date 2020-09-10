@@ -95,28 +95,195 @@ class Api::V1::CommunitiesController < ActionController::Base
     @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
   end
   def portico_list_communities
-    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
+        touruser = TourUser.find_by_id params[:tour_user_id]
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email.downcase]})
+      else
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+      end
+    else
+      if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
+        touruser = TourUser.find_by_id params[:tour_user_id]
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email.downcase]})
+      else
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+      end
+    end
   end
+  
+  def lincoln_list_communities
+    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      company = Company.where('lower(name) = ?', 'lincoln')
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
+    else
+      company = Company.where('lower(name) = ?', 'lincoln')
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
+    end
+  end
+
   def community_tours
+    @tour_user = TourUser.find_by_id params[:tour_user_id]
     @community = Community.find params[:id]
     @community.deleted_ids = []
     @community.save
     @tours = Tour.where(community_id: params[:id])
+    scheduled_tour = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
+    params[:current_time].present? ? current_time = params[:current_time] : current_time = DateTime.now
+    current_time = current_time.to_datetime
+
+    edge_state = EdgeState.find_by(community_id: params[:id])
+    if edge_state.present? and scheduled_tour.present?
+      Thread.new do
+        tour_user = TourUser.find params[:tour_user_id]
+        access_token = RemoteLockService.new(@community).client_credentials
+        prev_data = tour_user.as_guests.where(community_id: params[:id])
+        # ----------- creating a guest for remote lock (type = locks) ----------------- #
+        unless prev_data.present?
+          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
+          tour_user.as_guests.create(community_id: params[:id], edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        else
+          RemoteLockService.new(@community).delete_access_guest(access_token,prev_data.last.guest_id)
+          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
+          prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        end
+        # ------------ creating guest and granting access for igloo lock -------------------------------- #
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+        allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
+
+        unit_or_amenity_names = []
+        allowed_stops.each do |stop|
+          if stop[0] == "unit"
+            unit = stop[0].classify.constantize.find_by_id stop[1]
+            if unit.building.present?
+              name = unit.building + "-" + unit.name
+            else
+              name = unit.name
+            end
+            unit_or_amenity_names << name if unit.present?
+          elsif stop[0] == "amenity"
+            amentiy = stop[0].classify.constantize.find_by_id stop[1]
+            unit_or_amenity_names << amentiy.name if amentiy.present?
+          end
+        end
+
+        locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id, remote_lock_type: "igloo_lock").pluck(:device_id, :stop_id)
+        if locks.present?
+          igloo_guest_ids = @tour_user.igloo_guests.where(community_id: @community.id, status: "active").map{|x| x.guest_id} rescue ''
+          locks.each do |lock|
+              response = RemoteLockService.new(@community).create_igloo_guests(access_token, @tour_user, lock[0] ,current_time)
+              @tour_user.igloo_guests.create(community_id: @community.id, stop_id: lock[1], guest_type: response["data"]["type"],  guest_code: response["data"]["attributes"]["code"], guest_id: response["data"]["id"], status: "active")
+          end
+          igloo_guest_ids.map{ |guest_id| RemoteLockService.new(@community).delete_igloo_guests(access_token, guest_id) unless guest_id == ''}
+          IglooGuest.where(guest_id: igloo_guest_ids).update_all(status: 'deleted')
+        end
+        
+      end
+    end
   end
   
   def delete_tour_stop
     @community = Community.find params[:id]
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
-    @community.deleted_ids = delete_array.present? ? delete_array : []
+    te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
+    @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
     @community.save
     @tours = Tour.where(id: params[:tour_id])
+    @tour_user = TourUser.find_by(id: params[:tour_user_id])
+    @scheduled_tour = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
+
+    current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
+    current_time = current_time.to_datetime
+
+    edge_state = EdgeState.find_by(community_id: params[:id])
+    if edge_state.present? and @scheduled_tour.present?
+      Thread.new do
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+        allowed_ids = stops_arr.ids - @community.deleted_ids
+        allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
+
+        # unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}
+        unit_or_amenity_names = []
+        allowed_stops.each do |stop|
+          if stop[0] == "unit"
+            unit = stop[0].classify.constantize.find_by_id stop[1]
+            if unit.building.present?
+              name = unit.building + "-" + unit.name
+            else
+              name = unit.name
+            end
+            unit_or_amenity_names << name if unit.present?
+          elsif stop[0] == "amenity"
+            amentiy = stop[0].classify.constantize.find_by_id stop[1]
+            unit_or_amenity_names << amentiy.name if amentiy.present?
+          end
+        end
+
+        access_token = RemoteLockService.new(@community).client_credentials
+        locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
+        if locks.present?
+          tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+          locks.each do |lock|
+            RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+          end
+        end
+      end
+    end
   end
 
   def user_saved_tour
     # @device_id = params[:device_id]
+    @community = Community.find params[:community_id] if params[:community_id].present?
     @tour_user = TourUser.find params[:tour_user_id]
-    @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
+    @tour = @community.tour
+    
+    stops_arr = []
+      if @community.is_sitemap
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+      else
+        @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+          if @community.tour.sort_hash[floor.to_s].present?
+            @community.tour.sort_hash[floor.to_s].each do |s_id|
+              if (s_id.present?)
+                stop = (TourStop.find_by_id(s_id))
+                stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+              end
+            end
+          end
+        end
+      end
+
+      stops_arr = stops_arr.compact.map{|x| x.id}.uniq
+      
+      un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
+      @visited_stops = []
+      stops_arr.each do |val|
+        if un_ordered_visited_stops.include?(val)
+          @visited_stops << val
+        end
+      end
+    # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
+    @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
+    
+    @scheduled_tour = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
+    # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.tour.id,tour_key: last_vs.tour_key)
+    # @tours = @tours.map{|h| h}[-4..-1].to_h
   end
+
+  def is_tour_scheduled(time_param,community_id,tour_user_id)
+    current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')
+    current_time = current_datetime.to_datetime.strftime('%l:%M %p')
+    current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
+    current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
+    SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ? and end_time >= ? and tour_time <= ?', community_id, tour_user_id, current_tour.tour_date, current_tour.tour_time, current_tour.tour_time)
+  end
+ 
+  def is_tour_in_visiting_hours(time_param,community)
+    current_time = time_param.to_datetime.strftime("%H:%M")
+    current_day = time_param.to_datetime.strftime('%A')
+    community.opening_hours.where('day = ? and opening_time <= ? and closing_time >= ?', current_day, current_time, current_time)
+  end
+
   def include_application_data
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])

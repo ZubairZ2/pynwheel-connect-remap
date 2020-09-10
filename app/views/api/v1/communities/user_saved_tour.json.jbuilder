@@ -1,20 +1,24 @@
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
-last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
-@tours.each do |tour|
-  if tour[0][1] == last_vs.tour_key
-    @tours = { [tour[0][0],tour[0][1]] => tour[1]}
-  end
-end
+json.visual_id_verification @scheduled_tour.present? ? (@community.present? ? @community.tour.visual_id_verification : true) : false
+json.virtual_tour @scheduled_tour.present? ? true : false # seding reverse value due to last name 'ontime'
+
+# @tours.each do |tour|
+#   if tour[0][1] == last_vs.tour_key
+#     @tours = { [tour[0][0],tour[0][1]] => tour[1]}
+#   end
+# end
 # @tours = { [@tours.keys.last[0],@tours.keys.last[1]] => @tours.values.last}
 # @tours = @tours.last
-
-json.tours @tours do |tour|
-  tour_key = tour[0][1]
-  tour = Tour.find tour[0][0]
+tours = [@tour]
+tour_key = @last_vs.tour_key rescue nil
+json.tours tours do |tour|
+  # tour_key = tour[0][1]
+  # tour = Tour.find tour[0][0]
   @community = Community.find tour.community_id
   json.id tour.id
+  json.tour_key tour_key
   json.community_id tour.community_id
   json.name tour.name
   json.latitude tour.latitude
@@ -22,10 +26,15 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
-  visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
+  # visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
 
-  json.visited_tour visited_stops do |visited_stop|
-    @tour = TourStop.find visited_stop[0] rescue next
+  json.visited_tour @visited_stops do |visited_stop|
+    # @tour = TourStop.find visited_stop[0] rescue next
+    # byebug
+
+    @tour = TourStop.find visited_stop rescue next
+    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop,description: nil, image: nil).last
+    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
     if @tour.stop_type != "elevator"
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
@@ -33,7 +42,10 @@ json.tours @tours do |tour|
       if @tour.stop_type == "unit"
         unit = Unit.find @tour.stop_id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-        json.name "Apartment "+unit.marketing_name
+        json.name unit.marketing_name
+        json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
+        json.video_link_button_label unit.virtual_tour_button_label
+        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
         lease_pricing = []
         if unit.lease_pricing.present?
           str_split = unit.lease_pricing.split(';')
@@ -66,6 +78,8 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
           json.stop_description unit_amenity.description
           json.directional_text unit_amenity.directional_text
+          json.video_link_button_label unit.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
 
           # unit_amenity.description = nil
           @unit_gallery_arr << unit_amenity
@@ -89,7 +103,10 @@ json.tours @tours do |tour|
         json.image amenity.image.present? ? amenity.image.url : "no image"
         json.stop_description amenity.description
         json.name amenity.name
+        json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "") rescue ""
         json.directional_text amenity.directional_text
+        json.video_link_button_label amenity.video_link_button_label
+        json.video_link amenity.video_link.present? ? amenity.video_link : ""
 
         # amenity.description = nil
         amenityGalleryArr = []
@@ -106,22 +123,35 @@ json.tours @tours do |tour|
           json.directional_text ag.directional_text
         end
       end
-      user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(image: nil)
+      user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(image: nil)
       gallery_arr = []
+      gallery_arr_v1 = []
       user_gallery.each do |ud|
-        gallery_arr << ud.image.url
+        obj = {}
+        obj[:id] = ud.id
+        obj[:image] = ud.image
+        obj[:event_time] = (ud.event_date.present? ? ud.event_date.strftime("%m/%d/%Y") + " " : "") + (ud.event_time.present? ? ud.event_time.strftime("%H:%M:%S") : "")  rescue ""
+        gallery_arr << ud.image
+        gallery_arr_v1 << obj
         # json.image ud.image.url
       end
       json.user_gallery gallery_arr
-      user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id,tour_key: tour_key).where.not(description: nil)
+      json.user_gallery_v1 gallery_arr_v1
+      user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(description: nil)
       description_arr = []
+      description_arr_v1 = []
       user_notes.each do |un|
+        obj = {}
+        obj[:id] = un.id
+        obj[:note] = un.description
+        obj[:event_time] = (un.event_date.present? ? un.event_date.strftime("%m/%d/%Y") + " " : "") + (un.event_time.present? ? un.event_time.strftime("%H:%M:%S") : "")
         description_arr << un.description
+        description_arr_v1 << obj
         # json.description un.description
       end
       json.notes description_arr
+      json.notes_v1 description_arr_v1
     end
   end
 
 end
-

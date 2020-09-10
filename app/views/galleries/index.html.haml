@@ -1,6 +1,6 @@
 - content_for :title, "Gallery Page - Pynwheel"
 / Main content
-
+.divLoading.hidden
 
 %section
   .content
@@ -97,7 +97,7 @@
                       - orderVar = orderVar + 1
                       %td= orderVar
                       %td
-                        = link_to gallery.name, show_images_community_gallery_path(@community,gallery.id)
+                        = link_to gallery.name, show_images_community_gallery_path(@community,gallery.id), :class => "loader_class"
                       %td
                         -#%a.text-blue.ml-5{:href => "#{show_images_community_gallery_path(@community,gallery.id)}"}
                         -#  %i.fa.fa-eye

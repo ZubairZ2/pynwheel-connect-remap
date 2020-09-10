@@ -67,6 +67,11 @@
 -#      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
 -#      %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
 -#      %span.pl-15 Yes
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Access Code
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
 
 .form-group#unit_virtual_tour_button_label_field
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -82,13 +87,26 @@
     %span Specify URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
+- if EdgeState.find_by(community_id: @community.id).present?
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Remote Lock
+      %i.unit_manualoverride.fa.fa-question-circle
+        %span#unit_manualoverride_text
+          if building name is present then name of Remote lock must be formatted like BuildingName-MarketingName otherwise name must be same as unit marketing name
+      %span Assign the lock to this unit
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      %select.form-control#remote_lock{name: "remote_lock"}
+      %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
+        %a#a-lock.btn-text-color{href: "#"} Update selected lock
+  
+- if @community.touchscreen_app
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Details
 
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Details
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -114,15 +132,22 @@
       %span#unit_sold_text
         This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.
 
-
-
-
   .col-sm-12.col-lg-2.col-md-2.col-xs-12
     = f.radio_button :sold, true, class: "settings-field"
     = f.label :sold, "Yes", :value => "true"
   .col-sm-12.col-lg-2.col-md-2.col-xs-12
     = f.radio_button :sold, false, class: "settings-field"
     = f.label :sold, "No", :value => "false"          
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Model Unit
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
+      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+        .checkbox
+          = f.check_box :modal_unit
+          %label Model unit
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Custom Overlays</title>
+    
+    <style>
+      #map {
+        height: 100%;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .qty .count {
+          color: #000;
+          display: inline-block;
+          vertical-align: top;
+          font-size: 25px;
+          font-weight: 700;
+          line-height: 30px;
+          padding: 0 2px
+          ;min-width: 35px;
+          text-align: center;
+      }
+      .qty .plus {
+          cursor: pointer;
+          display: inline-block;
+          vertical-align: top;
+          color: #000000db;
+          width: 35px;
+          height: 35px;
+          font: 30px/1 Arial,sans-serif;
+          text-align: center;
+          /* border-radius: 50%; */
+          background-clip: padding-box;
+          }
+      .qty .minus {
+          cursor: pointer;
+          display: inline-block;
+          vertical-align: top;
+          color: #000000db;
+          width: 35px;
+          height: 35px;
+          font: 30px/1 Arial,sans-serif;
+          text-align: center;
+          /* border-radius: 50%; */
+          background-clip: padding-box;
+      }
+      div {
+          text-align: center;
+      }
+      .minus{
+          background-color: white !important;
+      }
+      .plus{
+          background-color: white !important;
+      }
+      /*Prevent text selection*/
+      .span-class{
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          border: solid;
+          border-width: 1px;
+      }
+      input{  
+          border: 0;
+          width: 2%;
+      }
+      nput::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+      }
+      .arrow {
+        background-color: white !important;
+      }
+    </style>
+    
+    <%# <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB4_LG1UW-tIjYsdi5eAsoNE7Ji8tLedaY"></script> %>
+    
+    <script>
+      var overlay;
+      var overlay_div;
+      USGSOverlay.prototype = new google.maps.OverlayView();
+
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 20,
+          center: {lat: 31.484527, lng: 74.409419},
+          mapTypeId: 'satellite'
+        });
+
+        var bounds = new google.maps.LatLngBounds(
+            new google.maps.LatLng(31.484447, 74.409385),
+            new google.maps.LatLng(31.484597, 74.409448));
+
+        var srcImage = $("#image_overlay").attr('href');
+
+        overlay = new USGSOverlay(bounds, srcImage, map);
+      }
+
+      /** @constructor */
+      function USGSOverlay(bounds, image, map) {
+
+        this.bounds_ = bounds;
+        this.image_ = image;
+        this.map_ = map;
+
+        this.div_ = null;
+
+        this.setMap(map);
+      }
+      
+      USGSOverlay.prototype.onAdd = function() {
+
+        var div = document.createElement('div');
+        div.style.borderStyle = 'none';
+        div.style.borderWidth = '0px';
+        div.style.position = 'absolute';
+
+        var img = document.createElement('img');
+        img.src = this.image_;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.position = 'absolute';
+        div.appendChild(img);
+
+        this.div_ = div;
+
+        // Add the element to the "overlayLayer" pane.
+        var panes = this.getPanes();
+        panes.overlayLayer.appendChild(div);
+      };
+
+      USGSOverlay.prototype.draw = function() {
+
+        // We use the south-west and north-east coordinates of the overlay to peg it to the correct position and size.
+        // To do this, we need to retrieve the projection from the overlay.
+        var overlayProjection = this.getProjection();
+
+        // Retrieve the south-west and north-east coordinates of this overlay in LatLngs and convert them to pixel coordinates.
+        // We'll use these coordinates to resize the div.
+        var sw = overlayProjection.fromLatLngToDivPixel(this.bounds_.getSouthWest());
+        var ne = overlayProjection.fromLatLngToDivPixel(this.bounds_.getNorthEast());
+
+        // Resize the image's div to fit the indicated dimensions.
+        var div = this.div_;
+        div.style.left = sw.x + 'px';
+        div.style.top = ne.y + 'px';
+        div.style.width = (ne.x - sw.x + 50) + 'px';
+        div.style.height = (sw.y - ne.y - 30) + 'px';
+        div.style.transform = 'rotate(' + 60 + 'deg)';
+        div.style.opacity = "0.25";
+        overlay_div = div
+      };
+
+      // will be called automatically from the API if we ever set the overlay's map property to 'null'.
+      USGSOverlay.prototype.onRemove = function() {
+        this.div_.parentNode.removeChild(this.div_);
+        this.div_ = null;
+      };
+
+      USGSOverlay.rotate_overlay = function(value) {
+            overlay_div.style.transform = 'rotate(' + value + 'deg)';
+      }
+
+      USGSOverlay.x_axis = function(value) {
+            overlay_div.style.top = value+'px';
+      }
+      
+      USGSOverlay.y_axis = function(value) {
+            overlay_div.style.left = value+'px';
+      }
+
+
+      google.maps.event.addDomListener(window, 'load', initMap);
+    </script>
+
+  </head>
+
+    <body>
+        <div id="map" style="position: relative;"></div>
+          
+        <div class="qty mt-5">
+            
+            <span class="minus bg-dark span-class">-</span>
+              <input type="hidden" class="count" name="qty" value="60" hidden='true'>
+            <span class="plus bg-dark span-class">+</span>
+
+            <span class="arrow bg-dark span-class"  id="up-arrow">
+              <i class="fa fa-long-arrow-up" style="font-size:18px"></i>
+            </span>
+
+            <span class="arrow bg-dark span-class" id="left-arrow">
+              <i class="fa fa-long-arrow-left" style="font-size:18px"></i>
+            </span>
+
+            <span class="arrow bg-dark span-class" id="right-arrow">
+              <i class="fa fa-long-arrow-right" style="font-size:18px"></i>
+            </span>
+
+            <span class="arrow bg-dark span-class" id="down-arrow">
+              <i class="fa fa-long-arrow-down" style="font-size:18px"></i>
+            </span>
+
+        </div>
+        <br>
+        
+        
+    </body>
+</html>
+
+<script>
+    x_axis = 0
+    y_axis = 0
+
+    $(document).ready(function(){
+
+        $('.count').prop('disabled', true);
+
+        $(document).on('click','.plus',function(){
+          $('.count').val(parseInt($('.count').val()) + 1 );
+          USGSOverlay.rotate_overlay(parseInt($('.count').val()));
+        });
+
+        $(document).on('click','.minus',function(){
+          $('.count').val(parseInt($('.count').val()) - 1 );
+            USGSOverlay.rotate_overlay(parseInt($('.count').val()));
+            
+            if ($('.count').val() == 0) {
+              $('.count').val(1);
+            }
+        });
+    });
+    
+
+    // ------------------ positioning ----------------------- //
+
+    var int;
+    
+    $("#up-arrow").mousedown(function() {
+        int = setInterval(move_up, 100);
+    }).mouseup(function() {
+      clearInterval(int);  
+    });
+    
+
+    $("#left-arrow").mousedown(function() {
+        int = setInterval(move_left, 100);
+    }).mouseup(function() {
+      clearInterval(int);  
+    });
+    
+
+    $("#right-arrow").mousedown(function() {
+        int = setInterval(move_right, 100);
+    }).mouseup(function() {
+      clearInterval(int);  
+    });
+    
+    $("#down-arrow").mousedown(function() {
+        int = setInterval(move_down, 100);
+    }).mouseup(function() {
+      clearInterval(int);  
+    });
+    
+    function move_up() {
+      y_axis = y_axis - 1
+      USGSOverlay.x_axis(y_axis)
+    }
+
+    function move_left() {
+      x_axis = x_axis - 1
+      USGSOverlay.y_axis(x_axis)
+    }
+
+    function move_right() {
+      x_axis = x_axis + 1
+      USGSOverlay.y_axis(x_axis)
+    }
+
+    function move_down() {
+      y_axis = y_axis + 1
+      USGSOverlay.x_axis(y_axis)
+    }
+
+    // $("#up-arrow").click(function() {
+    //   y_axis = y_axis - 1
+    //   USGSOverlay.x_axis(y_axis)
+    // });
+
+    // $("#left-arrow").click(function() {
+    //   x_axis = x_axis - 1
+    //   USGSOverlay.y_axis(x_axis)
+    // });
+
+    // $("#right-arrow").click(function() {
+    //   x_axis = x_axis + 1
+    //   USGSOverlay.y_axis(x_axis)
+    // });
+
+    // $("#down-arrow").click(function() {
+    //   y_axis = y_axis + 1
+    //   USGSOverlay.x_axis(y_axis)
+    // });
+
+
+</script>

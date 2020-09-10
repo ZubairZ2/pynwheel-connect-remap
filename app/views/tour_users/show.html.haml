@@ -1,3 +1,4 @@
+= javascript_include_tag 'moment'
 - content_for :title, "Visitor Details Page - Pynwheel"
 / Main content
 
@@ -16,12 +17,24 @@
           SUMMARY
           %span
             #{@tour_user.name}
+        - unless @chatroom_id == 0 
+          = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right", data: { toggle: "modal", target: "#ChatSupport_a" })
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
         -#%span{:style => "float: right;"}
         -#  = image_tag  image_url("unlock.png"), :style => "height: 20px; width: 20px;"
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
+    #ChatSupport_a.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+      .container.container_a
+        %h3.text-center Chat logs
+        .messaging_a
+          .inbox_msg_a
+            .mesgs_a
+              #msg_history_a.msg_history_a
+          %p.text-center.top_spac_a
+            Powered by
+            %a{href: "https://pynwheel-staging.herokuapp.com/", target: "_blank"} Pynwheel
     .row
       / Start Panel left Side
       .col-lg-12.col-md-12
@@ -30,10 +43,10 @@
             .box.box-widget.panel-box.add-plan.pt-30
               .row
                 .col-lg-6
-                  .col-lg-12{:style => "background: #efefef; margin: 30px; height: 100px;"}
-                    .col-lg-2.col-md-2.col-sm-2.col-xs-2
-                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "my_class", :style => "height: 100%; width: 100px; margin-top: #{(@tour_user.id_card.width - @tour_user.id_card.height) / 80}px; margin-left: -48px; #{@tour_user.image.present? ? "transform: rotate(90deg);" : ""}"
-                    .col-lg-3.col-md-3.col-sm-3.col-xs-3.email_div{:style => "margin-top: 15px; margin-left: -29px;"}
+                  .col-lg-12.name_div{:style => "background: #efefef; margin: 30px; left: 17px;  width: 92%; display: inline-flex; align-items: center;"}
+                    .col-lg-3.col-md-3.col-sm-2.col-xs-6
+                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                    .col-lg-3.col-md-3.col-sm-3.col-xs-12.email_div{:style => " "}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
                       %br
@@ -43,32 +56,94 @@
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
-                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "my_class", :style => " width: 100px;  margin-left: 99px; margin-top: #{(@tour_user.id_card.width - @tour_user.id_card.height) / 80}px; #{@tour_user.id_card.present? ? "transform: rotate(90deg);" : ""}"
+                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+
                   .row
                     %h4{:style => "margin-left: 45px"}
                       Alert
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
-                    - @alerts.each_with_index do |alert,index|
+                    - @alerts.order("id DESC").each_with_index do |alert,index|
                       - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                       .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                         .alert-div1{:style => "margin-top: 10px"}
-                          = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;"
+                          = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                           - if alert.arrived.present?
-                            #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                            - if alert.my_time_zone.present?
+                              - begin 
+                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                              - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone 
+                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                            - else
+                              #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                         %br
                         .alert-div2{:style => "margin-top: -10px"}
-                          = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;"
+                          = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                           #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
                         %br
                         .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
-                          = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;"
+                          = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                           - if end_time.present?
-                            #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                            - if alert.my_time_zone.present?
+                              - begin
+                                #{end_time.to_date} #{end_time.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                              - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                                #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                            - else
+                              #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                   //Tour Tracking
                   %h4{:style => "margin-left: 30px"}
-                    Tour Tracking Tour 1
-                  .col-lg-12.col-md-12.col-sm-12.col-xs-12{:style => "background: #efefef; margin: 30px"}
-                    = image_tag  @community.is_sitemap ? @community.sitemap.image : @community.floorplates.first.image, :class => "my_class", :style => "height: 100%; width: 100%;"
+                    Tour Tracking
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "margin-top: 10px;margin-left: 15px;margin-right: 15px;"}
+                    - unless @community.is_sitemap
+                      .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-left: 0px;"}
+                        = select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
+                      .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-right: 0;"}
+                        - begin
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+
+                    - else
+                      .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
+                        - begin
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
+                    -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
+                    -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
+
+                    = image_tag @community.is_sitemap ? @community.sitemap.image : @community.floorplates.all.order("id ASC").first.image, :class => "my_class", :id => "floorplane_img", :style => "height: 100%; width: 100%;"
+                    -# - if @existing_stops.present?
+                      -# - @existing_stops.flatten.each_with_index do |stop, index|
+                        -# - next if (stop.x_plot + stop.y_plot) < 1
+                        -# - if stop.class.to_s == "Amenity"
+                          -# %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
+                            -# %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
+
+                        -# - elsif stop.class.to_s == "Elevator"
+
+                          -# - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
+                            -# %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+
+
+                        -# - else
+                          -# - next if (stop.y_plot + stop.x_plot) < 1
+                          -# %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                  .col-lg-12.p-0
+                    .col-lg-4
+                    .col-lg-8#unlock_history
+                      - @visited_units_history.each_with_index do |unit, index|
+                        - if unit.event == "unlocked_event" 
+                          %h5#lock_histories_style
+                            %i.fa.fa-unlock-alt
+                            #{unit.stop_name} unlocked at #{unit.occured_at.strftime("%l:%M %p")}
+                      - @visited_amenities_history.each_with_index do |amenity, index|
+                        - if amenity.event == "unlocked_event" 
+                          %h5#lock_histories_style 
+                            %i.fa.fa-unlock-alt
+                            #{amenity.stop_name} unlocked at #{amenity.occured_at.strftime("%l:%M %p")}
+
 
                 .col-lg-6
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
@@ -86,16 +161,33 @@
                               .col-lg-2.col-md-2.col-sm-6.col-xs-6
                                 Tour photo
                                 %br
+                                = " "
+                                %br
+                                = " "
+                                %br
                                 = image_tag  @stop.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
                                 - image_hit = false
                             .col-lg-2.col-md-2.col-sm-6.col-xs-6.user_photo
                               User photo
+                              %text{:style => "color: gray"}
+                                %br
+                                = stop_image.event_date.present? ? stop_image.event_date.strftime("%m/%d/%Y") : stop_image.created_at.strftime("%m/%d/%Y")
+                                %br
+                                = stop_image.event_time.present? ? stop_image.event_time.strftime("%H:%M:%S") : stop_image.created_at.strftime("%H:%M:%S")
                               %br
-                              = image_tag  stop_image.image.url, :class => "", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
+                              - if stop_image.is_rotated == true
+                                = image_tag  stop_image.image.url, :class => "", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
+                              - else
+                                = image_tag  stop_image.image.url, :class => "", :style => "height: 74px; width: 100px; margin-top: 8px; margin-left: 0px; "
                         - stop[1].each do |stop_decription|
                           - if stop_decription.description.present?
                             .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
                               User Notes
+                              %text{:style => "color: gray"}
+                                %br
+                                = stop_decription.event_date.present? ? stop_decription.event_date.strftime("%m/%d/%Y") : stop_decription.created_at.strftime("%m/%d/%Y")
+                                %br
+                                = stop_decription.event_time.present? ? stop_decription.event_time.strftime("%H:%M:%S") : stop_decription.created_at.strftime("%H:%M:%S")
                               %br
                               .user_note{:style => "background: ;"}
                                 -##{stop_decription.description}
@@ -240,7 +332,7 @@
 -#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
 -#    / main-content ends
 .row
-  .col-md-12{:style => "position: absolute; bottom: 51px;"}
+  .col-md-12{:style => "/*position: absolute; */ bottom: 51px;"}
     .box-footer.mt-30.pt-15
       .row
         .col-lg-10
@@ -249,6 +341,11 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
+   if ("#{browser.device.iphone?}" == "true")
+   {
+     $(".user_id_image1").css("transform", "transform: rotate(90deg);");
+     $(".user_id_image2").css("transform", "transform: rotate(90deg);");
+   }
    function visitor_show_goBack()
   {
     if (window.history.length == 1)
@@ -260,3 +357,133 @@
       window.history.back();
      }
   }
+  $('[data-toggle="visitor_popover"]').popover();
+  
+  $('#chat-logs').on('click', function(){
+    if ($('#msg_history_a').children().length == 0){
+    
+    var loadAdminChat, loadAdminChatHelper;
+    
+    loadAdminChatHelper = function(chat) {
+        if(chat.name == "Support Team"){
+            $('#msg_history_a').append(`
+                <div class="outgoing_msg_a">
+                    <div class="sent_msg_a">
+                        <p>${chat.message}</p>
+                        <span class="time_date_a"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                    </div>
+                </div>
+            `)
+        }
+        else {
+            $('#msg_history_a').append(`
+                <div class="incoming_msg_a">
+                    <div class="incoming_msg_img_a"> <img id="img_id_a" src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                    <div class="received_msg_a">
+                        <div class="received_withd_msg_a">
+                            <p>${chat.message}</p>
+                            <span class="time_date_a"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                        </div>
+                    </div>
+                </div>
+            `)
+        }
+    };
+
+    loadAdminChat = function(chatArray) {
+      for (var item in chatArray) {
+          loadAdminChatHelper(chatArray[item])
+      }
+    };
+    
+    var chatroom_id = #{ raw @chatroom_id};
+
+    if(chatroom_id != 0){
+      $.ajax({
+          type: 'GET',
+          dataType: 'json',
+          cache: false,
+          url: '/chats/' + chatroom_id,
+          success: function(data){
+              loadAdminChat(data["chats"]);
+              $("#msg_history_a").animate({ scrollTop: $('#msg_history_a').prop("scrollHeight")}, 1000);
+          }
+      });
+    }
+    }
+  });
+  function change_image(){
+    if($('#floorplates_images :selected').text() != "Select the Floorplate"){
+      var floorplate_id = $('#floorplates_images :selected').val()
+      var community_id = #{ raw @community.id};
+
+      $.ajax({
+          type: 'GET',
+          dataType: 'json',
+          cache: false,
+          url: '/communities/' + community_id + '/floorplates/' + floorplate_id + '/floatplate_images',
+          success: function(data){
+            $(".my_class").attr('src', data.image_src)
+          },
+          fail: function(data){
+            console.log(data)
+          }
+      });
+    }
+  }
+
+  function plot_data(){
+    var is_sitemap = #{ @community.is_sitemap};
+    var tour_history_id = $('#tour_histories_dates :selected').val()
+    if (is_sitemap == false)
+      var floorplate_id = $('#floorplates_images :selected').val()
+    else
+      var floorplate_id = 0
+    var community_id = #{ raw @community.id};
+    var tour_user_id = #{ raw @tour_user.id};
+    
+    if((is_sitemap == false && tour_history_id != "" && floorplate_id != "") || (is_sitemap == true && tour_history_id != "")){
+      $.ajax({
+          type: 'GET',
+          dataType: 'json',
+          cache: false,
+          url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/lock_ploting?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
+          success: function(data){
+            $(".asdasd").children('i').remove()
+            $("#unlock_history").children('h5').remove()
+            // data.existing_stops.flat().forEach(draw_stop)
+            data.lock_histories.flat().forEach(draw_history)
+          },
+          fail: function(data){
+            console.log(data)
+          }
+      });
+    }
+    else{
+      $(".asdasd").children('i').remove()
+      $("#unlock_history").children('h5').remove()
+    }
+  }
+
+  function draw_stop(stop, index){
+    if(stop.x_plot + stop.y_plot > 1){
+      var left_margin =  #{ ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i }
+      var right_margin = #{ ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i }
+
+   //   $(".asdasd").append(`<i class="fa fa-unlock-alt stops" id="stop_${stop.id}" style="font-size: 35px; position: absolute; top: ${stop.y_plot - right_margin + 6}px; left: ${stop.x_plot - left_margin + 3}px; height:25px; width: 25px; color: #d37474; margin-top: 3px; "></i>`)
+    }
+  }
+
+  function draw_history(stop, index){
+      var time = stop.occured_at
+      var occured_time = moment(time).zone(time);
+      $("#unlock_history").append(`<h5 id="lock_histories_style" > <i class="fa fa-unlock-alt"></i> ${stop.stop_name} unlocked at ${occured_time.format("LT")}</h5>`)
+  }
+
+  $("#floorplates_images").change(function () {
+        change_image()
+        plot_data()
+  });
+  $("#tour_histories_dates").change(function () {
+        plot_data()
+  })

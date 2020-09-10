@@ -3,6 +3,7 @@ class UnitsController < ApplicationController
   before_action :set_community
   before_action :check_community
   before_action :set_unit, only: [:edit,:update,:destroy]
+  skip_before_action :load_tour_users_chats, only: [:load_remotelock_data, :clear_locks]
   def index
     #@units = @community.units.page(params[:page]).per(10)
     @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
@@ -37,10 +38,32 @@ class UnitsController < ApplicationController
   def edit
     add_breadcrumb "Units", community_units_path(@community)
     add_breadcrumb "Edit Unit",edit_community_unit_path(@community,@unit)
+    @assigned_lock = @unit.remote_locks.first
+  end
+
+  def load_remotelock_data
+    access_token = generate_remotelock_token
+    responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
+    RemoteLockService.new(current_community).update_deivces_in_db(responce)
+    es = EdgeState.find_by(community_id: current_community.id)
+    if es.nil?
+      render json: {locks: []}
+    else
+      render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+    end
+  end
+
+  def clear_locks
+    unit = Unit.find params[:id]
+    unit.remote_locks.delete_all
+    render json: {locks: unit.remote_locks}
   end
 
   def update
-
+    if params[:remote_lock].present?
+      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
+      remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: params[:unit][:marketing_name])
+    end
     respond_to do |format|
       ######## save item that updated
       if (params[:unit][:availability].present? && params[:unit][:availability] == "Unoccupied")
@@ -86,6 +109,25 @@ class UnitsController < ApplicationController
       end
       if (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability)
         @unit.availability_is_updated = true
+      end
+      if params[:unit][:modal_unit].present?
+        if params[:unit][:modal_unit] == "1"
+          ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
+          TourStop.create(tour_id: @community.tour.id, stop_type: "unit", name: @unit.marketing_name, display_stop: true, stop_id: @unit.id, latitude: @unit.x_plot, longitude: @unit.y_plot) unless ts.present?
+        else
+          unless @unit.modal_unit == false
+            ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
+            if ts.present?
+              paths = Path.where(map_path_from_id: ts.stop_id)
+              paths.each do |path|
+                path.path_points.destroy_all
+                path.destroy if path.present?
+              end
+              ts.destroy
+            end
+          end
+
+        end
       end
 
       if params[:unit][:sold].present? && params[:unit][:sold] == "true"
@@ -230,11 +272,20 @@ class UnitsController < ApplicationController
     @unit.x_plot = 0
     @unit.y_plot = 0
     @unit.floorplate_id = nil
-    ts = TourStop.find_by(stop_id: @unit.id)
-    if ts.present?
-      VisitedStop.where(tour_stop_id: ts.id).destroy_all
-      ts.destroy
+    ts = TourStop.find_by(stop_id: @unit.id) unless @unit.modal_unit
+    if @unit.modal_unit
+      if ts.present?
+        ts.latitude = 0
+        ts.longitude = 0
+        ts.save
+      end
+    else
+      if ts.present?
+        VisitedStop.where(tour_stop_id: ts.id).destroy_all
+        ts.destroy
+      end
     end
+
     if @unit.save(validate: false)
       redirect_to community_floorplate_plotexp_path(@community,@floorplate), notice: "The plot has been deleted successfully."
     else

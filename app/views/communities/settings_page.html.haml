@@ -1,4 +1,5 @@
 - content_for :title, "Settings Community - Pynwheel"
+.divLoading.hidden
 %section.is-community-page
   .content
     .box.box-info.add-plan.mt-20
@@ -6,7 +7,8 @@
         %h3.box-title
           Settings
           %span Community
-      = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal"} do |f|
+        = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
+      = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal form_class"} do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
@@ -58,7 +60,7 @@
                   = f.radio_button :billing_type, "monthly"
                   = f.label :billing_type, "Monthly", :value => "monthly"
 
-              - if @community.billing_type == "monthly"
+              - if @community.billing_type == "annual"
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Billing Month
@@ -122,11 +124,11 @@
                   Billing Rate
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
 
+                  = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Date Installed
+                  Subscription Start Date
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true
@@ -160,6 +162,24 @@
                     = f.check_box :self_tour
                     %label.label-primary{:for => "community_self_tour"}
                     %span.pl-15 Yes
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Show Map
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :show_map
+                    %label.label-primary{:for => "community_show_map"}
+                    %span.pl-15 Yes
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  MDU
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :mdu
+                    %label.label-primary{:for => "community_mdu"}
+                    %span.pl-15 Yes            
               - if current_user.is_super_admin?
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -170,6 +190,52 @@
                       = f.check_box :touchscreen_app
                       %label.label-primary{:for => "community_touchscreen_app"}
                       %span.pl-15 Yes
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Chat Control
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :chat_control
+                    %label.label-primary{:for => "community_chat_control"}
+                    %span.pl-15 Yes
+              .form-group#access_restrictions
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Restrict Access
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :restrict_access
+                    %label.label-primary{:for => "community_restrict_access"}
+                    %span.pl-15 Yes
+              / .form-group#access_restrictions
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /     Scheduler Widget
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = f.check_box :scheduler_widget
+              /       %label.label-primary{:for => "community_scheduler_widget"}
+              /       %span.pl-15 Yes
+              / .form-group#access_restrictions
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /     Pynwheel Widget
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = f.check_box :pynwheel_touch
+              /       %label.label-primary{:for => "community_pynwheel_touch"}
+              /       %span.pl-15 Yes            
+              .form-group#allowed_emails
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Allowed Emails
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AlloweEmails","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enter the comma separated emails, only users with these emails are allowed to visit your community in mobile app
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_area :allowed_emails, :value => @community.allowed_emails.collect(&:email).join(", ") , :id=>"emails_allowed", :class=>"form-control", rows:5, :placeholder=>"Emails"
+
               -#- if current_user.is_super_admin?
               -#  .form-group
               -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -218,7 +284,7 @@
         / /.box-body
         .box-footer
           = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
-          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"
+          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 loader_class"
 
 
 :javascript
@@ -246,3 +312,40 @@
     event.preventDefault();
   }
   });
+  
+  if ($("#community_self_tour").is(":checked") == false){
+    $("#access_restrictions").addClass("hidden")
+    $("#allowed_emails").addClass("hidden")
+  }
+
+  if ($("#community_restrict_access").is(":checked") == false){
+    $("#allowed_emails").addClass("hidden")
+  }
+
+  $('#community_self_tour').change(function() {
+    if ($("#community_self_tour").is(":checked")){
+      $("#access_restrictions").removeClass("hidden")
+      if ($("#community_restrict_access").is(":checked"))
+        $("#allowed_emails").removeClass("hidden")
+    }
+    else{
+      $("#access_restrictions").addClass("hidden")
+      $("#allowed_emails").addClass("hidden")
+    }
+  })
+
+  $('#community_restrict_access').change(function() {
+    if ($("#community_restrict_access").is(":checked"))
+      $("#allowed_emails").removeClass("hidden")
+    else
+      $("#allowed_emails").addClass("hidden")
+  })
+
+  $(".form_class").submit(function(){
+    if ($("#community_self_tour").is(":checked") == false){
+      $("#community_restrict_access").prop('checked', false);
+    }
+    if ($("#community_restrict_access").is(":checked") == false)
+      $("#emails_allowed").val('')
+  });
+  

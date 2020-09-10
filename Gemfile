@@ -4,6 +4,7 @@ ruby '2.5.0'
 gem "letter_opener", :group => :development
 
 gem 'rest-client'
+gem 'browser'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rack-cors', require: 'rack/cors'
 gem 'rails', '~> 5.0.0'
@@ -25,6 +26,7 @@ gem 'time_difference'
 source 'https://rails-assets.org' do
   gem 'rails-assets-jsTimezoneDetect'
 end
+gem 'geocoder'
 gem 'amoeba'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 0.21'
@@ -95,6 +97,7 @@ gem 'derailed_benchmarks', group: :development
 gem 'stackprof', group: :development
 gem 'ox'
 gem 'puma_worker_killer'
+gem 'pry-nav'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -114,3 +117,6 @@ end
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'countries'
+gem 'pusher'
+gem 'oauth2', '~> 1.4', '>= 1.4.4'
+gem 'unread'

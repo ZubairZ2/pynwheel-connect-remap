@@ -3,7 +3,7 @@ class WebpagesController < ActionController::Base
 
   def index
     @floorplans = []
-    if cookies[:favorite_unit_ids] == nil
+    if cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]"
       cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
       cookies.permanent[:session_id] = SecureRandom.hex(8)
       Favorite.create(session_id: cookies[:session_id],unit_ids: [])
@@ -93,6 +93,9 @@ class WebpagesController < ActionController::Base
     cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
     favorite = Favorite.find_by_session_id(cookies[:session_id]) 
     favorite.unit_ids << params[:unit_id]
+    fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.create(community_id: @community.id) 
+    fs.favorite_unit << params[:unit_id] unless fs.favorite_unit.include?(params[:unit_id])
+    fs.save
     favorite.save
   end
 
@@ -102,6 +105,11 @@ class WebpagesController < ActionController::Base
 
     cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
     favorite = Favorite.find_by_session_id(cookies[:session_id]) 
+    fs = @community.favorite_stop if @community.favorite_stop.present?
+    if fs.present?
+      fs.favorite_unit = fs.favorite_unit - [params[:unit_id]] if fs.favorite_unit.include?(params[:unit_id])
+      fs.save
+    end
     favorite.unit_ids.delete params[:unit_id]
     favorite.save
     updated_unit_ids = []
@@ -111,9 +119,12 @@ class WebpagesController < ActionController::Base
   end
 
   def favorites
-    @favorite = Favorite.find_by_session_id(cookies[:session_id])
-    @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
-    @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
+    begin
+      @favorite = Favorite.find_by_session_id(cookies[:session_id])
+      @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
+      @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
+    rescue => ex
+    end
   end
 
   def favorites_share_link

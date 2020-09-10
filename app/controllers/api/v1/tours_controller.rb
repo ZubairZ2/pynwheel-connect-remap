@@ -11,7 +11,7 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       begin
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key])
+      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false,event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil,event_date: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil)
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
@@ -31,14 +31,19 @@ class Api::V1::ToursController < ActionController::Base
     else
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
+        community = Community.find_by_id params[:community_id]
+        community_name = "visiting the community " + community.name if community.present?
+        vs.image_bit = true
+        vs.crop_image_bit = true
         vs.image = tempFile
+        vs.croped = true
         if vs.id_card.present? && vs.image.present?
           vs.id_selfie_mismatch = false
-          email_content = "Please verify user on the following link <br/> <a href='https://pynwheelapp.com/id_selfie_matching/#{vs.id}' target='_blank'> Visitor's ID page </a>"
+          url = Rails.env.production? ? "https://pynwheelapp.com/id_selfie_matching/#{vs.id }" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }"
+          email_content = "Please verify the user #{vs.name} #{community_name} on the following link <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-          DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'arslan.mirza@intagleo.com')
-
+          DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'kashif.aslam@intagleo.com')
         end
         puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{vs.valid?}"
         vs.save!(validate: false)
@@ -63,6 +68,9 @@ class Api::V1::ToursController < ActionController::Base
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
         vs.id_card = tempFile
+        vs.image_bit = false
+        vs.crop_image_bit = false
+        vs.croped = true
         vs.save
       rescue => ex
         success = false;
@@ -91,11 +99,13 @@ class Api::V1::ToursController < ActionController::Base
       end
       stops.each do |stop_id|
         begin
-          a3 = TourStop.find stop_id.to_i
+          s_id , dateTime = stop_id.split('|')
+          a3 = TourStop.find s_id.to_i
+          _date = dateTime.present? ? DateTime.parse(dateTime).strftime('%a, %d %b %Y %H:%M:%S') : nil
         rescue => ex
         end
         if a1.present? && a2.present? && a3.present?
-          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key])
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date)
         end
         if vs.present?
           arr << true
@@ -107,23 +117,19 @@ class Api::V1::ToursController < ActionController::Base
 
     end
   end
-  def tour_user_login
-    tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
-    tu = TourUser.create(email: params[:email], name: params[:first_name] + " " + params[:last_name]) if tu.blank?
-    if tu.present?
-      render :json=> {:success=>true, :message => "User present", tour_user: tu}
-    else
-      render :json=> {:success=>false, :message => "User not present"}
-    end
-  end
-
   def start_tour_auto_message
     begin
+      app_link = params[:company_name].downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392" rescue "https://apps.apple.com/us/app/self-tour/id1488907392"
+      android_link = params[:company_name].downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour" rescue "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
+       
       if params[:access_token] == "AC1097385e8559f1ad63"
         to = params[:phone_number]
         start_tour_auto_msg = "Thank you for choosing to tour our property!
-click here to start your tour
-https://apps.apple.com/us/app/self-tour/id1488907392"
+click here to start your tour.
+iPhone Users:
+#{app_link}
+Android Users:
+#{android_link}"
 
         prod_from = '+12017012957'
         account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
@@ -145,6 +151,21 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       render :json=> {:success=>false, :message => "Message Not Sent", :error => ex}
     end
   end
+  def tour_user_login
+    tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
+    tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name]) if tu.blank?
+    community = Community.find_by_id params[:community_id]
+    allow = true
+    if tu.present?
+      if community.present? and community.restrict_access
+        allow = false unless community.allowed_emails.pluck(:email).include?(tu.email.downcase)
+      end
+      render :json=> {:success=>true, :message => "User present", tour_user: tu, allowed_email: false} and return if allow == false
+      render :json=> {:success=>true, :message => "User present", tour_user: tu, allowed_email: true}
+    else
+      render :json=> {:success=>false, :message => "User not present"}
+    end
+  end
   
   def save_shared_tour
     shared_tour = SharedTour.new shared_tour_params
@@ -152,8 +173,8 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       tu = TourUser.find_by(id: params[:tour_user_id])
       
            # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
-      
-      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id]).group(:tour_stop_id).count
+      last_stop = VisitedStop.where(tour_user_id: params[:tour_user_id],tour_id: params[:tour_id]).last
+      vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id],tour_key: last_stop.tour_key).group(:tour_stop_id).count
 
       description_arr = []
       gallery_arr = []
@@ -161,6 +182,7 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       visited_stops = []
 
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
+      visited_stops = visited_stops.compact rescue visited_stops
       community = visited_stops.last&.tour.community
       shared_tour_stops = {}
       stops = []
@@ -202,15 +224,18 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
   def floorplan_units
     if params[:unit_id].present?
       unit = Unit.find_by_id(params[:unit_id])
-      @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today) if unit.present?
+      @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
       @units.each do |u|
         if u.community.is_sitemap?
           u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
             image.url(:svg_for_metro) : u.community.sitemap.image.url
+          @sitemap_image_url = u.sitemap_image_url
+
         else
           floorplate = Floorplate.find_by_id(u.floorplate_id)
           floorplate_image = floorplate.image.url if floorplate.present?
           u.sitemap_image_url = floorplate_image
+          @sitemap_image_url = floorplate_image
         end
         u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
       end
@@ -221,7 +246,9 @@ https://apps.apple.com/us/app/self-tour/id1488907392"
       success = false
       message = 'Please provide unit_id'
     end
-    render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+    unless params[:stringFormat].present? && params[:stringFormat] == "true"
+      render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+    end
   end
 
   private

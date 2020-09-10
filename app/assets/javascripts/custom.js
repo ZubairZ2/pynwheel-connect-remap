@@ -28,6 +28,10 @@ $(document).ready(function(e){
       e.stopPropagation();
     })
 
+    $(".loader_class").click(function(e){
+        $(".divLoading").removeClass("hidden");
+    })
+
   $("#multiselect li").click(function(e){
     if ($(this).hasClass("active")){
       $(this).removeClass("active")
@@ -202,6 +206,11 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
     $(this).find('#record-name').html('Delete '+$(e.relatedTarget).data('name'));
     $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
 });
+$('#confirm-delete-visitor').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok-visitor').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find('#record-name-visitor').html('Delete '+$(e.relatedTarget).data('name'));
+    $(this).find('#record-message-visitor').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?' + ' This cannot be undone.');
+});
 $('#confirm-delete_amenity').on('show.bs.modal', function(e) {
     $(this).find('.btn-ok-amenity').attr('href', $(e.relatedTarget).data('href')+'/remove_amenity');
 
@@ -234,6 +243,7 @@ $('#confirm-delete-gallery').on('show.bs.modal', function(e) {
     $(this).find('#record-name-gallery').html($(e.relatedTarget).data('name'));
     $(this).find('#record-message-gallery').html('Are you sure you want to delete this gallery? This cannot be undone.');
 });
+
 $('#markers-modal').on('show.bs.modal', function(e) {
     console.log("Displaying plotted unit information in markers modal");
     $('.unit-buttons').empty();
@@ -363,6 +373,27 @@ function readCommunityGroupLogoURL(input) {
 
             reader.readAsDataURL(input.files[0]);
 
+
+        }
+        else{
+            $(input).val('');
+            $('#image-upload-warning').modal('show');
+            //console.log($(input).val());
+        }
+    }
+}
+function readCommunityGroupHomepageImageURL(input) {
+    if (input.files && input.files[0]) {
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
+
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#preview-community-group-homepage-background-image').attr('src', e.target.result);
+                $('#preview-community-group-homepage-background-image').parent().attr('href', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
 
         }
         else{

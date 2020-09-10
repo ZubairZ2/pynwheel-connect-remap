@@ -35,7 +35,8 @@
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter panel text font style
+              Filter panel text 
+              = link_to "font style",  asset_path("font_style.pdf"), target: "_blank"
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :filter_panel_font_style , options_for_select(font_families,d.object.filter_panel_font_style),{},{class: "form-control filter-panel-field"}
       .row.global_navigation_sub_heading
@@ -110,7 +111,8 @@
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Filter button font style
+              Filter button 
+              = link_to "font style",  asset_path("font_style.pdf"), target: "_blank"
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = d.select :filter_button_font_style , options_for_select(font_families,d.object.filter_button_font_style),{},{class: "form-control filter-panel-field"}
       .row.global_navigation_sub_heading
