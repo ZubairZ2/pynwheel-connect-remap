@@ -84,11 +84,12 @@ json.tours @tours do |tour|
     else
       temp_max_floor = nil
       min_floor = @floor_list.include?(1) ? 1 : @floor_list[0]
+      
+      @building_list << "" if @building_list == []
       @building_list.each do |building|
         
         @floor_list.each do |floor|
           begin
-            
             
             if add_start
               stops_arr << tour #------- Adding starting point
@@ -118,6 +119,7 @@ json.tours @tours do |tour|
               end
               temp_max_floor = floor
               @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+                
                 # amenity_hit = true
                 # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
                 # if ts_ck.present?  && ts_ck.stop_type == "amenity"
@@ -162,7 +164,7 @@ json.tours @tours do |tour|
       # rescue
       # end
       
-      last_stop = stops_arr.compact[stops_arr.compact.size - 1]
+      last_stop = (stops_arr.compact[stops_arr.compact.size - 1].is_a? Tour) ? stops_arr.compact[stops_arr.compact.size - 2] : stops_arr.compact[stops_arr.compact.size - 1]
 
       sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
       max_floor = sto.floors.max rescue (max_floor = temp_max_floor)
@@ -239,6 +241,7 @@ json.tours @tours do |tour|
     else
       temp_max_floor = nil
       min_floor = @floor_list[0]
+      @building_list == []
       @building_list.each do |building|
         @floor_list.each do |floor|
 

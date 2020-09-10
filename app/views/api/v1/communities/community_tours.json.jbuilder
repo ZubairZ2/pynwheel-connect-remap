@@ -41,12 +41,15 @@ json.tours @tours do |tour|
   if @community.is_sitemap
     stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
   else
-    @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
-      if @community.tour.sort_hash[floor.to_s].present?
-        @community.tour.sort_hash[floor.to_s].each do |s_id|
-          if (s_id.present?)
-            stop = (TourStop.find_by_id(s_id))
-            stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+    @building_list << "" if @building_list == []
+    @building_list.each do |building|
+      @floor_list.each do |floor|
+        if @community.tour.sort_hash[building + ","+ floor.to_s].present?
+          @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+            if (s_id.present?)
+              stop = (TourStop.find_by_id(s_id))
+              stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+            end
           end
         end
       end
@@ -88,12 +91,12 @@ json.tours @tours do |tour|
         u = Unit.find stop.stop_id
         if u.present?
           
-          if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
-            unless u.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
-              next
-            end
-          end
-          json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + (u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "")
+          # if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.nil? ? true : tour.tour_setting.show_desired_bedroom) : false)
+          #   unless u.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
+          #     next
+          #   end
+          # end
+          json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
           json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
         else
           next

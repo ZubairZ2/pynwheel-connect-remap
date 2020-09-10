@@ -21,6 +21,8 @@ class TourStop < ApplicationRecord
   set_sortable :sort
   has_many :stop_details, dependent: :destroy
   has_many :stop_galleries, dependent: :destroy
+  attr_accessor :building
+  attr_accessor :floor
 
   has_one :path, as: :map_path
   has_many :path_points, through: :paths
