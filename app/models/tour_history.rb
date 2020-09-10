@@ -69,9 +69,9 @@ class TourHistory < ApplicationRecord
 
   	if self.abandoned_tour_at_stop.present?
 
-  		@mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
+  		@mail_content = ["abandoned_tour_at_stop", "#{(TourUser.find self.tour_user_id).name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "] #get_alert_message('abandoned_tour_at_stop')
 
-		@mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}."
+		@mail_content[1] = "#{@mail_content.last} #{(TourStop.find self.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."
 		  
 		@thank_you_content  = @community.thank_you_message.present? ? @community.thank_you_message : "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
 		touruser_remotelock_data
