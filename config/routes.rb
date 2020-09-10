@@ -210,6 +210,8 @@ Rails.application.routes.draw do
         post :adjust_position
         post :load_remotelock_data
         post :clear_locks
+        delete :remove_pri_scnd_image
+        post :set_amenities_for_units
       end
       collection do
         post :set_floor

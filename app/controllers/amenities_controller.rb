@@ -23,6 +23,7 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
+    @from_unit =  (params[:from] == "unit" and @amenity.amenityable_type == "Unit") ?  @amenity.amenityable_id : "0"
     @assigned_lock = @amenity.remote_locks.first
   end
 
@@ -60,7 +61,7 @@ class AmenitiesController < ApplicationController
       rescue => ex
       end
       unless params[:amenity_modal].present?
-        redirect_to params[:floorNo].nil? ? edit_community_amenity_path(current_community,@amenity) : edit_community_amenity_path(current_community,@amenity) << '?floorNo=' + params[:floorNo] , notice: "Amenity updated successfully"
+        redirect_to (params[:floorNo].nil? and params[:from].nil?) ? edit_community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit') , notice: "Amenity updated successfully"
       else
         redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
       end

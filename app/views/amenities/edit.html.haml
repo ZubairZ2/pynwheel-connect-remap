@@ -18,7 +18,7 @@
     .row
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30
-          = form_for @amenity,url: params[:floorNo].nil? ? community_amenity_path(current_community,@amenity) : community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?floorNo=' + params[:floorNo] , method: :put do |f|
+          = form_for @amenity,url: (params[:floorNo].nil? and params[:from].nil?) ? community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit'), method: :put do |f|
             = hidden_field_tag "community_id", @community.id
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -125,7 +125,7 @@
         .col-lg-10
           .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %a.btn-primary.mb-20.done_btn{:href => "#{params[:floorNo].nil? ? community_tours_path(current_community) : community_tours_path(current_community) << '?floorNo=' + params[:floorNo]}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+              %a.btn-primary.mb-20.done_btn{:href => "#{(params[:floorNo].nil? and params[:from].nil?) ? community_tours_path(current_community) : ( params[:floorNo].present? ? community_tours_path(current_community) << '?floorNo=' + params[:floorNo] : edit_community_unit_path(current_community,@from_unit) )}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 
