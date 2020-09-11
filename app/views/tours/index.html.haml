@@ -242,11 +242,12 @@
       %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same days exist
       .box-body{style: "padding: 0px 20px !important;"}
         .row
-          .col-lg-12 
+          .col-lg-12
             = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
-              .col-sm-12.list
-                - @community.opening_hours.each_with_index do |current_day,index| 
-                  .row.p-8-v
+              - index = 0
+              .col-sm-12.list.tour_sortable
+                - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
+                  .row.p-8-v{id: sortable_id}
                     %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
                       - if current_day.day == "Monday"
                         %option{selected: "", value: "Monday"} Monday
@@ -279,12 +280,14 @@
                     .font-17-v.pull-left.mr-20-v
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v From
-                      %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
+                      %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
                     .font-17-v.pull-left.mr-20-v
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v To
-                      %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
+                      %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
                     .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                    .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{raw current_day.opening_time}','#{raw current_day.closing_time}')", :style => "margin-left:15px;"} Apply To All
+                    - index +=1
                 - if @community.opening_hours.blank?
                   .row.p-8-v
                     %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1"}
@@ -308,7 +311,7 @@
                 %button.btn.btn-primary#add-btn{style: "margin-left: 10;"}
                   %span.fa.fa-v.fa-plus.font-17-v
                     Add
-                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}        
+                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}
 
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
@@ -330,14 +333,14 @@
                 /       = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
                 %h4.col-lg-9.col-lg-offset-1{:style => "margin-bottom: 50px;"}
                   %b Optional: Add custom messaging to the standard automated text & email notification(s).
-                - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )    
+                - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                         Confirmation
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                           %span#propertyDetailNameText
-                            This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is: 
+                            This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
                             Thank you for scheduling your self-guided tour! We look forward to having you at the property on <date> and <time>. When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive: (Links to app stores)
 
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -400,7 +403,7 @@
                     = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                     %span.ml-5
                       = amenity.name
-              
+
       - if @community.mdu
         - units = @units.sort_by{|u| u.marketing_name}
         .col-lg-6
@@ -421,7 +424,7 @@
               -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
 
       -#.col-lg-4{:style => "margin-bottom: 10px;"}
-      -#  %h5.mt-40.mb-20 Add Elevators 
+      -#  %h5.mt-40.mb-20 Add Elevators
       -#  .imageselect.elevator-imageselect
       -#    .show-categories
       -#     = "- select elevator -"
@@ -437,7 +440,7 @@
       -#               = elevator.name
 
       .col-lg-12.col-md-12
-        
+
         -#.box.box-widget.panel-box.add-plan
         .box.box-widget.panel-box
           .row
@@ -558,7 +561,7 @@
 
 
 
-        - if @tours.tour_stops.present?      
+        - if @tours.tour_stops.present?
           .row
             .col-md-12
               %h3{ style: 'color: #800000;' } How to Set up the Tour Path:
@@ -569,8 +572,8 @@
               %h4{:style => "display: inline"} Draw a Path between two stops: Choose two points from the list above by clicking on the "Way Finding" icon.
               %i.fa.fa-road.icon_size
               %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
-              %h4 Drag and drop the icon onto the correct postion on the map.         
-              %h4 To delete a point on the path, double-click the point. 
+              %h4 Drag and drop the icon onto the correct postion on the map.
+              %h4 To delete a point on the path, double-click the point.
 
             -#.col-md-12
             -#  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do
@@ -616,9 +619,9 @@
                     - else
                       - next if (stop.y_plot + stop.x_plot) < 1
                       %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
-                  
+
                   /- binding.pry
-                  - @existing_path_points.each_with_index do |point, index|               
+                  - @existing_path_points.each_with_index do |point, index|
                     .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
 
 .row
@@ -634,6 +637,11 @@
               / End Panel left Side
         / /.content
 :javascript
+  function apply_time_to_all(opening_time, closing_time)
+  {
+    $(".morning_time").val(opening_time);
+    $(".evening_time").val(closing_time);
+  }
   var floor = #{raw @floor}
   function tour_setup_goBack()
   {
@@ -701,11 +709,11 @@
   }
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
-    
+
     /*$.post( "/delete_path_on_sort_change",
       { "tour_stop_id": tour_stop_id },
       function(data,status,xhr) {
-        if(data){          
+        if(data){
         }
       }
     );*/
@@ -747,9 +755,9 @@
     $('.floor_submit_btn').click();
   });
   $('.tour_sortable').railsSortable();
-  
+
   community_id = #{params[:community_id]}
-  
+
   cords_arr = JSON.parse('#{raw(path_point_coords.to_json)}');
 
   $('.floor_submit_btn').click(function () {
@@ -775,11 +783,11 @@
 
   $(document).ready(function(){
     var path_id;
-    
+
     radius = 50;
     var point_color = 'rgb(85, 88, 85)';
     var point_size = 20;
-    
+
     path_array = $(".path_point")
     if (path_array.length > 0){
       $(".plot-image").append(createLine('#stop_'+document.getElementById($(".path_point")[0].id).getAttribute('value'), path_array[0]))
@@ -792,9 +800,9 @@
         }
       }
     }
-    
-    
-    // add listner to prev points 
+
+
+    // add listner to prev points
 
     $.each($("*.path_point"), function(i, existing_point){
       id = $(existing_point).prop('id');
@@ -885,7 +893,7 @@
       path_array.push(path_point)
       start_point_array.push(db_data.line_start_point)
       stop_point_array.push(db_data.line_stop_point)
-      
+
       if(path_array.length == 1 && db_data.line_start_point != "" ){
         line = createLine($('#stop_'+db_data.line_start_point), path_array[path_array.length-1])
         $(".plot-image").append(line)
@@ -897,7 +905,7 @@
       }
       else if(db_data.line_start_point == null){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
-        $(".plot-image").append(line) 
+        $(".plot-image").append(line)
       }
       else if(path_array.length > 1 && db_data.line_start_point != "" && db_data.exist){
         // debugger;
@@ -941,7 +949,7 @@
         if(d <= radius)
           neighbour_unit_ids.push(index)
       });
-      
+
       return neighbour_unit_ids
     }
 
@@ -954,7 +962,7 @@
 
     function updatePoint(x, y, unit_ids, point_id){
       $.post( "/update_path_point",
-        { 
+        {
           "x_plot": x,
           "y_plot": y,
           "point_id": point_id,
@@ -971,7 +979,7 @@
       elmnt.onmousedown = dragMouseDown;
 
       function dragMouseDown(e) {
-      
+
         e = e || window.event;
         e.preventDefault();
         // get the mouse cursor position at startup:
@@ -1027,7 +1035,7 @@
       event.preventDefault();
     });
 
-    
+
     var arr = []
     data = []
     var highlights = []
@@ -1058,7 +1066,7 @@
         var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
         var stop_2_id = url2.split('?')[0]
         var stop_2_type = url2.split('=')[1]
-        
+
         stop_ids = [stop_1_id, stop_2_id]
         stop_types = [stop_1_type, stop_2_type]
         $.ajax({
@@ -1103,7 +1111,7 @@
                 scrollTop: $(".plot-image").offset().top
               }, 500);
             }
-            
+
             //update drawing path for so we can use that path id to save point
           }
 
@@ -1139,11 +1147,11 @@
       var dx = 0;
       var dy = 0;
       var width = $(el).width()|0;
-      var height = $(el).height()|0;  
+      var height = $(el).height()|0;
       dx += parseInt($(el).css('left'), 10);
       dy += parseInt($(el).css('top'), 10);
-      
-      
+
+
       return { top: dy, left: dx, width: width, height: height };
     }
 
@@ -1153,7 +1161,7 @@
       // center of first point
       var dx1 = off1.left + off1.width/2;
       var dy1 = off1.top + off1.height/2;
-      // center of second point 
+      // center of second point
       var dx2 = off2.left + off2.width/2;
       var dy2 = off2.top + off1.height/2;
       // distance
@@ -1195,22 +1203,23 @@
             <option value="Saturday">Saturday</option>
             <option value="Sunday">Sunday</option>
           </select>
-          
+
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">From</label>
             </div>
             <input class="day-list bg-grey-v" name="from_${current_day}" type="time" value="09:00">
           </div>
-          
+
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">To</label>
             </div>
             <input class="day-list bg-grey-v" name="to_${current_day}" type="time" value="17:00">
           </div>
-          
+
           <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger"></div>
+
         </div>`);
     }
     var current_day = $(".list").children().length
