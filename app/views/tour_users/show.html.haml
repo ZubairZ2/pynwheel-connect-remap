@@ -1,3 +1,7 @@
+:css
+  .popover {
+    left: 25px !important;
+    }
 = javascript_include_tag 'moment'
 - content_for :title, "Visitor Details Page - Pynwheel"
 / Main content
@@ -150,48 +154,54 @@
                     - @visited_stop.each do |stop|
                       - @stop = TourStop.find stop[0].to_i rescue next
                       - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
-                      .row
-                        - image_hit = true
-                        - stop[1].each do |stop_image|
-                          - if stop_image.image.present?
+                      -unless @stop.is_a? Elevator
+                        .row{:style => "margin-top: 3px;"}
+                          - image_hit = true
+                          - description_hit = true
+                          - is_data_loaded = false
+                          %a.preview-image{:href=> @stop.image? ? @stop.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Stop Image"}
+                            %img{:src => "/assets/checkbox.png", :style => "height:20px; width:20px;color:green; margin-left: 13px; color: green;", "data-placement" => "top", "data-img" => "#{@stop.image.url}", "data-toggle-placement"=>"right", "data-toggle" => "popover-hover"}
+                          %strong{:style => "font-size: 16px; position: relative; margin-left: 5px;"}
+                            #{@stop.name}
+                          -# - stop[1]= stop[1].sort_by{|u| u.id}
+                          - stop[1].each do |stop_image|
                             - if image_hit
                               .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
-                                %strong{:style => "font-size: 16px;"}
-                                  #{@stop.name}
-                              .col-lg-2.col-md-2.col-sm-6.col-xs-6
-                                Tour photo
-                                %br
-                                = " "
-                                %br
-                                = " "
-                                %br
-                                = image_tag  @stop.image, :class => "my_class", :style => "height: 72px; width: 100px; margin-top: 10px;"
-                                - image_hit = false
-                            .col-lg-2.col-md-2.col-sm-6.col-xs-6.user_photo
-                              User photo
-                              %text{:style => "color: gray"}
-                                %br
-                                = stop_image.event_date.present? ? stop_image.event_date.strftime("%m/%d/%Y") : stop_image.created_at.strftime("%m/%d/%Y")
-                                %br
-                                = stop_image.event_time.present? ? stop_image.event_time.strftime("%H:%M:%S") : stop_image.created_at.strftime("%H:%M:%S")
-                              %br
+                              .row{:style => "margin-left: 13px; margin-right: 0px;"}
+                                %text{:style => "color: gray"}
+                                  %img{:src => "https://img.icons8.com/android/16/000000/walking.png"}/
+                                  -image_hit = false
+
+                                  = stop[1].first.event_date.present? ? stop[1].first.event_date.strftime("%m/%d/%Y") : stop[1].first.created_at.strftime("%m/%d/%Y")
+                                  = stop[1].first.event_time.present? ? stop[1].first.event_time.strftime("%I:%M %p") : stop[1].first.created_at.strftime("%I:%M %p")
+
+                            - if stop_image.image.url.present?
+                              - is_data_loaded = true
+                              = image_tag  @stop.image, :class => "my_class", id: "#{@stop.id}", :style => " display: none; height: 72px; width: 100px; margin-top: 10px;"
+                              = " "
                               - if stop_image.is_rotated == true
-                                = image_tag  stop_image.image.url, :class => "", :style => "height: 100px; width: 72px; margin-top: -4px; margin-left: 10px; transform: rotate(90deg);"
+                                = image_tag  stop_image.image.url, :class => "", :style => "height: 200px; width: auto; margin-top: -4px; margin-left: 28px; transform: rotate(90deg);"
                               - else
-                                = image_tag  stop_image.image.url, :class => "", :style => "height: 74px; width: 100px; margin-top: 8px; margin-left: 0px; "
-                        - stop[1].each do |stop_decription|
-                          - if stop_decription.description.present?
-                            .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
-                              User Notes
-                              %text{:style => "color: gray"}
+                                = image_tag  stop_image.image.url, :class => "", :style => "height: 148px; width: auto; margin-top: 8px; margin-left: 15px; "
+                          - stop[1].each do |stop_decription|
+                            - if stop_decription.description.present?
+                              - is_data_loaded = true
+                              - if description_hit
+                                .col-lg-12{:style => "margin-bottom: 5px;"}
+                                  -#%strong{:style => "font-size: 16px;"}
+                                    -##{@stop.name}
+                              - description_hit = false
+                              .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
+                                %strong{:style => "font-size: 16px;"}
+                                  Notes
+                                %text{:style => "color: gray"}
                                 %br
-                                = stop_decription.event_date.present? ? stop_decription.event_date.strftime("%m/%d/%Y") : stop_decription.created_at.strftime("%m/%d/%Y")
-                                %br
-                                = stop_decription.event_time.present? ? stop_decription.event_time.strftime("%H:%M:%S") : stop_decription.created_at.strftime("%H:%M:%S")
-                              %br
-                              .user_note{:style => "background: ;"}
-                                -##{stop_decription.description}
-                                = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
+                                .user_note{:style => "background: ;"}
+                                  -##{stop_decription.description}
+                                  = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
+                          / - unless is_data_loaded
+                        %hr{:style => "border-top: 2px solid white; margin-left: -15px; margin-right: -15px;"}
+
 
                     -#.col-lg-12{:style => "background: #efefef;  margin: 30px "}
                     -#  .col-lg-12
@@ -341,6 +351,17 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
+
+  $('[data-toggle="popover-hover"]').popover({
+      html: true,
+      trigger: 'hover',
+      placement: 'bottom',
+      content: function () { return '<img style="height: 100px; max-height:100px; max-width:100px;" src="' + $(this).data('img') + '" />'; }
+    });
+  function show_imagee(stop){
+        $(".abc").removeClass("hide_image");
+          }
+          
    if ("#{browser.device.iphone?}" == "true")
    {
      $(".user_id_image1").css("transform", "transform: rotate(90deg);");

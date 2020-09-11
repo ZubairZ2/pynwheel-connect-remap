@@ -86,50 +86,53 @@ json.tours @tours do |tour|
     else
       temp_max_floor = nil
       min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
-      @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
-
-        begin
-          if @community.tour.sort_hash[floor.to_s].present?
-            arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
-            if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
-              begin
-                # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
-                next
+      @building_list << "" if @building_list == []
+      @building_list.each do |building|
+        @floor_list.each do |floor|
+          begin
+            
+            if @community.tour.sort_hash[building+','+ floor.to_s].present?
+              arr_to_remove = @community.tour.sort_hash[building+','+ floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
+              if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
+                begin
+                  # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
+                  next
+                  # end
+                rescue
+                end
+              end
+              temp_max_floor = floor
+              @community.tour.sort_hash[building+','+ floor.to_s].each do |s_id|
+                # amenity_hit = true
+                # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
+                # if ts_ck.present?  && ts_ck.stop_type == "amenity"
+                #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
                 # end
-              rescue
-              end
-            end
-            temp_max_floor = floor
-            @community.tour.sort_hash[floor.to_s].each do |s_id|
-              # amenity_hit = true
-              # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
-              # if ts_ck.present?  && ts_ck.stop_type == "amenity"
-              #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
-              # end
-              add_stop = TourStop.find_by_id(s_id)
-              if add_stop.present?
-                add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                if add_stop.stop_type == "unit"
-                  u = Unit.find add_stop.stop_id
+                add_stop = TourStop.find_by_id(s_id)
+                if add_stop.present?
+                  add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
+                  if add_stop.stop_type == "unit"
+                    u = Unit.find add_stop.stop_id
 
-                end
-                bedroom_flag = true
-                #---------------- bedroom check
-                
-                if add_stop.stop_type == "unit" and @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
-                  unit = Unit.find_by_id add_stop.stop_id
-
-                  unless unit.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
-                    bedroom_flag = false
                   end
+                  bedroom_flag = true
+                  #---------------- bedroom check
+                  
+                  if add_stop.stop_type == "unit" and @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
+                    unit = Unit.find_by_id add_stop.stop_id
+
+                    unless unit.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
+                      bedroom_flag = false
+                    end
+                  end
+                  #--------------------
+                  stops_arr << add_stop if (add_stop.display_stop && add_mdu && bedroom_flag)
                 end
-                #--------------------
-                stops_arr << add_stop if (add_stop.display_stop && add_mdu && bedroom_flag)
+                # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
               end
-              # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
             end
+          rescue
           end
-        rescue
         end
       end
       stop_count = stops_arr.compact.count
@@ -200,36 +203,38 @@ json.tours @tours do |tour|
     else
       temp_max_floor = nil
       min_floor = @community.floorplates.map{|f| f.floors}.flatten.min
-      @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
+      @building_list.each do |building|
+        @floor_list.each do |floor|
 
-        begin
-          if @community.tour.sort_hash[floor.to_s].present?
-            arr_to_remove = @community.tour.sort_hash[floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
-            if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
-              begin
-                # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
-                next
+          begin
+            if @community.tour.sort_hash[building+','+ floor.to_s].present?
+              arr_to_remove = @community.tour.sort_hash[building+','+ floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids
+              if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
+                begin
+                  # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
+                  next
+                  # end
+                rescue
+                end
+              end
+              temp_max_floor = floor
+              @community.tour.sort_hash[building+','+ floor.to_s].each do |s_id|
+                # amenity_hit = true
+                # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
+                # if ts_ck.present?  && ts_ck.stop_type == "amenity"
+                #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
                 # end
-              rescue
+                add_stop = TourStop.find_by_id(s_id)
+                if add_stop.present?
+                
+                  add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
+                  stops_arr << add_stop if (add_stop.display_stop && add_mdu)
+                end
+                # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
               end
             end
-            temp_max_floor = floor
-            @community.tour.sort_hash[floor.to_s].each do |s_id|
-              # amenity_hit = true
-              # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
-              # if ts_ck.present?  && ts_ck.stop_type == "amenity"
-              #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
-              # end
-              add_stop = TourStop.find_by_id(s_id)
-              if add_stop.present?
-              
-                add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                stops_arr << add_stop if (add_stop.display_stop && add_mdu)
-              end
-              # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
-            end
+          rescue
           end
-        rescue
         end
       end
       stop_count = stops_arr.compact.count
