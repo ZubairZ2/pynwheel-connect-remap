@@ -166,7 +166,7 @@ class TourHistory < ApplicationRecord
 
   def send_email subj, body
 		begin
-			NotificationMailer.tour_history_mail(subj.humanize, body.humanize, community.email).deliver
+			NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
 		rescue
 
 		end
