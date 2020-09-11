@@ -494,7 +494,7 @@ json.tours @tours do |tour|
 
       json.directional_text show_directional_text ? unit_directional_text[0..description_limit - 1] : unit_directional_text
       json.show_long_directional_text show_directional_text
-      json.long_directional_text styling_start + unit.stop_description.gsub('"red','') + styling_end rescue ""      
+      json.long_directional_text styling_start + unit.stop_description.gsub('red','') + styling_end rescue ""      
       json.video_link_button_label unit.virtual_tour_button_label
       json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
       lease_pricing = []
@@ -537,7 +537,7 @@ json.tours @tours do |tour|
         show_long_description = true
       end
 
-      stop_dat = {"floorplan" => (Floorplan.find_by(id: unit.floorplan.id).name rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('"red','') + styling_end  rescue ""), "availability_url"=> unit.availability_url.present? ? unit.availability_url :  (Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url rescue "")}
+      stop_dat = {"floorplan" => (Floorplan.find_by(id: unit.floorplan.id).name rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> unit.availability_url.present? ? unit.availability_url :  (Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url rescue "")}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
@@ -595,7 +595,7 @@ json.tours @tours do |tour|
           json.stop_description unit_amenity_stop_description[0..description_limit - 1]
           end
 
-          json.long_stop_description styling_start + unit_amenity.description.gsub('"red','') + styling_end  rescue ""
+          json.long_stop_description styling_start + unit_amenity.description.gsub('red','') + styling_end  rescue ""
 
           unit_amenity_directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
           if unit_amenity_directional_text.size < description_limit
@@ -606,7 +606,7 @@ json.tours @tours do |tour|
           json.directional_text unit_amenity_directional_text[0..description_limit - 1]
           end
 
-          json.long_directional_text styling_start + unit_amenity.directional_text.gsub('"red','') + styling_end  rescue ""
+          json.long_directional_text styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue ""
           json.video_link_button_label unit.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
@@ -626,7 +626,7 @@ json.tours @tours do |tour|
             end
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
 
-            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"show_long_description" => show_long_description ,"long_description" => (styling_start + unit.description + styling_end  rescue ""), "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"show_long_directional_text" => show_directional_text,"long_directional_text" => (styling_start + unit_amenity.directional_text.gsub('"red','') + styling_end  rescue "")]
+            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"show_long_description" => show_long_description ,"long_description" => (styling_start + unit.description + styling_end  rescue ""), "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"show_long_directional_text" => show_directional_text,"long_directional_text" => (styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue "")]
           else
 
             amenityGalleryArr = []
@@ -660,7 +660,7 @@ json.tours @tours do |tour|
 
                 json.directional_text stop_description[0..description_limit - 1]
               end              
-              json.long_directional_text styling_start + ag.directional_text.gsub('"red','') + styling_end  rescue ""
+              json.long_directional_text styling_start + ag.directional_text.gsub('red','') + styling_end  rescue ""
             end
           end
 
@@ -780,7 +780,7 @@ json.tours @tours do |tour|
 
         json.stop_description stop_description[0..description_limit - 1]
       end
-      json.long_stop_description styling_start + amenity.description.gsub('"red','') + styling_end  rescue ""
+      json.long_stop_description styling_start + amenity.description.gsub('red','') + styling_end  rescue ""
       current_floor = amenity.floor
       json.name amenity.name
       directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
@@ -793,7 +793,7 @@ json.tours @tours do |tour|
 
       json.directional_text directional_text[0..description_limit - 1]
       end
-      json.long_directional_text styling_start + amenity.directional_text.gsub('"red','') + styling_end  rescue ""
+      json.long_directional_text styling_start + amenity.directional_text.gsub('red','') + styling_end  rescue ""
 
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
@@ -842,7 +842,7 @@ json.tours @tours do |tour|
           show_directional_text = true
         end
 
-        json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image","show_long_description" => show_long_description, "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"long_stop_description" => (styling_start + amenity.description.gsub('"red','') + styling_end  rescue ""),"show_long_directional_text" => show_directional_text, "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"long_directional_text" => (styling_start + amenity.directional_text.gsub('"red','') + styling_end  rescue "")]
+        json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image","show_long_description" => show_long_description, "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"long_stop_description" => (styling_start + amenity.description.gsub('red','') + styling_end  rescue ""),"show_long_directional_text" => show_directional_text, "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"long_directional_text" => (styling_start + amenity.directional_text.gsub('red','') + styling_end  rescue "")]
       else
         # json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
 
@@ -878,7 +878,7 @@ json.tours @tours do |tour|
 
             json.directional_text stop_description[0..description_limit - 1]
           end 
-          json.long_directional_text styling_start + ag.description.gsub('"red','') + styling_end  rescue ""
+          json.long_directional_text styling_start + ag.description.gsub('red','') + styling_end  rescue ""
         end
       end
     end
