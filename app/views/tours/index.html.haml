@@ -508,10 +508,12 @@
           %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?"+ "building=#{b}", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{@building.present? ? (@building == b ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{b.humanize}
 
     - unless @community.is_sitemap
-      %h3 Select a Floor
-      - @floor_list.sort.each do |f|
-        %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}&building=#{@building}", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floor.present? ? (@floor.to_i == f ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
-
+      - begin
+        %h3 Select a Floor
+        - @floor_list.sort.each do |f|
+          %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}&building=#{@building}", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floor.present? ? (@floor.to_i == f ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
+      - rescue
+        - puts "rescued"
     .row
       / Start Panel left Side
       .col-lg-6{:style => "margin-bottom: 10px;"}
@@ -599,8 +601,8 @@
                       - if stop.stop_type == "elevator" && @community.is_sitemap
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
-                        - elevator = Elevator.find stop.stop_id
-                        - if (!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (![@building,nil].include? elevator.building) && 1 != @floor.to_i
+                        - elevator = Elevator.find_by_id stop.stop_id
+                        - if elevator.present? && elevator.building.present? && ((!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (![@building,nil].include? elevator.building) && 1 != @floor.to_i)
                           - next
                       %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
@@ -633,18 +635,20 @@
                               %i.fa.fa-edit.icon_size
 
                           - elsif stop.stop_type == "elevator" && !@community.is_sitemap
-                            - if (elevator.floors.max.to_i == (@floor.to_i))
-                              - if @community.show_map
-                                = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
-                                  %i.fa.fa-road.icon_size
-                            - else
-                              - if @community.show_map
-                                = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
-                                  %i.fa.fa-road.icon_size
-
-                            = link_to edit_community_elevator_path(@community, elevator) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
-                              %i.fa.fa-edit.icon_size
-
+                            - begin
+                              - if (elevator.floors.max.to_i == (@floor.to_i))
+                                - if @community.show_map
+                                  = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
+                                    %i.fa.fa-road.icon_size
+                              - else
+                                - if @community.show_map
+                                  = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
+                                    %i.fa.fa-road.icon_size
+                            
+                              = link_to edit_community_elevator_path(@community, elevator) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                                %i.fa.fa-edit.icon_size
+                            - rescue
+                              - puts 'rescued'
                           - elsif stop.stop_type == "amenity"
                             - amenity = Amenity.find stop.stop_id
                             = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} #{stop.display_stop ? "" : "hidden"} text-warning ml-5" do

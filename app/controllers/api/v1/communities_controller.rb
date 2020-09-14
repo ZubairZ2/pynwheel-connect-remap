@@ -329,12 +329,14 @@ class Api::V1::CommunitiesController < ActionController::Base
 
       @building_list << "" if @building_list == []
         @building_list.each do |building|
-          @floor_list.each do |floor|
-            if @community.tour.sort_hash[building + ","+ floor.to_s].present?
-              @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
-                if (s_id.present?)
-                  stop = (TourStop.find_by_id(s_id))
-                  stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+          if @floor_list.present?
+            @floor_list.each do |floor|
+              if @community.tour.sort_hash[building + ","+ floor.to_s].present?
+                @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+                  if (s_id.present?)
+                    stop = (TourStop.find_by_id(s_id))
+                    stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+                  end
                 end
               end
             end

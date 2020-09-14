@@ -22,7 +22,7 @@ json.tours @tours do |tour|
 
   else
     @floorplate = @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
-    json.image @floorplate.image
+    json.image @floorplate.image rescue "no image"
 
   end
   fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
