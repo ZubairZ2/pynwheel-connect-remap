@@ -4,6 +4,7 @@ class ToursController < ApplicationController
     @community = Community.find params[:community_id]
     @tours = @community.tour || @community.create_tour
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
+    @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
     @community_opening_hours = @community.opening_hours.order(:sort).all
 
 

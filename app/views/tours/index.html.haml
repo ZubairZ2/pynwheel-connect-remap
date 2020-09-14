@@ -202,7 +202,7 @@
                     %span.pr-15 No
                     = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
                     %label.label-primary{:for => "automate_unit_stop"}
-                    %span.pl-15 Yes      
+                    %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Dotted line color
@@ -214,6 +214,15 @@
                   Max Tour At One Time
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12
+                In 15 minute increments (ie, 10:00, 10:15, 10:30)
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .row
+                  .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                    .checkbox
+                      = check_box_tag :time_intervel, true, @tour_setting.time_intervel == "15 min" ? true : false
+                      %label 15 min intervel
             -#.form-groups
             -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Show Notepad Button
@@ -239,10 +248,10 @@
           %span
       %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: green; display: none;"}
       %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: white"}
-      %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same days exist
+      %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same time exist
       .box-body{style: "padding: 0px 20px !important;"}
         .row
-          .col-lg-12
+          .col-lg-12 
             = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
               - index = 0
               .col-sm-12.list.tour_sortable
@@ -280,13 +289,15 @@
                     .font-17-v.pull-left.mr-20-v
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v From
-                      %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}"}
+                      %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
                     .font-17-v.pull-left.mr-20-v
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v To
-                      %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}"}
-                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-                    .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{raw current_day.opening_time}','#{raw current_day.closing_time}')", :style => "margin-left:15px;"} Apply To All
+                      %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
+                    -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                    .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{raw current_day.opening_time}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;"}
+                      .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply To All
+                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                     - index +=1
                 - if @community.opening_hours.blank?
                   .row.p-8-v
@@ -311,7 +322,7 @@
                 %button.btn.btn-primary#add-btn{style: "margin-left: 10;"}
                   %span.fa.fa-v.fa-plus.font-17-v
                     Add
-                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "save"}
+                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "Save"}
 
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
@@ -335,6 +346,8 @@
                   %b Optional: Add custom messaging to the standard automated text & email notification(s).
                 - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
+                    %h4{:style => "margin-bottom: 50px;"}
+                      %b Optional: Add custom messaging to the standard automated text & email notifications. (Only applicable if the property is using the scheduler widget). Click on the question marks to see the standard notification messages.
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                         Confirmation
@@ -1179,14 +1192,29 @@
 
   $(document).ready(function(){
 
-    function hasDuplicates(array) {
+    function hasDuplicates(array,times_hash) {
       var valuesSoFar = Object.create(null);
       for (var i = 0; i < array.length; ++i) {
-          var value = array[i];
-          if (value in valuesSoFar) {
-              return true;
+          if(times_hash[array[i]].length > 1)
+          {
+            var check_index = times_hash[array[i]];
+            for(var j = 0; j < check_index.length ;j++)
+            {
+              for(var k = 0; k < check_index.length ;k++)
+              {
+                if( j!=k )
+                {
+                if(check_index[j].split('-')[0] <= check_index[k].split('-')[0] && check_index[j].split('-')[1] >= check_index[k].split('-')[0])
+                {return true;}
+                if(check_index[j].split('-')[0] <= check_index[k].split('-')[1] && check_index[j].split('-')[1] >= check_index[k].split('-')[1])
+                {return true;}
+
+
+                }
+
+              }
+            }
           }
-          valuesSoFar[value] = true;
       }
       return false;
     }
@@ -1235,11 +1263,21 @@
 
   $('#schedule-btn-submit').click(function( event ){
     var days = []
+    var times_list = $(".bg-grey-v")
+    var times_hash = {}
+    var i = 0;
     $(".list").children().children('select').each(function(){
       var selected = '#' + $(this).attr('id') + ' :selected'
-      days.push($(selected).text())
+      var day_ = $(selected).text()
+      if(times_hash[day_] == undefined)
+      {
+        times_hash[day_] = []
+      }
+      times_hash[day_].push(times_list[i].value +'-'+ times_list[i+1].value);
+      days.push(day_);
+      i += 2;
     })
-    if(hasDuplicates(days)){
+    if(hasDuplicates(days,times_hash)){
       event.preventDefault();
       $("#same-days").css('color', 'red');
       timer = setTimeout(function() {
