@@ -225,6 +225,14 @@
 
 
               <div class="clearfix"></div>
+
+              <% if @community.data_provider == "realpagesvc" && @marketing_source_required %>
+                <div class="form-group">
+                  <label> How did you hear about <%= @community.name.titleize %> ? </label>
+                  <%= select_tag :marketing_source, options_for_select(@community.credential.realpage_marketing_sources.present? ? @community.credential.realpage_marketing_sources.collect{|s| [ s["Text"], s["Value"] ]} : []), include_blank: false , prompt: "select your option", required: 'required', class: "span2 form-control"%>
+                </div>
+              <% end %>
+
               <button id ="confirm_reservation" class="btn_popup">Confirm My Reservation!</button>
             <% end %>
           </div>

@@ -401,6 +401,10 @@ class Community < ApplicationRecord
   def real_page_get_activity_types
     RealPageGetActivityTypesJob.perform_async credential.attributes.to_json
   end
+
+  def real_page_get_marketing_sources
+    RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json
+  end
   
   def entrata_send_mits_leads(tour_user, tour_time, end_time, visited_stops)
     PsiSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, tour_time, end_time, visited_stops
