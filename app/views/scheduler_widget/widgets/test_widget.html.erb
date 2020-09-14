@@ -170,8 +170,7 @@
                 <%= label_tag "Exp Year", nil, required: true %>
                 <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
               </div>
-
-              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.tour.tour_setting.show_desired_bedroom) %>
+              <% if current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_desired_bedroom.present? ? current_community.tour.tour_setting.show_desired_bedroom : true ) : true %>
               <div class="">
                  
                 <label>Desired Number of Bedrooms</label>
@@ -182,7 +181,7 @@
               </div>
               <% end %> 
 
-              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date ) %>
+              <% if current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_desired_move_in_date.present? ? current_community.tour.tour_setting.show_desired_move_in_date : true  ) : true %>
               <div class="form-group">
                 <label>Desired Move-in Date</label>
                 <span class="hidden" id="move-in-date"></span>
