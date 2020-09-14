@@ -162,6 +162,16 @@
                     = f.check_box :self_tour
                     %label.label-primary{:for => "community_self_tour"}
                     %span.pl-15 Yes
+              - if f.object.self_tour.present? && f.object.self_tour
+                .form-group.apply_now_self_tour_field
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Apply Now Self Tour
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :apply_now_self_tour
+                      %label.label-primary{:for => "community_apply_now_self_tour"}
+                      %span.pl-15 Yes      
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Show Map
@@ -190,6 +200,25 @@
                       = f.check_box :touchscreen_app
                       %label.label-primary{:for => "community_touchscreen_app"}
                       %span.pl-15 Yes
+                - if f.object.touchscreen_app.present? && f.object.touchscreen_app
+                  .form-group.apply_now_pynwheel_touch_field
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Apply Now Pynwheel Touch
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = f.check_box :apply_now_pynwheel_touch
+                        %label.label-primary{:for => "community_apply_now_pynwheel_touch"}
+                        %span.pl-15 Yes
+                  .form-group.apply_now_pynwheel_touch_field
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Apply Now Pynwheel Touch and Go
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = f.check_box :apply_now_pynwheel_touch_and_go
+                        %label.label-primary{:for => "community_apply_now_pynwheel_touch_and_go"}
+                        %span.pl-15 Yes            
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Chat Control
@@ -331,6 +360,24 @@
     else{
       $("#access_restrictions").addClass("hidden")
       $("#allowed_emails").addClass("hidden")
+    }
+  })
+
+  $('#community_self_tour').change(function() {
+    if ($("#community_self_tour").is(":checked")){
+      $(".apply_now_self_tour_field").removeClass("hidden")
+    }
+    else{
+      $(".apply_now_self_tour_field").addClass("hidden")
+    }
+  })
+
+  $('#community_touchscreen_app').change(function() {
+    if ($("#community_touchscreen_app").is(":checked")){
+      $(".apply_now_pynwheel_touch_field").removeClass("hidden")
+    }
+    else{
+      $(".apply_now_pynwheel_touch_field").addClass("hidden")
     }
   })
 
