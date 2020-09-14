@@ -170,6 +170,8 @@
                 <%= label_tag "Exp Year", nil, required: true %>
                 <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
               </div>
+              
+              <% end %>
               <% if current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_desired_bedroom.present? ? current_community.tour.tour_setting.show_desired_bedroom : true ) : true %>
               <div class="">
                  
@@ -243,7 +245,6 @@
 
                   <button type="submit">Submit Payment</button>
                 <% end %>
-              <% end %>
               <% end %>
 
 
