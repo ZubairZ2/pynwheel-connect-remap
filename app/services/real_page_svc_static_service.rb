@@ -3,7 +3,7 @@ class RealPageSvcStaticService < BaseService
     # @doc = ""
     @array_of_units = []
     import_realpage_svc_floorplans
-    # import_initial_realpage_units
+    import_initial_realpage_units
     import_realpage_svc_units
     import_realpage_svc_price
     # com = Community.find(credentials.community_id)

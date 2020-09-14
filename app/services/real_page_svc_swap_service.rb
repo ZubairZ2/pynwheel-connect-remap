@@ -1,7 +1,7 @@
 class RealPageSvcSwapService < BaseService
   def perform
     import_realpage_svc_floorplans
-    # import_initial_realpage_units
+    import_initial_realpage_units
     import_realpage_svc_units
     import_realpage_svc_price
     rename_provider
@@ -378,7 +378,7 @@ class RealPageSvcSwapService < BaseService
                               <tem:listCriteria>
                                 <tem:ListCriterion>
                                   <tem:name>Limitresults</tem:name>
-                                  <tem:singlevalue>True</tem:singlevalue>
+                                  <tem:singlevalue>False</tem:singlevalue>
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>
