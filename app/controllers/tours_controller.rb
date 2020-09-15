@@ -492,6 +492,8 @@ class ToursController < ApplicationController
         to_key = 'to_' + i.to_s
       end
     end
+    @community = Community.find params[:community_id]
+    redirect_to community_tours_path(@community)
     flash[:notice] = "Tour settings updated successfully."
   end
 
