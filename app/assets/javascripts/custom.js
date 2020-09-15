@@ -568,6 +568,7 @@ function showYardiRentCafeFields(){
     $('#p_code').show();
     //$('#community_credential_attributes_p_code').addClass("validate[required]");
     $('#data-connection-buttons').show();
+    $('#limit_result_field').show();
     $('#yardirentcafe_option').show();
     $('#data-replace-update-buttons').hide();
 }
@@ -581,6 +582,7 @@ function showRealPageSVCFields(){
     //$('#community_credential_attributes_site_id').addClass("validate[required]"); 
     $('#data-connection-buttons').show();
     $('#data-replace-update-buttons').hide();
+    $('#limit_result_field').show();
 
     $('#realpage_store_pricing_button').show();
     $('#realpage_show_pricing_button').show();
