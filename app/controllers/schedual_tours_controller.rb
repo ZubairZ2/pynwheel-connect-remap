@@ -29,9 +29,9 @@ class SchedualToursController < ApplicationController
     
     phone_number = make_phone
 
-    tu = TourUser.find_by(email: params[:tour_user][:email])
+    tu = TourUser.find_by(email: params[:tour_user][:email].downcase)
     # tu.name = params[:tour_user][:name] if tu.present?
-    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
+    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email].downcase, phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
     tu.phone_number = phone_number if phone_number.present?
 
     # binding.pry
@@ -39,7 +39,7 @@ class SchedualToursController < ApplicationController
     if tu.save
       
       begin
-        customer = Stripe::Customer.create email: params[:tour_user][:email],
+        customer = Stripe::Customer.create email: params[:tour_user][:email].downcase,
                                            card: params[:tour_user][:card_token]
         res = Stripe::Charge.create customer: customer.id,
                               amount: 50,
