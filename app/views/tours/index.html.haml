@@ -637,7 +637,7 @@
                   - @existing_path_points.each_with_index do |point, index|
                     .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
 
-.row
+.row 
   .col-md-12
     .box-footer.mt-30.pt-15
       .row
