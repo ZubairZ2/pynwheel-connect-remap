@@ -246,7 +246,8 @@
               -#        = f.check_box :tour_setup_visible
               -#        %label.label-primary{:for => "community_tour_setup_visible"}
               -#        %span.pl-15 Yes
-              .form-group
+              
+              .form-group.verification_type_field.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   ID verification provider
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -292,6 +293,9 @@
 
 
 :javascript
+  var self_tour = #{@community.self_tour}
+  if(self_tour)
+    $(".verification_type_field").removeClass("hidden")
   populate_multiselect()
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd', maxDate: new Date, minDate: new Date(2007, 6, 12) });
   $(document).ready(function(e){
@@ -306,7 +310,6 @@
       (event.which != 0 && event.which != 8))) {
     event.preventDefault();
   }
-
   var text = $(this).val();
 
   if ((text.indexOf('.') != -1) &&
@@ -329,12 +332,16 @@
   $('#community_self_tour').change(function() {
     if ($("#community_self_tour").is(":checked")){
       $("#access_restrictions").removeClass("hidden")
+      $(".verification_type_field").removeClass("hidden")
+
       if ($("#community_restrict_access").is(":checked"))
         $("#allowed_emails").removeClass("hidden")
     }
     else{
       $("#access_restrictions").addClass("hidden")
       $("#allowed_emails").addClass("hidden")
+      $(".verification_type_field").addClass("hidden")
+
     }
   })
 
