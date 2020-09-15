@@ -50,6 +50,14 @@ class CommunitiesController < ApplicationController
     if params[:community][:image]
       @community.crop_x = nil
     end
+    if params["verification_type"].present?
+      begin
+        @community.tour.verification_type = params["verification_type"]
+        @community.tour.save
+      rescue Exception => e
+        
+      end
+    end
     if params[:community][:secondary_image]
       @community.crop_x_secondary = nil
     end
@@ -540,7 +548,6 @@ class CommunitiesController < ApplicationController
     @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
     @tour.credit_card_required = params[:credit_card_required].present? ? true : false
     
-    @tour.verification_type = params[:verification_type] if params[:verification_type].present?
     @tour.save
     @community.show_camera_button = params[:show_camera_button].present? ? true : false
     @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
