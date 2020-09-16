@@ -172,7 +172,7 @@
               </div>
               
               <% end %>
-              <% if current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_desired_bedroom.present? ? current_community.tour.tour_setting.show_desired_bedroom : true ) : true %>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.tour.tour_setting.show_desired_bedroom )  %>
               <div class="">
                  
                 <label>Desired Number of Bedrooms</label>
@@ -183,7 +183,7 @@
               </div>
               <% end %> 
 
-              <% if current_community.tour.tour_setting.present? ? (current_community.tour.tour_setting.show_desired_move_in_date.present? ? current_community.tour.tour_setting.show_desired_move_in_date : true  ) : true %>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date  ) %>
               <div class="form-group">
                 <label>Desired Move-in Date</label>
                 <span class="hidden" id="move-in-date"></span>
