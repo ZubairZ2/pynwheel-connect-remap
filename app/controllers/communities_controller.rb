@@ -50,6 +50,14 @@ class CommunitiesController < ApplicationController
     if params[:community][:image]
       @community.crop_x = nil
     end
+    if params["verification_type"].present?
+      begin
+        @community.tour.verification_type = params["verification_type"]
+        @community.tour.save
+      rescue Exception => e
+
+      end
+    end
     if params[:community][:secondary_image]
       @community.crop_x_secondary = nil
     end
@@ -527,45 +535,26 @@ class CommunitiesController < ApplicationController
   def save_tour_settings
     @community = Community.find params[:community_id]
     @tour = @community.tour
-    @tour_setting = @tour.tour_setting
-    unless params[:community][:optional_mails].present?
-      @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
-      @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
-      @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
-      @community.show_camera_button = params[:show_camera_button].present? ? true : false
-      @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
-      @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
-      # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
-      # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+    @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+    @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
+    @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
+    @tour.marker_icon_size = params[:marker_icon_size]
+    @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
+    @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
+    @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
+    @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
+    @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
+    @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
+    @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
+    @tour.credit_card_required = params[:credit_card_required].present? ? true : false
 
-      # @tour.marker_icon_size = params[:marker_icon_size]
-      @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
-      @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
-      @tour.credit_card_required = params[:credit_card_required].present? ? true : false
-      @tour.save
+    @tour.save
+    @community.show_camera_button = params[:show_camera_button].present? ? true : false
+    @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+    @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
+    @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
 
-      # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
-      # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
-      # @tour_setting.show_last_name = params[:show_last_name].present? ? params[:show_last_name] : false
-      # @tour_setting.show_email = params[:show_email].present? ? params[:show_email] : false
-      @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
-      @tour_setting.show_phone = params[:show_phone].present? ? params[:show_phone] : false
-      @tour_setting.show_desired_bedroom = params[:show_desired_bedroom].present? ? params[:show_desired_bedroom] : false
-      @tour_setting.show_desired_move_in_date = params[:show_desired_move_in_date].present? ? params[:show_desired_move_in_date] : false
-      @tour_setting.time_intervel = "15 min" if params[:time_intervel_15] == "true"
-      @tour_setting.time_intervel = "30 min" if params[:time_intervel_30] == "true"
-      @tour_setting.time_intervel = "1 hr" if params[:time_intervel_1] == "true"
-      @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
-      @tour_setting.save
 
-      @tour.save
-    else
-      @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
-      @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
-      @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
-      @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
-    end
-    
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)

@@ -304,6 +304,7 @@
                   Max Tour At One Time
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
+
               .form-group
                 %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
                   Allow visitors to schedule tours
@@ -342,6 +343,7 @@
                         .radiobutton.check_t
                           = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
                
+
             -#.form-groups
             -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             -#    Show Notepad Button
