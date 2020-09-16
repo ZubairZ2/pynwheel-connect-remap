@@ -593,6 +593,8 @@ class ToursController < ApplicationController
     if params[:tour_user_id].present?
       tour_user = TourUser.find_by_id params[:tour_user_id]
       tour_user.update_attributes id_selfie_mismatch: params[:match_status]
+      community_id = tour_user.community_id
+      community_email = Community.find(community_id).email
       status = 200
       message = "ID/Selfie is marked #{params[:match_status] == "true" ? 'Mismatched' : 'Matched' }"
 
@@ -601,9 +603,9 @@ class ToursController < ApplicationController
 
         email_content = "The user has a mismatching ID/Selfie. <br/> <a href='#{manual_selfie_match_url tour_user.id }' target='_blank'> Visitor's ID page </a>"
 
-        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
+        # DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
         DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'arslan.mirza@intagleo.com')
+        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, community_email)
 
       end
     else
