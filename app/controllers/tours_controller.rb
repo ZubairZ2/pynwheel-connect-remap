@@ -602,11 +602,12 @@ class ToursController < ApplicationController
         name = tour_user.name || tour_user.email.split('@').first.humanize
 
         email_content = "The user has a mismatching ID/Selfie. <br/> <a href='#{manual_selfie_match_url tour_user.id }' target='_blank'> Visitor's ID page </a>"
-
-        # DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
         DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, community_email)
-
+        if community_email.present?
+          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, community_email)
+        else
+          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
+        end
       end
     else
       status = 404
