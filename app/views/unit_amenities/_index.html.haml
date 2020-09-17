@@ -10,8 +10,10 @@
             %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
               = image_tag amenity.image.url
         .icons
-          = link_to edit_community_unit_amenity_path(@community,@unit,amenity), remote: true do
-            %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+          = link_to edit_community_amenity_path(@community,amenity) << "?from=unit" do
+            %i.fa.fa-pencil
+          -# = link_to edit_community_unit_amenity_path(@community,@unit,amenity), remote: true do
+          -#   %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
           %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/amenities/#{amenity.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
             %i.fa.fa-close
         %h4= amenity.name
