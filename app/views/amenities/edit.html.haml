@@ -136,11 +136,15 @@
         .col-lg-10
           .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %a.btn-primary.mb-20.done_btn{:href => "#{(params[:floorNo].nil? and params[:from].nil?) ? community_tours_path(current_community) : ( params[:floorNo].present? ? community_tours_path(current_community) << '?floorNo=' + params[:floorNo] : edit_community_unit_path(current_community,@from_unit) )}",:style => " margin-top: 0px;  margin-bottom: 0px;", :onclick => "onDone()"}
+              - @done_action = "#{(params[:floorNo].nil? and params[:from].nil?) ? community_tours_path(current_community) : ( params[:floorNo].present? ? community_tours_path(current_community) << '?floorNo=' + params[:floorNo] : edit_community_unit_path(current_community,@from_unit) )}"
+              %button.btn-primary.mb-20.done_btn{:style => " margin-top: 0px;  margin-bottom: 0px;", :onclick => "onDone()"}
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 
 :javascript
+
+  var done_action = "#{@done_action}"
+  console.log('done_action', done_action)
 
   $('.amenity_edit_field').change(function(){
     $('.edit_amenity').submit();
@@ -183,6 +187,7 @@
   function onDone(){
     console.log('Done button clicked')
     $('.edit_amenity').submit();
+    window.location.href = done_action;
   }
 
   function clear_assigned_lock(){
