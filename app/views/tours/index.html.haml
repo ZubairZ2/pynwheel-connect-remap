@@ -307,40 +307,46 @@
               .form-group
                 %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
                   Allow visitors to schedule tours
-              .form-group
-                .form-group.col-lg-6.col-md-6
-                  %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    In 15 minute increments (ie, 10:00, 10:15, 10:30)
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    .row
-                      .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                        .radiobutton.check_t
-                          = radio_button_tag :time_intervel_15, true, @tour_setting.time_intervel == "15 min" ? true : false, :id => "time_intervel_id15"
-                .form-group.col-lg-6.col-md-6
-                  %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    In hourly increments (ie, 10:00, 11:00, 12:00)
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    .row
-                      .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                        .radiobutton.check_t
-                          = radio_button_tag :time_intervel_1, true, @tour_setting.time_intervel == "1 hr" ? true : false, :id => "time_intervel_id1"
-              .form-group
-                .form-group.col-lg-6.col-md-6
-                  %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    In 30 minute increments (ie, 10:00, 10:30, 11:00)
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    .row
-                      .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                        .radiobutton.check_t
-                          = radio_button_tag :time_intervel_30, true, @tour_setting.time_intervel == "30 min" ? true : false, :id => "time_intervel_id30"
-                .form-group.col-lg-6.col-md-6
-                  %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    Every 2 hours (ie, 10:00, 12:00, 2:00)
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    .row
-                      .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                        .radiobutton.check_t
-                          = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
+              .row 
+                .form-group
+                  .form-group.col-lg-6.col-md-6
+                    
+                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                          .radiobutton.check_t
+                            = radio_button_tag :time_intervel_15, true, @tour_setting.time_intervel == "15 min" ? true : false, :id => "time_intervel_id15"
+                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      In 15 minute increments (ie, 10:00, 10:15, 10:30)
+                  .form-group.col-lg-6.col-md-6
+                    
+                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                          .radiobutton.check_t
+                            = radio_button_tag :time_intervel_1, true, @tour_setting.time_intervel == "1 hr" ? true : false, :id => "time_intervel_id1"
+                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      In hourly increments (ie, 10:00, 11:00, 12:00)        
+              .row 
+                .form-group
+                  .form-group.col-lg-6.col-md-6
+                    
+                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                          .radiobutton.check_t
+                            = radio_button_tag :time_intervel_30, true, @tour_setting.time_intervel == "30 min" ? true : false, :id => "time_intervel_id30"
+                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      In 30 minute increments (ie, 10:00, 10:30, 11:00)        
+                  .form-group.col-lg-6.col-md-6
+                    
+                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                          .radiobutton.check_t
+                            = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
+                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      Every 2 hours (ie, 10:00, 12:00, 2:00)        
                
             -#.form-groups
             -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
