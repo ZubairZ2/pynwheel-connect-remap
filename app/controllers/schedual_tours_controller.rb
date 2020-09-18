@@ -127,7 +127,7 @@ class SchedualToursController < ApplicationController
     # binding.pry
     puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
     respond_to do |format|
-      if @schedual_tour.save
+      if @schedual_tour.save 
 
         begin
           sent_notifications = send_email_and_other_notifications @schedual_tour
