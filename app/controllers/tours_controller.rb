@@ -246,7 +246,7 @@ class ToursController < ApplicationController
           unless selected_elevator
             ele = Elevator.find stop.stop_id
              
-            if ele.building != params[:building]
+            if (ele.building != params[:building]) && params[:building] != ''
               minus << stop.id.to_s
               next
             end
@@ -290,7 +290,7 @@ class ToursController < ApplicationController
     @tours.starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
     
     @tours.building = params[:building].present? ? params[:building] : nil
-    if @tours.building.nil?
+    if @tours.building.nil? && params[:building].present?
       flash[:error] = "Building can not be empty"
       redirect_to starting_point_community_tours_path(@community)
     else
