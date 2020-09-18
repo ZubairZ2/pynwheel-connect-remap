@@ -710,14 +710,15 @@ json.tours @tours do |tour|
             elevator_stop_description =  current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.min.to_s].present? ? plates_name[current_stop.floors.min.to_s] : current_stop.floors.min.to_s rescue current_stop.floors.min.to_s) : "" rescue ""
           end
           if current_stop.present? and next_stop.present? and current_stop.building.present? and next_stop.building.present? and current_stop.building != next_stop.building
-            elevator_stop_description =  "Go to floor " + next_stop.floors.min.to_s rescue elevator_stop_description           
+            elevator_stop_description =  "Go to floor " + (plates_name[next_stop.floors.min.to_s].present? ? plates_name[next_stop.floors.min.to_s] : next_stop.floors.min.to_s rescue next_stop.floors.min.to_s) rescue elevator_stop_description           
           end
         else
           elevator_stop_description =  next_stop.floor.present? ? "Go to floor " + (plates_name[next_stop.floor.to_s].present? ? plates_name[next_stop.floor.to_s] : next_stop.floor.to_s rescue next_stop.floor.to_s) : "" rescue ""
           next_floor  = next_stop.floor.to_i rescue current_floor
         end
         if new_stops_arr.compact[counter + 1].is_a? Tour
-          elevator_stop_description = "Go to floor " + (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : min_floor).to_s
+          fl_text = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : min_floor).to_s
+          elevator_stop_description = "Go to floor " + (plates_name[fl_text].present? ? plates_name[fl_text] : fl_text rescue fl_text)
           next_floor  = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : current_floor).to_i
         end
 
