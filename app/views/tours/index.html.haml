@@ -1398,17 +1398,32 @@
       return false;
     }
 
+    function get_next_day_with_selected_option(last_day){
+      var options = `<option value="Monday" selected="selected">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      if(last_day == "Monday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday" selected="selected">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Tuesday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday" selected="selected">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Wednesday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday" selected="selected">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Thursday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday" selected="selected">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Friday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday" selected="selected">Saturday</option><option value="Sunday">Sunday</option>`
+
+      return options
+    }
+    
     function append_new_day(){
+      var last_dropdown_id = "day_" + (current_day - 1)
+      var last_dropdown = document.getElementById(last_dropdown_id);
+      var last_day = last_dropdown.options[last_dropdown.selectedIndex].text;
+      var new_day_with_selected_options = get_next_day_with_selected_option(last_day)
+
       $(".list").append(`
         <div class="row p-8-v">
           <select class="day-list font-17-v pull-left mr-20-v" id="day_${current_day}" name="day_${current_day}">
-            <option value="Monday">Monday</option>
-            <option value="Tuesday">Tuesday</option>
-            <option value="Wednesday">Wednesday</option>
-            <option value="Thursday">Thursday</option>
-            <option value="Friday">Friday</option>
-            <option value="Saturday">Saturday</option>
-            <option value="Sunday">Sunday</option>
+            ${new_day_with_selected_options}
           </select>
           
           <div class="font-17-v pull-left mr-20-v">
