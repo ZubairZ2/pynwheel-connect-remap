@@ -136,19 +136,34 @@
         .col-lg-10
           .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %a.btn-primary.mb-20.done_btn{:href => "#{(params[:floorNo].nil? and params[:from].nil?) ? community_tours_path(current_community) : ( params[:floorNo].present? ? community_tours_path(current_community) << '?floorNo=' + params[:floorNo] : edit_community_unit_path(current_community,@from_unit) )}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+              %button.btn-primary.mb-20.done_btn#on_done{:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 
 :javascript
 
-  $('.amenity_edit_field').change(function(){
-    $('.edit_amenity').submit();
-  });
-
   var amenity_id = #{@amenity.id}
   var amenity_name = '#{@amenity.name}'
   var community_id = #{ @community.id}
+  var from = #{ @from_unit}
+  
+  $('.amenity_edit_field').change(function(){
+
+      action = "change"
+      $('#on_done').click(function(e){
+        action = "clicked"
+        $('.edit_amenity').submit(function() {
+            $(this).append('<input type="hidden" name="done_action" value="true">');
+            $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
+        });
+      })
+      
+      if(action == "change"){
+        setTimeout(function () {
+          $('.edit_amenity').submit();
+        }, 500);
+      }
+  });
 
   var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
   var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
@@ -179,6 +194,7 @@
         $("#a-lock").attr("href","#");
     }
   }
+
 
   function clear_assigned_lock(){
     $.ajax({
