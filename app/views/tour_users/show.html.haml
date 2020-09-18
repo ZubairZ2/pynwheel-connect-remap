@@ -82,7 +82,8 @@
                         %br
                         .alert-div2{:style => "margin-top: -10px"}
                           = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                          #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+                          #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+
                         %br
                         .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
                           = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
@@ -163,18 +164,17 @@
                             %img{:src => "/assets/checkbox.png", :style => "height:20px; width:20px;color:green; margin-left: 13px; color: green;", "data-placement" => "top", "data-img" => "#{@stop.image.url}", "data-toggle-placement"=>"right", "data-toggle" => "popover-hover"}
                           %strong{:style => "font-size: 16px; position: relative; margin-left: 5px;"}
                             #{@stop.name}
-                          -# - stop[1]= stop[1].sort_by{|u| u.id}
-                          - stop[1].each do |stop_image|
+                          - stop[1].sort_by(&:id).reverse.each do |stop_image|
                             - if image_hit
                               .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
                               .row{:style => "margin-left: 13px; margin-right: 0px;"}
                                 %text{:style => "color: gray"}
                                   %img{:src => "https://img.icons8.com/android/16/000000/walking.png"}/
-                                  -image_hit = false
+                                  -# -image_hit = false
 
-                                  = stop[1].first.event_date.present? ? stop[1].first.event_date.strftime("%m/%d/%Y") : stop[1].first.created_at.strftime("%m/%d/%Y")
-                                  = stop[1].first.event_time.present? ? stop[1].first.event_time.strftime("%I:%M %p") : stop[1].first.created_at.strftime("%I:%M %p")
-
+                                  = stop_image.event_date.present? ? stop_image.event_date.strftime("%m/%d/%Y") : stop_image.created_at.strftime("%m/%d/%Y")
+                                  = stop_image.event_time.present? ? stop_image.event_time.strftime("%I:%M %p") : stop_image.created_at.strftime("%I:%M %p")
+                          - stop[1].each do |stop_image|
                             - if stop_image.image.url.present?
                               - is_data_loaded = true
                               = image_tag  @stop.image, :class => "my_class", id: "#{@stop.id}", :style => " display: none; height: 72px; width: 100px; margin-top: 10px;"
