@@ -35,11 +35,12 @@
                     Longitude
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
                     = text_field_tag :longitude, @community.tour.longitude,:maxlength=>"15", :class=>"form-control save-starting-point-field", :placeholder => "Longitude"
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Building
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = select_tag :building, options_for_select(@building, @community.tour.building) , :class=>"form-control save-starting-point-field" , :include_blank => true
+                - unless @building == []
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Building
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = select_tag :building, options_for_select(@building, @community.tour.building) , :class=>"form-control save-starting-point-field" , :include_blank => true
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     Floor
