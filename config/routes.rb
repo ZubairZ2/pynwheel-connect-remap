@@ -291,6 +291,8 @@ Rails.application.routes.draw do
         post :sort_stops
         post :display_stop
         post :save_tour_settings
+        get :building_starting_point
+        get :update_building_starting_point
         get :check_point
         get :check_point_id_success
         post :save_check_point_response

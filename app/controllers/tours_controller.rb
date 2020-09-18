@@ -64,7 +64,7 @@ class ToursController < ApplicationController
       @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
     end
     
-    @all_stops = @tour_amenity_array | @tour_unit_array | (@floor.to_i == 1 ? @community.elevators : @community.elevators.where(building: building_choice).map{|x| x.id if ( x.floorplate_covering_range.present? && (x.floors.include?(@floor.to_i))  ) }.compact)
+    @all_stops = @tour_amenity_array | @tour_unit_array | (@floor.to_i == 1 ? @community.elevators : @community.elevators.where(building: building_choice).map{|x| x.id if ( x.floorplate_covering_range.present? && (x.floors.include?(@floor.to_i))  ) }.compact) | @community.building_starting_point.where(building: @building, floor: @floor.to_i).map{|x| x.id}
     floorplate_units = []
     floorplate_units = TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.where.not(floor: @floor.to_i).map{|x| x.id} if @floor.present?
     # @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if (x.present? && @all_stops.include?(x.stop_id)) }
@@ -447,6 +447,15 @@ class ToursController < ApplicationController
 
     end
     render json: {path: path, path_points: path.path_points.reorder('id DESC')}, status: 200
+  end
+  def building_starting_point
+    
+    bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i)
+    tour_stop = TourStop.create tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name
+    render json: {path: tour_stop}, status: 200
+  end
+  def update_building_starting_point
+    
   end
 
   def add_elevator

@@ -667,7 +667,11 @@
                                 %i.fa.fa-road.icon_size
                             = link_to edit_community_amenity_path(@community,amenity) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
-
+                          - elsif stop.stop_type == "building_starting_point"  && !@community.is_sitemap 
+                            = link_to draw_line_path(stop) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                              %i.fa.fa-road.icon_size
+                            = link_to edit_community_elevator_path(@community, elevator) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                                %i.fa.fa-edit.icon_size  
                           - unless u.present? && u.modal_unit
                             %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                               %i.fa.fa-trash.icon_size
@@ -681,9 +685,12 @@
                 ADD STARTING POINT
 
               - if !@community.is_sitemap
+                = link_to building_starting_point_community_tours_path(params[:community_id],floorplate: @floor,building: @building), class: "btn btn-primary mr-5", id: "add-building-starting-point", :style => "font-weight: bold;" do
+                  %i.fa.fa-plus-circle
+                  ADD BUILDING STARTING POINT
                 = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil,building: @building), class: "btn btn-primary mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
                   %i.fa.fa-plus-circle
-                  ADD ELEVATOR
+                  ADD ELEVATOR  
               -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
               -#  %i.fa.fa-plus-circle
               -#  ADD PATH FOR STARTING POINT
@@ -1269,26 +1276,26 @@
       event.preventDefault();
     });
 
-    $("#add-elevator-path").on("click", function(event){
-      $.ajax({
-        type: "POST",
-        url: this.href,
-        data: $(this).serialize(),
-        success: function(response) {
-          actions = ''
-          stop_id = "TourStop_"+ response.path.id
-          row_sequence_number = parseInt($('.tour_sortable_disabled tr:last td:first').html())+1
+    / $("#add-elevator-path").on("click", function(event){
+    /   $.ajax({
+    /     type: "POST",
+    /     url: this.href,
+    /     data: $(this).serialize(),
+    /     success: function(response) {
+    /       actions = ''
+    /       stop_id = "TourStop_"+ response.path.id
+    /       row_sequence_number = parseInt($('.tour_sortable_disabled tr:last td:first').html())+1
 
-          elevator_stop = '<tr id=' + stop_id + '>'
-          elevator_stop += '<td>'+row_sequence_number+'</td>'
-          elevator_stop += '<td>'+response.path.name+'</td>'
+    /       elevator_stop = '<tr id=' + stop_id + '>'
+    /       elevator_stop += '<td>'+row_sequence_number+'</td>'
+    /       elevator_stop += '<td>'+response.path.name+'</td>'
 
-          $('.tour_sortable_disabled').append(elevator_stop);
-          window.location.reload()
-        }
-      });
-      event.preventDefault();
-    });
+    /       $('.tour_sortable_disabled').append(elevator_stop);
+    /       window.location.reload()
+    /     }
+    /   });
+    /   event.preventDefault();
+    / });
 
 
     function getElementProperty(el){

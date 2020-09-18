@@ -93,6 +93,7 @@ class Community < ApplicationRecord
   has_many :igloo_guests, dependent: :destroy
   has_many :opening_hours, dependent: :destroy
   has_many :schedual_tours, dependent: :destroy
+  has_many :building_starting_point, dependent: :destroy
   has_one :tour, dependent: :destroy
   has_one :edge_state, dependent: :destroy
 
