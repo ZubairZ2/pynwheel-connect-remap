@@ -47,7 +47,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
     resize_to_fit(200, 200)
   end
 
-  process :quality => 40
+  process :quality => 40 , :if => :image?
   process :resize_id_card
 
   # process optimize: [{quality: 20, level: 7}]
@@ -56,7 +56,9 @@ class AvatarUploader < CarrierWave::Uploader::Base
     var = :"@#{mounted_as}_timestamp"
     model.instance_variable_get(var) or model.instance_variable_set(var, Time.now.to_i)
   end
-
+  def image?(file)
+    file.content_type.include?('png') || file.content_type.include?('jpg') || file.content_type.include?('jpeg')
+  end
   def store_dir
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
   end
