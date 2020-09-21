@@ -26,21 +26,22 @@ class SchedualToursController < ApplicationController
     
   end
   def create_tour_user_from
-    
     phone_number = make_phone
-
-    tu = TourUser.find_by(email: params[:tour_user][:email])
+    tu = TourUser.find_by(email: params[:tour_user][:email].downcase)
     # tu.name = params[:tour_user][:name] if tu.present?
-    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
+    tu = TourUser.new name: (params[:tour_user][:first_name] + " " + params[:tour_user][:last_name]), first_name: params[:tour_user][:first_name], last_name: params[:tour_user][:last_name], email: params[:tour_user][:email].downcase, phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
+    tu.name = (params[:tour_user][:first_name] + " " + params[:tour_user][:last_name])
+    tu.first_name = params[:tour_user][:first_name]
+    tu.last_name = params[:tour_user][:last_name]
     tu.phone_number = phone_number if phone_number.present?
     tu.desired_bedroom = params[:desired_bedroom]
 
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
     if tu.save
-      
+
       begin
-        customer = Stripe::Customer.create email: params[:tour_user][:email],
+        customer = Stripe::Customer.create email: params[:tour_user][:email].downcase,
                                            card: params[:tour_user][:card_token]
         res = Stripe::Charge.create customer: customer.id,
                               amount: 50,
@@ -63,7 +64,7 @@ class SchedualToursController < ApplicationController
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
       end
       community = Community.find_by_id params[:community_id]
-      
+
       if params[:desired_move_in_date].present?
         date = params[:desired_move_in_date].split('/')
         date[0],date[1] = date[1],date[0]
