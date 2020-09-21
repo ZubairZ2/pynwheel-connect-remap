@@ -78,7 +78,7 @@ Rails.application.routes.draw do
       get :web_cam_test
     end
 
-
+    resources :building_starting_points 
     resources :remote_locks do
       collection do
         get :authorization_code
@@ -140,6 +140,7 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
+    
     resources :elevators do
       resources :elevator_galleries
       # do

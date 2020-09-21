@@ -668,10 +668,11 @@
                             = link_to edit_community_amenity_path(@community,amenity) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size
                           - elsif stop.stop_type == "building_starting_point"  && !@community.is_sitemap 
-                            = link_to draw_line_path(stop) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                            - bsp = BuildingStartingPoint.find stop.stop_id
+                            = link_to draw_line_path(bsp) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
-                            = link_to edit_community_elevator_path(@community, elevator) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
-                                %i.fa.fa-edit.icon_size  
+                            = link_to edit_community_building_starting_point_path(@community.id,bsp) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                              %i.fa.fa-edit.icon_size  
                           - unless u.present? && u.modal_unit
                             %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                               %i.fa.fa-trash.icon_size
@@ -757,6 +758,11 @@
 
                       - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i)) && ([@building,nil].include? stop.building ) ) || (stop.floorplate_covering_range == "-") || 1 == @floor.to_i
                         %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                    
+                    - elsif stop.class.to_s == "BuildingStartingPoint"
+
+        
+                      %i.fa.fa-circle.stops.bsp_stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
 
                     - else
@@ -967,6 +973,9 @@
      $.each($("*.stop"), function(i, elevator){
        makeElevatorDragable(elevator);
      });
+     $.each($("*.bsp_stop"), function(i, bsp){
+       makeBuildingStartingPointDragable(bsp);
+     });
 
     $("#testimg").on('click', function (ev) {
       mouseX = Math.round(ev.offsetX - point_size/2)
@@ -1005,6 +1014,37 @@
             $.ajax({
               type: "POST",
               url: "#{update_elevator_path}",
+              data: {elevator_id: elevator_id, x_plot: left, y_plot: right },
+              success: function(response) {
+                console.log(response.message)
+              }
+            });
+          }
+
+       });
+    }
+    function makeBuildingStartingPointDragable(bsp){
+      bsp_id = $(bsp).prop('id').split('_')[1]
+      $(bsp).draggable({
+        containment: 'parent',
+          start: function(event, ui) {
+            console.log("start drag")
+            xpos = Math.round(ui.position.left);
+            ypos = Math.round(ui.position.top);
+          },
+
+          drag: function(event, ui) {
+            // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
+            xmove = ui.position.left - xpos;
+            ymove = ui.position.top - ypos;
+          },
+
+          stop: function(event, ui) {
+            left = Math.round(ui.position.left )
+            right = Math.round(ui.position.top );
+            $.ajax({
+              type: "POST",
+              url: "#{update_building_starting_point_community_tours_path}",
               data: {elevator_id: elevator_id, x_plot: left, y_plot: right },
               success: function(response) {
                 console.log(response.message)
@@ -1276,26 +1316,26 @@
       event.preventDefault();
     });
 
-    / $("#add-elevator-path").on("click", function(event){
-    /   $.ajax({
-    /     type: "POST",
-    /     url: this.href,
-    /     data: $(this).serialize(),
-    /     success: function(response) {
-    /       actions = ''
-    /       stop_id = "TourStop_"+ response.path.id
-    /       row_sequence_number = parseInt($('.tour_sortable_disabled tr:last td:first').html())+1
+    $("#add-elevator-path").on("click", function(event){
+      $.ajax({
+        type: "POST",
+        url: this.href,
+        data: $(this).serialize(),
+        success: function(response) {
+          actions = ''
+          stop_id = "TourStop_"+ response.path.id
+          row_sequence_number = parseInt($('.tour_sortable_disabled tr:last td:first').html())+1
 
-    /       elevator_stop = '<tr id=' + stop_id + '>'
-    /       elevator_stop += '<td>'+row_sequence_number+'</td>'
-    /       elevator_stop += '<td>'+response.path.name+'</td>'
+          elevator_stop = '<tr id=' + stop_id + '>'
+          elevator_stop += '<td>'+row_sequence_number+'</td>'
+          elevator_stop += '<td>'+response.path.name+'</td>'
 
-    /       $('.tour_sortable_disabled').append(elevator_stop);
-    /       window.location.reload()
-    /     }
-    /   });
-    /   event.preventDefault();
-    / });
+          $('.tour_sortable_disabled').append(elevator_stop);
+          window.location.reload()
+        }
+      });
+      event.preventDefault();
+    });
 
 
     function getElementProperty(el){

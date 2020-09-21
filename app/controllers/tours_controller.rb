@@ -63,8 +63,8 @@ class ToursController < ApplicationController
       @tour_unit_array =  @community.mdu ? TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id} | @community.units.where( modal_unit: true).ids : []
       @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
     end
-    
-    @all_stops = @tour_amenity_array | @tour_unit_array | (@floor.to_i == 1 ? @community.elevators : @community.elevators.where(building: building_choice).map{|x| x.id if ( x.floorplate_covering_range.present? && (x.floors.include?(@floor.to_i))  ) }.compact) | @community.building_starting_point.where(building: @building, floor: @floor.to_i).map{|x| x.id}
+    @building_starting_points = @community.building_starting_point.where(building: @building, floor: @floor.to_i).map{|x| x.id}
+    @all_stops = @tour_amenity_array | @tour_unit_array | (@floor.to_i == 1 ? @community.elevators : @community.elevators.where(building: building_choice).map{|x| x.id if ( x.floorplate_covering_range.present? && (x.floors.include?(@floor.to_i))  ) }.compact) | @building_starting_points
     floorplate_units = []
     floorplate_units = TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.where.not(floor: @floor.to_i).map{|x| x.id} if @floor.present?
     # @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if (x.present? && @all_stops.include?(x.stop_id)) }
@@ -105,7 +105,6 @@ class ToursController < ApplicationController
       # @existing_path_points << to_sp_path.path_points.reorder('id ASC') if (to_sp_path.present?)
     end
     
-    
     @community.tour.tour_stops.where(stop_id: @all_stops).map{|x|           @existing_path_points <<            @community.tour.tour_stops.where(stop_id: @all_stops).map{|y| Path.find_by(map_path_from_id: x.stop_id, map_path_to_id: y.stop_id).path_points.reorder('id ASC') unless x == y rescue next}.compact                              }
     
     
@@ -118,6 +117,7 @@ class ToursController < ApplicationController
     @existing_stops << Unit.where(id: @tour_unit_array) if @community.mdu
     @existing_stops << Amenity.where(id: @tour_amenity_array)
     @existing_stops << Elevator.where(id: @tour_elevator_array)
+    @existing_stops << BuildingStartingPoint.where(id: @building_starting_points)
     
     if @community.show_map
       
@@ -387,6 +387,7 @@ class ToursController < ApplicationController
   end
 
   def draw_map_line
+    
     from_id = params["stop_ids"].first if params["stop_ids"].present?
     from_type = params["stop_types"].first if params["stop_types"].present?
     to_id = params["stop_ids"].second if params["stop_ids"].present?
@@ -408,6 +409,8 @@ class ToursController < ApplicationController
       unit_amenity_or_elevator_from = Amenity.find_by_id(from_id)
     elsif from_type == "elevator"
       unit_amenity_or_elevator_from = Elevator.find_by_id(from_id)
+    elsif from_type == "building_starting_point"
+      unit_amenity_or_elevator_from = BuildingStartingPoint.find_by_id(from_id)
     end
 
     if to_type == "unit"
@@ -416,6 +419,8 @@ class ToursController < ApplicationController
       unit_amenity_or_elevator_to = Amenity.find_by_id(to_id)
     elsif to_type == "elevator"
       unit_amenity_or_elevator_to = Elevator.find_by_id(to_id)
+    elsif to_type == "building_starting_point"
+      unit_amenity_or_elevator_to = BuildingStartingPoint.find_by_id(to_id)
     end
 
     # unit_amenity_or_elevator_to = Unit.find_by_id(first) ? Unit.find_by_id(first) : Amenity.find_by_id(first) 
@@ -505,6 +510,8 @@ class ToursController < ApplicationController
       stop =  Amenity.find(path.map_path_id).id
     elsif path.map_path_to_type == "Elevator"
       stop =  Elevator.find(path.map_path_id).id
+    elsif path.map_path_to_type == "BuildingStartingPoint"
+      stop =  BuildingStartingPoint.find(path.map_path_id).id
     else
       stop = path.map_path_to_id.present? ? TourStop.find_by_stop_id(path.map_path_to_id).tour.id : TourStop.find_by_stop_id(path.map_path_from_id).tour.id
     end
@@ -515,6 +522,8 @@ class ToursController < ApplicationController
       start =  Amenity.find(path.map_path_from_id).id
     elsif path.map_path_from_type == "Elevator"
       start =  Elevator.find(path.map_path_from_id).id
+    elsif path.map_path_from_type == "BuildingStartingPoint"
+      start =  BuildingStartingPoint.find(path.map_path_from_id).id
     else
       start = path.map_path_to_id.present? ? TourStop.find_by_stop_id(path.map_path_to_id).tour.id : TourStop.find_by_stop_id(path.map_path_from_id).tour.id
     end
