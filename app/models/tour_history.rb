@@ -210,7 +210,7 @@ class TourHistory < ApplicationRecord
   	ActionController::Base.helpers.distance_of_time_in_words self.arrived, self.left
   end
 
-  def active_user_exists(event,guest_id)
+  def active_user_exists(event,guest_id) 
     return (event["type"] == "unlocked_event" and event["attributes"]["source"] == "user" and  event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)
   end
   
