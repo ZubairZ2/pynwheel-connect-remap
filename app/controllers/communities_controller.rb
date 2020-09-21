@@ -542,6 +542,7 @@ class CommunitiesController < ApplicationController
       @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
       @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
       @tour.credit_card_required = params[:credit_card_required].present? ? true : false
+      @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
       @tour.save
 
       # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false

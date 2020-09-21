@@ -213,7 +213,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     if edge_state.present? and @scheduled_tour.present?
       Thread.new do
         stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
-        allowed_ids = stops_arr.ids - @community.deleted_ids
+        allowed_ids = `stops_arr`.ids - @community.deleted_ids
         allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
 
         # unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}

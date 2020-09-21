@@ -62,6 +62,18 @@ class SchedualToursController < ApplicationController
       rescue Exception => e
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
       end
+      community = Community.find_by_id params[:community_id]
+      
+      if params[:desired_move_in_date].present?
+        date = params[:desired_move_in_date].split('/')
+        date[0],date[1] = date[1],date[0]
+        date = date.join('-').to_date
+        desired_move_in_date = date
+      else
+        desired_move_in_date = ""
+      end
+
+      community.realpage_insert_prospect(tu, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
 
       # sms_notifire notification_content, params[:tour_user][:phone_number]
     else

@@ -37,12 +37,13 @@ class TourHistory < ApplicationRecord
   		send_email_sms_or_both @mail_content
   	end
 
-  	if self.id_mismatch
+  	if self.id_mismatch and !self.is_left
   		@mail_content = ["id_mismatch", "The photo ID/selfie were flagged as a mis-match"] #get_alert_message('id_mismatch')
   		send_email_sms_or_both @mail_content
   	end
 
-  	if self.left
+	if self.left and !self.is_left
+		self.update_columns(is_left: true)
   		@mail_content = ["tour_has_ended", "A Pynwheel Self Tour has ended for:"] #get_alert_message('tour_has_ended')
       	url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers"
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"+ "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
@@ -52,7 +53,6 @@ class TourHistory < ApplicationRecord
 		@complete_tour_content  = ["#{@community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
 		@thank_you_content  = @community.thank_you_message.present? ? @community.thank_you_message : "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
 		touruser_remotelock_data
-
 		# tour = (Tour.find_by_id self.tour_id)
 		# assigned_pin = self.tour_user.as_guests.find_by(community_id: tour.community.id).edgestate_pin if tour.present? and self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
 		# ImportRemotelockEventsJob.perform_in(2.5.minute.seconds.to_i, self.tour_user, self, assigned_pin) if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
@@ -64,30 +64,48 @@ class TourHistory < ApplicationRecord
 		send_email_sms_or_both @complete_tour_content
 		send_email_sms_or_both_to_touruser @thank_you_content
 		# community.deleted_ids = []
+		save_prospect(self.left)
 		community.save
   	end
 
-  # 	if self.abandoned_tour_at_stop.present?
+  	if self.abandoned_tour_at_stop.present?
 
-  # 		@mail_content = ["abandoned_tour_at_stop", "#{(TourUser.find self.tour_user_id).name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "] #get_alert_message('abandoned_tour_at_stop')
-		# @mail_content[1] = "#{@mail_content.last} #{(TourStop.find self.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."	  
-		# @thank_you_content  = @community.thank_you_message.present? ? @community.thank_you_message : "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+  		@mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
+		@mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}."		  
+		@thank_you_content  = @community.thank_you_message.present? ? @community.thank_you_message : "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+		touruser_remotelock_data
 		
-		# # touruser_remotelock_data
-		# # tour = (Tour.find_by_id self.tour_id)
-		# # assigned_pin = self.tour_user.as_guests.find_by(community_id: tour.community.id).edgestate_pin if tour.present? and self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-		# # ImportRemotelockEventsJob.perform_in(2.5.minute.seconds.to_i, self.tour_user, self, assigned_pin) if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-		# # ImportRemotelockEventsWorker.perform_at(30.minutes.from_now, self.tour_user.id.to_s, self.id.to_s, assigned_pin)
-		# # email_content = "Events for #{self.tour_user.name} with tour id #{self.tour_user.id} are imported in pynwheel, while the tour history id is #{self.id} and the assigned pin is #{assigned_pin}" if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-		# # DelayedSchedulerMailerJob.perform_async("Remote Lock Events", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, its ran in callback","humza4142@gmail.com") if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
+		# tour = (Tour.find_by_id self.tour_id)
+		# assigned_pin = self.tour_user.as_guests.find_by(community_id: tour.community.id).edgestate_pin if tour.present? and self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
+		# ImportRemotelockEventsJob.perform_in(2.5.minute.seconds.to_i, self.tour_user, self, assigned_pin) if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
+		# ImportRemotelockEventsWorker.perform_at(30.minutes.from_now, self.tour_user.id.to_s, self.id.to_s, assigned_pin)
 
-		# send_email_sms_or_both @mail_content
-		# send_email_sms_or_both_to_touruser @thank_you_content
-	 #    # community.deleted_ids = []
-	 #    community.save
-  # 	end
+		# email_content = "Events for #{self.tour_user.name} with tour id #{self.tour_user.id} are imported in pynwheel, while the tour history id is #{self.id} and the assigned pin is #{assigned_pin}" if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
+		# DelayedSchedulerMailerJob.perform_async("Remote Lock Events", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, its ran in callback","humza4142@gmail.com") if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
+
+		send_email_sms_or_both @mail_content
+		send_email_sms_or_both_to_touruser @thank_you_content
+		# community.deleted_ids = []
+		save_prospect(self.lengthy_stay)
+	    community.save
+  	end
   end
-  
+	  
+	def save_prospect(endtime)
+		end_time = endtime.in_time_zone(self.my_time_zone)
+		tour_time = self.arrived.in_time_zone(self.my_time_zone)
+		tour_status = self.tour_status.present? ? self.tour_status : "virutal"
+
+		available_stops = avail_stops_name_of_community
+		visited_stops = stop_marketing_names_visited_by_user
+
+		if @community.data_provider == "realpagesvc"
+			RealPageGuestCardIntegrationJob.perform_async(@community.credential.attributes.to_json, self.tour_user, tour_time, end_time, tour_status, available_stops, visited_stops)
+		elsif @community.data_provider == "psi"
+			@community.entrata_send_mits_leads(self.tour_user, tour_time, end_time, visited_stops)
+		end
+	end
+
 	def touruser_remotelock_data
 		community = (Tour.find_by_id self.tour_id).community
 		as_guests_data = self.tour_user.as_guests.find_by(community_id: community.id)
@@ -221,4 +239,46 @@ class TourHistory < ApplicationRecord
   def sync_events_exists(event,guest_id)
     return (event["type"] == "access_person_synced_event" and event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)
   end
+
+	def avail_stops_name_of_community
+		# stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+		# allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
+
+        tour_stops = []
+        # allowed_stops.each do |stop|
+        #   if stop[0] == "unit"
+        #     unit = stop[0].classify.constantize.find_by_id stop[1]
+        #     if unit.building.present?
+        #       name = unit.building + "-" + unit.name
+        #     else
+        #       name = unit.name
+        #     end
+        #     tour_stops << name if unit.present?
+        #   elsif stop[0] == "amenity"
+        #     amentiy = stop[0].classify.constantize.find_by_id stop[1]
+        #     tour_stops << amentiy.name if amentiy.present?
+        #   end
+		# end
+		return tour_stops
+	end
+
+	def stop_marketing_names_visited_by_user
+		visited_stops = []
+
+		current_tour = VisitedStop.where(tour_user_id: self.tour_user_id, tour_id: self.tour_id).last
+		tour_key = current_tour.tour_key if current_tour.present?
+		if tour_key.present?
+			tour_stop_ids = VisitedStop.where(tour_key: tour_key).pluck(:tour_stop_id)
+			unit_stops = TourStop.where(id: tour_stop_ids, stop_type: "unit").pluck(:stop_id)
+
+			unit_stops.each do |stop_id|
+				unit = Unit.find_by_id stop_id
+				marketing_name = unit.marketing_name
+				visited_stops << marketing_name if unit.present?
+			end
+		end
+		puts "visited_stops"
+		puts visited_stops
+		return visited_stops
+	end
 end
