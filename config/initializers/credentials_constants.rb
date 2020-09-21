@@ -5,6 +5,7 @@ REALPAGE_URL="https://gateway.rpx.realpage.com/RPXGateway/partner/Pynwheel/Pynwh
 REALPAGE_FLOORPLAN_ACTION ='http://tempuri.org/IRPXService/getfloorplanlist'
 REALPAGE_UNIT_ACTION = 'http://tempuri.org/IRPXService/getunitsbyproperty'
 REALPAGE_INSERT_PROSPECT = 'http://tempuri.org/IRPXService/insertprospect'
+REALPAGE_UPDATE_PROSPECT = 'http://tempuri.org/IRPXService/updateprospect'
 REALPAGE_LEASING_AGENT_ACTION = 'http://tempuri.org/IRPXService/getleasingagentsbyproperty'
 REALPAGE_ACTIVITY_TYPES_ACTION = 'http://tempuri.org/IRPXService/getactivitytypes'
 REALPAGE_MARKETING_SOURCES_ACTION = 'http://tempuri.org/IRPXService/getmarketingsourcesbyproperty'

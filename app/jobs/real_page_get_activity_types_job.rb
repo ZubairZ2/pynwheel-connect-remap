@@ -1,8 +1,8 @@
 class RealPageGetActivityTypesJob < ApplicationJob
     include SuckerPunch::Job
   
-    def perform(credentials)
+    def perform(credentials, tour_status)
         real_page_get_activity_types_service = RealPageGetActivityTypesService.new(JSON.parse(credentials))
-        real_page_get_activity_types_service.perform
+        real_page_get_activity_types_service.perform(tour_status)
     end
 end

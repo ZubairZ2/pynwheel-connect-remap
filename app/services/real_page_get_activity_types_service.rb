@@ -1,9 +1,9 @@
 class RealPageGetActivityTypesService < BaseService
-    def perform
-        get_activity_types
+    def perform(tour_status)
+        get_activity_types(tour_status)
     end
 
-    def get_activity_types
+    def get_activity_types(tour_status)
         site_ids = credentials.site_id.split(',') rescue []
         site_ids.each do |site_id|
           begin
@@ -37,28 +37,29 @@ class RealPageGetActivityTypesService < BaseService
                         </soapenv:Envelope>')
             
             result = Ox.load(response.body, mode: :hash)
-            type = nil
+            types = []
             begin
-              result[:"s:Envelope"][1][:"s:Body"][1][:getactivitytypesResponse][1][:getactivitytypesResult][:GetActivityTypes][1][:Contents][:PicklistItem].each do |type_data|
-                if type_data[:Text] == "Self-guided - Tour" or type_data[:Text] == "Self-guided" or type_data[:Text] == "Tour"
-                  type = type_data
-                  break
-                elsif type_data[:Text] == "Visit"
-                  type = type_data
-                  break
-                else
-                  type = result[:"s:Envelope"][1][:"s:Body"][1][:getactivitytypesResponse][1][:getactivitytypesResult][:GetActivityTypes][1][:Contents][:PicklistItem][0]
+              pick_list_items  = result[:"s:Envelope"][1][:"s:Body"][1][:getactivitytypesResponse][1][:getactivitytypesResult][:GetActivityTypes][1][:Contents][:PicklistItem]
+              activity_types = pick_list_items.map{|x| [x[:Text], x[:Value]]}
+              
+              is_required_type_exists = false
+
+              activity_types.each do |type|
+                if type[0] == "Self-guided - Tour"
+                  types << type
+                  is_required_type_exists = true
+                elsif tour_status != "virutal" and type[0] == "Visit"
+                  types << type
+                  is_required_type_exists = true
                 end
               end
+
+              if is_required_type_exists == false
+                types << activity_types[0]
+              end         
             rescue => e
-                begin
-                  type = result[:"s:Envelope"][1][:"s:Body"][1][:getactivitytypesResponse][1][:getactivitytypesResult][:GetActivityTypes][1][:Contents][:PicklistItem][0]
-                rescue => e
-                  type = ''
-                end
             end
-            puts type
-            return type  
+            return types  
           rescue => e
             begin
               cred = Credential.find credentials.id

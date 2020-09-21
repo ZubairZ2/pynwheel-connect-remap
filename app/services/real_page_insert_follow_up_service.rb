@@ -25,10 +25,11 @@ class RealPageInsertFollowUpService < BaseService
                     puts '------------------------------------------------------------------------------------'
                     guest_card_id = prospect.data[0]["Guestcard"]["NewID"] != "0" ? prospect.data[0]["Guestcard"]["NewID"] : prospect.data[0]["Guestcard"]["ID"]
                 end
-                
+
+                task_appt_datetime = tour_time.strftime("%Y-%m-%dT%H:%M:%S")
                 task_duration_start = tour_time.strftime("%Y-%m-%dT%H:%M:%S")
                 task_duration_end = end_time.strftime("%Y-%m-%dT%H:%M:%S")
-                task_category_cd = "R0000003"           # General appointment
+                task_category_cd = "R0000001"           # Appointment
                 task_id =  "0"                          # For new task
                 agent_id = leasing_agent[:Value]
 
@@ -56,8 +57,10 @@ class RealPageInsertFollowUpService < BaseService
                                         <tem:guestcardid>'+guest_card_id+'</tem:guestcardid>
                                         <tem:taskid>'+task_id+'</tem:taskid>
                                         <tem:agentid>'+agent_id+'</tem:agentid>
+                                        <tem:taskapptdatetime>'+task_appt_datetime+'</tem:taskapptdatetime>
                                         <tem:taskdurationstart>'+task_duration_start+'</tem:taskdurationstart>
                                         <tem:taskdurationend>'+task_duration_end+'</tem:taskdurationend>
+                                        <tem:taskcontactdatetime>'+task_appt_datetime+'</tem:taskcontactdatetime>
                                         <tem:taskcategorycd>'+task_category_cd+'</tem:taskcategorycd>
                                     </tem:followup>
                                 </tem:insertfollowup>

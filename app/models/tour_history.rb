@@ -37,12 +37,13 @@ class TourHistory < ApplicationRecord
   		send_email_sms_or_both @mail_content
   	end
 
-  	if self.id_mismatch
+  	if self.id_mismatch and !self.is_left
   		@mail_content = ["id_mismatch", "The photo ID/selfie were flagged as a mis-match"] #get_alert_message('id_mismatch')
   		send_email_sms_or_both @mail_content
   	end
 
-  	if self.left
+	if self.left and !self.is_left
+		self.update_columns(is_left: true)
   		@mail_content = ["tour_has_ended", "A Pynwheel Self Tour has ended for:"] #get_alert_message('tour_has_ended')
       	url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers"
   		@mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}"+ "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
@@ -95,12 +96,13 @@ class TourHistory < ApplicationRecord
 	def save_prospect(endtime)
 		end_time = endtime.in_time_zone(self.my_time_zone)
 		tour_time = self.arrived.in_time_zone(self.my_time_zone)
+		tour_status = self.tour_status.present? ? self.tour_status : "virutal"
 
 		available_stops = avail_stops_name_of_community
-		visited_stops = stop_names_visited_by_user
+		visited_stops = stop_marketing_names_visited_by_user
 
 		if @community.data_provider == "realpagesvc"
-			RealPageGuestCardIntegrationJob.perform_async(@community.credential.attributes.to_json, self.tour_user, tour_time, end_time, available_stops, visited_stops)
+			RealPageGuestCardIntegrationJob.perform_async(@community.credential.attributes.to_json, self.tour_user, tour_time, end_time, tour_status, available_stops, visited_stops)
 		elsif @community.data_provider == "psi"
 			@community.entrata_send_mits_leads(self.tour_user, tour_time, end_time, visited_stops)
 		end
@@ -241,53 +243,44 @@ class TourHistory < ApplicationRecord
   end
 
 	def avail_stops_name_of_community
-		stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
-		allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
+		# stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+		# allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
 
         tour_stops = []
-        allowed_stops.each do |stop|
-          if stop[0] == "unit"
-            unit = stop[0].classify.constantize.find_by_id stop[1]
-            if unit.building.present?
-              name = unit.building + "-" + unit.name
-            else
-              name = unit.name
-            end
-            tour_stops << name if unit.present?
-          elsif stop[0] == "amenity"
-            amentiy = stop[0].classify.constantize.find_by_id stop[1]
-            tour_stops << amentiy.name if amentiy.present?
-          end
-		end
-		
+        # allowed_stops.each do |stop|
+        #   if stop[0] == "unit"
+        #     unit = stop[0].classify.constantize.find_by_id stop[1]
+        #     if unit.building.present?
+        #       name = unit.building + "-" + unit.name
+        #     else
+        #       name = unit.name
+        #     end
+        #     tour_stops << name if unit.present?
+        #   elsif stop[0] == "amenity"
+        #     amentiy = stop[0].classify.constantize.find_by_id stop[1]
+        #     tour_stops << amentiy.name if amentiy.present?
+        #   end
+		# end
 		return tour_stops
 	end
 
-	def stop_names_visited_by_user
+	def stop_marketing_names_visited_by_user
 		visited_stops = []
 
 		current_tour = VisitedStop.where(tour_user_id: self.tour_user_id, tour_id: self.tour_id).last
 		tour_key = current_tour.tour_key if current_tour.present?
 		if tour_key.present?
 			tour_stop_ids = VisitedStop.where(tour_key: tour_key).pluck(:tour_stop_id)
-			tour_stops = TourStop.where(id: tour_stop_ids).pluck(:stop_type, :stop_id)
+			unit_stops = TourStop.where(id: tour_stop_ids, stop_type: "unit").pluck(:stop_id)
 
-			tour_stops.each do |stop|
-				if stop[0] == "unit"
-					unit = stop[0].classify.constantize.find_by_id stop[1]
-					if unit.building.present?
-						name = unit.building + "-" + unit.name
-					else
-						name = unit.name
-					end
-					visited_stops << name if unit.present?
-				elsif stop[0] == "amenity"
-					amentiy = stop[0].classify.constantize.find_by_id stop[1]
-					visited_stops << amentiy.name if amentiy.present?
-				end
+			unit_stops.each do |stop_id|
+				unit = Unit.find_by_id stop_id
+				marketing_name = unit.marketing_name
+				visited_stops << marketing_name if unit.present?
 			end
 		end
-
+		puts "visited_stops"
+		puts visited_stops
 		return visited_stops
 	end
 end

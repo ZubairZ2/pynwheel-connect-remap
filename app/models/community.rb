@@ -89,6 +89,7 @@ class Community < ApplicationRecord
   has_many :webpages, dependent: :destroy
   has_many :imagepages, dependent: :destroy
   has_many :amenities, dependent: :destroy
+  has_many :prospects, dependent: :destroy
   has_many :as_guests, dependent: :destroy
   has_many :igloo_guests, dependent: :destroy
   has_many :opening_hours, dependent: :destroy
@@ -378,8 +379,9 @@ class Community < ApplicationRecord
     # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
 
-  def realpage_insert_prospect(tour_user, tour_time)
-    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, tour_time
+  def realpage_insert_prospect(tour_user, tour_time, marketing_source) 
+    # coming form scheduler widger, we are passing move-in-date for tour_time
+    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, tour_time, marketing_source
   end
 
   def realpage_insert_activity(tour_user)

@@ -1,9 +1,9 @@
 class RealPageInsertProspectService < BaseService
-    def perform(tour_user, tour_time)
-        insert_prospect(tour_user, tour_time)
+    def perform(tour_user, tour_time, marketing_source)
+        insert_prospect(tour_user, tour_time, marketing_source)
     end
 
-    def insert_prospect(guest, tour_time)
+    def insert_prospect(guest, tour_time, marketing_source)
         site_ids = credentials.site_id.split(',') rescue []
         site_ids.each do |site_id|
             begin
@@ -18,20 +18,35 @@ class RealPageInsertProspectService < BaseService
                 phone_number = guest.phone_number.present? ? guest.phone_number : ''
                 first_name = guest.first_name.present? ? guest.first_name : guest.name
                 last_name = guest.last_name.present? ? guest.last_name : 'missing'
-
                 begin
-                    if tour_time.instance_of? Date
-                        desired_move_in_date = tour_time
+                    if tour_time.instance_of? Date              # coming form scheduler widger, we are passing move-in-date for tour_time
+                        desired_move_in_date = tour_time.strftime("%Y-%m-%d")
                     else
                         tour_data = scheduled_tour(tour_time, community_id, guest.id)
-                        desired_bedroom = tour_data.desired_bedroom.present? ? tour_data.desired_bedroom : "" rescue ""
-                        desired_move_in_date = tour_data.desired_move_in_date.present? ? tour_data.desired_move_in_date.strftime("%Y-%m-%d") : "" rescue ""
+                        desired_bedroom = tour_data.desired_bedroom.present? ? tour_data.desired_bedroom : '' rescue ''
+                        desired_move_in_date = tour_data.desired_move_in_date.present? ? tour_data.desired_move_in_date.strftime("%Y-%m-%d") : '' rescue  ''
                     end
                 rescue Exception => e
-                    desired_bedroom = ""
-                    desired_move_in_date = ""
+                    desired_bedroom = ''
+                    desired_move_in_date = ''
                 end
-                
+
+                collection = marketing_source.present? ? '<tem:primaryleadsource>' + marketing_source + '</tem:primaryleadsource>' : ''
+                needed_date = desired_move_in_date.present? ? '<tem:dateneeded>' + desired_move_in_date + '</tem:dateneeded>' : ''
+
+                if desired_move_in_date.present? and marketing_source.present?
+                    year , month, date = desired_move_in_date.split("-")
+                    collection = '<tem:primaryleadsource>' + marketing_source + '</tem:primaryleadsource><tem:appointment><tem:year>' + year + '</tem:year><tem:month>' + month + '</tem:month><tem:day>' + date + '</tem:day><tem:leasingagentid>0</tem:leasingagentid></tem:appointment>'
+                elsif desired_move_in_date.present?
+                    year , month, date = desired_move_in_date.split("-")
+                    collection = '<tem:appointment><tem:year>' + year + '</tem:year><tem:month>' + month + '</tem:month><tem:day>' + date + '</tem:day><tem:leasingagentid>0</tem:leasingagentid></tem:appointment>'
+                end
+
+                puts '-------------------------------  data in insert prospect  ------------------------------------'
+                puts collection
+                puts needed_date
+                puts '---------------------------------------------------------------------------------------------------'
+
                 response = HTTParty.post(
                     url,
                     :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -49,8 +64,7 @@ class RealPageInsertProspectService < BaseService
                                 <tem:licensekey>'+license_key+'</tem:licensekey>
                                 <tem:system>OneSite</tem:system>
                             </tem:auth>
-                            <tem:guestcard>
-                                <tem:prospects>
+                            <tem:guestcard>'+ collection +'<tem:prospects>
                                     <tem:Prospect>
                                         <tem:firstname>'+first_name+'</tem:firstname>
                                         <tem:lastname>'+last_name+'</tem:lastname>
@@ -64,13 +78,10 @@ class RealPageInsertProspectService < BaseService
                                             </tem:phonenumbers>
                                             <tem:ExtensionData/>
                                         </tem:numbers>
-                                        <tem:gender>F</tem:gender>
                                         <tem:ExtensionData/>
                                     </tem:Prospect>
                                 </tem:prospects>
-                                <tem:preferences>
-                                    <tem:dateneeded>' + desired_move_in_date + '</tem:dateneeded>   
-                                    <tem:ExtensionData/>
+                                <tem:preferences>'+ needed_date + '<tem:ExtensionData/>
                                 </tem:preferences>
                                 <tem:ExtensionData/>
                             </tem:guestcard>
@@ -78,7 +89,10 @@ class RealPageInsertProspectService < BaseService
                     </soapenv:Body>
                 </soapenv:Envelope>')
             
-                
+                puts '-------------------------------  response of insert prospect  ------------------------------------'
+                puts response
+                puts '--------------------------------------------------------------------------------------------------'
+
                 result = Ox.load(response.body, mode: :hash)
                 prospect_response = result[:"s:Envelope"][1][:"s:Body"][1][:insertprospectResponse][1][:insertprospectResult][:InsertProspectResponse]
                 prospect_response = prospect_response - [prospect_response[0]]

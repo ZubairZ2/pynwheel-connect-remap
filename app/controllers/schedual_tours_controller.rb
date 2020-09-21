@@ -62,7 +62,16 @@ class SchedualToursController < ApplicationController
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
       end
       community = Community.find_by_id params[:community_id]
-      desired_move_in_date = schedual_tour.desired_move_in_date.present? ? schedual_tour.desired_move_in_date : "" rescue ""
+      
+      if params[:desired_move_in_date].present?
+        date = params[:desired_move_in_date].split('/')
+        date[0],date[1] = date[1],date[0]
+        date = date.join('-').to_date
+        desired_move_in_date = date
+      else
+        desired_move_in_date = ""
+      end
+
       community.realpage_insert_prospect(tu, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
 
       # sms_notifire notification_content, params[:tour_user][:phone_number]
@@ -187,7 +196,7 @@ class SchedualToursController < ApplicationController
       # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
       app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
       android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
-      email_content = "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download the Pynwheel tour app before you arrive: <br><a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store </a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour From Google Play</a> <br> #{community.email_text}"
+      email_content = "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download the Pynwheel tour app before you arrive: <br><a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store </a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour From Google Play</a> <br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
 
       community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincolon Property Company Self Tour" : "Pynwheel Self Tour"
       web_notification = "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your reservation is confirmed. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel Self Tour app before you arrive: <br/> <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store</a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour From Google Play</a>"

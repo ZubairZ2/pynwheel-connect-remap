@@ -1,6 +1,6 @@
 class RealPageInsertUnitShownService < BaseService
-    def perform(tour_user, tour_time, visited_stops, leasing_agent, activity_id)
-        insert_unit_shown(tour_user, tour_time, visited_stops, leasing_agent, activity_id)
+    def perform(tour_user, tour_time, visited_stop, leasing_agent, activity_id)
+        insert_unit_shown(tour_user, tour_time, visited_stop, leasing_agent, activity_id)
     end
 
     def insert_unit_shown(guest, activity_date, unit_shown, leasing_agent, activity_id)
@@ -16,23 +16,21 @@ class RealPageInsertUnitShownService < BaseService
 
                 community_id = credentials.community_id
                 activity_date = activity_date.strftime("%Y-%m-%d")
-                agent_id = leasing_agent[:Value]  
-                # unit_shown =unit_shown.count
+                agent_id = leasing_agent[:Value]
                
                 community = Community.find community_id
                 prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
                 
                 if prospect.present?
-                    puts '-------------------------------  prospect present in insert unit shown  ------------------------------------'
-                    puts "prospect is present"
-                    puts '------------------------------------------------------------------------------------'
+                    puts '-------------------------------  prospect is present in insert unit shown  ------------------------------------'
                     guest_card_id = prospect.data[0]["Guestcard"]["NewID"] != "0" ? prospect.data[0]["Guestcard"]["NewID"] : prospect.data[0]["Guestcard"]["ID"]
                 end
                 
                 if guest_card_id.present? and activity_id.present?
                     puts '-------------------------------  guest_card_id in insert unit shown ------------------------------------'
                     puts guest_card_id
-                    puts '------------------------------------------------------------------------------------'
+                    puts '--------------------------------------------------------------------------------------------------------'
+
                     response = HTTParty.post(
                         url,
                         :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -54,23 +52,24 @@ class RealPageInsertUnitShownService < BaseService
                                         <tem:guestcardid>'+guest_card_id+'</tem:guestcardid>
                                         <tem:activityid>'+activity_id+'</tem:activityid>
                                         <tem:activitydate>'+activity_date+'</tem:activitydate>
+                                        <tem:unitnumber>'+unit_shown+'</tem:unitnumber> 
                                         <tem:agentid>'+agent_id+'</tem:agentid>
                                     </tem:unitshown>
                                 </tem:insertunitshown>
                             </soapenv:Body>
                         </soapenv:Envelope>')
-                        
+
                     puts '-------------------------------  response insert unit shown  ------------------------------------'
                     puts response
-                    puts '------------------------------------------------------------------------------------'
+                    puts '-------------------------------------------------------------------------------------------------'
 
-                    # <tem:unitnumber>dsf</tem:unitnumber> 
                 else
                     cred = Credential.find credentials.id
                     cred.data_error_message = "missing guest card id or activity id for #{cred.community.data_provider}. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
                     PaperTrail.enabled = false
                     cred.save
                     PaperTrail.enabled = true
+                    puts '-------------------------------  in else  ------------------------------------'
                 end
             rescue => e
                 begin
@@ -79,6 +78,7 @@ class RealPageInsertUnitShownService < BaseService
                     PaperTrail.enabled = false
                     cred.save
                     PaperTrail.enabled = true
+                    puts '-------------------------------  rescued  ------------------------------------'
                 rescue => err
                 end
             end

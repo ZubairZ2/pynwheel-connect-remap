@@ -1,9 +1,9 @@
 class RealPageInsertActivityService < BaseService
-    def perform(tour_user, tour_time, avail_stops_name, leasing_agent, activity_type)
-        insert_activity(tour_user, tour_time, avail_stops_name, leasing_agent, activity_type)
+    def perform(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types)
+        insert_activity(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types)
     end
 
-    def insert_activity(guest, action_date, stops_name, leasing_agent, activity_type)
+    def insert_activity(guest, action_date, stops_name, leasing_agent, activity_types)
         site_ids = credentials.site_id.split(',') rescue []
         site_ids.each do |site_id|
             begin
@@ -18,71 +18,76 @@ class RealPageInsertActivityService < BaseService
                 property_id = credentials.property_id
                 action_date = action_date.strftime("%Y-%m-%d")
                 agent_id = leasing_agent[:Value]
-                activity_type_id = activity_type[:Value]
    
                 community = Community.find community_id
                 prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
                 
                 if prospect.present?
-                    puts '-------------------------------  prospect present in insert activity ------------------------------------'
-                    puts "prospect is present"
-                    puts '------------------------------------------------------------------------------------'
+                    puts '-------------------------------  prospect is present in insert activity ------------------------------------'
                     guest_card_id = prospect.data[0]["Guestcard"]["NewID"] != "0" ? prospect.data[0]["Guestcard"]["NewID"] : prospect.data[0]["Guestcard"]["ID"]
                 end
 
-                if guest_card_id.present? and agent_id.present? and activity_type_id.present?
+                if guest_card_id.present? and agent_id.present? and activity_types.present?
+                    
                     puts '-------------------------------  guest_card_id  in insert activity ------------------------------------'
                     puts guest_card_id
-                    puts '------------------------------------------------------------------------------------'
-                    response = HTTParty.post(
-                        url,
-                        :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-                        :body => '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
-                                <soapenv:Header/>
-                                <soapenv:Body>
-                                    <tem:insertactivity>
-                                        <tem:auth>
-                                            <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                                            <tem:siteid>'+site_id+'</tem:siteid>
-                                            <tem:username>'+username+'</tem:username>
-                                            <tem:password>'+password+'</tem:password>
-                                            <tem:licensekey>'+license_key+'</tem:licensekey>
-                                            <tem:system>OneSite</tem:system>
-                                        </tem:auth>
-                                        <tem:activity>
-                                            <tem:guestcardid>'+guest_card_id+'</tem:guestcardid>
-                                            <tem:propertyid>'+property_id+'</tem:propertyid>
-                                            <tem:actiondate>'+action_date+'</tem:actiondate>
-                                            <tem:creatorid>'+agent_id+'</tem:creatorid>
-                                            <tem:typeid>'+activity_type_id+'</tem:typeid>
-                                        </tem:activity>
-                                    </tem:insertactivity>
-                                </soapenv:Body>
-                                </soapenv:Envelope>')
+                    puts '-------------------------------  activity_types  in insert activity ------------------------------------'
+                    puts activity_types
+                    puts '--------------------------------------------------------------------------------------------------------'
+
+                    activity_ids = []
+                    activity_types.each do |activity_type|
+                        response = HTTParty.post(
+                            url,
+                            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+                            :body => '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+                                    <soapenv:Header/>
+                                    <soapenv:Body>
+                                        <tem:insertactivity>
+                                            <tem:auth>
+                                                <tem:pmcid>'+pmc_id+'</tem:pmcid>
+                                                <tem:siteid>'+site_id+'</tem:siteid>
+                                                <tem:username>'+username+'</tem:username>
+                                                <tem:password>'+password+'</tem:password>
+                                                <tem:licensekey>'+license_key+'</tem:licensekey>
+                                                <tem:system>OneSite</tem:system>
+                                            </tem:auth>
+                                            <tem:activity>
+                                                <tem:guestcardid>'+guest_card_id+'</tem:guestcardid>
+                                                <tem:propertyid>'+property_id+'</tem:propertyid>
+                                                <tem:actiondate>'+action_date+'</tem:actiondate>
+                                                <tem:creatorid>'+agent_id+'</tem:creatorid>
+                                                <tem:typeid>'+activity_type[1]+'</tem:typeid>
+                                            </tem:activity>
+                                        </tem:insertactivity>
+                                    </soapenv:Body>
+                                    </soapenv:Envelope>')
+
+                        puts '-------------------------------  response insert activity  ------------------------------------'
+                        puts response
+                        puts '-----------------------------------------------------------------------------------------------'
+                        
+                        result = Ox.load(response.body, mode: :hash)
+                        
+                        # <tem:unitid>'+stops_name.to_s+'</tem:unitid>
                     
-                    puts '-------------------------------  response insert activity  ------------------------------------'
-                    puts response
-                    puts '------------------------------------------------------------------------------------'
-                    
-                    result = Ox.load(response.body, mode: :hash)
-                    
-                    # <tem:unitid>'+stops_name.to_s+'</tem:unitid>
-                 
-                    activity_id = result[:"s:Envelope"][1][:"s:Body"][1][:insertactivityResponse][1][:insertactivityResult][:Activity][1][:NewID] rescue ""
-                    if activity_id.present?
-                        activity = Hash.new
-                        activity[:activity_id] = activity_id
-                        if prospect.activites.present?
-                            activity_count = prospect.activites.count + 1
-                            activity[:activity_count] = activity_count
-                            prospect.activites.push(activity)
-                        else
-                            activity[:activity_count] = 1
-                            prospect.activites = [activity]
+                        activity_id = result[:"s:Envelope"][1][:"s:Body"][1][:insertactivityResponse][1][:insertactivityResult][:Activity][1][:NewID] rescue ""
+                        if activity_id.present?
+                            activity = Hash.new
+                            activity[:activity_id] = activity_id
+                            if prospect.activites.present?
+                                activity_count = prospect.activites.count + 1
+                                activity[:activity_count] = activity_count
+                                prospect.activites.push(activity)
+                            else
+                                activity[:activity_count] = 1
+                                prospect.activites = [activity]
+                            end
+                            prospect.save
                         end
-                        prospect.save
+                        activity_ids << activity_id
                     end
-                    return activity_id
+                    return activity_ids[0]
                 else
                     cred = Credential.find credentials.id
                     cred.data_error_message = "missing guest card id or agent_id or activity_type_id for #{cred.community.data_provider}. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."

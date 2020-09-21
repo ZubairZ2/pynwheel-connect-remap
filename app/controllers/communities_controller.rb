@@ -539,6 +539,7 @@ class CommunitiesController < ApplicationController
     @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
     @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
     @tour.credit_card_required = params[:credit_card_required].present? ? true : false
+    @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
     @tour.save
     @community.show_camera_button = params[:show_camera_button].present? ? true : false
     @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
