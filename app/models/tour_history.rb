@@ -88,7 +88,8 @@ class TourHistory < ApplicationRecord
 	# 	# community.deleted_ids = []
 	# 	save_prospect(self.lengthy_stay)
 	#     community.save
-  	# end
+	# end
+	  
   end
 	  
 	def save_prospect(endtime)
