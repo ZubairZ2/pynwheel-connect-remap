@@ -61,7 +61,10 @@
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
                       = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
-
+                  - if @tour_user.desired_bedroom.present?
+                    .col-lg-12
+                      %h4{:style => "margin-left: 15px;margin-top: -20px; font-size: inherit;"}
+                        Desired Number of Bedrooms: #{@tour_user.desired_bedroom}      
                   .row
                     %h4{:style => "margin-left: 45px"}
                       Alert
