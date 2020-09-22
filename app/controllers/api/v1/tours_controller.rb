@@ -232,7 +232,7 @@ Android Users:
       @units.each do |u|
         if u.community.is_sitemap?
           u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
-            image.url(:svg_for_metro) : u.community.sitemap.image.url
+            image.url(:svg_for_metro) : u.community.sitemap.image.url rescue ""
           @sitemap_image_url = u.sitemap_image_url
 
         else
