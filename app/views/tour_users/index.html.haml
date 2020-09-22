@@ -56,20 +56,27 @@
                             #{user.tour_histories.last.arrived.to_date} #{user.tour_histories.last.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                         %td.col-lg-1
                           = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
-                          %i.fa.fa-remove{style: "color: red; font-size:18px; float:right; margin-top: -10px; z-index: 1;"}
+                          - if user.image.present?
+                            - image = "true"
+                            %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{image})"}
                         %td
                           .col-lg-2.visitor_list
                             = link_to "#{(user.last_name.present? ? user.last_name + ", " : "") + (user.first_name.present? ? user.first_name : user.name)}","/communities/#{@community.id}/tour_users/#{user.id}",:class => "name-list"
-                            %i.fa.fa-remove{style: "color: red; font-size:18px;  margin-left: 133px; margin-top: -53px;"}
+                            - if user.last_name.present? or user.first_name.present? or user.name.present?
+                              %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.first_name})"}
                         %td.col-lg-2
                           .visitor_list
                             = link_to "#{user.email}", "/communities/#{@community.id}/tour_users/#{user.id}"
-                            %i.fa.fa-remove.trash_icon_style
+                            - if user.email.present?
+                              - email = "true"
+                              %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{email})"}
 
                         %td.col-lg-1
                           .visitor_list
                             #{user.phone_number}
-                            %i.fa.fa-remove.trash_icon_style
+                            - if user.phone_number.present?
+                              - phone = "true"
+                              %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{phone})"}
                         %td.col-lg-2
                           .visitor_list
                             - if TourHistory.where(tour_user_id: user.id,lengthy_stay_email_sent: true,tour_id: @community.tour.id).present?
@@ -129,6 +136,9 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_index_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
+  function delete_user_information(user_id, user_attribute){
+    alert(user_attribute, user_id);
+  }
   if ("#{browser.device.iphone?}" == "true")
   {
     $(".user_id_image").css("transform", "transform: rotate(90deg);");
