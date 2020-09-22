@@ -18,7 +18,7 @@ json.tours @tours do |tour|
     json.mdu @community.mdu
   end
   if @community.is_sitemap
-    json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
+    json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
 
   else
     @floorplate = @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
@@ -86,7 +86,8 @@ json.tours @tours do |tour|
   # new_stops_arr
 
   json.tour_stop stops_arr.compact.each do |stop|
-    unless stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1)
+    unless stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1) && @community.show_map
+      
       if stop.stop_type == "unit"
         u = Unit.find stop.stop_id
         if u.present?
