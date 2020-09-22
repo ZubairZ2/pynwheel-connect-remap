@@ -87,7 +87,7 @@ class ToursController < ApplicationController
       to_sp_path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first if (!@community.is_sitemap && (@floor.to_i == (@tours.starting_floor.present? ? @tours.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.min.to_i)))
       if !@community.is_sitemap
         begin
-        if (@tours.starting_floor.present? || @floor.to_i == @floor_list[0]) && @tours.starting_floor.to_i == @floor.to_i  && (@tours.building.present? || @building == @building_list[0]) && @tours.building == @building        
+        if (floor_choice.include?(@tours.starting_floor) && building_choice.include?(@tours.building))       
           @community.tour.tour_stops.where(stop_id: @all_stops).map{|x|           @existing_path_points <<           Path.find_by(map_path_from_id: nil, map_path_to_id: x.stop_id).path_points rescue next} 
           @community.tour.tour_stops.where(stop_id: @all_stops).map{|x|           @existing_path_points <<           Path.find_by(map_path_from_id: x.stop_id, map_path_to_id: nil).path_points rescue next}
         
@@ -460,7 +460,15 @@ class ToursController < ApplicationController
     render json: {path: tour_stop}, status: 200
   end
   def update_building_starting_point
-    
+    @building_starting_point = BuildingStartingPoint.find_by_id params[:bsp_id]
+    respond_to do |format|
+      if @building_starting_point.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+        format.json { render json: @building_starting_point, status: :ok }
+      else
+        format.json { render json: @building_starting_point.errors, status: :unprocessable_entity }
+      end
+    end
+  
   end
 
   def add_elevator

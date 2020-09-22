@@ -1045,7 +1045,7 @@
             $.ajax({
               type: "POST",
               url: "#{update_building_starting_point_community_tours_path}",
-              data: {elevator_id: elevator_id, x_plot: left, y_plot: right },
+              data: {bsp_id: bsp_id, x_plot: left, y_plot: right },
               success: function(response) {
                 console.log(response.message)
               }
