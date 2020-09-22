@@ -23,7 +23,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @community = Community.find params[:community_id]
     @credit_card_required =  @community.tour.credit_card_required
     @bedroom_list = @community.floorplans.map{|x| x.bedrooms.to_i}.uniq
-    
+    @marketing_source_required = @community.tour.marketing_source_required
     if @community.opening_hours.present?
       @disable_day_of_week = [0,1,2,3,4,5,6]
       @community.opening_hours.each do |rcd|

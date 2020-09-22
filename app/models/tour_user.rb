@@ -26,6 +26,7 @@ class TourUser < ApplicationRecord
   has_many :as_guests, dependent: :destroy
   has_many :igloo_guests, dependent: :destroy
   has_many :lock_histories, dependent: :destroy
+  has_many :prospects, dependent: :destroy
   
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 

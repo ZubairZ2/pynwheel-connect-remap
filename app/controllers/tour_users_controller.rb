@@ -124,6 +124,7 @@ class TourUsersController < ApplicationController
     @tour_user.tour_histories.where(tour_id: @tour.id).delete_all
     @tour_user.visited_stops.where(tour_id: @tour.id).delete_all
     @tour_user.schedual_tours.where(community_id: @community.id).delete_all
+    @tour_user.prospects.where(community_id: @community.id).delete_all
 
     # @tour_user.destroy
     redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
