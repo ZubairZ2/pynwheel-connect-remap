@@ -39,10 +39,13 @@ class Amenity < ApplicationRecord
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]
+  after_update :crop_amenity_image
   # validate :url_validity
   # validate :image_size
 
-
+  def crop_amenity_image
+    image.recreate_versions! if (crop_x.present?)
+  end
   def url_validity
     require 'uri'
     if video_link.present?
