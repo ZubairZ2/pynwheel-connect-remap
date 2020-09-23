@@ -63,8 +63,7 @@ class ToursController < ApplicationController
       @tour_unit_array =  @community.mdu ? TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id} | @community.units.where( modal_unit: true).ids : []
       @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
     end
-    
-    @all_stops = @tour_amenity_array | @tour_unit_array | (@floor.to_i == 1 ? @community.elevators : @community.elevators.where(building: building_choice).map{|x| x.id if ( x.floorplate_covering_range.present? && (x.floors.include?(@floor.to_i))  ) }.compact)
+    @all_stops = @tour_amenity_array | @tour_unit_array | @community.elevators# (@floor.to_i == 1 ? @community.elevators : @community.elevators.where(building: building_choice).map{|x| x.id if ( x.floorplate_covering_range.present? && (x.floors.include?(@floor.to_i))  ) }.compact)
     floorplate_units = []
     floorplate_units = TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.where.not(floor: @floor.to_i).map{|x| x.id} if @floor.present?
     # @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if (x.present? && @all_stops.include?(x.stop_id)) }
