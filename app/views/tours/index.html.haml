@@ -294,10 +294,12 @@
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v To
                       %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
-                    -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-                    .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{raw current_day.opening_time}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;"}
-                      .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply To All
                     .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                    -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                    - if current_day.day == "Monday"
+                      .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{raw current_day.opening_time}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;"}
+                        .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
+
                     - index +=1
                 - if @community.opening_hours.blank?
                   .row.p-8-v
