@@ -9,6 +9,7 @@ class CreateBuildingStartingPoints < ActiveRecord::Migration[5.0]
       t.string :building
       t.string :image
       t.string :directional_text
+      t.string :status
 
       t.timestamps
     end

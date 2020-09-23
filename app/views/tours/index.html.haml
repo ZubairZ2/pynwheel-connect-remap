@@ -604,7 +604,7 @@
                         - next
                       - unless @all_stops.include?(stop.stop_id) || stop.stop_type == "elevator"
                         - next
-                      - if stop.stop_type == "elevator" && @community.is_sitemap
+                      - if stop.stop_type == "elevator" && @community.is_sitemap || stop.stop_type == "building_starting_point"
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find_by_id stop.stop_id
@@ -686,9 +686,16 @@
                 ADD STARTING POINT
 
               - if !@community.is_sitemap
-                = link_to building_starting_point_community_tours_path(params[:community_id],floorplate: @floor,building: @building), class: "btn btn-primary mr-5", id: "add-building-starting-point", :style => "font-weight: bold;" do
+                
+
+
+                = link_to select_status_community_tours_path(params[:community_id],floor: @floor,building: @building), id: "add-building-starting-point", :style => "font-weight: bold;" , remote: true do
                   %i.fa.fa-plus-circle
-                  ADD BUILDING STARTING POINT
+                  %button.btn-primary{"data-target" => "#select_status", "data-toggle" => "modal"} BUILDING ENTRY/EXIT
+
+
+
+
                 = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil,building: @building), class: "btn btn-primary mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
                   %i.fa.fa-plus-circle
                   ADD ELEVATOR  
@@ -772,7 +779,7 @@
                   /- binding.pry
                   - @existing_path_points.each_with_index do |point, index|               
                     .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
-
+  #select_status.modal.fade.select_status                    
 .row
   .col-md-12
     .box-footer.mt-30.pt-15

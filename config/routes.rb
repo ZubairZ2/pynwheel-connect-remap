@@ -289,6 +289,8 @@ Rails.application.routes.draw do
       end
       collection do
         post :save_starting_point
+        get :select_status
+        post :select_status
         post :sort_stops
         post :display_stop
         post :save_tour_settings

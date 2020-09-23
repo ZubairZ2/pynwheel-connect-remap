@@ -455,9 +455,9 @@ class ToursController < ApplicationController
   end
   def building_starting_point
     
-    bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i)
+    bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i, name: "Building " + params[:building],status: params[:status])
     tour_stop = TourStop.create tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name
-    render json: {path: tour_stop}, status: 200
+    redirect_to community_tours_path(floorNo: params[:floor].to_i,building: params[:building])
   end
   def update_building_starting_point
     @building_starting_point = BuildingStartingPoint.find_by_id params[:bsp_id]
@@ -470,7 +470,12 @@ class ToursController < ApplicationController
     end
   
   end
-
+  def select_status
+    
+    @building = params[:building]
+    @floor = params[:floor]
+    redirect_to building_starting_point_community_tours_path(building: @building,floor: @floor,status: params[:status]) if params[:status].present?
+  end
   def add_elevator
     last_elev = Elevator.last if Elevator.count > 0
 
