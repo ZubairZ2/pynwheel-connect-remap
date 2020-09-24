@@ -31,7 +31,7 @@ class Api::V1::ToursController < ActionController::Base
     else
       begin
         vs = TourUser.find_by(id: params[:tour_user_id].to_i)
-        community = Community.find_by_id params[:community]
+        community = Community.find_by_id params[:community_id]
         community_name = "visiting the community " + community.name if community.present?
         vs.image_bit = true
         vs.crop_image_bit = true

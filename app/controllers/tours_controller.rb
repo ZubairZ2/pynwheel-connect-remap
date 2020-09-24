@@ -593,8 +593,8 @@ class ToursController < ApplicationController
     if params[:tour_user_id].present?
       tour_user = TourUser.find_by_id params[:tour_user_id]
       tour_user.update_attributes id_selfie_mismatch: params[:match_status]
-      community_id = tour_user.community_id
-      community_email = Community.find(community_id).email
+      # community_id = tour_user.community_id
+      community_email = Community.find(params[:community]).email
       status = 200
       message = "ID/Selfie is marked #{params[:match_status] == "true" ? 'Mismatched' : 'Matched' }"
 
