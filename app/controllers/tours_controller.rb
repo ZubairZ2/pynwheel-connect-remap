@@ -265,7 +265,8 @@ class ToursController < ApplicationController
       end
       rescue
       end
-      params['array'] = (params['array'].present? ? params['array'] - minus : []) + ele_array
+      
+      params['array'] = (params['array'].present? ? params['array'] - minus : []) + ele_array unless params['array'] == [] and params['floor'].to_i < 1
       hash = tour.sort_hash.class == String ? JSON.parse(tour.sort_hash) : tour.sort_hash
       
       hash[params[:building] + "," + params[:floor].to_s] = params[:array]
