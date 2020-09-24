@@ -14,7 +14,7 @@ class RealPageGuestCardIntegrationJob < ApplicationJob
 
         unless prospect.present?
             real_page_insert_prospect_service = RealPageInsertProspectService.new(JSON.parse(credentials))
-            real_page_insert_prospect_service.perform(tour_user, tour_time, "")            # marketing_source is nil for unscheduled tour
+            real_page_insert_prospect_service.perform(tour_user, tour_time, "", "")            # marketing_source, desired_move_in_date are nil for unscheduled tour
         end
 
         # No need to call get_leasing_agents API, we will always be seeding "House" value "0" as a leasing agentg

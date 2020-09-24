@@ -379,9 +379,8 @@ class Community < ApplicationRecord
     # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
 
-  def realpage_insert_prospect(tour_user, tour_time, marketing_source) 
-    # coming form scheduler widger, we are passing move-in-date for tour_time
-    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, tour_time, marketing_source
+  def realpage_insert_prospect(tour_user, appointment_time, marketing_source, desired_move_in_date)
+    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, appointment_time, marketing_source, desired_move_in_date
   end
 
   def realpage_insert_activity(tour_user)

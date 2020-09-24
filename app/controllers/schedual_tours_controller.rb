@@ -74,9 +74,9 @@ class SchedualToursController < ApplicationController
         desired_move_in_date = ""
       end
 
+      appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime
       marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
-      community.realpage_insert_prospect(tu, desired_move_in_date, marketing_source) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
-
+      community.realpage_insert_prospect(tu, appointment_time, marketing_source, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
       # sms_notifire notification_content, params[:tour_user][:phone_number]
     else
       render json: {message: "some errors occured"}, status: 'failed'
