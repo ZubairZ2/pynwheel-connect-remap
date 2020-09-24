@@ -998,6 +998,7 @@
           },
 
           stop: function(event, ui) {
+            elevator_id = $(elevator).prop('id').split('_')[1]
             left = Math.round(ui.position.left )
             right = Math.round(ui.position.top );
             $.ajax({
