@@ -1,9 +1,9 @@
 class RealPageInsertProspectService < BaseService
-    def perform(tour_user, tour_time, marketing_source)
-        insert_prospect(tour_user, tour_time, marketing_source)
+    def perform(tour_user, appointment_time, marketing_source, desired_move_in_date)
+        insert_prospect(tour_user, appointment_time, marketing_source, desired_move_in_date)
     end
 
-    def insert_prospect(guest, tour_time, marketing_source)
+    def insert_prospect(guest, appointment_time, marketing_source, desired_move_in_date)
         site_ids = credentials.site_id.split(',') rescue []
         site_ids.each do |site_id|
             begin
@@ -18,29 +18,14 @@ class RealPageInsertProspectService < BaseService
                 phone_number = guest.phone_number.present? ? guest.phone_number : ''
                 first_name = guest.first_name.present? ? guest.first_name : guest.name
                 last_name = guest.last_name.present? ? guest.last_name : 'missing'
-                begin
-                    if tour_time.instance_of? Date              # coming form scheduler widger, we are passing move-in-date for tour_time
-                        desired_move_in_date = tour_time.strftime("%Y-%m-%d")
-                    else
-                        tour_data = scheduled_tour(tour_time, community_id, guest.id)
-                        desired_bedroom = tour_data.desired_bedroom.present? ? tour_data.desired_bedroom : '' rescue ''
-                        desired_move_in_date = tour_data.desired_move_in_date.present? ? tour_data.desired_move_in_date.strftime("%Y-%m-%d") : '' rescue  ''
-                    end
-                rescue Exception => e
-                    desired_bedroom = ''
-                    desired_move_in_date = ''
-                end
 
-                collection = marketing_source.present? ? '<tem:primaryleadsource>' + marketing_source + '</tem:primaryleadsource>' : ''
-                needed_date = desired_move_in_date.present? ? '<tem:dateneeded>' + desired_move_in_date + '</tem:dateneeded>' : ''
-
-                if desired_move_in_date.present? and marketing_source.present?
-                    year , month, date = desired_move_in_date.split("-")
-                    collection = '<tem:primaryleadsource>' + marketing_source + '</tem:primaryleadsource><tem:appointment><tem:year>' + year + '</tem:year><tem:month>' + month + '</tem:month><tem:day>' + date + '</tem:day><tem:leasingagentid>0</tem:leasingagentid></tem:appointment>'
-                elsif desired_move_in_date.present?
-                    year , month, date = desired_move_in_date.split("-")
-                    collection = '<tem:appointment><tem:year>' + year + '</tem:year><tem:month>' + month + '</tem:month><tem:day>' + date + '</tem:day><tem:leasingagentid>0</tem:leasingagentid></tem:appointment>'
+                year , month, date, hour, minute = appointment_time.strftime("%Y-%m-%d-%H-%M").split("-")
+                if marketing_source.present?
+                    collection = '<tem:primaryleadsource>' + marketing_source + '</tem:primaryleadsource><tem:appointment><tem:year>' + year + '</tem:year><tem:month>' + month + '</tem:month><tem:day>' + date + '</tem:day> <tem:hour>' + hour + '</tem:hour><tem:minute>' + minute + '</tem:minute><tem:leasingagentid>0</tem:leasingagentid></tem:appointment>'
+                else
+                    collection = '<tem:appointment><tem:year>' + year + '</tem:year><tem:month>' + month + '</tem:month><tem:day>' + date + '</tem:day> <tem:hour>' + hour + '</tem:hour><tem:minute>' + minute + '</tem:minute><tem:leasingagentid>0</tem:leasingagentid></tem:appointment>'
                 end
+                needed_date = desired_move_in_date.present? ? ('<tem:dateneeded>' + desired_move_in_date.strftime("%Y-%m-%d") + '</tem:dateneeded>') : ''
 
                 puts '-------------------------------  data in insert prospect  ------------------------------------'
                 puts collection
