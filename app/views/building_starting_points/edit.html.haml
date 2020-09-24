@@ -18,7 +18,7 @@
     .row
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30
-          = form_for @building_starting_point,url: update_building_starting_point_community_tours_path(current_community, @building_starting_point),method: :put do |f|
+          = form_for @building_starting_point,url: "/communities/#{@community.id}/building_starting_points/#{@building_starting_point.id}" , method: :put ,:html => {:class => 'save-building-starting-point-form'} do |f|
             = hidden_field_tag "community_id", @community.id
 
             .form-group
@@ -27,3 +27,26 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :name, :class=>"form-control building_starting_point_edit_field", :placeholder=>"Name",:maxlength=>"30"
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Directional Text
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.text_field :directional_text, :class=>"form-control building_starting_point_edit_field", :placeholder=>"Directional Text"
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Building
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.text_field :building, :class=>"form-control building_starting_point_edit_field", :placeholder=>"Building",:maxlength=>"30"
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Floor
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.select :floor, (@floors),{} , class: "form-control building_starting_point_edit_field" 
+:javascript
+  $('.building_starting_point_edit_field').change(function(){
+    // alert("grgr");
+    $('.save-building-starting-point-form').submit();
+  });

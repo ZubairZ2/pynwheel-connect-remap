@@ -511,7 +511,7 @@
       - unless @building_list.count < 2
         %h3 Select a Building
         - @building_list.each do |b|
-          %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?"+ "building=#{b}", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{@building.present? ? (@building == b ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{b.humanize}
+          %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?"+ "building=#{b}", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{@building.present? ? (@building == b ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{b}
 
     - unless @community.is_sitemap
       - begin
@@ -598,6 +598,20 @@
                           - if @community.show_map
                             = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size
+                  - @building_starting_points.where(building: @building).each do |bsp1,index|
+                    - stop = @tour_stops.find_by(stop_id: bsp1.id)
+                    %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
+                      - orderVar = orderVar + 1
+                      %td= orderVar
+                      %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
+                        = bsp1.name 
+                      %td
+                        = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                          %i.fa.fa-road.icon_size
+                        = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                          %i.fa.fa-edit.icon_size 
+                        %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                          %i.fa.fa-trash.icon_size     
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       - if !@community.mdu && stop.stop_type == "unit"
@@ -608,7 +622,7 @@
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find_by_id stop.stop_id
-                        - if elevator.present? && elevator.building.present? && ((!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (![@building,nil].include? elevator.building) && 1 != @floor.to_i)
+                        - if elevator.present? && elevator.building.present? && ((!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (![@building,nil].include? elevator.building))
                           - next
                       %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
@@ -676,6 +690,20 @@
                           - unless u.present? && u.modal_unit
                             %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
                               %i.fa.fa-trash.icon_size
+                  - @building_starting_points.where.not(building: @building).each do |bsp1,index|
+                    - stop = @tour_stops.find_by(stop_id: bsp1.id)
+                    %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
+                      - orderVar = orderVar + 1
+                      %td= orderVar
+                      %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
+                        = bsp1.name 
+                      %td
+                        = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                          %i.fa.fa-road.icon_size
+                        = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                          %i.fa.fa-edit.icon_size 
+                        %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                          %i.fa.fa-trash.icon_size             
 
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
         - if @community.show_map
@@ -689,9 +717,10 @@
                 
 
 
-                = link_to select_status_community_tours_path(params[:community_id],floor: @floor,building: @building), id: "add-building-starting-point", :style => "font-weight: bold;" , remote: true do
+                = link_to building_starting_point_community_tours_path(params[:community_id],floor: @floor,building: @building), id: "add-building-starting-point", class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
                   %i.fa.fa-plus-circle
-                  %button.btn-primary{"data-target" => "#select_status", "data-toggle" => "modal"} BUILDING ENTRY/EXIT
+                  BUILDING ENTRY / EXIT
+                  / %button.btn-primary{"data-target" => "#select_status", "data-toggle" => "modal"} BUILDING ENTRY/EXIT
 
 
 
@@ -763,7 +792,7 @@
 
                     - elsif stop.class.to_s == "Elevator"
 
-                      - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i)) && ([@building,nil].include? stop.building ) ) || (stop.floorplate_covering_range == "-") || 1 == @floor.to_i
+                      - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i)) && ([@building,nil].include? stop.building ) ) || (stop.floorplate_covering_range == "-")
                         %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                     
                     - elsif stop.class.to_s == "BuildingStartingPoint"
@@ -1016,6 +1045,7 @@
           },
 
           stop: function(event, ui) {
+          elevator_id = $(elevator).prop('id').split('_')[1]
             left = Math.round(ui.position.left )
             right = Math.round(ui.position.top );
             $.ajax({
@@ -1047,6 +1077,7 @@
           },
 
           stop: function(event, ui) {
+            bsp_id = event.target.id.split("_")[1]
             left = Math.round(ui.position.left )
             right = Math.round(ui.position.top );
             $.ajax({
