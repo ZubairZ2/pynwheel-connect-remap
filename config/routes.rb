@@ -16,7 +16,7 @@ Rails.application.routes.draw do
   end
 
   # selfie matching
-  get '/id_selfie_matching/:tour_user_id', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
+  get '/id_selfie_matching/:tour_user_id/', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
   
   get 'tours/index'
