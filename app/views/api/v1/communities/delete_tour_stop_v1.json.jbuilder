@@ -180,15 +180,16 @@ json.tours @tours do |tour|
           rescue
           end
         end
-          begin
-            bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
-            bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
-            bsp_stop.status = "Exit"
-            bsp_stop.name = "Building Exit"
-            stops_arr << bsp_stop
-            add_bsp_entry = true
-          rescue => ex
-          end
+          # begin
+            
+          #   bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
+          #   bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
+          #   bsp_stop.status = "Exit"
+          #   bsp_stop.name = "Building Exit"
+          #   stops_arr << bsp_stop
+          #   add_bsp_entry = true
+          # rescue => ex
+          # end
       end
       stop_count = stops_arr.compact.count
 
@@ -402,7 +403,7 @@ json.tours @tours do |tour|
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
     elsif skip_1 and new_stops_arr[counter + 2].is_a? Tour
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
-    elsif  new_stops_arr.compact[counter + 1].id == last_stop_id
+    elsif  new_stops_arr.compact[counter + 1].present? and new_stops_arr.compact[counter + 1].id == last_stop_id
       navigation_title = @community.show_map ? ("Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
       hit = false
     elsif last_stop_desc.present? && last_stop_desc.id == stop.id
