@@ -99,6 +99,8 @@ json.tours @tours do |tour|
                 bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
                 bsp_stop.status = "Entry"
                 bsp_stop.name = "Building #{building}"
+                bsp_stop.building = bsp.building
+                bsp_stop.floor = bsp.floor
               rescue => ex
               end
             end
@@ -107,7 +109,10 @@ json.tours @tours do |tour|
               add_start = false
               
               if bsp.present? and bsp.floor != tour.starting_floor
-                first_floor_elev = @community.tour.sort_hash[(tour.building.present? ? tour.building : building) + ","+ tour.starting_floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
+                
+                first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
+                first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
+                # first_floor_elev = @community.tour.sort_hash[(tour.building.present? ? tour.building : building) + ","+ tour.starting_floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
                 if first_floor_elev.present?
                   first_floor_elev.floor = floor
                   first_floor_elev.building = building
@@ -115,7 +120,8 @@ json.tours @tours do |tour|
                 end
               end
               if tour.starting_floor.present? and tour.starting_floor != min_floor and !bsp.present?
-                first_floor_elev = @community.tour.sort_hash[(tour.building.present? ? tour.building : building) + ","+ tour.starting_floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
+                first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
+                first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
                 if first_floor_elev.present?
                   first_floor_elev.floor = floor
                   first_floor_elev.building = building
@@ -128,8 +134,11 @@ json.tours @tours do |tour|
               stops_arr << bsp_stop
               add_bsp_entry  = false
             end
-            if add_start and bsp.present? and bsp.floor != min_floor
-              first_floor_elev = @community.tour.sort_hash[bsp.building + ","+ bsp.floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
+            
+            if bsp.present? and bsp.floor != min_floor
+              first_floor_elev = @all_elevators.map{|x| x[0] if ( x[2] == bsp.building ) and  (x[1].include? bsp.floor) }.compact.first
+              first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
+              # first_floor_elev = @community.tour.sort_hash[bsp.building + ","+ bsp.floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
               if first_floor_elev.present?
                 first_floor_elev.floor = floor
                 first_floor_elev.building = building
@@ -372,6 +381,10 @@ json.tours @tours do |tour|
         counter += 1
         skip_1 = false
         next
+      end
+      
+      if (stop.is_a? TourStop) and (new_stops_arr[counter + 2].is_a? TourStop) and (stop.building != new_stops_arr[counter + 2].building) and (new_stops_arr[counter + 1].stop_type == "elevator") and (stop.floor == new_stops_arr[counter + 2].floor) 
+        skip_1 = true
       end
       skip_bool = (new_stops_arr[counter + 2].is_a? Tour) ? (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].starting_floor) : (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].floor)
       if skip_bool
