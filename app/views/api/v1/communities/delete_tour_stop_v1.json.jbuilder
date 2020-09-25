@@ -735,6 +735,14 @@ json.tours @tours do |tour|
       #   json.unit_amenities unit_amenities_array
       # end
       end
+    elsif stop.stop_type == "building_starting_point"
+      bsp = BuildingStartingPoint.find stop.stop_id
+      json.type "starting_point"
+      json.name bsp.name
+      json.directional_text bsp.directional_text
+      
+      json.floorplate_image @community.floorplates.map{|x| x if (x.floors.include? bsp.floor)}.compact.first.image.url rescue ""
+
     elsif stop.stop_type == "elevator"
       
       elevator = Elevator.find_by_id stop.stop_id

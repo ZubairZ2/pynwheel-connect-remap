@@ -36,7 +36,7 @@ class BuildingStartingPointsController < ApplicationController
     end
   end
   def building_starting_point_params
-  	params.require(:building_starting_point).permit(:name, :x_plot, :y_plot, :community_id, :floor, :building, :directional_text)
+  	params.require(:building_starting_point).permit(:name, :x_plot, :y_plot, :community_id, :floor, :building, :directional_text, :access_code)
   end
 
 end

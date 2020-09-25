@@ -457,14 +457,15 @@ class ToursController < ApplicationController
   def building_starting_point
     
     bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i, name: "Building " + params[:building] + " Entry / Exit")
-    tour_stop = TourStop.create tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name
+    tour_stop = TourStop.create tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name, latitude: 40, longitude: 10
     # render json: {path: tour_stop}, status: 200
     redirect_to community_tours_path(floorNo: params[:floor].to_i,building: params[:building])
   end
   def update_building_starting_point
     @building_starting_point = BuildingStartingPoint.find_by_id params[:bsp_id]
+    @tour_stop = TourStop.find_by(stop_id: @building_starting_point, stop_type: "building_starting_point")
     respond_to do |format|
-      if @building_starting_point.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      if @building_starting_point.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot]) && @tour_stop.update_attributes(latitude: params[:x_plot], longitude: params[:y_plot])
         format.json { render json: @building_starting_point, status: :ok }
       else
         format.json { render json: @building_starting_point.errors, status: :unprocessable_entity }
