@@ -150,11 +150,11 @@ class TourHistory < ApplicationRecord
 
   def send_email_sms_or_both_to_touruser thank_you_msg
 	if community.alert_contact == "email"
-		send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg
+		send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg, community.email
 	elsif community.alert_contact == "phone"
 		send_sms_tour_user thank_you_msg
 	else
-		send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg
+		send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg ,community.email
 		send_sms_tour_user thank_you_msg
 	end
   end
@@ -189,9 +189,9 @@ class TourHistory < ApplicationRecord
 		end
 	end
 
-  	def send_email_tour_user subj, body
+  	def send_email_tour_user subj, body, community_email
 		begin
-			NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email).deliver
+			NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email,community_email).deliver
 		rescue
 		end
 	end
