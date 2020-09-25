@@ -31,21 +31,27 @@ class UsersController < ApplicationController
 
   def update
     u = User.find(params[:id])
-    data = u.communities.pluck(:id)
-
-    if @user.update(user_params)
-      data.each do |d|
-        if params[:user][:community_ids].present?
-          unless params[:user][:community_ids].map(&:to_i).include? d
-            CommunityUser.create(user_id: params[:id],community_id: d )
+    if params[:user_attribute].present?
+      user_attribute = params[:user_attribute]
+      if user_attribute == "email"
+        u.update!(email: "Removed at Consumer Request")
+      end
+    else
+      data = u.communities.pluck(:id)
+      if @user.update(user_params)
+        data.each do |d|
+          if params[:user][:community_ids].present?
+            unless params[:user][:community_ids].map(&:to_i).include? d
+              CommunityUser.create(user_id: params[:id], community_id: d)
+            end
           end
         end
+        flash[:notice] = alert_message
+        redirect_to redirect_path
+      else
+        flash[:error] = @user.errors.full_messages.join(',')
+        render render_action
       end
-      flash[:notice] = alert_message
-      redirect_to redirect_path
-    else
-      flash[:error] = @user.errors.full_messages.join(',')
-      render render_action
     end
   end
   def check_community

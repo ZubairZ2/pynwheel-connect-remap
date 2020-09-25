@@ -68,8 +68,8 @@
                           .visitor_list
                             = link_to "#{user.email}", "/communities/#{@community.id}/tour_users/#{user.id}"
                             - if user.email.present?
-                              - email = "true"
-                              %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{email})"}
+                              - pii = 3
+                              %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
 
                         %td.col-lg-1
                           .visitor_list
@@ -137,7 +137,21 @@
                 DONE
 :javascript
   function delete_user_information(user_id, user_attribute){
+  var company_id = #{ raw @community.company.id};
+  if (user_attribute == 3){
+    user_attribute = "email"
+  }
     alert(user_attribute, user_id);
+        $.ajax({
+          type: 'PUT',
+          dataType: 'json',
+          cache: false,
+          data: { user_attribute
+           },
+          url: '/companies/' + company_id + '/employees/'+ user_id,
+          success: function(data){
+          }
+      });
   }
   if ("#{browser.device.iphone?}" == "true")
   {
