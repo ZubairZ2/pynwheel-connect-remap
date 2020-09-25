@@ -98,7 +98,7 @@ json.tours @tours do |tour|
                 bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
                 bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
                 bsp_stop.status = "Entry"
-                bsp_stop.name = "Building Entry"
+                bsp_stop.name = "Building #{building}"
               rescue => ex
               end
             end
@@ -179,6 +179,9 @@ json.tours @tours do |tour|
             end
           rescue
           end
+        end
+        if stops_arr.map{|x| x.stop_type if (x.is_a? TourStop and x.building == building and x.stop_type != "elevator")}.uniq.compact == []
+          stops_arr = stops_arr[0..stops_arr.size-2]
         end
           # begin
             
