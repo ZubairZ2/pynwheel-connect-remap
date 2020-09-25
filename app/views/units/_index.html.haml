@@ -193,7 +193,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'floor-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'floor-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -213,7 +213,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'building-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'building-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -233,7 +233,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-date-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-date-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -253,7 +253,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -273,7 +273,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'manual-override-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'manual-override-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -293,7 +293,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'sold-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'sold-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -314,7 +314,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'description-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'description-checkbox mass-override'
                 = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -335,7 +335,7 @@
           .row
             - units.each do |unit|
               .col-md-3.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
                 = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -350,7 +350,7 @@
     }
      $(document).ready(function(){
 
-      var $chkboxes = $('.building-checkbox');
+      var $chkboxes = $('.mass-override');
       var lastChecked = null;
 
       $chkboxes.click(function(e) {
