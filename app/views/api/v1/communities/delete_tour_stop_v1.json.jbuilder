@@ -123,6 +123,7 @@ json.tours @tours do |tour|
                 end
               end
             end
+            
             if add_bsp_entry
               stops_arr << bsp_stop
               add_bsp_entry  = false
@@ -166,7 +167,7 @@ json.tours @tours do |tour|
                   add_stop.building = building
                   
                   next if add_start and ((add_stop.stop_type == "unit") or (add_stop.stop_type == "amenity"))
-
+                  
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
                   if (add_stop.display_stop && add_mdu)
                     stops_arr << add_stop 
@@ -183,6 +184,7 @@ json.tours @tours do |tour|
         if stops_arr.map{|x| x.stop_type if (x.is_a? TourStop and x.building == building and x.stop_type != "elevator")}.uniq.compact == []
           stops_arr = stops_arr[0..stops_arr.size-2]
         end
+        add_bsp_entry = true
           # begin
             
           #   bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
