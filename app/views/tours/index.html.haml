@@ -286,16 +286,27 @@
                         %option{selected: "", value: "Sunday"} Sunday
                       - else
                         %option{value: "Sunday"} Sunday
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v From
-                      %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v To
-                      %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
-                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
-                    -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                    - if current_day.day == "Monday"
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v From
+                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor"}
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v To
+                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve"}
+                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                    - if current_day.day != "Monday"
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v From
+                        %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v To
+                        %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
+                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                      -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                     - if current_day.day == "Monday"
                       .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{raw current_day.opening_time}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;"}
                         .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
@@ -654,6 +665,9 @@
 :javascript
   function apply_time_to_all(opening_time, closing_time)
   {
+    debugger
+    opening_time = $(".monday_mor").val();
+    closing_time = $(".monday_eve").val();
     $(".morning_time").val(opening_time);
     $(".evening_time").val(closing_time);
   }
@@ -1238,14 +1252,14 @@
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">From</label>
             </div>
-            <input class="day-list bg-grey-v" name="from_${current_day}" type="time" value="09:00">
+            <input class="day-list bg-grey-v morning_time" name="from_${current_day}" type="time" value="09:00">
           </div>
 
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">To</label>
             </div>
-            <input class="day-list bg-grey-v" name="to_${current_day}" type="time" value="17:00">
+            <input class="day-list bg-grey-v evening_time" name="to_${current_day}" type="time" value="17:00">
           </div>
 
           <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger"></div>
