@@ -224,12 +224,13 @@
                       .checkbox
                         = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
                         %label Credit card required
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
-                        %label Lead source
+                - if @community.data_provider == "realpagesvc"
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .row
+                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                        .checkbox
+                          = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
+                          %label Lead source
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /     Display name
