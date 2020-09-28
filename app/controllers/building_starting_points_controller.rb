@@ -12,9 +12,11 @@ class BuildingStartingPointsController < ApplicationController
         if ts.present?
           ts.update_attributes(name: @building_starting_point.name)
         end
-        format.html { redirect_back(fallback_location: community_building_starting_point_path, notice: 'building_starting_point was successfully updated.') }
+        format.html { redirect_back(fallback_location: community_building_starting_point_path, notice: 'Building starting point was successfully updated.') }
         format.js { render :show, status: :ok, location: @building_starting_point }
       else
+        @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+        flash[:error] = @building_starting_point.errors.full_messages.join(',')
         format.html { render :edit }
         format.json { render json: @building_starting_point.errors, status: :unprocessable_entity }
       end
@@ -31,7 +33,7 @@ class BuildingStartingPointsController < ApplicationController
     @building_starting_point.destroy
 
     respond_to do |format|
-      format.html { redirect_to community_building_starting_point_url, notice: 'building_starting_point was successfully destroyed.' }
+      format.html { redirect_to community_building_starting_point_url, notice: 'Building starting point was successfully destroyed.' }
       format.json { head :no_content }
     end
   end
