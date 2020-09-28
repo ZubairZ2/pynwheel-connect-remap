@@ -122,6 +122,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+
   def community_tours
     @tour_user = TourUser.find_by_id params[:tour_user_id]
     @community = Community.find params[:id]
