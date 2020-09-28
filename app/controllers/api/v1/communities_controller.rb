@@ -47,6 +47,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+
   def data
     include_application_data
   end
