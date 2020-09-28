@@ -216,7 +216,7 @@ Android Users: Download #{community_text} from Google Play #{app_link}
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
       # DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
       DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,nil,nil,nil,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
-      DelayedSchedulerMailerJob.perform_async("A Self Tour has been scheduled!",community_mail,community.email,nil,nil,nil,nil)if (community.alert_contact == "email" || community.alert_contact == "both")
+      DelayedSchedulerMailerJob.perform_async("A Self Tour has been scheduled!",community_mail,community.email,nil,nil,nil,nil)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
 
       sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
 

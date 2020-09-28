@@ -130,22 +130,23 @@ class TourHistory < ApplicationRecord
 	end
   
   def send_email_sms_or_both mail_content
-  	if community.alert_contact == "email"
-		if mail_content[0] == "#{community.name} has been visited"
-			send_email_without_humanize mail_content[0], mail_content[1]
-		else
-			send_email mail_content[0], mail_content[1]
+		if community.alert_contact == "email" or community.alert_contact == "phone"
+			if mail_content[0] == "#{community.name} has been visited"
+				send_email_without_humanize mail_content[0], mail_content[1]
+			else
+				send_email mail_content[0], mail_content[1]
+			end
 		end
-  	elsif community.alert_contact == "phone"
-  		send_sms mail_content[1]
-  	else
-		if mail_content[0] == "#{community.name} has been visited"
-			send_email_without_humanize mail_content[0], mail_content[1]
+		if community.alert_contact == "phone" or community.alert_contact == "email"
+			send_sms mail_content[1]
 		else
-			send_email mail_content[0], mail_content[1]
+			if mail_content[0] == "#{community.name} has been visited"
+				send_email_without_humanize mail_content[0], mail_content[1]
+			else
+				send_email mail_content[0], mail_content[1]
+			end
+			send_sms mail_content[1]
 		end
-  		send_sms mail_content[1]
-  	end
   end
 
   def send_email_sms_or_both_to_touruser thank_you_msg
