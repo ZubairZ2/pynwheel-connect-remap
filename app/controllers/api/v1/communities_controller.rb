@@ -285,10 +285,10 @@ class Api::V1::CommunitiesController < ActionController::Base
           if @scheduled_tours.present?
 
             @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
-            @tour_status = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
-            @tour_date = @scheduled_tours.last.tour_date.strftime('%d/%m/%Y')
-            @tour_time = @scheduled_tours.last.tour_time.strftime('%l:%M %P')
-
+            @tour_status , nearest_tour_id = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
+            nearest_time_tour = SchedualTour.find_by_id nearest_tour_id
+            @tour_date = nearest_time_tour.present? ? (SchedualTour.find nearest_tour_id).tour_date.strftime('%d/%m/%Y')  : "---"
+            @tour_time = nearest_time_tour.present? ?  (SchedualTour.find nearest_tour_id).tour_time.strftime('%l:%M %P') : "---"
           end
 
         end
@@ -303,7 +303,6 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def get_scheduled_tours(time_param, community_id, tour_user_id)
-    # get today's all scheduled tours for the current user
     current_tour = get_current_tour(time_param)
     SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ?', community_id, tour_user_id, current_tour.tour_date).order(:id)
   end
@@ -321,12 +320,19 @@ class Api::V1::CommunitiesController < ActionController::Base
   
   
   def tour_time_status(time_param, grace_time, scheduled_tours)
+    # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
+    # now it is confirmed that either the tour is before or after time
+
     current_tour = get_current_tour(time_param)
-    last_scheduled_tour = scheduled_tours.last
-    if current_tour.tour_time > last_scheduled_tour.tour_time + grace_time.minutes
-      return "after time"
-    elsif current_tour.tour_time < last_scheduled_tour.tour_time - grace_time.minutes
-      return "before time"
+    nearest_before_time = scheduled_tours.where("tour_time > ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
+    nearest_after_time  = scheduled_tours.where("tour_time < ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest after time  , remember min function will be applied at the first index of array, which is deliberately set to time
+
+    if nearest_before_time[0] < nearest_after_time[0]
+      return ["before time" , nearest_before_time[1]]
+    elsif nearest_after_time[0] < nearest_before_time[0]
+      return ["after time" , nearest_after_time[1]]
+    else
+      return ["after time" , nearest_after_time[1]] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
     end
   end
 

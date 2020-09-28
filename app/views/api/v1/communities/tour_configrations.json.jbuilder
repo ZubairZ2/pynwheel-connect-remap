@@ -24,11 +24,15 @@
 
             json.early_arrive_message @tour_status == "before time" ? (@community.arrive_too_early_alert.nil? ? "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@tour.grace_period.to_s} minutes before that time. In the meantime, would you like to take a virtual tour?" : @community.arrive_too_early_alert + " In the meantime, would you like to take a virtual tour?") : ""
             json.late_arrive_message ( @tour_status == "after time" and !@community.scheduler_widget) ? (@community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for #{@tour_date}, #{@tour_time}." : @community.arrive_too_late_alert + " In the meantime, would you like to take a virtual tour?") : ""
-            json.late_arrive_with_reschduler ( @tour_status == "after time" and @community.scheduler_widget) ? (@community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for #{@tour_date}, #{@tour_time}. Please click on the Reschedule button to reschedule" : @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?") : ""
-
+            json.late_arrive_with_rescheduler ( @tour_status == "after time" and @community.scheduler_widget) ? (@community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for #{@tour_date}, #{@tour_time}. Please click on the Reschedule button to reschedule" : @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?") : ""
+            
         else
+            if @community.unscheduled_alert.present?
+                @community.unscheduled_alert.gsub!("<phone>", @community.phone.present? ? @community.phone : '')
+            end
+
             json.tour_status "unscheduled"
-            json.unscheduled_message "Please contact #{@community.name.split(' ').map(&:capitalize).join(' ')} to schedule a tour. #{@community.phone.present? ? @community.phone : ''}"
+            json.unscheduled_message @community.unscheduled_alert.nil? ? (@community.scheduler_widget ? "I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below. You can take a virtual tour any time." : "I'm sorry! We only allow scheduled tours. To schedule a tour, please contact #{@community.name.titleize}: #{@community.phone.present? ? @community.phone : ''}. You can take a virtual tour any time." ) : (@community.scheduler_widget ?  @community.unscheduled_alert + " To schedule a tour, please use the button below. You can take a virtual tour any time." : @community.unscheduled_alert + " You can take a virtual tour any time.")
             json.early_arrive_message ""
             json.late_arrive_message ""
             json.late_arrive_with_reschduler ""

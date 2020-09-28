@@ -415,6 +415,16 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :arrive_too_late_alert, :value=> @community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for <date>, <time>." : @community.arrive_too_late_alert , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
 
+                  .col-lg-9.col-lg-offset-1
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                        Unscheduled tour alert
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            This message will be sent in case guest has not scheduled a tour. Standard text that is (You can take a virtual tour any time) will be added at the end of this meesage in the mobile app
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        = f.text_area :unscheduled_alert, :value=> @community.unscheduled_alert.nil? ? "I'm sorry! We only allow scheduled tours. To schedule a tour, please contact the property: <phone>." : @community.unscheduled_alert , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
 
             /
               \/.box-body

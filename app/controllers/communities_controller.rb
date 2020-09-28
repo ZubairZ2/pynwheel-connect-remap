@@ -551,6 +551,7 @@ class CommunitiesController < ApplicationController
       @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
       @community.arrive_too_early_alert = params[:community][:arrive_too_early_alert] if params[:community][:arrive_too_early_alert].present?
       @community.arrive_too_late_alert = params[:community][:arrive_too_late_alert] if params[:community][:arrive_too_late_alert].present?
+      @community.unscheduled_alert = params[:community][:unscheduled_alert] if params[:community][:unscheduled_alert].present?
     end
 
     if @community.save
