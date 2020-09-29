@@ -256,7 +256,7 @@
               - index = 0
               .col-sm-12.list.tour_sortable
                 - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
-                  .row.p-8-v{id: sortable_id}
+                  .row.p-8-v{id: sortable_id, class: current_day.day}
                     %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
                       - if current_day.day == "Monday"
                         %option{selected: "", value: "Monday"} Monday
@@ -665,7 +665,6 @@
 :javascript
   function apply_time_to_all(opening_time, closing_time)
   {
-    debugger
     opening_time = $(".monday_mor").val();
     closing_time = $(".monday_eve").val();
     $(".morning_time").val(opening_time);
