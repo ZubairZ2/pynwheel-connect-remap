@@ -199,7 +199,7 @@ json.tours @tours do |tour|
             stops_arr = stops_arr[0..stops_arr.size-2]
           end
           add_bsp_entry = true
-          if have_stop_in_building
+          unless have_stop_in_building
               bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
               bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
               stops_arr = stops_arr - [bsp_stop]
