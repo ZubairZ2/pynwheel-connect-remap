@@ -254,36 +254,46 @@
           .col-lg-12 
             = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
               - index = 0
+              - monday_count = 1
+              - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
               .col-sm-12.list.tour_sortable
                 - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
-                  .row.p-8-v{id: sortable_id, class: current_day.day}
+                  .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
+                    - days_count[current_day.day] = days_count[current_day.day] +1
                     %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
                       - if current_day.day == "Monday"
-                        %option{selected: "", value: "Monday"} Monday
+                        %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
+                        -# - days_count["mon"] = days_count["mon"] +1
                       - else
                         %option{value: "Monday"} Monday
                       - if current_day.day == "Tuesday"
-                        %option{selected: "", value: "Tuesday"} Tuesday
+                        %option{selected: "", value: "Tuesday" , class: "#{current_day.day}" + "_#{days_count["tue"]}"} Tuesday
+                        -# - days_count["tue"] = days_count["tue"] + 1
                       - else
                         %option{value: "Tuesday"} Tuesday
                       - if current_day.day == "Wednesday"
-                        %option{selected: "", value: "Wednesday"} Wednesday
+                        %option{selected: "", value: "Wednesday" , class: "#{current_day.day}" + "_#{days_count["wed"]}"} Wednesday
+                        -# - days_count["wed"] = days_count["wed"] + 1
                       - else
                         %option{value: "Wednesday"} Wednesday
                       - if current_day.day == "Thursday"
-                        %option{selected: "", value: "Thursday"} Thursday
+                        %option{selected: "", value: "Thursday" , class: "#{current_day.day}" + "_#{days_count["thur"]}"} Thursday
+                        -# - days_count["thur"]= days_count["thur"] +1
                       - else
                         %option{value: "Thursday"} Thursday
                       - if current_day.day == "Friday"
-                        %option{selected: "", value: "Friday"} Friday
+                        %option{selected: "", value: "Friday" , class: "#{current_day.day}" + "_#{days_count["fri"]}"} Friday
+                        -# -days_count["fri"] = days_count["fri"] +1
                       - else
                         %option{value: "Friday"} Friday
                       - if current_day.day == "Saturday"
-                        %option{selected: "", value: "Saturday"} Saturday
+                        %option{selected: "", value: "Saturday", class: "#{current_day.day}" + "_#{days_count["sat"]}"} Saturday
+                        -# - days_count["sat"] = days_count["sat"]
                       - else
                         %option{value: "Saturday"} Saturday
                       - if current_day.day == "Sunday"
-                        %option{selected: "", value: "Sunday"} Sunday
+                        %option{selected: "", value: "Sunday", class: "#{current_day.day}" + "_#{days_count["sun"]}"} Sunday
+                        -# - days_count["sun"] = days_count["sun"] +1
                       - else
                         %option{value: "Sunday"} Sunday
                     - if current_day.day == "Monday"
@@ -308,8 +318,9 @@
                       .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                       -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                     - if current_day.day == "Monday"
-                      .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{raw current_day.opening_time}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;"}
+                      .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;"}
                         .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
+                      - monday_count +=1
 
                     - index +=1
                 - if @community.opening_hours.blank?
@@ -663,8 +674,10 @@
               / End Panel left Side
         / /.content
 :javascript
-  function apply_time_to_all(opening_time, closing_time)
+  function apply_time_to_all(monday_count, closing_time)
   {
+    $(".Tuesday_" + monday_count > "morning_time").text();
+    debugger
     opening_time = $(".monday_mor").val();
     closing_time = $(".monday_eve").val();
     $(".morning_time").val(opening_time);
