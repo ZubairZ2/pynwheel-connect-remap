@@ -676,7 +676,8 @@
 :javascript
   function apply_time_to_all(monday_count, closing_time)
   {
-    $(".Tuesday_" + monday_count > "morning_time").text();
+    $(".Tuesday_" + monday_count > "morning_time").val();
+    jQuery(".Tuesday_" + monday_count).find($(".morning_time"))
     debugger
     opening_time = $(".monday_mor").val();
     closing_time = $(".monday_eve").val();
