@@ -300,11 +300,11 @@
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v From
-                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor"}
+                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor_" + "#{monday_count}"}
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v To
-                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve"}
+                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve_" + "#{monday_count}"}
                       .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                     - if current_day.day != "Monday"
                       .font-17-v.pull-left.mr-20-v
@@ -676,8 +676,10 @@
 :javascript
   function apply_time_to_all(monday_count, closing_time)
   {
-    $(".Tuesday_" + monday_count > "morning_time").val();
-    jQuery(".Tuesday_" + monday_count).find($(".morning_time"))
+    monday_evening = $(".monday_eve_" + monday_count).val();
+    monday_morning = $(".monday_eve_" + monday_count).val();
+    tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time")).val();
+    tues_evening_val = jQuery(".Tuesday_" + monday_count).find($(".evening_time")).val();
     debugger
     opening_time = $(".monday_mor").val();
     closing_time = $(".monday_eve").val();
