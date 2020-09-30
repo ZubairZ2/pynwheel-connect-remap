@@ -38,7 +38,9 @@ class TourHistory < ApplicationRecord
   	end
 
   	if self.id_mismatch
-  		@mail_content = ["id_mismatch", "The photo ID/selfie were flagged as a mis-match"] #get_alert_message('id_mismatch')
+			vs = self.tour_user
+			url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
+  		@mail_content = ["id_mismatch", "The photo ID/selfie for #{vs.name} were flagged as a mis-match <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"] #get_alert_message('id_mismatch')
   		send_email_sms_or_both @mail_content
   	end
 
