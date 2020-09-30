@@ -75,6 +75,7 @@ json.tours @tours do |tour|
     end
     stops_arr = []  
     add_start = true
+    first_bsp = false
     add_bsp_entry = true
     add_bsp_exit = true
     have_stop_in_building = false
@@ -131,12 +132,12 @@ json.tours @tours do |tour|
               end
             end
             
-            if add_bsp_entry
+            if first_bsp && add_bsp_entry
               stops_arr << bsp_stop
               add_bsp_entry  = false
             end
             
-            if bsp.present? and bsp.floor != min_floor
+            if bsp.present? and bsp.floor != min_floor and first_bsp
               first_floor_elev = @all_elevators.map{|x| x[0] if ( x[2] == bsp.building ) and  (x[1].include? bsp.floor) }.compact.first
               first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
               # first_floor_elev = @community.tour.sort_hash[bsp.building + ","+ bsp.floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
@@ -146,7 +147,6 @@ json.tours @tours do |tour|
                 stops_arr << first_floor_elev 
               end
             end
-            
             
 
 
@@ -179,11 +179,11 @@ json.tours @tours do |tour|
                   next if add_start and ((add_stop.stop_type == "unit") or (add_stop.stop_type == "amenity"))
                   
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                  if (add_stop.display_stop && add_mdu)
+                  if (add_stop.display_stop && add_mdu) and !(@community.deleted_ids.include? add_stop.id)
                     stops_arr << add_stop 
                     if add_stop.stop_type == "amenity" || add_stop.stop_type == "unit"
                       last_stop_id = add_stop.id
-                      have_stop_in_building = true 
+                      have_stop_in_building = true
                     end
                   end
                 end
@@ -191,21 +191,29 @@ json.tours @tours do |tour|
               end
               
             end
-          rescue
+          rescue => ex
+            puts ex
           end
         end
         begin
           if stops_arr.map{|x| x.stop_type if (x.is_a? TourStop and x.building == building and x.stop_type != "elevator")}.uniq.compact == []
             stops_arr = stops_arr[0..stops_arr.size-2]
           end
+          
           add_bsp_entry = true
           unless have_stop_in_building
               bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
               bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
               stops_arr = stops_arr - [bsp_stop]
+              
+          else
+            
           end
         rescue => ex
         end
+        first_bsp = true if (first_bsp or have_stop_in_building)
+        have_stop_in_building = false
+        
           # begin
             
           #   bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
