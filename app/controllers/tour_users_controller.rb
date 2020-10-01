@@ -109,10 +109,12 @@ class TourUsersController < ApplicationController
     tour_user = TourUser.find(params[:id])
     if params[:user_attribute].present?
       update_tour_user_attributes(params[:user_attribute],tour_user)
+      redirect_to community_tour_users_path(@community), :notice => "User #{user_attribute} deleted successfully"
     end
   end
 
   def update_tour_user_attributes(user_attribute, tour_user)
+    @community = Community.find params[:community_id]
     if user_attribute == "email"
       tour_user.email = "Removed at Consumer Request"
       tour_user.save!(validate: false)
@@ -132,9 +134,9 @@ class TourUsersController < ApplicationController
       tour_user.image = "Removed at Consumer Request"
       tour_user.save!(validate: false)
     end
-    # if user_attribute == "arrived"
-    #   tour_user.tour_histories.last.update!(arrived: "Removed at Consumer Request")
-    # end
+
+
+    # redirect_to community_tour_users_path(@community), :notice => "User #{user_attribute} deleted successfully"
   end
 
   def destroy
