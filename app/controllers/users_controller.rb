@@ -31,12 +31,6 @@ class UsersController < ApplicationController
 
   def update
     u = User.find(params[:id])
-    if params[:user_attribute].present?
-      user_attribute = params[:user_attribute]
-      if user_attribute == "email"
-        u.update!(email: "Removed at Consumer Request")
-      end
-    else
       data = u.communities.pluck(:id)
       if @user.update(user_params)
         data.each do |d|
@@ -52,7 +46,6 @@ class UsersController < ApplicationController
         flash[:error] = @user.errors.full_messages.join(',')
         render render_action
       end
-    end
   end
   def check_community
     unless current_user.is_super_admin?

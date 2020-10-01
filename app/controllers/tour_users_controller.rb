@@ -105,6 +105,38 @@ class TourUsersController < ApplicationController
 
   end
 
+  def update
+    tour_user = TourUser.find(params[:id])
+    if params[:user_attribute].present?
+      update_tour_user_attributes(params[:user_attribute],tour_user)
+    end
+  end
+
+  def update_tour_user_attributes(user_attribute, tour_user)
+    if user_attribute == "email"
+      tour_user.email = "Removed at Consumer Request"
+      tour_user.save!(validate: false)
+    end
+    if user_attribute == "name"
+      tour_user.name = "Removed at Consumer Request"
+      tour_user.first_name =  "Removed at Consumer Request"
+      tour_user.last_name = ""
+      tour_user.save!(validate: false)
+    end
+    if user_attribute == "phone"
+      tour_user.phone_number = "Removed at Consumer Request"
+      tour_user.save!(validate: false)
+    end
+    if user_attribute == "image"
+      tour_user.image.delete!
+      tour_user.image = "Removed at Consumer Request"
+      tour_user.save!(validate: false)
+    end
+    # if user_attribute == "arrived"
+    #   tour_user.tour_histories.last.update!(arrived: "Removed at Consumer Request")
+    # end
+  end
+
   def destroy
     @community = Community.find params[:community_id]
     @tour_user = TourUser.find params[:id]
