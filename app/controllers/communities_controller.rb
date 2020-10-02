@@ -527,7 +527,8 @@ class CommunitiesController < ApplicationController
   def save_tour_settings
     @community = Community.find params[:community_id]
     @tour = @community.tour
-
+    @tour_setting = @tour.tour_setting
+    
     unless params[:community][:optional_mails].present?
       @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
       @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
@@ -543,8 +544,24 @@ class CommunitiesController < ApplicationController
       @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
       @tour.credit_card_required = params[:credit_card_required].present? ? true : false
       @tour.only_scheduled_tour = params[:only_scheduled_tour].present? ? true : false
-      @tour.grace_period = params[:grace_time]
+      @tour.grace_period = params[:grace_time] if params[:grace_time].present?
+      @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
       @tour.save
+
+      # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
+      # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
+      # @tour_setting.show_last_name = params[:show_last_name].present? ? params[:show_last_name] : false
+      # @tour_setting.show_email = params[:show_email].present? ? params[:show_email] : false
+      @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
+      @tour_setting.show_phone = params[:show_phone].present? ? params[:show_phone] : false
+      @tour_setting.show_desired_bedroom = params[:show_desired_bedroom].present? ? params[:show_desired_bedroom] : false
+      @tour_setting.show_desired_move_in_date = params[:show_desired_move_in_date].present? ? params[:show_desired_move_in_date] : false
+      @tour_setting.time_intervel = "15 min" if params[:time_intervel_15] == "true"
+      @tour_setting.time_intervel = "30 min" if params[:time_intervel_30] == "true"
+      @tour_setting.time_intervel = "1 hr" if params[:time_intervel_1] == "true"
+      @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
+      @tour_setting.save
+
     else
       @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
       @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
@@ -613,9 +630,9 @@ class CommunitiesController < ApplicationController
 
   def community_params
     params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
-      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
+      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
-      :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
+      :api_token,:p_code,:apply_now,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
         :futurist_property_map_marker_color, :expressionist_property_map_marker_color, :panther_property_map_marker_color, :futurist_amenity_map_marker_color,:expressionist__amenity_map_marker_color,
         :panther_amenity_map_marker_color,:futurist_property_map_size,:expressionist_property_map_size,:panther_property_map_size,:modernist_property_map_size, :futurist_amenity_map_size, :expressionist_amenity_map_size, :panther_amenity_map_size, :modernist_amenity_map_size,

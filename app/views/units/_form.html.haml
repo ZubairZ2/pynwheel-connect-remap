@@ -49,9 +49,14 @@
         = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"20"
         %small Building (Manual Override Required)
       - unless @community.is_sitemap
-        .col-sm-6.col-lg-4.col-md-4.col-xs-12
-          = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
-          %small Floor (Manual Override Required)
+        - if f.object.x_plot.present? and f.object.y_plot.present? and (f.object.x_plot + f.object.y_plot) > 0
+          .col-sm-6.col-lg-4.col-md-4.col-xs-12
+            = f.select :floor, f.object.floorplate.floors,{}, :class=>"form-control validate[custom[floor]]"
+            %small Floor (Manual Override Required)
+        - else  
+          .col-sm-6.col-lg-4.col-md-4.col-xs-12
+            = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
+            %small Floor (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :square_feet, :class=>"form-control ", :placeholder=>"Unit space", :value => f.object.square_feet.to_i
         %small Square footage (Manual Override Required)
@@ -99,21 +104,26 @@
       %select.form-control#remote_lock{name: "remote_lock"}
       %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
         %a#a-lock.btn-text-color{href: "#"} Update selected lock
-  
+
 - if @community.touchscreen_app
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Details
+      
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+- if @community.self_tour
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Directional Text
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+        %span#propertyDetailNameText
+          This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
 
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Directional Text
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :stop_description,:class=>"form-control mb-20 ",:placeholder=>"Enter Directional Description", :rows => "8"
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
+      %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
 -#.form-group
 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 -#    Available
@@ -150,50 +160,93 @@
           %label Model unit
 
 .form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Upload Primary Image
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{style: "margin-top: 50px;"}
+    Primary Floor Plan Image
     %span
-      Upload primary image of this Unit.
+      THIS WILL REPLACE THE STANDARD FLOOR PLAN IMAGE FOR THIS UNIT.
       %br/
       Images will appear at a size of 325 x 300 px. Please note that images that are too small may appear pixelated.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     -#.select-img.mb-20
     -#  .select-img-img
-    .image-box.video-box
-      .images.height-200
-        %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Primary Image"}
-          = image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
-      = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.image.present? ? ((f.object.image.width < 300 && f.object.image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-
-    %span.btn.btn-default.black-button.btn-sm.btn-file
-      Select Image
-      = f.file_field :image
+    .col-lg-5.col-md-5.col-sm-6.col-xs-6
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Primary Image"}
+              = image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
+          = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.image.present? ? ((f.object.image.width < 300 && f.object.image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+        - if f.object.image.present?
+          .icons
+            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=primary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+              %i.fa.fa-close{ style:"margin-right: 50PX;"}
+      %span.btn.btn-default.black-button.btn-sm.btn-file
+        Select Image
+        = f.file_field :image
 
 .form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Upload Secondary Image
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{style: "margin-top: 50px;"}
+    Secondary Floor Plan Image
     %span
-      Upload secondary image of this Unit.
+      Upload secondary floor plan image of this Unit.
       %br/
       Images will appear at a size of 325 x 300 px. Please note that images that are too small may appear pixelated.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     -#.select-img.mb-20
     -#  .select-img-img
-    .image-box.video-box
-      .images.height-200
-        %a.preview-image{:href=>f.object.secondary_image.present? ? f.object.secondary_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
-          = image_tag f.object.secondary_image.present? ? f.object.secondary_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
-      = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-    %span.btn.btn-default.black-button.btn-sm.btn-file
-      Select Image
-      = f.file_field :secondary_image
+    .col-lg-5.col-md-5.col-sm-6.col-xs-6
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            %a.preview-image{:href=>f.object.secondary_image.present? ? f.object.secondary_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
+              = image_tag f.object.secondary_image.present? ? f.object.secondary_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
+          = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+        - if f.object.secondary_image.present?
+          .icons
+            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=secondary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+              %i.fa.fa-close{ style:"margin-right: 50PX;"}
+      %span.btn.btn-default.black-button.btn-sm.btn-file
+        Select Image
+        = f.file_field :secondary_image
 :javascript
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {
-        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
+        events: {
+                change: function(){
+                    var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
+                    var t = wysihtml5Editor.getValue();
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
+                    t2 = t2.fontcolor("red");
+                    wysihtml5Editor.setValue(t1 + t2);
+                },
+                load: function(){
+                    $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+                    if (wysihtml5Editor.getValue() != "")
+                    {
+                        var text_split = $('.unit_directional_text').text().split(" ")
+                        var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                        $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                        }
+                    });
+                    var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
+                    var t = wysihtml5Editor.getValue();
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
+                    t2 = t2.fontcolor("red");
+                    wysihtml5Editor.setValue(t1 + t2);
+                    var text_split = $('.unit_directional_text').text().split(" ")
+                    var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                    $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+
+                }
+            }
+        });
+
       });
   })
 

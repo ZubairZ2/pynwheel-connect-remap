@@ -4,7 +4,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: [:edit,:update]
   def index
     if current_user.is_super_admin?
-      @users = User.where(role: ["Community admin","Community manager","Super admin"])
+      @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page"])
     else
       @users = User.find current_user.communities.collect{|c| c.users.map(&:id)}.flatten
     end

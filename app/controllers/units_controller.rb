@@ -2,7 +2,7 @@ class UnitsController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
-  before_action :set_unit, only: [:edit,:update,:destroy]
+  before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image]
   skip_before_action :load_tour_users_chats, only: [:load_remotelock_data, :clear_locks]
   def index
     #@units = @community.units.page(params[:page]).per(10)
@@ -38,6 +38,9 @@ class UnitsController < ApplicationController
   def edit
     add_breadcrumb "Units", community_units_path(@community)
     add_breadcrumb "Edit Unit",edit_community_unit_path(@community,@unit)
+    @amenities = @unit.amenities.order(id: :desc)
+    @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
+    @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
     @assigned_lock = @unit.remote_locks.first
   end
 
@@ -52,7 +55,7 @@ class UnitsController < ApplicationController
       render json: {locks: RemoteLock.where(edge_state_id: es.id)}
     end
   end
-
+ 
   def clear_locks
     unit = Unit.find params[:id]
     unit.remote_locks.delete_all
@@ -142,9 +145,19 @@ class UnitsController < ApplicationController
         if @unit.update(unit_params)
           set_manually_updated_column
           PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
-          format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          if params[:floorNo].nil?
+            format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          else
+            format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+          end
           format.json { respond_with_bip(@unit) }
         else
+          # incase of failure, redering to edit will require the edit page @varaibles
+          @amenities = @unit.amenities.order(:sort)
+          @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
+          @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
+          @assigned_lock = @unit.remote_locks.first
+
           flash[:error] = @unit.errors.full_messages.join(',')
           format.html { render :action => "edit" }
           format.json { respond_with_bip(@unit) }
@@ -154,11 +167,22 @@ class UnitsController < ApplicationController
           @unit.update(unit_params)
           set_manually_updated_column
           PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id ,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
-          format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          if params[:floorNo].nil?
+            format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+          else
+            format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+          end
           format.json { respond_with_bip(@unit) }
         else
           if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name ) || (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id) ||(params[:unit][:effective_rent].present? && params[:unit][:effective_rent] != @unit.effective_rent.to_i.to_s) || (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability) || (params[:unit][:building].present? && params[:unit][:building] != @unit.building) || (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date.to_s) ||(params[:unit][:square_feet].present? && params[:unit][:square_feet] != @unit.square_feet.to_i.to_s) || (params[:unit][:available].present? && params[:unit][:available] != @unit.available) || (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold.to_s) || (params[:unit][:floor].present? && params[:unit][:floor].to_i != @unit.floor) || (params[:unit][:provider_unit_id].present? && params[:unit][:provider_unit_id] != @unit.provider_unit_id)
             @unit.errors[:base] << "Please set manual override field first"
+
+            # incase of failure, redering to edit will require the edit page @varaibles
+            @amenities = @unit.amenities.order(:sort)
+            @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
+            @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
+            @assigned_lock = @unit.remote_locks.first
+            
             flash[:error] = @unit.errors.full_messages.join(',')
             format.html { render :action => "edit" }
             format.json { respond_with_bip(@unit) }
@@ -166,7 +190,11 @@ class UnitsController < ApplicationController
             @unit.update(unit_params)
             set_manually_updated_column
             PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
-            format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+            if params[:floorNo].nil?
+              format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
+            else
+              format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+            end
             format.json { respond_with_bip(@unit) }
           end
 
@@ -205,6 +233,18 @@ class UnitsController < ApplicationController
     redirect_to community_units_path(:community_id=>@community.id)
   end
 
+  def remove_pri_scnd_image
+    if params[:image] == "primary"
+      @unit.remove_image!
+      @unit.standard_image_url = nil
+      @unit.save
+    elsif params[:image] == "secondary"
+      @unit.remove_secondary_image!
+      @unit.save
+    end
+    redirect_to :back, notice: "Image removed successfully."
+  end
+  
   def ajaxplotunit
     unit = @community.units.where(floorplate_id: nil,provider_unit_id: params[:id])
     if unit.present?
@@ -312,6 +352,11 @@ class UnitsController < ApplicationController
     flash[:notice] = "Floor is updated for units successfully."
     redirect_to :back
   end
+  def set_building
+    @community.units.where(id: params[:unit_ids]).update_all(building: params[:building],manually_updated: true)
+    flash[:notice] = "Building is updated for units successfully."
+    redirect_to :back
+  end
 
   def set_available_date
     @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date],manually_updated: true,available_date_is_updated: true)
@@ -401,6 +446,12 @@ class UnitsController < ApplicationController
     # flash[:notice] = "Image is uploaded for units successfully."
     redirect_to :back, notice: "Image is uploaded for units successfully."
   end
+  
+  def set_amenities_for_units
+    UploadAmenityForUnit.perform_async @community, params[:type_ids], params[:image], params[:name], params[:image_id]
+    render json: {success: "success"}
+  end
+
   def check_community
     unless current_user.is_super_admin?
       if params[:community_id].present?

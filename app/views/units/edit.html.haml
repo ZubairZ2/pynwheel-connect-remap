@@ -9,11 +9,11 @@
             %span
         .col-md-12
           = link_to "<Back to All Units", community_units_path(@community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
-          - if (current_community.self_tour)
-            = link_to "Manage Unit Tour", community_unit_amenities_path(@community,@unit), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+          -# - if (current_community.self_tour)
+            -# = link_to "Manage Unit Tour", community_unit_amenities_path(@community,@unit), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
       / /.box-header
       / form start
-      = form_for @unit,:url=>community_unit_path(:id=>@unit.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
+      = form_for @unit,:url=> params[:floorNo].nil? ? community_unit_path(:id=>@unit.id,:community_id=>@community.id) : community_unit_path(:id=>@unit.id,:community_id=>@community.id) <<  '?floorNo=' + params[:floorNo] ,:html=>{:class=>"form-horizontal"} do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
@@ -21,6 +21,62 @@
         / /.box-body
         .box-footer
           = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"
+- if @community.self_tour    
+  %section
+    .content
+      .box.box-info.add-plan.mt-20#logo_header
+        .box-header
+          %h3.box-title
+            Unit Tour Setup
+      .row
+        .col-lg-12.col-md-12
+          .row
+            .col-md-12
+              %h4.title
+                = @unit.marketing_name + " Unit Images"
+              %h4{:style => "color: grey;"}
+                %p
+                  Use the “Add Image” button or drag & drop area below to import images associated with the unit.
+                %p
+                  Once images have been added, a button will appear to allow you to plot them on the unit.
+              = link_to "PLOT IMAGES ON UNIT", plot_amenities_community_unit_amenities_path(@community,@unit), class: "btn btn-primary mb-20", id: "amenity_image"
+            .col-md-6
+              .mt-35
+                %span.btn.btn-success.btn-file
+                  %i.fa.fa-plus-circle
+                  Add image to this unit
+                  %input#unit-amenity-images{:multiple => "multiple", :type => "file"}
+                %button.dropbtn.btn.btn-primary{"data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Add images to multiple units
+              .divLoading.hidden
+          #images-index-unit
+            = render :partial=>'edit'
+
+  #edit-image.modal.fade.edit-image
+  
+  #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+    .modal-dialog
+      .modal-content
+        .modal-header
+          %b Upload Interior Image for Multiple Units
+        = form_tag '/', :id=>"amenities-for-multiple-units", multipart: true do
+          .modal-body.set-floor-modal-body
+            %input#units-amenities-images{:multiple => "multiple", :type => "file", :required=>"required"}
+            .row
+              .col-md-4
+                = check_box_tag 'select_all_units_for_image'
+                %label Select all
+            .row
+              - if @units.present?
+                - @units.each do |unit|
+                  .col-md-3.pt-5.pb-5
+                    = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
+                    = h unit.marketing_name
+          .modal-footer
+            = submit_tag 'Submit',:class=>"btn btn-success"
+            %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+
+#crop-unit-secondary-image.modal.fade.edit-image
+#crop-unit-image.modal.fade.edit-image
 
 :javascript
 
@@ -139,4 +195,54 @@
       $('#unit_marketing_name').keyup(function() {
         IsSelectedLockMatch()
       });
+  });
+
+  if(#{@unit.amenities.count} == 0)
+  {
+    $('#amenity_image').hide();
+  }
+  if(#{@unit.amenities.count.to_i} > 0)
+  {
+    $('#amenity_image').show();
+  }
+
+  $(form_id).submit(function(){
+    if($("#latch_lock_name").val() == '' && $("#latch_key_id").val() != '')
+    {
+      $("#latch_lock_name").prop('required',true);
+      $('.divLoading').removeClass('divLoading')
+    }
+    else if($("#latch_lock_name").val() != '' && $("#latch_key_id").val() == '')
+    {
+      $("#latch_key_id").prop('required',true);
+      $('.divLoading').removeClass('divLoading')
+    }
+  })
+
+  $('#select_all_units_for_image').change(function(){
+      if($(this).is(':checked')){
+        $('.image-checkbox').prop('checked',true)
+      }
+      else{
+        $('.image-checkbox').prop('checked',false)
+      }
+  });
+
+  var $chkboxes = $('.mass-override');
+  var lastChecked = null;
+
+  $chkboxes.click(function(e) {
+      if (!lastChecked) {
+          lastChecked = this;
+          return;
+      }
+
+      if (e.shiftKey) {
+          var start = $chkboxes.index(this);
+          var end = $chkboxes.index(lastChecked);
+
+          $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+      }
+
+      lastChecked = this;
   });

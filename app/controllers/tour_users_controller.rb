@@ -2,6 +2,7 @@ class TourUsersController < ApplicationController
   before_action :check_community
   before_action :breadCrumb
   skip_before_action :load_tour_users_chats, only: [:lock_ploting]
+  # skip_before_action :authenticate_user!, :only => [:show]
 
   def index
     add_breadcrumb "All Visitors", '#'
@@ -20,6 +21,9 @@ class TourUsersController < ApplicationController
     @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
     chatroom = Chatroom.find_by(tour_user_id: params[:id], tour_id: @community.tour.id)
     @chatroom_id = chatroom.present? ? chatroom.id : 0
+    if current_user.is_view_visitor_details_page? && @tour_user.email != current_user.email
+      redirect_to root_path
+    end
 
     # ------------ locks ploting on the map ---------------- #
     @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "unlocked_event")
@@ -98,6 +102,7 @@ class TourUsersController < ApplicationController
     # end
 
     render json: {existing_stops: existing_stops, lock_histories: lock_histories}, status: 200
+
   end
 
   def destroy
@@ -119,6 +124,7 @@ class TourUsersController < ApplicationController
     @tour_user.tour_histories.where(tour_id: @tour.id).delete_all
     @tour_user.visited_stops.where(tour_id: @tour.id).delete_all
     @tour_user.schedual_tours.where(community_id: @community.id).delete_all
+    @tour_user.prospects.where(community_id: @community.id).delete_all
 
     # @tour_user.destroy
     redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
@@ -128,6 +134,7 @@ class TourUsersController < ApplicationController
     add_breadcrumb "Home", root_path
   end
   def check_community
+    return if params[:controller] == "tour_users" && params[:action]== "show"
     unless current_user.is_super_admin?
       if params[:community_id].present?
         all_ids = []

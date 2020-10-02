@@ -21,8 +21,9 @@
             %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
             - unless @community.is_sitemap
               %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
+              %a{:href => '##',"data-target" => "#modal-to-change-building", "data-toggle" => "modal"} Add Buildings
             %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Details
-            %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Upload Image
+            %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Floor Plan Images
         %i.propertyDetailName.mb-20.fa.fa-question-circle{ "data-toggle" => "unitMassOverridePopover","data-content" => " "}
           %span#propertyDetailNameText
             Use this button to change data for multiple units at once, such as availability, floor number, details, and images.
@@ -192,11 +193,31 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'floor-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'floor-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+#modal-to-change-building.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Set Building
+      = form_tag set_building_community_units_path(@community) do  
+        .modal-body.set-building-modal-body
+          = text_field_tag :building, nil,:class=>"form-control mb-20 validate[required]",:placeholder=>"Enter Building"
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_building'
+              %label Select all
+          .row
+            - units.each do |unit|
+              .col-md-2.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'building-checkbox mass-override'
+                = h unit.marketing_name  
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel          
 #modal-to-set-available-date.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
@@ -212,7 +233,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-date-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-date-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -232,7 +253,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -252,7 +273,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'manual-override-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'manual-override-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -272,7 +293,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'sold-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'sold-checkbox mass-override'
                 = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -293,7 +314,7 @@
           .row
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'description-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'description-checkbox mass-override'
                 = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -303,7 +324,7 @@
   .modal-dialog
     .modal-content
       .modal-header
-        Upload Image
+        Upload Floor Plan Image
       = form_tag set_image_community_units_path(@community), multipart: true do
         .modal-body.set-floor-modal-body
           = file_field_tag 'image_file', :accept => 'image/*',:required=>true, :id => "size_limit"
@@ -314,7 +335,7 @@
           .row
             - units.each do |unit|
               .col-md-3.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
                 = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
@@ -328,6 +349,25 @@
       window.location.reload();
     }
      $(document).ready(function(){
+
+      var $chkboxes = $('.mass-override');
+      var lastChecked = null;
+
+      $chkboxes.click(function(e) {
+          if (!lastChecked) {
+              lastChecked = this;
+              return;
+          }
+
+          if (e.shiftKey) {
+              var start = $chkboxes.index(this);
+              var end = $chkboxes.index(lastChecked);
+
+              $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+          }
+
+          lastChecked = this;
+      });
 
       $('.wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
@@ -413,6 +453,14 @@
       }
       else{
         $('.floor-checkbox').prop('checked',false)
+      }
+    });
+    $('#select_all_units_for_building').change(function(){
+      if($(this).is(':checked')){
+        $('.building-checkbox').prop('checked',true)
+      }
+      else{
+        $('.building-checkbox').prop('checked',false)
       }
     });
 

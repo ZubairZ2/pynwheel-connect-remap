@@ -18,36 +18,18 @@
     .row
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30
-          = form_for @amenity,url: community_amenity_path(current_community,@amenity),method: :put do |f|
+          = form_for @amenity,url: (params[:floorNo].nil? and params[:from].nil?) ? community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit'), method: :put do |f|
             = hidden_field_tag "community_id", @community.id
-
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Name
-
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :name, :class=>"form-control amenity_edit_field", :placeholder=>"Name",:maxlength=>"30"
-
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Description
-
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :description, :class=>"form-control amenity_edit_field", :placeholder=>"Description",:maxlength=>"70"
-
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Directional Text
-
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :directional_text, :class=>"form-control amenity_edit_field", :placeholder=>"Directional Text",:maxlength=>"70"
-
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Access Code
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
-
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Video Link Button Label
@@ -70,14 +52,47 @@
                   %select.form-control#remote_lock{name: "remote_lock"}
                   %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
                     %a#a-lock.btn-text-color{href: "#"} Update selected lock
-            - bool_check = @community.show_map ? f.object.amenityable.present? : true
-            - if !@community.is_sitemap && bool_check  
+
+            - bool_check = @community.show_map ? f.object.amenityable.present? && f.object.amenityable_type == "Floorplate" : true
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Building
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = f.text_field :building ,  class: "form-control amenity_edit_field", placeholder: "building" 
+            - if !@community.is_sitemap && bool_check      
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Floor
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select :floor , (f.object.amenityable.floors.flatten.uniq.sort),{:include_blank => true}, class: "form-control amenity_edit_field", placeholder: "Floor"
+
                   -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
-                  = f.select :floor , (@community.show_map ? f.object.amenityable.floors : @community.floorplates.map{|f| f.floors}.flatten.sort),{}, class: "form-control amenity_edit_field", placeholder: "Floor"
+            - if @community.self_tour    
+              .row
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
+                    Description
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                    = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
+                    %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
+
+              .row
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
+                    Directional Text
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                    = f.text_area :directional_text, :class=>"form-control amenity_edit_field amenity_edit_directional_wysihtml5", :placeholder=>"Directional Text"
+                    %span.amenity_directional_text_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
+                    
             = submit_tag 'Save', class: "hidden"
 
     %span.btn.btn-primary.btn-file
@@ -121,19 +136,34 @@
         .col-lg-10
           .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %a.btn-primary.mb-20.done_btn{:href => "#{community_tours_path(current_community)}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+              %button.btn-primary.mb-20.done_btn#on_done{:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 
 :javascript
 
-  $('.amenity_edit_field').change(function(){
-    $('.edit_amenity').submit();
-  });
-
   var amenity_id = #{@amenity.id}
   var amenity_name = '#{@amenity.name}'
   var community_id = #{ @community.id}
+  var from = #{ @from_unit}
+  
+  $('.amenity_edit_field').change(function(){
+
+      action = "change"
+      $('#on_done').click(function(e){
+        action = "clicked"
+        $('.edit_amenity').submit(function() {
+            $(this).append('<input type="hidden" name="done_action" value="true">');
+            $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
+        });
+      })
+      
+      if(action == "change"){
+        setTimeout(function () {
+          $('.edit_amenity').submit();
+        }, 500);
+      }
+  });
 
   var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
   var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
@@ -165,6 +195,7 @@
     }
   }
 
+
   function clear_assigned_lock(){
     $.ajax({
       type: 'POST',
@@ -183,7 +214,7 @@
   $(document).ready(function(){
     var params = {"amenity_name": amenity_name}
     var assigned_lock_present = false
-  
+     
     $.ajax({
       type: 'POST',
       url: '/communities/'+ community_id + '/amenities/' + amenity_id +'/load_remotelock_data',

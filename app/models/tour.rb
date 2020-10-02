@@ -20,6 +20,18 @@ class Tour < ApplicationRecord
   has_many :chatrooms, dependent: :destroy
 
   has_one :path, as: :map_path
+  has_one :tour_setting
   has_many :path_points, through: :path
 
+  after_create :define_opening_hours
+
+  def define_opening_hours
+    self.community.opening_hours.create(day: "Monday", opening_time: "09:00", closing_time: "17:00")
+    self.community.opening_hours.create(day: "Tuesday", opening_time: "09:00", closing_time: "17:00")
+    self.community.opening_hours.create(day: "Wednesday", opening_time: "09:00", closing_time: "17:00")
+    self.community.opening_hours.create(day: "Thursday", opening_time: "09:00", closing_time: "17:00")
+    self.community.opening_hours.create(day: "Friday", opening_time: "09:00", closing_time: "17:00")
+    self.community.opening_hours.create(day: "Saturday", opening_time: "09:00", closing_time: "17:00")
+  end
+  
 end

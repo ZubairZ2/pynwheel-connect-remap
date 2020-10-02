@@ -119,14 +119,24 @@
             <%= form_for TourUser.new, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
 
               <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
+              <%= hidden_field_tag :community_id, @community_id %>
+
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_first_name.nil? ? true : current_community.tour.tour_setting.show_first_name) %>
+
               <div class="form-group">
-                <label>Name *</label>
-                <%= f.text_field :name, class: "form-control", placeholder: "Name", required: 'required' %>
+                <label>First Name *</label>
+                <%= f.text_field :first_name, class: "form-control", placeholder: "First Name", required: 'required' %>
               </div>
+              <div class="form-group">
+                <label>Last Name *</label>
+                <%= f.text_field :last_name, class: "form-control", placeholder: "Last Name", required: 'required' %>
+              </div>
+              <% end %>
               <div class="form-group">
                 <label>Email Address *</label>
                 <%= f.email_field :email, class: "form-control", placeholder: "Email Address", required: 'required' %>
               </div>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_phone.nil? ? true : current_community.tour.tour_setting.show_phone) %>
               <div class="form-group">
                 <div class="inner_phn_wrap">
                  
@@ -141,7 +151,9 @@
                   <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required' %>
                 </div>
               </div>
+              <% end %>
               <% if @credit_card_required %>
+              
               <p>A credit card is required to complete the reservation<br>Your credit card will not be charged at this time with the exception of a $0.50 charge for verification purposes.</p>
               <div class="clearfix"></div>
               <div class="form-group cardNumber">
@@ -165,6 +177,27 @@
                 <%= label_tag "Exp Year", nil, required: true %>
                 <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
               </div>
+              
+              <% end %>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.tour.tour_setting.show_desired_bedroom )  %>
+              <div class="">
+                 
+                <label>Desired Number of Bedrooms</label>
+                <span class="hidden" id="bedroom"></span>
+                <%= select_tag :desired_bedroom, options_for_select( @bedroom_list.sort), include_blank: true, :class=>"form-control " %>
+               
+                  
+              </div>
+              <% end %> 
+
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date  ) %>
+              <div class="form-group">
+                <label>Desired Move-in Date</label>
+                <span class="hidden" id="move-in-date"></span>
+                <%= text_field_tag :desired_move_in_date,"", :class=>"form-control datepicker", :placeholder=>"Move in date",:maxlength=>"15",:autocomplete=>"off"%>
+                
+              </div>
+              <% end %> 
 
 
 
@@ -220,10 +253,17 @@
                   <button type="submit">Submit Payment</button>
                 <% end %>
               <% end %>
-              <% end %>
 
 
               <div class="clearfix"></div>
+
+              <% if @community.data_provider == "realpagesvc" && @marketing_source_required %>
+                <div class="form-group">
+                  <label> How did you hear about <%= @community.name.titleize %> ? </label>
+                  <%= select_tag :marketing_source, options_for_select(@community.credential.realpage_marketing_sources.present? ? @community.credential.realpage_marketing_sources.collect{|s| [ s["Text"], s["Value"] ]} : []), include_blank: false , prompt: "select your option", required: 'required', class: "span2 form-control"%>
+                </div>
+              <% end %>
+
               <button id ="confirm_reservation" class="btn_popup">Confirm My Reservation!</button>
             <% end %>
           </div>
@@ -272,6 +312,7 @@
         document.getElementById('user_time_zone').value = jstz.determine().name();
         // -new Date().getTimezoneOffset()/60;
       })
+      var steps = <%= @stepping %>
       var success = "<%= flash[:success]  %>";
       var credit_card_required = <%= @credit_card_required %>
       // debugger
@@ -586,8 +627,12 @@
           showClose: true,
           useCurrent: true,
           toolbarPlacement: "bottom",
-          stepping: 15,
+          stepping: steps,
           daysOfWeekDisabled: days_disabled
+        });
+        $('.datepicker').datepicker({
+          
+          
         });
           $('.phoneNumber').keypress(function(event) {
               if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
@@ -641,6 +686,8 @@
           var visiting_times = <%= raw @visiting_times %>
           var error_messages = <%= raw @error_message %>
           var selected_date = $(".datepickertime").val()
+          var matched = false
+          var error
           selected_day = moment(selected_date).format('dddd')
           selected_time = moment(selected_date).format('HH:mm')
           // debugger
@@ -652,19 +699,22 @@
                 var end = getMinutes(visiting_times[d_t][2]);
                 var selected = getMinutes(selected_time);
 
-                if ((selected > start) && (selected < end)) {
+                if ((selected >= start) && (selected <= end)) {
+                  matched = true
                   schedual_my_tour($(this))
                 }
                 else{
                   $("#not-visiting-hours").removeClass('hidden')
                   for(var each in error_messages){
                     if (visiting_times[d_t][0] == error_messages[each][0]){
-                      $("#not-visiting-hours").addClass('color-red').text(error_messages[each][1])
+                      error = error_messages[each][1]
                     }
                   }
                 }
               }
             }
+            if (matched == false)
+              $("#not-visiting-hours").addClass('color-red').text(error)
           }
           else{
             schedual_my_tour($(this))
@@ -704,6 +754,11 @@
         var show_error, stripeResponseHandler;
         // debugger
         $("#new_tour_user").submit(function (event) {
+          if (parseInt($('#desired_bedroom').val()) < 0 || parseInt($('#desired_bedroom').val()) > 10)
+          {
+            alert("Invalid Number of Berdrooms");
+            return false;
+          }
           // debugger
           var $form;
           $form = $(this);

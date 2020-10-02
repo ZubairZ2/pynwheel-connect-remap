@@ -1,0 +1,19 @@
+.modal-dialog{:style=>"overflow-y: initial width: 400px !important; width: 300px;"}
+  .modal-content{:style => "margin-top: 50%;"}
+    = form_tag url: building_starting_point_community_tours_path(current_community,@building,@floor),method: :post do |f|
+      .modal-body{:style => "text-align: center;"}
+
+        %label Select Status
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+
+        = select_tag :status , options_for_select([["Building Entry","Entry"],["Building Exit","Exit"]], "Status"), class: "form-control", placeholder: "Status", :style => "width: 170px; margin-left: 22%; margin-top: 20px;"
+        = hidden_field_tag "building", @building
+        = hidden_field_tag "floor", @floor
+
+        .form-group
+          -#= link_to "fffffff", plot_amenities_community_floorplate_amenities_path(current_community,@floorplate),:class => "btn btn-success"
+          %button.btn.btn-success.btn-sm.mt-20{:type => "submit"}
+            Save
+}

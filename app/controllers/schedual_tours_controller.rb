@@ -5,7 +5,7 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
-    @schedual_tours = SchedualTour.where(community_id: @community.id).order('tour_time').order('tour_date')
+    @schedual_tours = SchedualTour.where(community_id: @community.id).order('tour_time').order('tour_date') rescue ""
   end
 
   # GET /schedual_tours/1
@@ -25,21 +25,24 @@ class SchedualToursController < ApplicationController
   def change_tour_time
     
   end
+  
   def create_tour_user_from
-    
     phone_number = make_phone
-
-    tu = TourUser.find_by(email: params[:tour_user][:email])
+    tu = TourUser.find_by(email: params[:tour_user][:email].downcase)
     # tu.name = params[:tour_user][:name] if tu.present?
-    tu = TourUser.new name: params[:tour_user][:name], email: params[:tour_user][:email], phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
+    tu = TourUser.new name: (params[:tour_user][:first_name] + " " + params[:tour_user][:last_name]), first_name: params[:tour_user][:first_name], last_name: params[:tour_user][:last_name], email: params[:tour_user][:email].downcase, phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
+    tu.name = (params[:tour_user][:first_name] + " " + params[:tour_user][:last_name])
+    tu.first_name = params[:tour_user][:first_name]
+    tu.last_name = params[:tour_user][:last_name]
     tu.phone_number = phone_number if phone_number.present?
+    tu.desired_bedroom = params[:desired_bedroom]
 
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
     if tu.save
-      
+
       begin
-        customer = Stripe::Customer.create email: params[:tour_user][:email],
+        customer = Stripe::Customer.create email: params[:tour_user][:email].downcase,
                                            card: params[:tour_user][:card_token]
         res = Stripe::Charge.create customer: customer.id,
                               amount: 50,
@@ -54,14 +57,27 @@ class SchedualToursController < ApplicationController
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
       end
-      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back[:id] : nil)
+      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back[:id] : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom])
 
       begin
         sent_notifications = send_email_and_other_notifications schedual_tour
       rescue Exception => e
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
       end
+      community = Community.find_by_id params[:community_id]
 
+      if params[:desired_move_in_date].present?
+        date = params[:desired_move_in_date].split('/')
+        date[0],date[1] = date[1],date[0]
+        date = date.join('-').to_date
+        desired_move_in_date = date
+      else
+        desired_move_in_date = ""
+      end
+
+      appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime
+      marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
+      community.realpage_insert_prospect(tu, appointment_time, marketing_source, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
       # sms_notifire notification_content, params[:tour_user][:phone_number]
     else
       render json: {message: "some errors occured"}, status: 'failed'
@@ -126,7 +142,7 @@ class SchedualToursController < ApplicationController
     # binding.pry
     puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
     respond_to do |format|
-      if @schedual_tour.save
+      if @schedual_tour.save 
 
         begin
           sent_notifications = send_email_and_other_notifications @schedual_tour
@@ -177,14 +193,13 @@ class SchedualToursController < ApplicationController
     end
 
     def send_email_and_other_notifications schedual_tour
-      
       tu = schedual_tour.tour_user
       community = schedual_tour.community
       puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{params}---"
       # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
       app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
       android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
-      email_content = "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download the Pynwheel tour app before you arrive: <br><a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store </a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour From Google Play</a> <br> #{community.email_text}"
+      email_content = "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download the Pynwheel tour app before you arrive: <br><a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store </a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour From Google Play</a> <br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
 
       community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincolon Property Company Self Tour" : "Pynwheel Self Tour"
       web_notification = "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your reservation is confirmed. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel Self Tour app before you arrive: <br/> <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store</a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour From Google Play</a>"
@@ -209,11 +224,10 @@ Android Users: Download #{community_text} from Google Play #{app_link}
 
       # DelayedSchedulerMailerJob.perform_in(day_before, "Your Tomorrow Tour", delayed_day_before_content, tu.email) if day_before.present?
       # DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
-    
 
       community_mail = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Lucky you! Someone has scheduled a Self Tour at your property!<br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
-      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
+      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,community.email) if (community.alert_contact == "email" || community.alert_contact == "both")
 
       sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
 
@@ -275,16 +289,20 @@ Android Users: Download #{community_text} from Google Play #{app_link}
     end
 
     def make_phone
-      user_phone = params[:tour_user][:phone_number].sub(/^[0]+/,'')
-      user_phone = trim_leading('\+', user_phone) if user_phone.starts_with? '+'
+      begin
+        user_phone = params[:tour_user][:phone_number].sub(/^[0]+/,'')
+        user_phone = trim_leading('\+', user_phone) if user_phone.starts_with? '+'
 
-      c = ISO3166::Country.new(params[:country_code])
-      if user_phone.starts_with? c.country_code
-        user_phone = "+#{user_phone}"
-      else
-        user_phone = "+#{c.country_code}#{user_phone}"
+        c = ISO3166::Country.new(params[:country_code])
+        if user_phone.starts_with? c.country_code
+          user_phone = "+#{user_phone}"
+        else
+          user_phone = "+#{c.country_code}#{user_phone}"
+        end
+        user_phone
+      rescue => ex
+        ""
       end
-      user_phone
     end
 
     def trim_leading chr, str

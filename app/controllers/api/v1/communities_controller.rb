@@ -47,6 +47,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+
   def data
     include_application_data
   end
@@ -122,11 +123,19 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+
   def community_tours
     @tour_user = TourUser.find_by_id params[:tour_user_id]
     @community = Community.find params[:id]
     @community.deleted_ids = []
     @community.save
+
+    #####
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+    #####
     @tours = Tour.where(community_id: params[:id])
     in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
     params[:current_time].present? ? current_time = params[:current_time] : current_time = DateTime.now
@@ -192,6 +201,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     @tour_user = TourUser.find_by(id: params[:tour_user_id])
     @in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
 
+    @building_list = @floor_list = []
+
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+
     current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
     current_time = current_time.to_datetime
 
@@ -199,7 +215,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     if edge_state.present? and @in_visiting_hours
       Thread.new do
         stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
-        allowed_ids = stops_arr.ids - @community.deleted_ids
+        allowed_ids = `stops_arr`.ids - @community.deleted_ids
         allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
 
         # unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}
@@ -229,6 +245,72 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     end
   end
+  def delete_tour_stop_v1
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if true or access == true
+      @community = Community.find params[:id]
+      delete_array = params[:stop_id].split(",") if params[:stop_id].present?
+      te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
+      @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+      @community.save
+      @tours = Tour.where(id: params[:tour_id])
+      @tour_user = TourUser.find_by(id: params[:tour_user_id])
+      @in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
+
+      @building_list = @floor_list = []
+
+      @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+      @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+      @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+      @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+      @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}
+      
+      # @floor_list = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if x.building.present?}.compact.flatten!
+      # non_building_floor = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if !x.building.present?}.compact.flatten!
+      # @floor_list = (@floor_list.present? ? @floor_list : []) + (non_building_floor.present? ? non_building_floor : [])
+
+      current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
+      current_time = current_time.to_datetime
+
+      edge_state = EdgeState.find_by(community_id: params[:id])
+      if edge_state.present? and @in_visiting_hours.present?
+        Thread.new do
+          stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+          allowed_ids = stops_arr.ids - @community.deleted_ids
+          allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
+          
+          # unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}
+          unit_or_amenity_names = []
+          allowed_stops.each do |stop|
+            if stop[0] == "unit"
+              unit = stop[0].classify.constantize.find_by_id stop[1]
+              if unit.building.present?
+                name = unit.building + "-" + unit.name
+              else
+                name = unit.name
+              end
+              unit_or_amenity_names << name if unit.present?
+            elsif stop[0] == "amenity"
+              amentiy = stop[0].classify.constantize.find_by_id stop[1]
+              unit_or_amenity_names << amentiy.name if amentiy.present?
+            end
+          end
+
+          access_token = RemoteLockService.new(@community).client_credentials
+          locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
+          if locks.present?
+            tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+            locks.each do |lock|
+              RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+            end
+          end
+        end
+      end
+    else
+        render :json=> {:success=>false, :message => "Invalid Token"}
+    end
+  end
 
   def user_saved_tour
     # @device_id = params[:device_id]
@@ -240,20 +322,32 @@ class Api::V1::CommunitiesController < ActionController::Base
     if @community.is_sitemap
       stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
     else
-      @community.floorplates.map{|f| f.floors}.flatten.sort.each do |floor|
-        if @community.tour.sort_hash[floor.to_s].present?
-          @community.tour.sort_hash[floor.to_s].each do |s_id|
-            if (s_id.present?)
-              stop = (TourStop.find_by_id(s_id))
-              stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+      @building_list = @floor_list = []
+
+      @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+      @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+      @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+      @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+
+      @building_list << "" if @building_list == []
+        @building_list.each do |building|
+          if @floor_list.present?
+            @floor_list.each do |floor|
+              if @community.tour.sort_hash[building + ","+ floor.to_s].present?
+                @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+                  if (s_id.present?)
+                    stop = (TourStop.find_by_id(s_id))
+                    stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+                  end
+                end
+              end
             end
           end
         end
-      end
     end
 
     stops_arr = stops_arr.compact.map{|x| x.id}.uniq
-    
+
     un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
     @visited_stops = []
     stops_arr.each do |val|
@@ -261,6 +355,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         @visited_stops << val
       end
     end
+
     # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
     @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
     @in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
@@ -347,7 +442,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
     current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
   end
-  
+
   def include_application_data
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])

@@ -886,11 +886,15 @@ module ApplicationHelper
   # end
 
   def set_active_class(x,categories)
-    arr = categories.split(',')
-    if arr.include? x
-      return 'active'
-    else
-      return ''
+    begin
+        arr = categories.split(',')
+        if arr.include? x
+          return 'active'
+        else
+          return ''
+        end
+    rescue Exception => e
+        return ''
     end
   end
 

@@ -7,18 +7,24 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
       tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
       tour_history.tour_id = params[:tour_id].to_i if params[:tour_id].present?
-
+      tour_history.tour_status = params[:tour_status] == false ? "virutal" : "self_tour"
+      puts "----------------  tour_status ----------------------------"
+      puts params[:tour_status]
+      puts tour_history.tour_status
+      puts "----------------  tour_status ----------------------------"
       tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
       if params[:time_zone].present?
         tour_history.my_time_zone = params[:time_zone].to_s rescue nil
       end
       tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
+      tour_history.active_app = params[:active_app] if params[:active_app].present?
       tour_history.tour_user_id = params[:tour_user_id]
       @tour = Tour.find params[:tour_id]
       if !@tour.visual_id_verification
         begin
           tu = TourUser.find params[:tour_user_id]
           tu.id_selfie_mismatch = false
+          tour_history.desired_bedroom = tu.desired_bedroom
           tu.save
         rescue => ex
         end

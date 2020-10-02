@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+
   mount ActionCable.server => '/cable'
   get 'tour_users/index'
 
@@ -31,12 +32,10 @@ Rails.application.routes.draw do
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
-  
   resources :chatrooms
   resources :chats
   get 'listening_message', to: 'chats#listening_message' 
-  post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages' 
-  
+  post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
   resources :companies do
     resources :communities
     resources :community_groups
@@ -74,8 +73,12 @@ Rails.application.routes.draw do
     collection do
       post :invitation_communities
       post :selected_communities
+      get :authenteq_response
+      get :authenteq_result
+      get :web_cam_test
     end
 
+    resources :building_starting_points 
     resources :remote_locks do
       collection do
         get :authorization_code
@@ -98,6 +101,7 @@ Rails.application.routes.draw do
     get :settings_page
     get :logs
     get :clone_community
+    post :make_cordinate
     get :change_expressionist_default
     get :test_connection
     post :make_cordinate
@@ -135,6 +139,7 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
+    
     resources :elevators do
       resources :elevator_galleries
       # do
@@ -162,6 +167,7 @@ Rails.application.routes.draw do
         get :edit_amenity_gallery_image
         post :load_remotelock_data
         post :clear_locks
+        post :extract_floors
       end
     end
     resources :tour_users do
@@ -210,9 +216,12 @@ Rails.application.routes.draw do
         post :adjust_position
         post :load_remotelock_data
         post :clear_locks
+        delete :remove_pri_scnd_image
+        post :set_amenities_for_units
       end
       collection do
         post :set_floor
+        post :set_building
         post :set_available_date
         post :set_available
         post :set_manual_override
@@ -280,9 +289,16 @@ Rails.application.routes.draw do
       end
       collection do
         post :save_starting_point
+        get :select_status
+        post :select_status
         post :sort_stops
         post :display_stop
         post :save_tour_settings
+        get :building_starting_point
+        post :update_building_starting_point
+        get :check_point
+        get :check_point_id_success
+        post :save_check_point_response
         get :starting_point
         get :select_stops
         get :edit_amenity
@@ -381,8 +397,10 @@ Rails.application.routes.draw do
           get :unit_and_floorplan_data
           get :update_unit_floorplan_data
           delete :delete_tour_stop
+          delete :delete_tour_stop_v1
         end
         collection do
+          get :authenteq
           post :login
           get :list_communities
           get :portico_list_communities

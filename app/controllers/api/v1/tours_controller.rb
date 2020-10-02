@@ -153,7 +153,11 @@ Android Users:
   end
   def tour_user_login
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
-    tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name]) if tu.blank?
+    if tu.blank?
+      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name],id_selfie_mismatch: false)
+    else
+      tu.update_attributes(name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name],id_selfie_mismatch: false)
+    end
     community = Community.find_by_id params[:community_id]
     allow = true
     if tu.present?
@@ -228,7 +232,7 @@ Android Users:
       @units.each do |u|
         if u.community.is_sitemap?
           u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
-            image.url(:svg_for_metro) : u.community.sitemap.image.url
+            image.url(:svg_for_metro) : u.community.sitemap.image.url rescue ""
           @sitemap_image_url = u.sitemap_image_url
 
         else
