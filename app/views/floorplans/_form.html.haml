@@ -122,7 +122,7 @@
           Select Image
           = f.file_field :image
       .col-lg-1
-        - if  f.object.image.present?
+        - if  f.object.image.present? && f.object.image.content_type != 'image/svg+xml'
           .icon
             = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
               %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
@@ -154,7 +154,7 @@
         %span.btn.btn-default.black-button.btn-sm.btn-file
           Select Image
           = f.file_field :secondary_image
-      - if  f.object.secondary_image.present?
+      - if  f.object.secondary_image.present? && f.object.secondary_image.content_type != 'image/svg+xml'
         .col-lg-1
           .icon
             = link_to show_floorplan_secondary_image_in_modal_community_floorplan_path(), remote: true do
