@@ -81,7 +81,7 @@ class ApplicationController < ActionController::Base
         RemoteLockService.new(current_community).client_credentials
       # end
   end
-
+ 
   def load_tour_users_chats
     if current_user.present? and @community.present? and @community.chat_control
       if @community.tour.present?
