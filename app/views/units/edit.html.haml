@@ -57,7 +57,7 @@
     .modal-dialog
       .modal-content
         .modal-header
-          %b Upload Interior Image for Multiple Units 
+          %b Upload Interior Image for Multiple Units
         = form_tag '/', :id=>"amenities-for-multiple-units", multipart: true do
           .modal-body.set-floor-modal-body
             %input#units-amenities-images{:multiple => "multiple", :type => "file", :required=>"required"}
@@ -69,11 +69,14 @@
               - if @units.present?
                 - @units.each do |unit|
                   .col-md-3.pt-5.pb-5
-                    = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
+                    = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
                     = h unit.marketing_name
           .modal-footer
             = submit_tag 'Submit',:class=>"btn btn-success"
             %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+
+#crop-unit-secondary-image.modal.fade.edit-image
+#crop-unit-image.modal.fade.edit-image
 
 :javascript
 
@@ -203,11 +206,43 @@
     $('#amenity_image').show();
   }
 
+  $(form_id).submit(function(){
+    if($("#latch_lock_name").val() == '' && $("#latch_key_id").val() != '')
+    {
+      $("#latch_lock_name").prop('required',true);
+      $('.divLoading').removeClass('divLoading')
+    }
+    else if($("#latch_lock_name").val() != '' && $("#latch_key_id").val() == '')
+    {
+      $("#latch_key_id").prop('required',true);
+      $('.divLoading').removeClass('divLoading')
+    }
+  })
+
   $('#select_all_units_for_image').change(function(){
-    if($(this).is(':checked')){
-      $('.image-checkbox').prop('checked',true)
-    }
-    else{
-      $('.image-checkbox').prop('checked',false)
-    }
+      if($(this).is(':checked')){
+        $('.image-checkbox').prop('checked',true)
+      }
+      else{
+        $('.image-checkbox').prop('checked',false)
+      }
+  });
+
+  var $chkboxes = $('.mass-override');
+  var lastChecked = null;
+
+  $chkboxes.click(function(e) {
+      if (!lastChecked) {
+          lastChecked = this;
+          return;
+      }
+
+      if (e.shiftKey) {
+          var start = $chkboxes.index(this);
+          var end = $chkboxes.index(lastChecked);
+
+          $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+      }
+
+      lastChecked = this;
   });

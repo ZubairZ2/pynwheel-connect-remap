@@ -352,6 +352,11 @@ class UnitsController < ApplicationController
     flash[:notice] = "Floor is updated for units successfully."
     redirect_to :back
   end
+  def set_building
+    @community.units.where(id: params[:unit_ids]).update_all(building: params[:building],manually_updated: true)
+    flash[:notice] = "Building is updated for units successfully."
+    redirect_to :back
+  end
 
   def set_available_date
     @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date],manually_updated: true,available_date_is_updated: true)
