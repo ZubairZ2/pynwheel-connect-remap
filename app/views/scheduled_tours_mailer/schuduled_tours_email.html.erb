@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+    </head>
+    <body>
+
+        Hello, <%= @community_name %>! Good news - you have Self Tours today!  <br><br>
+
+        <% @tours_data.each do |tour| %>
+            <%= tour %> <br>
+        <% end %><br>
+
+        Please make sure the tour path is clean and free of debris, and the tour stops are ready. <br><br>
+
+        Thank you! <br>
+        Pynwheel Support <br>
+        support@pynwheel.com
+        </p>
+    </body>
+</html>
