@@ -221,6 +221,7 @@ Rails.application.routes.draw do
       end
       collection do
         post :set_floor
+        post :set_building
         post :set_available_date
         post :set_available
         post :set_manual_override

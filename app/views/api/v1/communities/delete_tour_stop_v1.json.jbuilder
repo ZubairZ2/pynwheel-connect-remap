@@ -19,6 +19,7 @@ json.tours @tours do |tour|
     json.show_camera_button @in_visiting_hours.present? ? @community.show_camera_button : false
     json.dotted_line_color @community.tour.dotted_line_color rescue "green"
     json.visual_id_verification tour.visual_id_verification
+    json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
     if @community.is_chat_login
       json.chat_control @community.chat_control
     else
