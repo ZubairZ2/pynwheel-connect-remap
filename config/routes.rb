@@ -87,7 +87,6 @@ Rails.application.routes.draw do
     end
 
     resources :edgestate_accounts
-    resources :latch_accounts
 
     post :save_gallery_settings
     post :save_tour_settings
