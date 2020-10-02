@@ -158,6 +158,7 @@ class UnitsController < ApplicationController
           @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
           @assigned_lock = @unit.remote_locks.first
 
+
           flash[:error] = @unit.errors.full_messages.join(',')
           format.html { render :action => "edit" }
           format.json { respond_with_bip(@unit) }
@@ -350,6 +351,11 @@ class UnitsController < ApplicationController
   def set_floor
     @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor],manually_updated: true,floor_is_updated: true)
     flash[:notice] = "Floor is updated for units successfully."
+    redirect_to :back
+  end
+  def set_building
+    @community.units.where(id: params[:unit_ids]).update_all(building: params[:building],manually_updated: true)
+    flash[:notice] = "Building is updated for units successfully."
     redirect_to :back
   end
 
