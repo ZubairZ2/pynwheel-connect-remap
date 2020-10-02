@@ -1,4 +1,5 @@
 class RemoteLocksController < ApplicationController
+    include DweloDevicesHelper
     require 'oauth2'   
     before_action :set_user, only: [:client_credentials, :get_all_deivces, :create_access_guest, :grant_access, :authorization_code]
     before_action :set_base_url, only: [:client_credentials, :get_all_deivces, :create_access_guest, :grant_access, :authorization_code ]
@@ -23,13 +24,26 @@ class RemoteLocksController < ApplicationController
         remote_lock = RemoteLock.find_by(device_id: device_id)
         remote_lock.update_attributes(remote_lock_params)
 
-        access_token = generate_remotelock_token
-        responce = RemoteLockService.new(current_community).update_device(access_token, device_id ,remote_lock)
+        if remote_lock.dwelo_id.present?
+            dwelo_client_credentials
+            access_token = @token
+            responce = update_dweloo_device(access_token, remote_lock)
 
-        if params[:remote_lock][:stop_type] == "unit"
-            redirect_to edit_community_unit_path(current_community,stop_id), notice: "Remote Lock Updated Successfully" 
-        elsif params[:remote_lock][:stop_type] == "amenity"
-            redirect_to edit_community_amenity_path(current_community,stop_id), notice: "Remote Lock Updated Successfully" 
+            if params[:remote_lock][:stop_type] == "unit"
+                redirect_to edit_community_unit_path(current_community, stop_id), notice: "Remote Lock Updated Successfully"
+            elsif params[:remote_lock][:stop_type] == "amenity"
+                redirect_to edit_community_amenity_path(current_community, stop_id), notice: "Remote Lock Updated Successfully"
+            end
+        else
+
+            access_token = generate_remotelock_token
+            responce = RemoteLockService.new(current_community).update_device(access_token, device_id ,remote_lock)
+
+            if params[:remote_lock][:stop_type] == "unit"
+                redirect_to edit_community_unit_path(current_community,stop_id), notice: "Remote Lock Updated Successfully"
+            elsif params[:remote_lock][:stop_type] == "amenity"
+                redirect_to edit_community_amenity_path(current_community,stop_id), notice: "Remote Lock Updated Successfully"
+            end
         end
         # redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully" 
     end

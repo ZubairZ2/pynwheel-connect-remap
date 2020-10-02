@@ -1,0 +1,12 @@
+class CreateDwelos < ActiveRecord::Migration[5.0]
+  def change
+    create_table :dwelos do |t|
+      t.string :client_id
+      t.string :client_secret
+      t.references :community, foreign_key: true
+
+      t.timestamps
+    end
+  end
+end
+

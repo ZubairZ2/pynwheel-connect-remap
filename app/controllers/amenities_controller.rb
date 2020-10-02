@@ -51,6 +51,10 @@ class AmenitiesController < ApplicationController
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
       remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
     end
+    if params[:assigning_lock].present?
+      remote_lock = RemoteLock.find_by(device_id: params[:lock_id], dwelo_id: @community.dwelo.id)
+      remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: @amenity.name)
+    end
     if @amenity.update_attributes(amenity_params)
       begin
         ts = TourStop.find_by(stop_id: @amenity.id)

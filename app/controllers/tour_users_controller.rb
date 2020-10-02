@@ -26,9 +26,16 @@ class TourUsersController < ApplicationController
     end
 
     # ------------ locks ploting on the map ---------------- #
-    @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "unlocked_event")
-    @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
-    
+
+    if @community.dwelo.present?
+      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")	      @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "app_unlock")
+
+      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "app_unlock")
+    else
+      @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "unlocked_event")
+      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
+    end
+
     unit_ids = @visited_units_history.map{|x| x.stop_id}.uniq
     amenity_ids = @visited_amenities_history.map{|x| x.stop_id}.uniq
 
@@ -66,43 +73,69 @@ class TourUsersController < ApplicationController
     floorplate_id = params[:floorplate_id]
 
     community = Community.find community_id
-    visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit", event: "unlocked_event")
-    visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity", event: "unlocked_event")
-    
-    unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
-    amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
-    
-    unless community.is_sitemap
-      units = (Floorplate.find floorplate_id).units.where(id: unit_ids)
-      amenities = (Floorplate.find floorplate_id).amenities.where(id: amenity_ids)
+    if params[:dwelo_id] == "present"
+      visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity", event: "app_unlock")
+      visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit", event: "app_unlock")
+      unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
+      amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
 
-      visited_units_history = visited_units_history.where(stop_id: units.ids)
-      visited_amenities_history = visited_amenities_history.where(stop_id: amenities.ids)
+      unless community.is_sitemap
+        units = (Floorplate.find floorplate_id).units.where(id: unit_ids)
+        amenities = (Floorplate.find floorplate_id).amenities.where(id: amenity_ids)
+
+        visited_units_history = visited_units_history.where(stop_id: units.ids)
+        visited_amenities_history = visited_amenities_history.where(stop_id: amenities.ids)
+      else
+        units = community.units.where(id: unit_ids)
+        amenities = community.amenities.where(id: amenity_ids)
+      end
+
+      existing_stops = []
+      existing_stops << units if units.present?
+      existing_stops << amenities if amenities.present?
+
+      lock_histories = []
+      lock_histories << visited_units_history if visited_units_history.present?
+      lock_histories << visited_amenities_history if visited_amenities_history.present?
+
+      render json: {existing_stops: existing_stops, lock_histories: lock_histories}, status: 200
     else
-      units = community.units.where(id: unit_ids)
-      amenities = community.amenities.where(id: amenity_ids)
+      visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit", event: "unlocked_event")
+      visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity", event: "unlocked_event")
+      unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
+      amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
+
+      unless community.is_sitemap
+        units = (Floorplate.find floorplate_id).units.where(id: unit_ids)
+        amenities = (Floorplate.find floorplate_id).amenities.where(id: amenity_ids)
+
+        visited_units_history = visited_units_history.where(stop_id: units.ids)
+        visited_amenities_history = visited_amenities_history.where(stop_id: amenities.ids)
+      else
+        units = community.units.where(id: unit_ids)
+        amenities = community.amenities.where(id: amenity_ids)
+      end
+
+      existing_stops = []
+      existing_stops << units if units.present?
+      existing_stops << amenities if amenities.present?
+
+      lock_histories = []
+      lock_histories << visited_units_history if visited_units_history.present?
+      lock_histories << visited_amenities_history if visited_amenities_history.present?
+
+      # unless amenities.present?
+      #   puts '------------------ testing line amenities --------------------'
+      #   @existing_stops << Amenity.where(amenityable_type: "Floorplate", id: [297, 1360, 1022, 1023])
+      # end
+
+      # unless units.present?
+      #   puts '------------------ testing line units --------------------'
+      #   @existing_stops << (Floorplate.find 265).units
+      # end
+
+      render json: {existing_stops: existing_stops, lock_histories: lock_histories}, status: 200
     end
-
-    existing_stops = []
-    existing_stops << units if units.present?
-    existing_stops << amenities if amenities.present?
-
-    lock_histories = []
-    lock_histories << visited_units_history if visited_units_history.present?
-    lock_histories << visited_amenities_history if visited_amenities_history.present?
-
-    # unless amenities.present?
-    #   puts '------------------ testing line amenities --------------------'
-    #   @existing_stops << Amenity.where(amenityable_type: "Floorplate", id: [297, 1360, 1022, 1023])
-    # end
-
-    # unless units.present?
-    #   puts '------------------ testing line units --------------------'
-    #   @existing_stops << (Floorplate.find 265).units
-    # end
-
-    render json: {existing_stops: existing_stops, lock_histories: lock_histories}, status: 200
-
   end
 
   def destroy
