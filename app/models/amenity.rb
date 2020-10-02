@@ -28,7 +28,7 @@ class Amenity < ApplicationRecord
   set_sortable :sort
   include StandardUrl
   mount_base64_uploader :image, AvatarUploader
-  belongs_to :amenityable, polymorphic: true
+  belongs_to :amenityable, polymorphic: true 
   belongs_to :community
   has_many :amenity_galleries, dependent: :destroy
   
