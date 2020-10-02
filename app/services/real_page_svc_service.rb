@@ -369,6 +369,7 @@ class RealPageSvcService < BaseService
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         date_needed = Date.today + 540
+        limit_result = credentials.limit_result ? "True" : "False"
         community_id = credentials.community_id
         response = HTTParty.post(
             url,
@@ -392,7 +393,7 @@ class RealPageSvcService < BaseService
                               <tem:listCriteria>
                                 <tem:ListCriterion>
                                   <tem:name>Limitresults</tem:name>
-                                  <tem:singlevalue>True</tem:singlevalue>
+                                  <tem:singlevalue>'+limit_result+'</tem:singlevalue>
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>
