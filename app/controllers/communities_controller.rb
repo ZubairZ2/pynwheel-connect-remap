@@ -50,6 +50,14 @@ class CommunitiesController < ApplicationController
     if params[:community][:image]
       @community.crop_x = nil
     end
+    if params["verification_type"].present?
+      begin
+        @community.tour.verification_type = params["verification_type"]
+        @community.tour.save
+      rescue Exception => e
+        
+      end
+    end
     if params[:community][:secondary_image]
       @community.crop_x_secondary = nil
     end
