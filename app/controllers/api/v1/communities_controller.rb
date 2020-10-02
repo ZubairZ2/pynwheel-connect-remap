@@ -47,6 +47,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+
   def data
     include_application_data
   end
@@ -121,6 +122,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     end
   end
+
 
   def community_tours
     @tour_user = TourUser.find_by_id params[:tour_user_id]
@@ -263,6 +265,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
       @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
       @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+      @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}
       
       # @floor_list = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if x.building.present?}.compact.flatten!
       # non_building_floor = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if !x.building.present?}.compact.flatten!

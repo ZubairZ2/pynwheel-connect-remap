@@ -78,7 +78,7 @@ Rails.application.routes.draw do
       get :web_cam_test
     end
 
-
+    resources :building_starting_points 
     resources :remote_locks do
       collection do
         get :authorization_code
@@ -139,6 +139,7 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
+    
     resources :elevators do
       resources :elevator_galleries
       # do
@@ -287,9 +288,13 @@ Rails.application.routes.draw do
       end
       collection do
         post :save_starting_point
+        get :select_status
+        post :select_status
         post :sort_stops
         post :display_stop
         post :save_tour_settings
+        get :building_starting_point
+        post :update_building_starting_point
         get :check_point
         get :check_point_id_success
         post :save_check_point_response
