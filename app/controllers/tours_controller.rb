@@ -5,6 +5,7 @@ class ToursController < ApplicationController
     @tours = @community.tour || @community.create_tour
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
     @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
+    @community_opening_hours = @community.opening_hours.order(:sort).all
 
 
     @tour_elevator_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id}
@@ -225,7 +226,7 @@ class ToursController < ApplicationController
     @sitemap = @community.is_sitemap ? @community.sitemap : (@community.tour.starting_floor.present? ? @community.floorplates.select{|x| x if x.floors.include?(@community.tour.starting_floor.to_i)}.last : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first)
     @amenities = @community.amenities
     @floors =  @community.floorplates.map{|f| f.floors}.flatten.uniq.sort
-    @building = @community.units.map{|x| x.building.humanize rescue next}.uniq.compact + @community.amenities.map{|x| x.building.humanize rescue next}.uniq.compact
+    @building = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
     @building = @building.compact.reject { |c| c.empty? }.uniq.sort
     @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
@@ -617,6 +618,7 @@ class ToursController < ApplicationController
 
   def id_selfie_matching
     @visitor = TourUser.find_by_id(params[:tour_user_id])
+    @community = Community.find_by_id (params[:community])
     # binding.pry
     puts "<<<<<<<<<<< ID MISMATCH? #{@visitor.id_selfie_mismatch} >>>>>>>>>>"
     render  'visitor_profile'
@@ -630,6 +632,8 @@ class ToursController < ApplicationController
     if params[:tour_user_id].present?
       tour_user = TourUser.find_by_id params[:tour_user_id]
       tour_user.update_attributes id_selfie_mismatch: params[:match_status]
+      community = Community.find_by_id params[:community]
+      community_email =  community.email
       status = 200
       message = "ID/Selfie is marked #{params[:match_status] == "true" ? 'Mismatched' : 'Matched' }"
 
@@ -637,11 +641,12 @@ class ToursController < ApplicationController
         name = tour_user.name || tour_user.email.split('@').first.humanize
 
         email_content = "The user has a mismatching ID/Selfie. <br/> <a href='#{manual_selfie_match_url tour_user.id }' target='_blank'> Visitor's ID page </a>"
-
-        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
         DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'arslan.mirza@intagleo.com')
-
+        if community_email.present?
+          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, community_email)
+        else
+          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
+        end
       end
     else
       status = 404
@@ -669,6 +674,8 @@ class ToursController < ApplicationController
         to_key = 'to_' + i.to_s
       end
     end
+    @community = Community.find params[:community_id]
+    redirect_to community_tours_path(@community)
     flash[:notice] = "Tour settings updated successfully."
   end
 

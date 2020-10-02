@@ -39,7 +39,7 @@ class Api::V1::ToursController < ActionController::Base
         vs.croped = true
         if vs.id_card.present? && vs.image.present?
           vs.id_selfie_mismatch = false
-          url = Rails.env.production? ? "https://pynwheelapp.com/id_selfie_matching/#{vs.id }" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }"
+          url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
           email_content = "Please verify the user #{vs.name} #{community_name} on the following link <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')

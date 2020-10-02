@@ -182,7 +182,7 @@
 
                         %th Name
                         / %th Number
-                        %th Building
+                        / %th Building
                         %th Range
                         %th Image
                         - if @community.mdu
@@ -202,8 +202,8 @@
                             = f.name
                           / %td
                           /   = f.number 
-                          %td{:style => "color: #{f.building_is_updated ? "#dd4a39": ""}"}
-                            = f.building
+                          / %td{:style => "color: #{f.building_is_updated ? "#dd4a39": ""}"}
+                          /   = f.building
                           %td
                             = f.range 
                           %td

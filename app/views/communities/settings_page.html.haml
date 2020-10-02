@@ -275,7 +275,18 @@
               -#        = f.check_box :tour_setup_visible
               -#        %label.label-primary{:for => "community_tour_setup_visible"}
               -#        %span.pl-15 Yes
+              
+              .form-group.verification_type_field.hidden
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  ID verification provider
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = select_tag :verification_type , options_for_select([ ["Authenteq","authenteq"], ["Check Point Id","check_point_id"],["Manual (Email)","email"] ], @community.tour.verification_type),:class => "form-control email_to"
+              .form-group.email_field.hide_email
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Email to be sent to
 
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = text_field_tag :email,  @community.email, {:class=>"form-control", :autocomplete=>"off",:readonly=>true}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Inactivate
@@ -285,6 +296,7 @@
                       .checkbox
                         = f.check_box :locked
                         %label Inactivate
+
 
 
 
@@ -317,6 +329,9 @@
 
 
 :javascript
+  var self_tour = #{@community.self_tour}
+  if(self_tour)
+    $(".verification_type_field").removeClass("hidden")
   populate_multiselect()
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd', maxDate: new Date, minDate: new Date(2007, 6, 12) });
   $(document).ready(function(e){
@@ -331,7 +346,6 @@
       (event.which != 0 && event.which != 8))) {
     event.preventDefault();
   }
-
   var text = $(this).val();
 
   if ((text.indexOf('.') != -1) &&
@@ -354,12 +368,16 @@
   $('#community_self_tour').change(function() {
     if ($("#community_self_tour").is(":checked")){
       $("#access_restrictions").removeClass("hidden")
+      $(".verification_type_field").removeClass("hidden")
+
       if ($("#community_restrict_access").is(":checked"))
         $("#allowed_emails").removeClass("hidden")
     }
     else{
       $("#access_restrictions").addClass("hidden")
       $("#allowed_emails").addClass("hidden")
+      $(".verification_type_field").addClass("hidden")
+
     }
   })
 
@@ -394,5 +412,16 @@
     }
     if ($("#community_restrict_access").is(":checked") == false)
       $("#emails_allowed").val('')
+  })
+  $( ".email_to" ).change(function() {
+    if ($(".email_to").val() == "email") {
+      $(".email_field").removeClass("hide_email");
+    }
+    else {
+      $(".email_field").addClass("hide_email");
+    }
   });
-  
+    if ($(".email_to").val() == "email") {
+      $(".email_field").removeClass("hide_email");
+    }
+

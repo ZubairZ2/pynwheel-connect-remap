@@ -41,6 +41,7 @@
           $.post("/flag_id_mismatch", 
           { 
             "tour_user_id": visitor_id,
+            "community" : community_id,
             'match_status': this.checked
           },
           function(data,status,xhr) {
@@ -57,6 +58,7 @@
           $.post("/flag_id_mismatch",
             { 
               "tour_user_id": visitor_id,
+              "community" : community_id,
               'match_status': this.checked
             },
             function(data,status,xhr) {

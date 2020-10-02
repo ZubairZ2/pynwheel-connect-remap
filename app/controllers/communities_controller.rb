@@ -16,7 +16,7 @@ class CommunitiesController < ApplicationController
   end
   def new
     add_breadcrumb "Add Community", new_company_community_path(current_company)
-    @community = current_company.communities.new
+    @community = current_company.communities.new 
   end
 
   def create
@@ -49,6 +49,14 @@ class CommunitiesController < ApplicationController
     puts params
     if params[:community][:image]
       @community.crop_x = nil
+    end
+    if params["verification_type"].present?
+      begin
+        @community.tour.verification_type = params["verification_type"]
+        @community.tour.save
+      rescue Exception => e
+
+      end
     end
     if params[:community][:secondary_image]
       @community.crop_x_secondary = nil
