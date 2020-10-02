@@ -39,7 +39,7 @@
             unless @community.scheduler_widget
                 json.unscheduled_message @community.unscheduled_alert.nil? ? ("I'm sorry! We only allow scheduled tours. To schedule a tour, please contact #{@community.name.titleize}: #{phone}. In the meantime, would you like to take a virtual tour?" ) : (@community.unscheduled_alert + " In the meantime, would you like to take a virtual tour?")
             else
-                json.unscheduled_message @community.unscheduled_alert_with_widget.nil? ? ("I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?" ) : (@community.unscheduled_alert + " To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?")
+                json.unscheduled_message @community.unscheduled_alert_with_widget.nil? ? ("I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?" ) : (@community.unscheduled_alert_with_widget + " To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?")
             end
             json.early_arrive_message ""
             json.late_arrive_message ""
