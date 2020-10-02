@@ -624,6 +624,7 @@ class CommunitiesController < ApplicationController
       flash[:error] = @community.errors.full_messages.join(',')
       redirect_back(fallback_location: root_path)
     end
+    
   end
 
   private
