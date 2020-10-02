@@ -30,9 +30,12 @@
     .navbar-custom-menu
       - if user_signed_in?
         %ul.nav.navbar-nav
-          - if current_community.present? and current_community.chat_control and !current_user.is_view_visitor_details_page?
+          - user_chat_enable = CommunityUser.find_by(community_id: current_community.id , user_id: current_user.id).chat_enable rescue false
+          - community_id = current_community.present? ? (current_user.role != "Super admin" ? current_community.id : '') : ''
+          -# just show 'Chat Support' to super admin, but don't show chat button in the app if super admin is logged in in any community
+          - if (current_community.present? and user_chat_enable  and current_community.chat_control and !current_user.is_view_visitor_details_page?) or (current_user.role == "Super admin" and current_community.present? and current_community.chat_control)
             %li.mt-5
-              %a.btn.mr-5.notification#widget-button{"data-name"=>"visitor", "data-target" => "#ChatSupport", "data-toggle" => "modal", "data-href" => "url", style: "background: #20a345; color:white;  height: 34px;padding-top: 7px; border-radius: 4px; margin-right: 14px;"}
+              %a.btn.mr-5.notification#widget-button{"data-name"=>"visitor", "data-community-id" => "#{community_id}" , "data-target" => "#ChatSupport", "data-toggle" => "modal", "data-href" => "url", style: "background: #20a345; color:white;  height: 34px;padding-top: 7px; border-radius: 4px; margin-right: 14px;"}
                 %i.fa.fas.fa-comment.fa-lg
                 %span Chat Support
                 %span#new_msgs.new_msgs.hidden

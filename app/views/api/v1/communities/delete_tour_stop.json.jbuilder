@@ -19,11 +19,7 @@ json.tours @tours do |tour|
     json.show_camera_button @scheduled_tour.present? ? @community.show_camera_button : false
     json.dotted_line_color @community.tour.dotted_line_color rescue "green"
     json.visual_id_verification tour.visual_id_verification
-    if @community.is_chat_login
-      json.chat_control @community.chat_control
-    else
-      json.chat_control false
-    end
+    json.chat_control (@community.chat_control and @community.is_chat_login) ? @community.chat_control : false
     json.show_map @community.show_map
     json.mdu @community.mdu
 
