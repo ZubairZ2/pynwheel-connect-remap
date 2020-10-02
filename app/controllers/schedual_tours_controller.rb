@@ -25,6 +25,7 @@ class SchedualToursController < ApplicationController
   def change_tour_time
     
   end
+  
   def create_tour_user_from
     phone_number = make_phone
     tu = TourUser.find_by(email: params[:tour_user][:email].downcase)
