@@ -222,7 +222,7 @@ class ToursController < ApplicationController
     @sitemap = @community.is_sitemap ? @community.sitemap : (@community.tour.starting_floor.present? ? @community.floorplates.select{|x| x if x.floors.include?(@community.tour.starting_floor.to_i)}.last : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first)
     @amenities = @community.amenities
     @floors =  @community.floorplates.map{|f| f.floors}.flatten.uniq.sort
-    @building = @community.units.map{|x| x.building.humanize rescue next}.uniq.compact + @community.amenities.map{|x| x.building.humanize rescue next}.uniq.compact
+    @building = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
     @building = @building.compact.reject { |c| c.empty? }.uniq.sort
     @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
