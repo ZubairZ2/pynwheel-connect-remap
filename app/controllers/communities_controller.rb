@@ -8,6 +8,13 @@ class CommunitiesController < ApplicationController
 
   def index
     #@communities = Community.page(params[:page]).per(10)
+    if params[:enable_communities].present?
+      user_enable_communities_ids = CommunityUser.where(user_id: params[:user], chat_enable: true).map { |x| x.community_id } rescue nil
+      if user_enable_communities_ids.present?
+        user_enable_communities = Community.where(id: user_enable_communities_ids).pluck(:id, :name).to_json rescue nil
+        render :json => {data: user_enable_communities}, :status => 200
+      end
+    end
     if current_user.is_super_admin?
       @communities = current_company.communities
     else
@@ -449,10 +456,16 @@ class CommunitiesController < ApplicationController
   end
 
   def invitation_communities
-    company =  params['company']
-    comp = Company.find_by(name: company )
-    result = comp.communities.pluck(:name,:id).to_json
-    render :json => { data: result }, :status => 200
+    if params[:user_communities].present?
+      user = User.find params[:user]
+      result = user.communities.pluck(:name, :id).to_json
+      render :json => {data: result}, :status => 200
+    else
+      company =  params['company']
+      comp = Company.find_by(name: company )
+      result = comp.communities.pluck(:name,:id).to_json
+      render :json => { data: result }, :status => 200
+    end
 
   end
   def selected_communities
@@ -630,8 +643,6 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
-    cookies[:community_id] = params[:id]
-    @community = Community.find params[:id]
     @community.update_attributes(is_chat_login: true)
   end
 

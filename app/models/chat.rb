@@ -16,7 +16,7 @@ class Chat < ApplicationRecord
       end 
       
       community = self.chatroom.tour.community
-      channel_name = community.name.tr(" ", "_") + "_with_id_" + community.id.to_s
+      channel_name = (community.name.gsub(/[^0-9a-z ]/i, '') + "_with_id_" + community.id.to_s).gsub(' ', '_')
 
       data[:unread_count] = send_notification
 
