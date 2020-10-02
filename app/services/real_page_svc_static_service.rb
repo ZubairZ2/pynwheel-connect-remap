@@ -300,7 +300,7 @@ class RealPageSvcStaticService < BaseService
                               <tem:listCriteria>
                                 <tem:ListCriterion>
                                   <tem:name>Limitresults</tem:name>
-                                  <tem:singlevalue>False</tem:singlevalue>
+                                  <tem:singlevalue>True</tem:singlevalue>
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>

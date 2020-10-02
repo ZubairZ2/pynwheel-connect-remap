@@ -2,7 +2,7 @@ class RealPageSvcService < BaseService
   def perform
     @unit_record = []
     import_realpage_svc_floorplans
-    import_initials_realpage_units
+    # import_initials_realpage_units
     import_realpage_svc_units
     import_realpage_svc_price
   end
@@ -392,7 +392,7 @@ class RealPageSvcService < BaseService
                               <tem:listCriteria>
                                 <tem:ListCriterion>
                                   <tem:name>Limitresults</tem:name>
-                                  <tem:singlevalue>False</tem:singlevalue>
+                                  <tem:singlevalue>True</tem:singlevalue>
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>
