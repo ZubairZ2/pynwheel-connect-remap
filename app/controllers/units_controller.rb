@@ -26,6 +26,9 @@ class UnitsController < ApplicationController
       @unit.available = false
     end
     if @unit.save
+      floorplan_amenities = @unit.floorplan.amenities
+      add_floorplan_amenities = "true"
+      AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities,add_floorplan_amenities, @unit
       PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
       flash[:notice] = "Unit created successfully."
       redirect_to community_units_path(:community_id=>@community.id)
@@ -63,6 +66,7 @@ class UnitsController < ApplicationController
   end
 
   def update
+    unit_previous_floorplan_amenities = @unit.amenities.where.not(floorplan_amenity_id: nil) rescue nil
     if params[:remote_lock].present?
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
       remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: params[:unit][:marketing_name])
@@ -143,6 +147,15 @@ class UnitsController < ApplicationController
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
         if @unit.update(unit_params)
+          if params[:unit][:floorplan_id] != @unit.floorplan.id
+            delete_previous_floorplan_images = "delete previous"
+            if unit_previous_floorplan_amenities.present?
+              AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
+            end
+            floorplan_amenities = @unit.floorplan.amenities rescue nil
+            add_floorplan_amenities = "edit"
+            AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
+          end
           set_manually_updated_column
           PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
           if params[:floorNo].nil?
@@ -166,6 +179,13 @@ class UnitsController < ApplicationController
       else
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
+          if params[:unit][:floorplan_id] != @unit.floorplan.id
+            delete_previous_floorplan_images = "delete previous"
+            AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
+            floorplan_amenities = @unit.floorplan.amenities rescue nil
+            add_floorplan_amenities = "edit"
+            AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
+          end
           set_manually_updated_column
           PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id ,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
           if params[:floorNo].nil?
@@ -189,6 +209,13 @@ class UnitsController < ApplicationController
             format.json { respond_with_bip(@unit) }
           else
             @unit.update(unit_params)
+            if params[:unit][:floorplan_id] != @unit.floorplan.id
+              delete_previous_floorplan_images = "delete previous"
+              AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
+              floorplan_amenities = @unit.floorplan.amenities rescue nil
+              add_floorplan_amenities = "edit"
+              AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
+            end
             set_manually_updated_column
             PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
             if params[:floorNo].nil?

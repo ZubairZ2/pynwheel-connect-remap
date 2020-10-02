@@ -407,7 +407,7 @@
               - index = 0
               - monday_count = 1
               - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
-              .col-sm-12.tour_time_sortable
+              .col-sm-12.list.tour_time_sortable
                 - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
                   .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
                     - days_count[current_day.day] = days_count[current_day.day] +1
