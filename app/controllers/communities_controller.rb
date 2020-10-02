@@ -603,8 +603,6 @@ class CommunitiesController < ApplicationController
     @community.display_unit_on_homepage = params[:display_unit_on_homepage].present? ? params[:display_unit_on_homepage] : false
     @community.apartment_page_name = params[:apartment_page_name] if params[:apartment_page_name].present?
 
-
-    
     @community.show_property_map_key = params[:show_property_map_key].present? ? params[:show_property_map_key] : false
     @community.show_amenity_key = params[:show_amenity_key].present? ? params[:show_amenity_key] : false
 
