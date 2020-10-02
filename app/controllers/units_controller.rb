@@ -158,6 +158,7 @@ class UnitsController < ApplicationController
           @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
           @assigned_lock = @unit.remote_locks.first
 
+
           flash[:error] = @unit.errors.full_messages.join(',')
           format.html { render :action => "edit" }
           format.json { respond_with_bip(@unit) }

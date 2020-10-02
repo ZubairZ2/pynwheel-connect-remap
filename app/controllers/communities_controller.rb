@@ -50,6 +50,14 @@ class CommunitiesController < ApplicationController
     if params[:community][:image]
       @community.crop_x = nil
     end
+    if params["verification_type"].present?
+      begin
+        @community.tour.verification_type = params["verification_type"]
+        @community.tour.save
+      rescue Exception => e
+
+      end
+    end
     if params[:community][:secondary_image]
       @community.crop_x_secondary = nil
     end
@@ -567,6 +575,7 @@ class CommunitiesController < ApplicationController
       @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
     end
     
+
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
