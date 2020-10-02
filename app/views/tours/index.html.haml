@@ -284,7 +284,27 @@
               /       = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date, class: "show_desired_move_in_date"
               /       %label.label-primary{:for => "show_desired_move_in_date"}
               /       %span.pl-15 Yes
+
               /       %span.pl-15 Yes
+            .div_checklist.hidden
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Only allow scheduled tours
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Unscheduled and early or late arrived guests before or after the scheduled time will get proper customizable messages.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :only_scheduled_tour, true, @community.tour.only_scheduled_tour , class: "only_scheduled_tour"
+                    %label.label-primary{:for => "only_scheduled_tour"}
+                    %span.pl-15 Yes
+              .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
+                .form-group.hidden#grace_time_period
+                  .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{style:"margin-right: -35px;"}
+                    Grace period
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    %input.day-list.max-users-v{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}
             - if current_user.is_super_admin?
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -384,47 +404,76 @@
         .row
           .col-lg-12 
             = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
-              .col-sm-12.list
-                - @community.opening_hours.each_with_index do |current_day,index| 
-                  .row.p-8-v
+              - index = 0
+              - monday_count = 1
+              - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
+              .col-sm-12.tour_time_sortable
+                - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
+                  .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
+                    - days_count[current_day.day] = days_count[current_day.day] +1
                     %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
                       - if current_day.day == "Monday"
-                        %option{selected: "", value: "Monday"} Monday
+                        %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
+                        -# - days_count["mon"] = days_count["mon"] +1
                       - else
                         %option{value: "Monday"} Monday
                       - if current_day.day == "Tuesday"
-                        %option{selected: "", value: "Tuesday"} Tuesday
+                        %option{selected: "", value: "Tuesday" , class: "#{current_day.day}" + "_#{days_count["tue"]}"} Tuesday
+                        -# - days_count["tue"] = days_count["tue"] + 1
                       - else
                         %option{value: "Tuesday"} Tuesday
                       - if current_day.day == "Wednesday"
-                        %option{selected: "", value: "Wednesday"} Wednesday
+                        %option{selected: "", value: "Wednesday" , class: "#{current_day.day}" + "_#{days_count["wed"]}"} Wednesday
+                        -# - days_count["wed"] = days_count["wed"] + 1
                       - else
                         %option{value: "Wednesday"} Wednesday
                       - if current_day.day == "Thursday"
-                        %option{selected: "", value: "Thursday"} Thursday
+                        %option{selected: "", value: "Thursday" , class: "#{current_day.day}" + "_#{days_count["thur"]}"} Thursday
+                        -# - days_count["thur"]= days_count["thur"] +1
                       - else
                         %option{value: "Thursday"} Thursday
                       - if current_day.day == "Friday"
-                        %option{selected: "", value: "Friday"} Friday
+                        %option{selected: "", value: "Friday" , class: "#{current_day.day}" + "_#{days_count["fri"]}"} Friday
+                        -# -days_count["fri"] = days_count["fri"] +1
                       - else
                         %option{value: "Friday"} Friday
                       - if current_day.day == "Saturday"
-                        %option{selected: "", value: "Saturday"} Saturday
+                        %option{selected: "", value: "Saturday", class: "#{current_day.day}" + "_#{days_count["sat"]}"} Saturday
+                        -# - days_count["sat"] = days_count["sat"]
                       - else
                         %option{value: "Saturday"} Saturday
                       - if current_day.day == "Sunday"
-                        %option{selected: "", value: "Sunday"} Sunday
+                        %option{selected: "", value: "Sunday", class: "#{current_day.day}" + "_#{days_count["sun"]}"} Sunday
+                        -# - days_count["sun"] = days_count["sun"] +1
                       - else
                         %option{value: "Sunday"} Sunday
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v From
-                      %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v To
-                      %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
-                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                    - if current_day.day == "Monday"
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v From
+                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor_" + "#{monday_count}"}
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v To
+                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve_" + "#{monday_count}"}
+                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                    - if current_day.day != "Monday"
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v From
+                        %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
+                      .font-17-v.pull-left.mr-20-v
+                        .p-4-v.pull-left.mr-10-v
+                          %label.text-grey-v To
+                        %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
+                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                      -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                    - if current_day.day == "Monday"
+                      .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;"}
+                        .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
+                      - monday_count +=1
+
+                    - index +=1
                 - if @community.opening_hours.blank?
                   .row.p-8-v
                     %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1"}
@@ -454,6 +503,7 @@
         %h3.box-title
           COMPOSE TEXT/EMAILS
           %span
+    
     .row
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30{style: "margin-top: 60px;"}
@@ -472,12 +522,14 @@
                   %b Optional: Add custom messaging to the standard automated text & email notification(s).
                 - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
+                    %h4{:style => "margin-bottom: 50px;"}
+                      %b Optional: Add custom messaging to the standard automated text & email notifications. (Only applicable if the property is using the scheduler widget). Click on the question marks to see the standard notification messages.
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                         Confirmation
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                           %span#propertyDetailNameText
-                            This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is: 
+                            This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
                             Thank you for scheduling your self-guided tour! We look forward to having you at the property on <date> and <time>. When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive: (Links to app stores)
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
@@ -489,6 +541,7 @@
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
                             We look forward to having you visit our property at <time> tomorrow for your self-guided tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).
+
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                   .col-lg-9.col-lg-offset-1
@@ -499,6 +552,7 @@
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
                             Your self-guided tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.
+
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 .col-lg-9.col-lg-offset-1
@@ -508,8 +562,53 @@
                       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                         %span#propertyDetailNameText
                           This message will be sent to guest after tour will end.
+
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+                - if current_community.tour.only_scheduled_tour
+                  .col-lg-9.col-lg-offset-1
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                        Arrived too early alert
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            This message will be sent in case guest starts tour before the scheduled time + grace period.Standard text that is (In the meantime, would you like to take a virtual tour?) will be added at the end of this meesage in the mobile app
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        = f.text_area :arrive_too_early_alert, :value=> @community.arrive_too_early_alert.nil? ? "Your tour is scheduled for <date>, <time>. You will be able start your tour <grace time> minutes before that time." : @community.arrive_too_early_alert , :class=>"form-control tag-check", :placeholder=>"Custom Message", :rows => 3
+
+                  .col-lg-9.col-lg-offset-1
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                        Arrived too late alert
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            This message will be sent in case guest starts tour after the scheduled time + grace period. Standard text that is (In the meantime, would you like to take a virtual tour?) will be added at the end of this meesage in the mobile app
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        = f.text_area :arrive_too_late_alert, :value=> @community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for <date>, <time>." : @community.arrive_too_late_alert , :class=>"form-control tag-check", :placeholder=>"Custom Message", :rows => 3
+                  - if current_community.scheduler_widget.nil? || current_community.scheduler_widget
+                    .col-lg-9.col-lg-offset-1
+                      .form-group
+                        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                          Unscheduled tour alert
+                          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                            %span#propertyDetailNameText
+                              This message will be sent in case guest has not scheduled a tour. Standard text that is (To schedule a tour, please use the Scheduler button below. In the meantime, would you like to take a virtual tour?) will be added at the end of this meesage in the mobile app
+
+                        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                          = f.text_area :unscheduled_alert_with_widget, :value=> @community.unscheduled_alert_with_widget.nil? ? "I'm sorry! We only allow scheduled tours." : @community.unscheduled_alert_with_widget , :class=>"form-control tag-check", :placeholder=>"Custom Message", :rows => 3
+                  - else
+                    .col-lg-9.col-lg-offset-1
+                      .form-group
+                        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                          Unscheduled tour alert
+                          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                            %span#propertyDetailNameText
+                              This message will be sent in case guest has not scheduled a tour. Standard text that is (In the meantime, would you like to take a virtual tour?) will be added at the end of this meesage in the mobile app
+
+                        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                          = f.text_area :unscheduled_alert, :value=> @community.unscheduled_alert.nil? ? "I'm sorry! We only allow scheduled tours. To schedule a tour, please contact the property: <phone>." : @community.unscheduled_alert , :class=>"form-control tag-check", :placeholder=>"Custom Message", :rows => 3
 
             /
               \/.box-body
@@ -544,7 +643,7 @@
                     = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                     %span.ml-5
                       = amenity.name
-              
+
       - if @community.mdu
         - units = @units.sort_by{|u| u.marketing_name}
         .col-lg-6
@@ -566,7 +665,7 @@
 
 
       -#.col-lg-4{:style => "margin-bottom: 10px;"}
-      -#  %h5.mt-40.mb-20 Add Elevators 
+      -#  %h5.mt-40.mb-20 Add Elevators
       -#  .imageselect.elevator-imageselect
       -#    .show-categories
       -#     = "- select elevator -"
@@ -582,7 +681,7 @@
       -#               = elevator.name
 
       .col-lg-12.col-md-12
-        
+
         -#.box.box-widget.panel-box.add-plan
         .box.box-widget.panel-box
           .row
@@ -750,7 +849,7 @@
 
 
 
-        - if @tours.tour_stops.present?      
+        - if @tours.tour_stops.present?
           .row
             .col-md-12
               %h3{ style: 'color: #800000;' } How to Set up the Tour Path:
@@ -761,8 +860,8 @@
               %h4{:style => "display: inline"} Draw a Path between two stops: Choose two points from the list above by clicking on the "Way Finding" icon.
               %i.fa.fa-road.icon_size
               %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
-              %h4 Drag and drop the icon onto the correct postion on the map.         
-              %h4 To delete a point on the path, double-click the point. 
+              %h4 Drag and drop the icon onto the correct postion on the map.
+              %h4 To delete a point on the path, double-click the point.
 
             -#.col-md-12
             -#  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do
@@ -814,9 +913,9 @@
                     - else
                       - next if (stop.y_plot + stop.x_plot) < 1
                       %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
-                  
+
                   /- binding.pry
-                  - @existing_path_points.each_with_index do |point, index|               
+                  - @existing_path_points.each_with_index do |point, index|
                     .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
   #select_status.modal.fade.select_status                    
 .row
@@ -832,6 +931,23 @@
               / End Panel left Side
         / /.content
 :javascript
+  function apply_time_to_all(monday_count, closing_time)
+  {
+    monday_morning  = $(".monday_mor_" + monday_count).val();
+    monday_evening = $(".monday_eve_" + monday_count).val();
+    tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Tuesday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    wed_morning_val = jQuery(".Wednesday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    wed_evening_val = jQuery(".Wednesday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Thursday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Thursday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Friday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Friday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Saturday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Saturday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Sunday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
+  }
   var floor = #{raw @floor}
   function tour_setup_goBack()
   {
@@ -861,6 +977,19 @@
   {
     $('html, body').animate({ scrollTop: 800 });
   }
+
+  if ($("#only_scheduled_tour").is(":checked") == true){
+    $("#grace_time_period").removeClass("hidden")
+  }
+
+  $('#only_scheduled_tour').change(function() {
+    if ($("#only_scheduled_tour").is(":checked")){
+      $("#grace_time_period").removeClass("hidden")
+    }
+    else{
+      $("#grace_time_period").addClass("hidden")
+    }
+  })
 
     var arr = [];
     for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
@@ -918,11 +1047,11 @@
   }
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
-    
+
     /*$.post( "/delete_path_on_sort_change",
       { "tour_stop_id": tour_stop_id },
       function(data,status,xhr) {
-        if(data){          
+        if(data){
         }
       }
     );*/
@@ -963,10 +1092,11 @@
     $('.hidden_floor').val(this.textContent);
     $('.floor_submit_btn').click();
   });
+  $('.tour_time_sortable').railsSortable();
   $('.tour_sortable').railsSortable();
-  
+
   community_id = #{params[:community_id]}
-  
+
   cords_arr = JSON.parse('#{raw(path_point_coords.to_json)}');
 
   $('.floor_submit_btn').click(function () {
@@ -991,11 +1121,11 @@
   // });
   $(document).ready(function(){
     var path_id;
-    
+
     radius = 50;
     var point_color = 'rgb(85, 88, 85)';
     var point_size = 20;
-    
+
     path_array = $(".path_point")
     if (path_array.length > 0){
       $(".plot-image").append(createLine('#stop_'+document.getElementById($(".path_point")[0].id).getAttribute('value'), path_array[0]))
@@ -1008,9 +1138,11 @@
         }
       }
     }
-    
-    
-    // add listner to prev points 
+
+
+
+    // add listner to prev points
+
     $.each($("*.path_point"), function(i, existing_point){
       id = $(existing_point).prop('id');
       dragElement(document.getElementById(id));
@@ -1137,7 +1269,7 @@
       path_array.push(path_point)
       start_point_array.push(db_data.line_start_point)
       stop_point_array.push(db_data.line_stop_point)
-      
+
       if(path_array.length == 1 && db_data.line_start_point != "" ){
         line = createLine($('#stop_'+db_data.line_start_point), path_array[path_array.length-1])
         $(".plot-image").append(line)
@@ -1149,7 +1281,7 @@
       }
       else if(db_data.line_start_point == null){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
-        $(".plot-image").append(line) 
+        $(".plot-image").append(line)
       }
       else if(path_array.length > 1 && db_data.line_start_point != "" && db_data.exist){
         // debugger;
@@ -1193,7 +1325,7 @@
         if(d <= radius)
           neighbour_unit_ids.push(index)
       });
-      
+
       return neighbour_unit_ids
     }
 
@@ -1206,7 +1338,7 @@
 
     function updatePoint(x, y, unit_ids, point_id){
       $.post( "/update_path_point",
-        { 
+        {
           "x_plot": x,
           "y_plot": y,
           "point_id": point_id,
@@ -1223,7 +1355,7 @@
       elmnt.onmousedown = dragMouseDown;
 
       function dragMouseDown(e) {
-      
+
         e = e || window.event;
         e.preventDefault();
         // get the mouse cursor position at startup:
@@ -1279,7 +1411,7 @@
       event.preventDefault();
     });
 
-    
+
     var arr = []
     data = []
     var highlights = []
@@ -1310,7 +1442,7 @@
         var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
         var stop_2_id = url2.split('?')[0]
         var stop_2_type = url2.split('=')[1]
-        
+
         stop_ids = [stop_1_id, stop_2_id]
         stop_types = [stop_1_type, stop_2_type]
         $.ajax({
@@ -1355,7 +1487,7 @@
                 scrollTop: $(".plot-image").offset().top
               }, 500);
             }
-            
+
             //update drawing path for so we can use that path id to save point
           }
 
@@ -1391,11 +1523,11 @@
       var dx = 0;
       var dy = 0;
       var width = $(el).width()|0;
-      var height = $(el).height()|0;  
+      var height = $(el).height()|0;
       dx += parseInt($(el).css('left'), 10);
       dy += parseInt($(el).css('top'), 10);
-      
-      
+
+
       return { top: dy, left: dx, width: width, height: height };
     }
 
@@ -1405,7 +1537,7 @@
       // center of first point
       var dx1 = off1.left + off1.width/2;
       var dy1 = off1.top + off1.height/2;
-      // center of second point 
+      // center of second point
       var dx2 = off2.left + off2.width/2;
       var dy2 = off2.top + off1.height/2;
       // distance
@@ -1521,22 +1653,23 @@
           <select class="day-list font-17-v pull-left mr-20-v" id="day_${current_day}" name="day_${current_day}">
             ${new_day_with_selected_options}
           </select>
-          
+
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">From</label>
             </div>
-            <input class="day-list bg-grey-v" name="from_${current_day}" type="time" value="09:00">
+            <input class="day-list bg-grey-v morning_time" name="from_${current_day}" type="time" value="09:00">
           </div>
-          
+
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">To</label>
             </div>
-            <input class="day-list bg-grey-v" name="to_${current_day}" type="time" value="17:00">
+            <input class="day-list bg-grey-v evening_time" name="to_${current_day}" type="time" value="17:00">
           </div>
-          
+
           <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger"></div>
+
         </div>`);
     }
     var current_day = $(".list").children().length
@@ -1558,7 +1691,7 @@
       if(times_hash[day_] == undefined)
       {
         times_hash[day_] = []
-      } 
+      }
       times_hash[day_].push(times_list[i].value +'-'+ times_list[i+1].value);
       days.push(day_);
       i += 2;
@@ -1599,5 +1732,8 @@
       }
     })
   }
+  if ($(".list").children().length < 7)
+      $('#add-btn').show()
   });
+  
   });

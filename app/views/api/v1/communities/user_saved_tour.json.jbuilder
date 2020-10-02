@@ -1,8 +1,9 @@
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
-json.visual_id_verification @scheduled_tour.present? ? (@community.present? ? @community.tour.visual_id_verification : true) : false
-json.virtual_tour @scheduled_tour.present? ? true : false # seding reverse value due to last name 'ontime'
+json.visual_id_verification @in_visiting_hours == true ? (@community.present? ? @community.tour.visual_id_verification : true) : false
+json.virtual_tour @in_visiting_hours == true ? true : false   # seding reverse value due to last name of json field i.e 'ontime'
+
 
 # @tours.each do |tour|
 #   if tour[0][1] == last_vs.tour_key

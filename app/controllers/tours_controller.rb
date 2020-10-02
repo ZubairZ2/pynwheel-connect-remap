@@ -5,6 +5,7 @@ class ToursController < ApplicationController
     @tours = @community.tour || @community.create_tour
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
     @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
+    @community_opening_hours = @community.opening_hours.order(:sort).all
 
 
     @tour_elevator_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id}
@@ -673,6 +674,8 @@ class ToursController < ApplicationController
         to_key = 'to_' + i.to_s
       end
     end
+    @community = Community.find params[:community_id]
+    redirect_to community_tours_path(@community)
     flash[:notice] = "Tour settings updated successfully."
   end
 

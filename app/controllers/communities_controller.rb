@@ -536,6 +536,7 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @tour = @community.tour
     @tour_setting = @tour.tour_setting
+    
     unless params[:community][:optional_mails].present?
       @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
       @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
@@ -550,6 +551,8 @@ class CommunitiesController < ApplicationController
       @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
       @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
       @tour.credit_card_required = params[:credit_card_required].present? ? true : false
+      @tour.only_scheduled_tour = params[:only_scheduled_tour].present? ? true : false
+      @tour.grace_period = params[:grace_time] if params[:grace_time].present?
       @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
       @tour.save
 
@@ -567,14 +570,17 @@ class CommunitiesController < ApplicationController
       @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
       @tour_setting.save
 
-      @tour.save
     else
       @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
       @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
       @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
       @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
+      @community.arrive_too_early_alert = params[:community][:arrive_too_early_alert] if params[:community][:arrive_too_early_alert].present?
+      @community.arrive_too_late_alert = params[:community][:arrive_too_late_alert] if params[:community][:arrive_too_late_alert].present?
+      @community.unscheduled_alert = params[:community][:unscheduled_alert] if params[:community][:unscheduled_alert].present?
+      @community.unscheduled_alert_with_widget = params[:community][:unscheduled_alert_with_widget] if params[:community][:unscheduled_alert_with_widget].present?
     end
-    
+
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
       redirect_to community_tours_path(@community)
@@ -605,8 +611,6 @@ class CommunitiesController < ApplicationController
     @community.display_unit_on_homepage = params[:display_unit_on_homepage].present? ? params[:display_unit_on_homepage] : false
     @community.apartment_page_name = params[:apartment_page_name] if params[:apartment_page_name].present?
 
-
-    
     @community.show_property_map_key = params[:show_property_map_key].present? ? params[:show_property_map_key] : false
     @community.show_amenity_key = params[:show_amenity_key].present? ? params[:show_amenity_key] : false
 
@@ -620,6 +624,7 @@ class CommunitiesController < ApplicationController
       flash[:error] = @community.errors.full_messages.join(',')
       redirect_back(fallback_location: root_path)
     end
+    
   end
 
   private

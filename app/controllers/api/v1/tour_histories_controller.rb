@@ -52,6 +52,47 @@ class Api::V1::TourHistoriesController < ActionController::Base
     end
   end
 
+  def alerts_during_tour
+    access = grant_access (decoded(params[:token])) rescue false
+    if true or access == true
+      if params[:community_id].present? && params[:tour_id].present? && params[:tour_user_id].present?
+        id_mismatch = false
+        tour = Tour.find params[:tour_id]
+        unless tour.visual_id_verification
+          begin
+            tu = TourUser.find params[:tour_user_id]
+            tu.id_selfie_mismatch = false
+            id_mismatch = tu.id_selfie_mismatch
+            tu.save
+          rescue => ex
+          end
+        else
+          begin
+            id_mismatch = (TourUser.find params[:tour_user_id]).id_selfie_mismatch
+          rescue => ex
+          end
+        end
+
+        chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
+        if chatroom.present?
+          if params[:last_msg_id].present?
+            count = Chat.where("name = ? AND chatroom_id = ? AND id > ?", "Support Team", chatroom.id, params[:last_msg_id]).count
+          else
+            count = 0
+          end
+        else
+          count = 0
+        end
+
+        render :json=> {:success=>true, :message => "success", :un_read_msgs_count=> count, :id_mismatch=> id_mismatch }
+      else
+        render :json=> {:success=>false, :message => "Please provide community_id, tour_id and tour_user_id"}
+      end
+    else
+      render :json=> {:success=>false, :message => "Invalid Token"}
+    end
+  end
+  
   def change_id_selfie_status
     if params[:tour_user_id].present? && params[:id_selfie_mismatch_status].present?
       
