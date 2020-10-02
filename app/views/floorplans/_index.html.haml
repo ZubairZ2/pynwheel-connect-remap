@@ -70,7 +70,7 @@
                     = link_to "Manage Images",community_floorplan_amenities_path(current_community,f), class: "btn btn-default black-button loader_class"
                   %td
                     - if f.standard_image_url.present?
-                      .drop-img.drop-img-left{style: "color: #{f.manual_override ? "black" : ""};"}
+                      .drop-img{style: "color: #{f.manual_override ? "black" : ""};"}
                         = image_tag f.standard_image_url
                     - else  
                       .drop-img.drop-img-left.image-holder{:ondrop => "drop(event)",:id=>f.id,style: "color: #{f.manual_override ? "black" : ""};"}

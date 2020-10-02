@@ -253,7 +253,11 @@
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   .grid-graph.hidden
-                  = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
+                    %object{:data => "your.svg", :type => "image/svg+xml"}
+                      = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: 1412px; height: 932px;"
+                  - else
+                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
                   - units = @units.sort_by{|u| u.marketing_name}
                   - coordinates_array = []
 
