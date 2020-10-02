@@ -23,7 +23,6 @@ json.tours @tours do |tour|
     json.chat_control (@community.chat_control and @community.is_chat_login) ? @community.chat_control : false
     json.show_map @community.show_map
     json.mdu @community.mdu
-
   end
   plates_name = {}
 
