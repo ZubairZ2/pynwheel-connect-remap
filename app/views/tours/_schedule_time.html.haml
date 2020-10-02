@@ -1,0 +1,64 @@
+
+.col-sm-12.sortable
+  - index = 0
+  - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
+    .row.p-8-v{id: sortable_id}
+      %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
+        - if current_day.day == "Monday"
+          %option{selected: "", value: "Monday"} Monday
+        - else
+          %option{value: "Monday"} Monday
+        - if current_day.day == "Tuesday"
+          %option{selected: "", value: "Tuesday"} Tuesday
+        - else
+          %option{value: "Tuesday"} Tuesday
+        - if current_day.day == "Wednesday"
+          %option{selected: "", value: "Wednesday"} Wednesday
+        - else
+          %option{value: "Wednesday"} Wednesday
+        - if current_day.day == "Thursday"
+          %option{selected: "", value: "Thursday"} Thursday
+        - else
+          %option{value: "Thursday"} Thursday
+        - if current_day.day == "Friday"
+          %option{selected: "", value: "Friday"} Friday
+        - else
+          %option{value: "Friday"} Friday
+        - if current_day.day == "Saturday"
+          %option{selected: "", value: "Saturday"} Saturday
+        - else
+          %option{value: "Saturday"} Saturday
+        - if current_day.day == "Sunday"
+          %option{selected: "", value: "Sunday"} Sunday
+        - else
+          %option{value: "Sunday"} Sunday
+      .font-17-v.pull-left.mr-20-v
+        .p-4-v.pull-left.mr-10-v
+          %label.text-grey-v From
+        %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
+      .font-17-v.pull-left.mr-20-v
+        .p-4-v.pull-left.mr-10-v
+          %label.text-grey-v To
+        %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
+      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+      .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{raw current_day.opening_time}','#{raw current_day.closing_time}')", :style => "margin-left:15px;"} Apply To All
+      - index +=1
+  - if @community.opening_hours.blank?
+    .row.p-8-v
+      %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1"}
+        %option{selected: "", value: "Monday"} Monday
+        %option{value: "Tuesday"} Tuesday
+        %option{value: "Wednesday"} Wednesday
+        %option{value: "Thursday"} Thursday
+        %option{value: "Friday"} Friday
+        %option{value: "Saturday"} Saturday
+        %option{value: "Sunday"} Sunday
+      .font-17-v.pull-left.mr-20-v
+        .p-4-v.pull-left.mr-10-v
+          %label.text-grey-v From
+        %input.day-list.bg-grey-v{name: "from_1", type: "time", value: "09:00"}
+      .font-17-v.pull-left.mr-20-v
+        .p-4-v.pull-left.mr-10-v
+          %label.text-grey-v To
+        %input.day-list.bg-grey-v{name: "to_1", type: "time", value: "05:00"}
+      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
