@@ -1,9 +1,11 @@
 - if @community.present?
     json.data do
         json.visual_id_verification @in_visiting_hours ? (@tour.visual_id_verification ) : false
+        json.verification_type @tour.verification_type
         json.virtual_tour @in_visiting_hours ? false : true         # last name 'ontime' issue in user_saved_tour.json is corrected here
         json.visited_history @visited_history
 
+        json.unscheduled_tours_allowed !@tour.only_scheduled_tour
         json.grace_period @tour.grace_period
         json.is_tour_scheduled @scheduled_tours.present?
         
@@ -27,19 +29,29 @@
             json.late_arrive_with_rescheduler ( @tour_status == "after time" and @community.scheduler_widget) ? (@community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for #{@tour_date}, #{@tour_time}. Please click on the Reschedule button to reschedule" : @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?") : ""
             
         else
+            phone = @community.phone.present? ? @community.phone.scan(/\d/).join('') : ''
+            phone = "#{phone[-10..-8]}-#{phone[-7..-5]}-#{phone[-4..-1]}"
             if @community.unscheduled_alert.present?
-                @community.unscheduled_alert.gsub!("<phone>", @community.phone.present? ? @community.phone : '')
+                @community.unscheduled_alert.gsub!("<phone>", phone)
             end
 
-            json.tour_status "unscheduled"
-            json.unscheduled_message @community.unscheduled_alert.nil? ? (@community.scheduler_widget ? "I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below. You can take a virtual tour any time." : "I'm sorry! We only allow scheduled tours. To schedule a tour, please contact #{@community.name.titleize}: #{@community.phone.present? ? @community.phone : ''}. You can take a virtual tour any time." ) : (@community.scheduler_widget ?  @community.unscheduled_alert + " To schedule a tour, please use the button below. You can take a virtual tour any time." : @community.unscheduled_alert + " You can take a virtual tour any time.")
+            json.tour_status "unscheduled" 
+            unless @community.scheduler_widget
+                json.unscheduled_message @community.unscheduled_alert.nil? ? ("I'm sorry! We only allow scheduled tours. To schedule a tour, please contact #{@community.name.titleize}: #{phone}. In the meantime, would you like to take a virtual tour?" ) : (@community.unscheduled_alert + " In the meantime, would you like to take a virtual tour?")
+            else
+                json.unscheduled_message @community.unscheduled_alert_with_widget.nil? ? ("I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?" ) : (@community.unscheduled_alert + " To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?")
+            end
             json.early_arrive_message ""
             json.late_arrive_message ""
-            json.late_arrive_with_reschduler ""
+            json.late_arrive_with_reschduler "" 
         end
 
         json.scheduler_widget_allowed @community.scheduler_widget
-        json.scheduler_widget_url @community.scheduler_widget ? "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_tours.last.id}?datetime=#{@scheduled_tours.last.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_tours.last.tour_time.strftime("%H:%M")}" : ""
+        if @scheduled_tours.present?
+            json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_tours.last.id}?datetime=#{@scheduled_tours.last.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_tours.last.tour_time.strftime("%H:%M")}" : ""
+        else
+            json.scheduler_widget_url @community.scheduler_widget ? "#{root_url}/scheduler_widget/test_widget?community_id=#{@community.id}" : ""
+        end 
     end
 
     json.message "Response of tour configrations"

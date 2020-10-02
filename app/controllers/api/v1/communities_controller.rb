@@ -287,7 +287,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
             @tour_status , nearest_tour_id = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
             nearest_time_tour = SchedualTour.find_by_id nearest_tour_id
-            @tour_date = nearest_time_tour.present? ? (SchedualTour.find nearest_tour_id).tour_date.strftime('%d/%m/%Y')  : "---"
+            @tour_date = nearest_time_tour.present? ? (SchedualTour.find nearest_tour_id).tour_date.strftime('%_m/%d/%Y')  : "---"
             @tour_time = nearest_time_tour.present? ?  (SchedualTour.find nearest_tour_id).tour_time.strftime('%l:%M %P') : "---"
           end
 
@@ -322,11 +322,16 @@ class Api::V1::CommunitiesController < ActionController::Base
   def tour_time_status(time_param, grace_time, scheduled_tours)
     # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
     # now it is confirmed that either the tour is before or after time
-
     current_tour = get_current_tour(time_param)
     nearest_before_time = scheduled_tours.where("tour_time > ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
     nearest_after_time  = scheduled_tours.where("tour_time < ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest after time  , remember min function will be applied at the first index of array, which is deliberately set to time
-
+   
+    if nearest_before_time.present? and nearest_after_time.nil?
+      return ["before time" , nearest_before_time[1]]
+    elsif nearest_before_time.nil? and nearest_after_time.present?
+      return ["after time" , nearest_after_time[1]]
+    end
+   
     if nearest_before_time[0] < nearest_after_time[0]
       return ["before time" , nearest_before_time[1]]
     elsif nearest_after_time[0] < nearest_before_time[0]
@@ -342,13 +347,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
     current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
   end
- 
-  def is_tour_in_visiting_hours(time_param,community)
-    current_time = time_param.to_datetime.strftime("%H:%M")
-    current_day = time_param.to_datetime.strftime('%A')
-    community.opening_hours.where('day = ? and opening_time <= ? and closing_time >= ?', current_day, current_time, current_time).present?
-  end
-
+  
   def include_application_data
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])
