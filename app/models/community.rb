@@ -96,6 +96,7 @@ class Community < ApplicationRecord
   has_many :schedual_tours, dependent: :destroy
   has_one :tour, dependent: :destroy
   has_one :edge_state, dependent: :destroy
+  has_one :dwelo, dependent: :destroy
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design

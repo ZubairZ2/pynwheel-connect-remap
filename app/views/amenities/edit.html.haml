@@ -52,6 +52,18 @@
                   %select.form-control#remote_lock{name: "remote_lock"}
                   %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
                     %a#a-lock.btn-text-color{href: "#"} Update selected lock
+            - if Dwelo.find_by(community_id: @community.id).present?
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Dwelo Lock
+                  %i.unit_manualoverride.fa.fa-question-circle
+                    %span#unit_manualoverride_text
+                      Name of lock must be same as amenity name
+                  %span Assign the lock to this amenity
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  %select.form-control#dwelo_remote{name: "remote_lock"}
+                  %button#dwelo_update_btn.btn.btn-primary.update-lock.hidden{type: "button"}
+                    %a#dwelo_a_lock.btn-text-color{href: "#"} Update selected lock
 
             - bool_check = @community.show_map ? f.object.amenityable.present? && f.object.amenityable_type == "Floorplate" : true
             .form-group
@@ -167,6 +179,45 @@
 
   var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
   var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
+  var IsDweloSelectedLockMatch = function (){
+    if($('#dwelo_remote :selected').text() != "Select your option"){
+      var index = $('#dwelo_remote :selected').text().lastIndexOf(" ");
+      var lock_name = $('#dwelo_remote :selected').text();
+
+      if(lock_name != $('#amenity_name').val()){
+        $('#dwelo_remote').addClass('lock_mismatch')
+        $("#dwelo_update_btn").removeClass('hidden')
+
+        var id = $('#dwelo_remote :selected').val()
+        var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + amenity_id + '&stop_name=' + amenity_name + '&stop_type=amenity'
+
+
+        $("#dwelo_a_lock").attr("href",href);
+      }
+      else{
+        $('#dwelo_remote').removeClass('lock_mismatch')
+        $("#dwelo_update_btn").addClass('hidden')
+        $("#dwelo_a_lock").attr("href","#");
+        var id = $('#dwelo_remote :selected').val()
+        $.ajax({
+            type: 'Put',
+            url: "/communities/" + community_id + "/amenities/" + amenity_id,
+            data: {
+                lock_id: id,
+                assigning_lock: "true"
+            },
+                  cache: false,
+            success: function () {
+            }
+  })
+      }
+    }
+    else{
+        $('#dwelo_remote').removeClass('lock_mismatch')
+        $("#dwelo_update_btn").addClass('hidden')
+        $("#dwelo_a_lock").attr("href","#");
+    }
+  }
 
   var IsSelectedLockMatch = function(){
     if($('#remote_lock :selected').text() != "Select your option"){
@@ -214,8 +265,41 @@
   $(document).ready(function(){
     var params = {"amenity_name": amenity_name}
     var assigned_lock_present = false
+    if (#{ @community.dwelo.present? }){
      
     $.ajax({
+      type: 'POST',
+      url: '/api/v1/save_data',
+      dataType: 'json',
+      data:{ params,
+             community_id },
+      cache: false,
+      success: function(data){
+        locks = data['locks']
+        for (var item in locks) {
+            if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type && locks[item].dwelo_id == #{@community.dwelo.id}){
+              $('#dwelo_remote').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name}</option>`)
+              assigned_lock_present = true
+            }
+            else if ((locks[item].dwelo_id == #{@community.dwelo.id}) && (locks[item].stop_id == null) )
+            {
+              $('#dwelo_remote').append(`<option value="${locks[item].device_id}">${locks[item].name}</option>`)
+            }
+        }
+        if(assigned_lock_present == false){
+            $('#dwelo_remote').prepend(`<option value="" , selected="selected">Select your option</option>`)
+            // clear_assigned_lock()
+        }
+        else
+          IsDweloSelectedLockMatch()
+      },
+      fail: function(error){
+        console.log(error)
+      }
+    });
+  }
+  else{
+  $.ajax({
       type: 'POST',
       url: '/communities/'+ community_id + '/amenities/' + amenity_id +'/load_remotelock_data',
       dataType: 'json',
@@ -250,6 +334,13 @@
 
     $("#amenity_name").keyup(function() {
       IsSelectedLockMatch()
+    });
+    }
+   $("#dwelo_remote").change(function () {
+    IsDweloSelectedLockMatch()
+    })
+    $("#amenity_name").keyup(function() {
+      IsDweloSelectedLockMatch()
     });
     
   });

@@ -236,7 +236,26 @@ class RemoteLockService < BaseService
             return response
         end
     end
-    
+
+    def get_dwelo_events(access_token,guest_id)
+        @dwelo_user = Dwelo.first
+        if @dwelo_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token
+            url = "https://api-sandbox.dwelos.com/v4/integrations/pynwheel/events/?access_person_id=" + guest_id
+            response = HTTParty.get(url,
+                                    :headers => { 'Authorization' => auth_header} )
+
+            puts "---"*50
+            puts response
+            puts "---"*50
+
+            return response
+        end
+    end
+
+
+
     def create_igloo_guests(access_token,tour_user,igloo_lock_id,current_time)
         if @edge_state_user.present?
             token_type = "Bearer"

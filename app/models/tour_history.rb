@@ -18,6 +18,7 @@ class TourHistory < ApplicationRecord
 
   belongs_to :tour_user
   has_many :lock_histories, dependent: :destroy
+	include DweloDevicesHelper
 
   after_create :send_arrival_notifications
   after_update :send_update_notifications
@@ -114,7 +115,7 @@ class TourHistory < ApplicationRecord
 		if as_guests_data.present?
 			Thread.new do
 				access_token = RemoteLockService.new(community).client_credentials
-
+				if access_token.present?
 				page = 1
 				while page <= 5 do
 					responce = RemoteLockService.new(community).get_all_events(access_token,page)
@@ -141,6 +142,21 @@ class TourHistory < ApplicationRecord
 					
 					end
 					page = page + 1
+				end
+				else
+					access_token = dwelo_client_credentials
+					page = 1
+					responce = RemoteLockService.new(community).get_dwelo_events(access_token,as_guests_data.guest_id)
+					responce["data"].each do |event|
+						if dwelo_active_user_exists(event,as_guests_data.guest_id)
+
+							occurred_at = event["timestamp"].to_datetime.strftime('%a, %d %b %Y %H:%M:%S').to_datetime
+							rml = RemoteLock.find_by(device_id: event["lock_id"])
+							self.lock_histories.create(event: event["event_type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id) if rml.present?
+
+						end
+
+					end
 				end
 			end
 		end
@@ -239,7 +255,10 @@ class TourHistory < ApplicationRecord
 
   def sync_events_exists(event,guest_id)
     return (event["type"] == "access_person_synced_event" and event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)
-  end
+	end
+	def dwelo_active_user_exists(event,guest_id)
+		return (event["event_type"] == "app_unlock"  and  event["access_person_id"] == guest_id)
+	end
 
 	def avail_stops_name_of_community
 		# stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
