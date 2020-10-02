@@ -2,7 +2,7 @@ class RealPageSvcService < BaseService
   def perform
     @unit_record = []
     import_realpage_svc_floorplans
-    import_initials_realpage_units
+    # import_initials_realpage_units
     import_realpage_svc_units
     import_realpage_svc_price
   end
@@ -369,6 +369,7 @@ class RealPageSvcService < BaseService
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         date_needed = Date.today + 540
+        limit_result = credentials.limit_result ? "True" : "False"
         community_id = credentials.community_id
         response = HTTParty.post(
             url,
@@ -392,7 +393,7 @@ class RealPageSvcService < BaseService
                               <tem:listCriteria>
                                 <tem:ListCriterion>
                                   <tem:name>Limitresults</tem:name>
-                                  <tem:singlevalue>False</tem:singlevalue>
+                                  <tem:singlevalue>'+limit_result+'</tem:singlevalue>
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>
