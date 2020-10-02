@@ -196,7 +196,8 @@ json.tours @tours do |tour|
           end
         end
         begin
-          if stops_arr.map{|x| x.stop_type if (x.is_a? TourStop and x.building == building and x.stop_type != "elevator")}.uniq.compact == []
+          
+          if stops_arr.map{|x| x.stop_type if (x.is_a? TourStop and x.building == building and x.stop_type != "elevator" and x.stop_type != "building_starting_point")}.uniq.compact == []
             stops_arr = stops_arr[0..stops_arr.size-2]
           end
           
