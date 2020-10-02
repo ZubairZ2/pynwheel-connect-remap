@@ -462,7 +462,8 @@ class ToursController < ApplicationController
     bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i, name: "Building " + params[:building] + " Entry / Exit")
     tour_stop = TourStop.create tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name, latitude: 40, longitude: 10 unless bsp.errors.present?
     # render json: {path: tour_stop}, status: 200
-    flash[:error] = bsp.errors.full_messages.join(',') unless bsp.errors.present?
+    
+    flash[:error] = bsp.errors.full_messages.join(',') if bsp.errors.present?
     redirect_to community_tours_path(floorNo: params[:floor].to_i,building: params[:building])
   end
   def update_building_starting_point

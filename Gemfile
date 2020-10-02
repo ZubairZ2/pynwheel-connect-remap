@@ -18,6 +18,7 @@ gem 'bootstrap3-datetimepicker-rails', '~> 4.17.47'
 # gem 'piet'
 # gem 'piet-binary'
 gem 'twilio-ruby'
+gem 'scout_apm'
 gem 'phony_rails'
 gem 'write_xlsx'
 gem "mini_magick"
