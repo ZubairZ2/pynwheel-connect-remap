@@ -21,6 +21,9 @@
           SUMMARY
           %span
             #{@tour_user.name}
+        - if (current_user.is_super_admin?)
+          %button.btn-danger.pii_delete.mb-20{:onclick => "delete_all_pii(#{@tour_user.id})",:style => " margin-top: 0px;  margin-bottom: 0px; float: right;"}
+            Remove all PII
         - unless @chatroom_id == 0 
           = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right", data: { toggle: "modal", target: "#ChatSupport_a" })
         -#%span{:style => "float: right;"}
@@ -54,8 +57,12 @@
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
                       %br
-                      %a.mt-5
+                      - if @tour_user.email == "Removed at Consumer Request"
+                        .mt-5
                         #{@tour_user.email}
+                      - else
+                        %a.mt-5
+                          #{@tour_user.email}
                       %br
                       .mt-5
                         #{@tour_user.phone_number}
@@ -66,35 +73,37 @@
                     %h4{:style => "margin-left: 45px"}
                       Alert
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
-                    - @alerts.order("id DESC").each_with_index do |alert,index|
-                      - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
-                      .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
-                        .alert-div1{:style => "margin-top: 10px"}
-                          = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                          - if alert.arrived.present?
-                            - if alert.my_time_zone.present?
-                              - begin 
-                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
-                              - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone 
+                    - if @alerts.last.history == false
+                      - @alerts.order("id DESC").each_with_index do |alert,index|
+                        - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
+                        .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
+                          .alert-div1{:style => "margin-top: 10px"}
+                            = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - if alert.arrived.present?
+                              - if alert.my_time_zone.present?
+                                - begin
+                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                                - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                              - else
                                 #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
-                            - else
-                              #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
-                        %br
-                        .alert-div2{:style => "margin-top: -10px"}
-                          = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                          #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
-                        %br
-                        .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
-                          = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                          - if end_time.present?
-                            - if alert.my_time_zone.present?
-                              - begin
-                                #{end_time.to_date} #{end_time.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
-                              - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                          %br
+                          .alert-div2{:style => "margin-top: -10px"}
+                            = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+                          %br
+                          .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
+                            = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - if end_time.present?
+                              - if alert.my_time_zone.present?
+                                - begin
+                                  #{end_time.to_date} #{end_time.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                                - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                                  #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                              - else
                                 #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
-                            - else
-                              #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
-                  //Tour Tracking
+                    - else
+                      Removed at Consumer Request
                   %h4{:style => "margin-left: 30px"}
                     Tour Tracking
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "margin-top: 10px;margin-left: 15px;margin-right: 15px;"}
@@ -508,3 +517,18 @@
   $("#tour_histories_dates").change(function () {
         plot_data()
   })
+  function delete_all_pii(tour_user_id){
+    if (confirm('Are you sure you want to delete tour user data?')) {
+    var community_id = #{ raw @community.id};
+    var delete_user_attribute = "delete all PII"
+     $.ajax({
+          type: 'PUT',
+          cache: false,
+          data: { delete_user_attribute
+           },
+          url: '/communities/' + community_id + '/tour_users/'+ tour_user_id,
+          success: function(data){
+          }
+      });
+      }
+  }

@@ -107,14 +107,44 @@ class TourUsersController < ApplicationController
 
   def update
     tour_user = TourUser.find(params[:id])
+    @community = Community.find params[:community_id]
     if params[:user_attribute].present?
-      update_tour_user_attributes(params[:user_attribute],tour_user)
-      redirect_to community_tour_users_path(@community), :notice => "User #{user_attribute} deleted successfully"
+      user_data = params[:user_attribute]
+      update_tour_user_attributes(params[:user_attribute], tour_user)
+      flash[:notice] = "User #{user_data} updated successfully"
+      render :js => "window.location = '#{community_tour_users_path(@community)}'"
+    else
+      if params[:delete_user_attribute].present?
+        delete_tour_user_attributes(params[:delete_user_attribute], tour_user,@community)
+        flash[:notice] = "User PII deleted successfully"
+        render :js => "window.location = '#{community_tour_users_path(@community)}'"
+      end
     end
   end
 
+  def delete_tour_user_attributes(delete_all_attributes, tour_user, community)
+    if tour_user.image.present?
+      tour_user.image.delete!
+    end
+    tour_user.email = "Removed at Consumer Request"
+    tour_user.first_name = "Removed at Consumer Request"
+    tour_user.last_name = ""
+    tour_user.phone_number = "Removed at Consumer Request"
+    tour_user.image = "Removed at Consumer Request"
+    tour_user.save!(validate: false)
+    tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: community.tour.id) rescue nil
+    if tour_histories.present?
+      tour_histories.each do |tour_history|
+        tour_history.history = true
+        tour_history.save!
+      end
+    end
+  end
   def update_tour_user_attributes(user_attribute, tour_user)
     @community = Community.find params[:community_id]
+    if user_attribute == "arrived"
+      tour_user.tour_histories.last.update!(arrived: "48:00:00")
+    end
     if user_attribute == "email"
       tour_user.email = "Removed at Consumer Request"
       tour_user.save!(validate: false)
@@ -134,9 +164,13 @@ class TourUsersController < ApplicationController
       tour_user.image = "Removed at Consumer Request"
       tour_user.save!(validate: false)
     end
-
-
-    # redirect_to community_tour_users_path(@community), :notice => "User #{user_attribute} deleted successfully"
+    if user_attribute == "history"
+      tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: @community.tour.id) rescue nil
+      tour_histories.each do |tour_history|
+        tour_history.history = true
+        tour_history.save!
+      end
+    end
   end
 
   def destroy

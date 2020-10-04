@@ -30,6 +30,7 @@ class TourHistory < ApplicationRecord
   end
 
   def send_update_notifications
+		if self.history != true
   	if time_difference >= 60 && self.lengthy_stay_email_sent == false
   		@mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "Visitor is on site for more than"] #get_alert_message('lengthy_stay')
   		@mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
@@ -85,7 +86,8 @@ class TourHistory < ApplicationRecord
 		send_email_sms_or_both_to_touruser @thank_you_content
 	    # community.deleted_ids = []
 	    community.save
-  	end
+		end
+		end
   end
   
 	def touruser_remotelock_data
@@ -128,6 +130,7 @@ class TourHistory < ApplicationRecord
 	end
   
   def send_email_sms_or_both mail_content
+		if self.history != true
   	if community.alert_contact == "email"
 		if mail_content[0] == "#{community.name} has been visited"
 			send_email_without_humanize mail_content[0], mail_content[1]
@@ -143,7 +146,8 @@ class TourHistory < ApplicationRecord
 			send_email mail_content[0], mail_content[1]
 		end
   		send_sms mail_content[1]
-  	end
+		end
+		end
   end
 
   def send_email_sms_or_both_to_touruser thank_you_msg
