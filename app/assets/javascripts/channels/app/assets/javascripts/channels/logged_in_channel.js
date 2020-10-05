@@ -8,3 +8,4 @@ $(function() {
         App.cable.subscriptions.create({channel: "LoggedInChannel" , community_id: community_id});
     }
 });
+ 
