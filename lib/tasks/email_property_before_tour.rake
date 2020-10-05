@@ -1,4 +1,5 @@
 namespace :email_property_before_tour do
+    default_url_options[:host] = 'https://pynwheelconnect.com' 
     desc 'email to the property all today tour'
     task :send_email => :environment do
         Community.where(self_tour: true).each do |community|
