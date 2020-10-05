@@ -26,6 +26,7 @@ class FloorplanAmenitiesController < ApplicationController
 
   def create
     amenity = @floorplan.amenities.create(image: params[:src], name: params[:name])
+    amenity.update!(floorplan_amenity_id: amenity.id)
     @amenities = @floorplan.amenities.order(id: :desc)
     floorplan_units = Unit.all.where(floorplan_id: @floorplan.provider_floorplan_id) rescue nil
     if floorplan_units.present?
