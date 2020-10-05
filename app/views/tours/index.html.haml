@@ -469,7 +469,7 @@
                       .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                       -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                     - if current_day.day == "Monday"
-                      .pt-5.btn.btn-primary{:onclick => "apply_time_to_all('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;"}
+                      .pt-5.btn.btn-primary.apply-monday-btn{:onclick => "apply_time_to_all('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;", :class => ""}
                         .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
                       - monday_count +=1
 
@@ -498,6 +498,8 @@
                   %span.fa.fa-v.fa-plus.font-17-v
                     Add
                 %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "Save", class: "hide-save-btn"}
+                .pt-5.btn.btn-success#save-sorted-time{onclick: "ok();", class: "hide-sort-btn", style: "padding-top: 7px; padding-bottom:7px; padding-left:9px; padding-right: 8px;"}
+                  Save Time Order
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
         %h3.box-title
@@ -931,7 +933,9 @@
 :javascript
   function apply_time_to_all(monday_count, closing_time)
   {
+    $(".tour_time_sortable").sortable( "disable" );
     $("#schedule-btn-submit").removeClass("hide-save-btn");
+    $("#schedule-btn-submit").addClass("blink");
     monday_morning  = $(".monday_mor_" + monday_count).val();
     monday_evening = $(".monday_eve_" + monday_count).val();
     tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time")).val(monday_morning);
@@ -1093,6 +1097,17 @@
   });
   $('.tour_time_sortable').railsSortable();
   $('.tour_sortable').railsSortable();
+  $(".tour_time_sortable").on( "sortchange", function( event, ui ) {
+    $(".apply-monday-btn").addClass("hide-apply-btn");
+    $("#add-btn").addClass("hide-add-btn");
+    $(".day-list").attr('disabled','disabled');
+    $("#save-sorted-time").removeClass("hide-sort-btn");
+    $("#save-sorted-time").addClass("blink");
+
+  });
+  function ok (){
+   location.reload();
+  }
 
   community_id = #{params[:community_id]}
 
@@ -1739,4 +1754,7 @@
   });
   function myFunction(){
     $("#schedule-btn-submit").removeClass("hide-save-btn");
+    $(".tour_time_sortable").sortable( "disable" );
+    $("#schedule-btn-submit").addClass("blink");
+
   }
