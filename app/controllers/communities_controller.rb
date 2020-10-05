@@ -8,6 +8,13 @@ class CommunitiesController < ApplicationController
 
   def index
     #@communities = Community.page(params[:page]).per(10)
+    if params[:enable_communities].present?
+      user_enable_communities_ids = CommunityUser.where(user_id: params[:user], chat_enable: true).map { |x| x.community_id } rescue nil
+      if user_enable_communities_ids.present?
+        user_enable_communities = Community.where(id: user_enable_communities_ids).pluck(:id, :name).to_json rescue nil
+        render :json => {data: user_enable_communities}, :status => 200
+      end
+    end
     if current_user.is_super_admin?
       @communities = current_company.communities
     else
@@ -449,10 +456,16 @@ class CommunitiesController < ApplicationController
   end
 
   def invitation_communities
-    company =  params['company']
-    comp = Company.find_by(name: company )
-    result = comp.communities.pluck(:name,:id).to_json
-    render :json => { data: result }, :status => 200
+    if params[:user_communities].present?
+      user = User.find params[:user]
+      result = user.communities.pluck(:name, :id).to_json
+      render :json => {data: result}, :status => 200
+    else
+      company =  params['company']
+      comp = Company.find_by(name: company )
+      result = comp.communities.pluck(:name,:id).to_json
+      render :json => { data: result }, :status => 200
+    end
 
   end
   def selected_communities
@@ -551,7 +564,7 @@ class CommunitiesController < ApplicationController
       @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
       @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
       @tour.credit_card_required = params[:credit_card_required].present? ? true : false
-      @tour.only_scheduled_tour = params[:only_scheduled_tour].present? ? true : false
+      @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
       @tour.grace_period = params[:grace_time] if params[:grace_time].present?
       @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
       @tour.save
@@ -630,8 +643,6 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
-    cookies[:community_id] = params[:id]
-    @community = Community.find params[:id]
     @community.update_attributes(is_chat_login: true)
   end
 

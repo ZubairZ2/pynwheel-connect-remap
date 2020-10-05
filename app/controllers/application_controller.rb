@@ -45,10 +45,6 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_out_path_for(resource_or_scope)
-    if cookies[:community_id].present?
-      community = Community.find cookies[:community_id]
-      community.update_attributes(is_chat_login: false)
-    end
     new_user_session_path
   end
 
@@ -88,7 +84,7 @@ class ApplicationController < ActionController::Base
           all_communities = current_user.communities.map{|community| community.id}
           if all_communities.include?(@community.id) || current_user.role == "Super admin"
               @chatrooms = Chatroom.where(tour_id: @community.tour.id).includes(:chats, :tour, :tour_user)
-              @listening_channels = [@community.name.tr(" ", "_") + "_with_id_" + @community.id.to_s]
+              @listening_channels = [(@community.name.gsub(/[^0-9a-z ]/i, '') + "_with_id_" + @community.id.to_s).gsub(' ', '_')]
 
               @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }
               @chatroom_list = @chatrooms.map{|c| c.id}

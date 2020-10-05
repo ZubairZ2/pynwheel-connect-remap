@@ -276,17 +276,17 @@
               -#        %label.label-primary{:for => "community_tour_setup_visible"}
               -#        %span.pl-15 Yes
               
-              .form-group.verification_type_field.hidden
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  ID verification provider
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = select_tag :verification_type , options_for_select([ ["Authenteq","authenteq"], ["Check Point Id","check_point_id"],["Manual (Email)","email"] ], @community.tour.verification_type),:class => "form-control email_to"
-              .form-group.email_field.hide_email
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Email to be sent to
+              /.form-group.verification_type_field.hidden
+              /  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /    ID verification provider
+              /  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /    = select_tag :verification_type , options_for_select([ ["Authenteq","authenteq"], ["Check Point Id","check_point_id"],["Manual (Email)","email"] ], @community.tour.verification_type),:class => "form-control email_to"
+              /.form-group.email_field.hide_email
+              /  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /    Email to be sent to
 
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = text_field_tag :email,  @community.email, {:class=>"form-control", :autocomplete=>"off",:readonly=>true}
+              /  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /    = text_field_tag :email,  @community.email, {:class=>"form-control", :autocomplete=>"off",:readonly=>true}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Inactivate

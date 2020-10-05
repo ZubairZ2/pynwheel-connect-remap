@@ -43,7 +43,7 @@ class Api::V1::ToursController < ActionController::Base
           email_content = "Please verify the user #{vs.name} #{community_name} on the following link <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-          DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'kashif.aslam@intagleo.com')
+          DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'nawaal.asif@intagleo.com')
         end
         puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{vs.valid?}"
         vs.save!(validate: false)
