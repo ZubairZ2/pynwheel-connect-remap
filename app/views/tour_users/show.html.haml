@@ -22,10 +22,10 @@
           %span
             #{@tour_user.name}
         - if (current_user.is_super_admin?)
-          %button.btn-danger.pii_delete.mb-20{:onclick => "delete_all_pii(#{@tour_user.id})",:style => " margin-top: 0px;  margin-bottom: 0px; float: right;"}
+          %button.btn-danger.pii_delete.mb-20{:onclick => "delete_all_pii(#{@tour_user.id})",:style => "padding: 4px; margin-left: 8px; margin-top: 0px;  margin-bottom: 0px; float: right;"}
             Remove all PII
         - unless @chatroom_id == 0 
-          = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right", data: { toggle: "modal", target: "#ChatSupport_a" })
+          = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right; margin-right: 8px;", data: { toggle: "modal", target: "#ChatSupport_a" })
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
         -#%span{:style => "float: right;"}
@@ -52,7 +52,8 @@
                 .col-lg-6
                   .col-lg-12.name_div{:style => "background: #efefef; margin: 30px; left: 17px;  width: 92%; display: inline-flex; align-items: center;"}
                     .col-lg-3.col-md-3.col-sm-2.col-xs-6
-                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                      - if @tour_user.image.present? && @tour_user.image == "default-user128x128.jpg"
+                        Removed at Consumer Request
                     .col-lg-3.col-md-3.col-sm-3.col-xs-12.email_div{:style => " "}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
@@ -67,7 +68,10 @@
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
-                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+                      - if @tour_user.id_card.present? && @tour_user.id_card == "default id card.jpg"
+                        Removed at Consumer Request
+                      - else
+                        = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
 
                   .row
                     %h4{:style => "margin-left: 45px"}
@@ -90,7 +94,7 @@
                           %br
                           .alert-div2{:style => "margin-top: -10px"}
                             = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
                           %br
                           .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
                             = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
@@ -112,16 +116,28 @@
                         = select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
                       .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-right: 0;"}
                         - begin
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - if @alerts.last.history == false
+                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - elsif @alerts.last.history == true
+                            Removed at Consumer Request
                         - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - if @alerts.last.history == false
+                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - elsif @alerts.last.history == true
+                            Removed at Consumer Request
 
                     - else
                       .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
                         - begin
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - if @alerts.last.history == false
+                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - elsif @alerts.last.history == true
+                            Removed at Consumer Request
                         - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - if @alerts.last.history == false
+                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - elsif @alerts.last.history == true
+                            Removed at Consumer Request
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
                     -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
