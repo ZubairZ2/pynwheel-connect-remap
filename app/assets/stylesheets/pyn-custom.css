@@ -3429,6 +3429,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     transform: rotate(90deg);
 }
+.hide-save-btn {
+    display: none;
+}
 .hide_email {
     display: none;
 }

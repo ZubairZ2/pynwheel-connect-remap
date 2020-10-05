@@ -411,7 +411,7 @@
                 - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
                   .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
                     - days_count[current_day.day] = days_count[current_day.day] +1
-                    %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
+                    %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}", onchange: "myFunction()"}
                       - if current_day.day == "Monday"
                         %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
                         -# - days_count["mon"] = days_count["mon"] +1
@@ -451,21 +451,21 @@
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v From
-                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor_" + "#{monday_count}"}
+                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor_" + "#{monday_count}",onkeyup: "myFunction()"}
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v To
-                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve_" + "#{monday_count}"}
+                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve_" + "#{monday_count}", onkeyup: "myFunction()"}
                       .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                     - if current_day.day != "Monday"
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v From
-                        %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
+                        %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunction()"}
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v To
-                        %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
+                        %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunction()"}
                       .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                       -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                     - if current_day.day == "Monday"
@@ -496,8 +496,8 @@
               .asd{style: "padding-bottom: 20px;"}
                 %button.btn.btn-primary#add-btn{style: "margin-left: 10;"}
                   %span.fa.fa-v.fa-plus.font-17-v
-                  Add
-                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "Save"}
+                    Add
+                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "Save", class: "hide-save-btn"}
     #logo_header.box.box-info.add-plan.mt-50.hidden
       .box-header
         %h3.box-title
@@ -931,6 +931,7 @@
 :javascript
   function apply_time_to_all(monday_count, closing_time)
   {
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
     monday_morning  = $(".monday_mor_" + monday_count).val();
     monday_evening = $(".monday_eve_" + monday_count).val();
     tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time")).val(monday_morning);
@@ -1675,6 +1676,7 @@
   $('#add-btn').click(function(event){
     current_day = current_day + 1
     append_new_day()
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
     event.preventDefault();
   });
 
@@ -1735,3 +1737,6 @@
   });
   
   });
+  function myFunction(){
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
+  }
