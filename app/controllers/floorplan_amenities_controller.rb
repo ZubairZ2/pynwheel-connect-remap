@@ -49,7 +49,7 @@ class FloorplanAmenitiesController < ApplicationController
 
   def check_community
     unless current_user.is_super_admin?
-      if params[:community_id].present?
+      if params[:community_id].present? 
         all_ids = []
         current_user.communities.each do |c|
           # all_ids.insert(c.id)
