@@ -63,6 +63,8 @@
                             - if user.image.present?
                               - if user.image.url.include? "default-user128x128.jpg"
                                 Removed at Consumer Request
+                              - else
+                                = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
                             - else
                               = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
                           .col-lg-1{style: "float: right;"}
