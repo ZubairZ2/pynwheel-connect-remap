@@ -22,7 +22,7 @@
           %span
             #{@tour_user.name}
         - if (current_user.is_super_admin?)
-          %button.btn-danger.pii_delete.mb-20{:onclick => "delete_all_pii(#{@tour_user.id})",:style => "padding: 4px; margin-left: 8px; margin-top: 0px;  margin-bottom: 0px; float: right;", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
+          %button.btn-danger.pii_delete.mb-20{:style => "padding: 4px; margin-left: 8px; margin-top: 0px;  margin-bottom: 0px; float: right;", "data-name"=>"visitor","data-href" => "/communities/#{@community.id}/tour_users/#{@tour_user.id}?delete_all=true","data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
             Remove all PII
         - unless @chatroom_id == 0 
           = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right; margin-right: 8px;", data: { toggle: "modal", target: "#ChatSupport_a" })
@@ -541,17 +541,4 @@
   $("#tour_histories_dates").change(function () {
         plot_data()
   })
-  function delete_all_pii(tour_user_id){
-    var community_id = #{ raw @community.id};
-    var delete_user_attribute = "delete all PII"
-     $.ajax({
-          type: 'PUT',
-          cache: false,
-          data: { delete_user_attribute
-           },
-          url: '/communities/' + community_id + '/tour_users/'+ tour_user_id,
-          success: function(data){
-          }
-      });
-    
-  }
+
