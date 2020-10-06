@@ -3435,3 +3435,27 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     position: absolute;
 
 }
+.name_cross {
+    color: red;
+    position: relative;
+    top: -13px;
+    right: -12px;
+}
+.history_cross {
+    color: red;
+    position: relative;
+    top: -18px;
+    right: -12px;
+}
+.image_cross {
+    color: red;
+    position: relative;
+    top: -10px;
+    right: -12px;
+}
+.set_image_width {
+    max-width: 100px !important;
+}
+.set_image_width1 {
+    max-width: 10px !important;
+}

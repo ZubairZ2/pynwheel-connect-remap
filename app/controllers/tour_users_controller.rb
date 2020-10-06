@@ -110,7 +110,7 @@ class TourUsersController < ApplicationController
     @tour_user = TourUser.find params[:id]
     @tour = @community.tour
     if params[:delete_all].present?
-      delete_tour_user_attributes(@tour_user, @community)
+      delete_tour_user_all_attributes(@tour_user, @community)
       redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
     elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone].present? or params[:history].present?
       update_tour_user_attributes(@tour_user, @community)
@@ -136,14 +136,15 @@ class TourUsersController < ApplicationController
     end
   end
 
-  def delete_tour_user_attributes(tour_user, community)
+  def delete_tour_user_all_attributes(tour_user, community)
     tour_user.email = "Removed at Consumer Request"
     tour_user.first_name = "Removed at Consumer Request"
     tour_user.last_name = ""
+    tour_user.name = ""
     tour_user.phone_number = "Removed at Consumer Request"
     if tour_user.image.present?
-      tour_user.image = File.open("app/assets/images/default-user128x128.jpg")
       tour_user.remove_image!
+      tour_user.image = File.open("app/assets/images/default-user128x128.jpg")
     end
     if tour_user.id_card.present?
     tour_user.remove_id_card!
@@ -170,7 +171,7 @@ class TourUsersController < ApplicationController
       tour_user.last_name = ""
       tour_user.save!(validate: false)
     end
-    if params[:phone] == "true"
+    if params[:phone_number] == "true"
       tour_user.phone_number = "Removed at Consumer Request"
       tour_user.save!(validate: false)
     end
