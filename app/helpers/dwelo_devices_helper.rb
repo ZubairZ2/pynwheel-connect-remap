@@ -1,13 +1,13 @@
 module DweloDevicesHelper
-  def dwelo_client_credentials
-    @dwelo_user = Dwelo.find_by(community_id: params[:community_id])
+  def dwelo_client_credentials(community_dwelo_account)
+    @dwelo_user = Dwelo.find_by(community_id: community_dwelo_account.community_id)
     if @dwelo_user.present?
       auth_url = "https://api-sandbox.dwelo.com/v3/oauth/access_token"
       get_token_response = HTTParty.post(auth_url,
                                          body: {
-                                             client_id: @dwelo_user.client_id,
-                                             client_secret: @dwelo_user.client_secret,
-                                             grant_type: "client_credentials"
+                                             client_id: community_dwelo_account.client_id,
+                                             client_secret: community_dwelo_account.client_secret,
+                                             grant_type: community_dwelo_account.grant_type
                                          },
                                          headers: {'Content-Type' => 'application/x-www-form-urlencoded'})
       @token = get_token_response["access_token"]

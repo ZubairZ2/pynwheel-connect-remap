@@ -109,7 +109,7 @@ class Community < ApplicationRecord
   after_create :create_default_gallery
   after_create :create_sms_email_content
   validate :validate_page_position
-
+  attr_accessor :default_community_id
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true
 

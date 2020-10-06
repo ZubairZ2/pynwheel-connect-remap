@@ -139,18 +139,18 @@ class Api::V1::CommunitiesController < ActionController::Base
     scheduled_tour = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
     params[:current_time].present? ? current_time = params[:current_time] : current_time = DateTime.now
     current_time = current_time.to_datetime
-    dwelo_account = Dwelo.find_by(community_id: params[:id])
+    dwelo_account = Dwelo.find_by(community_id: params[:id]) rescue nil
     edge_state = EdgeState.find_by(community_id: params[:id])
 
     if dwelo_account.present? and scheduled_tour.present?
       Thread.new do
         tour_user = TourUser.find params[:tour_user_id]
-        access_token = dwelo_client_credentials
+        access_token = dwelo_client_credentials(dwelo_account)
         prev_data = tour_user.as_guests.where(community_id: params[:id])
         # ----------- creating a guest for remote lock (type = locks) ----------------- #
         unless prev_data.present?
           response = create_dwelo_access_guest(access_token, tour_user, current_time)
-          @dwelo_tour_user = tour_user.as_guests.create!(community_id: params[:id], edgestate_pin: response["pin"], guest_id: response["id"])
+          @dwelo_tour_user = tour_user.as_guests.create!(community_id: params[:id],  guest_id: response["id"], dwelo_guest: true)
         else
           delete_dwelo_access_guest(access_token, prev_data.last.guest_id)
           response = create_dwelo_access_guest(access_token, tour_user, current_time)
@@ -175,7 +175,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           end
         end
 
-        access_token = dwelo_client_credentials
+        access_token = dwelo_client_credentials(dwelo_account)
         locks = RemoteLock.where(name: unit_or_amenity_names, dwelo_id: Dwelo.first.id).pluck(:device_id, :remote_lock_type)
         if locks.present?
           tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
@@ -350,6 +350,8 @@ class Api::V1::CommunitiesController < ActionController::Base
             end
           end
         end
+      else
+        @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id
       end
     else
         render :json=> {:success=>false, :message => "Invalid Token"}

@@ -9,8 +9,9 @@ class EdgestateAccountsController < ApplicationController
         unless @is_already_exists
             @edge_state = EdgeState.new(edge_state_params)
             if @edge_state.save
+                Community.find(params[:community_id]).update!(locks_provider: params[:edgestate][:default_community_id])
                 flash[:notice] = "EdgeState credentails saved successfully"
-                redirect_to community_settings_page_path(current_community)
+                redirect_to new_community_dwelo_path
             else
                 flash[:error] = @edge_state.errors.full_messages.join(',')
                 render :new

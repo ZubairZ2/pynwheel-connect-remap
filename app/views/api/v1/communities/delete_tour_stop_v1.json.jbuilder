@@ -3,6 +3,11 @@ description_limit = 90
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
+  if @dwelo_guest_id.present?
+    json.dwelo_guest_id @dwelo_guest_id
+  else
+    json.dwelo_guest_id ""
+  end
 
   json.id tour.id
   require 'securerandom'
@@ -479,6 +484,12 @@ json.tours @tours do |tour|
         images << img
       end
       current_floor = unit.floor
+      unit_dwelo_lock = unit.remote_locks.where.not(dwelo_id: nil).first rescue nil
+      if unit_dwelo_lock.present?
+        json.unit_dwelo_lock_id unit_dwelo_lock.device_id
+      else
+        json.unit_dwelo_lock_id ""
+      end
       json.image_list images
       json.name (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?

@@ -44,6 +44,13 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
+    if params[:default_community_id].present?
+      dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
+      unless dwelo_account.present?
+        @dwelo = Dwelo.create!(client_id: "GLAeaxdUJb64yxWwQbzGGGEmnPAW4DaP", client_secret: "wr5RZQfGBqqWyVWLHU2gGWW2g9Qmz2BWSH94yNhfuuZ6GMet" ,community_id: @community.id, default_community_id: params[:default_community_id])
+        load_data(@dwelo.default_community_id)
+      end
+    end
   end
   def update
     puts params
@@ -623,7 +630,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:name,:default_community_id, :address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,

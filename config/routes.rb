@@ -14,7 +14,7 @@ Rails.application.routes.draw do
     # member do
     # end
   end
-
+  post :map_dwelo_locks, to: 'dwelos#map_dwelo_locks'
   # selfie matching
   get '/id_selfie_matching/:tour_user_id', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
@@ -87,6 +87,7 @@ Rails.application.routes.draw do
     end
 
     resources :edgestate_accounts
+    resources :dwelos
 
     post :save_gallery_settings
     post :save_tour_settings
@@ -375,6 +376,9 @@ Rails.application.routes.draw do
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
+      put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
+      post :save_data, to: 'dwelo_devices#load_data'
+      post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
       resources :communities, only: :index do
         member do
           get :data

@@ -64,6 +64,10 @@ class UnitsController < ApplicationController
 
   def update
     if params[:assigning_lock].present?
+      # current_lock =@unit.remote_locks.where(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
+      # if current_lock.present?
+      #
+      # end
       remote_lock = RemoteLock.find_by(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
       remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name)
     end
