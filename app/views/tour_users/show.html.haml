@@ -22,7 +22,7 @@
           %span
             #{@tour_user.name}
         - if (current_user.is_super_admin?)
-          %button.btn-danger.pii_delete.mb-20{:onclick => "delete_all_pii(#{@tour_user.id})",:style => "padding: 4px; margin-left: 8px; margin-top: 0px;  margin-bottom: 0px; float: right;"}
+          %button.btn-danger.pii_delete.mb-20{:onclick => "delete_all_pii(#{@tour_user.id})",:style => "padding: 4px; margin-left: 8px; margin-top: 0px;  margin-bottom: 0px; float: right;", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
             Remove all PII
         - unless @chatroom_id == 0 
           = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right; margin-right: 8px;", data: { toggle: "modal", target: "#ChatSupport_a" })
@@ -542,7 +542,6 @@
         plot_data()
   })
   function delete_all_pii(tour_user_id){
-    if (confirm('Are you sure you want to delete tour user data?')) {
     var community_id = #{ raw @community.id};
     var delete_user_attribute = "delete all PII"
      $.ajax({
@@ -554,5 +553,5 @@
           success: function(data){
           }
       });
-      }
+    
   }

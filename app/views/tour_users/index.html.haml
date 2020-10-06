@@ -67,7 +67,7 @@
                               - if user.image.present?
                                 - if (current_user.is_super_admin?)
                                   - pii = 1
-                                  %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
+                                  %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
                           - else
                             = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
                         %td
@@ -77,7 +77,7 @@
                               - if user.last_name.present? or user.first_name.present? or user.name.present?
                                 - if (current_user.is_super_admin?)
                                   - pii = 2
-                                  %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
+                                  %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
                             - else
                               = (user.first_name.present? ? user.first_name : user.name)
 
@@ -89,7 +89,7 @@
                               = link_to "#{user.email}", "/communities/#{@community.id}/tour_users/#{user.id}"
                               - if (current_user.is_super_admin?)
                                 - pii = 3
-                                %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
+                                %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
 
                         %td.col-lg-1
                           .visitor_list
@@ -98,7 +98,7 @@
                               - if user.phone_number != "Removed at Consumer Request"
                                 - if (current_user.is_super_admin?)
                                   - pii = 4
-                                  %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
+                                  %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
                         %td.col-lg-2
                           .visitor_list
                             - if TourHistory.where(tour_user_id: user.id, tour_id: @community.tour.id, history: false).present?
@@ -111,7 +111,7 @@
                                 = image_tag  "open.png", :style => "height: 20px; width: 20px;  margin-left: 20px;", "data-content" => "Tour Abandoned", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                               - if (current_user.is_super_admin?)
                                 - pii = 5
-                                %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
+                                %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
                             - else
                               Removed at Consumer Request
 
@@ -166,7 +166,6 @@
                 DONE
 :javascript
   function delete_user_information(user_id, user_attribute){
-  if (confirm('Are you sure you want to delete tour user data?')) {
   var company_id = #{ raw @community.company.id};
   var community_id = #{ raw @community.id }
   if (user_attribute == 0){
@@ -196,7 +195,6 @@
           success: function(data){
           }
       });
-  }
   }
   if ("#{browser.device.iphone?}" == "true")
   {
