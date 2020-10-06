@@ -52,8 +52,13 @@
                 .col-lg-6
                   .col-lg-12.name_div{:style => "background: #efefef; margin: 30px; left: 17px;  width: 92%; display: inline-flex; align-items: center;"}
                     .col-lg-3.col-md-3.col-sm-2.col-xs-6
-                      - if @tour_user.image.present? && @tour_user.image == "default-user128x128.jpg"
-                        Removed at Consumer Request
+                      - if @tour_user.image.present?
+                        - if @tour_user.image.url.include? "default-user128x128.jpg"
+                          Removed at Consumer Request
+                        - else
+                          = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                      - else
+                        = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
                     .col-lg-3.col-md-3.col-sm-3.col-xs-12.email_div{:style => " "}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
@@ -68,8 +73,11 @@
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
-                      - if @tour_user.id_card.present? && @tour_user.id_card == "default id card.jpg"
-                        Removed at Consumer Request
+                      - if @tour_user.id_card.present?
+                        - if @tour_user.id_card.url.include? "default_id_card.jpg"
+                          Removed at Consumer Request
+                        - else
+                          = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
                       - else
                         = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
 

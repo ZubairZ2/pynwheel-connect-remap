@@ -129,11 +129,8 @@ class TourUsersController < ApplicationController
     tour_user.phone_number = "Removed at Consumer Request"
     tour_user.remove_image!
     tour_user.remove_id_card!
-    tour_user.id_card = "default id card.jpg"
+    tour_user.id_card = File.open("app/assets/images/default id card.jpg")
     tour_user.image = File.open("app/assets/images/default-user128x128.jpg")
-    tour_user.image == image
-    tour_user.save!(validate: false)
-    tour_user.image.filename = "default-user128x128.jpg"
     tour_user.save!(validate: false)
     tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: community.tour.id) rescue nil
     if tour_histories.present?
@@ -163,8 +160,10 @@ class TourUsersController < ApplicationController
       tour_user.save!(validate: false)
     end
     if user_attribute == "image"
-      tour_user.image = "Removed at Consumer Request"
-      tour_user.id_card = "Removed at Consumer Request"
+      tour_user.remove_image!
+      tour_user.remove_id_card!
+      tour_user.id_card = File.open("app/assets/images/default id card.jpg")
+      tour_user.image = File.open("app/assets/images/default-user128x128.jpg")
       tour_user.save!(validate: false)
     end
     if user_attribute == "history"

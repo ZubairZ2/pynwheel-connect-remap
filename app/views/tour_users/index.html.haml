@@ -59,10 +59,17 @@
                             -#     - pii = 1
                             -#     %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
                         %td.col-lg-1
-                          = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
                           - if user.image.present?
-                            - pii = 1
-                            %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
+                            - if user.image.url.include? "default-user128x128.jpg"
+                              Removed at Consumer Request
+                            - else
+                              = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
+                              - if user.image.present?
+                                - if (current_user.is_super_admin?)
+                                  - pii = 1
+                                  %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
+                          - else
+                            = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
                         %td
                           .col-lg-2.visitor_list
                             - unless user.last_name == "Removed at Consumer Request" or user.first_name == "Removed at Consumer Request"or user.name == "Removed at Consumer Request"
