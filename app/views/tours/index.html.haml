@@ -510,9 +510,9 @@
     - unless @community.is_sitemap
       - unless @building_list.count < 2
         %h3 Select a Building
-        .building_sortable.building_buttons#building_buttons
+        .building_sortable#building_buttons
           - @building_list.each do |b|
-            %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?"+ "building=#{b}", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{@building.present? ? (@building == b ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{b}
+            %a.btn-default.ggq{:href => "/communities/"+@community.id.to_s+"/tours?"+ "building=#{b}", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{@building.present? ? (@building == b ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{b}
 
     - unless @community.is_sitemap
       - begin
@@ -836,10 +836,31 @@
   var min_floor1 = #{@community.is_sitemap ? 99999 : @community.floorplates.map{|f| f.floors}.flatten.min rescue 99999}
 
   $(document).ready(function() {
-  $('#building_buttons').change(function(){
-    debugger;
+  
+  $( "#building_buttons" ).sortable({
+    stop: function( event, ui ) {
+      var arr = []
+      for(var i = 0 ; i < this.children.length; i++)
+      {
+        arr.push(this.children[i].text)
+      }
+      
+      $.ajax({
+        url: "/communities/#{@community.id}/tours/sort_buildings",
+        type: "POST",
+        dataType: "script",
+        data: {
+            sitemap: "#{@community.is_sitemap}" ,
+            array: arr,
+            floor: "#{@floor}",
+            building: "#{@building}"
+        }
+      }).done(function (data) {
+        console.log("success");
+      });
+
+    }
   });
-  $( "#building_buttons" ).sortable();
   $('.check_t').change(function() {
   
     var checks = $('.check_t')
