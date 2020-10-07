@@ -28,7 +28,6 @@ class Api::V1::DweloDevicesController < ActionController::Base
       # dwelo_client_credentials
       token_type = "Bearer"
       auth_header = token_type + " " + @token
-
       url = base_url + "/v4/integrations/pynwheel/access_persons/"
 
       response = HTTParty.put(url,
@@ -48,8 +47,9 @@ class Api::V1::DweloDevicesController < ActionController::Base
 
   def device_lock_or_unlock
     # dwelo_client_credentials
-    if @dwelo_user.present?
+    dwelo_community_account= Dwelo.find_by(community_id: params[:community_id])
       token_type = "Bearer"
+      dwelo_client_credentials(dwelo_community_account)
       auth_header = token_type + " " + @token
 
       url = base_url + "/v4/integrations/pynwheel/devices/commands/"
@@ -68,7 +68,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
         render :json => {:success => false, :message => response["message"]}
       end
       return response
-    end
+
 
 
   end
