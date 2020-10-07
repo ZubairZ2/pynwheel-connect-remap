@@ -79,6 +79,7 @@ json.tours @tours do |tour|
     add_bsp_entry = true
     add_bsp_exit = true
     have_stop_in_building = false
+    first_floor_elev = nil
 
     if @community.is_sitemap
 
@@ -184,6 +185,11 @@ json.tours @tours do |tour|
                     if add_stop.stop_type == "amenity" || add_stop.stop_type == "unit"
                       last_stop_id = add_stop.id
                       have_stop_in_building = true
+                      
+                      if first_floor_elev.present? && tour.starting_floor.to_i == add_stop.floor
+                        stops_arr = stops_arr - [first_floor_elev]
+                        first_floor_elev = nil
+                      end
                     end
                   end
                 end
