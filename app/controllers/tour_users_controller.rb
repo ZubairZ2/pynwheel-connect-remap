@@ -28,7 +28,8 @@ class TourUsersController < ApplicationController
     # ------------ locks ploting on the map ---------------- #
 
     if @community.dwelo.present?
-      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")	      @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "app_unlock")
+      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
+      @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "app_unlock")
 
       @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "app_unlock")
     else

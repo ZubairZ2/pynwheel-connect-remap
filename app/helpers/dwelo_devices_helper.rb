@@ -62,22 +62,14 @@ module DweloDevicesHelper
 
 
   def create_dwelo_access_guest(access_token, tour_user, current_time)
-    @dwelo_user = Dwelo.first
-    if @dwelo_user.present?
+
       token_type = "Bearer"
       auth_header = token_type + " " + access_token
 
       url = base_url + "/v4/integrations/pynwheel/access_persons/"
 
-      if current_time.to_s.count('-') == 2 # GMT +
-        start_time = current_time.to_datetime.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-        ends_time = (current_time + 90.minutes).to_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
-      elsif current_time.to_s.count('-') == 3 # GMT -
-        char_pos = current_time.iso8601.to_s.rindex('-')
-        index = char_pos - 1
-        start_time = current_time.iso8601.to_s.slice(0..index).strftime('%Y-%m-%dT%H:%M:%SZ')
-        ends_time = (current_time + 90.minutes).iso8601.to_s.slice(0..index).strftime('%Y-%m-%dT%H:%M:%SZ')
-      end
+      start_time = Time.now.strftime('%Y-%m-%dT%H:%M:%SZ')
+      ends_time = (Time.now + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
       response = HTTParty.post(url,
@@ -86,8 +78,7 @@ module DweloDevicesHelper
                                    id: tour_user.id,
                                    starts_at: start_time,
                                    ends_at: ends_time
-                                   # starts_at: "2020-08-05T02:00:00Z",
-                                   # ends_at: "2020-08-05T16:12:00Z"
+
 
 
                                }.to_json,
@@ -95,12 +86,11 @@ module DweloDevicesHelper
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
       return response
-    end
+    
   end
 
   def delete_dwelo_access_guest(access_token, guest_id)
-    @dwelo_user = Dwelo.first
-    if @dwelo_user.present?
+
       token_type = "Bearer"
       auth_header = token_type + " " + access_token
 
@@ -114,12 +104,11 @@ module DweloDevicesHelper
 
 
       return response
-    end
+
   end
 
   def grant_dwelo_user_access(access_token, access_person_id, accessible_id)
-    @dwelo_user = Dwelo.first
-    if @dwelo_user.present?
+
       token_type = "Bearer"
       auth_header = token_type + " " + access_token
 
@@ -139,7 +128,7 @@ module DweloDevicesHelper
       puts "---" * 50
 
       return response
-    end
+
   end
 
   def base_url
