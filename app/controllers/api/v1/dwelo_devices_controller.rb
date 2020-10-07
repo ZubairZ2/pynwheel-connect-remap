@@ -47,15 +47,20 @@ class Api::V1::DweloDevicesController < ActionController::Base
 
   def device_lock_or_unlock
     # dwelo_client_credentials
-    dwelo_community_account= Dwelo.find_by(community_id: params[:community_id])
+    # 422eacec-dfac-4cca-bf40-6fe5d43a09ce
+
+      dwelo_community_account= Dwelo.find_by(community_id: params[:community_id])
       token_type = "Bearer"
       dwelo_client_credentials(dwelo_community_account)
       auth_header = token_type + " " + @token
+      tour_user = TourUser.find_by_id params[:tour_user_id]
+
+      guest_id = tour_user.as_guests.where(community_id: params[:community_id]).last.guest_id if tour_user.present? and tour_user.as_guests.where(community_id: params[:community_id]).present?
 
       url = base_url + "/v4/integrations/pynwheel/devices/commands/"
       response = HTTParty.post(url,
                                body: {
-                                   "access_person_id": params[:access_person_id],
+                                   "access_person_id": guest_id,
                                    "lock_id": params[:lock_id],
                                    "command": params[:command]
                                }.to_json,
