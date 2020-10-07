@@ -37,22 +37,27 @@ module DweloDevicesHelper
   end
   def update_deivces_in_db(response, dwelo_user)
     devices = response["data"]
-    devices.each do |device|
-
-      type = device["type"]
-      name = device["attributes"]["name"]
-      # serial_number = device["attributes"]["serial_number"]
-      device_id = device["id"]
-      # rml = RemoteLock.find_by(device_id: device_id, edge_state_id: @edge_state_user.id)
-      remote_lock = RemoteLock.find_by(device_id: device_id, dwelo_id: dwelo_user.id)
-      if remote_lock.nil?
-        # remote_lock = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, edge_state_id: @edge_state_user.id)
-        remote_lock = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, dwelo_id: dwelo_user.id)
-      elsif remote_lock.remote_lock_type != type or remote_lock.name != name
-        remote_lock.update_attributes(remote_lock_type: type, name: name)
+    if devices.present?
+      devices.each do |device|
+        type = device["type"]
+        name = device["attributes"]["name"]
+        # serial_number = device["attributes"]["serial_number"]
+        device_id = device["id"]
+        # rml = RemoteLock.find_by(device_id: device_id, edge_state_id: @edge_state_user.id)
+        remote_lock = RemoteLock.find_by(device_id: device_id, dwelo_id: dwelo_user.id)
+        if remote_lock.nil?
+          # remote_lock = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, edge_state_id: @edge_state_user.id)
+          remote_lock = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, dwelo_id: dwelo_user.id)
+        elsif remote_lock.remote_lock_type != type or remote_lock.name != name
+          remote_lock.update_attributes(remote_lock_type: type, name: name)
+        end
       end
+    # else
+    #   flash[:notice] = "Something went wrong, please check your credentials."
+    #   # render :js => "window.location = '/communities/#{dwelo_user.community_id}/dwelos/new'"
+    #   return false
     end
-    render json: {locks: RemoteLock.all}
+    # render json: {locks: RemoteLock.all}
   end
 
 

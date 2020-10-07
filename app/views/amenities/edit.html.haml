@@ -157,6 +157,7 @@
   var amenity_id = #{@amenity.id}
   var amenity_name = '#{@amenity.name}'
   var community_id = #{ @community.id}
+  var dwelo_account_id = #{@community.dwelo.id}
   var from = #{ @from_unit}
   
   $('.amenity_edit_field').change(function(){
@@ -268,34 +269,36 @@
     if (#{ @community.dwelo.present? }){
      
     $.ajax({
-      type: 'POST',
-      url: '/api/v1/save_data',
+      type: 'GET',
+      url: '/communities/' + community_id + '/dwelos',
       dataType: 'json',
       data:{ params,
-             community_id },
+             community_id, dwelo_account_id },
       cache: false,
       success: function(data){
-        locks = data['locks']
+        locks = data
         for (var item in locks) {
             if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type && locks[item].dwelo_id == #{@community.dwelo.id}){
               $('#dwelo_remote').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name}</option>`)
               assigned_lock_present = true
+
             }
             else if ((locks[item].dwelo_id == #{@community.dwelo.id}) && (locks[item].stop_id == null) )
             {
               $('#dwelo_remote').append(`<option value="${locks[item].device_id}">${locks[item].name}</option>`)
             }
         }
-        if(assigned_lock_present == false){
-            $('#dwelo_remote').prepend(`<option value="" , selected="selected">Select your option</option>`)
-            // clear_assigned_lock()
+          debugger
+          if(assigned_lock_present == false){
+              $('#dwelo_remote').prepend(`<option value="" , selected="selected">Select your option</option>`)
+              // clear_assigned_lock()
+          }
+          else
+            IsDweloSelectedLockMatch()
+        },
+        fail: function(error){
+          console.log(error)
         }
-        else
-          IsDweloSelectedLockMatch()
-      },
-      fail: function(error){
-        console.log(error)
-      }
     });
   }
   else{

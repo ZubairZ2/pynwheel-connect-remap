@@ -2,7 +2,7 @@
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Lock Provider
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.select :default_community_id , options_for_select([["Dwelo","dwelo"],["EdgeState","edgestate"],["Latch","Latch"]],f.object),{},{:class=>"form-control lock_provider"}
+    = f.select :default_community_id , options_for_select([["Dwelo","Dwelo"],["EdgeState","Edgestate"],["Latch","Latch"]],f.object),{},{:class=>"form-control lock_provider"}
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Community ID

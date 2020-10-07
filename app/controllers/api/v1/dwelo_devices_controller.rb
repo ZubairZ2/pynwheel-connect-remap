@@ -3,7 +3,8 @@ class Api::V1::DweloDevicesController < ActionController::Base
   include DweloDevicesHelper
 
   def load_data
-    dwelo_community_account = Dwelo.find(params[:dwelo_account_id])
+    dwelo_community_account = Dwelo.find(params[:dwelo_account_id]) rescue nil
+    @community = dwelo_community_account.community
     dwelo_client_credentials(dwelo_community_account)
     token_type = "Bearer"
     auth_header = token_type + " " + @token
@@ -12,8 +13,14 @@ class Api::V1::DweloDevicesController < ActionController::Base
     response = HTTParty.get(url,
                             :headers => {'Authorization' => auth_header,
                                          'Accept' => 'application/vnd.lockstate+json; version=1'})
-    update_deivces_in_db(response, dwelo_community_account)
-
+    if response["data"].present?
+      update_deivces_in_db(response, dwelo_community_account)
+      flash[:notice] = "Locks imported successfully."
+      render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
+    else
+      flash[:notice] = "Something went wrong, please check your credentials."
+      render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
+    end
   end
 
   def update_dwelo_access_guest

@@ -57,7 +57,8 @@
               .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                 -if @community.dwelo.present?
                   %button.btn.btn-primary.impo#import_locks{:onclick => "import_dwelo_locks(#{@community.dwelo.id})", :type => "button"} Import Locks Data
-                  %button.btn.btn-success#map_locks{:type => "button"} Map Units
+                  - if @community.dwelo.remote_locks.present?
+                    %button.btn.btn-success#map_locks{:type => "button"} Map Units
                   %button.btn.btn-warning.impo#update_locks_date{:onclick => "import_dwelo_locks(#{@community.dwelo.id})", :type => "button"} Update Locks Data
                 -else
                   %button.btn.btn-primary{:type => "button", :disabled => "disabled"} Import Locks Data
@@ -164,19 +165,21 @@
             -#= link_to "Update Data" , community_update_imported_data_path(current_community) , :class=>"btn btn-warning"
 
 :javascript
-   if ("#{@community.locks_provider}" == "EdgeState"){
+   if("#{@community.locks_provider}" == "EdgeState"){
+      debugger
       $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
       $(".edgestate").removeClass("hide_edgestate");
       $(".dwelo").addClass("hide_dwelo");
    }
-      if ("#{@community.locks_provider}" == "Dwelo"){
+    if ("#{@community.locks_provider}" == "Dwelo"){
+      debugger
       $(".lock_provider").val($(".lock_provider option:first").val());
       $(".edgestate").addClass("hide_edgestate");
       $(".dwelo").removeClass("hide_dwelo");
    }
-   $(".lock_provider").change(function (){
+  $(".lock_provider").change(function (){
    lock_provider = $(".lock_provider").val();
-   if (lock_provider == "EdgeState") {
+   if (lock_provider == "Edgestate") {
       $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
       $(".edgestate").removeClass("hide_edgestate");
       $(".dwelo").addClass("hide_dwelo");
@@ -209,6 +212,7 @@
                   dwelo_account_id: community_dwelo_id
               },
               success: function (data) {
+
               }
           });
     }
