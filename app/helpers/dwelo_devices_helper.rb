@@ -86,7 +86,7 @@ module DweloDevicesHelper
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
       return response
-    
+
   end
 
   def delete_dwelo_access_guest(access_token, guest_id)

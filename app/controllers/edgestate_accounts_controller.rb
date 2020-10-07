@@ -20,7 +20,7 @@ class EdgestateAccountsController < ApplicationController
             @edge_state = EdgeState.find_by(community_id: current_community.id)
             if @edge_state.update_attributes(edge_state_params)
                 flash[:notice] = "EdgeState credentails updated successfully"
-                redirect_to community_settings_page_path(current_community)
+                redirect_to new_community_dwelo_path(current_community)
             else
                 flash[:error] = @edge_state.errors.full_messages.join(',')
                 render :new
