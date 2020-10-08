@@ -3,288 +3,289 @@
 %section.is-community-page
   .content
     .box.box-info.add-plan.mt-20
-      .box-header
-        %h3.box-title
-          Settings
-          %span Community
-        = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
-      = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal form_class"} do |f|
-        .box-body
-          .row
-            .col-lg-9.col-lg-offset-1
+      - if can? :edit_settings_page, current_user 
+        .box-header
+          %h3.box-title
+            Settings
+            %span Community
+          = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
+        = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal form_class"} do |f|
+          .box-body
+            .row
+              .col-lg-9.col-lg-offset-1
 
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Code
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Company
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
-              -#.form-group
-              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#    Property Map / Floorplates
-              -#
-              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-              -#    = f.radio_button :is_sitemap, true
-              -#    = f.label :is_sitemap, "Property Map", :value => "true"
-              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-              -#    = f.radio_button :is_sitemap, false
-              -#    = f.label :is_sitemap, "Floorplates", :value => "false"
-
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Display Type
-
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  = f.radio_button :is_vertical_app, true
-                  = f.label :is_vertical_app, "Vertical", :value => "true"
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  = f.radio_button :is_vertical_app, false
-                  = f.label :is_vertical_app, "Horizontal", :value => "false"
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Billing Type
-
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  = f.radio_button :billing_type, "annual"
-                  = f.label :billing_type, "Annual", :value => "annual"
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  = f.radio_button :billing_type, "monthly"
-                  = f.label :billing_type, "Monthly", :value => "monthly"
-
-              - if @community.billing_type == "annual"
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Billing Month
+                    Code
+
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .multiselect
-                      .show-categories
-                        = @community.billing_month
-                      %ul#multiselect{style: "display:none;"}
-                        %li{:class=> set_active_class('January',@community.billing_month), 'data-title' => 'January'}
-                          %a
-                            %i.fa.fa-check
-                            January
-                        %li{:class=> set_active_class('February',@community.billing_month), 'data-title' => 'February'}
-                          %a
-                            %i.fa.fa-check
-                            February
-                        %li{:class=> set_active_class('March',@community.billing_month), 'data-title' => 'March'}
-                          %a
-                            %i.fa.fa-check
-                            March
-                        %li{:class=> set_active_class('April',@community.billing_month), 'data-title' => 'April'}
-                          %a
-                            %i.fa.fa-check
-                            April
-                        %li{:class=> set_active_class('May',@community.billing_month), 'data-title' => 'May'}
-                          %a
-                            %i.fa.fa-check
-                            May
-                        %li{:class=> set_active_class('June',@community.billing_month), 'data-title' => 'June'}
-                          %a
-                            %i.fa.fa-check
-                            June
-                        %li{:class=> set_active_class('July',@community.billing_month), 'data-title' => 'July'}
-                          %a
-                            %i.fa.fa-check
-                            July
-                        %li{:class=> set_active_class('August',@community.billing_month), 'data-title' => 'August'}
-                          %a
-                            %i.fa.fa-check
-                            August
-                        %li{:class=> set_active_class('September',@community.billing_month), 'data-title' => 'September'}
-                          %a
-                            %i.fa.fa-check
-                            September
-                        %li{:class=> set_active_class('October',@community.billing_month), 'data-title' => 'October'}
-                          %a
-                            %i.fa.fa-check
-                            October
-                        %li{:class=> set_active_class('November',@community.billing_month), 'data-title' => 'November'}
-                          %a
-                            %i.fa.fa-check
-                            November
-                        %li{:class=> set_active_class('December',@community.billing_month), 'data-title' => 'December'}
-                          %a
-                            %i.fa.fa-check
-                            December
-                = f.hidden_field :billing_month, :multiple => true, id: "categories_field",:class=>""
+                    = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
 
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Billing Rate
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
-                  = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Subscription Start Date
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true
-
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Show Gesture Icons
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = f.check_box :show_gesture_icons
-                    %label.label-primary{:for => "community_show_gesture_icons"}
-                    %span.pl-15 Yes
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Powered by Pynwheel
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = f.check_box :powered_by_btn,:value => true
-                    %label.label-primary{:for => "community_powered_by_btn"}
-                    %span.pl-15 Yes
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Self Tour
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = f.check_box :self_tour
-                    %label.label-primary{:for => "community_self_tour"}
-                    %span.pl-15 Yes
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Show Map
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = f.check_box :show_map
-                    %label.label-primary{:for => "community_show_map"}
-                    %span.pl-15 Yes
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  MDU
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = f.check_box :mdu
-                    %label.label-primary{:for => "community_mdu"}
-                    %span.pl-15 Yes            
-              - if current_user.is_super_admin?
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Touchscreen App
+                    Company
+
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
+                -#.form-group
+                -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                -#    Property Map / Floorplates
+                -#
+                -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                -#    = f.radio_button :is_sitemap, true
+                -#    = f.label :is_sitemap, "Property Map", :value => "true"
+                -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                -#    = f.radio_button :is_sitemap, false
+                -#    = f.label :is_sitemap, "Floorplates", :value => "false"
+
+
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Display Type
+
+                  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                    = f.radio_button :is_vertical_app, true
+                    = f.label :is_vertical_app, "Vertical", :value => "true"
+                  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                    = f.radio_button :is_vertical_app, false
+                    = f.label :is_vertical_app, "Horizontal", :value => "false"
+
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Billing Type
+
+                  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                    = f.radio_button :billing_type, "annual"
+                    = f.label :billing_type, "Annual", :value => "annual"
+                  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                    = f.radio_button :billing_type, "monthly"
+                    = f.label :billing_type, "Monthly", :value => "monthly"
+
+                - if @community.billing_type == "annual"
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Billing Month
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .multiselect
+                        .show-categories
+                          = @community.billing_month
+                        %ul#multiselect{style: "display:none;"}
+                          %li{:class=> set_active_class('January',@community.billing_month), 'data-title' => 'January'}
+                            %a
+                              %i.fa.fa-check
+                              January
+                          %li{:class=> set_active_class('February',@community.billing_month), 'data-title' => 'February'}
+                            %a
+                              %i.fa.fa-check
+                              February
+                          %li{:class=> set_active_class('March',@community.billing_month), 'data-title' => 'March'}
+                            %a
+                              %i.fa.fa-check
+                              March
+                          %li{:class=> set_active_class('April',@community.billing_month), 'data-title' => 'April'}
+                            %a
+                              %i.fa.fa-check
+                              April
+                          %li{:class=> set_active_class('May',@community.billing_month), 'data-title' => 'May'}
+                            %a
+                              %i.fa.fa-check
+                              May
+                          %li{:class=> set_active_class('June',@community.billing_month), 'data-title' => 'June'}
+                            %a
+                              %i.fa.fa-check
+                              June
+                          %li{:class=> set_active_class('July',@community.billing_month), 'data-title' => 'July'}
+                            %a
+                              %i.fa.fa-check
+                              July
+                          %li{:class=> set_active_class('August',@community.billing_month), 'data-title' => 'August'}
+                            %a
+                              %i.fa.fa-check
+                              August
+                          %li{:class=> set_active_class('September',@community.billing_month), 'data-title' => 'September'}
+                            %a
+                              %i.fa.fa-check
+                              September
+                          %li{:class=> set_active_class('October',@community.billing_month), 'data-title' => 'October'}
+                            %a
+                              %i.fa.fa-check
+                              October
+                          %li{:class=> set_active_class('November',@community.billing_month), 'data-title' => 'November'}
+                            %a
+                              %i.fa.fa-check
+                              November
+                          %li{:class=> set_active_class('December',@community.billing_month), 'data-title' => 'December'}
+                            %a
+                              %i.fa.fa-check
+                              December
+                  = f.hidden_field :billing_month, :multiple => true, id: "categories_field",:class=>""
+
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Billing Rate
+
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+
+                    = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Subscription Start Date
+
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true
+
+
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Show Gesture Icons
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
-                      = f.check_box :touchscreen_app
-                      %label.label-primary{:for => "community_touchscreen_app"}
+                      = f.check_box :show_gesture_icons
+                      %label.label-primary{:for => "community_show_gesture_icons"}
                       %span.pl-15 Yes
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Chat Control
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = f.check_box :chat_control
-                    %label.label-primary{:for => "community_chat_control"}
-                    %span.pl-15 Yes
-              .form-group#access_restrictions
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Restrict Access
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = f.check_box :restrict_access
-                    %label.label-primary{:for => "community_restrict_access"}
-                    %span.pl-15 Yes
-              / .form-group#access_restrictions
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              /     Scheduler Widget
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = f.check_box :scheduler_widget
-              /       %label.label-primary{:for => "community_scheduler_widget"}
-              /       %span.pl-15 Yes
-              / .form-group#access_restrictions
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              /     Pynwheel Widget
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = f.check_box :pynwheel_touch
-              /       %label.label-primary{:for => "community_pynwheel_touch"}
-              /       %span.pl-15 Yes            
-              .form-group#allowed_emails
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Allowed Emails
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AlloweEmails","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Enter the comma separated emails, only users with these emails are allowed to visit your community in mobile app
 
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_area :allowed_emails, :value => @community.allowed_emails.collect(&:email).join(", ") , :id=>"emails_allowed", :class=>"form-control", rows:5, :placeholder=>"Emails"
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Powered by Pynwheel
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :powered_by_btn,:value => true
+                      %label.label-primary{:for => "community_powered_by_btn"}
+                      %span.pl-15 Yes
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Self Tour
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :self_tour
+                      %label.label-primary{:for => "community_self_tour"}
+                      %span.pl-15 Yes
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Show Map
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :show_map
+                      %label.label-primary{:for => "community_show_map"}
+                      %span.pl-15 Yes
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    MDU
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :mdu
+                      %label.label-primary{:for => "community_mdu"}
+                      %span.pl-15 Yes            
+                - if current_user.is_super_admin?
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Touchscreen App
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = f.check_box :touchscreen_app
+                        %label.label-primary{:for => "community_touchscreen_app"}
+                        %span.pl-15 Yes
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Chat Control
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :chat_control
+                      %label.label-primary{:for => "community_chat_control"}
+                      %span.pl-15 Yes
+                .form-group#access_restrictions
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Restrict Access
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :restrict_access
+                      %label.label-primary{:for => "community_restrict_access"}
+                      %span.pl-15 Yes
+                / .form-group#access_restrictions
+                /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                /     Scheduler Widget
+                /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                /     .TriSea-technologies-Switch
+                /       %span.pr-15 No
+                /       = f.check_box :scheduler_widget
+                /       %label.label-primary{:for => "community_scheduler_widget"}
+                /       %span.pl-15 Yes
+                / .form-group#access_restrictions
+                /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                /     Pynwheel Widget
+                /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                /     .TriSea-technologies-Switch
+                /       %span.pr-15 No
+                /       = f.check_box :pynwheel_touch
+                /       %label.label-primary{:for => "community_pynwheel_touch"}
+                /       %span.pl-15 Yes            
+                .form-group#allowed_emails
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Allowed Emails
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AlloweEmails","data-content" => " "}
+                      %span#propertyDetailNameText
+                        Enter the comma separated emails, only users with these emails are allowed to visit your community in mobile app
 
-              -#- if current_user.is_super_admin?
-              -#  .form-group
-              -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#      Tour Setup Visible
-              -#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              -#      .TriSea-technologies-Switch
-              -#        %span.pr-15 No
-              -#        = f.check_box :tour_setup_visible
-              -#        %label.label-primary{:for => "community_tour_setup_visible"}
-              -#        %span.pl-15 Yes
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.text_area :allowed_emails, :value => @community.allowed_emails.collect(&:email).join(", ") , :id=>"emails_allowed", :class=>"form-control", rows:5, :placeholder=>"Emails"
 
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Inactivate
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = f.check_box :locked
-                        %label Inactivate
+                -#- if current_user.is_super_admin?
+                -#  .form-group
+                -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                -#      Tour Setup Visible
+                -#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                -#      .TriSea-technologies-Switch
+                -#        %span.pr-15 No
+                -#        = f.check_box :tour_setup_visible
+                -#        %label.label-primary{:for => "community_tour_setup_visible"}
+                -#        %span.pl-15 Yes
+
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Inactivate
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .row
+                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                        .checkbox
+                          = f.check_box :locked
+                          %label Inactivate
 
 
 
 
 
-              -#.form-group
-              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#    Equal housing opportunity logo
-              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              -#    .row
-              -#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-              -#        .checkbox
-              -#          = f.check_box :equal_housing_opportunity_logo
-              -#          %label Equal housing opportunity logo
-              -#.form-group
-              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#    Handicap accessible logo
-              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              -#    .row
-              -#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-              -#        .checkbox
-              -#          = f.check_box :handicap_accessible_logo
-              -#          %label Handicap accessible logo
+                -#.form-group
+                -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                -#    Equal housing opportunity logo
+                -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                -#    .row
+                -#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                -#        .checkbox
+                -#          = f.check_box :equal_housing_opportunity_logo
+                -#          %label Equal housing opportunity logo
+                -#.form-group
+                -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                -#    Handicap accessible logo
+                -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                -#    .row
+                -#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                -#        .checkbox
+                -#          = f.check_box :handicap_accessible_logo
+                -#          %label Handicap accessible logo
 
-        
-        / /.box-body
-        .box-footer
-          = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
-          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 loader_class"
+          
+          / /.box-body
+          .box-footer
+            = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
+            = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 loader_class"
 
 
 :javascript

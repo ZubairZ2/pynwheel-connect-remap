@@ -639,6 +639,9 @@ class Community < ApplicationRecord
     end
   end
 
+  def creator
+    User.find_by(id: self.creator_id)
+  end
   private
 
   def populate_favorites(items_objs,email_to)

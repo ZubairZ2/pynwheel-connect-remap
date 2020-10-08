@@ -12,7 +12,7 @@
             %span.pull-right-container
               %i.fa.fa-angle-right.pull-right
           %ul.treeview-menu
-            - if current_user.is_super_admin?
+            - if (can? :crud, Company) || (current_user.is_super_admin? )
               %li.loader_class{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
                 %a{:href => "/companies"} Companies
             %li.loader_class{:class=>"#{controller_name =='community_group' ? 'active' : ''}"}
@@ -24,7 +24,7 @@
           = link_to edit_company_community_path(current_company,current_community) do
             %i.fa.fa-info
             %span Property Details
-      - if (current_user.is_super_admin?)
+      - if (can? :edit_settings_page, current_user) || (current_user.is_super_admin?)
         %li.loader_class{:class=>"#{controller_name =='communities' && params[:action] =='settings_page' ? 'active' : ''}"}
           = link_to community_settings_page_path(current_community) do
             %i.fa.fa-cog

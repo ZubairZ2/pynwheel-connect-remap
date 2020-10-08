@@ -7,8 +7,12 @@
         %h2 Community Groups
         %h5
           All community groups are listed here.
-        %p.mb-30
-          This Admin feature allows you to directly access any community groups in the system
+        - if current_user.is_super_admin?
+          %p.mb-30
+            This Admin feature allows you to directly access any community groups in the system
+        - elsif current_user.is_dwelo_admin?
+          %p.mb-30
+            This Dwelo admin feature allows you to directly access any dwelo community groups in the system </br>
     .row
       .col-md-12
         .col-md-6

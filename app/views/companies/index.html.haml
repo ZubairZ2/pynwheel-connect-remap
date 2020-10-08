@@ -7,15 +7,19 @@
         %h2 Companies
         %h5
           All companies are listed here.
-        %p.mb-30
-          This Admin feature allows you to directly access any company in the system
+          - if current_user.is_super_admin?
+            %p.mb-30
+              This Admin feature allows you to directly access any company in the system
+          - elsif current_user.is_dwelo_admin?
+            %p.mb-30
+              This Dwelo admin feature allows you to directly access any dwelo company in the system </br>
     .row
       .col-md-12
         .col-md-6
           .mt-35
             %a.btn.btn-success.mb-20{:href => "/"}
               List all communities
-        - if can? :manage, current_user.company      
+        - if can? :crud, Company
           .col-md-6
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies/new"}

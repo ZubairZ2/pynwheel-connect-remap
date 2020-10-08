@@ -10,6 +10,8 @@ class CommunitiesController < ApplicationController
     #@communities = Community.page(params[:page]).per(10)
     if current_user.is_super_admin?
       @communities = current_company.communities
+    elsif current_user.is_dwelo_admin?
+      @communities = current_company.communities # Community.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
     else
       @communities = current_user.communities
     end
@@ -22,6 +24,7 @@ class CommunitiesController < ApplicationController
   def create
     @community = current_company.communities.new(community_params)
     @community.lincoln_app = true if current_company.name.downcase.include?("lincoln") rescue nil
+    @community.name = "(Dwelo) " + @community.name if current_user.is_dwelo_admin?
     if @community.save
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
@@ -40,6 +43,7 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
+		authorize! :edit_settings_page, current_user
     add_breadcrumb "Companies", companies_path(current_company)
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
@@ -146,24 +150,7 @@ class CommunitiesController < ApplicationController
     @community.clone_a_community(@community)
     redirect_to community_design_index_path(current_community),notice: 'Community will clone within few seconds.'
   end
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
 
-        else
-          redirect_to root_path
-        end
-      end
-    end
-  end
   def alert_message
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
@@ -623,7 +610,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:name,:address, :creator_id, :number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,

@@ -28,5 +28,7 @@ class CommunityGroup < ApplicationRecord
 
   mount_base64_uploader :logo, AvatarUploader
 
-
+  def creator
+    User.find_by(id: self.creator_id)
+  end
 end

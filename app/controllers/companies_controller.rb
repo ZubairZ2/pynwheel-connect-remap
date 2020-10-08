@@ -8,6 +8,8 @@ class CompaniesController < ApplicationController
   def index
     if current_user.is_super_admin?
       @companies = Company.all
+    elsif current_user.is_dwelo_admin?
+      @companies = Company.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
     else
       @companies = Company.where(id: current_user.company_id)
     end
@@ -20,6 +22,7 @@ class CompaniesController < ApplicationController
 
   def create
     @company = Company.new(company_params)
+    @company.name = "(Dwelo) " + @company.name if current_user.is_dwelo_admin?
     if @company.save
       flash[:notice] = "Company created successfully."
       redirect_to companies_path
@@ -42,22 +45,7 @@ class CompaniesController < ApplicationController
       render :edit
     end
   end
-  def check_community
-    unless current_user.is_super_admin?
-      all_ids = []
-      current_user.communities.each do |c|
-        # all_ids.insert(c.id)
-        all_ids << c.id
-      end
-      # byebug
-      # puts '+++++++++++++++', all_ids[0]
-      if all_ids.include? params[:community_id].to_i
 
-      else
-        raise ActionController::RoutingError.new('Not Found')
-      end
-    end
-  end
   def destroy
     @company.delete_company
     flash[:notice] = "Company will be deleted within few mintues."
@@ -68,30 +56,12 @@ class CompaniesController < ApplicationController
     redirect_to new_company_path if current_company.nil?
   end
 
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
-
-        else
-          redirect_to root_path
-        end
-      end
-    end
-  end
   private
   def set_company
     @company = Company.find params[:id]
   end
   def company_params
-    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate)
+    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id)
   end
 
 end

@@ -45,10 +45,6 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_out_path_for(resource_or_scope)
-    if cookies[:community_id].present?
-      community = Community.find cookies[:community_id]
-      community.update_attributes(is_chat_login: false)
-    end
     new_user_session_path
   end
 
@@ -57,7 +53,8 @@ class ApplicationController < ActionController::Base
   end
 
   def check_community
-    unless current_user.is_super_admin?
+    return if params[:controller] == "tour_users" && params[:action]== "show"
+    unless current_user.is_super_admin? or current_user.is_dwelo_admin?
       if params[:community_id].present?
         all_ids = []
         current_user.communities.each do |c|

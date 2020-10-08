@@ -38,22 +38,7 @@ class ContentpagesController < ApplicationController
       flash[:error] = @webpage.errors.full_messages.join(',')
     end
 	end
-	def check_community
-		unless current_user.is_super_admin?
-			all_ids = []
-			current_user.communities.each do |c|
-				# all_ids.insert(c.id)
-				all_ids << c.id
-			end
-			# byebug
-			# puts '+++++++++++++++', all_ids[0]
-			if all_ids.include? params[:community_id].to_i
 
-			else
-				raise ActionController::RoutingError.new('Not Found')
-			end
-		end
-	end
 	def edit
 		@webpage = @community.webpages.find(params[:id])
 	end
@@ -76,24 +61,6 @@ class ContentpagesController < ApplicationController
       flash[:error] = @webpage.errors.full_messages.join(',')
     end
     redirect_to community_additional_pages_path(@community)
-	end
-	def check_community
-		unless current_user.is_super_admin?
-			if params[:community_id].present?
-				all_ids = []
-				current_user.communities.each do |c|
-					# all_ids.insert(c.id)
-					all_ids << c.id
-				end
-				# byebug
-				# puts '+++++++++++++++', all_ids[0]
-				if all_ids.include? params[:community_id].to_i
-
-				else
-					redirect_to root_path
-				end
-			end
-		end
 	end
 
 	private 
