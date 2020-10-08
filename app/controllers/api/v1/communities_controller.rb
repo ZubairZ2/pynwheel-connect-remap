@@ -352,7 +352,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           end
         end
       else
-        @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id
+        @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
