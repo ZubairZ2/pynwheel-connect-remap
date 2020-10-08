@@ -127,7 +127,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community = Community.find params[:id]
     @community.deleted_ids = []
     @community.save
-
+    unless @tour_user.email == "Removed at Consumer Request"
     #####
     @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
     @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
@@ -186,6 +186,9 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
         
       end
+    end
+    else
+      render :json=> {:success=>false, :message => ""}, :status=>500
     end
   end
   
