@@ -12,7 +12,7 @@
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
-              .form-group
+              .form-group#company_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Company
 
@@ -28,7 +28,7 @@
                       = f.check_box :touchscreen_app
                       %label.label-primary{:for => "community_touchscreen_app"}
                       %span.pl-15 Yes
-              .form-group
+              .form-group#slef_tour_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Self Tour
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -67,83 +67,118 @@
                   = f.radio_button :is_vertical_app, false
                   = f.label :is_vertical_app, "Horizontal", :value => "false"
 
-              .form-group
+              -#.form-group#billing_type_row
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Billing Type
+              -#
+              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+              -#    = f.radio_button :billing_type, "annual"
+              -#    = f.label :billing_type, "Annual", :value => "annual"
+              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+              -#    = f.radio_button :billing_type, "monthly"
+              -#    = f.label :billing_type, "Monthly", :value => "monthly"
+              -#
+              -#- if @community.billing_type == "annual"
+              -#  .form-group#billing_month_row
+              -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#      Billing Month
+              -#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#      .multiselect
+              -#        .show-categories
+              -#          = @community.billing_month
+              -#        %ul#multiselect{style: "display:none;"}
+              -#          %li{:class=> set_active_class('January',@community.billing_month), 'data-title' => 'January'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              January
+              -#          %li{:class=> set_active_class('February',@community.billing_month), 'data-title' => 'February'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              February
+              -#          %li{:class=> set_active_class('March',@community.billing_month), 'data-title' => 'March'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              March
+              -#          %li{:class=> set_active_class('April',@community.billing_month), 'data-title' => 'April'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              April
+              -#          %li{:class=> set_active_class('May',@community.billing_month), 'data-title' => 'May'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              May
+              -#          %li{:class=> set_active_class('June',@community.billing_month), 'data-title' => 'June'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              June
+              -#          %li{:class=> set_active_class('July',@community.billing_month), 'data-title' => 'July'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              July
+              -#          %li{:class=> set_active_class('August',@community.billing_month), 'data-title' => 'August'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              August
+              -#          %li{:class=> set_active_class('September',@community.billing_month), 'data-title' => 'September'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              September
+              -#          %li{:class=> set_active_class('October',@community.billing_month), 'data-title' => 'October'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              October
+              -#          %li{:class=> set_active_class('November',@community.billing_month), 'data-title' => 'November'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              November
+              -#          %li{:class=> set_active_class('December',@community.billing_month), 'data-title' => 'December'}
+              -#            %a
+              -#              %i.fa.fa-check
+              -#              December
+              -#  = f.hidden_field :billing_month, :multiple => true, id: "categories_field",:class=>""
+
+              .form-group#billing_rate_touch
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Billing Type
-
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  = f.radio_button :billing_type, "annual"
-                  = f.label :billing_type, "Annual", :value => "annual"
-                .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                  = f.radio_button :billing_type, "monthly"
-                  = f.label :billing_type, "Monthly", :value => "monthly"
-
-              - if @community.billing_type == "annual"
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Billing Month
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .multiselect
-                      .show-categories
-                        = @community.billing_month
-                      %ul#multiselect{style: "display:none;"}
-                        %li{:class=> set_active_class('January',@community.billing_month), 'data-title' => 'January'}
-                          %a
-                            %i.fa.fa-check
-                            January
-                        %li{:class=> set_active_class('February',@community.billing_month), 'data-title' => 'February'}
-                          %a
-                            %i.fa.fa-check
-                            February
-                        %li{:class=> set_active_class('March',@community.billing_month), 'data-title' => 'March'}
-                          %a
-                            %i.fa.fa-check
-                            March
-                        %li{:class=> set_active_class('April',@community.billing_month), 'data-title' => 'April'}
-                          %a
-                            %i.fa.fa-check
-                            April
-                        %li{:class=> set_active_class('May',@community.billing_month), 'data-title' => 'May'}
-                          %a
-                            %i.fa.fa-check
-                            May
-                        %li{:class=> set_active_class('June',@community.billing_month), 'data-title' => 'June'}
-                          %a
-                            %i.fa.fa-check
-                            June
-                        %li{:class=> set_active_class('July',@community.billing_month), 'data-title' => 'July'}
-                          %a
-                            %i.fa.fa-check
-                            July
-                        %li{:class=> set_active_class('August',@community.billing_month), 'data-title' => 'August'}
-                          %a
-                            %i.fa.fa-check
-                            August
-                        %li{:class=> set_active_class('September',@community.billing_month), 'data-title' => 'September'}
-                          %a
-                            %i.fa.fa-check
-                            September
-                        %li{:class=> set_active_class('October',@community.billing_month), 'data-title' => 'October'}
-                          %a
-                            %i.fa.fa-check
-                            October
-                        %li{:class=> set_active_class('November',@community.billing_month), 'data-title' => 'November'}
-                          %a
-                            %i.fa.fa-check
-                            November
-                        %li{:class=> set_active_class('December',@community.billing_month), 'data-title' => 'December'}
-                          %a
-                            %i.fa.fa-check
-                            December
-                = f.hidden_field :billing_month, :multiple => true, id: "categories_field",:class=>""
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Billing Rate
+                  Billing Rate (Touch)
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
 
-                  = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
+                  = f.text_field :billing_rate_touch, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_touch.present? ? @community.billing_rate_touch : "$2,028"
+              - if @community.company.name.downcase == "lincoln"
+                .form-group.billing_rate_slef
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Billing Rate (Self Tour)
+
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+
+                    = f.text_field :billing_rate_selftour, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_touch.present? ? @community.billing_rate_selftour : "$295"
+              -# - elsif @community.dwelo.present?
+              -#   .form-group#billing_rate_slef_dwelo
+              -#     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#       Billing Rate (Self Tour)
+              -#
+              -#     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#
+              -#       = f.text_field :billing_rate_selftour, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_touch.present? ? @community.billing_rate_selftour : "$280"
+              -# - else
+
+              .form-group.billing_rate_slef
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Billing Rate (Self Tour)
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+
+                  = f.text_field :billing_rate_selftour, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_touch.present? ? @community.billing_rate_selftour : "$385"
+              .form-group#billing_rate_maps
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Billing Rate (Maps)
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+
+                  = f.text_field :billing_rate_maps, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
+
+
+
               .form-group#subscription_start_date_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Subscription Start Date
@@ -171,17 +206,17 @@
                     = f.check_box :powered_by_btn,:value => true
                     %label.label-primary{:for => "community_powered_by_btn"}
                     %span.pl-15 Yes
-              - if f.object.self_tour.present? && f.object.self_tour
-                .form-group.apply_now_self_tour_field
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Apply Now Self Tour
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = f.check_box :apply_now_self_tour
-                      %label.label-primary{:for => "community_apply_now_self_tour"}
-                      %span.pl-15 Yes      
-              .form-group
+              .form-group.apply_now_self_tour_field#apply_now_self_row
+
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Apply Now Self Tour
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :apply_now_self_tour
+                    %label.label-primary{:for => "community_apply_now_self_tour"}
+                    %span.pl-15 Yes
+              .form-group#show_map_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Show Map
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -190,7 +225,7 @@
                     = f.check_box :show_map
                     %label.label-primary{:for => "community_show_map"}
                     %span.pl-15 Yes
-              .form-group
+              .form-group#mdu_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   MDU
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -201,7 +236,7 @@
                     %span.pl-15 Yes
               - if current_user.is_super_admin?
                 - if f.object.touchscreen_app.present? && f.object.touchscreen_app
-                  .form-group.apply_now_pynwheel_touch_field
+                  .form-group.apply_now_pynwheel_touch_field#apply_phnwheel_touch
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                       Apply Now Pynwheel Touch
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -210,7 +245,7 @@
                         = f.check_box :apply_now_pynwheel_touch
                         %label.label-primary{:for => "community_apply_now_pynwheel_touch"}
                         %span.pl-15 Yes
-                  .form-group.apply_now_pynwheel_touch_field
+                  .form-group.apply_now_pynwheel_touch_field#apply_now_pynwheel_touch_field_row
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                       Apply Now Pynwheel Touch and Go
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -219,7 +254,7 @@
                         = f.check_box :apply_now_pynwheel_touch_and_go
                         %label.label-primary{:for => "community_apply_now_pynwheel_touch_and_go"}
                         %span.pl-15 Yes            
-              .form-group
+              .form-group#chat_control_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Chat Control
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -228,7 +263,7 @@
                     = f.check_box :chat_control
                     %label.label-primary{:for => "community_chat_control"}
                     %span.pl-15 Yes
-              .form-group#access_restrictions
+              .form-group#access_restrictions.access_restrictions_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Restrict Access
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -255,7 +290,7 @@
               /       = f.check_box :pynwheel_touch
               /       %label.label-primary{:for => "community_pynwheel_touch"}
               /       %span.pl-15 Yes            
-              .form-group#allowed_emails
+              .form-group#allowed_emails.allowed_emails_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Allowed Emails
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AlloweEmails","data-content" => " "}
@@ -287,7 +322,7 @@
 
               /  .col-sm-12.col-lg-9.col-md-9.col-xs-12
               /    = text_field_tag :email,  @community.email, {:class=>"form-control", :autocomplete=>"off",:readonly=>true}
-              .form-group
+              .form-group#inactive_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Inactivate
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -360,20 +395,6 @@
     $("#access_restrictions").addClass("hidden")
     $("#allowed_emails").addClass("hidden")
   }
-  if ($("#community_touchscreen_app").is(":checked") == false){
-    $("#code_row").addClass("hidden")
-    $("#display_types_row").addClass("hidden")
-    $("#subscription_start_date_row").addClass("hidden")
-    ("#show_gesture_icons").addClass("hidden")
-    ("#powered_by_pynwheel_row").addClass("hidden")
-  }
-  if ($("#community_touchscreen_app").is(":checked") == true){
-    $("#code_row").addClass("hidden")
-    $("#display_types_row").addClass("hidden")
-    $("#subscription_start_date_row").addClass("hidden")
-    ("#show_gesture_icons").addClass("hidden")
-    ("#powered_by_pynwheel_row").addClass("hidden")
-  }
 
   if ($("#community_restrict_access").is(":checked") == false){
     $("#allowed_emails").addClass("hidden")
@@ -398,9 +419,22 @@
   $('#community_self_tour').change(function() {
     if ($("#community_self_tour").is(":checked")){
       $(".apply_now_self_tour_field").removeClass("hidden")
+      $("#chat_control_row").removeClass("hidden")
+
+
+      $(".access_restrictions_row").removeClass("hidden")
+      $("#show_map_row").removeClass("hidden")
+      $("#mdu_row").removeClass("hidden")
+
     }
-    else{
+    if ($("#community_self_tour").is(":checked") == false){
       $(".apply_now_self_tour_field").addClass("hidden")
+      $("#chat_control_row").addClass("hidden")
+
+      $(".access_restrictions_row").addClass("hidden")
+      $("#show_map_row").addClass("hidden")
+      $("#mdu_row").addClass("hidden")
+
     }
   })
 
@@ -438,4 +472,212 @@
     if ($(".email_to").val() == "email") {
       $(".email_field").removeClass("hide_email");
     }
+  $('#community_touchscreen_app').change(function() {
+    if ($("#community_touchscreen_app").is(":checked")){
+        $("#slef_tour_row").removeClass("hidden")
+
+        $("#billing_type_row").addClass("hidden")
+        $("#billing_month_row").addClass("hidden")
+        $("#billing_rate").addClass("hidden")
+
+        if ($("#community_self_tour").is(":checked") == true){
+          $("#apply_now_self_row").removeClass("hidden")
+          $(".access_restrictions_row").removeClass("hidden")
+          if ($("#access_restrictions_row").is(":checked") == true){
+            $(".allowed_emails_row").removeClass("hidden")
+          }
+          else {
+            $(".allowed_emails_row").addClass("hidden")
+          }
+          $("#show_map_row").removeClass("hidden")
+          $("#mdu_row").removeClass("hidden")
+          $("#chat_control_row").removeClass("hidden")
+
+        }
+        $("#inactive_row").addClass("hidden")
+        $("#code_row").removeClass("hidden")
+        $("#display_types_row").removeClass("hidden")
+        $("#subscription_start_date_row").removeClass("hidden")
+        $("#show_gesture_icons").removeClass("hidden")
+        $("#powered_by_pynwheel_row").removeClass("hidden")
+    }
+    else{
+        $("#code_row").addClass("hidden")
+        $("#display_types_row").addClass("hidden")
+        $("#subscription_start_date_row").addClass("hidden")
+        $("#show_gesture_icons").addClass("hidden")
+        $("#powered_by_pynwheel_row").addClass("hidden")
+        $("#slef_tour_row").removeClass("hidden")
+      if ($("#community_self_tour").is(":checked") == true){
+          $("#apply_now_self_row").removeClass("hidden")
+          $(".access_restrictions_row").removeClass("hidden")
+          if ($("#access_restrictions_row").is(":checked") == true){
+            $(".allowed_emails_row").removeClass("hidden")
+          }
+          else {
+            $(".allowed_emails_row").addClass("hidden")
+          }
+          $("#show_map_row").removeClass("hidden")
+          $("#mdu_row").removeClass("hidden")
+          $("#chat_control_row").removeClass("hidden")
+
+        }
+
+      if ($("#community_self_tour").is(":checked") == false){
+        $("#apply_now_self_row").addClass("hidden")
+        $(".access_restrictions_row").addClass("hidden")
+        $(".allowed_emails_row").addClass("hidden")
+        $("#chat_control_row").addClass("hidden")
+        $("#show_map_row").addClass("hidden")
+        $("#mdu_row").addClass("hidden")
+      }
+
+    }
+  })
+      // for touch screen true
+  if ($("#community_touchscreen_app").is(":checked") == false){
+      $("#code_row").addClass("hidden")
+      $("#display_types_row").addClass("hidden")
+      $("#subscription_start_date_row").addClass("hidden")
+      $("#show_gesture_icons").addClass("hidden")
+      $("#powered_by_pynwheel_row").addClass("hidden")
+      $("#slef_tour_row").removeClass("hidden")
+      $("#billing_type_row").removeClass("hidden")
+      $("#billing_month_row").removeClass("hidden")
+      $("#billing_rate").removeClass("hidden")
+      $("#apply_phnwheel_touch").removeClass("hidden")
+      $("#apply_now_pynwheel_touch_field_row").removeClass("hidden")
+      $("#chat_control_row").removeClass("hidden")
+      $("#inactive_row").removeClass("hidden")
+
+
+
+   if ($("#community_self_tour").is(":checked") == true){
+      $("#billing_rate_maps").addClass("hidden")
+      $("#billing_rate_touch").addClass("hidden")
+      $(".billing_rate_slef").removeClass("hidden")
+      $("#billing_rate_slef_dwelo").addClass("hidden")
+      $("#apply_now_self_row").removeClass("hidden")
+      $(".access_restrictions_row").removeClass("hidden")
+      if ($("#access_restrictions_row").is(":checked") == true){
+        $(".allowed_emails_row").removeClass("hidden")
+      }
+      else {
+        $(".allowed_emails_row").addClass("hidden")
+      }
+      $("#show_map_row").removeClass("hidden")
+      $("#mdu_row").removeClass("hidden")
+      $("#chat_control_row").removeClass("hidden")
+    }
+    if ($("#community_self_tour").is(":checked") == false){
+      $("#apply_now_self_row").addClass("hidden")
+      $(".access_restrictions_row").addClass("hidden")
+      $(".allowed_emails_row").addClass("hidden")
+      $("#show_map_row").addClass("hidden")
+      $("#mdu_row").addClass("hidden")
+      $("#chat_control_row").addClass("hidden")
+    }
+
+  }
+  // for touch scree true
+    if ($("#community_touchscreen_app").is(":checked") == true){
+        $("#billing_rate_maps").addClass("hidden")
+        $("#billing_rate_touch").removeClass("hidden")
+        $(".billing_rate_slef").addClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        $("#code_row").removeClass("hidden")
+        $("#display_types_row").removeClass("hidden")
+        $("#subscription_start_date_row").removeClass("hidden")
+        $("#show_gesture_icons").removeClass("hidden")
+        $("#powered_by_pynwheel_row").removeClass("hidden")
+        $("#apply_now_self_row").removeClass("hidden")
+
+        $("#slef_tour_row").removeClass("hidden")
+        $("#billing_type_row").addClass("hidden")
+        $("#billing_month_row").addClass("hidden")
+        $("#billing_rate").addClass("hidden")
+        $("#apply_phnwheel_touch").addClass("hidden")
+        $("#apply_now_pynwheel_touch_field_row").addClass("hidden")
+        $("#inactive_row").addClass("hidden")
+
+     if ($("#community_self_tour").is(":checked") == true){
+        $("#billing_rate_maps").removeClass("hidden")
+        $("#billing_rate_touch").addClass("hidden")
+        $(".billing_rate_slef").addClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        $("#apply_now_self_row").removeClass("hidden")
+        $(".access_restrictions_row").removeClass("hidden")
+
+        if ($("#access_restrictions_row").is(":checked") == true){
+          $(".allowed_emails_row").removeClass("hidden")
+        }
+        else {
+          $(".allowed_emails_row").addClass("hidden")
+        }
+        $("#show_map_row").removeClass("hidden")
+        $("#mdu_row").removeClass("hidden")
+        $("#chat_control_row").removeClass("hidden")
+      }
+      if ($("#community_self_tour").is(":checked") == false){
+        $(".billing_rate_slef").addClass("hidden")
+        $("#apply_now_self_row").addClass("hidden")
+        $(".access_restrictions_row").addClass("hidden")
+        $(".allowed_emails_row").addClass("hidden")
+        $("#show_map_row").addClass("hidden")
+        $("#mdu_row").addClass("hidden")
+        $("#chat_control_row").addClass("hidden")
+      }
+
+
+    }
+
+
+  // for self true
+
+    if ($("#community_self_tour").is(":checked") == true){
+      $("#billing_rate_maps").addClass("hidden")
+      $("#billing_rate_touch").addClass("hidden")
+      $(".billing_rate_slef").removeClass("hidden")
+      $("#billing_rate_slef_dwelo").addClass("hidden")
+      $("#show_map_row").removeClass("hidden")
+      $("#mdu_row").removeClass("hidden")
+      $("#chat_control_row").removeClass("hidden")
+      $(".access_restrictions_row").removeClass("hidden")
+      $("#slef_tour_row").removeClass("hidden")
+      $("#billing_type_row").addClass("hidden")
+      $("#billing_month_row").addClass("hidden")
+      $("#billing_rate").addClass("hidden")
+      $("#apply_phnwheel_touch").addClass("hidden")
+      $("#apply_now_pynwheel_touch_field_row").addClass("hidden")
+      $("#inactive_row").addClass("hidden")
+
+      $("#apply_now_self_row").removeClass("hidden")
+      if ($("#access_restrictions_row").is(":checked") == true){
+        $(".allowed_emails_row").removeClass("hidden")
+      }
+      else {
+        $(".allowed_emails_row").addClass("hidden")
+      }
+      if ($("#community_touchscreen_app").is(":checked") == true){
+        $("#code_row").removeClass("hidden")
+        $("#billing_rate_maps").removeClass("hidden")
+        $("#billing_rate_touch").addClass("hidden")
+        $(".billing_rate_slef").addClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        $("#display_types_row").removeClass("hidden")
+        $("#subscription_start_date_row").removeClass("hidden")
+        $("#show_gesture_icons").removeClass("hidden")
+        $("#powered_by_pynwheel_row").removeClass("hidden")
+        $("#apply_now_self_row").removeClass("hidden")
+      }
+      else{
+        $("#code_row").addClass("hidden")
+        $("#display_types_row").addClass("hidden")
+        $("#subscription_start_date_row").addClass("hidden")
+        $("#show_gesture_icons").addClass("hidden")
+        $("#powered_by_pynwheel_row").addClass("hidden")
+        $("#apply_now_self_row").removeClass("hidden")
+
+      }
+  }
 
