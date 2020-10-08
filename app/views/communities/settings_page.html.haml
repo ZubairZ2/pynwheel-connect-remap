@@ -37,7 +37,7 @@
                     = f.check_box :self_tour
                     %label.label-primary{:for => "community_self_tour"}
                     %span.pl-15 Yes
-              .form-group
+              .form-group#code_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Code
 
@@ -56,7 +56,7 @@
               -#    = f.label :is_sitemap, "Floorplates", :value => "false"
 
 
-              .form-group
+              .form-group#display_types_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Display Type
 
@@ -144,7 +144,7 @@
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
 
                   = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
-              .form-group
+              .form-group#subscription_start_date_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Subscription Start Date
 
@@ -152,7 +152,7 @@
                   = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true
 
 
-              .form-group
+              .form-group#show_gesture_icons
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Show Gesture Icons
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -162,7 +162,7 @@
                     %label.label-primary{:for => "community_show_gesture_icons"}
                     %span.pl-15 Yes
 
-              .form-group
+              .form-group#powered_by_pynwheel_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Powered by Pynwheel
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -359,6 +359,20 @@
   if ($("#community_self_tour").is(":checked") == false){
     $("#access_restrictions").addClass("hidden")
     $("#allowed_emails").addClass("hidden")
+  }
+  if ($("#community_touchscreen_app").is(":checked") == false){
+    $("#code_row").addClass("hidden")
+    $("#display_types_row").addClass("hidden")
+    $("#subscription_start_date_row").addClass("hidden")
+    ("#show_gesture_icons").addClass("hidden")
+    ("#powered_by_pynwheel_row").addClass("hidden")
+  }
+  if ($("#community_touchscreen_app").is(":checked") == true){
+    $("#code_row").addClass("hidden")
+    $("#display_types_row").addClass("hidden")
+    $("#subscription_start_date_row").addClass("hidden")
+    ("#show_gesture_icons").addClass("hidden")
+    ("#powered_by_pynwheel_row").addClass("hidden")
   }
 
   if ($("#community_restrict_access").is(":checked") == false){
