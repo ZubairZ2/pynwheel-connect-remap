@@ -857,9 +857,13 @@ module ApplicationHelper
   end
 
   def unit_id_is_in_cookies?(cookies,fav_unit_id)
-    if cookies.present?
-      array = JSON.parse(cookies)
-      array.include? fav_unit_id.to_s
+    begin
+        if cookies.present?
+          array = JSON.parse(cookies)
+          array.include? fav_unit_id.to_s
+        end
+    rescue => ex
+        return false
     end
   end
 
