@@ -288,6 +288,7 @@ Rails.application.routes.draw do
         end
       end
       collection do
+        get :parameters
         post :save_starting_point
         get :select_status
         post :select_status

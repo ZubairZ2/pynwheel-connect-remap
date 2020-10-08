@@ -44,6 +44,7 @@
 //= require jquery.remotipart
 //= require jquery.mCustomScrollbar.concat.min
 //= require webpages
+//= require tour_setup
 //= require clipboard.min
 //= require favorites
 //= require bootstrap-tagsinput
