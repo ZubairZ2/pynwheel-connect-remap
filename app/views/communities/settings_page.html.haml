@@ -12,7 +12,31 @@
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Company
 
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
+              - if current_user.is_super_admin?
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Pynwheel Touch
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :touchscreen_app
+                      %label.label-primary{:for => "community_touchscreen_app"}
+                      %span.pl-15 Yes
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Self Tour
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :self_tour
+                    %label.label-primary{:for => "community_self_tour"}
+                    %span.pl-15 Yes
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Code
@@ -20,12 +44,6 @@
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
 
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Company
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
               -#.form-group
               -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               -#    Property Map / Floorplates
@@ -153,15 +171,6 @@
                     = f.check_box :powered_by_btn,:value => true
                     %label.label-primary{:for => "community_powered_by_btn"}
                     %span.pl-15 Yes
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Self Tour
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = f.check_box :self_tour
-                    %label.label-primary{:for => "community_self_tour"}
-                    %span.pl-15 Yes
               - if f.object.self_tour.present? && f.object.self_tour
                 .form-group.apply_now_self_tour_field
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -189,17 +198,8 @@
                     %span.pr-15 No
                     = f.check_box :mdu
                     %label.label-primary{:for => "community_mdu"}
-                    %span.pl-15 Yes            
+                    %span.pl-15 Yes
               - if current_user.is_super_admin?
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Touchscreen App
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = f.check_box :touchscreen_app
-                      %label.label-primary{:for => "community_touchscreen_app"}
-                      %span.pl-15 Yes
                 - if f.object.touchscreen_app.present? && f.object.touchscreen_app
                   .form-group.apply_now_pynwheel_touch_field
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
