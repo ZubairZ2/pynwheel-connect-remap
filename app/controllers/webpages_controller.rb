@@ -8,10 +8,10 @@ class WebpagesController < ActionController::Base
     #   cookies.permanent[:session_id] = SecureRandom.hex(8)
     #   Favorite.create(session_id: cookies[:session_id],unit_ids: [])
     # end
-    fav = Favorite.find_or_create_by(community_id: @community.id)
-    if fav.unit_ids.nil?
-      fav.unit_ids = []
-      fav.save
+    @fav = Favorite.find_or_create_by(community_id: @community.id)
+    if @fav.unit_ids.nil?
+      @fav.unit_ids = []
+      @fav.save
     end
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
