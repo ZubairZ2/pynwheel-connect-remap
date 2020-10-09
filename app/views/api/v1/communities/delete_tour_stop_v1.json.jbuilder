@@ -389,6 +389,7 @@ json.tours @tours do |tour|
     json.navigation_title "First Stop: " + new_stops_arr[0].name if new_stops_arr[0].present?
   end
   skip_1 = false 
+  skip_1_path = false
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
   json.tour_stop new_stops_arr.compact do |stop|
     
@@ -988,6 +989,7 @@ json.tours @tours do |tour|
     @existing_path_points = []
     
     if @community.show_map
+      
       if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
         @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
         path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
@@ -999,15 +1001,27 @@ json.tours @tours do |tour|
         end
          
       else
-        path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
-        if path.blank?
-          path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
-          @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+        unless skip_1_path
+          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
+          if path.blank?
+            path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
+            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+          else
+            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+          end
         else
-          @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-2].stop_id).first
+          if path.blank?
+            path = Path.where(map_path_to_id: new_stops_arr[i-2].stop_id, map_path_from_id: stop.stop_id).first
+            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+          else
+            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+          end
         end
+        
         # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
       end
+      skip_1_path = skip_1
     end  
 
     @existing_path_points.flatten!
