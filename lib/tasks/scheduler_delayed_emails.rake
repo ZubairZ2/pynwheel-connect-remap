@@ -56,11 +56,10 @@ namespace :delayed_email_notifications do
 
 				send_email_sms_or_both @mail_content, community
 				send_email_sms_or_both_to_touruser @thank_you_content, community, th
-
+				th.update_column 'abandoned_tour_email_sent', true
 				# community.deleted_ids = []
 				save_prospect(th.lengthy_stay, th, community) if th.lengthy_stay.present?
-				th.abandoned_tour_email_sent = true
-				th.save
+				
 				community.save
 			end
 		end

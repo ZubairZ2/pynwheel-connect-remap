@@ -557,7 +557,7 @@
 
             for (var each_channel in all_channels) {
                 channel = pusher.subscribe(all_channels[each_channel]);
-                // console.log("listening to ", all_channels[each_channel])
+                console.log("listening to ", all_channels[each_channel])
 
                 channel.bind('new-chat', function(data) {
                     return updateAdminChat(data);

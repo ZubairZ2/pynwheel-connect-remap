@@ -391,6 +391,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+
   def is_tour_in_visiting_hours(time_param, community)
     current_time = time_param.to_datetime.strftime("%H:%M")
     current_day = time_param.to_datetime.strftime('%A')
