@@ -959,9 +959,8 @@
   var div_checklist = "#{@community.scheduler_widget.nil? ? true : @community.scheduler_widget}"
   if(div_checklist == "true")
     $('.div_checklist').removeClass('hidden');
-
-  var min_floor = #{@community.is_sitemap ? 99999 : (@community.tour.starting_floor.present? ? @community.tour.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.min) rescue 99999}
-  var min_floor1 = #{@community.is_sitemap ? 99999 : @community.floorplates.map{|f| f.floors}.flatten.min rescue 99999}
+  var min_floor = #{@community.is_sitemap ? 99999 : (@community.tour.starting_floor.present? ? @community.tour.starting_floor : (@community.floorplates.present? ? @community.floorplates.map{|f| f.floors}.flatten.min : 99999)) rescue 99999}
+  var min_floor1 = #{@community.is_sitemap ? 99999 : (@community.floorplates.present? ? @community.floorplates.map{|f| f.floors}.flatten.min : 99999) rescue 99999}
 
   $(document).ready(function() {
 
