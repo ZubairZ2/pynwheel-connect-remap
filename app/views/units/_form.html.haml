@@ -49,7 +49,7 @@
         = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"20"
         %small Building (Manual Override Required)
       - unless @community.is_sitemap
-        - if f.object.x_plot.present? and f.object.y_plot.present? and (f.object.x_plot + f.object.y_plot) > 0
+        - if f.object.floorplate.present? 
           .col-sm-6.col-lg-4.col-md-4.col-xs-12
             = f.select :floor, f.object.floorplate.floors,{}, :class=>"form-control validate[custom[floor]]"
             %small Floor (Manual Override Required)
