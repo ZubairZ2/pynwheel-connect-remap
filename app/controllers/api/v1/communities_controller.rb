@@ -196,7 +196,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
     te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
     @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
-    @community.save
+    @community.save 
     @tours = Tour.where(id: params[:tour_id])
     @tour_user = TourUser.find_by(id: params[:tour_user_id])
     @in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
