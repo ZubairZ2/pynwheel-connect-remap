@@ -67,75 +67,6 @@
                   = f.radio_button :is_vertical_app, false
                   = f.label :is_vertical_app, "Horizontal", :value => "false"
 
-              -#.form-group#billing_type_row
-              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#    Billing Type
-              -#
-              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-              -#    = f.radio_button :billing_type, "annual"
-              -#    = f.label :billing_type, "Annual", :value => "annual"
-              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-              -#    = f.radio_button :billing_type, "monthly"
-              -#    = f.label :billing_type, "Monthly", :value => "monthly"
-              -#
-              -#- if @community.billing_type == "annual"
-              -#  .form-group#billing_month_row
-              -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#      Billing Month
-              -#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              -#      .multiselect
-              -#        .show-categories
-              -#          = @community.billing_month
-              -#        %ul#multiselect{style: "display:none;"}
-              -#          %li{:class=> set_active_class('January',@community.billing_month), 'data-title' => 'January'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              January
-              -#          %li{:class=> set_active_class('February',@community.billing_month), 'data-title' => 'February'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              February
-              -#          %li{:class=> set_active_class('March',@community.billing_month), 'data-title' => 'March'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              March
-              -#          %li{:class=> set_active_class('April',@community.billing_month), 'data-title' => 'April'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              April
-              -#          %li{:class=> set_active_class('May',@community.billing_month), 'data-title' => 'May'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              May
-              -#          %li{:class=> set_active_class('June',@community.billing_month), 'data-title' => 'June'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              June
-              -#          %li{:class=> set_active_class('July',@community.billing_month), 'data-title' => 'July'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              July
-              -#          %li{:class=> set_active_class('August',@community.billing_month), 'data-title' => 'August'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              August
-              -#          %li{:class=> set_active_class('September',@community.billing_month), 'data-title' => 'September'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              September
-              -#          %li{:class=> set_active_class('October',@community.billing_month), 'data-title' => 'October'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              October
-              -#          %li{:class=> set_active_class('November',@community.billing_month), 'data-title' => 'November'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              November
-              -#          %li{:class=> set_active_class('December',@community.billing_month), 'data-title' => 'December'}
-              -#            %a
-              -#              %i.fa.fa-check
-              -#              December
-              -#  = f.hidden_field :billing_month, :multiple => true, id: "categories_field",:class=>""
 
               .form-group#billing_rate_touch
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -175,7 +106,7 @@
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
 
-                  = f.text_field :billing_rate_maps, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
+                  = f.text_field :billing_rate_maps, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13",value: @community.billing_rate_maps.present? ? @community.billing_rate_maps : "$50"
 
 
 
@@ -402,6 +333,10 @@
 
   $('#community_self_tour').change(function() {
     if ($("#community_self_tour").is(":checked")){
+      $("#billing_rate_maps").addClass("hidden")
+      $("#billing_rate_touch").addClass("hidden")
+      $(".billing_rate_slef").removeClass("hidden")
+      $("#billing_rate_slef_dwelo").addClass("hidden")
       $("#access_restrictions").removeClass("hidden")
       $(".verification_type_field").removeClass("hidden")
 
@@ -420,8 +355,10 @@
     if ($("#community_self_tour").is(":checked")){
       $(".apply_now_self_tour_field").removeClass("hidden")
       $("#chat_control_row").removeClass("hidden")
-
-
+      $("#billing_rate_maps").addClass("hidden")
+      $("#billing_rate_touch").addClass("hidden")
+      $(".billing_rate_slef").removeClass("hidden")
+      $("#billing_rate_slef_dwelo").addClass("hidden")
       $(".access_restrictions_row").removeClass("hidden")
       $("#show_map_row").removeClass("hidden")
       $("#mdu_row").removeClass("hidden")
@@ -430,6 +367,7 @@
     if ($("#community_self_tour").is(":checked") == false){
       $(".apply_now_self_tour_field").addClass("hidden")
       $("#chat_control_row").addClass("hidden")
+      $(".billing_rate_slef").addClass("hidden")
 
       $(".access_restrictions_row").addClass("hidden")
       $("#show_map_row").addClass("hidden")
@@ -437,10 +375,26 @@
 
     }
   })
+  $('#community_touchscreen_app').change(function() {
+    if ($("#community_touchscreen_app").is(":checked") == false){
+      if ($("#community_self_tour").is(":checked") == true){
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").removeClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+    }
+  }
+  })
+
 
   $('#community_touchscreen_app').change(function() {
     if ($("#community_touchscreen_app").is(":checked")){
       $(".apply_now_pynwheel_touch_field").removeClass("hidden")
+      $("#billing_rate_touch").addClass("hidden")
+      $("#billing_rate_maps").addClass("hidden")
+      $("#billing_rate_touch").addClass("hidden")
+      $(".billing_rate_slef").removeClass("hidden")
+      $("#billing_rate_slef_dwelo").addClass("hidden")
     }
     else{
       $(".apply_now_pynwheel_touch_field").addClass("hidden")
@@ -475,12 +429,19 @@
   $('#community_touchscreen_app').change(function() {
     if ($("#community_touchscreen_app").is(":checked")){
         $("#slef_tour_row").removeClass("hidden")
-
+        $("#billing_rate_maps").addClass("hidden")
+        $("#billing_rate_touch").removeClass("hidden")
+        $(".billing_rate_slef").addClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
         $("#billing_type_row").addClass("hidden")
         $("#billing_month_row").addClass("hidden")
         $("#billing_rate").addClass("hidden")
 
         if ($("#community_self_tour").is(":checked") == true){
+          $("#billing_rate_maps").removeClass("hidden")
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").addClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
           $("#apply_now_self_row").removeClass("hidden")
           $(".access_restrictions_row").removeClass("hidden")
           if ($("#access_restrictions_row").is(":checked") == true){
@@ -633,7 +594,6 @@
 
 
   // for self true
-
     if ($("#community_self_tour").is(":checked") == true){
       $("#billing_rate_maps").addClass("hidden")
       $("#billing_rate_touch").addClass("hidden")
@@ -680,4 +640,10 @@
 
       }
   }
+  if ($("#community_self_tour").is(":checked") == true) {
+    if ($("#community_restrict_access").is(":checked") == true){
+        $(".allowed_emails_row").removeClass("hidden")
+    }
+  }
+
 
