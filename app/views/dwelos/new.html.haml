@@ -32,16 +32,10 @@
       .col-lg-12.col-md-12
         - if @community.dwelo.present?
           - if current_user.is_super_admin?
-            -#  .box-header
-            -#    %p
-            -#      This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
-            -#    = link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
-            -#    = link_to "Test Pricing" , community_psi_pricing_test_connection_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "entrata_pricing_button"
-            -#    = link_to "Test Space Configuration" , community_psi_space_configuration_test_connection_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "entrata_space_configuration_button"
-            -#    / = link_to "Store Pricing" , community_realpage_load_pricing_data_path(current_community) , :class=>"btn btn-primary credential_fields", :id => "realpage_store_pricing_button"
-            -#    / = link_to "Show Pricing" , community_show_realpage_pricing_data_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "realpage_show_pricing_button"
-            -#    %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
-            -#      If the page that opens contains a bunch of data, it's probably good! If it contains one line that is an error message, then your data cannot be imported into Pynwheel. Please contact your data provider to troubleshoot.
+            .box-header
+              %p
+                This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
+              = link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
           .row
             .col-md-6
               %h4.title Import Locks Data
@@ -92,14 +86,14 @@
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .row
                   .col-sm-6.col-lg-8.col-md-4.col-xs-12
-                    = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=>''
+                    = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.edge_state.present? ? @community.edge_state.client_id : " "
                     %small Your public client id of EdgeState Account
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .col-sm-6.col-lg-8.col-md-4.col-xs-12
-                    = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> ''
+                    = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.edge_state.present? ? @community.edge_state.client_secret : " "
                     %small Your client secret of EdgeState Account
                   = f.hidden_field :community_id, :value=> current_community.id
         / /.box-body

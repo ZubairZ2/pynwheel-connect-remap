@@ -1,4 +1,5 @@
 class CommunitiesController < ApplicationController
+  include DweloDevicesHelper
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
@@ -260,6 +261,28 @@ class CommunitiesController < ApplicationController
   
   def test_connection
     @community = Community.find params[:community_id]
+    if @community.dwelo.present? && @community.locks_provider == "Dwelo"
+      dwelo_community_account = Dwelo.find_by(community_id: @community.id) rescue nil
+      if dwelo_community_account.present?
+      dwelo_client_credentials(dwelo_community_account)
+      token_type = "Bearer"
+      auth_header = token_type + " " + @token
+
+      url = base_url + "/v4/integrations/pynwheel/devices/?community_id=" + dwelo_community_account.default_community_id
+      xml = HTTParty.get(url,
+                              :headers => {'Authorization' => auth_header,
+                                           'Accept' => 'application/vnd.lockstate+json; version=1'})
+      if xml["data"].present?
+        render :xml => xml
+      else
+        flash[:notice] = "Something went wrong, please check your credentials."
+        redirect_to new_community_dwelo_path(@community)
+      end
+      else
+        flash[:notice] = "Something went wrong, please check your credentials."
+        redirect_to new_community_dwelo_path(@community)
+      end
+      else
     if @community.credentials_are_present?
       if xml = @community.connect_to_provider
         begin
@@ -276,7 +299,8 @@ class CommunitiesController < ApplicationController
       flash[:error] = "Please enter credentials in settings before importing data."
       redirect_to community_settings_path(:community_id=>@community.id)
     end
-  end
+    end
+    end
   def psi_pricing_test_connection
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
