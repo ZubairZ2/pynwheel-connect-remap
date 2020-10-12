@@ -88,11 +88,11 @@ namespace :delayed_email_notifications do
   	def send_email_sms_or_both_to_touruser thank_you_msg, community, th
   		
 		if community.alert_contact == "email"
-			send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg, th, community.email
+			send_email_tour_user "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg, th, community.email
 		elsif community.alert_contact == "phone"
 			send_sms_tour_user thank_you_msg
 		else
-			send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg, th, community.email
+			send_email_tour_user "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg, th, community.email
 			send_sms_tour_user thank_you_msg
 		end
 	end
