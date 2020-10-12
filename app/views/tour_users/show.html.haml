@@ -109,14 +109,14 @@
                         - begin
                           = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                         - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] if f.arrived.present?} ,{:prompt => 'Select the tour data & time'}, class: "form-control"
 
                     - else
                       .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
                         - begin
                           = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                         - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] if f.arrived.present?} ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
                     -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
@@ -154,7 +154,10 @@
 
 
                 .col-lg-6
+                  %h4{:style => "margin-left: 30px"}
+                    Stops Visited
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
+
                     - @visited_stop.each do |stop|
                       - @stop = TourStop.find stop[0].to_i rescue next
                       - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)

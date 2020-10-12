@@ -87,7 +87,10 @@
       -#               = elevator.name
 
       .col-lg-12.col-md-12
-
+        .box.box-info.add-plan.mt-40#logo_header
+          .box-header
+            %h3.box-title
+              TOUR STOPS
         -#.box.box-widget.panel-box.add-plan
         .box.box-widget.panel-box
           .row
@@ -246,9 +249,10 @@
               -#  %i.fa.fa-plus-circle
               -#  ADD PATH FOR STARTING POINT
 
-              = link_to test_automate_community_tours_path(current_community.id), class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
-                %i.fa.fa-plus-circle
-                Test Automate
+              - if current_user.is_super_admin?
+                = link_to test_automate_community_tours_path(current_community.id), class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
+                  %i.fa.fa-plus-circle
+                  Test Automate
             -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
             -#  %i.fa.fa-plus-circle
             -#  ADD PATH FOR STARTING POINT
@@ -258,16 +262,17 @@
         - if @tours.tour_stops.present?
           .row
             .col-md-12
-              %h3{ style: 'color: #800000;' } How to Set up the Tour Path:
+              %h3{ style: '' } How to Set Up Tour Path:
 
             .row
             .col-md-12
-              %h4 Add a Starting Point: After you click "Add Staring Point" click the map in the location that your visitors will begin your tours.
-              %h4{:style => "display: inline"} Draw a Path between two stops: Choose two points from the list above by clicking on the "Way Finding" icon.
+              %h4 Add a Starting Point: After you click "Add Staring Point", click on "Plot Starting Point." Then click the map in the location that your visitors will begin your tours.
+              %h4{:style => "display: inline"} Draw a Path between two stops: Choose two points from the list above by clicking on the "Way Finding" icon for each.
               %i.fa.fa-road.icon_size
-              %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
-              %h4 Drag and drop the icon onto the correct postion on the map.
-              %h4 To delete a point on the path, double-click the point.
+              / %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
+              / %h4 Drag and drop the icon onto the correct postion on the map.
+              / %h4 To delete a point on the path, double-click the point.
+              %h4 The line will reset when the page is refreshed.
 
             -#.col-md-12
             -#  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do

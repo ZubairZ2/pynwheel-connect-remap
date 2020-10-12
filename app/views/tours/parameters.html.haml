@@ -121,13 +121,7 @@
           = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
             = hidden_field_tag "community_id", @community.id
 
-            .form-group.alert-contact
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Alert Contact
-
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})
-                = submit_tag 'Update', class: "btn btn-success btn-sm pull-right"
+            
             - if @community.touchscreen_app   
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -141,6 +135,7 @@
                     = check_box_tag :show_tour_page, true, @community.show_tour_page, class: "show-tour-page"
                     %label.label-primary{:for => "show_tour_page"}
                     %span.pl-15 Yes
+                    = submit_tag 'Save', class: "btn btn-success btn-sm pull-right"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Visual id verification
@@ -500,15 +495,14 @@
                 %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "Save", class: "hide-save-btn"}
                 .pt-5.btn.btn-success#save-sorted-time{onclick: "ok();", class: "hide-sort-btn", style: "padding-top: 7px; padding-bottom:7px; padding-left:9px; padding-right: 8px;"}
                   Save Time Order
-    #logo_header.box.box-info.add-plan.mt-50.hidden
+    
+    .box.box-info.add-plan.mt-40#logo_header
       .box-header
         %h3.box-title
-          COMPOSE TEXT/EMAILS
-          %span
-    
+          NOTIFICATIONS
     .row
       .col-md-12
-        .box.box-widget.panel-box.add-plan.pt-30{style: "margin-top: 60px;"}
+        .box.box-widget.panel-box.add-plan.pt-30
           = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
             = f.hidden_field :community_id, value: @community.id
             = f.hidden_field :optional_mails, value: "optional_mails"
@@ -522,6 +516,13 @@
                 /       = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
                 %h4.col-lg-9.col-lg-offset-1{:style => "margin-bottom: 50px;"}
                   %b Optional: Add custom messaging to the standard automated text & email notification(s).
+                .col-lg-9.col-lg-offset-1
+                  .form-group.alert-contact
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Alert Type
+
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})
                 - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
@@ -628,3 +629,284 @@
 
               / End Panel left Side
         / /.content
+:javascript
+  function apply_time_to_all(monday_count, closing_time)
+  {
+    $(".tour_time_sortable").sortable( "disable" );
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
+    $("#schedule-btn-submit").addClass("blink");
+    monday_morning  = $(".monday_mor_" + monday_count).val();
+    monday_evening = $(".monday_eve_" + monday_count).val();
+    tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Tuesday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    wed_morning_val = jQuery(".Wednesday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    wed_evening_val = jQuery(".Wednesday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Thursday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Thursday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Friday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Friday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Saturday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Saturday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Sunday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
+  }
+  var floor = 1
+  function tour_setup_goBack()
+  {
+      window.location.reload();
+  }
+  var div_checklist = "#{@community.scheduler_widget.nil? ? true : @community.scheduler_widget}"
+  if(div_checklist == "true")
+    $('.div_checklist').removeClass('hidden');
+
+
+  $(document).ready(function() {
+
+  $('.check_t').change(function() {
+  
+    var checks = $('.check_t')
+    for(var i =0; i< checks.length; i = i+1)
+    {
+      if(this != checks[i])
+      {
+        checks[i].children[0].checked = false
+      }
+    }
+  });
+  if (window.location.href.includes('floorNo'))
+  {
+    $('html, body').animate({ scrollTop: 800 });
+  }
+
+  if ($("#only_scheduled_tour").is(":checked") == true){
+    $("#grace_time_period").removeClass("hidden")
+  }
+
+  $('#only_scheduled_tour').change(function() {
+    if ($("#only_scheduled_tour").is(":checked")){
+      $("#grace_time_period").removeClass("hidden")
+    }
+    else{
+      $("#grace_time_period").addClass("hidden")
+    }
+  })
+
+    
+
+
+  });
+ 
+
+
+
+
+
+
+
+  $('.tour_time_sortable').railsSortable();
+  $('.tour_sortable').railsSortable();
+  $(".tour_time_sortable").on( "sortchange", function( event, ui ) {
+    $(".apply-monday-btn").addClass("hide-apply-btn");
+    $("#add-btn").addClass("hide-add-btn");
+    $(".day-list").attr('disabled','disabled');
+    $("#save-sorted-time").removeClass("hide-sort-btn");
+    $("#save-sorted-time").addClass("blink");
+
+  });
+  function ok (){
+   location.reload();
+  }
+
+  community_id = #{params[:community_id]}
+
+  $(document).ready(function(){
+
+    function hasDuplicates(array,times_hash) {
+      var valuesSoFar = Object.create(null);
+      for (var i = 0; i < array.length; ++i) {
+                if(times_hash[array[i]][0].split('-')[0] >= times_hash[array[i]][0].split('-')[1])
+                {return true;}
+          if(times_hash[array[i]].length > 1)
+          {
+            var check_index = times_hash[array[i]];
+            for(var j = 0; j < check_index.length ;j++)
+            {
+              for(var k = 0; k < check_index.length ;k++)
+              {
+                if( j!=k )
+                {
+                var a = check_index[j].split('-')[0]
+                var b = check_index[j].split('-')[1]
+                var c = check_index[k].split('-')[0]
+                var d = check_index[k].split('-')[1]
+                
+                // if(parseInt(b.split(':')[0]) < 12 && parseInt(c.split(':')[0]) > 12 && parseInt(d.split(':')[0]) > 12)
+                // {
+                //   temp = parseInt(b.split(':')[0]) + 24
+                //   b = temp + ':' + parseInt(b.split(':')[1])
+                // }
+                // if(parseInt(d.split(':')[0]) < 12 && parseInt(c.split(':')[0]) > 12)
+                // {
+                //   temp = parseInt(d.split(':')[0]) + 24
+                //   d = temp + ':' + parseInt(d.split(':')[1])
+                // }
+                x = a + '-' + b
+                y = c + '-' + d
+                if(x.split('-')[0] >= x.split('-')[1])
+                {return true;}
+                if(y.split('-')[0] >= y.split('-')[1])
+                {return true;}
+
+                x = x.replace('00:00','24:00')
+                y = y.replace('00:00','24:00')
+
+                if(x.split('-')[0] <= y.split('-')[0] && x.split('-')[1] >= y.split('-')[0])
+                {
+                  return true;
+                }
+                if(x.split('-')[0] <= y.split('-')[1] && x.split('-')[1] >= y.split('-')[1])
+                {
+                  return true;
+                }
+                if(y.split('-')[0] <= x.split('-')[0] && y.split('-')[1] >= x.split('-')[0])
+                {
+                  return true;
+                }
+                if(y.split('-')[0] <= x.split('-')[1] && y.split('-')[1] >= x.split('-')[1])
+                {
+                  return true;
+                }
+
+                if(check_index[j].split('-')[0] <= check_index[k].split('-')[0] && check_index[j].split('-')[1] >= check_index[k].split('-')[0])
+                {return true;}
+                if(check_index[j].split('-')[0] <= check_index[k].split('-')[1] && check_index[j].split('-')[1] >= check_index[k].split('-')[1])
+                {return true;}
+
+
+                }
+
+              }
+            }
+          }
+      }
+      return false;
+    }
+
+    function get_next_day_with_selected_option(last_day){
+      var options = `<option value="Monday" selected="selected">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      if(last_day == "Monday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday" selected="selected">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Tuesday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday" selected="selected">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Wednesday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday" selected="selected">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Thursday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday" selected="selected">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Friday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday" selected="selected">Saturday</option><option value="Sunday">Sunday</option>`
+
+      return options
+    }
+    
+    function append_new_day(){
+      var last_dropdown_id = "day_" + (current_day - 1)
+      var last_dropdown = document.getElementById(last_dropdown_id);
+      var last_day = last_dropdown.options[last_dropdown.selectedIndex].text;
+      var new_day_with_selected_options = get_next_day_with_selected_option(last_day)
+
+      $(".list").append(`
+        <div class="row p-8-v">
+          <select class="day-list font-17-v pull-left mr-20-v" id="day_${current_day}" name="day_${current_day}">
+            ${new_day_with_selected_options}
+          </select>
+
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">From</label>
+            </div>
+            <input class="day-list bg-grey-v morning_time" name="from_${current_day}" type="time" value="09:00">
+          </div>
+
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">To</label>
+            </div>
+            <input class="day-list bg-grey-v evening_time" name="to_${current_day}" type="time" value="17:00">
+          </div>
+
+          <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger"></div>
+
+        </div>`);
+    }
+    var current_day = $(".list").children().length
+    
+  $('#add-btn').click(function(event){
+    current_day = current_day + 1
+    append_new_day()
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
+    event.preventDefault();
+  });
+
+  $('#schedule-btn-submit').click(function( event ){
+    var days = []
+    var times_list = $(".bg-grey-v")
+    var times_hash = {}
+    var i = 0;
+    $(".list").children().children('select').each(function(){
+      var selected = '#' + $(this).attr('id') + ' :selected'
+      var day_ = $(selected).text()
+      if(times_hash[day_] == undefined)
+      {
+        times_hash[day_] = []
+      }
+      times_hash[day_].push(times_list[i].value +'-'+ times_list[i+1].value);
+      days.push(day_);
+      i += 2;
+    })
+    if(hasDuplicates(days,times_hash)){
+      event.preventDefault();
+      $("#same-days").css('color', 'red');
+      timer = setTimeout(function() {
+        $("#same-days").css('color', 'white');
+      }, 2000);
+    }
+    else{
+      $("#save_hours").show().delay(2000).fadeOut();
+    }
+  })
+
+  $(".list").on('click', '.cancel', function(){
+    if ($(".list").children().length > 1){
+    $(this).parent().remove();
+
+    current_day = 0
+    $(".list").children().children('select').each(function(){
+      current_day = current_day + 1
+      $(this).attr("id", 'day_'+current_day);
+      $(this).attr("name", 'day_'+current_day);
+    })
+
+    current_day = 0
+    $(".list").children().children().children('input').each(function(i){
+      if (Math.floor(i%2 == 0)){
+        current_day = current_day + 1
+        $(this).attr("id", 'from_'+current_day);
+        $(this).attr("name", 'from_'+current_day);
+      }
+      else{
+        $(this).attr("id", 'to_'+current_day);
+        $(this).attr("name", 'to_'+current_day);
+      }
+    })
+  }
+  if ($(".list").children().length < 7)
+      $('#add-btn').show()
+  });
+  
+  });
+  function myFunction(){
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
+    $(".tour_time_sortable").sortable( "disable" );
+    $("#schedule-btn-submit").addClass("blink");
+
+  }
