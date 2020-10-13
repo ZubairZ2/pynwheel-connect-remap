@@ -596,7 +596,7 @@ class CommunitiesController < ApplicationController
 
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
-      redirect_to parameters_community_tours_path(@community)
+      redirect_to settings_community_tours_path(@community)
     else
       flash[:error] = @community.errors.full_messages.join(',')
       redirect_back(fallback_location: root_path)

@@ -168,15 +168,15 @@
               %i.fa.fa-angle-right.pull-right
           %ul.treeview-menu.property_map_intent_list{:style=>"#{controller_name =='tou4r'? 'display: block' : ''}"}
             %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "parameters"  ? 'active' : ''}"}
-              %a{:href => "#{parameters_community_tours_path(current_community)}"}
+              %a{:href => "#{settings_community_tours_path(current_community)}"}
                 %i.fa.fa-bars
-                %span Parameters
+                %span Settings
                 %span.pull-right-container
 
             %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "index" ? 'active' : ''}"}
               %a{:href => "#{community_tours_path(current_community)}"}
                 %i.fa.fa-plane
-                %span Tour Setup
+                %span Tour Stops
                 %span.pull-right-container
 
 
