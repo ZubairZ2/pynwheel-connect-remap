@@ -33,6 +33,10 @@
           %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}&building=#{@building}", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floor.present? ? (@floor.to_i == f ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
       - rescue
         - puts "rescued"
+    .box.box-info.add-plan.mt-40#logo_header
+      .box-header
+        %h3.box-title
+          TOUR STOPS
     .row
       / Start Panel left Side
       .col-lg-6{:style => "margin-bottom: 10px;"}
@@ -87,10 +91,7 @@
       -#               = elevator.name
 
       .col-lg-12.col-md-12
-        .box.box-info.add-plan.mt-40#logo_header
-          .box-header
-            %h3.box-title
-              TOUR STOPS
+        
         -#.box.box-widget.panel-box.add-plan
         .box.box-widget.panel-box
           .row
@@ -260,9 +261,13 @@
 
 
         - if @tours.tour_stops.present?
+          .box.box-info.add-plan.mt-40
+            .box-header
+              %h3.box-title
+                How to Set Up Tour Path:
           .row
             .col-md-12
-              %h3{ style: '' } How to Set Up Tour Path:
+              / %h3{ style: '' } How to Set Up Tour Path:
 
             .row
             .col-md-12
