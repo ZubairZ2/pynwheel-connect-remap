@@ -167,7 +167,7 @@
             %span.pull-right-container
               %i.fa.fa-angle-right.pull-right
           %ul.treeview-menu.property_map_intent_list{:style=>"#{controller_name =='tou4r'? 'display: block' : ''}"}
-            %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "parameters"  ? 'active' : ''}"}
+            %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "settings"  ? 'active' : ''}"}
               %a{:href => "#{settings_community_tours_path(current_community)}"}
                 %i.fa.fa-bars
                 %span Settings
