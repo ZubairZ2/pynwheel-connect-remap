@@ -308,7 +308,7 @@ class CommunitiesController < ApplicationController
     end
   end
   def psi_space_configuration_test_connection
-    @community = Community.find params[:community_id]
+    @community = Community.find params[:community_id] 
     if @community.credentials_are_present?
       if xml = @community.connect_to_pricing_with_space_configuration(@community)
         render :xml => xml
