@@ -951,6 +951,10 @@
     tues_morning_val = jQuery(".Sunday_" + monday_count).find($(".morning_time")).val(monday_morning);
     tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
   }
+  $(".cancel").click(function (){
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
+    $("#schedule-btn-submit").addClass("blink");
+  })
   var floor = #{raw @floor}
   function tour_setup_goBack()
   {
