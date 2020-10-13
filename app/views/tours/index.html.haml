@@ -407,6 +407,8 @@
               - index = 0
               - monday_count = 1
               - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
+              - day_count = { "Monday" => 0, "Tuesday" => 0, "Wednesday" => 0, "Thursday" => 0, "Friday" => 0, "Saturday" => 0, "Sunday" => 0 }
+
               .col-sm-12.list.tour_time_sortable
                 - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
                   .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
@@ -447,6 +449,27 @@
                         -# - days_count["sun"] = days_count["sun"] +1
                       - else
                         %option{value: "Sunday"} Sunday
+                      - if current_day.day == "Monday"
+                        %input#day_count.hidden_count_field{:name => "mon_day_count", :type => "hidden", :value => day_count["Monday"]}
+                        - day_count["Monday"] = day_count["Monday"] +1
+                      - if current_day.day == "Tuesday"
+                        %input#day_count.hidden_count_field{:name => "tue_day_count", :type => "hidden", :value => day_count["Tuesday"]}
+                        - day_count["Tuesday"] = day_count["Tuesday"] +1
+                      - if current_day.day == "Wednesday"
+                        %input#day_count.hidden_count_field{:name => "wed_day_count", :type => "hidden", :value => day_count["Wednesday"]}
+                        - day_count["Wednesday"] = day_count["Wednesday"] +1
+                      - if current_day.day == "Thursday"
+                        %input#day_count.hidden_count_field{:name => "thur_day_count", :type => "hidden", :value => days_count["Thursday"]}
+                        - day_count["Thursday"] = day_count["Thursday"] +1
+                      - if current_day.day == "Friday"
+                        %input#day_count.hidden_count_field{:name => "fri_day_count", :type => "hidden", :value => day_count["Friday"]}
+                        - day_count["Friday"] = day_count["Friday"] +1
+                      - if current_day.day == "Saturday"
+                        %input#day_count.hidden_count_field{:name => "sat_day_count", :type => "hidden", :value => day_count["Saturday"]}
+                        - day_count["Saturday"] = day_count["Saturday"] +1
+                      - if current_day.day == "Sunday"
+                        %input#day_count.hidden_count_field{:name => "sun_day_count", :type => "hidden", :value => day_count["Sunday"]}
+                        - day_count["Sunday"] = day_count["Sunday"] +1
                     - if current_day.day == "Monday"
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
@@ -936,6 +959,67 @@
     $(".tour_time_sortable").sortable( "disable" );
     $("#schedule-btn-submit").removeClass("hide-save-btn");
     $("#schedule-btn-submit").addClass("blink");
+    console.log($(".Tuesday_" + monday_count).length)
+    if ($(".Tuesday_" + monday_count).length < 1) {
+    var day= "Tuesday"
+     add_days_on_apply(day)
+    }
+    if ( $(".Wednesday_" + monday_count).length < 1) {
+    var day= "Wednesday"
+     add_days_on_apply(day)
+    }
+    if ($(".Thursday_" + monday_count).length < 1) {
+    var day= "Thursday"
+     add_days_on_apply(day)
+    }
+    if ( $(".Friday_" + monday_count).length < 1) {
+    var day= "Friday"
+     add_days_on_apply(day)
+    }
+    function add_days_on_apply(day){
+
+      var current_day = $(".list").children().length
+      var new_day_with_selected_options = get_next_day_with_selected_option(day)
+
+      $(".list").append(`
+        <div class="row ${day}_${monday_count} p-8-v">
+          <select class="day-list font-17-v pull-left mr-20-v" id="day_${current_day+1}" name="day_${current_day+1}">
+            ${new_day_with_selected_options}
+          </select>
+
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">From</label>
+            </div>
+            <input class="day-list bg-grey-v morning_time" name="from_${current_day+1}" type="time" value="${$(".monday_mor_" + monday_count).val()}">
+          </div>
+
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">To</label>
+            </div>
+            <input class="day-list bg-grey-v evening_time" name="to_${current_day+1}" type="time" value="${$(".monday_eve_" + monday_count).val()}">
+          </div>
+
+          <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger" style="margin-left: 8px;"></div>
+
+        </div>`);
+        }
+
+
+    function get_next_day_with_selected_option(last_day){
+      var options = `<option value="Monday" selected="selected">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      if(last_day == "Tuesday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday" selected="selected">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Wednesday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday" selected="selected">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Thursday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday" selected="selected">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Friday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday" selected="selected">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      return options
+    }
+
     monday_morning  = $(".monday_mor_" + monday_count).val();
     monday_evening = $(".monday_eve_" + monday_count).val();
     tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time")).val(monday_morning);
@@ -954,6 +1038,7 @@
   $(".cancel").click(function (){
     $("#schedule-btn-submit").removeClass("hide-save-btn");
     $("#schedule-btn-submit").addClass("blink");
+    $(".tour_time_sortable").sortable( "disable" );
   })
   var floor = #{raw @floor}
   function tour_setup_goBack()
@@ -1685,7 +1770,7 @@
             <input class="day-list bg-grey-v evening_time" name="to_${current_day}" type="time" value="17:00">
           </div>
 
-          <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger"></div>
+          <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger" style="margin-left: 8px;"></div>
 
         </div>`);
     }
@@ -1694,6 +1779,7 @@
   $('#add-btn').click(function(event){
     current_day = current_day + 1
     append_new_day()
+    $(".apply-monday-btn").addClass("hide-apply-btn");
     $("#schedule-btn-submit").removeClass("hide-save-btn");
     event.preventDefault();
   });
