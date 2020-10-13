@@ -3,7 +3,6 @@ class LoggedInChannel < ApplicationCable::Channel
         user_logged_in_for_current_community
     end
 
-
     def unsubscribed
         user_logged_out_for_current_community
     end
