@@ -136,7 +136,9 @@
         .col-lg-10
           .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %button.btn-primary.mb-20.done_btn#on_done{:style => " margin-top: 0px;  margin-bottom: 0px;"}
+              - if @unit.present?
+                %a.btn-primary.mb-20.done_btn.direct_btn{href: edit_community_unit_path(@community.id,@unit.id)} DONE
+              %button.btn-primary.mb-20.done_btn#on_done{:style => " margin-top: 0px;  margin-bottom: 0px;", class: "unit_amenity_done" }
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 
@@ -146,8 +148,19 @@
   var amenity_name = '#{@amenity.name}'
   var community_id = #{ @community.id}
   var from = #{ @from_unit}
+  var unit = "false"
+  debugger
+  if ('#{@unit.present?}'){
+    unit = '#{@unit.id}'
+  }
+    $('.amenity_edit_field').click(function(){
+      $('#on_done').removeClass("unit_amenity_done")
+      $('.direct_btn').addClass("hidden")
+      })
   
   $('.amenity_edit_field').change(function(){
+      $('#on_done').removeClass("unit_amenity_done")
+      $('.direct_btn').addClass("hidden")
 
       action = "change"
       $('#on_done').click(function(e){
@@ -155,6 +168,7 @@
         $('.edit_amenity').submit(function() {
             $(this).append('<input type="hidden" name="done_action" value="true">');
             $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
+            $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
         });
       })
       

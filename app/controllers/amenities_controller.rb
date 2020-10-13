@@ -23,6 +23,9 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
+    if params[:unit].present?
+      @unit = Unit.find (params[:unit])
+    end
     @from_unit =  (params[:from] == "unit" and @amenity.amenityable_type == "Unit") ?  @amenity.amenityable_id : "0"
     @assigned_lock = @amenity.remote_locks.first
   end
@@ -60,6 +63,9 @@ class AmenitiesController < ApplicationController
         end
       rescue => ex
       end
+      if params[:unit_render].present? && params[:unit_render] != "false"
+        redirect_to edit_community_unit_path(current_community,params[:unit_render]) , notice: "Unit's Amenity updated successfully"
+      else
       if params[:done_action].present?
         from_unit = params[:from_id]
         done_action = (params[:floorNo].nil? and params[:from].nil?) ? community_tours_path(current_community) : ( params[:floorNo].present? ? community_tours_path(current_community) << '?floorNo=' + params[:floorNo] : edit_community_unit_path(current_community,from_unit) )
@@ -71,6 +77,7 @@ class AmenitiesController < ApplicationController
           redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
         end
       end
+      end
     else
       unless params[:amenity_modal].present?
         redirect_to params[:floorNo].nil? ? edit_community_amenity_path(current_community,@amenity) : edit_community_amenity_path(current_community,@amenity) << '?floorNo=' + params[:floorNo] , alert: @amenity.errors.full_messages.join(',')
@@ -78,7 +85,7 @@ class AmenitiesController < ApplicationController
         redirect_to community_amenities_path(current_community), alert: @amenity.errors.full_messages.join(',')
       end
     end
-  end
+    end
   def saveAmenityGallery
     @community = Community.find params[:community_id]
     @amenity = Amenity.find params[:amenityId]

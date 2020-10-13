@@ -3462,3 +3462,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     -ms-animation:blink normal 1.5s infinite ease-in-out; /* IE */
     animation:blink normal 1.5s infinite ease-in-out; /* Opera */
 }
+
+.unit_amenity_done {
+    display: none;
+}
