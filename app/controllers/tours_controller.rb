@@ -31,7 +31,13 @@ class ToursController < ApplicationController
 
     @building_list = @building_list.compact.reject { |c| c.empty? }.uniq
     @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-    @sorted_building.present? ? (@building_list = @sorted_building) : ""
+    if @sorted_building.present?
+      if (@building_list - @sorted_building == [])
+        @building_list = @sorted_building
+      else
+        @building_list = (@sorted_building) + (@building_list - @sorted_building) 
+      end
+    end
     
     @building = params[:building].present? ? params[:building] : @building_list[0]
     ########################################################################
