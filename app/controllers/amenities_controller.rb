@@ -63,7 +63,9 @@ class AmenitiesController < ApplicationController
         end
       rescue => ex
       end
-      if params[:unit_render].present? && params[:unit_render] != "false"
+      if params[:unit].present?
+        redirect_to edit_community_unit_path(current_community,params[:unit]) , notice: "Unit's Amenity updated successfully"
+      elsif (params[:unit_render].present? && params[:unit_render] != "false" || params[:unit].present?)
         redirect_to edit_community_unit_path(current_community,params[:unit_render]) , notice: "Unit's Amenity updated successfully"
       else
       if params[:done_action].present?
@@ -85,7 +87,7 @@ class AmenitiesController < ApplicationController
         redirect_to community_amenities_path(current_community), alert: @amenity.errors.full_messages.join(',')
       end
     end
-    end
+  end
   def saveAmenityGallery
     @community = Community.find params[:community_id]
     @amenity = Amenity.find params[:amenityId]
