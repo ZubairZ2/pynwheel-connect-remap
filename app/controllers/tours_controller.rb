@@ -667,7 +667,7 @@ class ToursController < ApplicationController
       to_key = 'to_' + i.to_s
 
       while params[day_key].present?
-        times = current_community.opening_hours.create(day: params[day_key], opening_time: params[from_key], closing_time: params[to_key])
+        times = current_community.opening_hours.create(day: params[day_key], opening_time: params[from_key], closing_time: params[to_key]) 
 
         i=i+1
         day_key = 'day_' + i.to_s
