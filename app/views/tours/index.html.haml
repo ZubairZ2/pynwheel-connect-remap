@@ -877,6 +877,26 @@
     $('html, body').animate({ scrollTop: 800 });
   }
 
+  var arr_building = []
+  for(var i = 0 ; i < $('#building_buttons')[0].children.length; i++)
+  { 
+    arr_building.push($('#building_buttons')[0].children[i].text)
+  }
+  
+  $.ajax({
+    url: "/communities/#{@community.id}/tours/sort_buildings",
+    type: "POST",
+    dataType: "script",
+    data: {
+        sitemap: "#{@community.is_sitemap}" ,
+        array: arr_building,
+        floor: "#{@floor}",
+        building: "#{@building}"
+    }
+  }).done(function (data) {
+    console.log("success");
+  });
+
     var arr = [];
     for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
       if ($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1] != undefined)
