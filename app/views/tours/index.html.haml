@@ -956,6 +956,7 @@
 :javascript
   function apply_time_to_all(monday_count, closing_time)
   {
+    $("#add-btn").addClass("hidden");
     $(".tour_time_sortable").sortable( "disable" );
     $("#schedule-btn-submit").removeClass("hide-save-btn");
     $("#schedule-btn-submit").addClass("blink");
