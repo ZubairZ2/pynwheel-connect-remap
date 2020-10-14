@@ -64,7 +64,10 @@ class AmenitiesController < ApplicationController
       rescue => ex
       end
       if params[:unit].present? && params[:unit_render].present? && params[:unit_render] != "false"
-        redirect_to edit_community_unit_path(current_community,params[:unit]) , notice: "Unit's Amenity updated successfully"
+          @unit = Unit.find(params[:unit]) rescue nil
+          if @unit.present?
+            redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=unit&unit=#{params[:unit]}", notice: "Amenity updated successfully"
+          end
       else
       if params[:done_action].present?
         from_unit = params[:from_id]
