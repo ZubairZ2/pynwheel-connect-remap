@@ -52,8 +52,25 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
   end
+  def update_billing_rate
+    # @community = Community.find(params[:community_id]) rescue nil
+    # if @community.company.name.downcase == "lincoln"
+      @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour])
+    # elsif @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+    #   @community.update!(dwelo_billing_rate: params[:community][:dwelo_billing_rate])
+    # elsif params[:community][:touchscreen_app] == 1 and params[:community][:self_tour] == 1
+    #   @community.update!(billing_rate_maps: params[:community][:billing_rate_maps])
+    # elsif params[:community][:touchscreen_app] == 1 and params[:community][:self_tour] == 0
+    #   @community.update!(billing_rate_touch: params[:community][:billing_rate_touch])
+    # elsif params[:community][:touchscreen_app] == 0 and params[:community][:self_tour] == 1
+    #   @community.update!(billing_rate_selftour: params[:community][:billing_rate_selftour])
+    # end
+  end
   def update
-    puts params
+    puts
+    if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present?
+      @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour])
+    end
     if params[:community][:image]
       @community.crop_x = nil
     end
@@ -351,6 +368,7 @@ class CommunitiesController < ApplicationController
     worksheet.write(0, 16, "Date Inactivated",format)
     worksheet.write(0, 17, "Billing Month",format)
     worksheet.write(0, 18, "Billing Rate (Annual)",format)
+    worksheet.write(0, 19, "Billing Rate (Monthly)",format)
 
     Community.all.each do |community|
       if community.present?
@@ -384,9 +402,20 @@ class CommunitiesController < ApplicationController
         worksheet.write(row, 15, community.date_activated,format1)
         worksheet.write(row, 16, community.date_inactivated,format1)
         worksheet.write(row, 17, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly",format1)
+        if @community.self_tour == false and @community.touchscreen_app == true and @community.company.name.downcase != "lincoln" and ((@community.creator_id.present? and @community.creator.present? and @community.creator.role != "Dwelo admin") or @community.creator_id.nil? )
         worksheet.write(row, 18, community.billing_rate_touch,format1)
+        end
+        if @community.company.name.downcase == "lincoln"
+        worksheet.write(row, 19, community.lincoln_billing_rate,format1)
+        elsif @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+        worksheet.write(row, 19, community.dwelo_billing_rate,format1)
+        elsif @community.self_tour == true and @community.touchscreen_app == true
+        worksheet.write(row, 19, community.billing_rate_maps,format1)
+        elsif @community.self_tour == true and @community.touchscreen_app == false
+        worksheet.write(row, 19, community.billing_rate_selftour,format1)
+        end
 
-        row = row + 1
+          row = row + 1
       end
     end
     workbook.close
@@ -647,7 +676,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:name,:billing_rate_touch,:lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
