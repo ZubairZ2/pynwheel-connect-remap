@@ -73,3 +73,7 @@
          $('.save-building-starting-point-form').submit();
     }, 500);
   });
+
+  $('#on_done').click(function(e){
+    window.location.replace("#{session[:go_back]}");
+  })
