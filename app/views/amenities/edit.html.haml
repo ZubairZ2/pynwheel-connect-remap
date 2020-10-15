@@ -165,13 +165,23 @@
             $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
             }
         });
+      $('.direct_btn').click(function(e){
+        action = "clicked"
+        $('.edit_amenity').submit(function() {
+            $(this).append('<input type="hidden" name="done_action" value="true">');
+            $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
+            if (unit != 111111000000000) {
+            $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
+            }
+        });
       })
-      
-      if(action == "change"){
-        setTimeout(function () {
-          $('.edit_amenity').submit();
-        }, 500);
-      }
+      })
+
+      // if(action == "change"){
+      //   setTimeout(function () {
+      //     $('.edit_amenity').submit();
+      //   }, 500);
+      // }
   });
   $('#on_done').click(function(e){
     $('.edit_amenity').submit();
