@@ -2895,8 +2895,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .tooltip1 #tooltiptext1 {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
+    background-color: #000000;
+    color: white;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
@@ -2942,8 +2942,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .unit_manualoverride #unit_manualoverride_text {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
+    background-color: #000000;
+    color: white;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
@@ -2978,8 +2978,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .unit_sold #unit_sold_text {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
+    background-color: #000000;
+    color: white;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
@@ -3097,8 +3097,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .propertyDetailName #propertyDetailNameText {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
+    background-color: #000000;
+    color: white;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
@@ -3135,8 +3135,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .select_amenity #select_amenityText {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
+    background-color: #000000;
+    color: white;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
@@ -3172,8 +3172,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .additionalPageAction #additionalPageActionText {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
+    background-color: #000000;
+    color: white;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
@@ -3224,8 +3224,8 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .floorplanMassUploadPopName #floorplanMassUploadPopNameText {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
+    background-color: #000000;
+    color: white;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;

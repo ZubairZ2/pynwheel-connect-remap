@@ -200,6 +200,14 @@ class ToursController < ApplicationController
     # @modal_unit = @community.is_sitemap ? @community.units.where(modal_unit: true) : @community.units.where( floor: @floor.to_i, modal_unit: true)
     # @units = @units + @modal_unit
   end
+  def settings
+    @community = Community.find params[:community_id]
+    @tours = @community.tour || @community.create_tour
+    @tour_stops = @tours.present? ? @tours.tour_stops : nil
+    @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
+    @community_opening_hours = @community.opening_hours.order(:sort).all
+
+  end
   
   def point_json
 
@@ -676,7 +684,7 @@ class ToursController < ApplicationController
       end
     end
     @community = Community.find params[:community_id]
-    redirect_to community_tours_path(@community)
+    redirect_to settings_community_tours_path(@community)
     flash[:notice] = "Tour settings updated successfully."
   end
 
