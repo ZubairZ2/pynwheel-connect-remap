@@ -45,10 +45,17 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_out_path_for(resource_or_scope)
+    begin
+      LoggedInUser.where(session_id: cookies[:session_id]).destroy_all
+      all_users_count = LoggedInUser.where(community_id: cookies[:community_id].to_i).map{|u| u.logged_in_count}.sum
+      Community.find_by(id: cookies[:community_id].to_i).update_columns(is_chat_login: false) if all_users_count == 0
+    rescue
+    end
     new_user_session_path
   end
 
   def after_sign_in_path_for(resource_or_scope)
+    cookies[:session_id] = SecureRandom.hex(8) if cookies[:session_id].nil?
     root_url
   end
 

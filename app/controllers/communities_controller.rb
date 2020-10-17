@@ -630,6 +630,7 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
+    cookies[:community_id] = @community.id if cookies[:community_id].nil?
     @community.update_attributes(is_chat_login: true)
   end
 
