@@ -6,7 +6,7 @@ $(function() {
 
     var community_id = $("#widget-button").attr("data-community-id")
     var session_id = $("#widget-button").attr("data-session-id")
-    if (community_id != undefined && community_id != ""){
+    if (community_id != undefined && (session_id != "" || session_id != undefined)){
         App.cable.subscriptions.create({channel: "LoggedInChannel" , community_id: community_id , session_id: session_id});
     }
 });
