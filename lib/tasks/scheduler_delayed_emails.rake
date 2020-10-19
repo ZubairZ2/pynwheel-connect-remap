@@ -59,7 +59,9 @@ namespace :delayed_email_notifications do
 				th.update_column 'abandoned_tour_email_sent', true
 				# community.deleted_ids = []
 				save_prospect(th.lengthy_stay, th, community) if th.lengthy_stay.present?
-				
+				th.abandoned_tour_email_sent = true
+				th.save
+
 				community.save
 			end
 		end
@@ -84,16 +86,28 @@ namespace :delayed_email_notifications do
 	  		# send_sms mail_content[1]
 	  	end
 	end
-
+	def send_sms message_body
+	    # begin
+	    #   DelayedSchedulerTextJob.perform_async(message_body, community.phone) if community.phone.present?
+	    # rescue
+	    # end
+ 	end
   	def send_email_sms_or_both_to_touruser thank_you_msg, community, th
-  		
-		if community.alert_contact == "email"
-			send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg, th, community.email
-		elsif community.alert_contact == "phone"
+
+		# if community.alert_contact == "email"
+		# 	send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg, th, community.email
+		# elsif community.alert_contact == "phone"
+		# 	send_sms_tour_user thank_you_msg
+		# else
+			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg, th, community.email
 			send_sms_tour_user thank_you_msg
-		else
-			send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg, th, community.email
-			send_sms_tour_user thank_you_msg
+		# end
+		end
+	def send_email_to_user_without_humanize subj, body, th=nil, comm_email=nil
+		begin
+			NotificationMailer.tour_history_mail(subj, body, th.tour_user.email,comm_email).deliver
+		rescue
+
 		end
 	end
 	def send_email subj, body, community
