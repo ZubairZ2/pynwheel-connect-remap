@@ -160,7 +160,7 @@
       /       %i.fa.fa-plane
       /       %span Tour Setup
       - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
-        %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : ''}"}
+        %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}
           %a{:href => "/"}
             %i.fa.fa-plane
             %span Tour Setup
