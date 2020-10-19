@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
   helper_method :current_community
   helper_method :current_company
   before_action :load_tour_users_chats
+  before_action :set_cookies
   def current_community
   	if params[:community_id].present?
 	  	@community ||= Community.find params[:community_id]
@@ -116,6 +117,10 @@ class ApplicationController < ActionController::Base
     [chatroom.id , min_count]
   end
   
+  def set_cookies
+    cookies[:session_id] = SecureRandom.hex(8) if cookies[:session_id].nil?
+    cookies[:community_id] = current_community.id if current_community.present? and cookies[:community_id].nil?
+  end
   protected
 
   def layout_by_resource
