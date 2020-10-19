@@ -78,6 +78,9 @@ class YardiRentCafeService < BaseService
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
 
+                rentStr = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                unit.lease_pricing = rentStr[0].to_s + ":" + rentStr[1] + "::" +  rentStr[2] + ":" + rentStr[3]
+
                 unit.save(validate: false)
 
               else
@@ -135,6 +138,10 @@ class YardiRentCafeService < BaseService
                   end
                   unit.manually_updated = false
                   unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
+
+                  rentStr = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                  unit.lease_pricing = rentStr[0].to_s + ":" + rentStr[1] + "::" +  rentStr[2] + ":" + rentStr[3]
+
                   unit.save(validate: false)
                 end
               end
@@ -271,4 +278,11 @@ class YardiRentCafeService < BaseService
     "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
   end
 
+  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name)
+    request_type = "pricingmatrix"
+    url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    response = HTTParty.get(url)
+    rent_matrix = JSON.parse(response.body)
+    rent_matrix.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min
+  end
 end

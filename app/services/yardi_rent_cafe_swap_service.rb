@@ -54,6 +54,8 @@ class YardiRentCafeSwapService < BaseService
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
+                rentStr = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                unit.lease_pricing = rentStr[0].to_s + ":" + rentStr[1] + "::" +  rentStr[2] + ":" + rentStr[3]
                 unit.save
               else
                 dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])
@@ -84,6 +86,8 @@ class YardiRentCafeSwapService < BaseService
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
+                rentStr = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                unit.lease_pricing = rentStr[0].to_s + ":" + rentStr[1] + "::" +  rentStr[2] + ":" + rentStr[3]
                 unit.save
               end
 
@@ -219,4 +223,11 @@ class YardiRentCafeSwapService < BaseService
     end
   end
 
+  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name)
+    request_type = "pricingmatrix"
+    url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    response = HTTParty.get(url)
+    rent_matrix = JSON.parse(response.body)
+    rent_matrix.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min
+  end
 end
