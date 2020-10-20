@@ -904,7 +904,7 @@
                 / id map
                 .plot-image
                   .grid-graph.hidden
-                  .container
+                  .container{:style => "width: inherit"}
                     -#= form_tag community_tours_path(@community), {:class => 'tour_floor_form'} do
                     -#  = hidden_field_tag "floorNo", 6, :class => "hidden_floor"
                     - if @community.is_sitemap
