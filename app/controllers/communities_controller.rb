@@ -402,16 +402,18 @@ class CommunitiesController < ApplicationController
         worksheet.write(row, 15, community.date_activated,format1)
         worksheet.write(row, 16, community.date_inactivated,format1)
         worksheet.write(row, 17, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly",format1)
-        if @community.self_tour == false and @community.touchscreen_app == true and @community.company.name.downcase != "lincoln" and ((@community.creator_id.present? and @community.creator.present? and @community.creator.role != "Dwelo admin") or @community.creator_id.nil? )
+        if community.self_tour == false and community.touchscreen_app == true and community.company.name.downcase != "lincoln" and ((community.creator_id.present? and community.creator.present? and community.creator.role != "Dwelo admin") or community.creator_id.nil? )
         worksheet.write(row, 18, community.billing_rate_touch,format1)
         end
-        if @community.company.name.downcase == "lincoln"
+        if community.company.name.downcase == "lincoln"
         worksheet.write(row, 19, community.lincoln_billing_rate,format1)
-        elsif @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+        elsif community.creator_id.present? and community.creator.present? and community.creator.role == "Dwelo admin"
         worksheet.write(row, 19, community.dwelo_billing_rate,format1)
-        elsif @community.self_tour == true and @community.touchscreen_app == true
+        elsif community.self_tour == false and community.touchscreen_app == false
         worksheet.write(row, 19, community.billing_rate_maps,format1)
-        elsif @community.self_tour == true and @community.touchscreen_app == false
+        elsif community.self_tour == true and community.touchscreen_app == true
+        worksheet.write(row, 19, community.billing_rate_for_both,format1)
+        elsif community.self_tour == true and community.touchscreen_app == false
         worksheet.write(row, 19, community.billing_rate_selftour,format1)
         end
 
