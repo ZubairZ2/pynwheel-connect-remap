@@ -370,8 +370,9 @@ class Api::V1::CommunitiesController < ActionController::Base
         @tour = @community.tour
         @tour_user = TourUser.find_by_id params[:tour_user_id]
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
-     
-        current_time = params[:current_time]
+        
+        community_time = get_coomunity_time(@community)
+        current_time = community_time.present? ? community_time : params[:current_time]
 
         if current_time.present?
           @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
@@ -391,11 +392,33 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def get_coomunity_time(community)
+    tz = Ziptz.new
+    if community.zip.present?
+        timezone = tz.time_zone_name(community.zip)
+        community_time = Time.now.in_time_zone(timezone) if timezone.present?
+    end
+
+    if community_time.nil? and community.latitude.present? and community.longitude.present?
+        timezone = Timezone.lookup(community.latitude, community.longitude)
+        community_time = timezone.utc_to_local(Time.now) if timezone.present?
+    end
+
+    community_time.present? ? community_time : nil
+  end
 
   def is_tour_in_visiting_hours(time_param, community)
-    current_time = time_param.to_datetime.strftime("%H:%M")
-    current_day = time_param.to_datetime.strftime('%A')
-    community.opening_hours.where('day = ? and opening_time <= ? and closing_time >= ?', current_day, current_time, current_time).present?
+    community_time = get_coomunity_time(community)
+
+    if community_time.present?
+      current_time = community_time.strftime("%H:%M")
+      current_day = community_time.strftime('%A')
+      community.opening_hours.where('day = ? and opening_time <= ? and closing_time >= ?', current_day, current_time, current_time).present?
+    else  # if we don't get community time somehow, we will use the time coming from mobile
+      current_time = time_param.to_datetime.strftime("%H:%M")
+      current_day = time_param.to_datetime.strftime('%A')
+      community.opening_hours.where('day = ? and opening_time <= ? and closing_time >= ?', current_day, current_time, current_time).present?
+    end
   end
 
   def get_scheduled_tours(time_param, community_id, tour_user_id)
