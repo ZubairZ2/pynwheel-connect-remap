@@ -7,7 +7,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
     @community = dwelo_community_account.community
     dwelo_client_credentials(dwelo_community_account)
     token_type = "Bearer"
-    auth_header = token_type + " " + @token
+    auth_header = token_type + " " + @token rescue ''
 
     url = base_url + "/v4/integrations/pynwheel/devices/?community_id=" + dwelo_community_account.default_community_id
     response = HTTParty.get(url,
@@ -18,7 +18,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
       flash[:notice] = "Locks imported successfully."
       render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
     else
-      flash[:notice] = "Something went wrong, please check your credentials."
+      flash[:error] = "Something went wrong, please check your credentials."
       render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
     end
   end

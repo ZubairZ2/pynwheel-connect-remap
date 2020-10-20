@@ -86,7 +86,14 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :edgestate_accounts
+    resources :edgestate_accounts do
+      collection do
+        get :test_edgestate_connection
+        post :import_edgestate_locks
+        post :map_edgestate_locks
+      end
+    end
+
     resources :dwelos
 
     post :save_gallery_settings

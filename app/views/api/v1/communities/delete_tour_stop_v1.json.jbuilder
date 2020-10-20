@@ -485,7 +485,7 @@ json.tours @tours do |tour|
       end
       current_floor = unit.floor
       unit_dwelo_lock = unit.remote_locks.where.not(dwelo_id: nil).first rescue nil
-      if unit_dwelo_lock.present?
+      if @in_visiting_hours and @community.locks_provider == "Dwelo" and unit_dwelo_lock.present?
         json.unit_dwelo_lock_id unit_dwelo_lock.device_id
       else
         json.unit_dwelo_lock_id ""

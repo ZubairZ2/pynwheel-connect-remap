@@ -45,14 +45,21 @@ class UnitsController < ApplicationController
   end
 
   def load_remotelock_data
-    access_token = generate_remotelock_token
-    responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
-    RemoteLockService.new(current_community).update_deivces_in_db(responce)
-    es = EdgeState.find_by(community_id: current_community.id)
-    if es.nil?
+    # access_token = generate_remotelock_token
+    # responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
+    # RemoteLockService.new(current_community).update_deivces_in_db(responce)
+    # es = EdgeState.find_by(community_id: current_community.id)
+    
+    # if es.nil?
+    #   render json: {locks: []}
+    # else
+    #   render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+    # end
+    
+    if current_community.edge_state.nil?
       render json: {locks: []}
     else
-      render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+      render json: {locks: current_community.edge_state.remote_locks}
     end
   end
  
