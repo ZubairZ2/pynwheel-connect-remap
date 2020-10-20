@@ -175,7 +175,7 @@
         .row
           .col-lg-6
             %span.btn.btn-default.black-button.btn-sm.btn-file
-              Select Image
+              Upload a new image
               = f.file_field :image
           .col-lg-6
             - if  f.object.image.present? && f.object.image.content_type != 'image/svg+xml'
@@ -210,7 +210,7 @@
         .row
           .col-lg-6
             %span.btn.btn-default.black-button.btn-sm.btn-file
-              Select Image
+              Upload a new image
               = f.file_field :secondary_image
           .col-lg-6
             - if  f.object.secondary_image.present? && f.object.secondary_image.content_type != 'image/svg+xml'
