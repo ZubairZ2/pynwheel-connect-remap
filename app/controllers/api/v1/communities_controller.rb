@@ -371,15 +371,14 @@ class Api::V1::CommunitiesController < ActionController::Base
         @tour_user = TourUser.find_by_id params[:tour_user_id]
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
         
-        community_time = get_coomunity_time(@community)
-        current_time = community_time.present? ? community_time : params[:current_time]
+        timezone = get_community_time_zone(@community) rescue nil
+        current_time = Time.now.in_time_zone(timezone) rescue params[:current_time]
 
         if current_time.present?
           @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
           @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
 
           if @scheduled_tours.present?
-
             @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
             @tour_status , nearest_tour_id = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
             nearest_time_tour = SchedualTour.find_by_id nearest_tour_id
@@ -405,6 +404,21 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
 
     community_time.present? ? community_time : nil
+  end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.zip.present?
+        timezone = tz.time_zone_name(community.zip)
+    end
+
+    if timezone.nil? and community.latitude.present? and community.longitude.present?
+        time_zone = Timezone.lookup(community.latitude, community.longitude)
+        timezone = time_zone.name
+    end
+    return timezone
   end
 
   def is_tour_in_visiting_hours(time_param, community)
