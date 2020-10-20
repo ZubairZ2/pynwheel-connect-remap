@@ -45,7 +45,7 @@
           = link_to logo_community_design_index_path(current_community) do
             %i.fa.fa-cubes
             %span Logo
-      - if (current_community.touchscreen_app) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      - if (current_community.touchscreen_app) && (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?)
         %li.loader_class{:class=>"#{controller_name =='home_page' || controller_name =='homepage_icons' ? 'active' : ''}"}
           = link_to community_home_page_index_path(current_community) do
             %i.fa.fa-home
@@ -119,22 +119,22 @@
       -#    = link_to community_units_path(current_community)  do
       -#      %i.fa.fa-laptop
       -#      %span Units
-      - if (current_community.touchscreen_app) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      - if (current_community.touchscreen_app) && (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?)
         %li.loader_class{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
           %a{:href => "#{community_galleries_path(current_community)}"}
             %i.fa.fa-image
             %span Gallery Page
-        - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+        - if (current_community.touchscreen_app) && (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?)
           %li.loader_class{:class=>"#{controller_name =='neighborhoods' ? 'active' : ''}"}
             %a{:href => "#{community_neighborhoods_path(current_community)}"}
               %i.fa.fa-bank
               %span Neighborhood Page
-        - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+        - if (current_community.touchscreen_app) && (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?) 
           %li.loader_class{:class=>"#{controller_name =='favorite_settings' || controller_name == 'ebrochure_menu_buttons' || controller_name == 'favorite_images' ? 'active' : ''}"}
             %a{:href => "#{community_favorite_settings_path(current_community)}"}
               %i.fa.fa-heart
               %span Favorites Page & eBrochure
-        - if (current_user.is_super_admin? || current_user.is_community_admin? )  
+        - if (current_community.touchscreen_app) && (current_user.is_super_admin? || current_user.is_community_admin?)
           %li.loader_class{:class=>"#{controller_name =='additional_pages' || controller_name =='imagepages' ? 'active' : ''}"}
             %a{:href => "#{community_additional_pages_path(current_community)}"}
               %i.fa.fa-star
