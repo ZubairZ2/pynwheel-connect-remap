@@ -120,7 +120,7 @@
           - if f.object.image.present?
             .icons
               %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/floorplans/#{@floorplan.id}/remove_pri_scnd_image?image=primary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-                %i.fa.fa-close{ style:"margin-right: 50PX;"}
+                %i.fa.fa-close
           .row
             .col-lg-6
               %span.btn.btn-default.black-button.btn-sm.btn-file
@@ -158,7 +158,7 @@
         - if f.object.secondary_image.present?
           .icons
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/floorplans/#{@floorplan.id}/remove_pri_scnd_image?image=secondary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-              %i.fa.fa-close{ style:"margin-right: 50PX;"}
+              %i.fa.fa-close
         .row
           .col-lg-6
             %span.btn.btn-default.black-button.btn-sm.btn-file
