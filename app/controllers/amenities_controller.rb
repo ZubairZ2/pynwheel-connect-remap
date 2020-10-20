@@ -38,17 +38,20 @@ class AmenitiesController < ApplicationController
     if @amenity.crop_x == params[:amenity][:crop_x].to_f
       @amenity.do_crop = false
     else
-      @floorplan.do_crop = true
-    end
-    if params[:amenity][:crop_h].to_f == 0 && params[:amenity][:crop_w].to_f == 0
-      @amenity.do_crop = false
+      @amenity.do_crop = true
     end
     @amenity.crop_x = params[:amenity][:crop_x]
     @amenity.crop_y = params[:amenity][:crop_y]
     @amenity.crop_w = params[:amenity][:crop_w]
     @amenity.crop_h = params[:amenity][:crop_h]
     @amenity.save!
+    if @amenity.amenityable_type == "Unit"
     redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=unit&unit=#{@amenity.amenityable_id}", notice: "Amenity updated successfully"
+    else
+      redirect_to edit_community_amenity_path(@community, @amenity)
+    end
+
+
   end
 
   def load_remotelock_data
