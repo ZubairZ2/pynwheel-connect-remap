@@ -85,7 +85,7 @@ class ToursController < ApplicationController
     @community.tour.tour_stops.order(:sort).each do |stop|
 
       next if !@community.mdu && stop.stop_type == "unit"
-      next if  !(@all_stops.include?(stop.id)) && !(floorplate_elevators.include?(stop.stop_id)) && !@community.is_sitemap rescue ''
+      next if  !(@all_stops.include?(stop.id)) && !(floorplate_elevators.include?(stop.stop_id)) && @community.is_sitemap rescue ''
       to_sp_path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first if (!@community.is_sitemap && (@floor.to_i == (@tours.starting_floor.present? ? @tours.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.min.to_i)))
       if !@community.is_sitemap
         begin
@@ -101,6 +101,7 @@ class ToursController < ApplicationController
         # from_sp_path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first if ( (@floor.to_i == (@tours.starting_floor.present? ? @tours.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.min.to_i)))
       else
         from_sp_path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
+        from_sp_path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first unless from_sp_path.present?
         @existing_path_points << from_sp_path.path_points.reorder('id ASC') if (from_sp_path.present?)
         @existing_path_points << to_sp_path.path_points.reorder('id ASC') if (to_sp_path.present?)
       end
