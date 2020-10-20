@@ -35,22 +35,20 @@ class AmenitiesController < ApplicationController
   def crop_amenity_image
     @community = Community.find params["community_id"]
     @amenity = Amenity.find params["id"]
-    #bilal commented this
-    # if @amenity.crop_x == params[:amenity][:crop_x].to_f
-    #   @amenity.do_crop = false
-    # else
-    #   @floorplan.do_crop = true
-    # end
-    # if params[:amenity][:crop_h].to_f == 0 && params[:amenity][:crop_w].to_f == 0
-    #   @amenity.do_crop = false
-    # end
+    if @amenity.crop_x == params[:amenity][:crop_x].to_f
+      @amenity.do_crop = false
+    else
+      @floorplan.do_crop = true
+    end
+    if params[:amenity][:crop_h].to_f == 0 && params[:amenity][:crop_w].to_f == 0
+      @amenity.do_crop = false
+    end
     @amenity.crop_x = params[:amenity][:crop_x]
     @amenity.crop_y = params[:amenity][:crop_y]
     @amenity.crop_w = params[:amenity][:crop_w]
     @amenity.crop_h = params[:amenity][:crop_h]
     @amenity.save!
-    redirect_to edit_community_amenity_path(@community, @amenity)
-    # render :json=> {:success=>false}
+    redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=unit&unit=#{@amenity.amenityable_id}", notice: "Amenity updated successfully"
   end
 
   def load_remotelock_data

@@ -44,7 +44,8 @@ class Amenity < ApplicationRecord
   # validate :image_size
 
   def crop_amenity_image
-    image.recreate_versions! if (crop_x.present?)
+    image.recreate_versions! if (crop_x.present?  && do_crop)
+    self.update_columns(do_crop: false)
   end
   def url_validity
     require 'uri'
