@@ -37,7 +37,7 @@
       .box-header
         %h3.box-title
           TOUR STOPS
-          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
+          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "tourStopsLogoPopover","data-content" => " "}
             %span#propertyDetailNameText
               Drag and drop stops in the list below to rearrange them.
     .row
@@ -45,7 +45,7 @@
       .col-lg-6{:style => "margin-bottom: 10px;"}
         %h5.mt-40.mb-20
           Add Amenities
-          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
+          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_amenity_Popover","data-content" => " "}
             %span#propertyDetailNameText
               Amenities are added on the "Amenities" page. Select an amenity from the list below to add it to the tour.
         .imageselect.amenity-imageselect
@@ -66,7 +66,7 @@
         .col-lg-6
           %h5.mt-40.mb-20
             Add Units
-            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_unit_Popover","data-content" => " "}
               %span#propertyDetailNameText
                 Units are imported on the "Data" page and can be edited on the "Units" page. Select a unit from the list below to add it to the tour. If a unit is not on the list, it may be because it is not plotted on the map.
           .imageselect.unit-imageselect
@@ -283,7 +283,7 @@
               = link_to starting_point_community_tours_path(@community), {:style=>'font-weight:bold;', class: "btn btn-primary mr-5 loader_class"} do
                 %i.fa.fa-plus-circle
                 ADD STARTING POINT
-              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_starting_point_Popover","data-content" => " "}
                 %span#propertyDetailNameText
                   Use this button to mark the location on the map below where your visitors will start their tours. Fill in the information in the fields. Then click on "Plot Starting Point" and click on the map to add the location. Drag and drop the dot to relocate it. 
 
@@ -294,7 +294,7 @@
                 = link_to building_starting_point_community_tours_path(params[:community_id],floor: @floor,building: @building), id: "add-building-starting-point", class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
                   %i.fa.fa-plus-circle
                   BUILDING ENTRY / EXIT
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "building_entry_Popover","data-content" => " "}
                   %span#propertyDetailNameText  
                     Use this button to add a building entrance. A red dot will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the entrance name, building number, floor number, and directional text.
 
@@ -306,7 +306,7 @@
                 = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil,building: @building), class: "btn btn-primary mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
                   %i.fa.fa-plus-circle
                   ADD ELEVATOR 
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_elevator_Popover","data-content" => " "}
                   %span#propertyDetailNameText  
                     Use this button to add an elevator. Three horizontal lines will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the elevator name, image, and the floors it services.  
               -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
@@ -1306,3 +1306,66 @@
     $("#schedule-btn-submit").addClass("blink");
 
   }
+
+
+
+  if (!#{current_user.welcome_tour_setup})
+  {
+    $('[data-toggle="tourStopsLogoPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Drag and drop stops in the list below to rearrange them.</div><div class="popover-footer"><a id="tourStopsLogoPopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#tourStopsLogoPopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="add_amenity_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Amenities are added on the "Amenities" page. Select an amenity from the list below to add it to the tour.</div><div class="popover-footer"><a id="add_amenity_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#add_amenity_PopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="add_unit_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Units are imported on the "Data" page and can be edited on the "Units" page. Select a unit from the list below to add it to the tour. If a unit is not on the list, it may be because it is not plotted on the map.</div><div class="popover-footer"><a id="add_unit_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#add_unit_PopoverId" , function(){
+        $('html, body').animate({ scrollTop: 600 });
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="add_starting_point_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to mark the location on the map below where your visitors will start their tours. Fill in the information in the fields. Then click on "Plot Starting Point" and click on the map to add the location. Drag and drop the dot to relocate it. /div><div class="popover-footer"><a id="add_starting_point_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#add_starting_point_PopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="building_entry_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to add a building entrance. A red dot will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the entrance name, building number, floor number, and directional text.</div><div class="popover-footer"><a id="building_entry_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#building_entry_PopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="add_elevator_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to add an elevator. Three horizontal lines will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the elevator name, image, and the floors it services. </div><div class="popover-footer"><a id="add_elevator_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#add_starting_point_PopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_tour_setup = true}
+        #{current_user.save}
+    });
