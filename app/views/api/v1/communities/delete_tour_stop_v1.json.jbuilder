@@ -1,3 +1,12 @@
+
+def check_unit_occupied add_stop
+  if add_stop.present? && add_stop.stop_type == "unit"
+    u = Unit.find add_stop.stop_id
+    return (u.available and u.available_date < Date.today) ? false : true
+  else
+    return false
+  end
+end
 i = 0
 description_limit = 90
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
@@ -77,10 +86,11 @@ json.tours @tours do |tour|
     have_stop_in_building = false
 
     if @community.is_sitemap
-
-      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available or u.available_date > Date.today}.compact
+      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
+      last_stop_id = stops_arr.compact[stop_count - 1].id
       last_stop_desc = stops_arr.compact[stop_count - 1]
     else
       temp_max_floor = nil
@@ -171,7 +181,7 @@ json.tours @tours do |tour|
                 if add_stop.present?
                   add_stop.floor = floor
                   add_stop.building = building
-                  
+                  next if (check_unit_occupied add_stop)
                   next if add_start and ((add_stop.stop_type == "unit") or (add_stop.stop_type == "amenity"))
                   
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
@@ -310,10 +320,11 @@ json.tours @tours do |tour|
 
     ########------------------------ Sorting tour Stop in an array-----------------------
     if @community.is_sitemap
-
-      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available or u.available_date > Date.today}.compact
+      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
+      last_stop_id = stops_arr.compact[stop_count - 1].id
       last_stop_desc = stops_arr.compact[stop_count - 1]
     else
       temp_max_floor = nil
@@ -350,7 +361,7 @@ json.tours @tours do |tour|
                 if add_stop.present?
 
 
-                
+                  next if (check_unit_occupied add_stop)
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
                   if (add_stop.display_stop && add_mdu)
                     stops_arr << add_stop 
