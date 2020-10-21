@@ -160,10 +160,21 @@
   
   $(document).on('change', '.address_fields1', function() {
 
-   $.ajax({
-    url: "/communities/#{Community.last.id}/make_cordinate",
+
+  });
+  try {
+    com = #{@community.present? ? @community.id :  0};
+  }
+  catch(err) {
+    com = 777777 ;
+  }
+  
+  function make_coord()
+  {
+    $.ajax({
+    url: "/communities/make_cordinate",
     type: "post",
-    data: {address : $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val()},
+    data: {address : $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val(), community_id : com},
     success: function(data) {
       if (data.cord != null)
       {
@@ -174,6 +185,9 @@
     },
     error: function(data) {}
   })
+  }
+  $( ".address_fields1" ).keyup(function() {
+    make_coord()
   });
 
   if (!#{current_user.welcome_property_details_page})

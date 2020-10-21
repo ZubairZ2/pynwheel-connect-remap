@@ -221,6 +221,7 @@ class CommunitiesController < ApplicationController
     end
   end
   def make_cordinate
+    byebug
     address = Geocoder.coordinates(params[:address])
     render :json=>{"cord"=> address }
   end
