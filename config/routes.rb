@@ -71,6 +71,7 @@ Rails.application.routes.draw do
       delete :remove_plots_from_floorplate
     end
     collection do
+      post :make_cordinate
       post :invitation_communities
       post :selected_communities
       get :authenteq_response
@@ -101,10 +102,8 @@ Rails.application.routes.draw do
     get :settings_page
     get :logs
     get :clone_community
-    post :make_cordinate
     get :change_expressionist_default
     get :test_connection
-    post :make_cordinate
     get :account_report
     get :psi_pricing_test_connection
     get :psi_space_configuration_test_connection
