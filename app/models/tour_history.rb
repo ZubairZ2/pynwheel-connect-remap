@@ -170,11 +170,11 @@ class TourHistory < ApplicationRecord
 
   def send_email_sms_or_both_to_touruser thank_you_msg
 	if community.alert_contact == "email"
-		send_email_tour_user "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg.gsub("\n", "<br>").html_safe
+		send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg.gsub("\n", "<br>").html_safe, community.email
 	elsif community.alert_contact == "phone"
 		send_sms_tour_user thank_you_ms
 	else
-		send_email_tour_user "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg.gsub("\n", "<br>").html_safe
+		send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg.gsub("\n", "<br>").html_safe, community.email
 		send_sms_tour_user thank_you_msg
 	end
   end
@@ -201,6 +201,13 @@ class TourHistory < ApplicationRecord
 
 		end
 	end
+	def send_email_to_user_without_humanize subj, body , community_email=nil
+		begin
+			NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, community_email).deliver
+		rescue
+
+		end
+	end
 
 	def send_sms_tour_user message_body
 		begin
@@ -211,7 +218,7 @@ class TourHistory < ApplicationRecord
 
   	def send_email_tour_user subj, body
 		begin
-			NotificationMailer.tour_history_mail(subj, body, self.tour_user.email).deliver
+			NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email).deliver
 		rescue
 		end
 	end
