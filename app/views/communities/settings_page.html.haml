@@ -795,6 +795,7 @@
         $("#billing_rate_maps").removeClass("hidden")
         $("#billing_rate_touch").addClass("hidden")
         $(".billing_rate_slef").addClass("hidden")
+        $("#billing_rate_not_maps").addClass("hidden")
         $("#billing_rate_slef_dwelo").addClass("hidden")
         $(".billing_rate_slef_lincoln").addClass("hidden")
         $("#apply_now_self_row").removeClass("hidden")
@@ -953,6 +954,12 @@
        $("#inactive_row").removeClass("hidden")
        $(".verification_type_field").addClass("hidden")
        $(".email_field").addClass("hidden")
+    }
+    })
+    $('#community_touchscreen_app').change(function() {
+    if ($("#community_touchscreen_app").is(":checked") == true) {
+    $("#billing_rate_not_maps").addClass("hidden")
+
     }
     })
 
