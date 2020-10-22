@@ -162,12 +162,7 @@
 
 
   });
-  try {
-    com = #{@community.present? ? @community.id :  0};
-  }
-  catch(err) {
-    com = 777777 ;
-  }
+  com = #{@com_id};
   
   function make_coord()
   {
