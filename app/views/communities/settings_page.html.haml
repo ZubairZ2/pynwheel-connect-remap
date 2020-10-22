@@ -940,6 +940,24 @@
        $("#inactive_row").removeClass("hidden")
        $(".verification_type_field").addClass("hidden")
        $(".email_field").addClass("hidden")
+       if (#{@community.company.name.downcase == "lincoln"}){
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").addClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+
+        }
+      if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").addClass("hidden")
+          $("#billing_rate_slef_dwelo").removeClass("hidden")
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+
+        }
 
     }
     })
@@ -954,6 +972,24 @@
        $("#inactive_row").removeClass("hidden")
        $(".verification_type_field").addClass("hidden")
        $(".email_field").addClass("hidden")
+       if (#{@community.company.name.downcase == "lincoln"}){
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").addClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+
+        }
+      if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").addClass("hidden")
+          $("#billing_rate_slef_dwelo").removeClass("hidden")
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+
+        }
     }
     })
     $('#community_touchscreen_app').change(function() {
@@ -962,5 +998,26 @@
 
     }
     })
+    if ($("#community_touchscreen_app").is(":checked") == false && $("#community_self_tour").is(":checked") == false)  {
+         if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            $("#billing_rate_touch").addClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            $("#billing_rate_touch").addClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+
+    }
 
 
