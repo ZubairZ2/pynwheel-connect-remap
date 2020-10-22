@@ -35,6 +35,7 @@ class AmenitiesController < ApplicationController
   def crop_amenity_image
     @community = Community.find params["community_id"]
     @amenity = Amenity.find params["id"]
+    @amenity.name = params[:amenity][:name] if params[:amenity][:name].present?
     if @amenity.crop_x == params[:amenity][:crop_x].to_f
       @amenity.do_crop = false
     else
