@@ -141,7 +141,7 @@
                 ID verification
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "2Popover","data-content" => " "}
                   %span#propertyDetailNameText
-                    When this is switched to "yes" the app will request that the in-person visitors upload an image of their ID and their face so that we can check the validity of the ID and match their identity. There is a cost associated with this service.
+                    When this is switched to "yes" the app will request that the in-person visitors upload an image of their ID and their face so that we can check the validity of the ID and match their identity. Please Note: There may be a cost associated with this service.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
@@ -153,7 +153,7 @@
                 Show Camera Button
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "3Popover","data-content" => " "}
                   %span#propertyDetailNameText
-                    When this is switched to "yes" the app will include a camera button that the prospect can press to take photos on tour. 
+                    When this is switched to "yes" the app will include a camera button that the prospect can use to take photos on tour. 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
@@ -293,7 +293,7 @@
                   Only allow scheduled tours
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "5Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Unscheduled and early or late arrived guests before or after the scheduled time will get proper customizable messages.
+                      Only give on-site access via the Self Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -312,7 +312,7 @@
                   Add Unit Stops Based on Availability
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "6Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
+                      Selecting this option will automate which vacant units will appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -540,6 +540,9 @@
                   .form-group.alert-contact
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                       Contact Type
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "10Popover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          Select how you would like your prospects to receive their notifications. We recommend selecting 'both'
 
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})

@@ -127,7 +127,7 @@
                             = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size.additionalPageAction
                                 %span#additionalPageActionText
-                                  Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed. 
+                                  Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
                   - @building_starting_points.where(building: @building).each do |bsp1,index|
                     - stop = @tour_stops.find_by(stop_id: bsp1.id)
                     %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
@@ -139,7 +139,7 @@
                         = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
                           %i.fa.fa-road.icon_size.additionalPageAction
                             %span#additionalPageActionText
-                              Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed. 
+                              Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
                         = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                           %i.fa.fa-edit.icon_size.additionalPageAction
                             %span#additionalPageActionText
@@ -193,7 +193,7 @@
                                 = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                                   %i.fa.fa-road.icon_size.additionalPageAction
                                     %span#additionalPageActionText
-                                      Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed. 
+                                      Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
                             = link_to edit_community_unit_path(@community,u)  << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}" ,  class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size.additionalPageAction
                                 %span#additionalPageActionText
@@ -206,13 +206,13 @@
                                   = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
                                     %i.fa.fa-road.icon_size.additionalPageAction
                                       %span#additionalPageActionText
-                                        Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed. 
+                                        Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
                               - else
                                 - if @community.show_map
                                   = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
                                     %i.fa.fa-road.icon_size.additionalPageAction
                                       %span#additionalPageActionText
-                                        Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed.  
+                                        Click two road icons in sequence to draw a path on the map below between the two stops you have selected.  
                             
                               = link_to edit_community_elevator_path(@community, elevator) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                                 %i.fa.fa-edit.icon_size.additionalPageAction
@@ -235,7 +235,7 @@
                               = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
                                 %i.fa.fa-road.icon_size.additionalPageAction
                                   %span#additionalPageActionText
-                                    Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed. 
+                                    Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
                             = link_to edit_community_amenity_path(@community,amenity) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size.additionalPageAction
                                 %span#additionalPageActionText
@@ -245,7 +245,7 @@
                             = link_to draw_line_path(bsp) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
                               %i.fa.fa-road.icon_size.additionalPageAction
                                 %span#additionalPageActionText
-                                  Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed. 
+                                  Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
                             = link_to edit_community_building_starting_point_path(@community.id,bsp) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                               %i.fa.fa-edit.icon_size.additionalPageAction
                                 %span#additionalPageActionText
@@ -266,7 +266,7 @@
                         = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
                           %i.fa.fa-road.icon_size.additionalPageAction
                             %span#additionalPageActionText
-                              Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed.  
+                              Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
                         = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
                           %i.fa.fa-edit.icon_size.additionalPageAction
                             %span#additionalPageActionText
@@ -338,7 +338,7 @@
               %h4{:style => "display: inline"} Draw a Path Between Two Stops: Choose two points from the list above by clicking on the "Way Finding" icon for each.
               %i.fa.fa-road.icon_size.additionalPageAction
                 %span#additionalPageActionText
-                  Click two road icons in sequence to draw a path on the map below between two stops. Once two items are selected, click on the map to draw the path. To delete a point, double-click it. To move a point, drag and drop it. The line will reset when the page is refreshed. 
+                  Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
               / %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
               / %h4 Drag and drop the icon onto the correct postion on the map.
               / %h4 To delete a point on the path, double-click the point.

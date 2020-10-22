@@ -79,7 +79,7 @@
               %li.loader_class{:class=>"#{controller_name =='sitemap_amenities' || controller_name =='floorplate_amenities' || controller_name =='amenities' || (controller_name =='floorplates' && params[:amenities].present?) || (params[:action] == 'plot_amenities' && controller_name != "floorplan_amenities" )? 'active' : ''}"}
                 = link_to community_amenities_path(current_community)  do
                   %i.fa.fa-plus-square
-                  %span Amenity Images
+                  %span Amenities
             - if (current_user.is_super_admin? || current_user.is_community_admin? ) && current_community.mdu
               %li.loader_class{:class=>"#{controller_name =='floorplans' || controller_name =='floorplan_amenities' ? 'active' : ''}"}
                 %a{:href => "#{community_floorplans_path(current_community)}"}
