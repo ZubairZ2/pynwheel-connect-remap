@@ -553,8 +553,7 @@
                         Confirmation
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "10Popover","data-content" => " "}
                           %span#propertyDetailNameText
-                            This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            Thank you for scheduling your self-guided tour! We look forward to having you at the property on <date> and <time>. When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive: (Links to app stores)
+                            We look forward to having you at the property on (date) at (time).
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                   .col-lg-9.col-lg-offset-1
@@ -1029,7 +1028,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="10Popover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: fit-content;"><div class="arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Thank you for scheduling your self-guided tour! We look forward to having you at the property on <date> and <time>. When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive: (Links to app stores)</div><div class="popover-footer"><a id="10PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: fit-content;"><div class="arrow"></div><div class="popover-body popover-padding">We look forward to having you at the property on (date) at (time).</div><div class="popover-footer"><a id="10PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
