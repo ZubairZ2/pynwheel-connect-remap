@@ -47,6 +47,8 @@ class UnitsController < ApplicationController
     @unit = Unit.find params["id"]
     if @unit.crop_x_secondary == params[:unit][:crop_x].to_f
       @unit.do_crop_secpndary = false
+    elsif @unit.crop_x == params[:unit][:crop_x].to_f and @unit.crop_y == params[:unit][:crop_y] and @unit.crop_w == params[:unit][:crop_w] and @unit.crop_h == params[:unit][:crop_h]
+      @unit.do_crop_secpndary = false
     else
       @unit.do_crop_secpndary = true
     end

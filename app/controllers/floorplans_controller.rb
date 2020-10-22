@@ -80,6 +80,8 @@ class FloorplansController < ApplicationController
     @floorplan = Floorplan.find params["id"]
     if @floorplan.crop_x_secondary == params[:floorplan][:crop_x].to_f
       @floorplan.do_crop_secondary = false
+    elsif @floorplan.crop_x == params[:floorplan][:crop_x].to_f and @floorplan.crop_y == params[:floorplan][:crop_y].to_f and @floorplan.crop_w == params[:floorplan][:crop_w].to_f and @floorplan.crop_h == params[:floorplan][:crop_h].to_f
+      @floorplan.do_crop_secondary = false
     else
       @floorplan.do_crop_secondary = true
     end
