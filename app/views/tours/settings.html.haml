@@ -121,16 +121,16 @@
           = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
             = hidden_field_tag "community_id", @community.id
 
-              - if @community.self_tour
-                .form-group#chat_control_row
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Chat Control
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = check_box_tag :chat_control, true,  @community.chat_control
-                      %label.label-primary{:for => "chat_control"}
-                      %span.pl-15 Yes
+            - if @community.self_tour
+              .form-group#chat_control_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Chat Control
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :chat_control, true,  @community.chat_control
+                    %label.label-primary{:for => "chat_control"}
+                    %span.pl-15 Yes
             - if @community.touchscreen_app   
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -563,7 +563,7 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "10Popover","data-content" => " "}
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-Thank you for scheduling your self-guided tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive. (Links to app stores)
+                            Thank you for scheduling your self-guided tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive. (Links to app stores)
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                   .col-lg-9.col-lg-offset-1
