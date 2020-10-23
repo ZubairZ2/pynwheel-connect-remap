@@ -2,7 +2,7 @@ class FloorplansController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
-  before_action :set_floorplan, only: [:edit,:update,:destroy]
+  before_action :set_floorplan, only: [:edit,:update,:destroy, :remove_pri_scnd_image]
 
   def index
     @floorplans = @community.floorplans.order(id: :desc)
@@ -33,6 +33,18 @@ class FloorplansController < ApplicationController
   def edit
     add_breadcrumb "Floor plans", community_floorplans_path(@community)
     add_breadcrumb "Floor plan Details", edit_community_floorplan_path(@community,@floorplan)
+  end
+
+  def remove_pri_scnd_image
+    if params[:image] == "primary"
+      @floorplan.remove_image!
+      @floorplan.standard_image_url = nil
+      @floorplan.save
+    elsif params[:image] == "secondary"
+      @floorplan.remove_secondary_image!
+      @floorplan.save
+    end
+    redirect_to :back, notice: "Image removed successfully."
   end
 
   def show_floorplan_image_in_modal
