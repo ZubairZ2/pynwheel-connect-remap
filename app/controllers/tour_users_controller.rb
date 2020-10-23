@@ -109,15 +109,21 @@ class TourUsersController < ApplicationController
     @community = Community.find params[:community_id]
     @tour_user = TourUser.find params[:id]
     @tour = @community.tour
+    if params[:delete_all].present?
+      delete_tour_user_all_attributes(@tour_user, @community)
+      redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
+    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone].present? or params[:history].present?
+      update_tour_user_attributes(@tour_user, @community)
+      redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
+    else
+      tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @tour.id).includes(:lock_histories)
+      lock_histories_ids = tour_histories.all.map { |x| x.lock_histories.ids }.flatten
+      LockHistory.where(id: lock_histories_ids).delete_all
 
-    tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @tour.id).includes(:lock_histories)
-    lock_histories_ids = tour_histories.all.map{|x| x.lock_histories.ids}.flatten
-    LockHistory.where(id: lock_histories_ids).delete_all
-
-    if @tour_user.chatrooms.find_by(tour_id: @tour.id).present?
-      @tour_user.chatrooms.find_by(tour_id: @tour.id).chats.delete_all
-      @tour_user.chatrooms.find_by(tour_id: @tour.id).delete
-    end
+      if @tour_user.chatrooms.find_by(tour_id: @tour.id).present?
+        @tour_user.chatrooms.find_by(tour_id: @tour.id).chats.delete_all
+        @tour_user.chatrooms.find_by(tour_id: @tour.id).delete
+      end
 
     @tour_user.as_guests.find_by(community_id: @community.id).delete if @tour_user.as_guests.find_by(community_id: @community.id).present?
     @tour_user.igloo_guests.where(community_id: @community.id).delete_all if @tour_user.igloo_guests.find_by(community_id: @community.id).present?
@@ -126,9 +132,66 @@ class TourUsersController < ApplicationController
     @tour_user.schedual_tours.where(community_id: @community.id).delete_all
     @tour_user.prospects.where(community_id: @community.id).delete_all
 
-    # @tour_user.destroy
-    redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
+      # @tour_user.destroy
+      redirect_to community_tour_users_path(@community), :notice => "User deleted successfully"
+    end
   end
+
+  def delete_tour_user_all_attributes(tour_user, community)
+    tour_user.email = "Removed at Consumer Request"
+    tour_user.first_name = "Removed at Consumer Request"
+    tour_user.last_name = ""
+    tour_user.name = ""
+    tour_user.phone_number = "Removed at Consumer Request"
+    if tour_user.image.present?
+      tour_user.remove_image!
+      tour_user.image = File.open("app/assets/images/default-user128x128.jpg")
+    end
+    if tour_user.id_card.present?
+    tour_user.remove_id_card!
+    tour_user.id_card = File.open("app/assets/images/default id card.jpg")
+    end
+    tour_user.save!(validate: false)
+    tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: community.tour.id) rescue nil
+    if tour_histories.present?
+      tour_histories.each do |tour_history|
+        tour_history.history = true
+        tour_history.save!
+      end
+    end
+  end
+
+  def update_tour_user_attributes(tour_user, community)
+    if params[:email] == "true"
+      tour_user.email = "Removed at Consumer Request"
+      tour_user.save!(validate: false)
+    end
+    if params[:name] == "true"
+      tour_user.name = "Removed at Consumer Request"
+      tour_user.first_name =  "Removed at Consumer Request"
+      tour_user.last_name = ""
+      tour_user.save!(validate: false)
+    end
+    if params[:phone_number] == "true"
+      tour_user.phone_number = "Removed at Consumer Request"
+      tour_user.save!(validate: false)
+    end
+    if params[:image] == "true"
+      tour_user.remove_image!
+      tour_user.remove_id_card!
+      tour_user.id_card = File.open("app/assets/images/default id card.jpg")
+      tour_user.image = File.open("app/assets/images/default-user128x128.jpg")
+      tour_user.save!(validate: false)
+    end
+    if params[:history] == "true"
+      tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: community.tour.id) rescue nil
+      tour_histories.each do |tour_history|
+        tour_history.history = true
+        tour_history.save!
+      end
+    end
+  end
+
 
   def breadCrumb
     add_breadcrumb "Home", root_path
