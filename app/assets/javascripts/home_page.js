@@ -1,7 +1,6 @@
 $(document).ready(function(){
     $('[data-toggle="popover"]').popover();
   $('.sortable').railsSortable(); 
-  
   $('#animation').on('change',function(){
     saveAnimation($(this).val());
   });
