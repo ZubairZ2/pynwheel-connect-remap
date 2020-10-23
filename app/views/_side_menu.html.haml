@@ -52,16 +52,16 @@
             %span Home Page
 
       - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?       
-        %li.treeview{:class=>"#{controller_name =='sitemaps' || controller_name =='floorplates' || controller_name =='sitemap_amenities' || controller_name =='floorplans' || controller_name =='units' || controller_name =='floorplate_amenities' || controller_name =='amenities' || controller_name =='floorplates' ? 'active' : ''}"}
+        %li.treeview.menu-open{:class=>"#{controller_name =='sitemaps' || controller_name =='floorplates' || controller_name =='sitemap_amenities' || controller_name =='floorplans' || controller_name =='units' || controller_name =='floorplate_amenities' || controller_name =='amenities' || controller_name =='floorplates' ? 'active' : ''}"}
           %a{:href => "/"}
             - if current_community.is_sitemap
               %i.fa.fa-map-marker
             - else
               %i.fa.fa-database
-            %span Property Map Page
+            %span Property Map
             %span.pull-right-container
               %i.fa.fa-angle-right.pull-right
-          %ul.treeview-menu.property_map_intent_list{:style=>"#{controller_name =='elevators'? 'display: block' : ''}"}
+          %ul.treeview-menu.property_map_intent_list{:style=>"display: block"}
             - if (current_community.is_sitemap && current_community.show_map && (current_user.is_super_admin? || current_user.is_community_admin? ))
               %li.loader_class{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
                 %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
