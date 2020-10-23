@@ -125,7 +125,7 @@
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
 
-                  = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
+                  / = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Subscription Start Date
@@ -222,6 +222,9 @@
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Chat Control
+                  %i.propertyDetailName.fa.fa-question-circle
+                    %span#propertyDetailNameText
+                      When this is switched to "yes" visitors will be able to chat with staff who have this feature activated in their user account. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
