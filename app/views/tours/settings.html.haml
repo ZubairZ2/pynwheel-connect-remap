@@ -121,7 +121,16 @@
           = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
             = hidden_field_tag "community_id", @community.id
 
-            
+              - if @community.self_tour
+                .form-group#chat_control_row
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Chat Control
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = check_box_tag :chat_control, true,  @community.chat_control
+                      %label.label-primary{:for => "chat_control"}
+                      %span.pl-15 Yes
             - if @community.touchscreen_app   
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
