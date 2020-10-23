@@ -17,7 +17,7 @@ class ToursController < ApplicationController
     @existing_path_points = []
     @building_list = []
     floor_choice = []
-    building_choice = []
+    @building_choice = []
     @sorted_building = @tours.building_order
 
     @floor = nil
@@ -48,7 +48,7 @@ class ToursController < ApplicationController
     unless params[:floorNo].present?
       params[:floorNo] = @community.floorplates.map{|f| f.floors}.flatten.sort[0].to_s
     end
-    building_choice = @building == @building_list[0] ? ['',nil,@building] : [@building]
+    @building_choice = @building == @building_list[0] ? ['',nil,@building] : [@building]
     
     if params[:floorNo].present? && !@community.is_sitemap
       
@@ -57,16 +57,16 @@ class ToursController < ApplicationController
       @sitemap =  @community.floorplates.select{|f| f.floors.include?(params[:floorNo].to_i)}.first
       if @community.show_map
         
-        @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @sitemap.amenities.where(floor: floor_choice, building: building_choice).map{|x| x.id}
+        @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @sitemap.amenities.where(floor: floor_choice, building: @building_choice).map{|x| x.id}
       else
-        @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @community.amenities.where(floor: floor_choice,building: building_choice).map{|x| x.id}
+        @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @community.amenities.where(floor: floor_choice,building: @building_choice).map{|x| x.id}
       end
 
       if @community.show_map
         
-        @tour_unit_array =  @community.mdu ? TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.map{|x| x.id if (floor_choice.include? x.floor)  && (building_choice.include? x.building ) } | @community.units.where( floor: floor_choice,building: building_choice,modal_unit:  true).ids : []
+        @tour_unit_array =  @community.mdu ? TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.map{|x| x.id if (floor_choice.include? x.floor)  && (@building_choice.include? x.building ) } | @community.units.where( floor: floor_choice,building: @building_choice,modal_unit:  true).ids : []
       else
-        @tour_unit_array =  @community.mdu ? TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @community.units.map{|x| x.id if (floor_choice.include? x.floor) && (building_choice.include? x.building ) } | @community.units.where(floor: floor_choice,building: building_choice,modal_unit:  true).ids : []
+        @tour_unit_array =  @community.mdu ? TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @community.units.map{|x| x.id if (floor_choice.include? x.floor) && (@building_choice.include? x.building ) } | @community.units.where(floor: floor_choice,building: @building_choice,modal_unit:  true).ids : []
       end
 
     else
@@ -82,7 +82,7 @@ class ToursController < ApplicationController
     # @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if z.path_points.present? } if (x.present? && @all_stops.include?(x.stop_id)) }
     # @community.tour.tour_stops.order(:sort).each {|x| x.stop_type.classify.constantize.find_by_id(x.stop_id).paths.each{|z| @existing_path_points << z.path_points.reorder('id ASC') if (z.path_points.present? &&  !floorplate_units.include?(z.map_path_from_id) && !z.map_path_from_id.nil? ) } if (x.present? && @all_stops.include?(x.stop_id)) }
     begin
-      floorplate_elevators = TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id if   (Elevator.find_by(id: x.stop_id.to_i).floors.include?(@floor.to_i) and (building_choice.include? (Elevator.find_by(id: x.stop_id.to_i).building))  )}.compact
+      floorplate_elevators = TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id if   (Elevator.find_by(id: x.stop_id.to_i).floors.include?(@floor.to_i) and (@building_choice.include? (Elevator.find_by(id: x.stop_id.to_i).building))  )}.compact
     rescue
       floorplate_elevators = nil
     end
@@ -101,7 +101,7 @@ class ToursController < ApplicationController
         begin
           
 
-        if (floor_choice.include?(@tours.starting_floor) && building_choice.include?(@tours.building))       
+        if (floor_choice.include?(@tours.starting_floor) && @building_choice.include?(@tours.building))       
           from_sp_path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
           from_sp_path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first unless from_sp_path.present?
           @existing_path_points << from_sp_path.path_points.reorder('id ASC') if (from_sp_path.present?)
@@ -139,7 +139,7 @@ class ToursController < ApplicationController
     
     if @community.show_map
       
-      @amenities = @community.is_sitemap ? @community.amenities : (@sitemap.amenities.present? ? @sitemap.amenities.where(floor: floor_choice,building: building_choice) : []) rescue []
+      @amenities = @community.is_sitemap ? @community.amenities : (@sitemap.amenities.present? ? @sitemap.amenities.where(floor: floor_choice,building: @building_choice) : []) rescue []
     else
       am = []
       TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").each{|x| am << (Amenity.find_by_id x.stop_id)}
@@ -147,11 +147,11 @@ class ToursController < ApplicationController
     end
     @elevators = @community.elevators
     if @community.show_map
-      @units = @community.is_sitemap ? @community.units : (@sitemap.units.map{|x| x if x.floor == @floor.to_i && (building_choice.include? x.building )}).compact rescue []
+      @units = @community.is_sitemap ? @community.units : (@sitemap.units.map{|x| x if x.floor == @floor.to_i && (@building_choice.include? x.building )}).compact rescue []
     else
       un = []
       TourStop.where(tour_id: @community.tour.id,stop_type: "unit").each{|x| un << (Unit.find_by_id x.stop_id)}
-      @units = @community.is_sitemap ? (@community.units - un.compact) : (@community.units.where(floor: @floor.to_i,building: building_choice) - un.compact)
+      @units = @community.is_sitemap ? (@community.units - un.compact) : (@community.units.where(floor: @floor.to_i,building: @building_choice) - un.compact)
     end
 
     #/////////////////////////////////// new
