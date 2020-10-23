@@ -158,6 +158,14 @@
 
 :javascript
   
+  
+  $(document).ready(function() {
+   // executes when HTML-Document is loaded and DOM is ready
+   
+   setTimeout(function(){
+    make_coord();
+  }, 2000);
+  });
   $(document).on('change', '.address_fields1', function() {
 
 
@@ -184,7 +192,6 @@
   $( ".address_fields1" ).keyup(function() {
     make_coord()
   });
-
   if (!#{current_user.welcome_property_details_page})
   {
     $('[data-toggle="propertyDetailNamePopover"]').popover({
