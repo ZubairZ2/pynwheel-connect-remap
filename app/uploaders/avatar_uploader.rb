@@ -13,8 +13,14 @@ class AvatarUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
    def filename
-     if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage)
-       if model.is_a? Floorplan
+     if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage) || (model.is_a? Amenity) || (model.is_a? Unit)
+       if model.is_a? Amenity
+         if  model.crop_x.present?
+           @name = original_filename
+         else
+           @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
+         end
+       elsif model.is_a? Floorplan
          if !model.image_bit.nil? && model.crop_x.present?
            @name = original_filename
          elsif !model.image_bit.nil? && model.crop_x_secondary.present?
@@ -153,8 +159,20 @@ class AvatarUploader < CarrierWave::Uploader::Base
           end
         end
       end
+      if model.is_a? Amenity
+        if model.crop_x.present?
+          manipulate! do |img|
+            xx = model.crop_x
+            yy = model.crop_y
+            ww = model.crop_w
+            hh = model.crop_h
+            img.crop!(xx, yy, ww, hh)
+            img
+          end
+        end
+    end
     else
-      if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage)
+      if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage) || (model.is_a? Amenity)
         if model.crop_x.present?
           manipulate! do |img|
             xx = model.crop_x

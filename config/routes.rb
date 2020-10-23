@@ -168,6 +168,8 @@ Rails.application.routes.draw do
         post :load_remotelock_data
         post :clear_locks
         post :extract_floors
+        get :show_amenity_image_in_modal
+        put :crop_amenity_image
       end
     end
     resources :tour_users do

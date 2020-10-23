@@ -1,16 +1,19 @@
 .modal-dialog{:style=>"min-width: 250px !important; width: fit-content; height: fit-content; !important;"}
   .modal-content
-    = form_for @floorplan,url: "/communities/#{@community.id}/floorplans/#{@floorplan.id}/crop_image",method: :put do |f|
+    = form_for @amenity,url: "/communities/#{@community.id}/amenities/#{@amenity.id}/crop_amenity_image",method: :put do |f|
       .modal-body
         - rn =  rand(9999999999999999999999999)
         .image-crop{:style=>"max-height: fit-content;"}
-          = image_tag @floorplan.crop_x.present? ? @floorplan.image.url  + "?timestamp=#{rn}" : @floorplan.image.url  + "?timestamp=#{rn}", id: "cropbox"
+          = image_tag @amenity.crop_x.present? ? @amenity.image.url  + "?timestamp=#{rn}" : @amenity.image.url  + "?timestamp=#{rn}", id: "cropbox"
           - %w[x y w h].each do |attribute|
             = f.hidden_field "crop_#{attribute}"
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
-        .form-group.mt-10
+        .form-group
+          %label{:for => "exampleInputEmail1"} Image Title
+          = f.text_field :name , class: "form-control", placeholder: "Name"
+        .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
             Apply Changes
             %i.fa.fa-check
@@ -35,13 +38,13 @@
     var ratioH = $('#cropbox')[0].naturalHeight / $('#cropbox').height();
     var currentRatio = Math.min(ratioW, ratioH);
     //$('#home_page_image_crop_x').val(Math.round(coords.x * currentRatio));
-    $('#floorplan_crop_x').val(coords.x);
+    $('#amenity_crop_x').val(coords.x);
     //$('#home_page_image_crop_y').val(Math.round(coords.y * currentRatio));
-    $('#floorplan_crop_y').val(coords.y);
+    $('#amenity_crop_y').val(coords.y);
     //$('#home_page_image_crop_w').val(Math.round(coords.w * currentRatio));
-    $('#floorplan_crop_w').val(coords.w);
+    $('#amenity_crop_w').val(coords.w);
     //$('#home_page_image_crop_h').val(Math.round(coords.h * currentRatio));
-    $('#floorplan_crop_h').val(coords.h);
+    $('#amenity_crop_h').val(coords.h);
     //update_preview(coords);
   }
 

@@ -27,6 +27,34 @@ class AmenitiesController < ApplicationController
     @assigned_lock = @amenity.remote_locks.first
   end
 
+  def show_amenity_image_in_modal
+    @community = Community.find params[:community_id]
+    @amenity = Amenity.find params[:id]
+  end
+
+  def crop_amenity_image
+    @community = Community.find params["community_id"]
+    @amenity = Amenity.find params["id"]
+    @amenity.name = params[:amenity][:name] if params[:amenity][:name].present?
+    if @amenity.crop_x == params[:amenity][:crop_x].to_f
+      @amenity.do_crop = false
+    else
+      @amenity.do_crop = true
+    end
+    @amenity.crop_x = params[:amenity][:crop_x]
+    @amenity.crop_y = params[:amenity][:crop_y]
+    @amenity.crop_w = params[:amenity][:crop_w]
+    @amenity.crop_h = params[:amenity][:crop_h]
+    @amenity.save!
+    if @amenity.amenityable_type == "Unit"
+    redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=unit&unit=#{@amenity.amenityable_id}", notice: "Amenity updated successfully"
+    else
+      redirect_to edit_community_amenity_path(@community, @amenity)
+    end
+
+
+  end
+
   def load_remotelock_data
     access_token = generate_remotelock_token
     responce = RemoteLockService.new(current_community).get_all_deivces(access_token)

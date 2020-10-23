@@ -686,7 +686,7 @@ json.tours @tours do |tour|
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
-          json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
+          json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
           json.stop_description unit_amenity.description
           json.directional_text unit_amenity.directional_text
           json.video_link_button_label unit.virtual_tour_button_label
@@ -718,7 +718,7 @@ json.tours @tours do |tour|
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
-          json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
+          json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
           unit_amenity_stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
           if unit_amenity_stop_description.size < description_limit

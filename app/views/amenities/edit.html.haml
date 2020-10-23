@@ -109,8 +109,15 @@
     .form-group.logo-upload-bg.pt-15
       .select-logo.center-img.mb-20.mt-30.logo-upload-bg
         .select-logo-logo.logo-container.logo-upload-container{:style => "height: 250px !important;"}
-          %a.preview-image{:href=>@amenity.image.present? ? @amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-            = image_tag @amenity.image.present? ? @amenity.image.url : "default.jpeg",:width=>"100%",:id=>"preview-image"
+          - rn =  rand(9999999999999999999999999)
+          %a.preview-image{:href=>@amenity.image.present? ? (@amenity.image.url + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+            = image_tag @amenity.image.present? ? (@amenity.image.url  + "?timestamp=#{rn}") : "default.jpeg",:width=>"100%",:id=>"preview-image"
+        - if  @amenity.image.present?
+          .col-lg-1
+            .icon{style: "margin-left: -15px;"}
+              = link_to show_amenity_image_in_modal_community_amenity_path(), remote: true do
+                %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                  Crop
     //////////////////////// Amenity Gallery
     .box.box-info.add-plan
 
@@ -139,6 +146,7 @@
               %button.btn-primary.mb-20.done_btn#on_done{:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
+#crop-amenity-image.modal.fade.edit-image
 
 :javascript
 

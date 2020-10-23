@@ -8,7 +8,8 @@
         .image-box.video-box
           .images.height-200
             %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-              = image_tag amenity.image.url
+              - rn =  rand(9999999999999999999999999)
+              = image_tag (amenity.crop_x.present? ? amenity.image.url + "?timestamp=#{rn}": amenity.image.url + "?timestamp=#{rn}")
         .icons
           = link_to edit_community_floorplan_amenity_path(@community,@floorplan,amenity), remote: true do 
             %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
