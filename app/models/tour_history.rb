@@ -31,7 +31,7 @@ class TourHistory < ApplicationRecord
 
   def send_update_notifications
   	if time_difference >= 60 && self.lengthy_stay_email_sent == false
-  		@mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "Visitor is on site for more than"] #get_alert_message('lengthy_stay')
+  		@mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "#{self.tour_user.name.capitalize} has been on a Self Tour at #{@community.name.gsub("(", "( ").split.map(&:capitalize).join(' ')} for more than"] #get_alert_message('lengthy_stay')
   		@mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
       self.update_attributes(lengthy_stay_email_sent: true)
   		send_email_sms_or_both @mail_content
@@ -54,7 +54,7 @@ class TourHistory < ApplicationRecord
 		touruser = self.tour_user
 		tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers/#{touruser.id}"
 		@complete_tour_content  = ["#{@community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
-		@thank_you_content  = @community.thank_you_message.present? ? @community.thank_you_message : "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+		@thank_you_content  = @community.thank_you_message.present? ? @community.thank_you_message : "<div style='vertical-align:middle; text-align:center'><img style='width: 150px' src='#{@community.logo.present? ? @community.logo.url : ''}' data-title='#{@community.name}' /></div><br/>Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
 		touruser_remotelock_data
 		# tour = (Tour.find_by_id self.tour_id)
 		# assigned_pin = self.tour_user.as_guests.find_by(community_id: tour.community.id).edgestate_pin if tour.present? and self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
