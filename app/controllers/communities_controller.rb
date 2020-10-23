@@ -550,10 +550,9 @@ class CommunitiesController < ApplicationController
     @tour = @community.tour
     @tour_setting = @tour.tour_setting
     
-    unless params[:community][:optional_mails].present?
+    unless params[:community].present? && params[:community][:optional_mails].present?
       @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
       @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
-      @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
       @community.show_camera_button = params[:show_camera_button].present? ? true : false
       @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
       @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
@@ -584,6 +583,7 @@ class CommunitiesController < ApplicationController
       @tour_setting.save
 
     else
+      @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
       @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
       @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
       @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
@@ -596,7 +596,7 @@ class CommunitiesController < ApplicationController
 
     if @community.save
       flash[:notice] = "Tour settings updated successfully."
-      redirect_to community_tours_path(@community)
+      redirect_to settings_community_tours_path(@community)
     else
       flash[:error] = @community.errors.full_messages.join(',')
       redirect_back(fallback_location: root_path)

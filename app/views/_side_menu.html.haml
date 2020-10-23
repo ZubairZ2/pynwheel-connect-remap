@@ -154,11 +154,32 @@
       -#     %a{"data-toggle"=>"modal","data-target"=>"#share-chat-widget",:href => "##"}
       -#       %i.fa.fa-share
       -#       %span Chat Widget
+      / - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      /   %li.loader_class{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
+      /     %a{:href => "#{community_tours_path(current_community)}"}
+      /       %i.fa.fa-plane
+      /       %span Tour Setup
       - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
-        %li.loader_class{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
-          %a{:href => "#{community_tours_path(current_community)}"}
+        %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}
+          %a{:href => "/"}
             %i.fa.fa-plane
             %span Tour Setup
+            %span.pull-right-container
+              %i.fa.fa-angle-right.pull-right
+          %ul.treeview-menu.property_map_intent_list{:style=>"#{controller_name =='tou4r'? 'display: block' : ''}"}
+            %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "settings"  ? 'active' : ''}"}
+              %a{:href => "#{settings_community_tours_path(current_community)}"}
+                %i.fa.fa-bars
+                %span Settings
+                %span.pull-right-container
+
+            %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "index" ? 'active' : ''}"}
+              %a{:href => "#{community_tours_path(current_community)}"}
+                %i.fa.fa-plane
+                %span Tour Stops
+                %span.pull-right-container
+
+
       - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? || current_user.is_view_visitor_details_page?
         %li.loader_class{:class=>"#{controller_name =='tour_users' ? 'active' : ''}"}
           %a{:href => "#{community_tour_users_path(current_community)}"}
