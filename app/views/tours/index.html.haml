@@ -159,8 +159,7 @@
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find_by_id stop.stop_id
-                        
-                        - if elevator.present? && elevator.building.present? && ((!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (![@building,nil].include? elevator.building))
+                        - if elevator.present? && ((!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (![@building,nil,""].include? elevator.building))
                           - next
                       %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
