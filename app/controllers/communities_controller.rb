@@ -585,7 +585,7 @@ class CommunitiesController < ApplicationController
     @tour = @community.tour
     @tour_setting = @tour.tour_setting
     @community.chat_control = params[:chat_control].present? ? params[:chat_control] : false
-    unless params[:community].present? && params[:community][:optional_mails].present?
+    unless params[:community].present? && params[:community][:optional_mails].present? 
       @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
       @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
       @community.show_camera_button = params[:show_camera_button].present? ? true : false
