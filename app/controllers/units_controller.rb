@@ -10,6 +10,63 @@ class UnitsController < ApplicationController
     @communities = current_company.communities
     add_breadcrumb "Units", community_units_path(@community)
   end
+  def show_unit_image_in_modal
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:id]
+  end
+
+  def crop_unit_image
+    @community = Community.find params["community_id"]
+    @unit = Unit.find params["id"]
+    if @unit.crop_x == params[:unit][:crop_x].to_f
+      @unit.do_crop = false
+    else
+      @unit.do_crop = true
+    end
+    if params[:unit][:crop_h].to_f == 0 && params[:unit][:crop_w].to_f == 0
+      @unit.do_crop = false
+    end
+    @unit.crop_x = params[:unit][:crop_x]
+    @unit.crop_y = params[:unit][:crop_y]
+    @unit.crop_w = params[:unit][:crop_w]
+    @unit.crop_h = params[:unit][:crop_h]
+    @unit.image_bit = true
+    @unit.save!
+    # PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+
+    redirect_to edit_community_unit_path(@community,@unit)
+    # render :json=> {:success=>false}
+  end
+
+  def show_unit_secondary_image_in_modal
+    @community = Community.find params[:community_id]
+    @unit = Unit.find params[:id]
+  end
+  def crop_unit_secondary_image
+    @community = Community.find params["community_id"]
+    @unit = Unit.find params["id"]
+    if @unit.crop_x_secondary == params[:unit][:crop_x].to_f
+      @unit.do_crop_secpndary = false
+    elsif @unit.crop_x == params[:unit][:crop_x].to_f and @unit.crop_y == params[:unit][:crop_y] and @unit.crop_w == params[:unit][:crop_w] and @unit.crop_h == params[:unit][:crop_h]
+      @unit.do_crop_secpndary = false
+    else
+      @unit.do_crop_secpndary = true
+    end
+    if params[:unit][:crop_h].to_f == 0 && params[:unit][:crop_w].to_f == 0
+      @unit.do_crop_secpndary = false
+    end
+    @unit.crop_x_secondary = params[:unit][:crop_x]
+    @unit.crop_y_secondary = params[:unit][:crop_y]
+    @unit.crop_w_secondary = params[:unit][:crop_w]
+    @unit.crop_h_secondary = params[:unit][:crop_h]
+    @unit.image_bit = false
+
+    @unit.save
+    # PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+
+    redirect_to edit_community_unit_path(@community,@unit)
+    # render :json=> {:success=>false}
+  end
 
   def new
     @unit = @community.units.new
@@ -58,7 +115,7 @@ class UnitsController < ApplicationController
       render json: {locks: RemoteLock.where(edge_state_id: es.id)}
     end
   end
- 
+
   def clear_locks
     unit = Unit.find params[:id]
     unit.remote_locks.delete_all
@@ -66,6 +123,13 @@ class UnitsController < ApplicationController
   end
 
   def update
+    if params[:unit][:image]
+      @unit.crop_x = nil
+    end
+    if params[:unit][:secondary_image]
+      @unit.crop_x_secondary = nil
+    end
+    @unit.image_bit = nil
     unit_previous_floorplan_amenities = @unit.amenities.where.not(floorplan_amenity_id: nil) rescue nil
     if params[:remote_lock].present?
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
@@ -203,7 +267,7 @@ class UnitsController < ApplicationController
             @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
             @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
             @assigned_lock = @unit.remote_locks.first
-            
+
             flash[:error] = @unit.errors.full_messages.join(',')
             format.html { render :action => "edit" }
             format.json { respond_with_bip(@unit) }
@@ -272,7 +336,7 @@ class UnitsController < ApplicationController
     end
     redirect_to :back, notice: "Image removed successfully."
   end
-  
+
   def ajaxplotunit
     unit = @community.units.where(floorplate_id: nil,provider_unit_id: params[:id])
     if unit.present?
@@ -474,7 +538,7 @@ class UnitsController < ApplicationController
     # flash[:notice] = "Image is uploaded for units successfully."
     redirect_to :back, notice: "Image is uploaded for units successfully."
   end
-  
+
   def set_amenities_for_units
     UploadAmenityForUnit.perform_async @community, params[:type_ids], params[:image], params[:name], params[:image_id]
     render json: {success: "success"}

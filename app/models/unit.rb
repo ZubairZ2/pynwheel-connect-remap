@@ -77,6 +77,18 @@ class Unit < ApplicationRecord
   #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
   scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
   after_commit :populate_image_urls, on: [:create,:update]
+  after_update :crop_unit_image
+  after_update :crop_unit_secondary_image
+
+
+  def crop_unit_secondary_image
+    secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secpndary)
+    self.update_columns(do_crop_secpndary: false)
+  end
+  def crop_unit_image
+    image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
+    self.update_columns(do_crop: false)
+  end
 
 
   def floorplan

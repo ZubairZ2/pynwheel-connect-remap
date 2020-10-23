@@ -21,7 +21,9 @@
         / /.box-body
         .box-footer
           = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"
-- if @community.self_tour    
+    #crop-unit-secondary-image.modal.fade.edit-image
+    #crop-unit-image.modal.fade.edit-image
+- if @community.self_tour
   %section
     .content
       .box.box-info.add-plan.mt-20#logo_header
@@ -52,7 +54,7 @@
             = render :partial=>'edit'
 
   #edit-image.modal.fade.edit-image
-  
+
   #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
     .modal-dialog
       .modal-content
