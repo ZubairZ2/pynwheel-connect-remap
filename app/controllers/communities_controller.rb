@@ -35,7 +35,11 @@ class CommunitiesController < ApplicationController
     if @community.save
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
-      redirect_to community_design_index_path(@community)
+      if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+        redirect_to community_settings_page_path(:community_id=>@community.id)
+      else
+        redirect_to community_design_index_path(@community)
+      end
     else
       flash[:error] = @community.errors.full_messages.join(',')
       render :new
@@ -50,7 +54,9 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
-		authorize! :edit_settings_page, current_user
+    authorize! :edit_settings_page, current_user
+    tour = @community.create_tour if @community.tour.nil?	
+    tour.create_tour_setting if tour.present? and tour.tour_setting.nil?
     add_breadcrumb "Companies", companies_path(current_company)
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"

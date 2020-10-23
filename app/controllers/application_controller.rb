@@ -66,7 +66,25 @@ class ApplicationController < ActionController::Base
 
   def check_community
     return if params[:controller] == "tour_users" && params[:action]== "show"
-    unless current_user.is_super_admin? or current_user.is_dwelo_admin?
+    return if params[:controller] == "tour_users" &&(params[:action]== "checkpoint_verification" || params[:action]== "show")
+    
+    if current_user.is_dwelo_admin?
+
+      assigned_communities_ids = current_user.communities.ids
+      dwelo_communities_ids = Community.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact).ids
+      ids = (assigned_communities_ids + dwelo_communities_ids).uniq
+      communities = Community.where(id: ids)
+
+      if params[:community_id].present?
+        if communities.ids.include? params[:community_id].to_i
+          return
+        else
+          redirect_to root_path and return
+        end
+      end
+    end
+
+    unless current_user.is_super_admin?
       if params[:community_id].present?
         all_ids = []
         current_user.communities.each do |c|
