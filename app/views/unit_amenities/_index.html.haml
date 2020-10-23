@@ -22,7 +22,7 @@
 
 
         .icons
-          = link_to edit_community_amenity_path(@community,amenity) << "?from=unit" do
+          = link_to edit_community_amenity_path(@community,amenity) << "?from=unit&unit=#{@unit.id}" do
             %i.fa.fa-pencil
           -# = link_to edit_community_unit_amenity_path(@community,@unit,amenity), remote: true do
           -#   %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
