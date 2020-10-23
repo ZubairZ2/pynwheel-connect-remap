@@ -68,6 +68,9 @@
                   .row
                     %h4{:style => "margin-left: 45px"}
                       Alert
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          This section will show the time the tour began, how long the tour lasted, and when the tour ended.
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
                     - @alerts.order("id DESC").each_with_index do |alert,index|
                       - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
@@ -101,6 +104,9 @@
                   //Tour Tracking
                   %h4{:style => "margin-left: 30px"}
                     Tour Tracking
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        This section will show you where the visitor went on their tour and when online controlled access points were unlocked (if applicable). 
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "margin-top: 10px;margin-left: 15px;margin-right: 15px;"}
                     - unless @community.is_sitemap
                       .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-left: 0px;"}
@@ -156,6 +162,9 @@
                 .col-lg-6
                   %h4{:style => "margin-left: 30px"}
                     Stops Visited
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+                      %span#propertyDetailNameText 
+                        This section will show you what time each stop that was visited on the tour, and photos and notes that were taken by the visitor at each stop.  
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
 
                     - @visited_stop.each do |stop|
