@@ -669,7 +669,7 @@ class CommunitiesController < ApplicationController
       flash[:notice] = "Apartment settings updated successfully."
       redirect_back(fallback_location: root_path)
     else
-      flash[:error] = @community.errors.full_messages.join(',')
+      flash[:error] = @community.errors.full_messages.join(',') 
       redirect_back(fallback_location: root_path)
     end
     
