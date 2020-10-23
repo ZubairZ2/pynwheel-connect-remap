@@ -26,8 +26,8 @@ class TourUsersController < ApplicationController
     end
 
     # ------------ locks ploting on the map ---------------- #
-    @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "unlocked_event")
-    @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
+    @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "unlocked_event") rescue nil
+    @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event") rescue nil
     
     unit_ids = @visited_units_history.map{|x| x.stop_id}.uniq
     amenity_ids = @visited_amenities_history.map{|x| x.stop_id}.uniq
@@ -112,7 +112,7 @@ class TourUsersController < ApplicationController
     if params[:delete_all].present?
       delete_tour_user_all_attributes(@tour_user, @community)
       redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
-    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone].present? or params[:history].present?
+    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone_number].present? or params[:history].present?
       update_tour_user_attributes(@tour_user, @community)
       redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
     else

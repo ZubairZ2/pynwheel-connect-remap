@@ -18,7 +18,7 @@ class TourHistory < ApplicationRecord
 
   belongs_to :tour_user
   has_many :lock_histories, dependent: :destroy
-  include DweloDevicesHelper
+  # include DweloDevicesHelper
 
   after_create :send_arrival_notifications
   after_update :send_update_notifications
