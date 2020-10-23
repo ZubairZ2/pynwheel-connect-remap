@@ -11,7 +11,7 @@
           %span.pull-right-container
             %i.fa.fa-angle-right.pull-right
         %ul.treeview-menu
-          - if (current_user.is_super_admin? )
+          - if (can? :crud, Company) || (current_user.is_super_admin? )
             %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
               %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='community_groups' ? 'active' : ''}"}

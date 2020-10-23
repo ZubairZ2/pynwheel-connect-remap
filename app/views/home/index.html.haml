@@ -10,9 +10,12 @@
         - if current_user.is_super_admin?
           %p.mb-30
             This Admin feature allows you to directly access any community in the system
+        - elsif current_user.is_dwelo_admin?
+          %p.mb-30
+            This Dwelo admin feature allows you to directly access any dwelo community in the system </br>
       - if can? :read, Company     
         .col-md-6
-        - if current_user.is_super_admin?
+        - if current_user.is_super_admin? or current_user.is_dwelo_admin?
           .mt-35
             %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
               List all companies

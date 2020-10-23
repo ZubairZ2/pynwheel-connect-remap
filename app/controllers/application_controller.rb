@@ -65,7 +65,8 @@ class ApplicationController < ActionController::Base
   end
 
   def check_community
-    unless current_user.is_super_admin?
+    return if params[:controller] == "tour_users" && params[:action]== "show"
+    unless current_user.is_super_admin? or current_user.is_dwelo_admin?
       if params[:community_id].present?
         all_ids = []
         current_user.communities.each do |c|

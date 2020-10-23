@@ -119,6 +119,8 @@ class Community < ApplicationRecord
   validates_with CodeValidatorOnCreate , on: [:create]
   after_update :crop_image
   after_update :crop_secondary_image
+  after_create :create_tour_also
+  after_create :change_touchscreen_app_for_dwelo
 
   #
   # phony_normalize :phone
@@ -140,6 +142,16 @@ class Community < ApplicationRecord
   amoeba do
     include_association :design
   end
+
+  def create_tour_also
+    tour = self.create_tour if self.tour.nil?
+    tour.create_tour_setting if tour.present? and tour.tour_setting.nil?
+  end
+
+  def change_touchscreen_app_for_dwelo
+    self.update_columns(touchscreen_app: false)
+  end
+
   def crop_image
     logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
@@ -642,6 +654,9 @@ class Community < ApplicationRecord
     end
   end
 
+  def creator
+    User.find_by(id: self.creator_id)
+  end
   private
 
   def populate_favorites(items_objs,email_to)

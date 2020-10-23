@@ -196,21 +196,5 @@ class TourUsersController < ApplicationController
   def breadCrumb
     add_breadcrumb "Home", root_path
   end
-  def check_community
-    return if params[:controller] == "tour_users" && params[:action]== "show"
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        if all_ids.include? params[:community_id].to_i
 
-        else
-          redirect_to root_path
-        end
-      end
-    end
-  end
 end

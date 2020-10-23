@@ -3513,3 +3513,11 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .set_image_width1 {
     max-width: 10px !important;
 }
+.dwelo-logo{
+  height: 45px;
+  width: 110px;
+  float: right;
+  margin-right: 20px;
+  padding-bottom: 15px;
+  margin-top: -20px;
+}
