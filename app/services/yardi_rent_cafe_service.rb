@@ -78,6 +78,14 @@ class YardiRentCafeService < BaseService
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
 
+                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                leasing = ""
+                rentStrs.each do |rentStr|
+                  leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';'
+                end
+                unit.lease_pricing = leasing
+                
+
                 unit.save(validate: false)
 
               else
@@ -135,6 +143,14 @@ class YardiRentCafeService < BaseService
                   end
                   unit.manually_updated = false
                   unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
+
+                  rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                  leasing = ""
+                  rentStrs.each do |rentStr|
+                    leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';'
+                  end
+                  unit.lease_pricing = leasing
+
                   unit.save(validate: false)
                 end
               end
@@ -271,4 +287,15 @@ class YardiRentCafeService < BaseService
     "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
   end
 
+  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name)
+    request_type = "pricingmatrix"
+    url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    
+    response = HTTParty.get(url)
+    rent_matrix = JSON.parse(response.body)
+
+    uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
+    distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
+    return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
+  end
 end
