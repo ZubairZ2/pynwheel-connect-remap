@@ -752,7 +752,7 @@
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find_by_id stop.stop_id
-
+                        
                         - if elevator.present? && elevator.building.present? && ((!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (![@building,nil].include? elevator.building))
                           - next
                       %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
@@ -924,7 +924,7 @@
                     - elsif stop.class.to_s == "Elevator"
 
 
-                      - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i)) && ([@building,nil].include? stop.building ) ) || (stop.floorplate_covering_range == "-")
+                      - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i)) && ([@building,nil,""].include? stop.building ) ) || (stop.floorplate_covering_range == "-")
                         %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                     
                     - elsif stop.class.to_s == "BuildingStartingPoint"
