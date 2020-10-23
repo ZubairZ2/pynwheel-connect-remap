@@ -82,6 +82,7 @@ class Community < ApplicationRecord
   has_one :favorite_stop, dependent: :destroy
   has_one :sitemap, dependent: :destroy
   has_one :favorite_setting, dependent: :destroy
+  has_one :dwelo, dependent: :destroy
   has_one :neighborhood, dependent: :destroy
   has_many :galleries, dependent: :destroy
   has_many :gallery_images, -> { order(:sort) }, dependent: :destroy
