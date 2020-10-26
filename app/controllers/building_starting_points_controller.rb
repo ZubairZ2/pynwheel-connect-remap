@@ -2,7 +2,7 @@ class BuildingStartingPointsController < ApplicationController
   after_filter "previous_url", only: [:edit]
 	def edit
 		@community = Community.find params[:community_id]
-    @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+    @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
     @building_starting_point = BuildingStartingPoint.find_by_id(params[:id])
 	end
 	def update
@@ -21,7 +21,7 @@ class BuildingStartingPointsController < ApplicationController
           format.js { render :show, status: :ok, location: @building_starting_point }
         end
       else
-        @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+        @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
         flash[:error] = @building_starting_point.errors.full_messages.join(',')
         format.html { render :edit }
         format.json { render json: @building_starting_point.errors, status: :unprocessable_entity }
