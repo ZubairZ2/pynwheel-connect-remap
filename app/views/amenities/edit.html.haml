@@ -160,9 +160,11 @@
   if (#{@unit.present?}){
     unit = #{@unit.present? ? @unit.id : 111111000000000}
   }
+   $('.amenity_edit_field').change(function(){
+    $('.edit_amenity').submit();
+  });
   
   $('.amenity_edit_field').change(function(){
-
       action = "change"
       $('#on_done').click(function(e){
         action = "clicked"
