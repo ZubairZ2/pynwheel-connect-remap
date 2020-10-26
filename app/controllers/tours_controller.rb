@@ -51,7 +51,7 @@ class ToursController < ApplicationController
     end
     @building_choice = @building == @building_list[0] ? ['',nil,@building] : [@building]
     
-    if params[:floorNo].present? && !@community.is_sitemap
+    if params[:floorNo].present? && !@community.is_sitemap && @floor_list.present?
       
     floor_choice = (params[:floorNo].to_i == @floor_list[0]) ? [nil,params[:floorNo].to_i] : [params[:floorNo].to_i]
       @floor = params[:floorNo]
