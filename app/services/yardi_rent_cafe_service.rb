@@ -80,8 +80,10 @@ class YardiRentCafeService < BaseService
 
                 rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
                 leasing = ""
-                rentStrs.each do |rentStr|
-                  leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';'
+                if rentStrs.present?
+                    rentStrs.each do |rentStr|
+                    leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                  end
                 end
                 unit.lease_pricing = leasing
                 
@@ -146,8 +148,10 @@ class YardiRentCafeService < BaseService
 
                   rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
                   leasing = ""
-                  rentStrs.each do |rentStr|
-                    leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';'
+                  if rentStrs.present?
+                    rentStrs.each do |rentStr|
+                      leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                    end
                   end
                   unit.lease_pricing = leasing
 
@@ -290,12 +294,18 @@ class YardiRentCafeService < BaseService
   def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name)
     request_type = "pricingmatrix"
     url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
-    
-    response = HTTParty.get(url)
-    rent_matrix = JSON.parse(response.body)
-
-    uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
-    distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
-    return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
+    begin
+      response = HTTParty.get(url)
+      rent_matrix = JSON.parse(response.body)
+      unless rent_matrix[0]["Error"].present?
+        uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
+        distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
+        return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
+      else
+        return nil
+      end
+    rescue => ex
+      return nil
+    end
   end
 end
