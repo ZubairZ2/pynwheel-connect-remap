@@ -19,7 +19,6 @@
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Company
-
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
                 -#.form-group#chat_control_row
@@ -53,10 +52,8 @@
                 .form-group#code_row
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Pynwheel Touch Code
-
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
-
                 -#.form-group
                 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 -#    Property Map / Floorplates
@@ -67,12 +64,9 @@
                 -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
                 -#    = f.radio_button :is_sitemap, false
                 -#    = f.label :is_sitemap, "Floorplates", :value => "false"
-
-
                 .form-group#display_types_row
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Pynwheel Touch Display Type
-
                   .col-sm-12.col-lg-3.col-md-3.col-xs-12
                     = f.radio_button :is_vertical_app, true
                     = f.label :is_vertical_app, "Vertical", :value => "true"
@@ -87,56 +81,39 @@
                 -#
                 -#    = f.text_field :billing_rate_for_both, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_for_both.present? ? @community.billing_rate_for_both : "$2,413"
                 -#
-
                 .form-group#billing_rate_touch
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Billing Rate (Touch)
-
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
                     = f.text_field :billing_rate_touch, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_touch.present? ? @community.billing_rate_touch : "$2,028"
                 - if @community.company.name.downcase == "lincoln"
                   .form-group.billing_rate_slef_lincoln
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                       Billing Rate (Self Tour)
-
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
                       = f.text_field :lincoln_billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.lincoln_billing_rate.present? ? @community.lincoln_billing_rate : "$295"
                 - elsif @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
                   .form-group#billing_rate_slef_dwelo
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                       Billing Rate (Self Tour)
-
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
                       = f.text_field :dwelo_billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.dwelo_billing_rate.present? ? @community.dwelo_billing_rate : "$280"
                 - else
                 .form-group.billing_rate_slef
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Billing Rate (Self Tour)
-
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
                     = f.text_field :billing_rate_selftour, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_selftour.present? ? @community.billing_rate_selftour : "$385"
                 .form-group#billing_rate_not_maps
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Billing Rate (Maps)
-
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
                     = f.text_field :billing_rate_maps, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13",value: @community.billing_rate_maps.present? ? @community.billing_rate_maps : "$50"
-
-
-
                 .form-group#subscription_start_date_row
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Subscription Start Date
-
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true
-
-
                 .form-group#show_gesture_icons
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Show Gesture Icons in Pynwheel Touch
@@ -146,7 +123,6 @@
                       = f.check_box :show_gesture_icons
                       %label.label-primary{:for => "community_show_gesture_icons"}
                       %span.pl-15 Yes
-
                 .form-group#powered_by_pynwheel_row
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Show 'Powered by Pynwheel' on Pynwheel Touch Home Screen
@@ -236,10 +212,8 @@
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AlloweEmails","data-content" => " "}
                       %span#propertyDetailNameText
                         Enter the comma separated emails, only users with these emails are allowed to visit your community in mobile app
-
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     = f.text_area :allowed_emails, :value => @community.allowed_emails.collect(&:email).join(", ") , :id=>"emails_allowed", :class=>"form-control", rows:5, :placeholder=>"Emails"
-
                 -#- if current_user.is_super_admin?
                 -#  .form-group
                 -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -259,7 +233,6 @@
                 /.form-group.email_field.hide_email
                 /  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 /    ID verification email to be sent to
-
                 /  .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 /    = text_field_tag :email,  @community.email, {:class=>"form-control", :autocomplete=>"off",:readonly=>true}
                 .form-group#inactive_row
@@ -271,12 +244,6 @@
                         .checkbox
                           = f.check_box :locked
                           %label Inactivate
-
-
-
-
-
-
                 -#.form-group
                 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 -#    Equal housing opportunity logo
@@ -295,14 +262,11 @@
                 -#        .checkbox
                 -#          = f.check_box :handicap_accessible_logo
                 -#          %label Handicap accessible logo
-
           
           / /.box-body
           .box-footer
             = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
             = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 loader_class"
-
-
   :javascript
     var self_tour = #{@community.self_tour}
     if(self_tour)
@@ -322,7 +286,6 @@
       event.preventDefault();
     }
     var text = $(this).val();
-
     if ((text.indexOf('.') != -1) &&
       (text.substring(text.indexOf('.')).length > 2) &&
       (event.which != 0 && event.which != 8) &&
@@ -424,7 +387,6 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").addClass("hidden")
             $(".billing_rate_slef_lincoln").removeClass("hidden")
-
           }
           if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
             $("#billing_rate_maps").addClass("hidden")
@@ -433,7 +395,6 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").removeClass("hidden")
             $(".billing_rate_slef_lincoln").addClass("hidden")
-
           }
         }
         $("#code_row").addClass("hidden")
@@ -442,7 +403,6 @@
         $("#show_gesture_icons").addClass("hidden")
         $("#powered_by_pynwheel_row").addClass("hidden")
         $("#billing_rate_touch").addClass("hidden")
-
         $("#apply_phnwheel_touch").addClass("hidden")
         $("#apply_now_pynwheel_touch_field_row").addClass("hidden")
             }
@@ -453,7 +413,6 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").addClass("hidden")
             $(".billing_rate_slef_lincoln").removeClass("hidden")
-
           }
         if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
             $("#billing_rate_maps").addClass("hidden")
@@ -462,9 +421,7 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").removeClass("hidden")
             $(".billing_rate_slef_lincoln").addClass("hidden")
-
           }
-
     })
 
     //right code slef tour true
@@ -485,7 +442,6 @@
         $("#show_map_row").removeClass("hidden")
         $("#mdu_row").removeClass("hidden")
         $("#inactive_row").addClass("hidden")
-
         $("#chat_control_row").removeClass("hidden")
         if ($("#access_restrictions_row").is(":checked") == true){
           $(".allowed_emails_row").removeClass("hidden")
@@ -509,7 +465,6 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").addClass("hidden")
             $(".billing_rate_slef_lincoln").removeClass("hidden")
-
           }
         if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
             $("#billing_rate_maps").addClass("hidden")
@@ -518,10 +473,7 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").removeClass("hidden")
             $(".billing_rate_slef_lincoln").addClass("hidden")
-
           }
-
-
     })
 
     // right code for self tour false
@@ -788,8 +740,6 @@
           $("#billing_rate").addClass("hidden")
           $("#apply_phnwheel_touch").removeClass("hidden")
           $("#apply_now_pynwheel_touch_field_row").removeClass("hidden")
-
-
       if ($("#community_self_tour").is(":checked") == true){
           $(".verification_type_field").removeClass("hidden")
           if ($(".email_to").val() == "email") {
@@ -804,7 +754,6 @@
           $(".billing_rate_slef_lincoln").addClass("hidden")
           $("#apply_now_self_row").removeClass("hidden")
           $(".access_restrictions_row").removeClass("hidden")
-
           if ($("#access_restrictions_row").is(":checked") == true){
             $(".allowed_emails_row").removeClass("hidden")
           }
@@ -833,7 +782,6 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").addClass("hidden")
             $(".billing_rate_slef_lincoln").removeClass("hidden")
-
           }
         if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
             $("#billing_rate_maps").addClass("hidden")
@@ -842,13 +790,8 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").removeClass("hidden")
             $(".billing_rate_slef_lincoln").addClass("hidden")
-
           }
-
-
       }
-
-
     // for self true
       if ($("#community_self_tour").is(":checked") == true){
         $(".verification_type_field").removeClass("hidden")
@@ -902,7 +845,6 @@
           $("#show_gesture_icons").addClass("hidden")
           $("#powered_by_pynwheel_row").addClass("hidden")
           $("#apply_now_self_row").removeClass("hidden")
-
         }
         if (#{@community.company.name.downcase == "lincoln"}){
             $("#billing_rate_maps").addClass("hidden")
@@ -911,7 +853,6 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").addClass("hidden")
             $(".billing_rate_slef_lincoln").removeClass("hidden")
-
           }
         if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
             $("#billing_rate_maps").addClass("hidden")
@@ -920,7 +861,6 @@
             $(".billing_rate_slef").addClass("hidden")
             $("#billing_rate_slef_dwelo").removeClass("hidden")
             $(".billing_rate_slef_lincoln").addClass("hidden")
-
           }
     }
     if ($("#community_self_tour").is(":checked") == true) {
@@ -1023,5 +963,4 @@
             }
 
       }
-
 
