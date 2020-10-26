@@ -88,9 +88,9 @@ class UnitsController < ApplicationController
         add_floorplan_amenities = "true"
         AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities,add_floorplan_amenities, @unit
         PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
-        flash[:notice] = "Unit created successfully."
-        redirect_to community_units_path(:community_id=>@community.id)
       end
+      flash[:notice] = "Unit created successfully."
+      redirect_to community_units_path(:community_id=>@community.id)
     else
       flash[:error] = @unit.errors.full_messages.join(',')
       render :new
