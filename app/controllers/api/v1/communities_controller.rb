@@ -1,5 +1,6 @@
 class Api::V1::CommunitiesController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
+  include DweloDevicesHelper
   before_action :set_community, only: :email_favorites
   @@counter = 0
   # $deleted_ids = []
@@ -142,8 +143,54 @@ class Api::V1::CommunitiesController < ActionController::Base
     in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
     params[:current_time].present? ? current_time = params[:current_time] : current_time = DateTime.now
     current_time = current_time.to_datetime
+    dwelo_account = Dwelo.find_by(community_id: params[:id]) rescue nil
+    edge_state = EdgeState.find_by(community_id: params[:id]) rescue nil
 
-    edge_state = EdgeState.find_by(community_id: params[:id])
+    if dwelo_account.present? and scheduled_tour.present?
+      Thread.new do
+        tour_user = TourUser.find params[:tour_user_id]
+        access_token = dwelo_client_credentials(dwelo_account)
+        prev_data = tour_user.as_guests.where(community_id: params[:id])
+        # ----------- creating a guest for remote lock (type = locks) ----------------- #
+        unless prev_data.present?
+          response = create_dwelo_access_guest(access_token, tour_user, current_time)
+          @dwelo_tour_user = tour_user.as_guests.create!(community_id: params[:id],  guest_id: response["id"], dwelo_guest: true)
+        else
+          delete_dwelo_access_guest(access_token, prev_data.last.guest_id)
+          response = create_dwelo_access_guest(access_token, tour_user, current_time)
+          prev_data.last.update_attributes!(guest_id: response["id"])
+        end
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+        allowed_ids = stops_arr.ids - @community.deleted_ids
+        allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
+        unit_or_amenity_names = []
+        allowed_stops.each do |stop|
+          if stop[0] == "unit"
+            unit = stop[0].classify.constantize.find_by_id stop[1]
+            if unit.building.present?
+              name = unit.building + "-" + unit.name
+            else
+              name = unit.name
+            end
+            unit_or_amenity_names << name if unit.present?
+          elsif stop[0] == "amenity"
+            amentiy = stop[0].classify.constantize.find_by_id stop[1]
+            unit_or_amenity_names << amentiy.name if amentiy.present?
+          end
+        end
+
+        access_token = dwelo_client_credentials(dwelo_account)
+        dwelo = Dwelo.find_by(community_id: @community.id)
+        locks = RemoteLock.where(name: unit_or_amenity_names, dwelo_id: dwelo.id).pluck(:device_id, :remote_lock_type)
+        if locks.present?
+          tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+          locks.each do |lock|
+            grant_dwelo_user_access(access_token, tour_user_guest_id, lock[0])
+          end
+        end
+      end
+    end
+
     if edge_state.present? and in_visiting_hours
       Thread.new do
         tour_user = TourUser.find params[:tour_user_id]
@@ -315,6 +362,8 @@ class Api::V1::CommunitiesController < ActionController::Base
             end
           end
         end
+      else
+        @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
     else
         render :json=> {:success=>false, :message => "Invalid Token"}

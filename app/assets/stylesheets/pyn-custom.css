@@ -3521,3 +3521,12 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   padding-bottom: 15px;
   margin-top: -20px;
 }
+.hide_edgestate{
+    display: none !important;
+}
+.hide_latch{
+    display: none;
+}
+.hide_dwelo {
+    display: none;
+}

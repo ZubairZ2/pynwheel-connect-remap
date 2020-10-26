@@ -504,6 +504,13 @@
   function plot_data(){
     var is_sitemap = #{ @community.is_sitemap};
     var tour_history_id = $('#tour_histories_dates :selected').val()
+    var dwelo_id;
+    if(#{@community.dwelo.present?}){
+     dwelo_id = "present"
+     }
+    else{
+      dwelo_id = false
+    }
     if (is_sitemap == false)
       var floorplate_id = $('#floorplates_images :selected').val()
     else
@@ -516,6 +523,9 @@
           type: 'GET',
           dataType: 'json',
           cache: false,
+          data:  {
+          dwelo_id
+            },
           url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/lock_ploting?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
           success: function(data){
             $(".asdasd").children('i').remove()

@@ -1,4 +1,5 @@
 class CommunitiesController < ApplicationController
+  include DweloDevicesHelper
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
@@ -61,6 +62,13 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
+    if params[:default_community_id].present?
+      dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
+      unless dwelo_account.present?
+        @dwelo = Dwelo.create!(client_id: "GLAeaxdUJb64yxWwQbzGGGEmnPAW4DaP", client_secret: "wr5RZQfGBqqWyVWLHU2gGWW2g9Qmz2BWSH94yNhfuuZ6GMet" ,community_id: @community.id, default_community_id: params[:default_community_id])
+        load_data(@dwelo.default_community_id)
+      end
+    end
   end
   def update_billing_rate
     # @community = Community.find(params[:community_id]) rescue nil
@@ -278,6 +286,30 @@ class CommunitiesController < ApplicationController
   
   def test_connection
     @community = Community.find params[:community_id]
+    if @community.dwelo.present? && @community.locks_provider == "Dwelo"
+      dwelo_community_account = Dwelo.find_by(community_id: @community.id) rescue nil
+      if dwelo_community_account.present?
+        dwelo_client_credentials(dwelo_community_account)
+        if @token.present?
+          token_type = "Bearer"
+          auth_header = token_type + " " + @token
+
+          url = base_url + "/v4/integrations/pynwheel/devices/?community_id=" + dwelo_community_account.default_community_id
+          xml = HTTParty.get(url,
+                             :headers => {'Authorization' => auth_header,
+                                          'Accept' => 'application/vnd.lockstate+json; version=1'})
+          if xml["data"].present?
+            render :xml => xml
+          else
+            flash[:error] = "Data cannot be imported. Please check the credentails or contact your data provider to troubleshoot."
+            redirect_to new_community_dwelo_path(@community)
+          end
+        else
+          flash[:error] = "Data cannot be imported. Please check the credentails or contact your data provider to troubleshoot."
+          redirect_to new_community_dwelo_path(@community)
+        end
+      end
+    else
     if @community.credentials_are_present?
       if xml = @community.connect_to_provider
         begin
@@ -293,6 +325,7 @@ class CommunitiesController < ApplicationController
     else
       flash[:error] = "Please enter credentials in settings before importing data."
       redirect_to community_settings_path(:community_id=>@community.id)
+    end
     end
   end
   def psi_pricing_test_connection
@@ -676,7 +709,7 @@ class CommunitiesController < ApplicationController
   end
 
   def community_params
-    params.require(:community).permit(:name,:creator_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:name,:creator_id,:default_community_id ,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,

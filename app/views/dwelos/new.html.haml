@@ -1,0 +1,220 @@
+- content_for :title, "Import Data - Pynwheel", class: "dwelo"
+%section.dwelo{style: "margin-top: -45px"}
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-laptop
+        = @community.name.capitalize
+        - if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+          .box-info.add-plan
+            %img.dwelo-logo{style: "margin-top: -30px;" , :alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
+        %small.text-primary
+          = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Create
+          %span Dwelo Account
+      / /.box-header
+      / form start
+      / <form class="form-horizontal">
+      = form_for @dwelo,:url=>community_dwelos_path(:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              = render :partial=>'form',:locals=>{:f=>f}
+        / /.box-body
+        - unless @community.dwelo.present?
+          .box-footer
+            = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+        - else
+          .box-footer
+            = link_to "Edit Account", edit_community_dwelo_path(@community.id, @community.dwelo.id), :class=>"btn btn-success pull-right loader_class"
+    .row#data-connection-buttons
+      .col-lg-12.col-md-12
+        - if @community.dwelo.present?
+          .row
+            .col-md-6
+              %h4.title Test Data Connection
+          .box.box-widget.panel-box.pl-20.pr-20.pb-20
+            .box-header
+              %p
+                This option allows you to test connection settings in the data section. A new browser window will open and attempt to write the data feed output.
+              = link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
+              %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
+                If the page that opens contains a bunch of data, it's probably good! Otherwise you will get the alert message that, Data cannot be imported. Please check the credentails or contact your data provider to troubleshoot.
+          .row
+            .col-md-6
+              %h4.title Import Locks Data
+          .box.box-widget.panel-box.pl-20.pr-20.pb-20
+            .box-header
+              %p
+                This option allows you to import dwelo lock data.
+              .callout.callout-danger
+                %p
+                  %i.fa.fa-warning
+                  This action will either import new, or update existing, Dwelo lock records, based on community.
+
+              .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                -if @community.dwelo.present?
+                  %button.btn.btn-primary.impo#import_locks{:onclick => "import_dwelo_locks(#{@community.dwelo.id})", :type => "button"} Import Locks Data
+                  - if @community.dwelo.remote_locks.present?
+                    %button.btn.btn-success#map_locks{:type => "button"} Map Units
+                -else
+                  %button.btn.btn-primary{:type => "button", :disabled => "disabled"} Import Locks Data
+
+- content_for :title, "Save EdgeState - Pynwheel", class: "edgestate hide_edgestate"
+%section.edgestate.hide_edgestate{style: "margin-top: -45px"}
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-laptop
+        = @community.name.capitalize
+        - if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+          .box-info.add-plan
+            %img.dwelo-logo{style: "margin-top: -30px;" , :alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
+        %small.text-primary
+          = @community.code
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Create
+          %span EdgeState Account
+        .col-md-12
+        -#   = link_to "<Back to #{@unit_name} Unit", edit_community_unit_path(current_community,@unit_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+      / /.box-header
+      / form start
+      = form_for :edgestate, :url=>community_edgestate_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Lock Provider
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .col-sm-6.col-lg-8.col-md-4.col-xs-12
+                    = f.select :default_community_id , options_for_select([["EdgeState","EdgeState"],["Dwelo","Dwelo"]],f.object),{},{:class=>"form-control lock_provider_edge"}
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Client ID
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                  .col-sm-6.col-lg-8.col-md-4.col-xs-12
+                    = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.edge_state.present? ? @community.edge_state.client_id : " "
+                    %small Your public client id of EdgeState Account
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Client Secret
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .col-sm-6.col-lg-8.col-md-4.col-xs-12
+                    = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.edge_state.present? ? @community.edge_state.client_secret : " "
+                    %small Your client secret of EdgeState Account
+                  = f.hidden_field :community_id, :value=> current_community.id
+        / /.box-body
+        .box-footer
+          - if @is_already_exists
+            = f.submit "Update Account", :class=>"btn btn-info pull-right loader_class"
+          - else
+            = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+    .row#data-connection-buttons
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-6
+            %h4.title Test Data Connection
+        .box.box-widget.panel-box.pl-20.pr-20.pb-20
+          .box-header
+            %p
+              This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
+            = link_to "Test Connection" , test_edgestate_connection_community_edgestate_accounts_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
+            %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
+              If the page that opens contains a bunch of data, it's probably good! If it contains one line that is an error message, then your data cannot be imported into Pynwheel. Please contact your data provider to troubleshoot.
+        .row
+          .col-md-6
+            %h4.title Import Locks Data
+        .box.box-widget.panel-box.pl-20.pr-20.pb-20
+          .box-header
+            %p
+              This option allows you to import EdgeState lock data.
+            .callout.callout-danger
+              %p
+                %i.fa.fa-warning
+                This action will either import new, or update existing.
+            .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+              -if @community.edge_state.present?
+                %button.btn.btn-primary.impo#import_locks{:onclick => "import_edgestate_locks(#{@community.id})", :type => "button"} Import Locks Data
+                - if @community.edge_state.remote_locks.present?
+                  %button.btn.btn-success#map_edgestate_locks{:type => "button"} Map Units
+              -else
+                %button.btn.btn-primary{:type => "button", :disabled => "disabled"} Import Locks Data
+
+:javascript
+   if("#{@community.locks_provider}" == "EdgeState"){
+      $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
+      $(".edgestate").removeClass("hide_edgestate");
+      $(".dwelo").addClass("hide_dwelo");
+   }
+    if ("#{@community.locks_provider}" == "Dwelo"){
+      $(".lock_provider").val($(".lock_provider option:first").val());
+      $(".edgestate").addClass("hide_edgestate");
+      $(".dwelo").removeClass("hide_dwelo");
+   }
+  $(".lock_provider").change(function (){
+   lock_provider = $(".lock_provider").val();
+   if (lock_provider == "EdgeState") {
+      $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
+      $(".edgestate").removeClass("hide_edgestate");
+      $(".dwelo").addClass("hide_dwelo");
+    }
+   })
+  $(".lock_provider_edge").change(function (){
+   lock_providerr = $(".lock_provider_edge").val();
+   if (lock_providerr == "Dwelo") {
+      $(".lock_provider").val($(".lock_provider option:first").val());
+      $(".edgestate").addClass("hide_edgestate");
+      $(".dwelo").removeClass("hide_dwelo");
+    }
+   })
+   $("#map_locks").click(function (){
+       $.ajax({
+              type: 'POST',
+              url: '/map_dwelo_locks',
+              data: {
+                  community_id: #{@community.id}
+              },
+              success: function (data) {
+              }
+          });
+   })
+  function import_dwelo_locks(community_dwelo_id){
+    $.ajax({
+              type: 'POST',
+              url: '/api/v1/save_data',
+              data: {
+                  dwelo_account_id: community_dwelo_id
+              },
+              success: function (data) {
+
+              }
+          });
+  }
+
+  $("#map_edgestate_locks").click(function (){
+      var community_id = #{@community.id}
+       $.ajax({
+              type: 'POST',
+              url: '/communities/' + community_id + '/edgestate_accounts/map_edgestate_locks',
+              cache: false,
+              success: function (data) {},
+              fail: function (data) {},
+          });
+  })
+
+  function import_edgestate_locks(community_id){
+    $.ajax({
+        type: 'POST',
+        url: '/communities/'+ community_id + '/edgestate_accounts/import_edgestate_locks',
+        cache: false,
+        success: function (data) {}
+      });
+  }

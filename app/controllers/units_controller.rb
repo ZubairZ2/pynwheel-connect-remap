@@ -107,14 +107,21 @@ class UnitsController < ApplicationController
   end
 
   def load_remotelock_data
-    access_token = generate_remotelock_token
-    responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
-    RemoteLockService.new(current_community).update_deivces_in_db(responce)
-    es = EdgeState.find_by(community_id: current_community.id)
-    if es.nil?
+    # access_token = generate_remotelock_token
+    # responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
+    # RemoteLockService.new(current_community).update_deivces_in_db(responce)
+    # es = EdgeState.find_by(community_id: current_community.id)
+    
+    # if es.nil?
+    #   render json: {locks: []}
+    # else
+    #   render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+    # end
+    
+    if current_community.edge_state.nil?
       render json: {locks: []}
     else
-      render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+      render json: {locks: current_community.edge_state.remote_locks}
     end
   end
 
@@ -125,16 +132,24 @@ class UnitsController < ApplicationController
   end
 
   def update
-    if params[:unit][:image]
+    if  params[:unit].present? and params[:unit][:image]
       @unit.crop_x = nil
     end
-    if params[:unit][:secondary_image]
+    if params[:unit].present? and params[:unit][:secondary_image]
       @unit.crop_x_secondary = nil
     end
     @unit.image_bit = nil
     unit_previous_floorplan_amenities = @unit.amenities.where.not(floorplan_amenity_id: nil) rescue nil
+    if params[:assigning_lock].present?
+      # current_lock =@unit.remote_locks.where(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
+      # if current_lock.present?
+      #
+      # end
+      remote_lock = RemoteLock.find_by(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
+      remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name)
+    end
     if params[:remote_lock].present?
-      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
+      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock]) rescue nil
       remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: params[:unit][:marketing_name])
     end
     respond_to do |format|
@@ -213,7 +228,7 @@ class UnitsController < ApplicationController
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
         if @unit.update(unit_params)
-          if params[:unit][:floorplan_id] != @unit.floorplan.id
+          if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             if unit_previous_floorplan_amenities.present?
               AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit

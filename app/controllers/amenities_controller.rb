@@ -59,14 +59,20 @@ class AmenitiesController < ApplicationController
   end
 
   def load_remotelock_data
-    access_token = generate_remotelock_token
-    responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
-    RemoteLockService.new(current_community).update_deivces_in_db(responce)
-    es = EdgeState.find_by(community_id: current_community.id)
-    if es.nil?
+    # access_token = generate_remotelock_token
+    # responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
+    # RemoteLockService.new(current_community).update_deivces_in_db(responce)
+    # es = EdgeState.find_by(community_id: current_community.id)
+    # if es.nil?
+    #   render json: {locks: []}
+    # else
+    #   render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+    # end
+
+    if current_community.edge_state.nil?
       render json: {locks: []}
     else
-      render json: {locks: RemoteLock.where(edge_state_id: es.id)}
+      render json: {locks: current_community.edge_state.remote_locks}
     end
   end
   
@@ -77,10 +83,14 @@ class AmenitiesController < ApplicationController
   end
 
   def update
-    @amenity = Amenity.find(params[:id])
+    @amenity = Amenity.find(params[:id]) 
     if params[:remote_lock].present?
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
       remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
+    end
+    if params[:assigning_lock].present?
+      remote_lock = RemoteLock.find_by(device_id: params[:lock_id], dwelo_id: @community.dwelo.id)
+      remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: @amenity.name)
     end
     if @amenity.update_attributes(amenity_params)
       begin

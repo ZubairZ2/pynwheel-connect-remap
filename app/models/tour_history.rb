@@ -18,7 +18,7 @@ class TourHistory < ApplicationRecord
 
   belongs_to :tour_user
   has_many :lock_histories, dependent: :destroy
-  # include DweloDevicesHelper
+	include DweloDevicesHelper
 
   after_create :send_arrival_notifications
   after_update :send_update_notifications
@@ -116,46 +116,60 @@ class TourHistory < ApplicationRecord
     end
   end
 
-  def touruser_remotelock_data
-    community = (Tour.find_by_id self.tour_id).community
-    as_guests_data = self.tour_user.as_guests.find_by(community_id: community.id)
+	def touruser_remotelock_data
+		community = (Tour.find_by_id self.tour_id).community
+		as_guests_data = self.tour_user.as_guests.find_by(community_id: community.id)
 
-    if as_guests_data.present?
-      Thread.new do
-        access_token = RemoteLockService.new(community).client_credentials
+		if as_guests_data.present?
+			Thread.new do
+				access_token = RemoteLockService.new(community).client_credentials
+				if access_token.present?
+				page = 1
+				while page <= 5 do
+					responce = RemoteLockService.new(community).get_all_events(access_token,page)
+					responce["data"].each do |event|
+						if active_user_exists(event,as_guests_data.guest_id)
 
-        page = 1
-        while page <= 1 do
-          # as igloo locks don't generate enents therefore we have limited the api search for only one page instead of 5 pages
-          responce = RemoteLockService.new(community).get_all_events(access_token, page)
-          responce["data"].each do |event|
-            if active_user_exists(event, as_guests_data.guest_id)
+							occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
+							rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
+							self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id) if rml.present?
+						
+						elsif expire_user_exists(event, tour_user.name, as_guests_data.edgestate_pin)
+							
+							occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
+							rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
+							self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id) if rml.present?
+				
+						elsif sync_events_exists(event,as_guests_data.guest_id) # just for testing
+							
+							occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
+							rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
+							self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id) if rml.present?
+						
+						end
+					
+					end
+					page = page + 1
+				end
+				else
+					access_token = dwelo_client_credentials(community.dwelo)
+					page = 1
+					responce = RemoteLockService.new(community).get_dwelo_events(access_token,as_guests_data.guest_id)
+					responce["data"].each do |event|
+						if dwelo_active_user_exists(event,as_guests_data.guest_id)
 
-              occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
-              rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
-              self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type, tour_user_id: self.tour_user_id) if rml.present?
+							occurred_at = event["timestamp"].to_datetime.strftime('%a, %d %b %Y %H:%M:%S').to_datetime
+							rml = RemoteLock.find_by(device_id: event["lock_id"])
+							self.lock_histories.create(event: event["event_type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type , tour_user_id: self.tour_user_id) if rml.present?
 
-            elsif expire_user_exists(event, tour_user.name, as_guests_data.edgestate_pin)
+						end
 
-              occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
-              rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
-              self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type, tour_user_id: self.tour_user_id) if rml.present?
-
-            elsif sync_events_exists(event, as_guests_data.guest_id) # just for testing
-
-              occurred_at = event["attributes"]["occurred_at"].to_datetime.in_time_zone(event["attributes"]["time_zone"]).strftime('%a, %d %b %Y %H:%M:%S').to_datetime
-              rml = RemoteLock.find_by(device_id: event["attributes"]["publisher_id"])
-              self.lock_histories.create(event: event["type"], occured_at: occurred_at, stop_id: rml.stop_id, stop_name: rml.stop_name, stop_type: rml.stop_type, tour_user_id: self.tour_user_id) if rml.present?
-
-            end
-
-          end
-          page = page + 1
-        end
-      end
-    end
-  end
-
+					end
+				end
+			end
+		end
+	end
+  
   def send_email_sms_or_both mail_content
     if self.history != true
         community = (Tour.find_by_id self.tour_id).community unless community.present?
@@ -251,10 +265,11 @@ class TourHistory < ApplicationRecord
   def sync_events_exists(event,guest_id)
     return (event["type"] == "access_person_synced_event" and event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)
   end
-  # def dwelo_active_user_exists(event,guest_id)
-  #   return (event["event_type"] == "app_unlock"  and  event["access_person_id"] == guest_id)
-  # end
-
+  
+	def dwelo_active_user_exists(event,guest_id)
+		return (event["event_type"] == "app_unlock"  and  event["access_person_id"] == guest_id)
+  end
+  
 	def avail_stops_name_of_community
 		# stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
 		# allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)

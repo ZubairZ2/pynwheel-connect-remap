@@ -570,7 +570,8 @@ json.tours @tours do |tour|
           end
         else
           _stop_ = Unit.find_by_id stop.stop_id
-          if _stop_.present? and _stop_.access_code.present?
+          unit_dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).first rescue nil
+          if _stop_.present? and _stop_.access_code.present? and unit_dwelo_lock.nil?
             json.guest_pin "Use code " + _stop_.access_code + " to enter."
           else
             json.guest_pin ''
@@ -609,7 +610,7 @@ json.tours @tours do |tour|
       end
       current_floor = unit.floor
       unit_dwelo_lock = unit.remote_locks.where.not(dwelo_id: nil).first rescue nil
-      if unit_dwelo_lock.present?
+      if @in_visiting_hours and @community.locks_provider == "Dwelo" and unit_dwelo_lock.present?
         json.unit_dwelo_lock_id unit_dwelo_lock.device_id
       else
         json.unit_dwelo_lock_id ""

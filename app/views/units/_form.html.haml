@@ -85,7 +85,14 @@
     %span Specify virtual tour button label here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label",:maxlength=>"10"
-
+- if @community.locks_provider == "Dwelo"
+  .form-group.hide_on_new
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Dwelo locks
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      %select.form-control#dwelo_remote_lock{name: "dwelo_remote_lock"}
+      %button#dwelo_lock_update_btn.btn.btn-primary.update-lock.hidden{type: "button"}
+        %a#a-dwelo-lock.btn-text-color{href: "#"} Update selected lock
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Virtual Tour URL
@@ -93,17 +100,18 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
 - if EdgeState.find_by(community_id: @community.id).present?
-  .form-group
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Remote Lock
-      %i.unit_manualoverride.fa.fa-question-circle
-        %span#unit_manualoverride_text
-          if building name is present then name of Remote lock must be formatted like BuildingName-MarketingName otherwise name must be same as unit marketing name
-      %span Assign the lock to this unit
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      %select.form-control#remote_lock{name: "remote_lock"}
-      %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
-        %a#a-lock.btn-text-color{href: "#"} Update selected lock
+  - if @community.locks_provider == "Edgestate"
+    .form-group
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Remote Lock
+        %i.unit_manualoverride.fa.fa-question-circle
+          %span#unit_manualoverride_text
+            if building name is present then name of Remote lock must be formatted like BuildingName-MarketingName otherwise name must be same as unit marketing name
+        %span Assign the lock to this unit
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        %select.form-control#remote_lock{name: "remote_lock"}
+        %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
+          %a#a-lock.btn-text-color{href: "#"} Update selected lock
 
 - if @community.touchscreen_app
   .form-group
