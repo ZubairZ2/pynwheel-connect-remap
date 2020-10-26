@@ -3,7 +3,7 @@
 - if can? :edit_settings_page, current_user 
   %section.is-community-page
   - if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
-    .box-info.add-plan{style: "margin-top: 50px; margin-right: 10px;"}
+    .box-info.add-plan{style: "margin-top: 15px; margin-right: 10px;"}
       %img.dwelo-logo{:alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
   .content
     .box.box-info.add-plan.mt-20
