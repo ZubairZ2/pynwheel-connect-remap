@@ -37,6 +37,7 @@ class CommunitiesController < ApplicationController
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
       if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+        desings_for_new_community(@community)
         redirect_to community_settings_page_path(:community_id=>@community.id)
       else
         redirect_to community_design_index_path(@community)
@@ -701,6 +702,15 @@ class CommunitiesController < ApplicationController
     
   end
 
+  def desings_for_new_community(current_community)
+    design = current_community.design || current_community.create_design
+    menu = design.menu ||  design.create_menu
+    main_screen = design.main_screen ||  design.create_main_screen
+    home_screen = design.home_screen ||  design.create_home_screen 
+    gable = design.gable ||  design.create_gable 
+    expressionist = design.expressionist ||  design.create_expressionist 
+    expressionist = design.filter_panel ||  design.create_filter_panel 
+  end
   private
 
   def set_community
