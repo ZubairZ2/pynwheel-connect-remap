@@ -7,7 +7,7 @@ module DweloDevicesHelper
                                          body: {
                                              client_id: community_dwelo_account.client_id,
                                              client_secret: community_dwelo_account.client_secret,
-                                             grant_type: community_dwelo_account.grant_type
+                                             grant_type: "client_credentials"
                                          },
                                          headers: {'Content-Type' => 'application/x-www-form-urlencoded'})
       @token = get_token_response["access_token"]
@@ -62,31 +62,28 @@ module DweloDevicesHelper
 
 
   def create_dwelo_access_guest(access_token, tour_user, current_time)
-
       token_type = "Bearer"
       auth_header = token_type + " " + access_token
-
+      id = SecureRandom.random_number(100000000)
+      tour_user.update!(random_number: id)
       url = base_url + "/v4/integrations/pynwheel/access_persons/"
 
       start_time = Time.now.strftime('%Y-%m-%dT%H:%M:%SZ')
       ends_time = (Time.now + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
-
+      puts start_time
+      puts ends_time
 
       response = HTTParty.post(url,
                                body: {
                                    type: "access_guest",
-                                   id: tour_user.id,
+                                   id: tour_user.random_number,
                                    starts_at: start_time,
                                    ends_at: ends_time
-
-
-
                                }.to_json,
                                :headers => {'Authorization' => auth_header,
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
       return response
-
   end
 
   def delete_dwelo_access_guest(access_token, guest_id)
@@ -123,9 +120,9 @@ module DweloDevicesHelper
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
 
-      puts "---" * 50
+      puts "111" * 50
       puts response
-      puts "---" * 50
+      puts "111" * 50
 
       return response
 
@@ -136,4 +133,3 @@ module DweloDevicesHelper
   end
 
 end
-

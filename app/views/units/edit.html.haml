@@ -21,9 +21,9 @@
         / /.box-body
         .box-footer
           = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"
-    #crop-unit-secondary-image.modal.fade.edit-image
-    #crop-unit-image.modal.fade.edit-image
-- if @community.self_tour
+#crop-unit-secondary-image.modal.fade.edit-image
+#crop-unit-image.modal.fade.edit-image
+- if @community.self_tour    
   %section
     .content
       .box.box-info.add-plan.mt-20#logo_header
@@ -54,7 +54,7 @@
             = render :partial=>'edit'
 
   #edit-image.modal.fade.edit-image
-
+  
   #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
     .modal-dialog
       .modal-content
@@ -77,19 +77,17 @@
             = submit_tag 'Submit',:class=>"btn btn-success"
             %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 
-#crop-unit-secondary-image.modal.fade.edit-image
-#crop-unit-image.modal.fade.edit-image
-
 :javascript
 
   $("#unit_secondary_image").change(function(){
-      readSecondaryURL(this);
+      readSecondaryURL(this);   
   });
 
   var unit_id = #{ @unit.id }
   var unit_name = '#{ @unit.name }'
   var building_name = '#{ @unit.building.present? ? @unit.building : '' }'
   var community_id = #{ @community.id }
+  var form_id = "#edit_unit_" + #{ @unit.id }
   var lock_name_should_be
 
   if (building_name.length > 0){
@@ -302,6 +300,10 @@
         IsSelectedDweloLockMatch()
       });
 
+      $('#unit_marketing_name').keyup(function() {
+        IsSelectedDweloLockMatch()
+      });
+
   $(form_id).submit(function(){
     if($("#latch_lock_name").val() == '' && $("#latch_key_id").val() != '')
     {
@@ -341,7 +343,4 @@
       }
 
       lastChecked = this;
-      $('#unit_marketing_name').keyup(function() {
-        IsSelectedDweloLockMatch()
-      });
   });

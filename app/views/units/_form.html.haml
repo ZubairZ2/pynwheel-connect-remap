@@ -85,7 +85,7 @@
     %span Specify virtual tour button label here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label",:maxlength=>"10"
-- if @community.locks_provider == "Dwelo"
+- if @community.dwelo.present? && @community.locks_provider == "Dwelo"
   .form-group.hide_on_new
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Dwelo locks
@@ -99,25 +99,23 @@
     %span Specify URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
-- if EdgeState.find_by(community_id: @community.id).present?
-  - if @community.locks_provider == "Edgestate"
-    .form-group
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Remote Lock
-        %i.unit_manualoverride.fa.fa-question-circle
-          %span#unit_manualoverride_text
-            if building name is present then name of Remote lock must be formatted like BuildingName-MarketingName otherwise name must be same as unit marketing name
-        %span Assign the lock to this unit
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        %select.form-control#remote_lock{name: "remote_lock"}
-        %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
-          %a#a-lock.btn-text-color{href: "#"} Update selected lock
+- if @community.locks_provider == "EdgeState" and EdgeState.find_by(community_id: @community.id).present?
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Remote Lock
+      %i.unit_manualoverride.fa.fa-question-circle
+        %span#unit_manualoverride_text
+          if building name is present then name of Remote lock must be formatted like BuildingName-MarketingName otherwise name must be same as unit marketing name
+      %span Assign the lock to this unit
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      %select.form-control#remote_lock{name: "remote_lock"}
+      %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
+        %a#a-lock.btn-text-color{href: "#"} Update selected lock
 
 - if @community.touchscreen_app
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Details
-
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
@@ -128,7 +126,6 @@
       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
         %span#propertyDetailNameText
           This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
-
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
       %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
