@@ -20,6 +20,7 @@ class ToursController < ApplicationController
     @building_choice = []
     @sorted_building = @tours.building_order
 
+
     @floor = nil
     
     
