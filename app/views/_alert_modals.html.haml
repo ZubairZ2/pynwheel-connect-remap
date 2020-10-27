@@ -171,7 +171,7 @@
     #{current_user.save unless (params["controller"] == "home" && params["action"] == "index") || (params["controller"] == "users" && params["action"] == "profile")}
   });
   $(".welcome_prompt_btn1").on("click",function(e){
-    if(#{current_community.touchscreen_app})
+    if(#{current_community.present? && current_community.touchscreen_app})
     {$('#welcome-prompt-modal3').modal('show');}
     else
     {$('#welcome-prompt-modal2').modal('show');}
