@@ -500,10 +500,10 @@
     $("#schedule-btn-submit").addClass("blink");
     $(".tour_time_sortable").sortable( "disable" );
   })
-  var floor = #{raw @floor}
+  var floor = #{@floor.present? ? @floor : 12345678900}
   function tour_setup_goBack()
   {
-      window.location.reload();
+      location.href;
   }
   var div_checklist = "#{@community.scheduler_widget.nil? ? true : @community.scheduler_widget}"
   if(div_checklist == "true")
