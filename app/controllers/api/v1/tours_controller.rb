@@ -192,7 +192,7 @@ Android Users:
       stops = []
       visited_stops.compact.each_with_index do |x,i|
         puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
-        if x.stop_type != "elevator"
+        if x.stop_type != "elevator" && (x.id != params[:tour_id])
           descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
 
           images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(image: nil)
