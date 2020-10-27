@@ -93,8 +93,8 @@ json.tours @tours do |tour|
       min_floor = @floor_list.include?(1) ? 1 : @floor_list[0]
       @building_list << "" if @building_list == []
       @building_list.each do |building|
-        
-        @floor_list.each do |floor|
+        @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
+        @floor_list_loop.each do |floor|
           begin
             if add_bsp_entry
               begin
@@ -123,19 +123,19 @@ json.tours @tours do |tour|
               #   end
               # end
 
-              begin
-                if tour.starting_floor.present? and tour.starting_floor != min_floor #and !bsp.present?
+              # begin
+              #   if tour.starting_floor.present? and tour.starting_floor != min_floor #and !bsp.present?
 
-                  first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
-                  first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
-                  if first_floor_elev.present?
-                    first_floor_elev.floor = floor
-                    first_floor_elev.building = building
-                    stops_arr << first_floor_elev 
-                  end
-                end
-              rescue => ex
-              end
+              #     first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
+              #     first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
+              #     if first_floor_elev.present?
+              #       first_floor_elev.floor = floor
+              #       first_floor_elev.building = building
+              #       stops_arr << first_floor_elev 
+              #     end
+              #   end
+              # rescue => ex
+              # end
             end
             
             if first_bsp && add_bsp_entry
@@ -336,7 +336,8 @@ json.tours @tours do |tour|
       min_floor = @floor_list[0]
       @building_list << "" if @building_list == []
       @building_list.each do |building|
-        @floor_list.each do |floor|
+        @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
+        @floor_list_loop.each do |floor|
 
           begin
             # if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.nil? ? true : tour.tour_setting.show_desired_bedroom) : false)

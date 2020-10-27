@@ -138,6 +138,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
 
     @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
+    @floor_list_temp = (@floor_list - [@community.tour.starting_floor]).unshift(@community.tour.starting_floor) if @community.tour.starting_floor.present? rescue []
     #####
     @tours = Tour.where(community_id: params[:id])
 
@@ -359,6 +360,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
       
       @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+      
+      @floor_list_temp = (@floor_list - [@tours.last.starting_floor]).unshift(@tours.last.starting_floor) if @tours.last.starting_floor.present? rescue nil
       @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}
 
       # @floor_list = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if x.building.present?}.compact.flatten!
