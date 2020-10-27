@@ -90,6 +90,10 @@ class CommunitiesController < ApplicationController
     if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
       @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
     end
+    if params[:community][:company_id].present?
+      company = Company.find(params[:community][:company_id]) rescue nil
+      @community.update!(creator_id: company.creator_id)
+    end
     if params[:community][:image]
       @community.crop_x = nil
     end
@@ -429,9 +433,7 @@ class CommunitiesController < ApplicationController
         worksheet.write(row, 15, community.date_activated,format1)
         worksheet.write(row, 16, community.date_inactivated,format1)
         worksheet.write(row, 17, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly",format1)
-        if community.self_tour == true and community.touchscreen_app == true and community.company.name.downcase != "lincoln" and ((community.creator_id.present? and community.creator.present? and community.creator.role != "Dwelo admin") or community.creator_id.nil? )
-        worksheet.write(row, 18, community.billing_rate_touch,format1)
-        else community.self_tour == false and community.touchscreen_app == true and community.company.name.downcase != "lincoln" and ((community.creator_id.present? and community.creator.present? and community.creator.role != "Dwelo admin") or community.creator_id.nil? )
+        if community.touchscreen_app == true
         worksheet.write(row, 18, community.billing_rate_touch,format1)
         end
         if community.company.name.downcase == "lincoln"
