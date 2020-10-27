@@ -23,7 +23,7 @@ class BuildingStartingPointsController < ApplicationController
       else
         @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
         flash[:error] = @building_starting_point.errors.full_messages.join(',')
-        format.html { render :edit }
+        format.html { redirect_back(fallback_location: community_building_starting_point_path) }
         format.json { render json: @building_starting_point.errors, status: :unprocessable_entity }
       end
     end
