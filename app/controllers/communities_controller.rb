@@ -94,7 +94,7 @@ class CommunitiesController < ApplicationController
       company = Company.find(params[:community][:company_id]) rescue nil
       if company.name.downcase.include?("dwelo")
         dwelo_admin = User.all.where(role: "Dwelo admin").first
-        @community.update(creator_id: dwelo_admin.id)
+        @community.update(creator_id: dwelo_admin.id) 
       else
         @community.update(creator_id: "")
       end
