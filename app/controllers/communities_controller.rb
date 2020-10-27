@@ -92,7 +92,7 @@ class CommunitiesController < ApplicationController
     end
     if params[:community][:company_id].present?
       company = Company.find(params[:community][:company_id]) rescue nil
-      @community.update!(creator_id: company.creator_id)
+      @community.update!(creator_id: company.creator_id) 
     end
     if params[:community][:image]
       @community.crop_x = nil
