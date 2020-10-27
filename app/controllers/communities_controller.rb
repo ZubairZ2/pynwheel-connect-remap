@@ -92,7 +92,12 @@ class CommunitiesController < ApplicationController
     end
     if params[:community][:company_id].present?
       company = Company.find(params[:community][:company_id]) rescue nil
-      @community.update!(creator_id: company.creator_id) 
+      if company.name.downcase.include?("dwelo")
+        dwelo_admin = User.all.where(role: "Dwelo admin").first
+        @community.update(creator_id: dwelo_admin.id)
+      else
+        @community.update(creator_id: "")
+      end
     end
     if params[:community][:image]
       @community.crop_x = nil
