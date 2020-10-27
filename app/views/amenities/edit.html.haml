@@ -168,15 +168,15 @@
   var amenity_id = #{@amenity.id}
   var amenity_name = '#{@amenity.name}'
   var community_id = '#{ @community.id}'
-  var dwelo_account_id = #{@community.dwelo.id rescue nil}
-  var from = #{ @from_unit}
-  if (#{@unit.present?}){
+ 
     unit = #{@unit.present? ? @unit.id : 111111000000000}
-  }
    $('.amenity_edit_field').change(function(){
     $('.edit_amenity').submit();
   });
-  
+  if (unit != 111111000000000){
+    var from = #{ @from_unit}
+  }
+
   $('.amenity_edit_field').change(function(){
       action = "change"
       $('#on_done').click(function(e){
