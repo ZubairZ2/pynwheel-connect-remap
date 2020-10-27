@@ -203,7 +203,7 @@
                     - @visited_stop.each do |stop|
                       - @stop = TourStop.find stop[0].to_i rescue next
                       - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
-                      -unless (@stop.is_a? Elevator) || (@stop.is_a? BuildingStartingPoint) || (stop[0].to_i != @community.tour.id)
+                      -unless (@stop.is_a? Elevator) || (@stop.is_a? BuildingStartingPoint) || (stop[0].to_i == @community.tour.id)
                         .row{:style => "margin-top: 3px;"}
                           - image_hit = true
                           - description_hit = true
