@@ -477,6 +477,7 @@ DEPENDENCIES
   puma
   puma_worker_killer
   pusher
+  rack (~> 2.2.2)
   rack-cors
   rails (~> 5.0.0)
   rails-assets-jsTimezoneDetect!

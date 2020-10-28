@@ -29,7 +29,7 @@ class ChatroomsController < ApplicationController
                 end
             end
         # end
-     
+             
         render plain: "Unauthorized"
     end
 
