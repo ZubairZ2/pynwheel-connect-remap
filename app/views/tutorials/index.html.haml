@@ -1,0 +1,56 @@
+- content_for :title, "Tutorial Page - Pynwheel"
+.divLoading.hidden
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-image
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          TUTORIAL
+          %span
+    .row{:style => "margin-bottom: 70px;"}
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12#outer_div
+            .box.box-widget.panel-box.add-plan.pt-30
+            
+              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.tour_user_table
+                %thead
+                  %tr
+                    %th
+                      Arrived
+                    %th
+                      Image
+                    %th
+                      Name
+                    %th
+                      Email
+                    %th
+                      Phone
+                    %th
+                    %th
+                      Visitor Details
+                    - if (current_user.is_super_admin?)
+                      %th
+                        Action
+
+              
+                %tbody
+                  - @tutorial.each_with_index  do |user,index|
+                    .row
+
+                      %tr
+                        %td.col-lg-2
+                        %td.col-lg-2
+                        %td.col-lg-2
+                        %td.col-lg-2
+                        %td.col-lg-2
+                          

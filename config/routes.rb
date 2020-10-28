@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  get 'tutorial/index'
+
   mount ActionCable.server => '/cable'
   get 'tour_users/index'
 
@@ -246,6 +248,8 @@ Rails.application.routes.draw do
         post :add_description
         post :set_image
       end
+    end
+    resources :tutorials do
     end
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do

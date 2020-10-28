@@ -100,6 +100,7 @@ class Community < ApplicationRecord
   has_one :tour, dependent: :destroy
   has_one :edge_state, dependent: :destroy
   has_one :dwelo, dependent: :destroy
+  has_many :tutorials, dependent: :destroy
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
