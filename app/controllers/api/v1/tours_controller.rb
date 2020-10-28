@@ -214,6 +214,7 @@ Android Users:
         end
       end
       begin
+        puts "tuertyuo"*200
         shared_tour_stops.map{|x| x[0]}
         FavoriteMailer.email_shared_tour([shared_tour.email],shared_tour_stops,community).deliver_now
       rescue => ex
