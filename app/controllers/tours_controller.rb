@@ -284,7 +284,8 @@ class ToursController < ApplicationController
               next
             end
             max_floor = @community.floorplates.map{|x| x.floors}.flatten.max
-            if ele.floors.max != params['floor'].to_i or max_floor == params['floor'].to_i 
+            
+            if ele.floors.max != params['floor'].to_i or max_floor == params['floor'].to_i or (params['floor'].to_i == 1 && params['first_building'] == params['building'])
               ele_array << stop.id.to_s
               params['array'] = params['array'] - [stop.id.to_s]
               selected_elevator = true
