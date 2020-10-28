@@ -141,7 +141,6 @@ class Api::V1::CommunitiesController < ActionController::Base
     @floor_list_temp = (@floor_list - [@community.tour.starting_floor]).unshift(@community.tour.starting_floor) if @community.tour.starting_floor.present? rescue []
     #####
     @tours = Tour.where(community_id: params[:id])
-
     current_time = get_community_time(@community) rescue nil
     current_time = params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now if current_time.nil?
     in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
@@ -272,7 +271,6 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.save 
     @tours = Tour.where(id: params[:tour_id])
     @tour_user = TourUser.find_by(id: params[:tour_user_id])
-    @in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
 
     @building_list = @floor_list = []
 
@@ -283,8 +281,13 @@ class Api::V1::CommunitiesController < ActionController::Base
 
     @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
 
-    current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
-    current_time = current_time.to_datetime
+    current_time = get_community_time(@community) rescue nil
+    current_time = params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now if current_time.nil?
+    @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
+
+    # current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
+    # current_time = current_time.to_datetime
+    # @in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
 
     edge_state = EdgeState.find_by(community_id: params[:id])
     if @community.locks_provider == "EdgeState" and edge_state.present? and @in_visiting_hours
