@@ -174,8 +174,6 @@ Android Users:
   def save_shared_tour
     shared_tour = SharedTour.new shared_tour_params
     if shared_tour.save
-      params[:tour_user_id] = 182
-      params[:tour_id] = 255
       tu = TourUser.find_by(id: params[:tour_user_id])
       
            # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
@@ -186,14 +184,13 @@ Android Users:
       gallery_arr = []
       
       visited_stops = []
-
+      vs.delete(params[:tour_id])
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
       visited_stops = visited_stops.compact rescue visited_stops
       community = visited_stops.last&.tour.community
       shared_tour_stops = {}
       stops = []
       visited_stops.compact.each_with_index do |x,i|
-        
         puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
         if x.stop_type != "elevator" && (x.id != params[:tour_id])
           descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
@@ -214,8 +211,6 @@ Android Users:
         end
       end
       begin
-        puts "tuertyuo"*200
-        shared_tour_stops.map{|x| x[0]}
         FavoriteMailer.email_shared_tour([shared_tour.email],shared_tour_stops,community).deliver_now
       rescue => ex
         puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"
