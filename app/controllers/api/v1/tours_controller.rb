@@ -184,7 +184,7 @@ Android Users:
       gallery_arr = []
       
       visited_stops = []
-      vs.delete(params[:tour_id])
+      vs.delete(params[:tour_id]) rescue ""
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
       visited_stops = visited_stops.compact rescue visited_stops
       community = visited_stops.last&.tour.community
@@ -211,6 +211,9 @@ Android Users:
         end
       end
       begin
+        puts "tour_po"*200
+        puts shared_tour_stops.map{|x| x[0]}
+        shared_tour_stops.delete(params[:tour_id])
         FavoriteMailer.email_shared_tour([shared_tour.email],shared_tour_stops,community).deliver_now
       rescue => ex
         puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"
