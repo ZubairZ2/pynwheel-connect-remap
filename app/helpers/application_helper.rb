@@ -858,11 +858,9 @@ module ApplicationHelper
 
   def unit_id_is_in_cookies?(cookies,fav_unit_id)
     if cookies.present?
-      # array = JSON.parse(cookies)
-      # array.include? fav_unit_id.to_s
-      return cookies.include? fav_unit_id.to_s
+      array = JSON.parse(cookies)
+      array.include? fav_unit_id.to_s
     end
-    return false
   end
 
   def determine_available_date(date)
@@ -888,15 +886,11 @@ module ApplicationHelper
   # end
 
   def set_active_class(x,categories)
-    begin
-        arr = categories.split(',')
-        if arr.include? x
-          return 'active'
-        else
-          return ''
-        end
-    rescue Exception => e
-        return ''
+    arr = categories.split(',')
+    if arr.include? x
+      return 'active'
+    else
+      return ''
     end
   end
 
