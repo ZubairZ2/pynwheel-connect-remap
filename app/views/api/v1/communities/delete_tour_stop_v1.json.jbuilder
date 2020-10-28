@@ -369,7 +369,7 @@ json.tours @tours do |tour|
 
                 
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                  if (add_stop.display_stop && add_mdu)
+                  if (add_stop.display_stop && add_mdu) and !(@community.deleted_ids.include? add_stop.id)
                     stops_arr << add_stop 
                     last_stop_id = add_stop.id if add_stop.stop_type == "amenity" || add_stop.stop_type == "unit"
                   end
