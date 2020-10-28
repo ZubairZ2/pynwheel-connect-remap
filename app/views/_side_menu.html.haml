@@ -40,7 +40,13 @@
             %i.fa.fa-gears
             %span Data
             %span.pull-right-container
-      - if (current_user.is_super_admin? || current_user.is_community_admin? ) && current_community.mdu
+      - if ( current_user.is_community_admin? and current_community.self_tour)
+        %li.loader_class{:class=>"#{controller_name =='dwelos' ? 'active' : ''}"}
+          %a{:href => "#{new_community_dwelo_path(current_community)}"}
+            %i.fa.fa-lock
+            %span Locks
+            %span.pull-right-container
+      - if (current_user.is_super_admin? and current_community.self_tour) && current_community.mdu
         %li.loader_class{:class=>"#{controller_name =='dwelos' ? 'active' : ''}"}
           %a{:href => "#{new_community_dwelo_path(current_community)}"}
             %i.fa.fa-lock
@@ -68,13 +74,13 @@
             %span.pull-right-container
               %i.fa.fa-angle-right.pull-right
           %ul.treeview-menu.property_map_intent_list{:style=>"display: block"}
-            - if (current_community.is_sitemap && current_community.show_map && (current_user.is_super_admin? || current_user.is_community_admin? ))
+            - if (current_community.is_sitemap && current_community.show_map && (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? ))
               %li.loader_class{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
                 %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
                   %i.fa.fa-map-marker
                   %span Property Map
                   %span.pull-right-container
-            - elsif current_community.show_map && (current_user.is_super_admin? || current_user.is_community_admin? )
+            - elsif current_community.show_map && (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? )
               %li.loader_class{:class=>"#{controller_name =='floorplates' && params[:amenities].blank? ? 'active' : ''}"}
                 %a{:href => "#{community_floorplates_path(current_community)}"}
                   %i.fa.fa-database
@@ -86,13 +92,13 @@
                 = link_to community_amenities_path(current_community)  do
                   %i.fa.fa-plus-square
                   %span Amenities
-            - if (current_user.is_super_admin? || current_user.is_community_admin? ) && current_community.mdu
+            - if (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? ) && current_community.mdu
               %li.loader_class{:class=>"#{controller_name =='floorplans' || controller_name =='floorplan_amenities' ? 'active' : ''}"}
                 %a{:href => "#{community_floorplans_path(current_community)}"}
                   %i.fa.fa-columns
                   %span Floor Plans
                   %span.pull-right-container
-            - if (current_user.is_super_admin? || current_user.is_community_admin? ) && current_community.mdu
+            - if (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?) && current_community.mdu
               %li.loader_class{:class=>"#{controller_name =='units' ? 'active' : ''}"}
                 = link_to community_units_path(current_community)  do
                   %i.fa.fa-laptop
@@ -165,7 +171,46 @@
       /     %a{:href => "#{community_tours_path(current_community)}"}
       /       %i.fa.fa-plane
       /       %span Tour Setup
-      - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      - if (current_user.is_community_manager? and current_community.self_tour)
+        %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}
+          %a{:href => "/"}
+            %i.fa.fa-plane
+            %span Tour Setup
+            %span.pull-right-container
+              %i.fa.fa-angle-right.pull-right
+          %ul.treeview-menu.property_map_intent_list{:style=>"#{controller_name =='tou4r'? 'display: block' : ''}"}
+            %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "settings"  ? 'active' : ''}"}
+              %a{:href => "#{settings_community_tours_path(current_community)}"}
+                %i.fa.fa-bars
+                %span Settings
+                %span.pull-right-container
+
+            %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "index" ? 'active' : ''}"}
+              %a{:href => "#{community_tours_path(current_community)}"}
+                %i.fa.fa-plane
+                %span Tour Stops
+                %span.pull-right-container
+
+      - if ( current_user.is_community_admin? and current_community.self_tour)
+        %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}
+          %a{:href => "/"}
+            %i.fa.fa-plane
+            %span Tour Setup
+            %span.pull-right-container
+              %i.fa.fa-angle-right.pull-right
+          %ul.treeview-menu.property_map_intent_list{:style=>"#{controller_name =='tou4r'? 'display: block' : ''}"}
+            %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "settings"  ? 'active' : ''}"}
+              %a{:href => "#{settings_community_tours_path(current_community)}"}
+                %i.fa.fa-bars
+                %span Settings
+                %span.pull-right-container
+
+            %li.loader_class{:class=>"#{controller_name =='tours' && params[:action] == "index" ? 'active' : ''}"}
+              %a{:href => "#{community_tours_path(current_community)}"}
+                %i.fa.fa-plane
+                %span Tour Stops
+                %span.pull-right-container
+      - if (current_community.self_tour) && current_user.is_super_admin?
         %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}
           %a{:href => "/"}
             %i.fa.fa-plane
@@ -196,7 +241,7 @@
           %a{:href => "#{community_schedual_tours_path(current_community)}"}
             %i.fa.fa-sticky-note-o
             %span Scheduled Tours      
-      - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
           %a{:href => "#{community_logs_path(current_community)}"}
             %i.fa.fa-history
