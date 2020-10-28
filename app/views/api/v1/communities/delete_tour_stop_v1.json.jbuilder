@@ -328,6 +328,7 @@ json.tours @tours do |tour|
     if @community.is_sitemap
 
       stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      stops_arr = stops_arr.map{|x| x if !(@community.deleted_ids.include? x.id)}.compact
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
       last_stop_desc = stops_arr.compact[stop_count - 1]
