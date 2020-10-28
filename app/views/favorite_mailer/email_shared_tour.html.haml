@@ -386,7 +386,6 @@
               - @favorites.flatten!
 
               - (0..(@favorites.count-1)).each_with_index do |f,index |
-                - next if (@community.tour.id == @favorites[index].id)
                 - notes = @shared_tour_stops.values[index][:description]
                 - user_gallery = @shared_tour_stops.values[index][:images]
 
