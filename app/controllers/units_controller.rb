@@ -83,7 +83,7 @@ class UnitsController < ApplicationController
       @unit.available = false
     end
     if @unit.save
-      if @unit.floorplan.present? and @unit.floorplan.amenities.present? 
+      if @unit.floorplan.present? and @unit.floorplan.amenities.present?
         floorplan_amenities = @unit.floorplan.amenities
         add_floorplan_amenities = "true"
         AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities,add_floorplan_amenities, @unit
