@@ -250,6 +250,9 @@ Rails.application.routes.draw do
       end
     end
     resources :tutorials do
+      collection do
+        get :upload_video_direct
+      end
     end
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do

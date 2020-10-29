@@ -1,0 +1,86 @@
+= hidden_field_tag "tutorial_id", @tutorial.id
+= hidden_field_tag "community_id", @community.id
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+    Name
+  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+    = f.text_field :name, :maxlength=>"30", :class=>"form-control save-tutorial-field", :placeholder => "Name"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+    Description
+  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+    = f.text_field :description, :maxlength=>"15", :class=>"form-control save-tutorial-field", :placeholder => "Latitude"
+
+
+= submit_tag 'Save', class: "hidden"
+
+.form-group
+  %span.btn.btn-success.btn-file.text-UP#file-load
+    %i.fa.fa-plus-circle
+    Add Video
+
+
+= direct_upload_form_for @uploader, :id => "direct_form" do |f|
+  = f.file_field :avatar, :id => "video_field",:class => "hidden"
+  = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"  
+  = hidden_field_tag "tutorial_id", @tutorial.id
+
+
+:javascript
+  $("#file-load").on('click', function(e) {
+    $('#video_field').click();
+  });
+  function home_page_goBack()
+  {
+    $('#home-page-image-form').submit();
+    window.location.reload();
+
+  }
+
+  $("#file-load-drop").on('drop', function(e) {
+    // $("#video_submit").click();
+  });
+  function dropHandler(e)
+  {
+    if (e.dataTransfer.files[0].size < 500000000)
+    {
+      if (e.dataTransfer.files[0].type == "video/mp4")
+      {
+        $(".divLoading").removeClass("hidden");
+        e.preventDefault();
+        console.log(e.dataTransfer);
+        video_field.files = e.dataTransfer.files;
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  }
+  $("#video_field").on('change', function(e) {
+    if (e.currentTarget.files[0].size < 500000000)
+    {
+      if (e.currentTarget.files[0].type == "video/mp4" || e.currentTarget.files[0].type == "video/quicktime")
+      {	debugger;
+        $(".divLoading").removeClass("hidden");
+        $("#video_submit").click();
+      }
+      else
+      {
+        $('#video-upload-warning').modal('show');
+      }
+    }
+    else
+    {
+      $('#video-size-warning').modal('show');
+    }
+  });
+  $(".divLoading").addClass("hidden");
+  $('.save-tutorial-field').change(function(){
+    $('.tutorial-form').submit();
+  });            

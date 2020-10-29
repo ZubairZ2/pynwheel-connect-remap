@@ -26,31 +26,41 @@
                 %thead
                   %tr
                     %th
-                      Arrived
-                    %th
-                      Image
+                      Sr
                     %th
                       Name
                     %th
-                      Email
+                      Description
                     %th
-                      Phone
+                      Video
                     %th
+                      Uploaded at
                     %th
-                      Visitor Details
-                    - if (current_user.is_super_admin?)
-                      %th
-                        Action
+                      Action
 
               
                 %tbody
-                  - @tutorial.each_with_index  do |user,index|
+                  - @tutorials.each_with_index  do |t,index|
                     .row
-
                       %tr
                         %td.col-lg-2
+                          = index + 1
                         %td.col-lg-2
+                          = t.name
                         %td.col-lg-2
+                          = t.description
                         %td.col-lg-2
+                          = t.created_at
                         %td.col-lg-2
-                          
+                          - if t.video.present?
+                            = video_tag t.video.url , :controls => true, :autobuffer => true,:type => "video/mp4", :width => "400px"
+                        %td
+                          %a.text-success{:href => "#{edit_community_tutorial_path(@community,t)}"}
+                            %i.fa.fa-edit.icon_size
+                          %a.text-danger{"data-name"=>"Tutorial","data-href" => "#{community_tutorial_path(@community,t)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+                            %i.fa.fa-trash.icon_size  
+                    
+
+    = link_to new_community_tutorial_path(@community), class: "btn btn-primary mr-5", id: "add-tutorial", :style => "font-weight: bold;" do
+      %i.fa.fa-plus-circle
+      ADD TUTORIAL
