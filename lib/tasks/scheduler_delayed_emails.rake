@@ -43,7 +43,7 @@ namespace :delayed_email_notifications do
 
 				@mail_content[1] = "#{@mail_content.last} #{(TourStop.find th.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."
 				  
-				@thank_you_content  = community.thank_you_message.present? ? "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + community.thank_you_message : "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+				@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
 				touruser_remotelock_data community, th
 
 				# tour = (Tour.find_by_id self.tour_id)
@@ -88,11 +88,11 @@ namespace :delayed_email_notifications do
   	def send_email_sms_or_both_to_touruser thank_you_msg, community, th
   		
 		if community.alert_contact == "email"
-			send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg, th, community.email
+			send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email
 		elsif community.alert_contact == "phone"
 			send_sms_tour_user thank_you_msg
 		else
-			send_email_tour_user "Thank you for visiting #{community.name}", thank_you_msg, th, community.email
+			send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email
 			send_sms_tour_user thank_you_msg
 		end
 	end
