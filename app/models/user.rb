@@ -71,6 +71,10 @@ class User < ApplicationRecord
   def all_companies
     Company.all.map(&:name).sort
   end
+
+  def dwelo_companies
+    Company.where(creator_id: User.where(role: "Dwelo admin").ids).map(&:name).sort
+  end
   def name
   	if first_name.nil? and last_name.nil?
   		email
