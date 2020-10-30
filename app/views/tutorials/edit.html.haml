@@ -1,5 +1,5 @@
 = render '/font_awesome_v5'
-
+.divLoading.hidden
 - content_for :title, "Add Tutorial - Pynwheel"
 %section.is-amenity
   .content
@@ -17,26 +17,31 @@
         .row
           .col-md-12
             .box.box-widget.panel-box.add-plan.pt-30
-              = form_for @tutorial,:url=>"/communities/#{@community.id}/tutorials/#{@tutorial.id}",:html=>{:class=>"form-horizontal tutorial-form"} do |f|
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Name
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = f.text_field :name, :maxlength=>"30", :class=>"form-control save-tutorial-field", :placeholder => "Name"
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Description
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = f.text_field :description, :maxlength=>"15", :class=>"form-control save-tutorial-field", :placeholder => "Latitude"
-                .form-group
-                  %span.btn.btn-success.btn-file.text-UP#file-load
-                    %i.fa.fa-plus-circle
-                    Add Video
-    
-                
-                = submit_tag 'Save', class: "hidden"
+              .form-group{:style => "margin-left: 40px;"}
+                = form_for @tutorial,:url=>"/communities/#{@community.id}/tutorials/#{@tutorial.id}",:html=>{:class=>"form-horizontal tutorial-form"} do |f|
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Name
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = f.text_field :name, :maxlength=>"30", :class=>"form-control save-tutorial-field", :placeholder => "Name"
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Description
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = f.text_area :description, :maxlength=>"15", :class=>"form-control save-tutorial-field", :placeholder => "Desciption", :rows => "5"
+                  .form-group
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      %span.btn.btn-success.btn-file.text-UP#file-load
+                        %i.fa.fa-plus-circle
+                        Add Video
+                      %span
+                        = f.object.filename
+      
+                  
+                  = submit_tag 'Save', class: "hidden"
     = direct_upload_form_for @uploader, :id => "direct_form" do |f|
       = f.file_field :avatar, :id => "video_field",:class => "hidden"
+      = f.hidden_field :filename, :id => "filename"
       = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"            
 
 :javascript
@@ -80,6 +85,7 @@
     {
       if (e.currentTarget.files[0].type == "video/mp4" || e.currentTarget.files[0].type == "video/quicktime")
       {
+        document.getElementById("filename").value = e.currentTarget.files[0].name
         $(".divLoading").removeClass("hidden");
         $("#video_submit").click();
       }

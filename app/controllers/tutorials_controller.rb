@@ -11,7 +11,6 @@ class TutorialsController < ApplicationController
   def edit
   	@tutorial = Tutorial.find params[:id]
   	@uploader = @tutorial.video
-
     @uploader.success_action_redirect = upload_video_direct_community_tutorials_url(@community, @tutorial)
   end
   def update
@@ -30,14 +29,13 @@ class TutorialsController < ApplicationController
    	else
    		@uploader =  Tutorial.new()
    	end
-    
-  
+    @uploader.filename = params[:key].split('/').last
     if @uploader.save
     	@uploader.community_id = current_community.id	
       @uploader.remote_video_url = @uploader.video.direct_fog_url + params[:key]
 
       @uploader.save
-      redirect_to edit_community_tutorial_path(current_community,@uploader), notice: 'Video has been uploaded'
+      redirect_to community_tutorials_path(current_community), notice: 'Video has been uploaded'
     else
       render action: "index"
     end

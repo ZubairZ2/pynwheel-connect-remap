@@ -6,6 +6,7 @@ class CreateTutorials < ActiveRecord::Migration[5.0]
       t.string :description
       t.string :video_type
       t.string :video
+      t.string :filename
 
       t.timestamps
     end
