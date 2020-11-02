@@ -53,7 +53,7 @@
                       %tr
                         %td.col-lg-2
                           .visitor_list.custom_label_color
-                            #{user.tour_histories.last.arrived.to_date rescue nil} #{user.tour_histories.last.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p") rescue nil}
+                            #{user.tour_histories.where(tour_id: @community.tour.id).last.arrived.to_date rescue nil} #{user.tour_histories.where(tour_id: @community.tour.id).last.arrived.in_time_zone(user.tour_histories.where(tour_id: @community.tour.id).last.my_time_zone).strftime("%I:%M %p") rescue nil}
                             -# - if user.tour_histories.present?
                             -#   - if user.tour_histories.last.arrived.present?
                             -#     - pii = 1

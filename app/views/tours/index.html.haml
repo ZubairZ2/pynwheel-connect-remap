@@ -502,8 +502,8 @@
   })
   var floor = #{@floor.present? ? @floor : 12345678900}
   function tour_setup_goBack()
-  {
-      location.href;
+  { 
+    location.reload();
   }
   var div_checklist = "#{@community.scheduler_widget.nil? ? true : @community.scheduler_widget}"
   if(div_checklist == "true")
