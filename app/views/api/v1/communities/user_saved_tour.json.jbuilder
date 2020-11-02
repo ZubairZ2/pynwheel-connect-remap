@@ -158,7 +158,7 @@ json.tours tours do |tour|
             show_long_description = false
           end
           json.show_long_description show_long_description
-          json.stop_description (show_long_description ? ag_description[0..description_limit - 1] : ag_description)
+          json.description (show_long_description ? ag_description[0..description_limit - 1] : ag_description)
           json.long_stop_description  styling_start + ag.description.gsub('red','') + styling_end rescue ""
 
           json.directional_text ag.directional_text
