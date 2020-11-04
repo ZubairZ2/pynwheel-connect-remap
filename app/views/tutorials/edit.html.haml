@@ -33,14 +33,17 @@
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                       Product Line
                     .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                      = check_box_tag :video_type1, (f.object.video_type.present? ? f.object.video_type.include?("pynwheel_touch") : false ), :class=>"form-control save-tutorial-field" 
-                      %span Pynwheel Touch
+                      .checkbox
+                        = f.check_box :pynwheel_touch, :class=>"form-control save-tutorial-field" 
+                        %label Pynwheel Touch
                     .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                      = check_box_tag :video_type2, (f.object.video_type.present? ? f.object.video_type.include?("pynwheel_maps") : false), :class=>"form-control save-tutorial-field" 
-                      %span Pynwheel Maps
+                      .checkbox
+                        = f.check_box :pynwheel_maps, :class=>"form-control save-tutorial-field" 
+                        %label Pynwheel Maps
                     .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                      = check_box_tag :video_type3, (f.object.video_type.present? ? f.object.video_type.include?("self_tour") : false), :class=>"form-control save-tutorial-field" 
-                      %span Self Tour
+                      .checkbox
+                        = f.check_box :self_tour, :class=>"form-control save-tutorial-field" 
+                        %label Self Tour
                   .form-group
                     .col-sm-12.col-lg-6.col-md-6.col-xs-12
                       %span.btn.btn-success.btn-file.text-UP#file-load
@@ -113,5 +116,6 @@
   });
   $(".divLoading").addClass("hidden");                
   $('.save-tutorial-field').change(function(){
+  $(".divLoading").removeClass("hidden");
     $('.tutorial-form').submit();
   });            

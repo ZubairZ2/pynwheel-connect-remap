@@ -37,7 +37,7 @@
                     %th
                       Description
                     %th
-                      Uploaded at
+                      Product Line
                     %th
                       Video
                     %th
@@ -55,7 +55,16 @@
                         %td.col-lg-2{:style => "max_width: 300px;"}
                           = t.description
                         %td.col-lg-2
-                          = t.created_at
+                          %ul
+                            - if t.pynwheel_touch
+                              %li
+                                Pynwheel Touch
+                            - if t.pynwheel_maps
+                              %li
+                                Pynwheel Maps
+                            - if t.self_tour
+                              %li
+                                Self Tour        
                         %td.col-lg-2
                           - if t.video.present?
                             %button.btn.btn-lg.video{"data-target" => "#videoModal", "data-toggle" => "modal", "data-video" => t.video.url} Play Video
@@ -91,4 +100,7 @@
   });
   $(document).ready(function(e){
     document.getElementById("video1").style.width = $(window).width() / 2 + "px";
+  });
+  $('#videoModal').on('hidden.bs.modal', function () {
+    $('.video1').attr('src', "")
   });
