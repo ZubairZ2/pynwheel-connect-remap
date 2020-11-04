@@ -158,9 +158,9 @@ Android Users:
   def tour_user_login
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
     if tu.blank?
-      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name],id_selfie_mismatch: false)
+      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name], phone_number: params[:phone_number], id_selfie_mismatch: false)
     else
-      tu.update_attributes(name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name],id_selfie_mismatch: false)
+      tu.update_attributes(name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name], phone_number: params[:phone_number], id_selfie_mismatch: false)
     end
     community = Community.find_by_id params[:community_id]
     allow = true
