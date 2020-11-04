@@ -13,6 +13,7 @@ json.tours @tours do |tour|
   require 'securerandom'
   json.tour_key  random_string = SecureRandom.hex
   json.community_id tour.community_id
+  json.locks_provider @community.locks_provider.present? ? @community.locks_provider : ''
   json.name tour.name
   json.latitude tour.latitude
   json.longitude tour.longitude
