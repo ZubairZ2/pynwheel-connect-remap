@@ -74,10 +74,19 @@
     for (var i=0; i<parsed_arr.length  ; i++) {
 
       $('#user_community_ids').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
-      $('#chat_community_ids').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
+      
 
     }
     }
 
   });
+  });
+  $('#user_community_ids').change(function(){
+    $('#chat_community_ids').multiSelect('removeAllOptions');
+    for(i = 0; i < $('#user_community_ids :selected').length ; i++)
+    {
+      
+    $('#chat_community_ids').multiSelect('addOption', { value: $('#user_community_ids :selected')[i].value, text: $('#user_community_ids :selected')[i].text });
+    }
+    
   });
