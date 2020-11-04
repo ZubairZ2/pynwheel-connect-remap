@@ -72,7 +72,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
           rescue => ex
           end
         end
-
+        chat_control = (tour.community.chat_control and tour.community.is_chat_login) ? tour.community.chat_control : false
         chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
         if chatroom.present?
           if params[:last_msg_id].present?
@@ -84,7 +84,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
           count = 0
         end
 
-        render :json=> {:success=>true, :message => "success", :un_read_msgs_count=> count, :id_mismatch=> id_mismatch }
+        render :json=> {:success=>true, :message => "success", :un_read_msgs_count=> count, :id_mismatch=> id_mismatch, chat_control: chat_control}
       else
         render :json=> {:success=>false, :message => "Please provide community_id, tour_id and tour_user_id"}
       end

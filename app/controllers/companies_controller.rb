@@ -7,11 +7,11 @@ class CompaniesController < ApplicationController
   #before_action :check_current_company , except: [:new,:create]
   def index
     if current_user.is_super_admin?
-      @companies = Company.all
+      @companies = alphabetical_sort(Company.all)
     elsif current_user.is_dwelo_admin?
-      @companies = Company.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
+      @companies = alphabetical_sort(Company.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact))
     else
-      @companies = Company.where(id: current_user.company_id)
+      @companies = alphabetical_sort(Company.where(id: current_user.company_id))
     end
   end
 

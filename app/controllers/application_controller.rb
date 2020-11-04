@@ -7,6 +7,7 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
   helper_method :current_company
+  helper_method :alphabetical_sort
   before_action :load_tour_users_chats
   # before_action :set_cookies
   def current_community
@@ -144,6 +145,11 @@ class ApplicationController < ActionController::Base
   #   cookies[:session_id] = SecureRandom.hex(8) if cookies[:session_id].nil?
   #   cookies[:community_id] = current_community.id if current_community.present? and cookies[:community_id].nil?
   # end
+
+  def alphabetical_sort(company_or_community_or_community_groups)
+    company_or_community_or_community_groups.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
+  end
+
   protected
 
   def layout_by_resource
