@@ -164,12 +164,23 @@
 
 :javascript
   
+  
+  
   $(document).on('change', '.address_fields1', function() {
 
-   $.ajax({
-    url: "/communities/#{Community.last.id}/make_cordinate",
+
+  });
+  com = #{@com_id};
+  if(com == 0)
+  {com = null;}
+  
+  function make_coord()
+  {
+    
+    $.ajax({
+    url: "/communities/make_cordinate",
     type: "post",
-    data: {address : $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val()},
+    data: {address : $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val(), community_id : com},
     success: function(data) {
       if (data.cord != null)
       {
@@ -180,8 +191,17 @@
     },
     error: function(data) {}
   })
+  }
+  $( ".address_fields1" ).keyup(function() {
+    make_coord()
   });
-
+  $(document).ready(function() {
+   // executes when HTML-Document is loaded and DOM is ready
+   
+   setTimeout(function(){
+    make_coord();
+  }, 2000);
+  });
   if (!#{current_user.welcome_property_details_page})
   {
     $('[data-toggle="propertyDetailNamePopover"]').popover({

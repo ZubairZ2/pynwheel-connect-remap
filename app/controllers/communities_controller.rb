@@ -27,6 +27,7 @@ class CommunitiesController < ApplicationController
   def new
     add_breadcrumb "Add Community", new_company_community_path(current_company)
     @community = current_company.communities.new 
+    @com_id = 0
   end
 
   def create
@@ -53,6 +54,7 @@ class CommunitiesController < ApplicationController
   end
 
   def edit
+    @com_id = current_community.id
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
@@ -249,7 +251,9 @@ class CommunitiesController < ApplicationController
     end
   end
   def make_cordinate
+    
     address = Geocoder.coordinates(params[:address])
+    @community.update_attributes(latitude: address[0], longitude: address[1]) rescue ""
     render :json=>{"cord"=> address }
   end
   def change_expressionist_default
