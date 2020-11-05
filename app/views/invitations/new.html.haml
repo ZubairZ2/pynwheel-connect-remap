@@ -19,9 +19,9 @@
             .form-group
               .row
                 .col-lg-6.col-sm-6.col-xs-6.col-md-6
-                  %p{:style => "float: right;     padding-right: 39px;"} Listed Communities
+                  %p{:style => "text-align: center;"} Listed Communities
                 .col-lg-6.col-sm-6.col-xs-6.col-md-6
-                  %p{:style => "padding-left: 25px;"} Selected Communities
+                  %p{:style => ""} Selected Communities
               -#= f.select :community_ids, options_for_select(current_user.is_super_admin? ? Community.pluck(:name,:id) : current_user.communities.pluck(:name,:id)),{},{class: "form-control validate[required]",:multiple=>true}
               .col-sm-12.col-xs-12.col-lg-12.col-md-12
               .col-sm-1.col-xs-1.col-lg-12.col-md-12
@@ -32,9 +32,9 @@
             .form-group
               .row
                 .col-lg-6.col-sm-6.col-xs-6.col-md-6
-                  %p{:style => "float: right;     padding-right: 39px;"} Listed Communities
+                  %p{:style => "text-align: center;"} Listed Communities
                 .col-lg-6.col-sm-6.col-xs-6.col-md-6
-                  %p{:style => "padding-left: 25px;"} Selected Communities
+                  %p{:style => ""} Selected Communities
               -#= f.select :community_ids, options_for_select(current_user.is_super_admin? ? Community.pluck(:name,:id) : current_user.communities.pluck(:name,:id)),{},{class: "form-control validate[required]",:multiple=>true}
               .col-sm-12.col-xs-12.col-lg-12.col-md-12
               .col-sm-1.col-xs-1.col-lg-12.col-md-12
