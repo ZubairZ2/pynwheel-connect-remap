@@ -16,7 +16,8 @@
               %li.loader_class{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
                 %a{:href => "/companies"} Companies
             %li.loader_class{:class=>"#{controller_name =='community_group' ? 'active' : ''}"}
-              %a{:href => "/community_groups"} Community Group
+              - unless (current_user.is_dwelo_admin? )
+                %a{:href => "/community_groups"} Community Group
             %li.loader_class{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
               = link_to "Communities", root_path
       - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
