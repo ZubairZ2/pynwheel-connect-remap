@@ -14,7 +14,10 @@
           %h3 Send Invitation
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
           .form-group
-            = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
+            - if current_user.is_super_admin?
+              = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
+            - elsif current_user.is_dwelo_admin?
+              = f.select :company, options_for_select(current_user.dwelo_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
           .row
             .form-group
               .row
