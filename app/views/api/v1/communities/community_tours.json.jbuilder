@@ -93,7 +93,7 @@ json.tours @tours do |tour|
       
       if stop.stop_type == "unit"
         u = Unit.find stop.stop_id
-        if u.present?
+        if u.present? && (u.available and u.available_date >= Date.today)
           
           # if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.nil? ? true : tour.tour_setting.show_desired_bedroom) : false)
           #   unless u.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
