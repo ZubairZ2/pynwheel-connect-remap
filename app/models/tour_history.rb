@@ -33,7 +33,7 @@ class TourHistory < ApplicationRecord
   def send_update_notifications
     if self.history != true
       if time_difference >= 60 && self.lengthy_stay_email_sent == false
-        @mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "Visitor is on site for more than"] #get_alert_message('lengthy_stay')
+        @mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "#{self.tour_user.name.capitalize} has been on a Self Tour at #{@community.name.gsub("(", "( ").split.map(&:capitalize).join(' ')} for more than"] #get_alert_message('lengthy_stay')
         @mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
         self.update_attributes(lengthy_stay_email_sent: true)
         send_email_sms_or_both @mail_content
@@ -194,14 +194,14 @@ class TourHistory < ApplicationRecord
   end
 
   def send_email_sms_or_both_to_touruser thank_you_msg
-    if community.alert_contact == "email"
-      send_email_to_user_without_humanize  "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg, community.email
-    elsif community.alert_contact == "phone"
-      send_sms_tour_user thank_you_msg
-    else
-      send_email_to_user_without_humanize  "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", thank_you_msg, community.email
-      send_sms_tour_user thank_you_msg
-    end
+  	if community.alert_contact == "email"
+  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe
+  	elsif community.alert_contact == "phone"
+  		send_sms_tour_user thank_you_ms
+  	else
+  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe
+  		send_sms_tour_user thank_you_msg
+  	end
   end
 
   def send_sms message_body
