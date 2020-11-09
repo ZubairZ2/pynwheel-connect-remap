@@ -217,8 +217,12 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Limit Max Tour Type
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :limit_max_tour , options_for_select([ ["Scheduling","scheduling"],["App Usage","app_usage"] ], @community.tour.tour_setting.limit_max_tour),:class => "form-control"
-                      
+                = select_tag :limit_max_tour_type , options_for_select([ ["Scheduling","scheduling"],["App Usage","app_usage"] ], @community.tour.tour_setting.limit_max_tour_type),:class => "form-control"
+            .form-group.limit_max_tour_class.hidden
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Limit Max Tour
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %input.day-list.max-users-v{type: "number", id: "limit_max_tour", name: "limit_max_tour", min: "1", max: "60", step: "1", onkeydown: "return false", value: @community.tour.tour_setting.limit_max_tour}         
             .div_checklist.hidden{:style => "margin-left: 60px;"}
               %label Select Fields for Schedule Widget:
               .form-group{:style => "height: 190px; margin-top: ;"}
