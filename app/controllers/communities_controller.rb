@@ -624,6 +624,8 @@ class CommunitiesController < ApplicationController
       @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
       @community.show_camera_button = params[:show_camera_button].present? ? true : false
       @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
+      @community.tour.tour_setting.do_limit_max_tour = params[:do_limit_max_tour].present? ? true : false
+      @community.tour.tour_setting.limit_max_tour = params[:limit_max_tour] if params[:limit_max_tour].present?
       @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
       # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
       # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
