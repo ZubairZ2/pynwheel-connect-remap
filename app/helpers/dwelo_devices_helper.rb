@@ -129,7 +129,7 @@ module DweloDevicesHelper
   end
 
   def base_url
-    "https://api.qa.dwelo.com/"
+    "https://api.qa.dwelo.com"
   end
 
 end
