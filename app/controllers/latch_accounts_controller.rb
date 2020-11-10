@@ -1,0 +1,65 @@
+class LatchAccountsController < ApplicationController
+    before_action :set_user
+
+    def new
+        @latch = Latch.new
+    end
+    
+    def create
+        if params[:latch][:zerv_selected].present? and params[:latch][:zerv_selected] == "Zerv"
+            current_community.update_columns(locks_provider: "Zerv")
+            flash[:notice] = "Zerv sets as lock provider successfully"
+            redirect_to new_community_dwelo_path
+        else
+        unless @is_already_exists
+
+            @latch = Latch.new(latch_params)
+            result = parse_csv(params[:file]) if params[:file].present?
+
+            if @latch.save
+                current_community.update_columns(locks_provider: "Latch")
+                flash[:notice] = "Latch credentails saved successfully"
+                redirect_to new_community_dwelo_path
+            else
+                flash[:error] = @latch.errors.full_messages.join(',')
+                redirect_to new_community_dwelo_path
+            end
+
+        else
+
+            @latch = Latch.find_by(community_id: current_community.id)
+            result = parse_csv(params[:file]) if params[:file].present?
+
+            if @latch.update_attributes(latch_params)
+                current_community.update_columns(locks_provider: "Latch")
+                flash[:notice] = "Latch credentails updated successfully"
+                redirect_to new_community_dwelo_path
+            else
+                flash[:error] = @latch.errors.full_messages.join(',')
+                redirect_to new_community_dwelo_path
+            end
+
+        end
+        end
+        
+    end
+
+    def parse_csv(file)
+        @latch.import_data(file)
+    end
+
+    def destroy
+        @latch  = EdgeState.find(params[:id])
+        @latch.destroy
+    end
+
+    private
+        def latch_params
+            params.require(:latch).permit(:client_id, :client_secret, :community_id)
+        end
+
+        def set_user
+            @is_already_exists = Latch.find_by(community_id: current_community.id).present?
+        end
+
+end
