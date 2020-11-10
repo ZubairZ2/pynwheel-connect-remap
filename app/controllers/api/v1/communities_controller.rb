@@ -494,7 +494,12 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     end
   end
-
+  def total_scheduled_tour(property_time, limit)
+    return (limit <= SchedualTour.where('tour_date = ? AND tour_time BETWEEN ? AND  ?', ti.to_date, (property_time.to_time - 30.minutes).to_s(:time), (property_time.to_time + 60.minutes).to_s(:time)).count) ? false : true
+  end
+  def app_usage(property_time, limit)
+    return (limit <= TourHistory.where(arrived: property_time.to_date, left: nil, abandoned_tour_at_stop: nil, active_app: false).count) ? false : true
+  end
   def get_community_time(community)
     tz = Ziptz.new
     if community.zip.present?
