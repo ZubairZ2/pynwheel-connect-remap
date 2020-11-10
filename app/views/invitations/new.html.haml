@@ -28,6 +28,9 @@
               .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
                 = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
           %br
+          .row{:style => "text-align: center; margin-top: 50px; margin-bottom: 30px;"}
+            %label
+              Enable Chat
           .row
             .form-group
               .row
