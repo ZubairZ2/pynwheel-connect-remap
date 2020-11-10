@@ -113,7 +113,18 @@ json.tours tours do |tour|
         json.gallery @unit_gallery_arr do |ag|
           json.name ag.name
           json.image ag.image.url
-          json.description ag.description
+          
+          
+          ag_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          if ag_description.size > description_limit
+            show_long_description = true
+          else
+            show_long_description = false
+          end
+          json.show_long_description show_long_description
+          json.description (show_long_description ? ag_description[0..description_limit - 1] : ag_description)
+          json.long_stop_description  styling_start + ag.description.gsub('red','') + styling_end rescue ""
+          
           json.directional_text ag.directional_text
         end
       elsif @tour.stop_type == "amenity"
