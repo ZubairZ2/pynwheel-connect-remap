@@ -17,6 +17,9 @@ class Api::V1::DweloDevicesController < ActionController::Base
       update_deivces_in_db(response, dwelo_community_account)
       flash[:notice] = "Locks imported successfully."
       render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
+    elsif response["data"].class == Array and response["data"].length == 0
+      flash[:notice] = "No locks are present against your account"
+      render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
     else
       flash[:error] = "Something went wrong, please check your credentials."
       render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
