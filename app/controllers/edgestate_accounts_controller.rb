@@ -52,7 +52,7 @@ class EdgestateAccountsController < ApplicationController
             redirect_to new_community_dwelo_path(@community)
           end
         else
-          flash[:error] = "Please enter the credentials before testing data."
+          flash[:error] = "Please enter the EdgeState credentials before testing data."
           redirect_to new_community_dwelo_path(@community)
         end
       end
@@ -72,6 +72,9 @@ class EdgestateAccountsController < ApplicationController
                 flash[:error] = "Something went wrong, please check your credentials."
                 render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
             end
+        else
+          flash[:error] = "Please enter the EdgeState credentials before testing data."
+          render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
         end
     end
 
