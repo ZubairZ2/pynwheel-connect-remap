@@ -479,7 +479,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         current_time = Time.now.in_time_zone(timezone) rescue params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now
 
         if current_time.present?
-          @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
+          @in_visiting_hours = (is_tour_in_visiting_hours(current_time, @community) && check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour))
           @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
 
           if @scheduled_tours.present?
@@ -494,11 +494,24 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     end
   end
-  def total_scheduled_tour(property_time, limit)
-    return (limit <= SchedualTour.where('tour_date = ? AND tour_time BETWEEN ? AND  ?', ti.to_date, (property_time.to_time - 30.minutes).to_s(:time), (property_time.to_time + 60.minutes).to_s(:time)).count) ? false : true
+  def check_guest_limit(community, property_time, limit)
+    
+    if community.tour.tour_setting.do_limit_max_tour
+      return (community.tour.tour_setting.limit_max_tour_type == "app_usage") ? app_usage(property_time, limit) : total_scheduled_tour(community,property_time, limit)
+    else
+      return false
+    end
+  end
+  def total_scheduled_tour(community, property_time, limit)
+    timezone = Timezone.lookup(community.latitude, community.longitude)
+    
+    total_count = SchedualTour.where('tour_date = ?', Date.today.to_date).map{|x| x if ((((x.tour_date.to_s + " " + x.tour_time.to_s(:time)).in_time_zone(x.user_time_zone).in_time_zone(timezone.name)) - property_time.in_time_zone(timezone.name) ) / 3600).between?(-0.5,0.5)}.compact.count
+    return ((limit <= total_count) ? false : true)
+    # return (limit <= SchedualTour.where('tour_date = ? AND tour_time BETWEEN ? AND  ?', property_time.to_date, (property_time.to_time - 30.minutes).to_s(:time), (property_time.to_time + 60.minutes).to_s(:time)).count) ? false : true
   end
   def app_usage(property_time, limit)
-    return (limit <= TourHistory.where(arrived: property_time.to_date, left: nil, abandoned_tour_at_stop: nil, active_app: false).count) ? false : true
+    
+    return (limit <= TourHistory.where('arrived = ? AND left = ? AND abandoned_tour_at_stop AND active_app = ? AND arrived > ?', property_time.to_date,  nil, nil, false, property_time - 180.minutes).count) ? false : true
   end
   def get_community_time(community)
     tz = Ziptz.new
