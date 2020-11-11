@@ -1,352 +1,1301 @@
 - content_for :title, "Settings Community - Pynwheel"
 .divLoading.hidden
-%section.is-community-page
+- if can? :edit_settings_page, current_user 
+  %section.is-community-page
+  - if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+    .box-info.add-plan{style: "margin-top: 15px; margin-right: 10px;"}
+      %img.dwelo-logo{:alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
   .content
     .box.box-info.add-plan.mt-20
-      - if can? :edit_settings_page, current_user 
-        .box-header
-          %h3.box-title
-            Settings
-            %span Community
-          = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
-        = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal form_class"} do |f|
-          .box-body
-            .row
-              .col-lg-9.col-lg-offset-1
-
+      .box-header
+        %h3.box-title
+          Settings
+          %span Community
+        -# = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
+      = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal form_class"} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Company
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
+              -#.form-group#chat_control_row
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Chat Control
+              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#    .TriSea-technologies-Switch
+              -#      %span.pr-15 No
+              -#      = f.check_box :chat_control
+              -#      %label.label-primary{:for => "community_chat_control"}
+              -#      %span.pl-15 Yes
+              - if current_user.is_super_admin?
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Code
-
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
-
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Company
-
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.select :company_id, Company.all.order(:name).collect {|p| [ p.name, p.id ] },{} ,:class=>"form-control"
-                -#.form-group
-                -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                -#    Property Map / Floorplates
-                -#
-                -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                -#    = f.radio_button :is_sitemap, true
-                -#    = f.label :is_sitemap, "Property Map", :value => "true"
-                -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                -#    = f.radio_button :is_sitemap, false
-                -#    = f.label :is_sitemap, "Floorplates", :value => "false"
-
-
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Display Type
-
-                  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                    = f.radio_button :is_vertical_app, true
-                    = f.label :is_vertical_app, "Vertical", :value => "true"
-                  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                    = f.radio_button :is_vertical_app, false
-                    = f.label :is_vertical_app, "Horizontal", :value => "false"
-
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Billing Type
-
-                  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                    = f.radio_button :billing_type, "annual"
-                    = f.label :billing_type, "Annual", :value => "annual"
-                  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-                    = f.radio_button :billing_type, "monthly"
-                    = f.label :billing_type, "Monthly", :value => "monthly"
-
-                - if @community.billing_type == "annual"
-                  .form-group
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      Billing Month
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      .multiselect
-                        .show-categories
-                          = @community.billing_month
-                        %ul#multiselect{style: "display:none;"}
-                          %li{:class=> set_active_class('January',@community.billing_month), 'data-title' => 'January'}
-                            %a
-                              %i.fa.fa-check
-                              January
-                          %li{:class=> set_active_class('February',@community.billing_month), 'data-title' => 'February'}
-                            %a
-                              %i.fa.fa-check
-                              February
-                          %li{:class=> set_active_class('March',@community.billing_month), 'data-title' => 'March'}
-                            %a
-                              %i.fa.fa-check
-                              March
-                          %li{:class=> set_active_class('April',@community.billing_month), 'data-title' => 'April'}
-                            %a
-                              %i.fa.fa-check
-                              April
-                          %li{:class=> set_active_class('May',@community.billing_month), 'data-title' => 'May'}
-                            %a
-                              %i.fa.fa-check
-                              May
-                          %li{:class=> set_active_class('June',@community.billing_month), 'data-title' => 'June'}
-                            %a
-                              %i.fa.fa-check
-                              June
-                          %li{:class=> set_active_class('July',@community.billing_month), 'data-title' => 'July'}
-                            %a
-                              %i.fa.fa-check
-                              July
-                          %li{:class=> set_active_class('August',@community.billing_month), 'data-title' => 'August'}
-                            %a
-                              %i.fa.fa-check
-                              August
-                          %li{:class=> set_active_class('September',@community.billing_month), 'data-title' => 'September'}
-                            %a
-                              %i.fa.fa-check
-                              September
-                          %li{:class=> set_active_class('October',@community.billing_month), 'data-title' => 'October'}
-                            %a
-                              %i.fa.fa-check
-                              October
-                          %li{:class=> set_active_class('November',@community.billing_month), 'data-title' => 'November'}
-                            %a
-                              %i.fa.fa-check
-                              November
-                          %li{:class=> set_active_class('December',@community.billing_month), 'data-title' => 'December'}
-                            %a
-                              %i.fa.fa-check
-                              December
-                  = f.hidden_field :billing_month, :multiple => true, id: "categories_field",:class=>""
-
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Billing Rate
-
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
-                    = f.text_field :billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13"
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Subscription Start Date
-
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true
-
-
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Show Gesture Icons
+                    Pynwheel Touch
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
-                      = f.check_box :show_gesture_icons
-                      %label.label-primary{:for => "community_show_gesture_icons"}
+                      = f.check_box :touchscreen_app
+                      %label.label-primary{:for => "community_touchscreen_app"}
                       %span.pl-15 Yes
-
-                .form-group
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Self Tour
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :self_tour
+                    %label.label-primary{:for => "community_self_tour"}
+                    %span.pl-15 Yes
+              .form-group#code_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Pynwheel Touch Code
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
+              -#.form-group
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Property Map / Floorplates
+              -#
+              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+              -#    = f.radio_button :is_sitemap, true
+              -#    = f.label :is_sitemap, "Property Map", :value => "true"
+              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+              -#    = f.radio_button :is_sitemap, false
+              -#    = f.label :is_sitemap, "Floorplates", :value => "false"
+              .form-group#display_types_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Pynwheel Touch Display Type
+                .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                  = f.radio_button :is_vertical_app, true
+                  = f.label :is_vertical_app, "Vertical", :value => "true"
+                .col-sm-12.col-lg-3.col-md-3.col-xs-12
+                  = f.radio_button :is_vertical_app, false
+                  = f.label :is_vertical_app, "Horizontal", :value => "false"
+              -#.form-group#billing_rate_maps
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Billing Rate (Self & Touch)
+              -#
+              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#
+              -#    = f.text_field :billing_rate_for_both, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_for_both.present? ? @community.billing_rate_for_both : "$2,413"
+              -#
+              .form-group#billing_rate_touch
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Billing Rate (Touch)
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :billing_rate_touch, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_touch.present? ? @community.billing_rate_touch : "$2,028"
+              - if @community.company.name.downcase == "lincoln"
+                .form-group.billing_rate_slef_lincoln
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Powered by Pynwheel
+                    Billing Rate (Self Tour)
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.text_field :lincoln_billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.lincoln_billing_rate.present? ? @community.lincoln_billing_rate : "$295"
+              - elsif @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+                .form-group#billing_rate_slef_dwelo
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Billing Rate (Self Tour)
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.text_field :dwelo_billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.dwelo_billing_rate.present? ? @community.dwelo_billing_rate : "$280"
+              - else
+              .form-group.billing_rate_slef
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Billing Rate (Self Tour)
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :billing_rate_selftour, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_selftour.present? ? @community.billing_rate_selftour : "$385"
+              .form-group#billing_rate_not_maps
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Billing Rate (Maps)
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :billing_rate_maps, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13",value: @community.billing_rate_maps.present? ? @community.billing_rate_maps : "$50"
+              .form-group#subscription_start_date_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Subscription Start Date
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :date_installed, :class=>"form-control datepicker", :placeholder=>"Installed date",:autocomplete=>"off",:readonly=>true
+              .form-group#show_gesture_icons
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Show Gesture Icons in Pynwheel Touch
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :show_gesture_icons
+                    %label.label-primary{:for => "community_show_gesture_icons"}
+                    %span.pl-15 Yes
+              .form-group#powered_by_pynwheel_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Show 'Powered by Pynwheel' on Pynwheel Touch Home Screen
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :powered_by_btn,:value => true
+                    %label.label-primary{:for => "community_powered_by_btn"}
+                    %span.pl-15 Yes
+              .form-group#show_map_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Show Map in Self Tour app
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :show_map
+                    %label.label-primary{:for => "community_show_map"}
+                    %span.pl-15 Yes
+              .form-group#mdu_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  MDU
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :mdu
+                    %label.label-primary{:for => "community_mdu"}
+                    %span.pl-15 Yes
+              - if current_user.is_super_admin?
+                .form-group.apply_now_pynwheel_touch_field#apply_phnwheel_touch
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Show "Apply Now" in Pynwheel Touch
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
-                      = f.check_box :powered_by_btn,:value => true
-                      %label.label-primary{:for => "community_powered_by_btn"}
+                      = f.check_box :apply_now_pynwheel_touch
+                      %label.label-primary{:for => "community_apply_now_pynwheel_touch"}
                       %span.pl-15 Yes
-                .form-group
+              .testing
+                .form-group.apply_now_self_tour_field#apply_now_self_row
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Self Tour
+                    Show "Apply Now" in Self Tour
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
-                      = f.check_box :self_tour
-                      %label.label-primary{:for => "community_self_tour"}
+                      = f.check_box :apply_now_self_tour
+                      %label.label-primary{:for => "community_apply_now_self_tour"}
                       %span.pl-15 Yes
-                .form-group
+                .form-group.apply_now_pynwheel_touch_field#apply_now_pynwheel_touch_field_row
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Show Map
+                    Show "Apply Now" in Pynwheel Touch & Go
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     .TriSea-technologies-Switch
                       %span.pr-15 No
-                      = f.check_box :show_map
-                      %label.label-primary{:for => "community_show_map"}
+                      = f.check_box :apply_now_pynwheel_touch_and_go
+                      %label.label-primary{:for => "community_apply_now_pynwheel_touch_and_go"}
                       %span.pl-15 Yes
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    MDU
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = f.check_box :mdu
-                      %label.label-primary{:for => "community_mdu"}
-                      %span.pl-15 Yes            
-                - if current_user.is_super_admin?
-                  .form-group
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      Touchscreen App
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      .TriSea-technologies-Switch
-                        %span.pr-15 No
-                        = f.check_box :touchscreen_app
-                        %label.label-primary{:for => "community_touchscreen_app"}
-                        %span.pl-15 Yes
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Chat Control
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = f.check_box :chat_control
-                      %label.label-primary{:for => "community_chat_control"}
-                      %span.pl-15 Yes
-                .form-group#access_restrictions
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Restrict Access
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = f.check_box :restrict_access
-                      %label.label-primary{:for => "community_restrict_access"}
-                      %span.pl-15 Yes
-                / .form-group#access_restrictions
-                /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                /     Scheduler Widget
-                /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                /     .TriSea-technologies-Switch
-                /       %span.pr-15 No
-                /       = f.check_box :scheduler_widget
-                /       %label.label-primary{:for => "community_scheduler_widget"}
-                /       %span.pl-15 Yes
-                / .form-group#access_restrictions
-                /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                /     Pynwheel Widget
-                /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                /     .TriSea-technologies-Switch
-                /       %span.pr-15 No
-                /       = f.check_box :pynwheel_touch
-                /       %label.label-primary{:for => "community_pynwheel_touch"}
-                /       %span.pl-15 Yes            
-                .form-group#allowed_emails
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Allowed Emails
-                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AlloweEmails","data-content" => " "}
-                      %span#propertyDetailNameText
-                        Enter the comma separated emails, only users with these emails are allowed to visit your community in mobile app
-
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.text_area :allowed_emails, :value => @community.allowed_emails.collect(&:email).join(", ") , :id=>"emails_allowed", :class=>"form-control", rows:5, :placeholder=>"Emails"
-
-                -#- if current_user.is_super_admin?
-                -#  .form-group
-                -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                -#      Tour Setup Visible
-                -#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                -#      .TriSea-technologies-Switch
-                -#        %span.pr-15 No
-                -#        = f.check_box :tour_setup_visible
-                -#        %label.label-primary{:for => "community_tour_setup_visible"}
-                -#        %span.pl-15 Yes
-
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Inactivate
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .row
-                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                        .checkbox
-                          = f.check_box :locked
-                          %label Inactivate
-
-
-
-
-
-                -#.form-group
-                -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                -#    Equal housing opportunity logo
-                -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                -#    .row
-                -#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                -#        .checkbox
-                -#          = f.check_box :equal_housing_opportunity_logo
-                -#          %label Equal housing opportunity logo
-                -#.form-group
-                -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                -#    Handicap accessible logo
-                -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                -#    .row
-                -#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                -#        .checkbox
-                -#          = f.check_box :handicap_accessible_logo
-                -#          %label Handicap accessible logo
-
-          
-          / /.box-body
-          .box-footer
-            = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
-            = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 loader_class"
-
-
-:javascript
-  populate_multiselect()
-  $(".datepicker").datepicker({dateFormat: 'yy-mm-dd', maxDate: new Date, minDate: new Date(2007, 6, 12) });
-  $(document).ready(function(e){
-    if (!(#{current_user.welcome_prompt}))
-    {
-      $('#welcome-prompt-modal1').modal('show');
+              .form-group#access_restrictions.access_restrictions_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Restrict Access to Self Tour app for this community
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :restrict_access
+                    %label.label-primary{:for => "community_restrict_access"}
+                    %span.pl-15 Yes
+              / .form-group#access_restrictions
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /     Scheduler Widget
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = f.check_box :scheduler_widget
+              /       %label.label-primary{:for => "community_scheduler_widget"}
+              /       %span.pl-15 Yes
+              / .form-group#access_restrictions
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /     Pynwheel Widget
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     .TriSea-technologies-Switch
+              /       %span.pr-15 No
+              /       = f.check_box :pynwheel_touch
+              /       %label.label-primary{:for => "community_pynwheel_touch"}
+              /       %span.pl-15 Yes            
+              .form-group#allowed_emails.allowed_emails_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Allowed Emails
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "AlloweEmails","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enter the comma separated emails, only users with these emails are allowed to visit your community in mobile app
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_area :allowed_emails, :value => @community.allowed_emails.collect(&:email).join(", ") , :id=>"emails_allowed", :class=>"form-control", rows:5, :placeholder=>"Emails"
+              -#- if current_user.is_super_admin?
+              -#  .form-group
+              -#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#      Tour Setup Visible
+              -#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#      .TriSea-technologies-Switch
+              -#        %span.pr-15 No
+              -#        = f.check_box :tour_setup_visible
+              -#        %label.label-primary{:for => "community_tour_setup_visible"}
+              -#        %span.pl-15 Yes
+              
+              /.form-group.verification_type_field.hidden
+              /  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /    ID verification provider
+              /  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /    = select_tag :verification_type , options_for_select([ ["Authenteq","authenteq"], ["Check Point Id","check_point_id"],["Manual (Email)","email"] ], @community.tour.verification_type),:class => "form-control email_to"
+              /.form-group.email_field.hide_email
+              /  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              /    ID verification email to be sent to
+              /  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /    = text_field_tag :email,  @community.email, {:class=>"form-control", :autocomplete=>"off",:readonly=>true}
+              .form-group#inactive_row
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Inactivate
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .row
+                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                      .checkbox
+                        = f.check_box :locked
+                        %label Inactivate
+              -#.form-group
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Equal housing opportunity logo
+              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#    .row
+              -#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+              -#        .checkbox
+              -#          = f.check_box :equal_housing_opportunity_logo
+              -#          %label Equal housing opportunity logo
+              -#.form-group
+              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#    Handicap accessible logo
+              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#    .row
+              -#      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+              -#        .checkbox
+              -#          = f.check_box :handicap_accessible_logo
+              -#          %label Handicap accessible logo
+        
+        / /.box-body
+        .box-footer
+          = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
+          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 loader_class"
+  :javascript
+    var self_tour = #{@community.self_tour}
+    if(self_tour)
+      $(".verification_type_field").removeClass("hidden")
+    populate_multiselect()
+    $(".datepicker").datepicker({dateFormat: 'yy-mm-dd', maxDate: new Date, minDate: new Date(2007, 6, 12) });
+    $(document).ready(function(e){
+      if (!(#{current_user.welcome_prompt}))
+      {
+        $('#welcome-prompt-modal1').modal('show');
+      }
+    });
+    $('.billing_number').keypress(function(event) {
+    if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
+      ((event.which < 48 || event.which > 57) &&
+        (event.which != 0 && event.which != 8))) {
+      event.preventDefault();
     }
-  });
-   $('.billing_number').keypress(function(event) {
-  if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
-    ((event.which < 48 || event.which > 57) &&
-      (event.which != 0 && event.which != 8))) {
-    event.preventDefault();
-  }
-
-  var text = $(this).val();
-
-  if ((text.indexOf('.') != -1) &&
-    (text.substring(text.indexOf('.')).length > 2) &&
-    (event.which != 0 && event.which != 8) &&
-    ($(this)[0].selectionStart >= text.length - 2)) {
-    event.preventDefault();
-  }
-  });
-  
-  if ($("#community_self_tour").is(":checked") == false){
-    $("#access_restrictions").addClass("hidden")
-    $("#allowed_emails").addClass("hidden")
-  }
-
-  if ($("#community_restrict_access").is(":checked") == false){
-    $("#allowed_emails").addClass("hidden")
-  }
-
-  $('#community_self_tour').change(function() {
-    if ($("#community_self_tour").is(":checked")){
-      $("#access_restrictions").removeClass("hidden")
-      if ($("#community_restrict_access").is(":checked"))
-        $("#allowed_emails").removeClass("hidden")
+    var text = $(this).val();
+    if ((text.indexOf('.') != -1) &&
+      (text.substring(text.indexOf('.')).length > 2) &&
+      (event.which != 0 && event.which != 8) &&
+      ($(this)[0].selectionStart >= text.length - 2)) {
+      event.preventDefault();
     }
-    else{
+    });
+    
+    if ($("#community_self_tour").is(":checked") == false){
       $("#access_restrictions").addClass("hidden")
       $("#allowed_emails").addClass("hidden")
     }
-  })
 
-  $('#community_restrict_access').change(function() {
-    if ($("#community_restrict_access").is(":checked"))
-      $("#allowed_emails").removeClass("hidden")
-    else
+    if ($("#community_restrict_access").is(":checked") == false){
       $("#allowed_emails").addClass("hidden")
-  })
-
-  $(".form_class").submit(function(){
-    if ($("#community_self_tour").is(":checked") == false){
-      $("#community_restrict_access").prop('checked', false);
     }
-    if ($("#community_restrict_access").is(":checked") == false)
-      $("#emails_allowed").val('')
-  });
-  
+
+    $('#community_restrict_access').change(function() {
+      if ($("#community_restrict_access").is(":checked"))
+        $("#allowed_emails").removeClass("hidden")
+      else
+        $("#allowed_emails").addClass("hidden")
+    })
+
+    $(".form_class").submit(function(){
+      if ($("#community_self_tour").is(":checked") == false){
+        $("#community_restrict_access").prop('checked', false);
+      }
+      if ($("#community_restrict_access").is(":checked") == false)
+        $("#emails_allowed").val('')
+    })
+    $( ".email_to" ).change(function() {
+      if ($(".email_to").val() == "email") {
+        $(".email_field").removeClass("hide_email");
+        $(".email_field").removeClass("hidden");
+      }
+      else {
+        $(".email_field").addClass("hide_email");
+      }
+    });
+      if ($(".email_to").val() == "email") {
+        $(".email_field").removeClass("hide_email");
+        $(".email_field").removeClass("hidden");
+      }
+
+
+
+      // right code touch true change
+      $('#community_touchscreen_app').change(function() {
+      if ($("#community_touchscreen_app").is(":checked")){
+        $("#code_row").removeClass("hidden")
+        $("#display_types_row").removeClass("hidden")
+        $("#subscription_start_date_row").removeClass("hidden")
+        $("#show_gesture_icons").removeClass("hidden")
+        $("#powered_by_pynwheel_row").removeClass("hidden")
+        $("#billing_rate_touch").removeClass("hidden")
+        $("#apply_phnwheel_touch").removeClass("hidden")
+        $("#apply_now_pynwheel_touch_field_row").removeClass("hidden")
+
+            }
+        if (#{@community.company.name.downcase == "lincoln"}){
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").addClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+
+        }
+      if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").addClass("hidden")
+          if ($("#community_self_tour").is(":checked") == true){
+          $("#billing_rate_slef_dwelo").removeClass("hidden")
+          }
+          else {
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          }
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+
+        }
+    })
+
+    // right code touch false change
+      $('#community_touchscreen_app').change(function() {
+      if ($("#community_touchscreen_app").is(":checked") == false){
+        if ($("#community_self_tour").is(":checked") == true){
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          $(".verification_type_field").removeClass("hidden")
+          if ($(".email_to").val() == "email") {
+          $(".email_field").removeClass("hidden")
+          }
+          $("#billing_rate_touch").addClass("hidden")
+          $(".billing_rate_slef").removeClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+          if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_not_maps").addClass("hidden")
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_touch").addClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+          }
+          if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            $("#billing_rate_touch").addClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            }
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+        }
+        $("#code_row").addClass("hidden")
+        $("#display_types_row").addClass("hidden")
+        $("#subscription_start_date_row").addClass("hidden")
+        $("#show_gesture_icons").addClass("hidden")
+        $("#powered_by_pynwheel_row").addClass("hidden")
+        $("#billing_rate_touch").addClass("hidden")
+        $("#apply_phnwheel_touch").addClass("hidden")
+        $("#apply_now_pynwheel_touch_field_row").addClass("hidden")
+            }
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            $("#billing_rate_touch").addClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_touch").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            }
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+    })
+
+
+    //right code slef tour true
+      $('#community_self_tour').change(function() {
+      if ($("#community_self_tour").is(":checked")){
+          $(".verification_type_field").removeClass("hidden")
+          if ($(".email_to").val() == "email") {
+          $(".email_field").removeClass("hidden")
+          }
+        $("#billing_rate_maps").addClass("hidden")
+        $("#billing_rate_not_maps").addClass("hidden")
+          if ($("#community_touchscreen_app").is(":checked") == true){
+          $("#billing_rate_touch").removeClass("hidden")
+          }
+          else {
+          $("#billing_rate_touch").addClass("hidden")
+          }
+        $(".billing_rate_slef").removeClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        $(".billing_rate_slef_lincoln").addClass("hidden")
+        $("#apply_now_self_row").removeClass("hidden")
+        $(".access_restrictions_row").removeClass("hidden")
+        $("#show_map_row").removeClass("hidden")
+        $("#mdu_row").removeClass("hidden")
+
+        $("#chat_control_row").removeClass("hidden")
+        if ($("#access_restrictions_row").is(":checked") == true){
+          $(".allowed_emails_row").removeClass("hidden")
+        }
+        else {
+          $(".allowed_emails_row").addClass("hidden")
+        }
+        if ($("#community_touchscreen_app").is(":checked") == true){
+          $("#billing_rate_not_maps").addClass("hidden")
+          // $("#billing_rate_maps").removeClass("hidden")
+          $("#billing_rate_touch").removeClass("hidden")
+          $(".billing_rate_slef").removeClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+        }
+      }
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+            }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            }
+            else {
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            }
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+    })
+
+    // right code for self tour false
+    $('#community_self_tour').change(function() {
+      if ($("#community_self_tour").is(":checked") == false){
+      $("#billing_rate_maps").addClass("hidden")
+      $("#billing_rate_not_maps").addClass("hidden")
+      if ($("#community_touchscreen_app").is(":checked") == true){
+      $("#billing_rate_touch").removeClass("hidden")
+      }
+      else {
+      $("#billing_rate_touch").addClass("hidden")
+      }
+        $(".billing_rate_slef").addClass("hidden")
+        if ($("#community_self_tour").is(":checked") == true){
+        $("#billing_rate_slef_dwelo").removeClass("hidden")
+        }
+        else {
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        }
+        $("#apply_now_self_row").removeClass("hidden")
+        $(".access_restrictions_row").addClass("hidden")
+        $("#show_map_row").addClass("hidden")
+        $("#apply_now_self_row").addClass("hidden")
+        $(".allowed_emails_row").addClass("hidden")
+        $(".verification_type_field").addClass("hidden")
+        $(".email_field").addClass("hidden")
+
+        $("#mdu_row").addClass("hidden")
+        $("#chat_control_row").addClass("hidden")
+        if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+
+        }
+      }
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            }
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+      })
+
+
+
+    // touch onchange if both are true
+    $('#community_touchscreen_app').change(function() {
+      if ($("#community_touchscreen_app").is(":checked") == true && $("#community_self_tour").is(":checked") == true)  {
+        // $("#billing_rate_maps").removeClass("hidden")
+        $("#billing_rate_not_maps").addClass("hidden")
+        if ($("#community_touchscreen_app").is(":checked") == true){
+        $("#billing_rate_touch").removeClass("hidden")
+        }
+        else {
+        $("#billing_rate_touch").addClass("hidden")
+        }
+        $(".billing_rate_slef").removeClass("hidden")
+        if ($("#community_self_tour").is(":checked") == true){
+        $("#billing_rate_slef_dwelo").removeClass("hidden")
+        }
+        else {
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        }
+          if ($("#community_self_tour").is(":checked") == true){
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+          }
+          else {
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+        $(".verification_type_field").removeClass("hidden")
+          if ($(".email_to").val() == "email") {
+          $(".email_field").removeClass("hidden")
+          }
+        if ($("#access_restrictions_row").is(":checked") == true){
+          $(".allowed_emails_row").removeClass("hidden")
+        }
+        else {
+          $(".allowed_emails_row").addClass("hidden")
+        }
+      }
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            }
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+      })
+      // if both are true
+      if ($("#community_touchscreen_app").is(":checked") == false && $("#community_touchscreen_app").is(":checked") == false)  {
+          $("#billing_rate_maps").addClass("hidden")
+          if ($("#community_touchscreen_app").is(":checked") == true){
+          $("#billing_rate_touch").removeClass("hidden")
+          }
+          else {
+          $("#billing_rate_touch").addClass("hidden")
+          }
+          $("#billing_rate_not_maps").addClass("hidden")
+          $(".billing_rate_slef").addClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          if ($("#community_self_tour").is(":checked") == true){
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+          }
+          else {
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+          $("#apply_now_self_row").addClass("hidden")
+          $(".access_restrictions_row").addClass("hidden")
+          $("#show_map_row").addClass("hidden")
+          $("#apply_now_self_row").addClass("hidden")
+          $(".allowed_emails_row").addClass("hidden")
+          $("#chat_control_row").removeClass("hidden")
+          $("#code_row").addClass("hidden")
+          $("#display_types_row").addClass("hidden")
+          $("#subscription_start_date_row").addClass("hidden")
+          $("#show_gesture_icons").addClass("hidden")
+          $("#powered_by_pynwheel_row").addClass("hidden")
+
+          $("#apply_phnwheel_touch").addClass("hidden")
+          $("#apply_now_pynwheel_touch_field_row").addClass("hidden")
+          if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            }
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+
+        }
+
+        // for touch screen true
+    if ($("#community_touchscreen_app").is(":checked") == false){
+        $("#code_row").addClass("hidden")
+        $("#display_types_row").addClass("hidden")
+        $("#subscription_start_date_row").addClass("hidden")
+        $("#show_gesture_icons").addClass("hidden")
+        $("#powered_by_pynwheel_row").addClass("hidden")
+        $("#slef_tour_row").removeClass("hidden")
+        $("#apply_phnwheel_touch").addClass("hidden")
+        $("#apply_now_pynwheel_touch_field_row").addClass("hidden")
+        $("#chat_control_row").removeClass("hidden")
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+
+
+
+
+    if ($("#community_self_tour").is(":checked") == true){
+        $(".verification_type_field").removeClass("hidden")
+          if ($(".email_to").val() == "email") {
+          $(".email_field").removeClass("hidden")
+          }
+        $("#billing_rate_maps").addClass("hidden")
+        if ($("#community_touchscreen_app").is(":checked") == true){
+        $("#billing_rate_touch").removeClass("hidden")
+        }
+        else {
+        $("#billing_rate_touch").addClass("hidden")
+        }
+        $(".billing_rate_slef").removeClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        if ($("#community_self_tour").is(":checked") == true){
+        $(".billing_rate_slef_lincoln").removeClass("hidden")
+        }
+        else {
+        $(".billing_rate_slef_lincoln").addClass("hidden")
+        }
+        $("#billing_rate_not_maps").addClass("hidden")
+        $("#apply_now_self_row").removeClass("hidden")
+        $(".access_restrictions_row").removeClass("hidden")
+          if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $("#billing_rate_not_maps").addClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+        if ($("#access_restrictions_row").is(":checked") == true){
+          $(".allowed_emails_row").removeClass("hidden")
+        }
+        else {
+          $(".allowed_emails_row").addClass("hidden")
+        }
+        $("#show_map_row").removeClass("hidden")
+        $("#mdu_row").removeClass("hidden")
+        $("#chat_control_row").removeClass("hidden")
+      }
+      if ($("#community_self_tour").is(":checked") == false){
+        $("#billing_rate_maps").addClass("hidden")
+        $("#billing_rate_not_maps").removeClass("hidden")
+        $("#apply_now_self_row").addClass("hidden")
+        $(".verification_type_field").addClass("hidden")
+        $(".email_field").addClass("hidden")
+        $(".access_restrictions_row").addClass("hidden")
+        $(".allowed_emails_row").addClass("hidden")
+        $("#show_map_row").addClass("hidden")
+        $("#mdu_row").addClass("hidden")
+        $("#chat_control_row").addClass("hidden")
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+      }
+            $("#billing_rate_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+
+    }
+    // for touch scree true
+      if ($("#community_touchscreen_app").is(":checked") == true){
+          $("#billing_rate_maps").addClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          if ($("#community_touchscreen_app").is(":checked") == true){
+          $("#billing_rate_touch").removeClass("hidden")
+          }
+          else {
+          $("#billing_rate_touch").addClass("hidden")
+          }
+          $(".billing_rate_slef").addClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          if ($("#community_self_tour").is(":checked") == true){
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+          }
+          else {
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+          $("#code_row").removeClass("hidden")
+          $("#display_types_row").removeClass("hidden")
+          $("#subscription_start_date_row").removeClass("hidden")
+          $("#show_gesture_icons").removeClass("hidden")
+          $("#powered_by_pynwheel_row").removeClass("hidden")
+          $("#apply_now_self_row").removeClass("hidden")
+          $("#apply_phnwheel_touch").removeClass("hidden")
+
+          $("#apply_now_pynwheel_touch_field_row").removeClass("hidden")
+          $(".verification_type_field").addClass("hidden")
+          $(".email_field").addClass("hidden")
+          $("#slef_tour_row").removeClass("hidden")
+          $("#billing_type_row").addClass("hidden")
+          $("#billing_month_row").addClass("hidden")
+          $("#billing_rate").addClass("hidden")
+          $("#apply_phnwheel_touch").removeClass("hidden")
+          $("#apply_now_pynwheel_touch_field_row").removeClass("hidden")
+      if ($("#community_self_tour").is(":checked") == true){
+          $(".verification_type_field").removeClass("hidden")
+          if ($(".email_to").val() == "email") {
+            $(".email_field").removeClass("hidden")
+          }
+
+          // $("#billing_rate_maps").removeClass("hidden")
+          if ($("#community_touchscreen_app").is(":checked") == true){
+          $("#billing_rate_touch").removeClass("hidden")
+          }
+          else {
+          $("#billing_rate_touch").addClass("hidden")
+          }
+          $(".billing_rate_slef").removeClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          if ($("#community_self_tour").is(":checked") == true){
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+          }
+          else {
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+          $("#apply_now_self_row").removeClass("hidden")
+          $(".access_restrictions_row").removeClass("hidden")
+          if ($("#access_restrictions_row").is(":checked") == true){
+            $(".allowed_emails_row").removeClass("hidden")
+          }
+          else {
+            $(".allowed_emails_row").addClass("hidden")
+          }
+          $("#show_map_row").removeClass("hidden")
+          $("#mdu_row").removeClass("hidden")
+          $("#chat_control_row").removeClass("hidden")
+        }
+        if ($("#community_self_tour").is(":checked") == false){
+          $(".billing_rate_slef").addClass("hidden")
+          $("#apply_now_self_row").addClass("hidden")
+          $(".access_restrictions_row").addClass("hidden")
+          $(".allowed_emails_row").addClass("hidden")
+          $("#show_map_row").addClass("hidden")
+          $("#mdu_row").addClass("hidden")
+          $("#chat_control_row").addClass("hidden")
+          $(".verification_type_field").addClass("hidden")
+          $(".email_field").addClass("hidden")
+        }
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+      }
+    // for self true
+      if ($("#community_self_tour").is(":checked") == true){
+        $(".verification_type_field").removeClass("hidden")
+          if ($(".email_to").val() == "email") {
+          $(".email_field").removeClass("hidden")
+          }
+
+        $("#billing_rate_maps").addClass("hidden")
+        if ($("#community_touchscreen_app").is(":checked") == true){
+        $("#billing_rate_touch").removeClass("hidden")
+        }
+        else {
+        $("#billing_rate_touch").addClass("hidden")
+        }
+        $("#billing_rate_not_maps").addClass("hidden")
+        $(".billing_rate_slef").removeClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+          if ($("#community_self_tour").is(":checked") == true){
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+          }
+          else {
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+        $("#show_map_row").removeClass("hidden")
+        $("#mdu_row").removeClass("hidden")
+        $("#chat_control_row").removeClass("hidden")
+        $(".access_restrictions_row").removeClass("hidden")
+        $("#slef_tour_row").removeClass("hidden")
+        $("#billing_type_row").addClass("hidden")
+        $("#billing_month_row").addClass("hidden")
+        $("#billing_rate").addClass("hidden")
+        $("#apply_phnwheel_touch").addClass("hidden")
+        $("#apply_now_pynwheel_touch_field_row").addClass("hidden")
+        $("#apply_now_self_row").removeClass("hidden")
+        if ($("#access_restrictions_row").is(":checked") == true){
+          $(".allowed_emails_row").removeClass("hidden")
+        }
+        else {
+          $(".allowed_emails_row").addClass("hidden")
+        }
+        if ($("#community_touchscreen_app").is(":checked") == true){
+          $("#code_row").removeClass("hidden")
+          if ($("#community_self_tour").is(":checked") == true){
+          $(".billing_rate_slef_lincoln").removeClass("hidden")
+          }
+          else {
+          $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+          // $("#billing_rate_maps").removeClass("hidden")
+          $("#billing_rate_not_maps").addClass("hidden")
+          if ($("#community_touchscreen_app").is(":checked") == true){
+          $("#billing_rate_touch").removeClass("hidden")
+          }
+          else {
+          $("#billing_rate_touch").addClass("hidden")
+          }
+          $(".billing_rate_slef").removeClass("hidden")
+          $("#billing_rate_slef_dwelo").addClass("hidden")
+          $("#display_types_row").removeClass("hidden")
+          $("#subscription_start_date_row").removeClass("hidden")
+          $("#show_gesture_icons").removeClass("hidden")
+          $("#powered_by_pynwheel_row").removeClass("hidden")
+          $("#apply_now_self_row").removeClass("hidden")
+          $("#apply_phnwheel_touch").removeClass("hidden")
+          $("#apply_now_pynwheel_touch_field_row").removeClass("hidden")
+        }
+        else{
+          $("#code_row").addClass("hidden")
+          $("#display_types_row").addClass("hidden")
+          $("#subscription_start_date_row").addClass("hidden")
+          $("#show_gesture_icons").addClass("hidden")
+          $("#powered_by_pynwheel_row").addClass("hidden")
+          $("#apply_now_self_row").removeClass("hidden")
+        }
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+          }
+    }
+    if ($("#community_self_tour").is(":checked") == true) {
+      if ($("#community_restrict_access").is(":checked") == true){
+          $(".allowed_emails_row").removeClass("hidden")
+      }
+      $(".verification_type_field").removeClass("hidden")
+          if ($(".email_to").val() == "email") {
+          $(".email_field").removeClass("hidden")
+          }
+    }
+        // on change if both are false
+      $('#community_touchscreen_app').change(function() {
+      if ($("#community_touchscreen_app").is(":checked") == false && $("#community_self_tour").is(":checked") == false)  {
+        $("#billing_rate_maps").addClass("hidden")
+        $("#billing_rate_not_maps").removeClass("hidden")
+        if ($("#community_touchscreen_app").is(":checked") == true){
+        $("#billing_rate_touch").removeClass("hidden")
+        }
+        else {
+        $("#billing_rate_touch").addClass("hidden")
+        }
+        $(".billing_rate_slef").addClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        $(".billing_rate_slef_lincoln").addClass("hidden")
+
+        $(".verification_type_field").addClass("hidden")
+        $(".email_field").addClass("hidden")
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+            }
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            if ($("#community_self_tour").is(":checked") == true){
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            $("#billing_rate_not_maps").removeClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+
+      }
+      })
+      $('#community_self_tour').change(function() {
+      if ($("#community_touchscreen_app").is(":checked") == false && $("#community_self_tour").is(":checked") == false) {
+        $("#billing_rate_maps").addClass("hidden")
+        $("#billing_rate_not_maps").removeClass("hidden")
+        if ($("#community_touchscreen_app").is(":checked") == true){
+        $("#billing_rate_touch").removeClass("hidden")
+        }
+        else {
+        $("#billing_rate_touch").addClass("hidden")
+        }
+        $(".billing_rate_slef").addClass("hidden")
+        $("#billing_rate_slef_dwelo").addClass("hidden")
+        $(".billing_rate_slef_lincoln").addClass("hidden")
+
+        $(".verification_type_field").addClass("hidden")
+        $(".email_field").addClass("hidden")
+        if (#{@community.company.name.downcase == "lincoln"}){
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            $("#billing_rate_not_maps").removeClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $(".billing_rate_slef_lincoln").removeClass("hidden")
+            }
+            else {
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+            }
+
+          }
+        if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+            $("#billing_rate_maps").addClass("hidden")
+            $("#billing_rate_not_maps").addClass("hidden")
+            if ($("#community_touchscreen_app").is(":checked") == true){
+            $("#billing_rate_touch").removeClass("hidden")
+            }
+            else {
+            $("#billing_rate_touch").addClass("hidden")
+            }
+            $(".billing_rate_slef").addClass("hidden")
+            if ($("#community_self_tour").is(":checked") == true){
+            $("#billing_rate_slef_dwelo").removeClass("hidden")
+            $(".billing_rate_slef").addClass("hidden")
+            }
+            else {
+            $("#billing_rate_slef_dwelo").addClass("hidden")
+            $("#billing_rate_not_maps").removeClass("hidden")
+            }
+            $(".billing_rate_slef_lincoln").addClass("hidden")
+
+          }
+      }
+      })
+      $('#community_touchscreen_app').change(function() {
+      if ($("#community_touchscreen_app").is(":checked") == true) {
+      $("#billing_rate_not_maps").addClass("hidden")
+
+      }
+      })
+      if ($("#community_touchscreen_app").is(":checked") == false && $("#community_self_tour").is(":checked") == false)  {
+          if (#{@community.company.name.downcase == "lincoln"}){
+              $("#billing_rate_maps").addClass("hidden")
+              $("#billing_rate_not_maps").removeClass("hidden")
+              $("#billing_rate_touch").addClass("hidden")
+              $(".billing_rate_slef").addClass("hidden")
+              $("#billing_rate_slef_dwelo").addClass("hidden")
+              $(".billing_rate_slef_lincoln").addClass("hidden")
+
+            }
+          if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+              $("#billing_rate_maps").addClass("hidden")
+              $("#billing_rate_not_maps").removeClass("hidden")
+              $("#billing_rate_touch").addClass("hidden")
+              $(".billing_rate_slef").addClass("hidden")
+              $("#billing_rate_slef_dwelo").addClass("hidden")
+              $(".billing_rate_slef_lincoln").addClass("hidden")
+
+            }
+
+      }
+      $('#community_self_tour').change(function() {
+      if ($("#community_self_tour").is(":checked")){
+      if (#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"}) {
+        $(".billing_rate_slef").addClass("hidden")
+        $("#billing_rate_slef_dwelo").removeClass("hidden")
+      }
+      }
+      })
+

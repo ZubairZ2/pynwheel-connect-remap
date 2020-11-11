@@ -14,7 +14,7 @@ Rails.application.routes.draw do
     # member do
     # end
   end
-
+  post :map_dwelo_locks, to: 'dwelos#map_dwelo_locks'
   # selfie matching
   get '/id_selfie_matching/:tour_user_id', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
@@ -78,7 +78,7 @@ Rails.application.routes.draw do
       get :web_cam_test
     end
 
-
+    resources :building_starting_points 
     resources :remote_locks do
       collection do
         get :authorization_code
@@ -86,7 +86,19 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :edgestate_accounts
+    resources :edgestate_accounts do
+      collection do
+        get :test_edgestate_connection
+        post :import_edgestate_locks
+        post :map_edgestate_locks
+      end
+    end
+
+    resources :dwelos do
+      collection do
+        get :test_dwelo_connection
+      end
+    end
 
     post :save_gallery_settings
     post :save_tour_settings
@@ -132,6 +144,7 @@ Rails.application.routes.draw do
         get :show_floorplan_image_in_modal
         put :crop_image
         get :show_floorplan_secondary_image_in_modal
+        delete :remove_pri_scnd_image
         put :crop_secondary_image
       end
       collection do
@@ -139,6 +152,7 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
+    
     resources :elevators do
       resources :elevator_galleries
       # do
@@ -167,6 +181,8 @@ Rails.application.routes.draw do
         post :load_remotelock_data
         post :clear_locks
         post :extract_floors
+        get :show_amenity_image_in_modal
+        put :crop_amenity_image
       end
     end
     resources :tour_users do
@@ -208,6 +224,12 @@ Rails.application.routes.draw do
         end
       end
       member do
+        get :show_unit_image_in_modal
+        put :crop_unit_image
+        get :show_unit_secondary_image_in_modal
+        put :crop_unit_secondary_image
+      end
+      member do
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
         delete :remove_plot
@@ -220,6 +242,7 @@ Rails.application.routes.draw do
       end
       collection do
         post :set_floor
+        post :set_building
         post :set_available_date
         post :set_available
         post :set_manual_override
@@ -286,10 +309,16 @@ Rails.application.routes.draw do
         end
       end
       collection do
+        get :settings
         post :save_starting_point
+        get :select_status
+        post :select_status
+        post :sort_buildings
         post :sort_stops
         post :display_stop
         post :save_tour_settings
+        get :building_starting_point
+        post :update_building_starting_point
         get :check_point
         get :check_point_id_success
         post :save_check_point_response
@@ -375,6 +404,9 @@ Rails.application.routes.draw do
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
+      put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
+      post :save_data, to: 'dwelo_devices#load_data'
+      post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
       resources :communities, only: :index do
         member do
           get :data
@@ -422,7 +454,8 @@ Rails.application.routes.draw do
 
       # 
       post :save_tour_history, to: 'tour_histories#save_tour_history'
-      get :get_tour_history, to: 'tour_histories#get_tour_history'
+      post :alerts_during_tour, to: 'tour_histories#alerts_during_tour'
+      get :get_tour_history, to: 'tour_histories#get_tour_history' 
       # ID/Selfie get status
       get :get_id_selfie_mismatch_status, to: 'tours#get_id_selfie_mismatch'
       post :change_id_selfie_mismatch_status, to: 'tour_histories#change_id_selfie_status'

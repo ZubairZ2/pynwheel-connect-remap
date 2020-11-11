@@ -82,6 +82,7 @@ class Community < ApplicationRecord
   has_one :favorite_stop, dependent: :destroy
   has_one :sitemap, dependent: :destroy
   has_one :favorite_setting, dependent: :destroy
+  has_one :dwelo, dependent: :destroy
   has_one :neighborhood, dependent: :destroy
   has_many :galleries, dependent: :destroy
   has_many :gallery_images, -> { order(:sort) }, dependent: :destroy
@@ -94,8 +95,11 @@ class Community < ApplicationRecord
   has_many :igloo_guests, dependent: :destroy
   has_many :opening_hours, dependent: :destroy
   has_many :schedual_tours, dependent: :destroy
+  has_many :building_starting_point, dependent: :destroy
+  has_many :logged_in_users, dependent: :destroy
   has_one :tour, dependent: :destroy
   has_one :edge_state, dependent: :destroy
+  has_one :dwelo, dependent: :destroy
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
@@ -108,7 +112,7 @@ class Community < ApplicationRecord
   after_create :create_default_gallery
   after_create :create_sms_email_content
   validate :validate_page_position
-
+  attr_accessor :default_community_id
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true
 

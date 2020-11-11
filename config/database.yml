@@ -1,9 +1,9 @@
 connection: &connection
   adapter: postgresql
   host: localhost
-  username: umer
-  password: 9999
-  pool: 5
+  username: postgres
+  password: 123
+  pool: 10
   timeout: 5000
   min_messages: warning
 development:

@@ -25,8 +25,13 @@ class FloorplanAmenitiesController < ApplicationController
   end
 
   def create
-    @floorplan.amenities.create(image: params[:src],name: params[:name])
+    amenity = @floorplan.amenities.create(image: params[:src], name: params[:name])
+    amenity.update!(floorplan_amenity_id: amenity.id)
     @amenities = @floorplan.amenities.order(id: :desc)
+    floorplan_units = Unit.all.where(floorplan_id: @floorplan.provider_floorplan_id) rescue nil
+    if floorplan_units.present?
+      FloorplanAmenityImagesJob.perform_async @floorplan,params[:src],params[:name],amenity, params[:community_id]
+    end
   end
 
   def update
@@ -45,6 +50,10 @@ class FloorplanAmenitiesController < ApplicationController
   def destroy
     @amenity = @floorplan.amenities.find (params[:id])
     if @amenity.destroy
+      floorplan_units = Unit.all.where(floorplan_id: @floorplan.provider_floorplan_id) rescue nil
+      if floorplan_units.present?
+        DeleteFloorplanAmenityImagesJob.perform_async @floorplan,@amenity, params[:community_id]
+      end
       redirect_to community_floorplan_amenities_path(@community,@floorplan), notice: "Amenity deleted successfully"
     else
       redirect_to community_floorplan_amenities_path(@community,@floorplan), error: @amenity.errors.full_messages.join(',')
@@ -56,6 +65,9 @@ class FloorplanAmenitiesController < ApplicationController
     @amenity.x_plot = params[:x_plot]
     @amenity.y_plot = params[:y_plot]
     if @amenity.save(validate: false)
+      @plot_amenity_for_units = Amenity.where(floorplan_amenity_id:  @amenity.id)
+      plot_amenity_on_unit = "True"
+      FloorplanAmenityImagesJob.perform_async(@plot_amenity_for_units, plot_amenity_on_unit ,params[:x_plot],params[:y_plot], nil)
       render json: {amenity: @amenity}, status: 200
     else
       render json: {}, status: 404

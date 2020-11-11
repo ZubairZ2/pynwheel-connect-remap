@@ -108,7 +108,7 @@ class SitemapsController < ApplicationController
 
   def save_sitemap_image
     image = MiniMagick::Image.open(params[:file].path)
-    if image.width < 1000 && image.height < 700
+    if image.width < 1000 && image.height < 700 && image.type != "SVG"
       flash[:error] = "Too small property map image"
       redirect_to community_sitemaps_path(@community)
     else

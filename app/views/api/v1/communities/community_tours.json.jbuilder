@@ -38,12 +38,15 @@ json.tours @tours do |tour|
   # end
 
   stops_arr = []
+  add_start = true
   if @community.is_sitemap
     stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
   else
     @building_list << "" if @building_list == []
     @building_list.each do |building|
-      @floor_list.each do |floor|
+      @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
+      add_start = false
+      @floor_list_loop.each do |floor|
         if @community.tour.sort_hash[building + ","+ floor.to_s].present?
           @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
             if (s_id.present?)

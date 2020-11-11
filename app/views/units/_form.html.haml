@@ -49,11 +49,11 @@
         = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"20"
         %small Building (Manual Override Required)
       - unless @community.is_sitemap
-        - if f.object.x_plot.present? and f.object.y_plot.present? and (f.object.x_plot + f.object.y_plot) > 0
+        - if f.object.floorplate.present?
           .col-sm-6.col-lg-4.col-md-4.col-xs-12
             = f.select :floor, f.object.floorplate.floors,{}, :class=>"form-control validate[custom[floor]]"
             %small Floor (Manual Override Required)
-        - else  
+        - else
           .col-sm-6.col-lg-4.col-md-4.col-xs-12
             = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
             %small Floor (Manual Override Required)
@@ -85,14 +85,21 @@
     %span Specify virtual tour button label here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label",:maxlength=>"10"
-
+- if @community.dwelo.present? && @community.locks_provider == "Dwelo"
+  .form-group.hide_on_new
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Dwelo locks
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      %select.form-control#dwelo_remote_lock{name: "dwelo_remote_lock"}
+      %button#dwelo_lock_update_btn.btn.btn-primary.update-lock.hidden{type: "button"}
+        %a#a-dwelo-lock.btn-text-color{href: "#"} Update selected lock
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Virtual Tour URL
     %span Specify URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
-- if EdgeState.find_by(community_id: @community.id).present?
+- if @community.locks_provider == "EdgeState" and EdgeState.find_by(community_id: @community.id).present?
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Remote Lock
@@ -109,7 +116,6 @@
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Details
-      
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
@@ -120,7 +126,6 @@
       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
         %span#propertyDetailNameText
           This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
-
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
       %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
@@ -174,16 +179,25 @@
       .slide-image
         .image-box.video-box
           .images.height-200
-            %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Primary Image"}
-              = image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
+            - rn =  rand(9999999999999999999999999)
+            %a.preview-image{:href=>f.object.image.present? ? (f.object.image.url + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Primary Image"}
+              = image_tag f.object.image.present? ? (f.object.image.url + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
           = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.image.present? ? ((f.object.image.width < 300 && f.object.image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
         - if f.object.image.present?
           .icons
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=primary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-              %i.fa.fa-close{ style:"margin-right: 50PX;"}
-      %span.btn.btn-default.black-button.btn-sm.btn-file
-        Select Image
-        = f.file_field :image
+              %i.fa.fa-close
+        .row
+          .col-lg-6
+            %span.btn.btn-default.black-button.btn-sm.btn-file
+              Upload a new image
+              = f.file_field :image
+          .col-lg-6
+            - if  f.object.image.present? && f.object.image.content_type != 'image/svg+xml'
+              .icon
+                = link_to show_unit_image_in_modal_community_unit_path(), remote: true do
+                  %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                    Crop
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{style: "margin-top: 50px;"}
@@ -200,16 +214,25 @@
       .slide-image
         .image-box.video-box
           .images.height-200
-            %a.preview-image{:href=>f.object.secondary_image.present? ? f.object.secondary_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
-              = image_tag f.object.secondary_image.present? ? f.object.secondary_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
+            - rn =  rand(9999999999999999999999999)
+            %a.preview-image{:href=>f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
+              = image_tag f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
           = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
         - if f.object.secondary_image.present?
           .icons
             %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=secondary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-              %i.fa.fa-close{ style:"margin-right: 50PX;"}
-      %span.btn.btn-default.black-button.btn-sm.btn-file
-        Select Image
-        = f.file_field :secondary_image
+              %i.fa.fa-close
+        .row
+          .col-lg-6
+            %span.btn.btn-default.black-button.btn-sm.btn-file
+              Upload a new image
+              = f.file_field :secondary_image
+          .col-lg-6
+            - if  f.object.secondary_image.present? && f.object.secondary_image.content_type != 'image/svg+xml'
+              .icon
+                = link_to show_unit_secondary_image_in_modal_community_unit_path(), remote: true do
+                  %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                    crop
 :javascript
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){
@@ -249,4 +272,10 @@
 
       });
   })
+  if (localStorage.getItem("floorplanCropped") == "1")
+  {
+    localStorage.setItem("floorplanCropped", "0");
+    location.reload(true);
+  }
+
 

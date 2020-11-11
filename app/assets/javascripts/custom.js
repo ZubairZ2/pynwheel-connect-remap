@@ -135,12 +135,7 @@ $("#company_logo,#community_logo,#user_avatar,#amenity_image,#unit_image").chang
 });
 
 
-$(".welcome_prompt_btn1").on("click",function(e){
-    $('#welcome-prompt-modal3').modal('show');
-});
-$(".welcome_prompt_btn3").on("click",function(e){
-    $('#welcome-prompt-modal2').modal('show');
-});
+
 
 
 $(".import_data").on("click",function(e){
@@ -164,7 +159,7 @@ var holder = document.getElementById('holder');
                 files = e.dataTransfer.files;
                 if (files.length > 0) {
                     for (var i = 0; i < files.length; i++) {
-                        if (files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg") {
+                        if (files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg" || files[i].type == "image/svg" || files[i].type == "image/svg+xml") {
                             readImageSrc(files[i]);
                         }
                         else {
@@ -318,7 +313,7 @@ function drop(ev) {
 function readURL(input) {
 
     if (input.files && input.files[0]) {
-        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"  || input.files[0].type == "image/svg" || input.files[0].type == "image/svg+xml"){
                 var reader = new FileReader();
 
                 reader.onload = function (e) {
@@ -340,7 +335,7 @@ function readURL(input) {
 function readSecondaryURL(input) {
 
     if (input.files && input.files[0]) {
-        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"){
+        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg"  || input.files[0].type == "image/svg" || input.files[0].type == "image/svg+xml"){
 
                 var reader = new FileReader();
 
@@ -568,6 +563,7 @@ function showYardiRentCafeFields(){
     $('#p_code').show();
     //$('#community_credential_attributes_p_code').addClass("validate[required]");
     $('#data-connection-buttons').show();
+    $('#limit_result_field').show();
     $('#yardirentcafe_option').show();
     $('#data-replace-update-buttons').hide();
 }
@@ -581,6 +577,7 @@ function showRealPageSVCFields(){
     //$('#community_credential_attributes_site_id').addClass("validate[required]"); 
     $('#data-connection-buttons').show();
     $('#data-replace-update-buttons').hide();
+    $('#limit_result_field').show();
 
     $('#realpage_store_pricing_button').show();
     $('#realpage_show_pricing_button').show();

@@ -108,25 +108,30 @@
       Images will appear at a size of 325 x 300 px when fully expanded. Please note that images that are too small may appear pixelated.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
-    .image-box.video-box
-      .images.height-200
-        - rn =  rand(9999999999999999999999999)
-        %a.preview-image{:href=>f.object.image.present? ? (f.object.image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floor Plan Image"}
-          = image_tag f.object.image.present? ? (f.object.image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"100%",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;  min-height: 190px; min-width: 270px;"
-      = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.image.present? ? ((f.object.image.width < 300 && f.object.image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-
-    .row
-      .col-lg-2
-        %span.btn.btn-default.black-button.btn-sm.btn-file
-          Select Image
-          = f.file_field :image
-      .col-lg-1
-        - if  f.object.image.present?
-          .icon
-            = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
-              %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-                Crop
+    .col-lg-5.col-md-5.col-sm-6.col-xs-6
+      .slide-image
+        .image-box.video-box
+          .image-box.video-box
+            .images.height-200
+              - rn =  rand(9999999999999999999999999)
+              %a.preview-image{:href=>f.object.image.present? ? (f.object.image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floor Plan Image"}
+                = image_tag f.object.image.present? ? (f.object.image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"100%",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;  min-height: 190px; min-width: 270px;"
+            = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.image.present? ? ((f.object.image.width < 300 && f.object.image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+          - if f.object.image.present?
+            .icons
+              %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/floorplans/#{@floorplan.id}/remove_pri_scnd_image?image=primary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                %i.fa.fa-close
+          .row
+            .col-lg-6
+              %span.btn.btn-default.black-button.btn-sm.btn-file
+                Upload a new image
+                = f.file_field :image
+            .col-lg-6
+              - if  f.object.image.present? && f.object.image.content_type != 'image/svg+xml'
+                .icon
+                  = link_to show_floorplan_image_in_modal_community_floorplan_path(), remote: true do
+                    %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                      Crop
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Secondary Image
@@ -142,24 +147,29 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     -#.select-img.mb-20
     -#  .select-img-img
-    .image-box.video-box
-      .images.height-200
-        - rn =  rand(9999999999999999999999999)
-        %a.preview-image{:href=>f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
-          = image_tag f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px; min-height: 190px; min-width: 270px;"
-      = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-
-    .row
-      .col-lg-2
-        %span.btn.btn-default.black-button.btn-sm.btn-file
-          Select Image
-          = f.file_field :secondary_image
-      - if  f.object.secondary_image.present?
-        .col-lg-1
-          .icon
-            = link_to show_floorplan_secondary_image_in_modal_community_floorplan_path(), remote: true do
-              %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-                Crop
+    .col-lg-5.col-md-5.col-sm-6.col-xs-6
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            - rn =  rand(9999999999999999999999999)
+            %a.preview-image{:href=>f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
+              = image_tag f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px; min-height: 190px; min-width: 270px;"
+          = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+        - if f.object.secondary_image.present?
+          .icons
+            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/floorplans/#{@floorplan.id}/remove_pri_scnd_image?image=secondary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+              %i.fa.fa-close
+        .row
+          .col-lg-6
+            %span.btn.btn-default.black-button.btn-sm.btn-file
+              Upload a new image
+              = f.file_field :secondary_image
+          - if  f.object.secondary_image.present? && f.object.secondary_image.content_type != 'image/svg+xml'
+            .col-lg-6
+              .icon
+                = link_to show_floorplan_secondary_image_in_modal_community_floorplan_path(), remote: true do
+                  %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                    Crop
 
 :javascript
   $(document).ready(function(){

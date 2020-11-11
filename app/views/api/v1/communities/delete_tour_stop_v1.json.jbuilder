@@ -3,6 +3,11 @@ description_limit = 90
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
+  if @dwelo_guest_id.present?
+    json.dwelo_guest_id @dwelo_guest_id
+  else
+    json.dwelo_guest_id ""
+  end
 
   json.id tour.id
   require 'securerandom'
@@ -16,23 +21,20 @@ json.tours @tours do |tour|
   json.tour_setting do
     json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
     json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
-    json.show_camera_button @in_visiting_hours.present? ? @community.show_camera_button : false
+    json.show_camera_button (@in_visiting_hours == true and @is_tour_virtual == false) ? @community.show_camera_button : false
     json.dotted_line_color @community.tour.dotted_line_color rescue "green"
     json.visual_id_verification tour.visual_id_verification
-    if @community.is_chat_login
-      json.chat_control @community.chat_control
-    else
-      json.chat_control false
-    end
+    json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
+    json.chat_control (@community.chat_control and @community.is_chat_login) ? @community.chat_control : false
     json.show_map @community.show_map
     json.mdu @community.mdu
-
   end
   plates_name = {}
 
   current_floor = nil
   current_building = nil
   next_floor = nil
+  last_stop_id = nil
    unit_dlt_ids = []
   # if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.nil? ? true : tour.tour_setting.show_desired_bedroom) : false)
   #   unit_dlt_ids = @community.tour.tour_stops.map{|x| x.id if x.stop_type == "unit" && ((Unit.find_by_id x.stop_id).floorplan.bedrooms.to_i != @tour_user.desired_bedroom.to_i rescue false)}.compact
@@ -74,6 +76,11 @@ json.tours @tours do |tour|
     end
     stops_arr = []  
     add_start = true
+    first_bsp = false
+    add_bsp_entry = true
+    add_bsp_exit = true
+    have_stop_in_building = false
+    first_floor_elev = nil
 
     if @community.is_sitemap
 
@@ -84,26 +91,71 @@ json.tours @tours do |tour|
     else
       temp_max_floor = nil
       min_floor = @floor_list.include?(1) ? 1 : @floor_list[0]
-      
       @building_list << "" if @building_list == []
       @building_list.each do |building|
-        
-        @floor_list.each do |floor|
+        @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
+        @floor_list_loop.each do |floor|
           begin
-            
+            if add_bsp_entry
+              begin
+                bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
+                bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
+                bsp_stop.status = "Entry"
+                bsp_stop.name = "Building #{building}"
+                bsp_stop.building = bsp.building
+                bsp_stop.floor = bsp.floor
+              rescue => ex
+              end
+            end
             if add_start
               stops_arr << tour #------- Adding starting point
               add_start = false
               
-              if tour.starting_floor.present? and tour.starting_floor != min_floor
-                first_floor_elev = @community.tour.sort_hash[(tour.building.present? ? tour.building : building) + ","+ tour.starting_floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first
+              # if bsp.present? and bsp.floor != tour.starting_floor
+                
+              #   first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
+              #   first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
+              #   # first_floor_elev = @community.tour.sort_hash[(tour.building.present? ? tour.building : building) + ","+ tour.starting_floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
+              #   if first_floor_elev.present?
+              #     first_floor_elev.floor = floor
+              #     first_floor_elev.building = building
+              #     stops_arr << first_floor_elev 
+              #   end
+              # end
+
+              # begin
+              #   if tour.starting_floor.present? and tour.starting_floor != min_floor #and !bsp.present?
+
+              #     first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
+              #     first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
+              #     if first_floor_elev.present?
+              #       first_floor_elev.floor = floor
+              #       first_floor_elev.building = building
+              #       stops_arr << first_floor_elev 
+              #     end
+              #   end
+              # rescue => ex
+              # end
+            end
+            
+            if first_bsp && add_bsp_entry
+              stops_arr << bsp_stop
+              add_bsp_entry  = false
+            end
+            begin
+              if bsp.present? and bsp.floor != min_floor and first_bsp
+                first_floor_elev = @all_elevators.map{|x| x[0] if ( x[2] == bsp.building ) and  (x[1].include? bsp.floor) }.compact.first
+                first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
+                # first_floor_elev = @community.tour.sort_hash[bsp.building + ","+ bsp.floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
                 if first_floor_elev.present?
                   first_floor_elev.floor = floor
                   first_floor_elev.building = building
                   stops_arr << first_floor_elev 
                 end
               end
+            rescue => ex
             end
+            
 
             if @community.tour.sort_hash[building + ","+ floor.to_s].present?
 
@@ -119,7 +171,6 @@ json.tours @tours do |tour|
               end
               temp_max_floor = floor
               @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
-                
                 # amenity_hit = true
                 # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
                 # if ts_ck.present?  && ts_ck.stop_type == "amenity"
@@ -132,18 +183,59 @@ json.tours @tours do |tour|
                   add_stop.building = building
                   
                   next if add_start and ((add_stop.stop_type == "unit") or (add_stop.stop_type == "amenity"))
-
+                  
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                  stops_arr << add_stop if (add_stop.display_stop && add_mdu)
+                  if (add_stop.display_stop && add_mdu) and !(@community.deleted_ids.include? add_stop.id)
+                    stops_arr << add_stop 
+                    if add_stop.stop_type == "amenity" || add_stop.stop_type == "unit"
+                      last_stop_id = add_stop.id
+                      have_stop_in_building = true
+                      
+                      if first_floor_elev.present? && tour.starting_floor.to_i == add_stop.floor
+                        stops_arr = stops_arr - [first_floor_elev]
+                        first_floor_elev = nil
+                      end
+                    end
+                  end
                 end
                 # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
               end
               
             end
-          rescue
+          rescue => ex
+            puts ex
           end
         end
-      
+        begin
+          
+          if stops_arr.map{|x| x.stop_type if (x.is_a? TourStop and x.building == building and x.stop_type != "elevator" and x.stop_type != "building_starting_point")}.uniq.compact == []
+            stops_arr = stops_arr[0..stops_arr.size-2]
+          end
+          
+          add_bsp_entry = true
+          unless have_stop_in_building
+              bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
+              bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
+              stops_arr = stops_arr - [bsp_stop]
+              
+          else
+            
+          end
+        rescue => ex
+        end
+        first_bsp = true if (first_bsp or have_stop_in_building)
+        have_stop_in_building = false
+        
+          # begin
+            
+          #   bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
+          #   bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
+          #   bsp_stop.status = "Exit"
+          #   bsp_stop.name = "Building Exit"
+          #   stops_arr << bsp_stop
+          #   add_bsp_entry = true
+          # rescue => ex
+          # end
       end
       stop_count = stops_arr.compact.count
 
@@ -164,7 +256,7 @@ json.tours @tours do |tour|
       # rescue
       # end
       
-      last_stop = (stops_arr.compact[stops_arr.compact.size - 1].is_a? Tour) ? stops_arr.compact[stops_arr.compact.size - 2] : stops_arr.compact[stops_arr.compact.size - 1]
+      last_stop = (stops_arr.compact[stops_arr.compact.size - 1].is_a? Tour) ? stops_arr.compact[stops_arr.compact.size - 2] : stops_arr.compact[stops_arr.compact.size - 1] 
 
       sto = last_stop.stop_type.classify.constantize.find_by_id(last_stop.stop_id)
       max_floor = sto.floors.max rescue (max_floor = temp_max_floor)
@@ -202,6 +294,7 @@ json.tours @tours do |tour|
     end
 
 
+
     stops = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
     # all_stop_ids = stops_arr.compact.pluck(:id)
     
@@ -235,15 +328,17 @@ json.tours @tours do |tour|
     if @community.is_sitemap
 
       stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      stops_arr = stops_arr.map{|x| x if !(@community.deleted_ids.include? x.id)}.compact
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
       last_stop_desc = stops_arr.compact[stop_count - 1]
     else
       temp_max_floor = nil
       min_floor = @floor_list[0]
-      @building_list == []
+      @building_list << "" if @building_list == []
       @building_list.each do |building|
-        @floor_list.each do |floor|
+        @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
+        @floor_list_loop.each do |floor|
 
           begin
             # if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.nil? ? true : tour.tour_setting.show_desired_bedroom) : false)
@@ -275,7 +370,10 @@ json.tours @tours do |tour|
 
                 
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                  stops_arr << add_stop if (add_stop.display_stop && add_mdu)
+                  if (add_stop.display_stop && add_mdu) and !(@community.deleted_ids.include? add_stop.id)
+                    stops_arr << add_stop 
+                    last_stop_id = add_stop.id if add_stop.stop_type == "amenity" || add_stop.stop_type == "unit"
+                  end
                 end
                 # stops_arr << (TourStop.find_by_id(s_id)) if (s_id.present? )
               end
@@ -309,6 +407,7 @@ json.tours @tours do |tour|
     json.navigation_title "First Stop: " + new_stops_arr[0].name if new_stops_arr[0].present?
   end
   skip_1 = false 
+  skip_1_path = false
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
   json.tour_stop new_stops_arr.compact do |stop|
     
@@ -318,6 +417,10 @@ json.tours @tours do |tour|
         counter += 1
         skip_1 = false
         next
+      end
+      
+      if (stop.is_a? TourStop) and (new_stops_arr[counter + 2].is_a? TourStop) and (stop.building != new_stops_arr[counter + 2].building) and (new_stops_arr[counter + 1].stop_type == "elevator") and (stop.floor == new_stops_arr[counter + 2].floor) 
+        skip_1 = true
       end
       skip_bool = (new_stops_arr[counter + 2].is_a? Tour) ? (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].starting_floor) : (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].floor)
       if skip_bool
@@ -354,7 +457,7 @@ json.tours @tours do |tour|
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
     elsif skip_1 and new_stops_arr[counter + 2].is_a? Tour
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
-    elsif  counter == second_last_count_num
+    elsif  new_stops_arr.compact[counter + 1].present? and new_stops_arr.compact[counter + 1].id == last_stop_id
       navigation_title = @community.show_map ? ("Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
       hit = false
     elsif last_stop_desc.present? && last_stop_desc.id == stop.id
@@ -368,6 +471,7 @@ json.tours @tours do |tour|
     elsif last_last_count_num == counter
       navigation_title = "Your tour is completed! Now let's go back to where you started."
     end
+
     begin
       if (navigation_title.include? "elevator") || (navigation_title.include? "Elevator") && !counter == 0
         navigation_title = "Next Stop: Elevator"
@@ -425,23 +529,33 @@ json.tours @tours do |tour|
       next
     end
     begin
-      if @in_visiting_hours.present?
-        rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
-        if rml.present?
-          if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
-            igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
-            if igloo_guest.nil? 
-              pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
-              json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+      if @in_visiting_hours and !@is_tour_virtual
+        if @community.locks_provider == "EdgeState"
+          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
+          if rml.present?
+            if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
+              igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
+              if igloo_guest.nil? 
+                pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
+                json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+              else
+                json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+              end
             else
-              json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+              json.guest_pin ''
             end
           else
-            json.guest_pin ''
+            _stop_ = Unit.find_by_id stop.stop_id
+            if _stop_.present? and _stop_.access_code.present?
+              json.guest_pin "Use code " + _stop_.access_code + " to enter."
+            else
+              json.guest_pin ''
+            end
           end
         else
           _stop_ = Unit.find_by_id stop.stop_id
-          if _stop_.present? and _stop_.access_code.present?
+          unit_dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).first rescue nil
+          if _stop_.present? and _stop_.access_code.present? and unit_dwelo_lock.nil?
             json.guest_pin "Use code " + _stop_.access_code + " to enter."
           else
             json.guest_pin ''
@@ -479,6 +593,12 @@ json.tours @tours do |tour|
         images << img
       end
       current_floor = unit.floor
+      unit_dwelo_lock = unit.remote_locks.where.not(dwelo_id: nil).first rescue nil
+      if @in_visiting_hours and !@is_tour_virtual and @community.locks_provider == "Dwelo" and unit_dwelo_lock.present?
+        json.unit_dwelo_lock_id unit_dwelo_lock.device_id
+      else
+        json.unit_dwelo_lock_id ""
+      end
       json.image_list images
       json.name (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
@@ -551,7 +671,7 @@ json.tours @tours do |tour|
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
-          json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
+          json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
           json.stop_description unit_amenity.description
           json.directional_text unit_amenity.directional_text
           json.video_link_button_label unit.virtual_tour_button_label
@@ -583,7 +703,7 @@ json.tours @tours do |tour|
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
-          json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
+          json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
           unit_amenity_stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
           if unit_amenity_stop_description.size < description_limit
@@ -683,6 +803,14 @@ json.tours @tours do |tour|
       #   json.unit_amenities unit_amenities_array
       # end
       end
+    elsif stop.stop_type == "building_starting_point"
+      bsp = BuildingStartingPoint.find stop.stop_id
+      json.type "starting_point"
+      json.name bsp.name
+      json.directional_text bsp.directional_text
+      
+      json.floorplate_image @community.floorplates.map{|x| x if (x.floors.include? bsp.floor)}.compact.first.image.url rescue ""
+
     elsif stop.stop_type == "elevator"
       
       elevator = Elevator.find_by_id stop.stop_id
@@ -798,21 +926,47 @@ json.tours @tours do |tour|
 
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
-
-      if @in_visiting_hours.present?
-        rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
-        if rml.present?
-          if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
-            igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
-            if igloo_guest.nil? 
-              pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
-              json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
-              # json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+      if @in_visiting_hours and !@is_tour_virtual
+        if @community.locks_provider == "EdgeState"
+          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
+          if rml.present?
+            if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
+              igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
+              if igloo_guest.nil? 
+                pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
+                json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+                # json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+              else
+                json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+              end
             else
-              json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+              json.guest_pin ''
             end
           else
-            json.guest_pin ''
+            _stop_ = Amenity.find_by_id stop.stop_id
+            if _stop_.present? and _stop_.access_code.present?
+              json.guest_pin "Use code " + _stop_.access_code + " to enter."
+            else
+              json.guest_pin ''
+            end
+          end
+        elsif @community.locks_provider == "Latch"
+          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id, stop_type: "Amenity") if @community.latch.present?
+          if lch.present?
+            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, status: "active") if @tour_user.present?
+            if latch_guest.present?
+              door_data = latch_guest.latch_allowed_accesses.find_by(stop_id: stop.stop_id, stop_type: "Amenity")
+              json.guest_pin "Use code " + door_data.doorcode + " to enter." if door_data.present?
+            else
+              json.guest_pin ''
+            end  
+          else
+            _stop_ = Amenity.find_by_id stop.stop_id
+            if _stop_.present? and _stop_.access_code.present?
+              json.guest_pin "Use code " + _stop_.access_code + " to enter."
+            else
+              json.guest_pin ''
+            end
           end
         else
           _stop_ = Amenity.find_by_id stop.stop_id
@@ -896,6 +1050,7 @@ json.tours @tours do |tour|
     @existing_path_points = []
     
     if @community.show_map
+      
       if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
         @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
         path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
@@ -907,15 +1062,27 @@ json.tours @tours do |tour|
         end
          
       else
-        path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
-        if path.blank?
-          path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
-          @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+        unless skip_1_path
+          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
+          if path.blank?
+            path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
+            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+          else
+            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+          end
         else
-          @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-2].stop_id).first
+          if path.blank?
+            path = Path.where(map_path_to_id: new_stops_arr[i-2].stop_id, map_path_from_id: stop.stop_id).first
+            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+          else
+            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+          end
         end
+        
         # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
       end
+      skip_1_path = skip_1
     end  
 
     @existing_path_points.flatten!

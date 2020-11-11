@@ -2,7 +2,7 @@
 .divLoading.hidden
 %section.is-community-page
   .content
-    - if @community.creator_id.present? and @community.creator.role == "Dwelo admin"
+    - if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
       .box-info.add-plan
         %img.dwelo-logo{:alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
     .box.box-info.add-plan.mt-20

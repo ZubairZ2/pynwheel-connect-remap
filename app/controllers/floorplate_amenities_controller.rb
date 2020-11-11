@@ -58,6 +58,12 @@ class FloorplateAmenitiesController < ApplicationController
     @amenity.amenityable_id = params[:floorplate_id]
     @amenity.x_plot = params[:x_plot]
     @amenity.y_plot = params[:y_plot]
+    ts = TourStop.find_by(stop_id: @amenity.id)
+    if ts.present?
+      ts.latitude  = @amenity.x_plot
+      ts.longitude = @amenity.y_plot
+      ts.save
+    end
     @amenity.floor = params[:floor]
     if @amenity.save(validate: false)
       render json: {amenity: @amenity}, status: 200

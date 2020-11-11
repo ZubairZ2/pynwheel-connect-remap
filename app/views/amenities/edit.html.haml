@@ -18,7 +18,7 @@
     .row
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30
-          = form_for @amenity,url: (params[:floorNo].nil? and params[:from].nil?) ? community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit'), method: :put do |f|
+          = form_for @amenity,url: (params[:floorNo].nil? and params[:from].nil?) ? community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit'+ (@unit.present? ? '?&unit='+@unit.id.to_s : '')), method: :put do |f|
             = hidden_field_tag "community_id", @community.id
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -52,14 +52,26 @@
                   %select.form-control#remote_lock{name: "remote_lock"}
                   %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
                     %a#a-lock.btn-text-color{href: "#"} Update selected lock
+            -# - if Dwelo.find_by(community_id: @community.id).present?
+            -#   .form-group
+            -#     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+            -#       Dwelo Lock
+            -#       %i.unit_manualoverride.fa.fa-question-circle
+            -#         %span#unit_manualoverride_text
+            -#           Name of lock must be same as amenity name
+            -#       %span Assign the lock to this amenity
+            -#     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            -#       %select.form-control#dwelo_remote{name: "remote_lock"}
+            -#       %button#dwelo_update_btn.btn.btn-primary.update-lock.hidden{type: "button"}
+            -#         %a#dwelo_a_lock.btn-text-color{href: "#"} Update selected lock
 
             - bool_check = @community.show_map ? f.object.amenityable.present? && f.object.amenityable_type == "Floorplate" : true
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Building
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :building ,  class: "form-control amenity_edit_field", placeholder: "building" 
-            - if !@community.is_sitemap && bool_check      
+                = f.text_field :building ,  class: "form-control amenity_edit_field", placeholder: "building"
+            - if !@community.is_sitemap && bool_check
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -68,7 +80,7 @@
                   = f.select :floor , (f.object.amenityable.floors.flatten.uniq.sort),{:include_blank => true}, class: "form-control amenity_edit_field", placeholder: "Floor"
 
                   -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
-            - if @community.self_tour    
+            - if @community.self_tour
               .row
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
@@ -92,7 +104,7 @@
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
                     = f.text_area :directional_text, :class=>"form-control amenity_edit_field amenity_edit_directional_wysihtml5", :placeholder=>"Directional Text"
                     %span.amenity_directional_text_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
-                    
+
             = submit_tag 'Save', class: "hidden"
 
     %span.btn.btn-primary.btn-file
@@ -109,8 +121,15 @@
     .form-group.logo-upload-bg.pt-15
       .select-logo.center-img.mb-20.mt-30.logo-upload-bg
         .select-logo-logo.logo-container.logo-upload-container{:style => "height: 250px !important;"}
-          %a.preview-image{:href=>@amenity.image.present? ? @amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-            = image_tag @amenity.image.present? ? @amenity.image.url : "default.jpeg",:width=>"100%",:id=>"preview-image"
+          - rn =  rand(9999999999999999999999999)
+          %a.preview-image{:href=>@amenity.image.present? ? (@amenity.image.url + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+            = image_tag @amenity.image.present? ? (@amenity.image.url  + "?timestamp=#{rn}") : "default.jpeg",:width=>"100%",:id=>"preview-image"
+        - if  @amenity.image.present?
+          .col-lg-1
+            .icon{style: "margin-left: -15px;"}
+              = link_to show_amenity_image_in_modal_community_amenity_path(), remote: true do
+                %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                  Crop
     //////////////////////// Amenity Gallery
     .box.box-info.add-plan
 
@@ -136,37 +155,102 @@
         .col-lg-10
           .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %button.btn-primary.mb-20.done_btn#on_done{:style => " margin-top: 0px;  margin-bottom: 0px;"}
-                DONE
+              - if @unit.present?
+                %a.btn-primary.mb-20.done_btn.direct_btn{href: edit_community_unit_path(@community.id,@unit.id)} DONE
+              - else
+                %button.btn-primary.mb-20.done_btn#on_done{:style => " margin-top: 0px;  margin-bottom: 0px;" }
+                  DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
+#crop-amenity-image.modal.fade.edit-image
 
 :javascript
 
   var amenity_id = #{@amenity.id}
   var amenity_name = '#{@amenity.name}'
-  var community_id = #{ @community.id}
-  var from = #{ @from_unit}
-  
-  $('.amenity_edit_field').change(function(){
+  var community_id = '#{ @community.id}'
+ 
+    unit = #{@unit.present? ? @unit.id : 111111000000000}
+   $('.amenity_edit_field').change(function(){
+    $('.edit_amenity').submit();
+  });
+  if (unit != 111111000000000){
+    var from = #{ @from_unit}
+  }
 
+  $('.amenity_edit_field').change(function(){
       action = "change"
       $('#on_done').click(function(e){
         action = "clicked"
         $('.edit_amenity').submit(function() {
             $(this).append('<input type="hidden" name="done_action" value="true">');
             $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
+            if (unit != 111111000000000) {
+            $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
+            }
+        });
+      $('.direct_btn').click(function(e){
+        action = "clicked"
+        $('.edit_amenity').submit(function() {
+            $(this).append('<input type="hidden" name="done_action" value="true">');
+            $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
+            if (unit != 111111000000000) {
+            $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
+            }
         });
       })
-      
-      if(action == "change"){
-        setTimeout(function () {
-          $('.edit_amenity').submit();
-        }, 500);
-      }
+      })
+
+      // if(action == "change"){
+      //   setTimeout(function () {
+      //     $('.edit_amenity').submit();
+      //   }, 500);
+      // }
   });
+  $('#on_done').click(function(e){
+    $('.edit_amenity').submit();
+  })
 
   var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
   var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
+  // var IsDweloSelectedLockMatch = function (){
+  //   if($('#dwelo_remote :selected').text() != "Select your option"){
+  //     var index = $('#dwelo_remote :selected').text().lastIndexOf(" ");
+  //     var lock_name = $('#dwelo_remote :selected').text();
+  //
+  //     if(lock_name != $('#amenity_name').val()){
+  //       $('#dwelo_remote').addClass('lock_mismatch')
+  //       $("#dwelo_update_btn").removeClass('hidden')
+  //
+  //       var id = $('#dwelo_remote :selected').val()
+  //       var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + amenity_id + '&stop_name=' + amenity_name + '&stop_type=amenity'
+  //
+  //
+  //       $("#dwelo_a_lock").attr("href",href);
+  //     }
+  //     else{
+  //       $('#dwelo_remote').removeClass('lock_mismatch')
+  //       $("#dwelo_update_btn").addClass('hidden')
+  //       $("#dwelo_a_lock").attr("href","#");
+  //       var id = $('#dwelo_remote :selected').val()
+  //       $.ajax({
+  //           type: 'Put',
+  //           url: "/communities/" + community_id + "/amenities/" + amenity_id,
+  //           data: {
+  //               lock_id: id,
+  //               assigning_lock: "true"
+  //           },
+  //                 cache: false,
+  //           success: function () {
+  //           }
+  // })
+  //     }
+  //   }
+  //   else{
+  //       $('#dwelo_remote').removeClass('lock_mismatch')
+  //       $("#dwelo_update_btn").addClass('hidden')
+  //       $("#dwelo_a_lock").attr("href","#");
+  //   }
+  // }
 
   var IsSelectedLockMatch = function(){
     if($('#remote_lock :selected').text() != "Select your option"){
@@ -214,8 +298,8 @@
   $(document).ready(function(){
     var params = {"amenity_name": amenity_name}
     var assigned_lock_present = false
-     
-    $.ajax({
+    // removed code for dwelo amenity check in dwelo work
+  $.ajax({
       type: 'POST',
       url: '/communities/'+ community_id + '/amenities/' + amenity_id +'/load_remotelock_data',
       dataType: 'json',
@@ -250,6 +334,13 @@
 
     $("#amenity_name").keyup(function() {
       IsSelectedLockMatch()
+    });
+
+   $("#dwelo_remote").change(function () {
+    IsDweloSelectedLockMatch()
+    })
+    $("#amenity_name").keyup(function() {
+      IsDweloSelectedLockMatch()
     });
     
   });

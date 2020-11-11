@@ -1,101 +1,4 @@
 
-:css
-
-  .text-grey-v {
-      color: #9E9E9E
-  }
-  
-  .fa-v {
-      font-size: 25px;
-      cursor: pointer
-  }
-
-  .day-list {
-      padding: 2px 6px;
-      border: none;
-      border-bottom: 1px solid #bdb7b7;
-      border-radius: none;
-      box-sizing: border-box;
-      color: #000000;
-      background-color: transparent;
-      font-size: 14px;
-      letter-spacing: 1px;
-      text-align: center !important
-  }
-  input[type=time] {
-    border: none;
-    color: #2a2c2d;
-    font-size: 14px;
-    font-family: helvetica;
-    width: 150px;
-  }
-
-
-
-  input[type=time]::-webkit-clear-button {
-    display: none;
-  }
-
-  input[type=time]::-webkit-inner-spin-button {
-    display: none;
-  }
-  
-  ::placeholder {
-      color: #fff;
-      opacity: 1
-  }
-  
-  :-ms-input-placeholder {
-      color: #fff
-  }
-  
-  ::-ms-input-placeholder {
-      color: #fff
-  }
-  
-  .btn-v {
-      border-radius: 50px;
-      width: 120px
-  }
-
-  .font-17-v{
-    font-size: 17px !important;
-  }
-
-  .p-20-v{
-      padding-left: 20px;
-      padding-bottom: 35px
-  }
-  .p-8-v{
-    padding: 8px;
-  }
-  .p-4-v{
-    padding: 4px;
-  }
-  .mr-20-v{
-    margin-right: 20px !important;
-  }
-  .mr-10-v{
-    margin-right: 10px !important;
-  }
-  .bg-grey-v{
-    background: #e3e3e3;
-  }
-
-  .pt-5-v{
-    padding-top: 5px !important;
-  }
-  .error-msg-v {
-    margin-left: 450px;
-    color: white;
-  }
-  .max-users-v {
-    width: 125px;
-    border-style: groove;
-    border-color: #d8d8d8;
-    border-width: 2px;
-  }
-
 - content_for :title, "Tour Setup Page - Pynwheel"
 .divLoading.hidden
 - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
@@ -116,409 +19,13 @@
           TOUR SETUP PAGE
           %span
         -# = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
-    .row
-      .col-md-12
-        .box.box-widget.panel-box.add-plan.pt-30.pb-40
-          = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
-            = hidden_field_tag "community_id", @community.id
-
-            .form-group.alert-contact
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Alert Contact
-
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})
-                = submit_tag 'Update', class: "btn btn-success btn-sm pull-right"
-            - if @community.touchscreen_app   
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Show "Start Tour" in Pynwheel Touch
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      When this is set to "on" there will be a "Start Tour" button in your Pynwheel Touch app. When touched, the user will enter their cell phone number or scan a QR code and receive a link to download / open the Self Tour app.
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :show_tour_page, true, @community.show_tour_page, class: "show-tour-page"
-                    %label.label-primary{:for => "show_tour_page"}
-                    %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Visual id verification
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
-                  %label.label-primary{:for => "visual_id_verification"}
-                  %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Show Camera Button
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
-                  %label.label-primary{:for => "show_camera_button"}
-                  %span.pl-15 Yes
-            / .form-group
-            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            /     Visual id verification
-            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            /     .TriSea-technologies-Switch
-            /       %span.pr-15 No
-            /       = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
-            /       %label.label-primary{:for => "visual_id_verification"}
-            /       %span.pl-15 Yes 
-            / .form-group
-            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            /     Add fields to the registration page
-            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            /     .TriSea-technologies-Switch
-            /       %span.pr-15 No
-            /       = check_box_tag :show_checklist, true, @tour_setting.show_checklist, class: "show_checklist"
-            /       %label.label-primary{:for => "show_checklist"}
-            /       %span.pl-15 Yes 
-            
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Scheduler Widget
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "secondaryLogoPopover","data-content" => " "}
-                  %span#propertyDetailNameText
-                    If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget  , class: "scheduler_widget"
-                  %label.label-primary{:for => "scheduler_widget"}
-                  %span.pl-15 Yes
-            .div_checklist.hidden{:style => "margin-left: 60px;"}
-              %label Select Fields for Schedule Widget:
-              .form-group{:style => "height: 190px; margin-top: ;"}
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_first_name, true, @tour_setting.show_first_name.nil? ? true :  @tour_setting.show_first_name
-                        %label Name
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_phone, true, @tour_setting.show_phone.nil? ? true : @tour_setting.show_phone
-                        %label Phone
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom.nil? ? true : @tour_setting.show_desired_bedroom
-                        %label Desired bedrooms
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date.nil? ? true : @tour_setting.show_desired_move_in_date
-                        %label Desired move-in date
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
-                        %label Credit card required
-                - if @community.data_provider == "realpagesvc"
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .row
-                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                        .checkbox
-                          = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
-                          %label Lead source
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display name
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_first_name, true, @tour_setting.show_first_name, class: "show_first_name"
-              /       %label.label-primary{:for => "show_first_name"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display last name
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_last_name, true, @tour_setting.show_last_name, class: "show_last_name"
-              /       %label.label-primary{:for => "show_last_name"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display phone
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_phone, true, @tour_setting.show_phone, class: "show_phone"
-              /       %label.label-primary{:for => "show_phone"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display email
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_email, true, @tour_setting.show_email, class: "show_email"
-              /       %label.label-primary{:for => "show_email"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display desired bedroom
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom, class: "show_desired_bedroom"
-              /       %label.label-primary{:for => "show_desired_bedroom"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display desired move in date
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date, class: "show_desired_move_in_date"
-              /       %label.label-primary{:for => "show_desired_move_in_date"}
-              /       %span.pl-15 Yes
-              /       %span.pl-15 Yes
-            - if current_user.is_super_admin?
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Add Unit Stops Based in Availability
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
-                    %label.label-primary{:for => "automate_unit_stop"}
-                    %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Dotted line color
-              .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
-            
-            - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Max Tour At One Time
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  %input.day-list.max-users-v{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
-              .form-group
-                %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
-                  Allow visitors to schedule tours
-              .row 
-                .form-group
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_15, true, @tour_setting.time_intervel == "15 min" ? true : false, :id => "time_intervel_id15"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In 15 minute increments (ie, 10:00, 10:15, 10:30)
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_1, true, @tour_setting.time_intervel == "1 hr" ? true : false, :id => "time_intervel_id1"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In hourly increments (ie, 10:00, 11:00, 12:00)        
-              .row 
-                .form-group
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_30, true, @tour_setting.time_intervel == "30 min" ? true : false, :id => "time_intervel_id30"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In 30 minute increments (ie, 10:00, 10:30, 11:00)        
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      Every 2 hours (ie, 10:00, 12:00, 2:00)        
-               
-            -#.form-groups
-            -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            -#    Show Notepad Button
-            -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            -#    .TriSea-technologies-Switch
-            -#      %span.pr-15 No
-            -#      = check_box_tag :show_notepad_button, true, @community.show_notepad_button, class: "show-notepad-button"
-            -#      %label.label-primary{:for => "show_notepad_button"}
-            -#      %span.pl-15 Yes
-            -#.form-group.mt-30
-            -#  %label.col-sm-16.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            -#    Self Tour icon size
-            -#  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-            -#    = select_tag :marker_icon_size , options_for_select(self_tour_icon_size,@community.tour.marker_icon_size ), :class => "form-control"
-            = submit_tag 'Save', class: "hidden"
-    .box.box-info.add-plan.mt-20#logo_header
-      .box-header
-        %h3.box-title
-          VISITING HOURS
-          %span
-      %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: green; display: none;"}
-      %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: white"}
-      %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same time exists or invalid time
-
-      .box-body{style: "padding: 0px 20px !important;"}
-        .row
-          .col-lg-12 
-            = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
-              .col-sm-12.list
-                - @community.opening_hours.each_with_index do |current_day,index| 
-                  .row.p-8-v
-                    %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}"}
-                      - if current_day.day == "Monday"
-                        %option{selected: "", value: "Monday"} Monday
-                      - else
-                        %option{value: "Monday"} Monday
-                      - if current_day.day == "Tuesday"
-                        %option{selected: "", value: "Tuesday"} Tuesday
-                      - else
-                        %option{value: "Tuesday"} Tuesday
-                      - if current_day.day == "Wednesday"
-                        %option{selected: "", value: "Wednesday"} Wednesday
-                      - else
-                        %option{value: "Wednesday"} Wednesday
-                      - if current_day.day == "Thursday"
-                        %option{selected: "", value: "Thursday"} Thursday
-                      - else
-                        %option{value: "Thursday"} Thursday
-                      - if current_day.day == "Friday"
-                        %option{selected: "", value: "Friday"} Friday
-                      - else
-                        %option{value: "Friday"} Friday
-                      - if current_day.day == "Saturday"
-                        %option{selected: "", value: "Saturday"} Saturday
-                      - else
-                        %option{value: "Saturday"} Saturday
-                      - if current_day.day == "Sunday"
-                        %option{selected: "", value: "Sunday"} Sunday
-                      - else
-                        %option{value: "Sunday"} Sunday
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v From
-                      %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t"}
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v To
-                      %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t"}
-                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-                - if @community.opening_hours.blank?
-                  .row.p-8-v
-                    %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1"}
-                      %option{selected: "", value: "Monday"} Monday
-                      %option{value: "Tuesday"} Tuesday
-                      %option{value: "Wednesday"} Wednesday
-                      %option{value: "Thursday"} Thursday
-                      %option{value: "Friday"} Friday
-                      %option{value: "Saturday"} Saturday
-                      %option{value: "Sunday"} Sunday
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v From
-                      %input.day-list.bg-grey-v{name: "from_1", type: "time", value: "09:00"}
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v To
-                      %input.day-list.bg-grey-v{name: "to_1", type: "time", value: "05:00"}
-                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-              .asd{style: "padding-bottom: 20px;"}
-                %button.btn.btn-primary#add-btn{style: "margin-left: 10;"}
-                  %span.fa.fa-v.fa-plus.font-17-v
-                  Add
-                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "Save"}
-    #logo_header.box.box-info.add-plan.mt-50.hidden
-      .box-header
-        %h3.box-title
-          COMPOSE TEXT/EMAILS
-          %span
-    .row
-      .col-md-12
-        .box.box-widget.panel-box.add-plan.pt-30{style: "margin-top: 60px;"}
-          = form_for @community,:url=>community_save_tour_settings_path(@community),:html=>{:class=>"form-horizontal"}, method: :post do |f|
-            = f.hidden_field :community_id, value: @community.id
-            = f.hidden_field :optional_mails, value: "optional_mails"
-            .box-body
-              .row
-                / .col-lg-9.col-lg-offset-1
-                /   .form-group
-                /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                /       Sms Text
-                /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                /       = f.text_area :sms_text, :class=>"form-control", :placeholder=>"Sms Text", :rows => 5
-                %h4.col-lg-9.col-lg-offset-1{:style => "margin-bottom: 50px;"}
-                  %b Optional: Add custom messaging to the standard automated text & email notification(s).
-                - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
-                  .col-lg-9.col-lg-offset-1
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                        Confirmation
-                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                          %span#propertyDetailNameText
-                            This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is: 
-                            Thank you for scheduling your self-guided tour! We look forward to having you at the property on <date> and <time>. When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive: (Links to app stores)
-                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                        = f.text_area :email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-                  .col-lg-9.col-lg-offset-1
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                        One Day Reminder
-                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                          %span#propertyDetailNameText
-                            This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            We look forward to having you visit our property at <time> tomorrow for your self-guided tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).
-                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                        = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-                  .col-lg-9.col-lg-offset-1
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                        One Hour Reminder
-                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                          %span#propertyDetailNameText
-                            This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            Your self-guided tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.
-                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                        = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-                .col-lg-9.col-lg-offset-1
-                  .form-group
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                      Thank you message
-                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                        %span#propertyDetailNameText
-                          This message will be sent to guest after tour will end.
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-
-            /
-              \/.box-body
-            .box-footer
-              = f.submit "Save", :class=>"btn btn-success pull-right mr-10"
+    
     - unless @community.is_sitemap
       - unless @building_list.count < 2
         %h3 Select a Building
-        - @building_list.each do |b|
-          %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?"+ "building=#{b}", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{@building.present? ? (@building == b ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{b.humanize}
+        .building_sortable#building_buttons
+          - @building_list.each do |b|
+            %a.btn-default.ggq{:href => "/communities/"+@community.id.to_s+"/tours?"+ "building=#{b}", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{@building.present? ? (@building == b ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;"} #{b}
 
     - unless @community.is_sitemap
       - begin
@@ -527,10 +34,21 @@
           %a.btn-default{:href => "/communities/"+@community.id.to_s+"/tours?floorNo="+ "#{f}&building=#{@building}", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floor.present? ? (@floor.to_i == f ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
       - rescue
         - puts "rescued"
+    .box.box-info.add-plan.mt-40#logo_header
+      .box-header
+        %h3.box-title
+          TOUR STOPS
+          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "tourStopsLogoPopover","data-content" => " "}
+            %span#propertyDetailNameText
+              Drag and drop stops in the list below to rearrange them.
     .row
       / Start Panel left Side
       .col-lg-6{:style => "margin-bottom: 10px;"}
-        %h5.mt-40.mb-20 Add Amenities
+        %h5.mt-40.mb-20
+          Add Amenities
+          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_amenity_Popover","data-content" => " "}
+            %span#propertyDetailNameText
+              Amenities are added on the "Amenities" page. Select an amenity from the list below to add it to the tour.
         .imageselect.amenity-imageselect
           .show-categories
             = "- select amenity -"
@@ -543,11 +61,15 @@
                     = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                     %span.ml-5
                       = amenity.name
-              
+
       - if @community.mdu
         - units = @units.sort_by{|u| u.marketing_name}
         .col-lg-6
-          %h5.mt-40.mb-20 Add Units
+          %h5.mt-40.mb-20
+            Add Units
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_unit_Popover","data-content" => " "}
+              %span#propertyDetailNameText
+                Units are imported on the "Data" page and can be edited on the "Units" page. Select a unit from the list below to add it to the tour. If a unit is not on the list, it may be because it is not plotted on the map.
           .imageselect.unit-imageselect
             .show-categories
               = "- select unit -"
@@ -565,7 +87,7 @@
 
 
       -#.col-lg-4{:style => "margin-bottom: 10px;"}
-      -#  %h5.mt-40.mb-20 Add Elevators 
+      -#  %h5.mt-40.mb-20 Add Elevators
       -#  .imageselect.elevator-imageselect
       -#    .show-categories
       -#     = "- select elevator -"
@@ -604,18 +126,41 @@
                         %td
                           - if @community.show_map
                             = link_to draw_line_path(@tours), id: "create_path", :data => {:idattr => "starting point"},  class: "text-warning ml-5" do
-                              %i.fa.fa-road.icon_size
+                              %i.fa.fa-road.icon_size.additionalPageAction
+                                %span#additionalPageActionText
+                                  Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
+                  - @building_starting_points.where(building: @building).each do |bsp1,index|
+                    - stop = @tour_stops.find_by(stop_id: bsp1.id)
+                    %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
+                      - orderVar = orderVar + 1
+                      %td= orderVar
+                      %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
+                        = bsp1.name 
+                      %td
+                        = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                          %i.fa.fa-road.icon_size.additionalPageAction
+                            %span#additionalPageActionText
+                              Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
+                        = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                          %i.fa.fa-edit.icon_size.additionalPageAction
+                            %span#additionalPageActionText
+                              Click on the edit icon to edit the stop. Add photos, videos, and text. 
+                        %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                          %i.fa.fa-trash.icon_size.additionalPageAction
+                            %span#additionalPageActionText 
+                              Click on the trash can to delete a stop.  
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       - if !@community.mdu && stop.stop_type == "unit"
                         - next
                       - unless @all_stops.include?(stop.stop_id) || stop.stop_type == "elevator"
                         - next
-                      - if stop.stop_type == "elevator" && @community.is_sitemap
+                      - if stop.stop_type == "elevator" && @community.is_sitemap || stop.stop_type == "building_starting_point"
                         - next
                       - if !@community.is_sitemap && stop.stop_type == "elevator"
                         - elevator = Elevator.find_by_id stop.stop_id
-                        - if elevator.present? && ((!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (![@building,nil,""].include? elevator.building) && 1 != @floor.to_i)
+
+                        - if elevator.present? && ((!(elevator.floors.include?(@floor.to_i)) && !(elevator.floorplate_covering_range == "-")) || (!@building_choice.include? elevator.building))
                           - next
                       %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
                         - orderVar = orderVar + 1
@@ -637,47 +182,100 @@
 
                             - unless u.modal_unit
                               = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} ml-5 #{stop.display_stop ? "" : "hidden"} text-warning " do
-                                %i.fa.fa-eye.icon_size
+                                %i.fa.fa-eye.icon_size.additionalPageAction
+                                  %span#additionalPageActionText
+                                    Click on the eye icon to temporarily remove a stop from the tour. 
                               = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
-                                %i.fa.fa-eye-slash.icon_size
+                                %i.fa.fa-eye-slash.icon_size.additionalPageAction
+                                  %span#additionalPageActionText
+                                    Click on the eye icon to temporarily remove a stop from the tour. 
                             - unless u.modal_unit  && ((u.x_plot + u.y_plot) < 1)
                               - if @community.show_map
                                 = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
-                                  %i.fa.fa-road.icon_size
+                                  %i.fa.fa-road.icon_size.additionalPageAction
+                                    %span#additionalPageActionText
+                                      Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
                             = link_to edit_community_unit_path(@community,u)  << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}" ,  class: "text-success ml-5" do
-                              %i.fa.fa-edit.icon_size
+                              %i.fa.fa-edit.icon_size.additionalPageAction
+                                %span#additionalPageActionText
+                                  Click on the edit icon to edit the stop. Add photos, videos, and text. 
 
                           - elsif stop.stop_type == "elevator" && !@community.is_sitemap
                             - begin
                               - if (elevator.floors.max.to_i == (@floor.to_i))
                                 - if @community.show_map
                                   = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
-                                    %i.fa.fa-road.icon_size
+                                    %i.fa.fa-road.icon_size.additionalPageAction
+                                      %span#additionalPageActionText
+                                        Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
                               - else
                                 - if @community.show_map
                                   = link_to draw_line_path(elevator) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => elevator.id},  class: "text-warning ml-5" do
-                                    %i.fa.fa-road.icon_size
+                                    %i.fa.fa-road.icon_size.additionalPageAction
+                                      %span#additionalPageActionText
+                                        Click two road icons in sequence to draw a path on the map below between the two stops you have selected.  
                             
                               = link_to edit_community_elevator_path(@community, elevator) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
-                                %i.fa.fa-edit.icon_size
+                                %i.fa.fa-edit.icon_size.additionalPageAction
+                                  %span#additionalPageActionText
+                                    Click on the edit icon to edit the stop. Add photos, videos, and text. 
                             - rescue
                               - puts 'rescued'
                           - elsif stop.stop_type == "amenity"
                             - amenity = Amenity.find stop.stop_id
                             = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye#{stop.id} #{stop.display_stop ? "" : "hidden"} text-warning ml-5" do
-                              %i.fa.fa-eye.icon_size
+                              %i.fa.fa-eye.icon_size.additionalPageAction
+                                %span#additionalPageActionText
+                                  Click on the eye icon to temporarily remove a stop from the tour. 
                             = link_to "", id: "display_stop", :data => {:idattr => stop.id},:onclick => "display_stop(#{stop.id})", class: "stop_eye_slash#{stop.id} #{stop.display_stop ? "hidden" : ""} text-warning ml-5" do
-                              %i.fa.fa-eye-slash.icon_size
+                              %i.fa.fa-eye-slash.icon_size.additionalPageAction
+                                %span#additionalPageActionText
+                                  Click on the eye icon to temporarily remove a stop from the tour. 
 
                             - if @community.show_map
                               = link_to draw_line_path(amenity) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => amenity.id},  class: "text-warning ml-5" do
-                                %i.fa.fa-road.icon_size
+                                %i.fa.fa-road.icon_size.additionalPageAction
+                                  %span#additionalPageActionText
+                                    Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
                             = link_to edit_community_amenity_path(@community,amenity) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
-                              %i.fa.fa-edit.icon_size
-
+                              %i.fa.fa-edit.icon_size.additionalPageAction
+                                %span#additionalPageActionText
+                                  Click on the edit icon to edit the stop. Add photos, videos, and text. 
+                          - elsif stop.stop_type == "building_starting_point"  && !@community.is_sitemap 
+                            - bsp = BuildingStartingPoint.find stop.stop_id
+                            = link_to draw_line_path(bsp) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                              %i.fa.fa-road.icon_size.additionalPageAction
+                                %span#additionalPageActionText
+                                  Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
+                            = link_to edit_community_building_starting_point_path(@community.id,bsp) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                              %i.fa.fa-edit.icon_size.additionalPageAction
+                                %span#additionalPageActionText
+                                  Click on the edit icon to edit the stop. Add photos, videos, and text. 
                           - unless u.present? && u.modal_unit
                             %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
-                              %i.fa.fa-trash.icon_size
+                              %i.fa.fa-trash.icon_size.additionalPageAction
+                                %span#additionalPageActionText
+                                  Click on the trash can to delete a stop.
+                  - @building_starting_points.where.not(building: @building).each do |bsp1,index|
+                    - stop = @tour_stops.find_by(stop_id: bsp1.id)
+                    %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
+                      - orderVar = orderVar + 1
+                      %td= orderVar
+                      %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
+                        = bsp1.name 
+                      %td
+                        = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                          %i.fa.fa-road.icon_size.additionalPageAction
+                            %span#additionalPageActionText
+                              Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
+                        = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                          %i.fa.fa-edit.icon_size.additionalPageAction
+                            %span#additionalPageActionText
+                              Click on the edit icon to edit the stop. Add photos, videos, and text. 
+                        %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                          %i.fa.fa-trash.icon_size.additionalPageAction
+                            %span#additionalPageActionText
+                              Click on the trash can to delete a stop.          
 
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
         - if @community.show_map
@@ -686,37 +284,66 @@
               = link_to starting_point_community_tours_path(@community), {:style=>'font-weight:bold;', class: "btn btn-primary mr-5 loader_class"} do
                 %i.fa.fa-plus-circle
                 ADD STARTING POINT
+              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_starting_point_Popover","data-content" => " "}
+                %span#propertyDetailNameText
+                  Use this button to mark the location on the map below where your visitors will start their tours. Fill in the information in the fields. Then click on "Plot Starting Point" and click on the map to add the location. Drag and drop the dot to relocate it. 
 
               - if !@community.is_sitemap
+                
+
+
+                = link_to building_starting_point_community_tours_path(params[:community_id],floor: @floor,building: @building), id: "add-building-starting-point", class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
+                  %i.fa.fa-plus-circle
+                  BUILDING ENTRY / EXIT
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "building_entry_Popover","data-content" => " "}
+                  %span#propertyDetailNameText  
+                    Use this button to add a building entrance. A red dot will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the entrance name, building number, floor number, and directional text.
+
+                  / %button.btn-primary{"data-target" => "#select_status", "data-toggle" => "modal"} BUILDING ENTRY/EXIT
+
+
+
+
                 = link_to create_elevator_path(@tours.id, params[:community_id],floorplate: @sitemap.present? ? @sitemap : nil,building: @building), class: "btn btn-primary mr-5", id: "add-elevator-path", :style => "font-weight: bold;" do
                   %i.fa.fa-plus-circle
-                  ADD ELEVATOR
+                  ADD ELEVATOR 
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_elevator_Popover","data-content" => " "}
+                  %span#propertyDetailNameText  
+                    Use this button to add an elevator. Three horizontal lines will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the elevator name, image, and the floors it services.  
               -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
               -#  %i.fa.fa-plus-circle
               -#  ADD PATH FOR STARTING POINT
 
-              = link_to test_automate_community_tours_path(current_community.id), class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
-                %i.fa.fa-plus-circle
-                Test Automate
+              - if current_user.is_super_admin?
+                = link_to test_automate_community_tours_path(current_community.id), class: "btn btn-primary mr-5", :style => "font-weight: bold;" do
+                  %i.fa.fa-plus-circle
+                  Test Automate
             -#= link_to draw_line_path(@tours.id), class: "btn btn-primary mb-20", id: "start-point-path" do
             -#  %i.fa.fa-plus-circle
             -#  ADD PATH FOR STARTING POINT
 
 
 
-        - if @tours.tour_stops.present?      
+        - if @tours.tour_stops.present?
+          .box.box-info.add-plan.mt-40
+            .box-header
+              %h3.box-title
+                How to Set Up Tour Path:
           .row
             .col-md-12
-              %h3{ style: 'color: #800000;' } How to Set up the Tour Path:
+              / %h3{ style: '' } How to Set Up Tour Path:
 
             .row
             .col-md-12
-              %h4 Add a Starting Point: After you click "Add Staring Point" click the map in the location that your visitors will begin your tours.
-              %h4{:style => "display: inline"} Draw a Path between two stops: Choose two points from the list above by clicking on the "Way Finding" icon.
-              %i.fa.fa-road.icon_size
-              %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
-              %h4 Drag and drop the icon onto the correct postion on the map.         
-              %h4 To delete a point on the path, double-click the point. 
+              %h4 Add a Starting Point: After you click "Add Staring Point", click on "Plot Starting Point." Then click the map in the location that your visitors will begin your tours.
+              %h4{:style => "display: inline"} Draw a Path Between Two Stops: Choose two points from the list above by clicking on the "Way Finding" icon for each.
+              %i.fa.fa-road.icon_size.additionalPageAction
+                %span#additionalPageActionText
+                  Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
+              / %h4 Add an Elevator: when you click "Add Elevator" an elevator icon(three horizontal lines) will appear below after the page auto-refreshes. Drag and drop to the icon to the correct position on the map.
+              / %h4 Drag and drop the icon onto the correct postion on the map.
+              / %h4 To delete a point on the path, double-click the point.
+              %h4 To delete a point on the path, double-click the point. The line will reset when the page is refreshed.
 
             -#.col-md-12
             -#  = link_to select_stops_community_tours_path(@community), class: "btn btn-success mb-20" do
@@ -736,7 +363,7 @@
                 / id map
                 .plot-image
                   .grid-graph.hidden
-                  .container
+                  .container{:style => "width: inherit"}
                     -#= form_tag community_tours_path(@community), {:class => 'tour_floor_form'} do
                     -#  = hidden_field_tag "floorNo", 6, :class => "hidden_floor"
                     - if @community.is_sitemap
@@ -754,18 +381,25 @@
                         %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
 
                     - elsif stop.class.to_s == "Elevator"
-                      - if !@community.is_sitemap && (((stop.floors.include?(@floor.to_i)) && (stop.floorplate_covering_range != "-") && ([@building,nil,""].include? stop.building)) || 1 == @floor.to_i)  
+
+
+                      - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i)) && (@building_choice.include? stop.building ) ) || (stop.floorplate_covering_range == "-")
                         %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                    
+                    - elsif stop.class.to_s == "BuildingStartingPoint"
+
+        
+                      %i.fa.fa-circle.stops.bsp_stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
 
                     - else
                       - next if (stop.y_plot + stop.x_plot) < 1
                       %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
-                  
-                  /- binding.pry
-                  - @existing_path_points.each_with_index do |point, index|               
-                    .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
 
+                  /- binding.pry
+                  - @existing_path_points.each_with_index do |point, index|
+                    .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
+  #select_status.modal.fade.select_status                    
 .row
   .col-md-12
     .box-footer.mt-30.pt-15
@@ -779,20 +413,130 @@
               / End Panel left Side
         / /.content
 :javascript
-  var floor = #{raw @floor}
-  function tour_setup_goBack()
+  function apply_time_to_all(monday_count, closing_time)
   {
-      window.location.reload();
+    $("#add-btn").addClass("hidden");
+    $(".tour_time_sortable").sortable( "disable" );
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
+    $("#schedule-btn-submit").addClass("blink");
+    console.log($(".Tuesday_" + monday_count).length)
+    if ($(".Tuesday_" + monday_count).length < 1) {
+    var day= "Tuesday"
+     add_days_on_apply(day)
+    }
+    if ( $(".Wednesday_" + monday_count).length < 1) {
+    var day= "Wednesday"
+     add_days_on_apply(day)
+    }
+    if ($(".Thursday_" + monday_count).length < 1) {
+    var day= "Thursday"
+     add_days_on_apply(day)
+    }
+    if ( $(".Friday_" + monday_count).length < 1) {
+    var day= "Friday"
+     add_days_on_apply(day)
+    }
+    function add_days_on_apply(day){
+
+      var current_day = $(".list").children().length
+      var new_day_with_selected_options = get_next_day_with_selected_option(day)
+
+      $(".list").append(`
+        <div class="row ${day}_${monday_count} p-8-v">
+          <select class="day-list font-17-v pull-left mr-20-v" id="day_${current_day+1}" name="day_${current_day+1}">
+            ${new_day_with_selected_options}
+          </select>
+
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">From</label>
+            </div>
+            <input class="day-list bg-grey-v morning_time" name="from_${current_day+1}" type="time" value="${$(".monday_mor_" + monday_count).val()}">
+          </div>
+
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">To</label>
+            </div>
+            <input class="day-list bg-grey-v evening_time" name="to_${current_day+1}" type="time" value="${$(".monday_eve_" + monday_count).val()}">
+          </div>
+
+          <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger" style="margin-left: 8px;"></div>
+
+        </div>`);
+        }
+
+
+    function get_next_day_with_selected_option(last_day){
+      var options = `<option value="Monday" selected="selected">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      if(last_day == "Tuesday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday" selected="selected">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Wednesday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday" selected="selected">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Thursday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday" selected="selected">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      else if(last_day == "Friday")
+        options = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday" selected="selected">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`
+      return options
+    }
+
+    monday_morning  = $(".monday_mor_" + monday_count).val();
+    monday_evening = $(".monday_eve_" + monday_count).val();
+    tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Tuesday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    wed_morning_val = jQuery(".Wednesday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    wed_evening_val = jQuery(".Wednesday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Thursday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Thursday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Friday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Friday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Saturday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Saturday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    tues_morning_val = jQuery(".Sunday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
+  }
+  $(".cancel").click(function (){
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
+    $("#schedule-btn-submit").addClass("blink");
+    $(".tour_time_sortable").sortable( "disable" );
+  })
+  var floor = #{@floor.present? ? @floor : 12345678900}
+  function tour_setup_goBack()
+  { 
+    location.reload();
   }
   var div_checklist = "#{@community.scheduler_widget.nil? ? true : @community.scheduler_widget}"
   if(div_checklist == "true")
     $('.div_checklist').removeClass('hidden');
-
-  var min_floor = #{@community.is_sitemap ? 99999 : (@community.tour.starting_floor.present? ? @community.tour.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.min) rescue 99999}
-  var min_floor1 = #{@community.is_sitemap ? 99999 : @community.floorplates.map{|f| f.floors}.flatten.min rescue 99999}
+  var min_floor = #{@community.is_sitemap ? 99999 : (@community.tour.starting_floor.present? ? @community.tour.starting_floor : (@community.floorplates.present? ? @community.floorplates.map{|f| f.floors}.flatten.min : 99999)) rescue 99999}
+  var min_floor1 = #{@community.is_sitemap ? 99999 : (@community.floorplates.present? ? @community.floorplates.map{|f| f.floors}.flatten.min : 99999) rescue 99999}
 
   $(document).ready(function() {
+  
+  $( "#building_buttons" ).sortable({
+    stop: function( event, ui ) {
+      var arr = []
+      for(var i = 0 ; i < this.children.length; i++)
+      {
+        arr.push(this.children[i].text)
+      }
+      
+      $.ajax({
+        url: "/communities/#{@community.id}/tours/sort_buildings",
+        type: "POST",
+        dataType: "script",
+        data: {
+            sitemap: "#{@community.is_sitemap}" ,
+            array: arr,
+            floor: "#{@floor}",
+            building: "#{@building}"
+        }
+      }).done(function (data) {
+        console.log("success");
+      });
 
+    }
+  });
   $('.check_t').change(function() {
   
     var checks = $('.check_t')
@@ -809,6 +553,42 @@
     $('html, body').animate({ scrollTop: 800 });
   }
 
+  if ($("#only_scheduled_tour").is(":checked") == true){
+    $("#grace_time_period").removeClass("hidden")
+  }
+
+  $('#only_scheduled_tour').change(function() {
+    if ($("#only_scheduled_tour").is(":checked")){
+      $("#grace_time_period").removeClass("hidden")
+    }
+    else{
+      $("#grace_time_period").addClass("hidden")
+    }
+  })
+
+  var arr_building = []
+  if($('#building_buttons').chlidren != undefined)
+  {
+    for(var i = 0 ; i < $('#building_buttons')[0].children.length; i++)
+  { 
+    arr_building.push($('#building_buttons')[0].children[i].text)
+  }
+  
+  $.ajax({
+    url: "/communities/#{@community.id}/tours/sort_buildings",
+    type: "POST",
+    dataType: "script",
+    data: {
+        sitemap: "#{@community.is_sitemap}" ,
+        array: arr_building,
+        floor: "#{@floor}",
+        building: "#{@building}"
+    }
+  }).done(function (data) {
+    console.log("success");
+  });
+  }
+  
     var arr = [];
     for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
       if ($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1] != undefined)
@@ -819,7 +599,7 @@
         }
       }
     }
-    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0 && floor != min_floor && floor != min_floor1)
+    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0 && floor != 1)
     {
       arr = []
     }
@@ -831,7 +611,8 @@
             sitemap: "#{@community.is_sitemap}" ,
             array: arr,
             floor: "#{@floor}",
-            building: "#{@building}"
+            building: "#{@building}",
+            first_building: "#{@building_list[0]}"
         }
       }).done(function (data) {
         console.log("success");
@@ -865,11 +646,11 @@
   }
   $( ".tour_sortable" ).on( "sortstop", function( event, ui ) {
     tour_stop_id = parseInt($(ui.item.first()).prop("id").replace( /^\D+/g, ''), 10);
-    
+
     /*$.post( "/delete_path_on_sort_change",
       { "tour_stop_id": tour_stop_id },
       function(data,status,xhr) {
-        if(data){          
+        if(data){
         }
       }
     );*/
@@ -886,7 +667,7 @@
         //arr.push(this.children[i].id.split("TourStop_")[1]);
       }
     }
-    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0)
+    if ($('.amenity_row').length == 0 && $('.unit_row').length == 0  && floor != 1)
     {
       arr = []
     }
@@ -898,7 +679,9 @@
         data: {
             sitemap: "#{@community.is_sitemap}" ,
             array: arr,
-            floor: "#{@floor}"
+            floor: "#{@floor}",
+            building: "#{@building}",
+            first_building: "#{@building_list[0]}"
         }
       }).done(function () {
         console.log("success");
@@ -910,10 +693,22 @@
     $('.hidden_floor').val(this.textContent);
     $('.floor_submit_btn').click();
   });
+  $('.tour_time_sortable').railsSortable();
   $('.tour_sortable').railsSortable();
-  
+  $(".tour_time_sortable").on( "sortchange", function( event, ui ) {
+    $(".apply-monday-btn").addClass("hide-apply-btn");
+    $("#add-btn").addClass("hide-add-btn");
+    $(".day-list").attr('disabled','disabled');
+    $("#save-sorted-time").removeClass("hide-sort-btn");
+    $("#save-sorted-time").addClass("blink");
+
+  });
+  function ok (){
+   location.reload();
+  }
+
   community_id = #{params[:community_id]}
-  
+
   cords_arr = JSON.parse('#{raw(path_point_coords.to_json)}');
 
   $('.floor_submit_btn').click(function () {
@@ -938,11 +733,11 @@
   // });
   $(document).ready(function(){
     var path_id;
-    
+
     radius = 50;
     var point_color = 'rgb(85, 88, 85)';
     var point_size = 20;
-    
+
     path_array = $(".path_point")
     if (path_array.length > 0){
       $(".plot-image").append(createLine('#stop_'+document.getElementById($(".path_point")[0].id).getAttribute('value'), path_array[0]))
@@ -955,9 +750,11 @@
         }
       }
     }
-    
-    
-    // add listner to prev points 
+
+
+
+    // add listner to prev points
+
     $.each($("*.path_point"), function(i, existing_point){
       id = $(existing_point).prop('id');
       dragElement(document.getElementById(id));
@@ -965,6 +762,9 @@
 
      $.each($("*.stop"), function(i, elevator){
        makeElevatorDragable(elevator);
+     });
+     $.each($("*.bsp_stop"), function(i, bsp){
+       makeBuildingStartingPointDragable(bsp);
      });
 
     $("#testimg").on('click', function (ev) {
@@ -999,13 +799,46 @@
           },
 
           stop: function(event, ui) {
-            elevator_id = $(elevator).prop('id').split('_')[1]
+
+          elevator_id = $(elevator).prop('id').split('_')[1]
             left = Math.round(ui.position.left )
             right = Math.round(ui.position.top );
             $.ajax({
               type: "POST",
               url: "#{update_elevator_path}",
               data: {elevator_id: elevator_id, x_plot: left, y_plot: right },
+              success: function(response) {
+                console.log(response.message)
+              }
+            });
+          }
+
+       });
+    }
+    function makeBuildingStartingPointDragable(bsp){
+      bsp_id = $(bsp).prop('id').split('_')[1]
+      $(bsp).draggable({
+        containment: 'parent',
+          start: function(event, ui) {
+            console.log("start drag")
+            xpos = Math.round(ui.position.left);
+            ypos = Math.round(ui.position.top);
+          },
+
+          drag: function(event, ui) {
+            // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
+            xmove = ui.position.left - xpos;
+            ymove = ui.position.top - ypos;
+          },
+
+          stop: function(event, ui) {
+            bsp_id = event.target.id.split("_")[1]
+            left = Math.round(ui.position.left )
+            right = Math.round(ui.position.top );
+            $.ajax({
+              type: "POST",
+              url: "#{update_building_starting_point_community_tours_path}",
+              data: {bsp_id: bsp_id, x_plot: left, y_plot: right },
               success: function(response) {
                 console.log(response.message)
               }
@@ -1048,7 +881,7 @@
       path_array.push(path_point)
       start_point_array.push(db_data.line_start_point)
       stop_point_array.push(db_data.line_stop_point)
-      
+
       if(path_array.length == 1 && db_data.line_start_point != "" ){
         line = createLine($('#stop_'+db_data.line_start_point), path_array[path_array.length-1])
         $(".plot-image").append(line)
@@ -1060,7 +893,7 @@
       }
       else if(db_data.line_start_point == null){
         line = createLine(path_array[path_array.length-1], path_array[path_array.length-2])
-        $(".plot-image").append(line) 
+        $(".plot-image").append(line)
       }
       else if(path_array.length > 1 && db_data.line_start_point != "" && db_data.exist){
         // debugger;
@@ -1104,7 +937,7 @@
         if(d <= radius)
           neighbour_unit_ids.push(index)
       });
-      
+
       return neighbour_unit_ids
     }
 
@@ -1117,7 +950,7 @@
 
     function updatePoint(x, y, unit_ids, point_id){
       $.post( "/update_path_point",
-        { 
+        {
           "x_plot": x,
           "y_plot": y,
           "point_id": point_id,
@@ -1134,7 +967,7 @@
       elmnt.onmousedown = dragMouseDown;
 
       function dragMouseDown(e) {
-      
+
         e = e || window.event;
         e.preventDefault();
         // get the mouse cursor position at startup:
@@ -1190,7 +1023,7 @@
       event.preventDefault();
     });
 
-    
+
     var arr = []
     data = []
     var highlights = []
@@ -1221,7 +1054,7 @@
         var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
         var stop_2_id = url2.split('?')[0]
         var stop_2_type = url2.split('=')[1]
-        
+
         stop_ids = [stop_1_id, stop_2_id]
         stop_types = [stop_1_type, stop_2_type]
         $.ajax({
@@ -1266,7 +1099,7 @@
                 scrollTop: $(".plot-image").offset().top
               }, 500);
             }
-            
+
             //update drawing path for so we can use that path id to save point
           }
 
@@ -1302,11 +1135,11 @@
       var dx = 0;
       var dy = 0;
       var width = $(el).width()|0;
-      var height = $(el).height()|0;  
+      var height = $(el).height()|0;
       dx += parseInt($(el).css('left'), 10);
       dy += parseInt($(el).css('top'), 10);
-      
-      
+
+
       return { top: dy, left: dx, width: width, height: height };
     }
 
@@ -1316,7 +1149,7 @@
       // center of first point
       var dx1 = off1.left + off1.width/2;
       var dy1 = off1.top + off1.height/2;
-      // center of second point 
+      // center of second point
       var dx2 = off2.left + off2.width/2;
       var dy2 = off2.top + off1.height/2;
       // distance
@@ -1432,22 +1265,23 @@
           <select class="day-list font-17-v pull-left mr-20-v" id="day_${current_day}" name="day_${current_day}">
             ${new_day_with_selected_options}
           </select>
-          
+
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">From</label>
             </div>
-            <input class="day-list bg-grey-v" name="from_${current_day}" type="time" value="09:00">
+            <input class="day-list bg-grey-v morning_time" name="from_${current_day}" type="time" value="09:00">
           </div>
-          
+
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">To</label>
             </div>
-            <input class="day-list bg-grey-v" name="to_${current_day}" type="time" value="17:00">
+            <input class="day-list bg-grey-v evening_time" name="to_${current_day}" type="time" value="17:00">
           </div>
-          
-          <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger"></div>
+
+          <div class="font-17-v pt-5 cancel fa fa-v fa-times text-danger" style="margin-left: 8px;"></div>
+
         </div>`);
     }
     var current_day = $(".list").children().length
@@ -1455,6 +1289,8 @@
   $('#add-btn').click(function(event){
     current_day = current_day + 1
     append_new_day()
+    $(".apply-monday-btn").addClass("hide-apply-btn");
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
     event.preventDefault();
   });
 
@@ -1469,7 +1305,7 @@
       if(times_hash[day_] == undefined)
       {
         times_hash[day_] = []
-      } 
+      }
       times_hash[day_].push(times_list[i].value +'-'+ times_list[i+1].value);
       days.push(day_);
       i += 2;
@@ -1510,5 +1346,77 @@
       }
     })
   }
+  if ($(".list").children().length < 7)
+      $('#add-btn').show()
   });
+  
   });
+  function myFunction(){
+    $("#schedule-btn-submit").removeClass("hide-save-btn");
+    $(".tour_time_sortable").sortable( "disable" );
+    $("#schedule-btn-submit").addClass("blink");
+
+  }
+
+
+
+  if (!#{current_user.welcome_tour_setup})
+  {
+    $('[data-toggle="tourStopsLogoPopover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Drag and drop stops in the list below to rearrange them.</div><div class="popover-footer"><a id="tourStopsLogoPopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  }
+
+    $(document).on("click", "#tourStopsLogoPopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="add_amenity_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Amenities are added on the "Amenities" page. Select an amenity from the list below to add it to the tour.</div><div class="popover-footer"><a id="add_amenity_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#add_amenity_PopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="add_unit_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Units are imported on the "Data" page and can be edited on the "Units" page. Select a unit from the list below to add it to the tour. If a unit is not on the list, it may be because it is not plotted on the map.</div><div class="popover-footer"><a id="add_unit_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#add_unit_PopoverId" , function(){
+        $('html, body').animate({ scrollTop: 600 });
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="add_starting_point_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to mark the location on the map below where your visitors will start their tours. Fill in the information in the fields. Then click on "Plot Starting Point" and click on the map to add the location. Drag and drop the dot to relocate it. /div><div class="popover-footer"><a id="add_starting_point_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#add_starting_point_PopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="building_entry_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to add a building entrance. A red dot will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the entrance name, building number, floor number, and directional text.</div><div class="popover-footer"><a id="building_entry_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#building_entry_PopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        $('[data-toggle="add_elevator_Popover"]').popover({
+        html: true,
+        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to add an elevator. Three horizontal lines will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the elevator name, image, and the floors it services. </div><div class="popover-footer"><a id="add_elevator_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#add_starting_point_PopoverId" , function(){
+        $(this).parents(".popover").popover('hide');
+        $(this).parents(".popover").addClass('hidden');
+        #{current_user.welcome_tour_setup = true}
+        #{current_user.save}
+    });

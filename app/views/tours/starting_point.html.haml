@@ -184,7 +184,7 @@
      }
      else
      {
-      window.history.back();
+      window.location.href = '/communities/#{@community.id}/tours';
      }
   }
   if (#{@tours.x_plot.to_i + @tours.y_plot.to_i == 0})

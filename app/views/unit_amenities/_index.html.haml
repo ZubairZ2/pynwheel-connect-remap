@@ -7,10 +7,22 @@
       .slide-image
         .image-box.video-box
           .images.height-200
-            %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-              = image_tag amenity.image.url
+            - rn =  rand(9999999999999999999999999)
+            - if amenity.present?
+              - if amenity.crop_x.present?
+                %a.preview-image{:href=> amenity.image.url  + "?timestamp=#{rn}","data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+                  = image_tag amenity.crop_x.present? ? amenity.image.url  + "?timestamp=#{rn}" : amenity.image.url  + "?timestamp=#{rn}", id: "cropbox"
+
+              - else
+                %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+                  = image_tag amenity.image.url
+            - else
+              %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+                = image_tag amenity.image.url
+
+
         .icons
-          = link_to edit_community_amenity_path(@community,amenity) << "?from=unit" do
+          = link_to edit_community_amenity_path(@community,amenity) << "?from=unit&unit=#{@unit.id}" do
             %i.fa.fa-pencil
           -# = link_to edit_community_unit_amenity_path(@community,@unit,amenity), remote: true do
           -#   %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}

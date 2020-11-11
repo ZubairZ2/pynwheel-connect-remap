@@ -13,8 +13,14 @@ class AvatarUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
    def filename
-     if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage)
-       if model.is_a? Floorplan
+     if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage) || (model.is_a? Amenity) || (model.is_a? Unit)
+       if model.is_a? Amenity
+         if  model.crop_x.present?
+           @name = original_filename
+         else
+           @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
+         end
+       elsif model.is_a? Floorplan
          if !model.image_bit.nil? && model.crop_x.present?
            @name = original_filename
          elsif !model.image_bit.nil? && model.crop_x_secondary.present?
@@ -23,6 +29,14 @@ class AvatarUploader < CarrierWave::Uploader::Base
            @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
          end
        elsif model.is_a? Community
+         if !model.image_bit.nil? && model.crop_x.present?
+           @name = original_filename
+         elsif !model.image_bit.nil? && model.crop_x_secondary.present?
+           @name = original_filename
+         else
+           @name ||= "#{model.id}-#{timestamp}-#{SecureRandom.hex(4)}-#{super}" if original_filename.present? and super.present?
+         end
+       elsif model.is_a? Unit
          if !model.image_bit.nil? && model.crop_x.present?
            @name = original_filename
          elsif !model.image_bit.nil? && model.crop_x_secondary.present?
@@ -47,7 +61,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
     resize_to_fit(200, 200)
   end
 
-  process :quality => 40
+  process :quality => 40 , :if => :image?
   process :resize_id_card
 
   # process optimize: [{quality: 20, level: 7}]
@@ -56,7 +70,9 @@ class AvatarUploader < CarrierWave::Uploader::Base
     var = :"@#{mounted_as}_timestamp"
     model.instance_variable_get(var) or model.instance_variable_set(var, Time.now.to_i)
   end
-
+  def image?(file)
+    file.content_type.include?('png') || file.content_type.include?('jpg') || file.content_type.include?('jpeg')
+  end
   def store_dir
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
   end
@@ -151,8 +167,44 @@ class AvatarUploader < CarrierWave::Uploader::Base
           end
         end
       end
+    elsif  model.is_a? Unit
+      if (model.image_bit.nil? ? false : model.image_bit) && model.crop_x.present?
+        manipulate! do |img|
+
+          xx = model.crop_x
+          yy = model.crop_y
+          ww = model.crop_w
+          hh = model.crop_h
+          img.crop!(xx, yy, ww, hh)
+          img
+        end
+      else
+        if (model.image_bit.nil? ? false : !model.image_bit) && model.crop_x_secondary.present?
+          manipulate! do |img|
+
+            xx = model.crop_x_secondary
+            yy = model.crop_y_secondary
+            ww = model.crop_w_secondary
+            hh = model.crop_h_secondary
+            img.crop!(xx, yy, ww, hh)
+            img
+          end
+        end
+      end
+      if model.is_a? Amenity
+        if model.crop_x.present?
+          manipulate! do |img|
+            xx = model.crop_x
+            yy = model.crop_y
+            ww = model.crop_w
+            hh = model.crop_h
+            img.crop!(xx, yy, ww, hh)
+            img
+          end
+        end
+    end
     else
-      if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage)
+      if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage) || (model.is_a? Amenity)
         if model.crop_x.present?
           manipulate! do |img|
             xx = model.crop_x

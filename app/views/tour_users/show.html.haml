@@ -21,8 +21,11 @@
           SUMMARY
           %span
             #{@tour_user.name}
-        - unless @chatroom_id == 0 
-          = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right", data: { toggle: "modal", target: "#ChatSupport_a" })
+        - if (current_user.is_super_admin?)
+          %button.btn-danger.pii_delete.mb-20{:style => "padding: 4px; margin-left: 8px; margin-top: 0px;  margin-bottom: 0px; float: right;", "data-name"=>"visitor","data-href" => "/communities/#{@community.id}/tour_users/#{@tour_user.id}?delete_all=true","data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
+            Remove all PII
+        - unless @chatroom_id == 0
+          = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right; margin-right: 8px;", data: { toggle: "modal", target: "#ChatSupport_a" })
         -#%span{:style => "float: right;"}
         -#  #{Time.zone.now}
         -#%span{:style => "float: right;"}
@@ -49,74 +52,110 @@
                 .col-lg-6
                   .col-lg-12.name_div{:style => "background: #efefef; margin: 30px; left: 17px;  width: 92%; display: inline-flex; align-items: center;"}
                     .col-lg-3.col-md-3.col-sm-2.col-xs-6
-                      = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                      - if @tour_user.image.present?
+                        - if @tour_user.image.url.include? "default-user128x128.jpg"
+                          Removed at Consumer Request
+                        - else
+                          = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                      - else
+                        = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
                     .col-lg-3.col-md-3.col-sm-3.col-xs-12.email_div{:style => " "}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
                       %br
-                      %a.mt-5
+                      - if @tour_user.email == "Removed at Consumer Request"
+                        .mt-5
                         #{@tour_user.email}
+                      - else
+                        %a.mt-5
+                          #{@tour_user.email}
                       %br
                       .mt-5
                         #{@tour_user.phone_number}
                     .col-lg-6.col-md-6.col-sm-6.col-xs-6
-                      = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+                      - if @tour_user.id_card.present?
+                        - if @tour_user.id_card.url.include? "default_id_card.jpg"
+                          Removed at Consumer Request
+                        - else
+                          = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+                      - else
+                        = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+
                   - if @tour_user.desired_bedroom.present?
                     .col-lg-12
                       %h4{:style => "margin-left: 15px;margin-top: -20px; font-size: inherit;"}
-                        Desired Number of Bedrooms: #{@tour_user.desired_bedroom}      
+                        Desired Number of Bedrooms: #{@tour_user.desired_bedroom}
                   .row
                     %h4{:style => "margin-left: 45px"}
                       Alert
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          This section will show the time the tour began, how long the tour lasted, and when the tour ended.
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
-                    - @alerts.order("id DESC").each_with_index do |alert,index|
-                      - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
-                      .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
-                        .alert-div1{:style => "margin-top: 10px"}
-                          = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                          - if alert.arrived.present?
-                            - if alert.my_time_zone.present?
-                              - begin 
-                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
-                              - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone 
+                    - if @alerts.last.history == false
+                      - @alerts.order("id DESC").each_with_index do |alert,index|
+                        - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
+                        .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
+                          .alert-div1{:style => "margin-top: 10px"}
+                            = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - if alert.arrived.present?
+                              - if alert.my_time_zone.present?
+                                - begin
+                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                                - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                              - else
                                 #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
-                            - else
-                              #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
-                        %br
-                        .alert-div2{:style => "margin-top: -10px"}
-                          = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                          #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
-
-                        %br
-                        .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
-                          = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                          - if end_time.present?
-                            - if alert.my_time_zone.present?
-                              - begin
-                                #{end_time.to_date} #{end_time.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
-                              - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                          %br
+                          .alert-div2{:style => "margin-top: -10px"}
+                            = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+                          %br
+                          .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
+                            = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - if end_time.present?
+                              - if alert.my_time_zone.present?
+                                - begin
+                                  #{end_time.to_date} #{end_time.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                                - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                                  #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                              - else
                                 #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
-                            - else
-                              #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
-                  //Tour Tracking
+                    - else
+                      Removed at Consumer Request
                   %h4{:style => "margin-left: 30px"}
                     Tour Tracking
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        This section will show you where the visitor went on their tour and when online controlled access points were unlocked (if applicable).
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "margin-top: 10px;margin-left: 15px;margin-right: 15px;"}
                     - unless @community.is_sitemap
                       .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-left: 0px;"}
                         = select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
                       .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-right: 0;"}
                         - begin
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - if @alerts.last.history == false
+                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - elsif @alerts.last.history == true
+                            Removed at Consumer Request
                         - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - if @alerts.last.history == false
+                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - elsif @alerts.last.history == true
+                            Removed at Consumer Request
 
                     - else
                       .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
                         - begin
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - if @alerts.last.history == false
+                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - elsif @alerts.last.history == true
+                            Removed at Consumer Request
                         - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - if @alerts.last.history == false
+                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                          - elsif @alerts.last.history == true
+                            Removed at Consumer Request
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
                     -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
@@ -154,11 +193,17 @@
 
 
                 .col-lg-6
+                  %h4{:style => "margin-left: 30px"}
+                    Stops Visited
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        This section will show you what time each stop that was visited on the tour, and photos and notes that were taken by the visitor at each stop.
                   .col-lg-12{:style => "background: #efefef; margin: 30px; height: -webkit-fill-available; width: -webkit-fill-available; overflow: auto;"}
+
                     - @visited_stop.each do |stop|
                       - @stop = TourStop.find stop[0].to_i rescue next
                       - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
-                      -unless @stop.is_a? Elevator
+                      -unless (@stop.is_a? Elevator) || (@stop.is_a? BuildingStartingPoint) || (stop[0].to_i == @community.tour.id)
                         .row{:style => "margin-top: 3px;"}
                           - image_hit = true
                           - description_hit = true
@@ -459,6 +504,13 @@
   function plot_data(){
     var is_sitemap = #{ @community.is_sitemap};
     var tour_history_id = $('#tour_histories_dates :selected').val()
+    var dwelo_id;
+    if(#{@community.dwelo.present?}){
+     dwelo_id = "present"
+     }
+    else{
+      dwelo_id = false
+    }
     if (is_sitemap == false)
       var floorplate_id = $('#floorplates_images :selected').val()
     else
@@ -471,6 +523,9 @@
           type: 'GET',
           dataType: 'json',
           cache: false,
+          data:  {
+          dwelo_id
+            },
           url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/lock_ploting?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
           success: function(data){
             $(".asdasd").children('i').remove()
@@ -511,3 +566,4 @@
   $("#tour_histories_dates").change(function () {
         plot_data()
   })
+

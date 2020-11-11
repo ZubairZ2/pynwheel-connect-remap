@@ -1,8 +1,9 @@
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
-json.visual_id_verification @scheduled_tour.present? ? (@community.present? ? @community.tour.visual_id_verification : true) : false
-json.virtual_tour @scheduled_tour.present? ? true : false # seding reverse value due to last name 'ontime'
+json.visual_id_verification @in_visiting_hours == true ? (@community.present? ? @community.tour.visual_id_verification : true) : false
+json.virtual_tour @in_visiting_hours == true ? true : false   # seding reverse value due to last name of json field i.e 'ontime'
+
 
 # @tours.each do |tour|
 #   if tour[0][1] == last_vs.tour_key
@@ -35,7 +36,9 @@ json.tours tours do |tour|
     @tour = TourStop.find visited_stop rescue next
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop,description: nil, image: nil).last
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
-    if @tour.stop_type != "elevator"
+    stop = VisitedStop.where(tour_user_id: @tour_user.id,tour_stop_id: @tour.id).last unless stop.present?
+    
+    if @tour.stop_type != "elevator" && tours[0].id != @tour.id
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
       json.type @tour.stop_type

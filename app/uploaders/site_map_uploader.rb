@@ -9,6 +9,12 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   # Choose what kind of storage to use for this uploader:
   #storage :file
   process :set_file_dimensions
+
+  def set_file_dimensions
+    if image?(file)
+      resize_to_fill(1412, 932)
+    end
+  end
   #resize_to_fill(1412, 932) 
   #process convert: 'png' ,:if => :svg?
   storage Rails.env.development? ? :file : :fog 
@@ -25,18 +31,18 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   end
   # process optimize: [{quality: 50, level: 7}]
 
-  process :quality => 40
-  def set_file_dimensions
-    if image?(file)
-      # manipulate! do |source|
-      #   overlay_path = Rails.root.join("app/assets/images/bg.png")
-      #   overlay = Magick::Image.read(overlay_path).first
-      #   source = source.resize_to_fit(1412, 932)
-      #   overlay.composite!(source, Magick::CenterGravity, Magick::OverCompositeOp)
-      # end
-      resize_to_fit(1412, 932)
-    end
-  end
+  process :quality => 40,  :if => :image?
+  # def set_file_dimensions
+  #   if image?(file)
+  #     # manipulate! do |source|
+  #     #   overlay_path = Rails.root.join("app/assets/images/bg.png")
+  #     #   overlay = Magick::Image.read(overlay_path).first
+  #     #   source = source.resize_to_fit(1412, 932)
+  #     #   overlay.composite!(source, Magick::CenterGravity, Magick::OverCompositeOp)
+  #     # end
+  #     resize_to_fit(1412, 932)
+  #   end
+  # end
 
   def filename
     #if svg?(file)
@@ -58,7 +64,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   protected
 
   def svg?(file)
-    file.content_type == 'image/svg+xml'
+    file.content_type.include?('svg') || file.content_type.include?('svg+xml')
   end
 
   def image?(file)

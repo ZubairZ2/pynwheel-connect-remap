@@ -56,7 +56,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable and :omniauthable
   mount_uploader :avatar, AvatarUploader
   devise :invitable, :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable, :validatable
+         :recoverable, :rememberable, :trackable, :validatable, :timeoutable, :timeout_in => 8.hours
   #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
   ROLES = ["Community admin", "Community manager",["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"]]
   ROLES_DWELO_ADMIN = [["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"]]
@@ -64,6 +64,7 @@ class User < ApplicationRecord
   belongs_to :company
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
+  has_many :logged_in_users, dependent: :destroy
 
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true

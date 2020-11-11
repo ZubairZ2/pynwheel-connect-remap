@@ -4,8 +4,8 @@ class WebpagesController < ActionController::Base
   def index
     @floorplans = []
     if cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]"
-      cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
-      cookies.permanent[:session_id] = SecureRandom.hex(8)
+      cookies[:favorite_unit_ids] = { value: JSON.generate([]), expiry: 5.years.from_now, same_site: :none}
+      cookies[:session_id] = { value: SecureRandom.hex(8), expiry: 5.years.from_now, same_site: :none}
       Favorite.create(session_id: cookies[:session_id],unit_ids: [])
     end
     @units_with_floorplan_info = []
@@ -90,7 +90,7 @@ class WebpagesController < ActionController::Base
     array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
     @unit = Unit.find params[:unit_id]
     array << params[:unit_id]
-    cookies.permanent[:favorite_unit_ids] = JSON.generate(array)
+    cookies[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
     favorite = Favorite.find_by_session_id(cookies[:session_id]) 
     favorite.unit_ids << params[:unit_id]
     fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.create(community_id: @community.id) 
@@ -103,7 +103,7 @@ class WebpagesController < ActionController::Base
     array = JSON.parse(cookies[:favorite_unit_ids])
     @unit = Unit.find params[:unit_id]
 
-    cookies.permanent[:favorite_unit_ids] = JSON.generate(array) 
+    cookies[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
     favorite = Favorite.find_by_session_id(cookies[:session_id]) 
     fs = @community.favorite_stop if @community.favorite_stop.present?
     if fs.present?
@@ -114,8 +114,7 @@ class WebpagesController < ActionController::Base
     favorite.save
     updated_unit_ids = []
     updated_unit_ids << favorite.unit_ids
-    cookies[:favorite_unit_ids] = updated_unit_ids
-    cookies.permanent[:favorite_unit_ids] = updated_unit_ids
+    cookies[:favorite_unit_ids] = { value: updated_unit_ids, expiry: 5.years.from_now, same_site: :none}
   end
 
   def favorites
@@ -134,7 +133,7 @@ class WebpagesController < ActionController::Base
   end
 
   def clear_favorites
-    cookies.permanent[:favorite_unit_ids] = JSON.generate([]) 
+    cookies[:favorite_unit_ids] = { value: JSON.generate([]), expiry: 5.years.from_now, same_site: :none}
     favorite = Favorite.find_by_session_id(cookies[:session_id]) 
     favorite.unit_ids = []
     favorite.save

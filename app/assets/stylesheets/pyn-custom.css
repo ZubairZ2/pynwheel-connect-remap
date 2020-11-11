@@ -2895,18 +2895,20 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .tooltip1 #tooltiptext1 {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
-    text-align: center;
+    background-color: #000000;
+    color: white;
+    text-align: left;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
     z-index: 1;
     bottom: 150%;
     left: 50%;
-    margin-left: -60px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 15px;
+    margin-left: -67px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 1.3;
 }
 
 .tooltip1 #tooltiptext1::after {
@@ -2942,18 +2944,20 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .unit_manualoverride #unit_manualoverride_text {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
-    text-align: center;
+    background-color: #000000;
+    color: white;
+    text-align: left;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
     z-index: 1;
     bottom: 150%;
     left: 50%;
-    margin-left: -60px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 15px;
+    margin-left: -67px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 1.3;
 }
 
 .unit_manualoverride #unit_manualoverride_text::after {
@@ -2978,18 +2982,20 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .unit_sold #unit_sold_text {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
-    text-align: center;
+    background-color: #000000;
+    color: white;
+    text-align: left;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
     z-index: 1;
     bottom: 150%;
     left: 50%;
-    margin-left: -60px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 15px;
+    margin-left: -67px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 1.3;
 }
 
 .unit_sold #unit_sold_text::after {
@@ -3097,9 +3103,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .propertyDetailName #propertyDetailNameText {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
-    text-align: center;
+    background-color: #000000;
+    color: white;
+    text-align: left;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
@@ -3107,8 +3113,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     bottom: 150%;
     left: 50%;
     margin-left: -60px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 15px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 1.3;
 }
 
 .propertyDetailName #propertyDetailNameText::after {
@@ -3135,9 +3143,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .select_amenity #select_amenityText {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
-    text-align: center;
+    background-color: #000000;
+    color: white;
+    text-align: left;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
@@ -3145,8 +3153,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     bottom: 150%;
     left: 50%;
     margin-left: -220px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 15px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 1.3;
 }
 
 .select_amenity #select_amenityText::after {
@@ -3172,9 +3182,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .additionalPageAction #additionalPageActionText {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
-    text-align: center;
+    background-color: #000000;
+    color: white;
+    text-align: left;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
@@ -3182,8 +3192,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     bottom: 150%;
     left: 50%;
     margin-left: -320px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 15px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 1.3;
 }
 
 .additionalPageAction #additionalPageActionText::after {
@@ -3224,9 +3236,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .floorplanMassUploadPopName #floorplanMassUploadPopNameText {
     visibility: hidden;
     width: 350px;
-    background-color: #e0e0e0;
-    color: black;
-    text-align: center;
+    background-color: #000000;
+    color: white;
+    text-align: left;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
@@ -3234,8 +3246,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     bottom: 150%;
     left: 50%;
     margin-left: -170px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 15px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 1.3;
 }
 
 .floorplanMassUploadPopName #floorplanMassUploadPopNameText::after {
@@ -3429,6 +3443,76 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     transform: rotate(90deg);
 }
+.hide-save-btn {
+    display: none;
+}
+.hide_email {
+    display: none;
+}
+.hide-apply-btn {
+    display: none;
+}
+.hide-sort-btn {
+    display: none;
+}
+.hide-add-btn {
+    display: none;
+}
+@-moz-keyframes blink {0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;}} /* Firefox */
+@-webkit-keyframes blink {0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;}} /* Webkit */
+@-ms-keyframes blink {0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;}} /* IE */
+@keyframes blink {0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;}} /* Opera */
+
+.blink {
+    text-align:center;
+    border-radius: 5px;
+    -moz-transition:all 0.5s ease-in-out;
+    -webkit-transition:all 0.5s ease-in-out;
+    -o-transition:all 0.5s ease-in-out;
+    -ms-transition:all 0.5s ease-in-out;
+    transition:all 0.5s ease-in-out;
+    -moz-animation:blink normal 1.5s infinite ease-in-out; /* Firefox */
+    -webkit-animation:blink normal 1.5s infinite ease-in-out; /* Webkit */
+    -ms-animation:blink normal 1.5s infinite ease-in-out; /* IE */
+    animation:blink normal 1.5s infinite ease-in-out; /* Opera */
+}
+.hidden_count_field {
+    display: none;
+}
+
+.unit_amenity_done {
+    display: none;
+}
+.trash_icon_style {
+    color: red;
+    font-size:18px;
+    position: absolute;
+
+}
+.name_cross {
+    color: red;
+    position: relative;
+    top: -13px;
+    right: -12px;
+}
+.history_cross {
+    color: red;
+    position: relative;
+    top: -18px;
+    right: -12px;
+}
+.image_cross {
+    color: red;
+    position: relative;
+    top: -10px;
+    right: -12px;
+}
+.set_image_width {
+    max-width: 100px !important;
+}
+.set_image_width1 {
+    max-width: 10px !important;
+}
 .dwelo-logo{
   height: 45px;
   width: 110px;
@@ -3436,4 +3520,16 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   margin-right: 20px;
   padding-bottom: 15px;
   margin-top: -20px;
+}
+.hide_edgestate{
+    display: none !important;
+}
+.hide_latch{
+    display: none;
+}
+.hide_dwelo {
+    display: none;
+}
+.hide_locks_tour_setup_c_admin {
+    display: none;
 }

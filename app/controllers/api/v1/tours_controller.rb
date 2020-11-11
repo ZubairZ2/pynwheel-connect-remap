@@ -11,7 +11,9 @@ class Api::V1::ToursController < ActionController::Base
       render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
     else
       begin
-      vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false,event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil,event_date: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil)
+        unless (params[:tour_stop_id].to_i == params[:tour_id].to_i)
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false,event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil,event_date: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil) 
+        end
       rescue => ex
         render :json=> {:success=>false, :message => "failed"}
       end
@@ -39,11 +41,11 @@ class Api::V1::ToursController < ActionController::Base
         vs.croped = true
         if vs.id_card.present? && vs.image.present?
           vs.id_selfie_mismatch = false
-          url = Rails.env.production? ? "https://pynwheelapp.com/id_selfie_matching/#{vs.id }" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }"
+          url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
           email_content = "Please verify the user #{vs.name} #{community_name} on the following link <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
           DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-          DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'kashif.aslam@intagleo.com')
+          DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'nawaal.asif@intagleo.com')
         end
         puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{vs.valid?}"
         vs.save!(validate: false)
@@ -105,7 +107,9 @@ class Api::V1::ToursController < ActionController::Base
         rescue => ex
         end
         if a1.present? && a2.present? && a3.present?
-          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date)
+          unless (stop_id.to_i == params[:tour_id].to_i)
+            vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date)
+          end
         end
         if vs.present?
           arr << true
@@ -184,7 +188,7 @@ Android Users:
       gallery_arr = []
       
       visited_stops = []
-
+      vs.delete(params[:tour_id]) rescue ""
       vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
       visited_stops = visited_stops.compact rescue visited_stops
       community = visited_stops.last&.tour.community
@@ -192,7 +196,7 @@ Android Users:
       stops = []
       visited_stops.compact.each_with_index do |x,i|
         puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
-        if x.stop_type != "elevator"
+        if x.stop_type != "elevator" && (x.id != params[:tour_id])
           descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
 
           images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(image: nil)
@@ -211,6 +215,7 @@ Android Users:
         end
       end
       begin
+        shared_tour_stops.delete(params[:tour_id])
         FavoriteMailer.email_shared_tour([shared_tour.email],shared_tour_stops,community).deliver_now
       rescue => ex
         puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"

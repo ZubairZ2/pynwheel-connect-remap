@@ -1395,8 +1395,8 @@ json.apartments do
         json.lease_pricing nil
       end
       if unit.standard_image_url.present? || unit.secondary_image.present?
-        json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : nil
-        json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : nil
+        json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url + (unit.crop_x.present? ? "?temp/"+unit.crop_x.to_s +  unit.standard_image_url.split('/')[ unit.standard_image_url.split('/').count - 1] : "")  : unit.standard_image_url + (unit.crop_x.present? ? "?temp/"+unit.crop_x.to_s +  unit.standard_image_url.split('/')[ unit.standard_image_url.split('/').count - 1] : "")) : nil
+        json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url + (unit.crop_x_secondary.present? ? "?temp/"+unit.crop_x_secondary.to_s +  unit.secondary_image.url.split('/')[ unit.secondary_image.url.split('/').count - 1] : "") : unit.secondary_image.url + (unit.crop_x_secondary.present? ? "?temp/"+unit.crop_x_secondary.to_s + unit.secondary_image.url.split('/')[ unit.secondary_image.url.split('/').count - 1] : "")) : nil
       else
         # json.image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
         # json.secondary_image floorplan.present? ? (floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil) : nil

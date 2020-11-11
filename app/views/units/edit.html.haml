@@ -21,6 +21,8 @@
         / /.box-body
         .box-footer
           = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"
+#crop-unit-secondary-image.modal.fade.edit-image
+#crop-unit-image.modal.fade.edit-image
 - if @community.self_tour    
   %section
     .content
@@ -57,7 +59,7 @@
     .modal-dialog
       .modal-content
         .modal-header
-          %b Upload Interior Image for Multiple Units 
+          %b Upload Interior Image for Multiple Units
         = form_tag '/', :id=>"amenities-for-multiple-units", multipart: true do
           .modal-body.set-floor-modal-body
             %input#units-amenities-images{:multiple => "multiple", :type => "file", :required=>"required"}
@@ -69,7 +71,7 @@
               - if @units.present?
                 - @units.each do |unit|
                   .col-md-3.pt-5.pb-5
-                    = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox'
+                    = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
                     = h unit.marketing_name
           .modal-footer
             = submit_tag 'Submit',:class=>"btn btn-success"
@@ -85,17 +87,65 @@
   var unit_name = '#{ @unit.name }'
   var building_name = '#{ @unit.building.present? ? @unit.building : '' }'
   var community_id = #{ @community.id }
+  var form_id = "#edit_unit_" + #{ @unit.id }
   var lock_name_should_be
 
   if (building_name.length > 0){
-    lock_name_should_be = building_name + '-' + unit_name
-  }
+    lock_name_should_be = building_name + '-' + unit_name}
   else{
-    lock_name_should_be = unit_name
-  }
+    lock_name_should_be = unit_name}
 
   var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
   var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
+
+  var IsSelectedDweloLockMatch = function (){
+    if($('#dwelo_remote_lock :selected').text() != "Select your option"){
+      var index = $('#dwelo_remote_lock :selected').text().lastIndexOf(" ");
+      var lock_name = $('#dwelo_remote_lock :selected').text();
+
+      var name_should_be
+
+      if($('#unit_building').val().length > 0){
+        name_should_be = $('#unit_building').val() + '-' + $('#unit_marketing_name').val()
+      }
+      else{
+        name_should_be = $('#unit_marketing_name').val()
+      }
+
+      if(lock_name != name_should_be){
+        dwelo_device_id = $("#dwelo_remote_lock").val();
+        var dwelo = #{ @community.dwelo.present? ? @community.dwelo.id : "undefined"};
+        unit_lock_device_id = "#{@unit.remote_locks.present? ? @unit.remote_locks.first.device_id : "undefined"}";
+
+        if (dwelo_device_id != unit_lock_device_id){
+          $('#dwelo_remote_lock').addClass('lock_mismatch')
+          $("#dwelo_lock_update_btn").removeClass('hidden')
+
+          var id = $('#dwelo_remote_lock :selected').val()
+          var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + unit_id + '&stop_name=' + unit_name + '&stop_type=unit'
+
+          $("#a-dwelo-lock").attr("href",href);
+        }
+      }
+      else{
+        $('#dwelo_remote_lock').removeClass('lock_mismatch')
+        $("#dwelo_lock_update_btn").addClass('hidden')
+        var id = $('#dwelo_remote_lock :selected').val()
+        $.ajax({
+          type: 'Put',
+          url: "/communities/#{@community.id}/units/#{@unit.id}",
+          data: { lock_id: id, assigning_lock: "true"},
+          cache: false,
+          success: function () {}
+        })
+      }
+    }
+    else{
+      $('#dwelo_remote_lock').removeClass('lock_mismatch')
+      $("#dwelo_lock_update_btn").addClass('hidden')
+      $("#a-dwelo-lock").attr("href","#");
+    }
+  }
   
   var IsSelectedLockMatch = function(){
     if($('#remote_lock :selected').text() != "Select your option"){
@@ -131,7 +181,7 @@
         $("#a-lock").attr("href","#");
     }
   }
-  
+
   function clear_assigned_lock(){
     $.ajax({
       type: 'POST',
@@ -147,43 +197,93 @@
     })
   }
 
-  $(document).ready(function(){
-      var assigned_lock_present = false
-      
-      var params = {"unit_name": unit_name}
+  function get_dwelo_locks(){
+    var assigned_lock_present = false
+    var params = {"unit_name": unit_name}
+    var dwelo = #{ @community.dwelo.present? ? @community.dwelo.id : "undefined"};
+    if (dwelo != undefined){
       $.ajax({
-        type: 'POST',
-        url: '/communities/'+ community_id + '/units/' + unit_id +'/load_remotelock_data',
+        type: 'GET',
+        url: '/communities/' + community_id + '/dwelos',
         dataType: 'json',
-        data: params,
+        data: { params, community_id },
         cache: false,
         success: function(data){
-          locks = data['locks']
+          locks = data
           for (var item in locks) {
-            if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type){
-              $('#remote_lock').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+            if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type && locks[item].dwelo_id == dwelo){
+              $('#dwelo_remote_lock').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name}</option>`)
               assigned_lock_present = true
             }
-            else{
-              $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+            else if (locks[item].dwelo_id == dwelo && locks[item].stop_id == null)
+            {
+              $('#dwelo_remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name}</option>`)
             }
           }
           if(assigned_lock_present == false){
-              $('#remote_lock').prepend(`<option value="" , selected="selected">Select your option</option>`)
+              $('#dwelo_remote_lock').prepend(`<option value="" , selected="selected">Select your option</option>`)
               // clear_assigned_lock()
           }
           else
-            IsSelectedLockMatch()
+            IsSelectedDweloLockMatch()
         },
         fail: function(error){
           console.log(error)
         }
       });
+    }
+  }
+
+  function get_edgestate_locks(){
+    var assigned_lock_present = false
+    var params = {"unit_name": unit_name}
+    $.ajax({
+      type: 'POST',
+      url: '/communities/'+ community_id + '/units/' + unit_id +'/load_remotelock_data',
+      dataType: 'json',
+      data: params,
+      cache: false,
+      success: function(data){
+        locks = data['locks']
+        for (var item in locks) {
+          if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type){
+            $('#remote_lock').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+            assigned_lock_present = true
+          }
+          else{
+            $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
+          }
+        }
+        if(assigned_lock_present == false){
+            $('#remote_lock').prepend(`<option value="" , selected="selected">Select your option</option>`)
+            // clear_assigned_lock()
+        }
+        else
+          IsSelectedLockMatch()
+      },
+      fail: function(error){
+        console.log(error)
+      }
+    });
+  }
+
+  $(document).ready(function(){
+    var params = {"unit_name": unit_name}
+    var locks_provider = "#{ @community.locks_provider.present? ? @community.locks_provider : nil}";
+    
+    if (locks_provider == "EdgeState"){
+      get_edgestate_locks()
+    }
+    else if (locks_provider == "Dwelo") {
+      get_dwelo_locks()
+    }
+  });
+
 
 
       $("#remote_lock").change(function () {
         IsSelectedLockMatch()
-      });      
+      });
 
       $('#unit_building').keyup(function() {
         IsSelectedLockMatch()
@@ -192,22 +292,55 @@
       $('#unit_marketing_name').keyup(function() {
         IsSelectedLockMatch()
       });
-  });
+       $("#dwelo_remote_lock").change(function () {
+        IsSelectedDweloLockMatch()
+      });
 
-  if(#{@unit.amenities.count} == 0)
-  {
-    $('#amenity_image').hide();
-  }
-  if(#{@unit.amenities.count.to_i} > 0)
-  {
-    $('#amenity_image').show();
-  }
+      $('#unit_building').keyup(function() {
+        IsSelectedDweloLockMatch()
+      });
+
+      $('#unit_marketing_name').keyup(function() {
+        IsSelectedDweloLockMatch()
+      });
+
+  $(form_id).submit(function(){
+    if($("#latch_lock_name").val() == '' && $("#latch_key_id").val() != '')
+    {
+      $("#latch_lock_name").prop('required',true);
+      $('.divLoading').removeClass('divLoading')
+    }
+    else if($("#latch_lock_name").val() != '' && $("#latch_key_id").val() == '')
+    {
+      $("#latch_key_id").prop('required',true);
+      $('.divLoading').removeClass('divLoading')
+    }
+  })
 
   $('#select_all_units_for_image').change(function(){
-    if($(this).is(':checked')){
-      $('.image-checkbox').prop('checked',true)
-    }
-    else{
-      $('.image-checkbox').prop('checked',false)
-    }
+      if($(this).is(':checked')){
+        $('.image-checkbox').prop('checked',true)
+      }
+      else{
+        $('.image-checkbox').prop('checked',false)
+      }
+  });
+
+  var $chkboxes = $('.mass-override');
+  var lastChecked = null;
+
+  $chkboxes.click(function(e) {
+      if (!lastChecked) {
+          lastChecked = this;
+          return;
+      }
+
+      if (e.shiftKey) {
+          var start = $chkboxes.index(this);
+          var end = $chkboxes.index(lastChecked);
+
+          $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+      }
+
+      lastChecked = this;
   });

@@ -25,14 +25,17 @@ class SchedualToursController < ApplicationController
   def change_tour_time
     
   end
+  
   def create_tour_user_from
     phone_number = make_phone
     tu = TourUser.find_by(email: params[:tour_user][:email].downcase)
     # tu.name = params[:tour_user][:name] if tu.present?
-    tu = TourUser.new name: (params[:tour_user][:first_name] + " " + params[:tour_user][:last_name]), first_name: params[:tour_user][:first_name], last_name: params[:tour_user][:last_name], email: params[:tour_user][:email].downcase, phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
-    tu.name = (params[:tour_user][:first_name] + " " + params[:tour_user][:last_name])
-    tu.first_name = params[:tour_user][:first_name]
-    tu.last_name = params[:tour_user][:last_name]
+    f_name = params[:tour_user][:first_name].present? ? params[:tour_user][:first_name] : ""
+    l_name = params[:tour_user][:last_name].present? ? params[:tour_user][:last_name] : ""
+    tu = TourUser.new name: (f_name + " " + l_name), first_name: params[:tour_user][:first_name], last_name: params[:tour_user][:last_name], email: params[:tour_user][:email].downcase, phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
+    tu.name = (f_name + " " + l_name)
+    tu.first_name = f_name
+    tu.last_name = l_name
     tu.phone_number = phone_number if phone_number.present?
     tu.desired_bedroom = params[:desired_bedroom]
 
@@ -194,6 +197,7 @@ class SchedualToursController < ApplicationController
     def send_email_and_other_notifications schedual_tour
       tu = schedual_tour.tour_user
       community = schedual_tour.community
+      community_email = community.email.present? ? community.email : 'info@pynwheel.com'
       puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{params}---"
       # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
       app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
@@ -208,7 +212,7 @@ class SchedualToursController < ApplicationController
 
 iPhone Users: Download #{community_text} from the App Store #{app_link}
 
-Android Users: Download #{community_text} from Google Play #{app_link}
+Android Users: Download #{community_text} from Google Play #{android_link}
 #{community.email_text}
 "
       # sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(#{community.name.humanize if community.present?}) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. #{community.email_text}"
@@ -226,7 +230,10 @@ Android Users: Download #{community_text} from Google Play #{app_link}
 
       community_mail = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Lucky you! Someone has scheduled a Self Tour at your property!<br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
-      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,community.email) if (community.alert_contact == "email" || community.alert_contact == "both")
+
+      # DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
+      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,nil,nil,nil,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
+      DelayedSchedulerMailerJob.perform_async("A Self Tour has been scheduled!",community_mail,community.email,nil,nil,nil,nil)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
 
       sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
 
