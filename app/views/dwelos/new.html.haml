@@ -38,7 +38,7 @@
             .box-header
               %p
                 This option allows you to test connection settings in the data section. A new browser window will open and attempt to write the data feed output.
-              = link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
+              = link_to "Test Connection" , test_dwelo_connection_community_dwelos_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
               %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
                 If the page that opens contains a bunch of data, it's probably good! Otherwise you will get the alert message that, Data cannot be imported. Please check the credentails or contact your data provider to troubleshoot.
           .row
