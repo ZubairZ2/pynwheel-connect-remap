@@ -20,9 +20,12 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.active_app = params[:active_app] if params[:active_app].present?
       tour_history.tour_user_id = params[:tour_user_id]
       @tour = Tour.find params[:tour_id]
+      tu = TourUser.find params[:tour_user_id]
+      @tour_history.is_virtual_tour = tu.virtual_tour rescue nil
+      @tour_history.latitude = tu.latitude rescue nil
+      @tour_history.longitude = tu.longitude rescue nil
       if !@tour.visual_id_verification
         begin
-          tu = TourUser.find params[:tour_user_id]
           tu.id_selfie_mismatch = false
           tour_history.desired_bedroom = tu.desired_bedroom
           tu.save
