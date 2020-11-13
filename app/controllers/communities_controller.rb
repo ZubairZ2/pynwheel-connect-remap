@@ -32,7 +32,10 @@ class CommunitiesController < ApplicationController
   def create
     @community = current_company.communities.new(community_params)
     @community.lincoln_app = true if current_company.name.downcase.include?("lincoln") rescue nil
-    @community.name = "(Dwelo) " + @community.name if current_user.is_dwelo_admin?
+    if current_company.name.downcase.include?(CommunityConstants::DWELO_TAG) or current_company.name.downcase.include?(CommunityConstants::DWELO)
+      @community.name = CommunityConstants::DWELO_TAG + @community.name
+      # @community.creator_id = User.where(role: "Dwelo admin").first.id unless current_user.is_dwelo_admin?
+    end
     if @community.save
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
