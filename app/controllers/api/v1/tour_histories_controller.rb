@@ -21,7 +21,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.tour_user_id = params[:tour_user_id]
       @tour = Tour.find params[:tour_id]
       tu = TourUser.find params[:tour_user_id]
-      @tour_history.is_virtual_tour = tu.virtual_tour rescue nil
+      @tour_history.is_virtual_tour = tu.is_virtual_tour rescue nil
       @tour_history.latitude = tu.latitude rescue nil
       @tour_history.longitude = tu.longitude rescue nil
       if !@tour.visual_id_verification
