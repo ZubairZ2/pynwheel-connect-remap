@@ -71,6 +71,7 @@ class YardiRentCafeStaticService < BaseService
                   end
 
                 end
+                unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 if unit.effective_rent <= 0

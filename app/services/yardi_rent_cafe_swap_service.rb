@@ -41,6 +41,7 @@ class YardiRentCafeSwapService < BaseService
                 unit.floorplan_id = r["FloorplanId"]
                 unit.market_rent = r["MinimumRent"]
                 unit.effective_rent = r["MinimumRent"]
+                unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.availability = "Unoccupied"
                 if r["AvailableDate"] != ""
                   unit.available = true
@@ -80,6 +81,7 @@ class YardiRentCafeSwapService < BaseService
                 unit.marketing_name = r["ApartmentName"]
                 unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                 unit.floorplan_id = r["FloorplanId"]
+                unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.market_rent = r["MinimumRent"]
                 unit.effective_rent = r["MinimumRent"]
                 if r["AvailableDate"] != ""
