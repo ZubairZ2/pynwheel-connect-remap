@@ -74,6 +74,7 @@ class YardiRentCafeService < BaseService
                 end
 
                 @unit_record << unit.provider_unit_id
+                unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
