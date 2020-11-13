@@ -40,6 +40,31 @@ class DwelosController < ApplicationController
       end
     end
   end
+
+  def test_dwelo_connection
+    @community = Community.find params[:community_id]
+    if @community.locks_provider == "Dwelo" and @community.dwelo.present?
+      dwelo_client_credentials(@community.dwelo)
+      if @token.present?
+        token_type = "Bearer"
+        auth_header = token_type + " " + @token
+
+        url = base_url + "/v4/integrations/pynwheel/devices/?community_id=" + @community.dwelo.default_community_id
+        xml = HTTParty.get(url,
+                            :headers => {'Authorization' => auth_header,
+                                        'Accept' => 'application/vnd.lockstate+json; version=1'})
+
+        render :xml => xml
+      else
+        flash[:error] = "Data cannot be imported. Please check the credentails or contact your data provider to troubleshoot."
+        redirect_to new_community_dwelo_path(@community)
+      end
+    else
+      flash[:error] = "Please enter the credentials before testing data."
+      redirect_to new_community_dwelo_path(@community)
+    end
+  end
+
   def map_dwelo_locks
     community = Community.find(params[:community_id])
     access_token = dwelo_client_credentials(community.dwelo)

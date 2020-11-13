@@ -94,7 +94,11 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :dwelos
+    resources :dwelos do
+      collection do
+        get :test_dwelo_connection
+      end
+    end
 
     post :save_gallery_settings
     post :save_tour_settings
