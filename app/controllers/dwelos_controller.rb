@@ -60,7 +60,7 @@ class DwelosController < ApplicationController
         redirect_to new_community_dwelo_path(@community)
       end
     else
-      flash[:error] = "Please enter the credentials before testing data."
+      flash[:error] = "Please enter the Dwelo credentials before testing data."
       redirect_to new_community_dwelo_path(@community)
     end
   end

@@ -59,6 +59,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable, :timeoutable, :timeout_in => 8.hours
   #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
   ROLES = ["Community admin", "Community manager",["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"]]
+  ROLES_DWELO_ADMIN = [["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"]]
   ROLES_ADMIN = [ "Community manager"]   
   belongs_to :company
   has_many :community_users,dependent: :destroy
@@ -70,6 +71,10 @@ class User < ApplicationRecord
 
   def all_companies
     Company.all.map(&:name).sort
+  end
+
+  def dwelo_companies
+    Company.where(creator_id: User.where(role: "Dwelo admin").ids).map(&:name).sort
   end
   def name
   	if first_name.nil? and last_name.nil?
