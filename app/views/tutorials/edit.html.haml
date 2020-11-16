@@ -23,7 +23,7 @@
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                       Name
                     .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      = f.text_field :name, :maxlength=>"90", :class=>"form-control save-tutorial-field", :placeholder => "Name"
+                      = f.text_field :name, :maxlength=>"90", :class=>"form-control save-tutorial-field validate[required]", :placeholder => "Name"
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                       Description
@@ -51,9 +51,12 @@
                         Add Video
                       %span
                         = f.object.filename
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    .box-footer
+                    = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 "      
       
                   
-                  = submit_tag 'Save', class: "hidden"
+                  
     = direct_upload_form_for @uploader, :id => "direct_form" do |f|
       = f.file_field :avatar, :id => "video_field",:class => "hidden"
       = f.hidden_field :filename, :id => "filename"
@@ -115,7 +118,7 @@
     }
   });
   $(".divLoading").addClass("hidden");                
-  $('.save-tutorial-field').change(function(){
+  $('.save-tutorial-field1').change(function(){
   $(".divLoading").removeClass("hidden");
     $('.tutorial-form').submit();
   });            

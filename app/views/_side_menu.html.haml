@@ -204,7 +204,7 @@
       - unless (current_user.is_view_visitor_details_page?) 
         %li.loader_class{:class=>"#{controller_name =='Tutorial' && params[:action] == "index" ? 'active' : ''}"}
           %a{:href => "#{community_tutorials_path(current_community)}"}
-            %i.fa.fa-history
+            %i.fa.fa-video-camera
             %span Tutorial      
   / /.sidebar
 / End menu nav left Section 
