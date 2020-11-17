@@ -21,15 +21,14 @@ class RemoteLocksController < ApplicationController
   def update
     stop_id = params[:remote_lock][:stop_id]
     device_id = params[:id]
-    if @community.dwelo.present?
+    if @community.locks_provider == "Dwelo" and @community.dwelo.present?
       remote_lock = RemoteLock.find_by(device_id: device_id, dwelo_id: @community.dwelo.id)
       remote_lock.update_attributes(remote_lock_params)
-    else
-
+    elsif @community.locks_provider == "EdgeState" and @community.edge_state.present?
       remote_lock = RemoteLock.find_by(device_id: device_id, edge_state_id: current_community.edge_state.id)
       remote_lock.update_attributes(remote_lock_params)
     end
-    if remote_lock.dwelo_id.present?
+    if @community.locks_provider == "Dwelo" and remote_lock.dwelo_id.present?
       dwelo_client_credentials(remote_lock.dwelo)
       access_token = @token
       responce = update_dweloo_device(access_token, remote_lock)
@@ -39,7 +38,7 @@ class RemoteLocksController < ApplicationController
       elsif params[:remote_lock][:stop_type] == "amenity"
         redirect_to edit_community_amenity_path(current_community, stop_id), notice: "Remote Lock Updated Successfully"
       end
-    else
+    elsif @community.locks_provider == "EdgeState"
 
       access_token = generate_remotelock_token
       responce = RemoteLockService.new(current_community).update_device(access_token, device_id, remote_lock)

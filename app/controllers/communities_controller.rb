@@ -17,11 +17,11 @@ class CommunitiesController < ApplicationController
       end
     end
     if current_user.is_super_admin?
-      @communities = current_company.communities
+      @communities = alphabetical_sort(current_company.communities)
     elsif current_user.is_dwelo_admin?
-      @communities = current_company.communities # Community.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
+      @communities = alphabetical_sort(current_company.communities) # Community.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
     else
-      @communities = current_user.communities
+      @communities = alphabetical_sort(current_user.communities)
     end
   end
   def new
@@ -68,13 +68,13 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
-    if params[:default_community_id].present?
-      dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
-      unless dwelo_account.present?
-        @dwelo = Dwelo.create!(client_id: "GLAeaxdUJb64yxWwQbzGGGEmnPAW4DaP", client_secret: "wr5RZQfGBqqWyVWLHU2gGWW2g9Qmz2BWSH94yNhfuuZ6GMet" ,community_id: @community.id, default_community_id: params[:default_community_id])
-        load_data(@dwelo.default_community_id)
-      end
-    end
+    # if params[:default_community_id].present?
+    #   dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
+    #   unless dwelo_account.present?
+    #     @dwelo = Dwelo.create!(client_id: "GLAeaxdUJb64yxWwQbzGGGEmnPAW4DaP", client_secret: "wr5RZQfGBqqWyVWLHU2gGWW2g9Qmz2BWSH94yNhfuuZ6GMet" ,community_id: @community.id, default_community_id: params[:default_community_id])
+    #     load_data(@dwelo.default_community_id)
+    #   end
+    # end
   end
   def update_billing_rate
     # @community = Community.find(params[:community_id]) rescue nil

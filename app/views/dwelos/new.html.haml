@@ -68,8 +68,6 @@
         - if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
           .box-info.add-plan
             %img.dwelo-logo{style: "margin-top: -30px;" , :alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
-        %small.text-primary
-          = @community.code
     .box.box-info.add-plan
       .box-header
         %h3.box-title
@@ -87,28 +85,22 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Lock Provider
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .col-sm-6.col-lg-8.col-md-4.col-xs-12
-                    = f.select :default_community_id , options_for_select([["EdgeState","EdgeState"],["Dwelo","Dwelo"]],f.object),{},{:class=>"form-control lock_provider_edge"}
+                  = f.select :default_community_id , options_for_select([["EdgeState","EdgeState"],["Dwelo","Dwelo"],["Latch","Latch"],["Zerv","Zerv"]],f.object),{},{:class=>"form-control lock_provider_edge"}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Client ID
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                  .col-sm-6.col-lg-8.col-md-4.col-xs-12
-                    = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.edge_state.present? ? @community.edge_state.client_id : " "
-                    %small Your public client id of EdgeState Account
+                  = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.edge_state.present? ? @community.edge_state.client_id : ""
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Client Secret
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .col-sm-6.col-lg-8.col-md-4.col-xs-12
-                    = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.edge_state.present? ? @community.edge_state.client_secret : " "
-                    %small Your client secret of EdgeState Account
-                  = f.hidden_field :community_id, :value=> current_community.id
+                  = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.edge_state.present? ? @community.edge_state.client_secret : ""
+                = f.hidden_field :community_id, :value=> current_community.id
         / /.box-body
         .box-footer
-          - if @is_already_exists
-            = f.submit "Update Account", :class=>"btn btn-info pull-right loader_class"
+          - if current_community.edge_state.present?
+            = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
           - else
             = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
     .row#data-connection-buttons
@@ -134,81 +126,249 @@
             .callout.callout-danger
               %p
                 %i.fa.fa-warning
-                This action will either import new, or update existing.
+                This action will either import new, or update existing locks.
             .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
               %button.btn.btn-primary.impo#import_locks{:onclick => "import_edgestate_locks(#{@community.id})", :type => "button"} Import Locks Data
               - if @community.edge_state.present? and @community.edge_state.remote_locks.present?
                 %button.btn.btn-success#map_edgestate_locks{:type => "button"} Map Units
 
+- content_for :title, "Save Latch - Pynwheel", class: "latch hide_latch"
+%section.latch.hide_latch{style: "margin-top: -45px"}
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-laptop
+        = @community.name.capitalize
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Create
+          %span Latch Account
+      = form_for :latch, :url=>community_latch_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal",  multipart: true} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Lock Provider
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select :default_community_id , options_for_select([["Latch","Latch"],["EdgeState","EdgeState"],["Dwelo","Dwelo"],["Zerv","Zerv"]],f.object),{},{:class=>"form-control lock_provider_latch"}
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Client ID
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.latch.present? ? @community.latch.client_id : ""
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Client Secret
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.latch.present? ? @community.latch.client_secret : ""
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Upload CSV File
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = file_field_tag 'file'
+                = f.hidden_field :community_id, :value=> current_community.id
+        / /.box-body
+        .box-footer
+          - if current_community.latch.present?
+            = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
+          - else
+            = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+
+- content_for :title, "Save Zerv - Pynwheel", class: "zerv hide_zerv"
+%section.zerv.hide_zerv{style: "margin-top: -45px"}
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-laptop
+        = @community.name.capitalize
+    .box.box-info.add-plan
+      .box-header
+        %h3.box-title
+          Create
+          %span Zerv Account
+      = form_for :latch, :url=>community_latch_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal",  multipart: true} do |f|
+        .box-body
+          .row
+            .col-lg-9.col-lg-offset-1
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Lock Provider
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select :default_community_id , options_for_select([["Zerv","Zerv"],["EdgeState","EdgeState"],["Latch","Latch"],["Dwelo","Dwelo"]],f.object),{},{:class=>"form-control lock_provider_zerv"}
+                = f.hidden_field :community_id, :value=> current_community.id
+                = f.hidden_field :zerv_selected, :value=> "Zerv"
+        / /.box-body
+        .box-footer
+          = f.submit "Save Provider", :class=>"btn btn-success pull-right loader_class"
+
 :javascript
-   if("#{@community.locks_provider}" == "EdgeState"){
+
+    if("#{@community.locks_provider}" == "EdgeState"){
       $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
       $(".edgestate").removeClass("hide_edgestate");
+      $(".latch").addClass("hide_latch");
       $(".dwelo").addClass("hide_dwelo");
-   }
-    if ("#{@community.locks_provider}" == "Dwelo"){
+      $(".zerv").addClass("hide_zerv");
+    }
+    else if ("#{@community.locks_provider}" == "Dwelo"){
       $(".lock_provider").val($(".lock_provider option:first").val());
       $(".edgestate").addClass("hide_edgestate");
+      $(".latch").addClass("hide_latch");
+      $(".zerv").addClass("hide_zerv");
       $(".dwelo").removeClass("hide_dwelo");
-   }
-  $(".lock_provider").change(function (){
-   lock_provider = $(".lock_provider").val();
-   if (lock_provider == "EdgeState") {
-      $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
-      $(".edgestate").removeClass("hide_edgestate");
-      $(".dwelo").addClass("hide_dwelo");
     }
-   })
-  $(".lock_provider_edge").change(function (){
-   lock_providerr = $(".lock_provider_edge").val();
-   if (lock_providerr == "Dwelo") {
-      $(".lock_provider").val($(".lock_provider option:first").val());
+    else if ("#{@community.locks_provider}" == "Latch"){
+      $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
       $(".edgestate").addClass("hide_edgestate");
-      $(".dwelo").removeClass("hide_dwelo");
+      $(".dwelo").addClass("hide_dwelo");
+      $(".zerv").addClass("hide_zerv");
+      $(".latch").removeClass("hide_latch");
     }
-   })
-   $("#map_locks").click(function (){
-       $.ajax({
-              type: 'POST',
-              url: '/map_dwelo_locks',
-              data: {
-                  community_id: #{@community.id}
-              },
-              success: function (data) {
-              }
-          });
-   })
-  function import_dwelo_locks(community_dwelo_id){
-    var community_id = #{@community.id}
-    $.ajax({
-              type: 'POST',
-              url: '/api/v1/save_data',
-              data: {
-                  dwelo_account_id: community_dwelo_id,
-                  community_id: community_id
-              },
-              success: function (data) {
+    else if ("#{@community.locks_provider}" == "Zerv"){
+      $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
+      $(".edgestate").addClass("hide_edgestate");
+      $(".dwelo").addClass("hide_dwelo");
+      $(".latch").addClass("hide_latch");
+      $(".zerv").removeClass("hide_zerv");
+    }
 
-              }
-          });
-  }
+    $(".lock_provider").change(function (){
+      lock_providerr = $(".lock_provider").val();
+      if (lock_providerr == "EdgeState") {
+        $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
+        $(".edgestate").removeClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".latch").addClass("hide_latch");
+        $(".zerv").addClass("hide_zerv");
+      }
+      else if(lock_providerr == "Latch"){
+        $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
+        $(".latch").removeClass("hide_latch");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".zerv").addClass("hide_zerv");
+      }
+      else if(lock_providerr == "Zerv"){
+        $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
+        $(".zerv").removeClass("hide_zerv");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".latch").addClass("hide_latch");
+      }
+    })
 
-  $("#map_edgestate_locks").click(function (){
+    $(".lock_provider_edge").change(function (){
+      lock_providerr = $(".lock_provider_edge").val();
+      if (lock_providerr == "Dwelo") {
+        $(".lock_provider").val($(".lock_provider option:first").val());
+        $(".dwelo").removeClass("hide_dwelo");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".latch").addClass("hide_latch");
+        $(".zerv").addClass("hide_zerv");
+      }
+      else if(lock_providerr == "Latch"){
+        $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
+        $(".latch").removeClass("hide_latch");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".zerv").addClass("hide_zerv");
+      }
+      else if(lock_providerr == "Zerv"){
+        $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
+        $(".zerv").removeClass("hide_zerv");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".latch").addClass("hide_latch");
+      }
+    })
+
+    $(".lock_provider_latch").change(function (){
+      lock_providerr = $(".lock_provider_latch").val();
+      if (lock_providerr == "EdgeState") {
+        $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
+        $(".edgestate").removeClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".latch").addClass("hide_latch");
+        $(".zerv").addClass("hide_zerv");
+      }
+      else if (lock_providerr == "Dwelo") {
+        $(".lock_provider").val($(".lock_provider option:first").val());
+        $(".dwelo").removeClass("hide_dwelo");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".latch").addClass("hide_latch");
+        $(".zerv").addClass("hide_zerv");
+      }
+      else if(lock_providerr == "Zerv"){
+        $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
+        $(".zerv").removeClass("hide_zerv");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".latch").addClass("hide_latch");
+      }
+    })
+
+    $(".lock_provider_zerv").change(function (){
+      lock_providerr = $(".lock_provider_zerv").val();
+      if (lock_providerr == "EdgeState") {
+        $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
+        $(".edgestate").removeClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".latch").addClass("hide_latch");
+        $(".zerv").addClass("hide_zerv");
+      }
+      else if (lock_providerr == "Dwelo") {
+        $(".lock_provider").val($(".lock_provider option:first").val());
+        $(".dwelo").removeClass("hide_dwelo");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".latch").addClass("hide_latch");
+        $(".zerv").addClass("hide_zerv");
+      }
+      else if(lock_providerr == "Latch"){
+        $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
+        $(".latch").removeClass("hide_latch");
+        $(".edgestate").addClass("hide_edgestate");
+        $(".dwelo").addClass("hide_dwelo");
+        $(".zerv").addClass("hide_zerv");
+      }
+    })
+
+    $("#map_locks").click(function (){
+      $.ajax({
+        type: 'POST',
+        url: '/map_dwelo_locks',
+        data: {community_id: #{@community.id}},
+        success: function (data) {}
+      });
+    })
+
+    function import_dwelo_locks(community_dwelo_id){
       var community_id = #{@community.id}
-       $.ajax({
-              type: 'POST',
-              url: '/communities/' + community_id + '/edgestate_accounts/map_edgestate_locks',
-              cache: false,
-              success: function (data) {},
-              fail: function (data) {},
-          });
-  })
+      $.ajax({
+        type: 'POST',
+        url: '/api/v1/save_data',
+        data: {dwelo_account_id: community_dwelo_id, community_id: community_id},
+        success: function (data) {}
+      });
+    }
 
-  function import_edgestate_locks(community_id){
-    $.ajax({
+    $("#map_edgestate_locks").click(function (){
+      var community_id = #{@community.id}
+      $.ajax({
+        type: 'POST',
+        url: '/communities/' + community_id + '/edgestate_accounts/map_edgestate_locks',
+        cache: false,
+        success: function (data) {},
+        fail: function (data) {},
+      });
+    })
+
+    function import_edgestate_locks(community_id){
+      $.ajax({
         type: 'POST',
         url: '/communities/'+ community_id + '/edgestate_accounts/import_edgestate_locks',
         cache: false,
         success: function (data) {}
       });
-  }
+    }

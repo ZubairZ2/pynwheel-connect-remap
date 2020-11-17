@@ -186,10 +186,9 @@ class Api::V1::CommunitiesController < ActionController::Base
         is_tour_virtual = true
       end
 
-      dwelo_account = Dwelo.find_by(community_id: params[:id]) rescue nil
-      edge_state = EdgeState.find_by(community_id: params[:id]) rescue nil
+      providers_account = @community.locks_provider.classify.constantize.find_by(community_id: params[:id]) rescue nil
 
-      if @community.locks_provider == "Dwelo" and dwelo_account.present? and in_visiting_hours and !is_tour_virtual
+      if providers_account.present? and providers_account.class.name == "Dwelo" and in_visiting_hours and !is_tour_virtual
         Thread.new do
           tour_user = TourUser.find params[:tour_user_id]
           access_token = dwelo_client_credentials(dwelo_account)
@@ -236,7 +235,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
       end
 
-      if @community.locks_provider == "EdgeState" and edge_state.present? and in_visiting_hours  and !is_tour_virtual
+      if providers_account.present? and providers_account.class.name == "EdgeState" and in_visiting_hours and !is_tour_virtual
         Thread.new do
           tour_user = TourUser.find params[:tour_user_id]
           access_token = RemoteLockService.new(@community).client_credentials
@@ -283,6 +282,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           
         end
       end
+      create_latch_reservation(@community, @tour_user, DateTime.now.utc) if providers_account.present? and providers_account.class.name == "Latch" and in_visiting_hours and !is_tour_virtual
       else
         render :json=> {:success=>false, :message => ""}, :status=>500
       end
@@ -611,6 +611,66 @@ class Api::V1::CommunitiesController < ActionController::Base
     current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
   end
 
+  def create_latch_reservation(community, tour_user, start_time)
+    Thread.new do
+      end_time = start_time + 90.minutes
+
+      stops_arr = community.mdu ? community.tour.tour_stops.where(display_stop: true).order(:sort) :  community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+      stops_ids = stops_arr.ids
+
+      unit_ids = TourStop.where(id: stops_ids, stop_type: "unit").pluck(:stop_id)
+      amenity_ids = TourStop.where(id: stops_ids, stop_type: "amenity").pluck(:stop_id)
+
+      units = Unit.where(id: unit_ids).includes(:latch_locks)
+      amenities = Amenity.where(id: amenity_ids).includes(:latch_locks)
+      locks_data = []
+      units.each do |unit|
+        lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        locks_data << lock_info if lock_info.present?
+      end
+      amenities.each do |amenity|
+        lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        locks_data << lock_info if lock_info.present?
+      end
+
+      if locks_data.present?
+        LatchGuest.where(tour_user_id: tour_user.id, community_id: community.id).update_all(status: "deleted")
+        locks_data.each do |lock_info|
+          response = LatchCreateReservationService.call(
+            community_id: community.id,
+            startTime: start_time,
+            endTime: end_time,
+            keyIds: lock_info[0],
+            tour_user: tour_user,
+            allowedKeycardCount: 0
+          )
+
+          latch_link = response["payload"]["message"]["link"]
+
+          if latch_link.present?
+            tour_user.latch_guests.create(community_id: community.id, latch_link: latch_link, guest_of_stop_type: lock_info[1] , guest_of_stop_id: lock_info[2], start_time: start_time.to_i, end_time: end_time.to_i, status: "active")
+
+            # reservation_token = response["payload"]["message"]["reservationToken"] 
+            # response = LatchDoorcodesService.call(community_id: community.id, reservation_token: reservation_token)
+            # if response["payload"]["message"].present?
+            #   begin
+            #     if response["payload"]["message"]["error"].present?
+            #       puts response["payload"]["message"]["error"]
+            #     end
+            #   rescue => ex
+            #     locks = response["payload"]["message"]
+            #     locks.each do |lock|
+            #       latch_lock = LatchLock.find_by(lock_name: lock["lockName"])
+            #       latch_guest.latch_allowed_accesses.create(doorcode: lock["doorcode"], doorcode_type: lock["passcodeType"], stop_id: latch_lock.stop_id, stop_type: latch_lock.stop_type) if latch_lock.present?
+            #     end
+            #   end      
+            # end
+          end
+        end
+      end
+    end
+  end
+  
   def include_application_data
     @version = AppVersion.first.version
     @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])

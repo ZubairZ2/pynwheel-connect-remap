@@ -24,7 +24,16 @@
       .modal-body
         Only JPEG,PNG,JPG,SVG files are allowed
       .modal-footer
-        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok        
+        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok
+#latch-service-response.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#latch-response-header
+      .modal-body#latch-response-body
+        
+      .modal-footer
+        %button.btn.btn-danger{"data-dismiss" => "modal", :type => "button"} Ok
+            
 #video-upload-warning.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content

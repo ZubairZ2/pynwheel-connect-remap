@@ -25,6 +25,7 @@ class TourUser < ApplicationRecord
   has_many :chatrooms, dependent: :destroy
   has_many :as_guests, dependent: :destroy
   has_many :igloo_guests, dependent: :destroy
+  has_many :latch_guests, dependent: :destroy
   has_many :lock_histories, dependent: :destroy
   has_many :prospects, dependent: :destroy
   

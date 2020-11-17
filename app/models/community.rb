@@ -93,6 +93,7 @@ class Community < ApplicationRecord
   has_many :prospects, dependent: :destroy
   has_many :as_guests, dependent: :destroy
   has_many :igloo_guests, dependent: :destroy
+  has_many :latch_guests, dependent: :destroy
   has_many :opening_hours, dependent: :destroy
   has_many :schedual_tours, dependent: :destroy
   has_many :building_starting_point, dependent: :destroy
@@ -100,6 +101,7 @@ class Community < ApplicationRecord
   has_one :tour, dependent: :destroy
   has_one :edge_state, dependent: :destroy
   has_one :dwelo, dependent: :destroy
+  has_one :latch, dependent: :destroy
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design

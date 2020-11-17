@@ -50,12 +50,23 @@ class ChatsController < ApplicationController
     end
 
     def listening_message
+        begin
+            community = Community.find params[:community_id]
+            chat_control = (community.chat_control and community.is_chat_login) ? community.chat_control : false
+            phone = community.phone.present? ? community.phone.scan(/\d/).join('') : ''
+            phone = phone.present? ? ("Please check back later or call the property at: #{phone[-10..-8]}-#{phone[-7..-5]}-#{phone[-4..-1]}") : ''
+            agent_status = chat_control ? "User is live" : "The agent has logged out. #{phone}"
+        rescue => exception
+            chat_control = true
+            agent_status = "User is live"
+        end
+        
         chats = Chat.where("name = ? AND chatroom_id = ? AND id > ?", "Support Team", params[:chatroom_id], params[:last_msg_id]).order(created_at: :desc)
         if chats.present?
             message_history = serailize_messages(chats)
-            render json: {messages: message_history,chatroom_id: params[:chatroom_id],  stats: :OK, code: 200 }
+            render json: {messages: message_history,chatroom_id: params[:chatroom_id], chat_control: chat_control, agent_status: agent_status, stats: :OK, code: 200 }
         else
-            render json: {messages: [],chatroom_id: params[:chatroom_id], stats: :OK, code: 200}
+            render json: {messages: [],chatroom_id: params[:chatroom_id], chat_control: chat_control, agent_status: agent_status, stats: :OK, code: 200}
         end
     end
 
