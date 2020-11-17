@@ -14,7 +14,10 @@
           %h3 Send Invitation
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
           .form-group
-            = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
+            - if current_user.is_super_admin?
+              = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
+            - elsif current_user.is_dwelo_admin?
+              = f.select :company, options_for_select(current_user.dwelo_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
           .row
             .form-group
               .row
@@ -48,7 +51,9 @@
           .form-group
             - if current_user.is_super_admin?
               = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
-            - if current_user.is_community_admin?
+            - elsif current_user.is_dwelo_admin?
+              = f.select :role, options_for_select(User::ROLES_DWELO_ADMIN,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
+            - elsif current_user.is_community_admin?
               = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{},{class: "form-control validate[required]"}
           .form-group
             = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true

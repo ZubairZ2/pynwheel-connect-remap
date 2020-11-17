@@ -22,7 +22,7 @@ class CompaniesController < ApplicationController
 
   def create
     @company = Company.new(company_params)
-    @company.name = "(Dwelo) " + @company.name if current_user.is_dwelo_admin?
+    @company.name = CommunityConstants::DWELO_TAG + @company.name if current_user.is_dwelo_admin?
     if @company.save
       flash[:notice] = "Company created successfully."
       redirect_to companies_path

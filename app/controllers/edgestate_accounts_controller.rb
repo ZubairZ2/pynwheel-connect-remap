@@ -51,6 +51,9 @@ class EdgestateAccountsController < ApplicationController
             flash[:error] = "Data cannot be imported. Please check the credentails or contact your data provider to troubleshoot."
             redirect_to new_community_dwelo_path(@community)
           end
+        else
+          flash[:error] = "Please enter the EdgeState credentials before testing data."
+          redirect_to new_community_dwelo_path(@community)
         end
       end
     
@@ -69,6 +72,9 @@ class EdgestateAccountsController < ApplicationController
                 flash[:error] = "Something went wrong, please check your credentials."
                 render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
             end
+        else
+          flash[:error] = "Please enter the EdgeState credentials before testing data."
+          render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
         end
     end
 

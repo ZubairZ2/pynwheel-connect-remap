@@ -8,7 +8,7 @@ class CommunityGroupsController < ApplicationController
   def create
     @community_group = CommunityGroup.new(community_group_params)
     @community_group.company_id = params[:company_id]
-    @community_group.name = "(Dwelo) " + @community_group.name if current_user.is_dwelo_admin?
+    @community_group.name = CommunityConstants::DWELO_TAG + @community_group.name if current_user.is_dwelo_admin?
     if @community_group.save
       @company = Company.find current_company.id
       redirect_to company_community_groups_path(@company)
