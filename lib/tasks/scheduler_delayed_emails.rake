@@ -138,7 +138,6 @@ namespace :delayed_email_notifications do
 	end
 
 	def one_day_before_emails schedual_tours
-
 	  	schedual_tours.each do |schedual_tour|
 	  
 			begin
