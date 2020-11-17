@@ -21,7 +21,7 @@ json.data @units do |u|
         json.property_id u.property_id
         json.provider_unit_id u.provider_unit_id
         json.unit_type u.unit_type
-        json.marketing_name u.marketing_name
+        json.marketing_name u.building.present? ? u.building + u.marketing_name : u.marketing_name rescue u.marketing_name
         json.floorplan_id u.floorplan_id
         json.market_rent u.market_rent
         json.effective_rent u.effective_rent
