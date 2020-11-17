@@ -77,13 +77,18 @@ namespace :delayed_email_notifications do
 			end
 	  	elsif community.alert_contact == "phone"
 	  		send_sms mail_content[1]
+				if mail_content[0] == "#{community.name} has been visited"
+					send_email_without_humanize mail_content[0], mail_content[1], community
+				else
+					send_email mail_content[0], mail_content[1], community
+				end
 	  	else
-			if mail_content[0] == "#{community.name} has been visited"
-				send_email_without_humanize mail_content[0], mail_content[1], community
-			else
-				send_email mail_content[0], mail_content[1], community
-			end
-	  		# send_sms mail_content[1]
+	  		send_sms mail_content[1]
+				if mail_content[0] == "#{community.name} has been visited"
+					send_email_without_humanize mail_content[0], mail_content[1], community
+				else
+					send_email mail_content[0], mail_content[1], community
+				end
 	  	end
 	end
 	def send_sms message_body
@@ -93,14 +98,15 @@ namespace :delayed_email_notifications do
 	    # end
  	end
   	def send_email_sms_or_both_to_touruser thank_you_msg, community, th
-  		
+
 		if community.alert_contact == "email"
-			send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email
+			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email
 		elsif community.alert_contact == "phone"
-			send_sms_tour_user thank_you_msg
+			send_sms_tour_user thank_you_msg, th
 		else
-			send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email
-			send_sms_tour_user thank_you_msg
+			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email
+			send_sms_tour_user thank_you_msg ,th
+		end
 		end
 	def send_email_to_user_without_humanize subj, body, th=nil, comm_email=nil
 		begin
@@ -130,14 +136,15 @@ namespace :delayed_email_notifications do
 		rescue
 		end
 	end
-	def send_sms_tour_user message_body
+	def send_sms_tour_user message_body,th
 		begin
-			DelayedSchedulerTextJob.perform_async(message_body, self.tour_user.phone_number) if self.tour_user.phone_number.present? 
+			DelayedSchedulerTextJob.perform_async(message_body, th.tour_user.phone_number) if th.tour_user.phone_number.present?
 		rescue
 		end
 	end
 
 	def one_day_before_emails schedual_tours
+
 	  	schedual_tours.each do |schedual_tour|
 	  
 			begin
@@ -162,9 +169,10 @@ Change appointment #{change_tour_time_url(schedual_tour)}?datetime=#{get_date_ti
 			# schedual_tour.update_columns(daily_email_sent: true, day_diff: day_diff)
 			diff = (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(schedual_tour.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y"))) 
 			schedual_tour.update_columns(daily_email_sent: true) if diff == 1
+			
+			DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,nil,nil,nil,community_email) if (diff == 1 && !(community.alert_contact == "phone"))
+			DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (diff == 1 && !(community.alert_contact == "email"))
 
-			DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,nil,nil,nil,community_email) if diff == 1
-			DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if diff == 1
 	  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		end
 	rescue => ex
@@ -208,8 +216,9 @@ Open #{community_text}  #{app_link}
 					# "Your self-guided tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>Open #{community_text} for iPhones <a href=#{app_link} target='_blank'>link</a><br>Open #{community_text} for Android <a href=#{app_link} target='_blank'>link</a> <br>#{community.one_hour_email_text}"
 					schedual_tour.update_columns(hourly_email_sent: true)
 
-					DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,nil,nil, nil, community_email)
-					DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number)
+					DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,nil,nil,nil,community_email) if !(community.alert_contact == "phone")
+					DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if !(community.alert_contact == "email")
+
 			  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 			  end
 			end
