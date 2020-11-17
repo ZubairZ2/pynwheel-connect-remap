@@ -721,8 +721,8 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
-    cookies[:community_id] = @community.id if cookies[:community_id].nil?
-    @community.update_attributes(is_chat_login: true)
+    @community = Community.find params[:id]
+    Community.joins(:users).where(users: {id: current_user.id}, community_users: {chat_enable: true}).update_all(is_chat_login: true)
   end
 
   def community_params

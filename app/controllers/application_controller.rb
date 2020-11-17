@@ -9,7 +9,6 @@ class ApplicationController < ActionController::Base
   helper_method :current_company
   helper_method :alphabetical_sort
   before_action :load_tour_users_chats
-  # before_action :set_cookies
   def current_community
   	if params[:community_id].present?
 	  	@community ||= Community.find params[:community_id]
@@ -47,21 +46,11 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_out_path_for(resource_or_scope)
-    begin
-      LoggedInUser.where(session_id: cookies[:session_id]).destroy_all
-      all_users_count = LoggedInUser.where(community_id: cookies[:community_id].to_i).map{|u| u.logged_in_count}.sum
-      if all_users_count == 0
-        Community.find_by(id: cookies[:community_id].to_i).update_columns(is_chat_login: false)
-        cookies.delete :community_id
-        cookies.delete :session_id
-      end
-    rescue
-    end
     new_user_session_path
   end
 
   def after_sign_in_path_for(resource_or_scope)
-    cookies[:session_id] = SecureRandom.hex(8) if cookies[:session_id].nil?
+    cookies[:browser_id] = SecureRandom.hex(8) if cookies[:browser_id].nil?
     root_url
   end
 
@@ -141,10 +130,6 @@ class ApplicationController < ActionController::Base
     [chatroom.id , min_count]
   end
   
-  # def set_cookies
-  #   cookies[:session_id] = SecureRandom.hex(8) if cookies[:session_id].nil?
-  #   cookies[:community_id] = current_community.id if current_community.present? and cookies[:community_id].nil?
-  # end
 
   def alphabetical_sort(company_or_community_or_community_groups)
     company_or_community_or_community_groups.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
