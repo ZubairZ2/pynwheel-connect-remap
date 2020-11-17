@@ -1,3 +1,6 @@
+description_limit = 90
+styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
+styling_end = '</p></div>'
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
@@ -79,7 +82,19 @@ json.tours tours do |tour|
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
-          json.stop_description unit_amenity.description
+          
+          unit_amenity_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+          
+          if unit_amenity_description.size > description_limit
+            show_long_stop_description = true
+          else
+            show_long_stop_description = false
+          end
+          json.show_long_stop_description show_long_stop_description
+          json.stop_description (show_long_stop_description ? unit_amenity_description[0..description_limit - 1] : unit_amenity_description)
+          json.long_stop_description  styling_start + unit_amenity.description.gsub('red','') + styling_end rescue ""
+
+
           json.directional_text unit_amenity.directional_text
           json.video_link_button_label unit.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
@@ -98,13 +113,37 @@ json.tours tours do |tour|
         json.gallery @unit_gallery_arr do |ag|
           json.name ag.name
           json.image ag.image.url
-          json.description ag.description
+          
+          
+          ag_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          if ag_description.size > description_limit
+            show_long_description = true
+          else
+            show_long_description = false
+          end
+          json.show_long_description show_long_description
+          json.description (show_long_description ? ag_description[0..description_limit - 1] : ag_description)
+          json.long_stop_description  styling_start + ag.description.gsub('red','') + styling_end rescue ""
+          
           json.directional_text ag.directional_text
         end
       elsif @tour.stop_type == "amenity"
         amenity = Amenity.find @tour.stop_id
         json.image amenity.image.present? ? amenity.image.url : "no image"
-        json.stop_description amenity.description
+
+        amenity_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
+          
+        if amenity_description.size > description_limit
+          show_long_stop_description = true
+        else
+          show_long_stop_description = false
+        end
+        json.show_long_stop_description show_long_stop_description
+        json.stop_description (show_long_stop_description ? amenity_description[0..description_limit - 1] : amenity_description)
+        json.long_stop_description  styling_start + amenity.description.gsub('red','') + styling_end rescue ""
+
+
+
         json.name amenity.name
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "") rescue ""
         json.directional_text amenity.directional_text
@@ -122,7 +161,17 @@ json.tours tours do |tour|
           json.name ag.name
           json.type "unit_stop"
           json.image ag.image.url
-          json.description ag.description
+
+          ag_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          if ag_description.size > description_limit
+            show_long_description = true
+          else
+            show_long_description = false
+          end
+          json.show_long_description show_long_description
+          json.description (show_long_description ? ag_description[0..description_limit - 1] : ag_description)
+          json.long_stop_description  styling_start + ag.description.gsub('red','') + styling_end rescue ""
+
           json.directional_text ag.directional_text
         end
       end
