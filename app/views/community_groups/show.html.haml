@@ -43,7 +43,7 @@
                       -#%th Master Community
                       %th{:width => "250"} Actions
                   %tbody
-                    - @community_group.communities.each_with_index  do |f,index|
+                    - alphabetical_sort(@community_group.communities).each_with_index  do |f,index|
                       %tr
                         %td
                           = index+1
