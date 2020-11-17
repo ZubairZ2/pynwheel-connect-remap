@@ -95,6 +95,8 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :latch_accounts
+
     resources :dwelos do
       collection do
         get :test_dwelo_connection
@@ -186,6 +188,7 @@ Rails.application.routes.draw do
     end
     resources :tour_users do
         get :lock_ploting
+        get :checkpoint_verification
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
@@ -448,13 +451,15 @@ Rails.application.routes.draw do
         end
       end
       post :save_shared_tour, to: 'tours#save_shared_tour'
+      post :checkpoint_verification_response, to: 'tours#checkpoint_verification_response'
       get '/get_floorplan_units', to: 'tours#floorplan_units'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 
       # 
       post :save_tour_history, to: 'tour_histories#save_tour_history'
       post :alerts_during_tour, to: 'tour_histories#alerts_during_tour'
-      get :get_tour_history, to: 'tour_histories#get_tour_history' 
+      get :get_tour_history, to: 'tour_histories#get_tour_history'
+
       # ID/Selfie get status
       get :get_id_selfie_mismatch_status, to: 'tours#get_id_selfie_mismatch'
       post :change_id_selfie_mismatch_status, to: 'tour_histories#change_id_selfie_status'
