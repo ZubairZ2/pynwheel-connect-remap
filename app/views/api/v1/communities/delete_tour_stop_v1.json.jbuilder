@@ -494,6 +494,7 @@ json.tours @tours do |tour|
     
     if stop.is_a? Tour 
       json.guest_pin  ""
+      json.latch_link ''
       json.navigation_title navigation_title
       json.id stop.id
       json.x_plot stop.x_plot
@@ -550,18 +551,45 @@ json.tours @tours do |tour|
               if igloo_guest.nil? 
                 pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
                 json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
+                json.latch_link ''
               else
                 json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+                json.latch_link ''
               end
             else
               json.guest_pin ''
+              json.latch_link ''
             end
           else
             _stop_ = Unit.find_by_id stop.stop_id
             if _stop_.present? and _stop_.access_code.present?
               json.guest_pin "Use code " + _stop_.access_code + " to enter."
+              json.latch_link ''
             else
               json.guest_pin ''
+              json.latch_link ''
+            end
+          end
+        elsif @community.locks_provider == "Latch"
+          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id, stop_type: "Unit") if @community.latch.present?
+          if lch.present?
+
+            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: "Unit", status: "active") if @tour_user.present?
+            if latch_guest.present?
+              json.guest_pin ''
+              json.latch_link latch_guest.latch_link
+            else
+              json.guest_pin ''
+              json.latch_link ''
+            end
+          else
+            stop = Amenity.find_by_id stop.stop_id
+            if stop_.present? and stop_.access_code.present?
+              json.guest_pin "Use code " + _stop_.access_code + " to enter."
+              json.latch_link ''
+            else
+              json.guest_pin ''
+              json.latch_link ''
             end
           end
         else
@@ -569,19 +597,23 @@ json.tours @tours do |tour|
           unit_dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).first rescue nil
           if _stop_.present? and _stop_.access_code.present? and unit_dwelo_lock.nil?
             json.guest_pin "Use code " + _stop_.access_code + " to enter."
+            json.latch_link ''
           else
             json.guest_pin ''
+            json.latch_link ''
           end
         end
       else
         json.guest_pin ''
+        json.latch_link ''
       end
     rescue => pin
       json.guest_pin ''
+      json.latch_link ''
     end
     json.navigation_title navigation_title
-    json.id stop.id
-    json.x_plot stop.latitude
+    json.id stop.id rescue next
+    json.x_plot stop.latitude rescue next
     json.y_plot stop.longitude
     json.unit_id stop.stop_id
     json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
@@ -947,49 +979,38 @@ json.tours @tours do |tour|
               if igloo_guest.nil? 
                 pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
                 json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
-                # json.guest_pin "Use code " + pin + " to enter." if pin.present? and rml.remote_lock_type == "igloo_lock"
+                json.latch_link ''
               else
                 json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
+                json.latch_link ''
               end
             else
               json.guest_pin ''
+              json.latch_link ''
             end
           else
             _stop_ = Amenity.find_by_id stop.stop_id
             if _stop_.present? and _stop_.access_code.present?
               json.guest_pin "Use code " + _stop_.access_code + " to enter."
+              json.latch_link ''
             else
               json.guest_pin ''
-            end
-          end
-        elsif @community.locks_provider == "Latch"
-          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id, stop_type: "Amenity") if @community.latch.present?
-          if lch.present?
-            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, status: "active") if @tour_user.present?
-            if latch_guest.present?
-              door_data = latch_guest.latch_allowed_accesses.find_by(stop_id: stop.stop_id, stop_type: "Amenity")
-              json.guest_pin "Use code " + door_data.doorcode + " to enter." if door_data.present?
-            else
-              json.guest_pin ''
-            end  
-          else
-            _stop_ = Amenity.find_by_id stop.stop_id
-            if _stop_.present? and _stop_.access_code.present?
-              json.guest_pin "Use code " + _stop_.access_code + " to enter."
-            else
-              json.guest_pin ''
+              json.latch_link ''
             end
           end
         else
           _stop_ = Amenity.find_by_id stop.stop_id
           if _stop_.present? and _stop_.access_code.present?
             json.guest_pin "Use code " + _stop_.access_code + " to enter."
+            json.latch_link ''
           else
             json.guest_pin ''
+            json.latch_link ''
           end
         end
       else
         json.guest_pin ''
+        json.latch_link ''
       end
       json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
       json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false

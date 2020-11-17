@@ -40,7 +40,7 @@
                 Video Link
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :video_link, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link"
-            - if EdgeState.find_by(community_id: @community.id).present?
+            - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Remote Lock

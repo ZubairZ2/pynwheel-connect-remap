@@ -181,7 +181,6 @@
         $("#a-lock").attr("href","#");
     }
   }
-
   function clear_assigned_lock(){
     $.ajax({
       type: 'POST',
@@ -281,28 +280,40 @@
 
 
 
-      $("#remote_lock").change(function () {
-        IsSelectedLockMatch()
-      });
+  $("#remote_lock").change(function () {
+    IsSelectedLockMatch()
+  });
 
-      $('#unit_building').keyup(function() {
-        IsSelectedLockMatch()
-      });
+  $('#unit_building').keyup(function() {
+    IsSelectedLockMatch()
+  });
 
-      $('#unit_marketing_name').keyup(function() {
-        IsSelectedLockMatch()
-      });
-       $("#dwelo_remote_lock").change(function () {
-        IsSelectedDweloLockMatch()
-      });
+  $('#unit_marketing_name').keyup(function() {
+    IsSelectedLockMatch()
+  });
+    $("#dwelo_remote_lock").change(function () {
+    IsSelectedDweloLockMatch()
+  });
 
-      $('#unit_building').keyup(function() {
-        IsSelectedDweloLockMatch()
-      });
+  $('#unit_building').keyup(function() {
+    IsSelectedDweloLockMatch()
+  });
 
-      $('#unit_marketing_name').keyup(function() {
-        IsSelectedDweloLockMatch()
-      });
+  $('#unit_marketing_name').keyup(function() {
+    IsSelectedDweloLockMatch()
+  });
+
+  if(#{@unit.amenities.count} == 0){
+    $('#amenity_image').hide();
+  }
+
+  if(#{@unit.amenities.count.to_i} > 0){
+    $('#amenity_image').show();
+  }
+
+  $('#unit_marketing_name').keyup(function() {
+    IsSelectedDweloLockMatch()
+  });
 
   $(form_id).submit(function(){
     if($("#latch_lock_name").val() == '' && $("#latch_key_id").val() != '')

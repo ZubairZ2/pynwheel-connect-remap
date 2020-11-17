@@ -103,6 +103,7 @@ GEM
       sixarm_ruby_unaccent (~> 1.1)
       unicode_utils (~> 1.4)
     crass (1.0.6)
+    csv (1.0.0)
     delayed_job (4.1.8)
       activesupport (>= 3.0, < 6.1)
     delayed_job_active_record (4.1.4)
@@ -443,6 +444,7 @@ DEPENDENCIES
   carrierwave_direct
   coffee-rails (~> 4.2)
   countries
+  csv
   delayed_job_active_record
   derailed_benchmarks
   devise
