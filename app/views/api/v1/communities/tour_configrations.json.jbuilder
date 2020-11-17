@@ -4,7 +4,7 @@
         json.verification_type @tour.verification_type
         json.virtual_tour @in_visiting_hours ? false : true         # last name 'ontime' issue in user_saved_tour.json is corrected here
         json.visited_history @visited_history
-
+        json.tour_user @tour_user
         json.unscheduled_tours_allowed !@tour.only_scheduled_tour
         json.grace_period @tour.grace_period
         json.is_tour_scheduled @scheduled_tours.present?

@@ -6,6 +6,11 @@ class LatchAccountsController < ApplicationController
     end
     
     def create
+        if params[:latch][:zerv_selected].present? and params[:latch][:zerv_selected] == "Zerv"
+            current_community.update_columns(locks_provider: "Zerv")
+            flash[:notice] = "Zerv sets as lock provider successfully"
+            redirect_to new_community_dwelo_path
+        else
         unless @is_already_exists
 
             @latch = Latch.new(latch_params)
@@ -34,6 +39,7 @@ class LatchAccountsController < ApplicationController
                 redirect_to new_community_dwelo_path
             end
 
+        end
         end
         
     end

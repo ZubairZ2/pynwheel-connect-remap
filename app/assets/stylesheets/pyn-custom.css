@@ -1678,6 +1678,42 @@ overflow-y: hidden;*/
 .plan-image-pop{
 
 }
+.hide_text_amenties {
+    display: none;
+}
+.w3-black, .w3-hover-black:hover{
+    color: #FFFFFF !important;
+    background-color: rgba(0,0,0,0.8) !important;
+}
+.display_none {
+    display: none;
+}
+.w3-display-left {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(0%,-50%);
+}
+.w3-display-right{
+    position: absolute;
+    top: 50%;
+    right: 0%;
+    transform: translate(0%,-50%);
+
+}
+.w3-btn, .w3-button {
+    border: none;
+    font-weight: bold;
+    font-size: 18px;
+    display: inline-block;
+    padding: 8px 16px;
+    vertical-align: middle;
+    overflow: hidden;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+}
 .plan-image-pop img{
   width: 100%;
 }
@@ -3443,10 +3479,54 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 {
     transform: rotate(90deg);
 }
+.hide_edgestate{
+    display: none !important;
+}
+.hide_latch{
+    display: none;
+}
+.hide_dwelo {
+    display: none;
+}
 .hide-save-btn {
     display: none;
 }
 .hide_email {
+    display: none;
+}
+.hide_image {
+    display: none;
+}
+.your-class .slick-list .slick-track,
+.your-class .slick-list  {
+    width: 100%;
+
+}
+.your-class .slick-list {
+    max-height: 140px;
+}
+.slick-slide slick-current slick-active {
+
+}
+.slick-prev:before {
+    color: black !important;
+    /*background-color: #eee;*/
+}
+.slick-next:before {
+    color: black !important;
+}
+
+.slick-arrow.slick-next{
+    right: 0px !important;
+}
+.slick-arrow.slick-prev{
+    left: -12px !important;
+}
+.your-class .slick-list .slick-track{
+    margin-left: 10px;
+}
+
+.hide-save-btn {
     display: none;
 }
 .hide-apply-btn {
@@ -3521,6 +3601,10 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
   padding-bottom: 15px;
   margin-top: -20px;
 }
+
+.hidden_count_field {
+    display: none;
+}
 .hide_edgestate{
     display: none !important;
 }
@@ -3529,6 +3613,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 }
 .hide_dwelo {
     display: none;
+}
+.hide_zerv{
+  display: none;
 }
 .hide_locks_tour_setup_c_admin {
     display: none;
