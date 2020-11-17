@@ -195,11 +195,11 @@ class TourHistory < ApplicationRecord
 
   def send_email_sms_or_both_to_touruser thank_you_msg
   	if community.alert_contact == "email"
-  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe
+  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe, community.email
   	elsif community.alert_contact == "phone"
   		send_sms_tour_user thank_you_ms
   	else
-  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe
+  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe, community.email
   		send_sms_tour_user thank_you_msg
   	end
   end
