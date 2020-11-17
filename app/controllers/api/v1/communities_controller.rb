@@ -99,19 +99,39 @@ class Api::V1::CommunitiesController < ActionController::Base
     @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
   end
   def portico_list_communities
-    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    puts params
+    unless params[:access_token].present?
+      begin
+        secure_random = SecureRandom.hex
+
+        payload = {tour_user_id: params[:tour_user_id], license_key: params[:license_key],secure_random: secure_random}
+        # session[params[:tour_user_id].to_i] = secure_random
+        (TourUser.find params[:tour_user_id]).update_attributes(secure_random: secure_random)
+        @token = encoded(payload)
+      rescue => ex
+        @token = nil
+      end
       if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
         touruser = TourUser.find_by_id params[:tour_user_id]
-        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email.downcase]})
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
       else
         @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
       end
     else
-      if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
-        touruser = TourUser.find_by_id params[:tour_user_id]
-        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email.downcase]})
+      if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+        if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
+          touruser = TourUser.find_by_id params[:tour_user_id]
+          @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
+        else
+          @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+        end
       else
-        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+        if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
+          touruser = TourUser.find_by_id params[:tour_user_id]
+          @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
+        else
+          @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+        end
       end
     end
   end
