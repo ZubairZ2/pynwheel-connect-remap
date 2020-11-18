@@ -9,7 +9,13 @@ module ApplicationCable
     private
 
     def find_verified_user  # this checks whether a user is authenticated with devise
+      puts  env['warden']
       if env['warden'].present? and env['warden'].user.present?
+    
+        puts "--------------------     verfified user ----------------------------"
+        puts  env['warden'].user
+        puts "--------------------     verfified user ----------------------------"
+    
         if verified_user = env['warden'].user
           verified_user
         else
