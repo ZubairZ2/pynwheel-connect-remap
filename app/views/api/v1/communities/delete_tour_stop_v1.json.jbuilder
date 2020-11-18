@@ -22,13 +22,13 @@ json.tours @tours do |tour|
   require 'securerandom'
   json.tour_key  random_string = SecureRandom.hex
   json.community_id tour.community_id
-  json.locks_provider @community.locks_provider.present? ? @community.locks_provider : ''
   json.name tour.name
   json.latitude tour.latitude
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.tour_setting do
+    json.locks_provider @community.locks_provider.present? ? @community.locks_provider : ''
     json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
     json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
     json.show_camera_button (@in_visiting_hours == true and @is_tour_virtual == false) ? @community.show_camera_button : false
