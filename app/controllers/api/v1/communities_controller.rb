@@ -507,7 +507,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @tour = @community.tour
           @tour_user = TourUser.find_by_id params[:tour_user_id]
           @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
-          
+          @verfication_type = params[:id_verification].present? ? @tour.verification_type : "email" rescue "email"
           timezone = get_community_time_zone(@community) rescue nil
           current_time = Time.now.in_time_zone(timezone) rescue params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now
 
