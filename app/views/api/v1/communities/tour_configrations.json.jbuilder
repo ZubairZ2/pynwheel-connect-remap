@@ -1,7 +1,7 @@
 - if @community.present?
     json.data do
         json.visual_id_verification @in_visiting_hours ? (@tour.visual_id_verification ) : false
-        json.verification_type @tour.verification_type
+        json.verification_type "email"#@tour.verification_type
         json.virtual_tour @in_visiting_hours ? false : true         # last name 'ontime' issue in user_saved_tour.json is corrected here
         json.visited_history @visited_history
         json.tour_user @tour_user
