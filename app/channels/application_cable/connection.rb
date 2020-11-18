@@ -9,7 +9,10 @@ module ApplicationCable
     private
 
     def find_verified_user  # this checks whether a user is authenticated with devise
+      puts "====================     env[warden] ===================="
       puts  env['warden']
+      puts "====================     env[warden] ===================="
+
       if env['warden'].present? and env['warden'].user.present?
     
         puts "--------------------     verfified user ----------------------------"
@@ -22,6 +25,9 @@ module ApplicationCable
           reject_unauthorized_connection
         end
       else
+        puts "************************************************************"
+        puts "REJECTED"
+        puts "************************************************************"
         reject_unauthorized_connection
       end
     end
