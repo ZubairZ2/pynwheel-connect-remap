@@ -2,7 +2,7 @@
 def check_unit_occupied add_stop
   if add_stop.present? && add_stop.stop_type == "unit"
     u = Unit.find add_stop.stop_id
-    return (u.available and u.available_date >= Date.today) ? false : true
+    return (u.available || u.modal_unit) ? false : true
   else
     return false
   end
@@ -93,7 +93,7 @@ json.tours @tours do |tour|
     first_floor_elev = nil
 
     if @community.is_sitemap
-      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available or u.available_date < Date.today}.compact
+      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
       stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
@@ -338,7 +338,7 @@ json.tours @tours do |tour|
     ########------------------------ Sorting tour Stop in an array-----------------------
     if @community.is_sitemap
 
-      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available or u.available_date < Date.today}.compact
+      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit}.compact
       stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       stops_arr = stops_arr.map{|x| x if !(@community.deleted_ids.include? x.id)}.compact
       stop_count = stops_arr.compact.count
@@ -584,8 +584,8 @@ json.tours @tours do |tour|
               json.latch_link ''
             end
           else
-            stop = Amenity.find_by_id stop.stop_id
-            if stop_.present? and stop_.access_code.present?
+            _stop_ = Amenity.find_by_id stop.stop_id
+            if _stop_.present? and _stop_.access_code.present?
               json.guest_pin "Use code " + _stop_.access_code + " to enter."
               json.latch_link ''
             else
