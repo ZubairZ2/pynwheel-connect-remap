@@ -13,7 +13,7 @@ module ApplicationCable
       puts  env['warden']
       puts "====================     env[warden] ===================="
 
-      if env['warden'].present? and env['warden'].user.present?
+      unless env['warden'].user.nil?
     
         puts "--------------------     verfified user ----------------------------"
         puts  env['warden'].user
