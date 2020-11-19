@@ -540,19 +540,29 @@ json.tours @tours do |tour|
       json.stop_description ((new_stops_arr.size - 1) == counter ? "Your Tour Has Ended" : "Starting point")
       counter = counter + 1
       i += 1
-      if counter == 1 and @community.locks_provider == "Latch" and @community.latch.present?
-        lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.latch_locks.first.stop_id)
-        if lch.present?
 
-          latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active") if @tour_user.present?
-          if latch_guest.present?
-            json.guest_pin ''
-            json.latch_link latch_guest.latch_link
-          else
-            json.guest_pin ''
-            json.latch_link ''
+
+      begin
+        if counter == 1 and @community.locks_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
+          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.latch_locks.first.stop_id)
+          if lch.present?
+  
+            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active") if @tour_user.present?
+            if latch_guest.present?
+              json.guest_pin ''
+              json.latch_link latch_guest.latch_link
+            else
+              json.guest_pin ''
+              json.latch_link ''
+            end
           end
+        else
+          json.guest_pin ''
+          json.latch_link ''
         end
+      rescue => exception
+        json.guest_pin ''
+        json.latch_link ''
       end
 
       next
