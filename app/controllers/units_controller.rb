@@ -146,7 +146,7 @@ class UnitsController < ApplicationController
       #
       # end
       remote_lock = RemoteLock.find_by(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
-      remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name)
+      remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name) rescue nil
     end
     if params[:remote_lock].present? and @community.locks_provider == "EdgeState"
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock], edge_state_id: @community.edge_state.id ) rescue nil
@@ -159,12 +159,12 @@ class UnitsController < ApplicationController
     end
     respond_to do |format|
       ######## save item that updated
-      if (params[:unit][:availability].present? && params[:unit][:availability] == "Unoccupied")
+      if (params[:unit].present? and params[:unit][:availability].present? && params[:unit][:availability] == "Unoccupied")
         if @unit.available == false
           @unit.available_is_updated = true
         end
         @unit.available = true
-      elsif (params[:unit][:availability].present? && params[:unit][:availability] == "Occupied")
+      elsif (params[:unit].present? and params[:unit][:availability].present? && params[:unit][:availability] == "Occupied")
         if @unit.available == true
           @unit.available_is_updated = true
         end
