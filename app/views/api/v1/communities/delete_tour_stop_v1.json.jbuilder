@@ -543,7 +543,7 @@ json.tours @tours do |tour|
 
       if @community.locks_provider == "Latch"
         json.guest_pin ''
-        json.latch_link 'https://latch.link/zIloQSuqTNyOGibvNfFq'
+        json.latch_link (counter % 2 == 0) ? "https://latch.link/CgMBqDvZmSuaYmNQPzMp" : 'https://latch.link/zIloQSuqTNyOGibvNfFq'
           
       end
 
@@ -621,7 +621,7 @@ json.tours @tours do |tour|
       json.latch_link ''
     end
     json.guest_pin ''
-    json.latch_link 'https://latch.link/zIloQSuqTNyOGibvNfFq'
+    json.latch_link (counter % 2 == 0) ? "https://latch.link/CgMBqDvZmSuaYmNQPzMp" : 'https://latch.link/zIloQSuqTNyOGibvNfFq'
     json.navigation_title navigation_title
     json.id stop.id rescue next
     json.x_plot stop.latitude rescue next
