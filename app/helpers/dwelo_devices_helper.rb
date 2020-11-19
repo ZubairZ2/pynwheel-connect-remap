@@ -73,6 +73,12 @@ module DweloDevicesHelper
       puts start_time
       puts ends_time
 
+      request_body = { type: "access_guest", id: tour_user.random_number, starts_at: start_time, ends_at: ends_time }
+      puts "--------------------------- create access_persons request ----------------------------"
+      puts request_body
+      puts "----------------------------------------------------------------------------------------"
+
+
       response = HTTParty.post(url,
                                body: {
                                    type: "access_guest",
@@ -83,6 +89,10 @@ module DweloDevicesHelper
                                :headers => {'Authorization' => auth_header,
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
+
+      puts "--------------------------- create access_persons response ----------------------------"
+      puts response
+      puts "----------------------------------------------------------------------------------------"
       return response
   end
 
