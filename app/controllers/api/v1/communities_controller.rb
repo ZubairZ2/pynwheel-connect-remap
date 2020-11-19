@@ -615,21 +615,35 @@ class Api::V1::CommunitiesController < ActionController::Base
     Thread.new do
       end_time = start_time + 90.minutes
 
-      stops_arr = community.mdu ? community.tour.tour_stops.where(display_stop: true).order(:sort) :  community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+      stops_arr = community.tour.tour_stops.where(display_stop: true).order(:sort)
       stops_ids = stops_arr.ids
 
       unit_ids = TourStop.where(id: stops_ids, stop_type: "unit").pluck(:stop_id)
       amenity_ids = TourStop.where(id: stops_ids, stop_type: "amenity").pluck(:stop_id)
-
+      elevator_ids = TourStop.where(id: stops_ids, stop_type: "elevator").pluck(:stop_id)
+      building_starting_point_ids = TourStop.where(id: stops_ids, stop_type: "building_starting_point").pluck(:stop_id)
+      
       units = Unit.where(id: unit_ids).includes(:latch_locks)
       amenities = Amenity.where(id: amenity_ids).includes(:latch_locks)
+      elevators = Elevator.where(id: elevator_ids).includes(:latch_locks)
+      building_starting_points = BuildingStartingPoint.where(id: building_starting_point_ids).includes(:latch_locks)
+
       locks_data = []
+      locks_data << community.tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.tour.latch_locks.present?
       units.each do |unit|
         lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present?
       end
       amenities.each do |amenity|
         lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        locks_data << lock_info if lock_info.present?
+      end
+      elevators.each do |elevator|
+        lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        locks_data << lock_info if lock_info.present?
+      end
+      building_starting_points.each do |building_starting_point|
+        lock_info = building_starting_point.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present?
       end
 

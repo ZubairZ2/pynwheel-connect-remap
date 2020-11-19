@@ -25,11 +25,12 @@
                 Name
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :name, :class=>"form-control amenity_edit_field", :placeholder=>"Name",:maxlength=>"30"
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Access Code
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
+            - if @community.locks_provider.nil?
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Access Code
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Video Link Button Label
@@ -40,18 +41,6 @@
                 Video Link
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :video_link, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link"
-            - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Remote Lock
-                  %i.unit_manualoverride.fa.fa-question-circle
-                    %span#unit_manualoverride_text
-                      Name of Remote lock must be same as amenity name
-                  %span Assign the lock to this amenity
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  %select.form-control#remote_lock{name: "remote_lock"}
-                  %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
-                    %a#a-lock.btn-text-color{href: "#"} Update selected lock
             -# - if Dwelo.find_by(community_id: @community.id).present?
             -#   .form-group
             -#     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -80,6 +69,28 @@
                   = f.select :floor , (f.object.amenityable.floors.flatten.uniq.sort),{:include_blank => true}, class: "form-control amenity_edit_field", placeholder: "Floor"
 
                   -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
+            - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Remote Lock
+                  %i.unit_manualoverride.fa.fa-question-circle
+                    %span#unit_manualoverride_text
+                      Name of Remote lock must be same as amenity name
+                  %span Assign the lock to this amenity
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  %select.form-control#remote_lock{name: "remote_lock"}
+                  %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
+                    %a#a-lock.btn-text-color{href: "#"} Update selected lock
+            - elsif @community.locks_provider == "Latch" and @community.latch.present?
+              .form-group.hide_on_new
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Latch lock
+                  %i.unit_manualoverride.fa.fa-question-circle
+                    %span#unit_manualoverride_text
+                      Assign the lock to this amenity
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.collect{ |l| [l.lock_name, l.lock_id] } , @amenity.latch_locks.present? ?  @amenity.latch_locks.first.lock_id : ''), {:class => "form-control amenity_edit_field", :prompt => "Select your option"}
+            
             - if @community.self_tour
               .row
                 .form-group

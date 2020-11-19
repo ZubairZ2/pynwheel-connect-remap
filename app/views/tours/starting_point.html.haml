@@ -46,7 +46,16 @@
                     Floor
                   .col-sm-12.col-lg-6.col-md-6.col-xs-12
                     = select_tag :starting_floor, options_for_select(@floors, @community.tour.starting_floor) , :class=>"form-control save-starting-point-field" , :include_blank => true
-    
+                - if @community.locks_provider == "Latch" and @community.latch.present?
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Latch lock
+                      %i.unit_manualoverride.fa.fa-question-circle
+                        %span#unit_manualoverride_text
+                          Assign the lock to the starting point
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.collect{ |l| [l.lock_name, l.lock_id] } , @community.tour.latch_locks.present? ?  @community.tour.latch_locks.first.lock_id : ''), {:class => "form-control save-starting-point-field", :prompt => "Select your option"}
+
                 -#.form-group
                 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 -#    Show Tour Page

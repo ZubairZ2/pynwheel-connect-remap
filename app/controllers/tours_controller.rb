@@ -325,6 +325,13 @@ class ToursController < ApplicationController
     @tours.starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
     
     @tours.building = params[:building].present? ? params[:building] : nil
+
+    if params[:latch_lock].present? and @community.locks_provider == "Latch" 
+      latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
+      @tours.latch_locks.update_all(stop_id: nil, stop_type: nil)
+      latch_lock.update_attributes(stop_id: @tours.id, stop_type: "Tour")
+    end
+
     if @tours.building.nil? && params[:building].present?
       flash[:error] = "Building can not be empty"
       redirect_to starting_point_community_tours_path(@community)

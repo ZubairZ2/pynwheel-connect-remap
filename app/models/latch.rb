@@ -35,24 +35,44 @@ class Latch < ApplicationRecord
     end
 
     def save_lock_info(community, lock_data)
-        lock_name = lock_data[1]; lock_id = lock_data[2]; unit_data = lock_data[3];
-        building_name, unit_name = unit_data.split('-') rescue nil
-        unit_name , building_name = building_name, unit_name unless unit_name.present?
-
-        unit = community.units.where('(marketing_name = ? or provider_unit_id = ?) and building = ?', unit_name, unit_name, building_name).first rescue nil
+        lock_name = lock_data[1]; lock_id = lock_data[2]; stop_data = lock_data[3];
+        data = parse_stop(stop_data)
         lock = community.latch.latch_locks.find_by(lock_id: lock_id) rescue nil
 
         if lock_name.present? and lock_id.present? 
-            if lock.nil? and unit.nil?
+            if lock.nil? and data.nil?
                 LatchLock.create(lock_id: lock_id, lock_name: lock_name, latch_id: community.latch.id)
-            elsif lock.present? and unit.nil?
+            elsif lock.present? and data.nil?
                 lock.update_attributes(lock_id: lock_id, lock_name: lock_name, latch_id: community.latch.id)
-            else  # (lock.nil? and unit.present?) or (lock.present? and unit.present?)
-                unit.latch_locks.destroy_all
+            else  # (lock.nil? and data.present?) or (lock.present? and data.present?)
+                data.latch_locks.destroy_all
                 lock.destroy if lock.present?
-                unit.latch_locks.create(lock_id:lock_id, lock_name: lock_name, latch_id: community.latch.id)
+                data.latch_locks.create(lock_id:lock_id, lock_name: lock_name, latch_id: community.latch.id)
             end
         end
+    end
+
+
+    def parse_stop(stop_name)
+      
+        data=nil
+
+        if stop_name.include?('-')
+            building_name, unit_name = stop_name.split('-',2)
+        else
+            building_name = nil
+            unit_name = stop_name
+        end
+       
+        data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and building = ?', unit_name, unit_name, building_name).first rescue nil
+        data = community.units.where('marketing_name = ? or provider_unit_id = ?', stop_name, stop_name).first rescue nil unless data.present?
+        
+        data = community.amenities.where(name: stop_name).first if data.nil?
+        data = community.elevators.where(name: stop_name).first if data.nil?
+        data = community.building_starting_point.where(name: stop_name).first if data.nil?
+        data = community.tour.name == stop_name ? community.tour : nil if data.nil?
+
+        return data
     end
 
     def notify_pusher(response)
