@@ -540,6 +540,31 @@ json.tours @tours do |tour|
       json.stop_description ((new_stops_arr.size - 1) == counter ? "Your Tour Has Ended" : "Starting point")
       counter = counter + 1
       i += 1
+
+
+      begin
+        if counter == 1 and @community.locks_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
+          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.latch_locks.first.stop_id)
+          if lch.present?
+  
+            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active") if @tour_user.present?
+            if latch_guest.present?
+              json.guest_pin ''
+              json.latch_link latch_guest.latch_link
+            else
+              json.guest_pin ''
+              json.latch_link ''
+            end
+          end
+        else
+          json.guest_pin ''
+          json.latch_link ''
+        end
+      rescue => exception
+        json.guest_pin ''
+        json.latch_link ''
+      end
+
       next
     end
     begin
@@ -572,10 +597,10 @@ json.tours @tours do |tour|
             end
           end
         elsif @community.locks_provider == "Latch"
-          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id, stop_type: "Unit") if @community.latch.present?
+          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id) if @community.latch.present?
           if lch.present?
 
-            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: "Unit", status: "active") if @tour_user.present?
+            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, status: "active") if @tour_user.present?
             if latch_guest.present?
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
@@ -584,7 +609,7 @@ json.tours @tours do |tour|
               json.latch_link ''
             end
           else
-            _stop_ = Amenity.find_by_id stop.stop_id
+            _stop_ = Unit.find_by_id stop.stop_id
             if _stop_.present? and _stop_.access_code.present?
               json.guest_pin "Use code " + _stop_.access_code + " to enter."
               json.latch_link ''
@@ -593,7 +618,7 @@ json.tours @tours do |tour|
               json.latch_link ''
             end
           end
-        else
+        elsif @community.locks_provider.nil?
           _stop_ = Unit.find_by_id stop.stop_id
           unit_dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).first rescue nil
           if _stop_.present? and _stop_.access_code.present? and unit_dwelo_lock.nil?
@@ -999,7 +1024,7 @@ json.tours @tours do |tour|
               json.latch_link ''
             end
           end
-        else
+        elsif @community.locks_provider.nil?
           _stop_ = Amenity.find_by_id stop.stop_id
           if _stop_.present? and _stop_.access_code.present?
             json.guest_pin "Use code " + _stop_.access_code + " to enter."

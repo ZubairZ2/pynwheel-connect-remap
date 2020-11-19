@@ -57,6 +57,11 @@ class ElevatorsController < ApplicationController
   # PATCH/PUT /elevators/1
   # PATCH/PUT /elevators/1.json
   def update
+    if params[:latch_lock].present? and @community.locks_provider == "Latch" 
+      latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
+      @elevator.latch_locks.update_all(stop_id: nil, stop_type: nil)
+      latch_lock.update_attributes(stop_id: @elevator.id, stop_type: "Elevator")
+    end
     respond_to do |format|
       if @elevator.update(elevator_params)
         ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id)

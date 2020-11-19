@@ -84,13 +84,18 @@ class AmenitiesController < ApplicationController
 
   def update
     @amenity = Amenity.find(params[:id]) 
-    if params[:remote_lock].present?
+    if params[:remote_lock].present? and @community.locks_provider == "EdgeState"
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
       remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
     end
-    if params[:assigning_lock].present?
+    if params[:assigning_lock].present? and @community.locks_provider == "Dwelo"
       remote_lock = RemoteLock.find_by(device_id: params[:lock_id], dwelo_id: @community.dwelo.id)
       remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: @amenity.name)
+    end
+    if params[:latch_lock].present? and @community.locks_provider == "Latch" 
+      latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
+      @amenity.latch_locks.update_all(stop_id: nil, stop_type: nil)
+      latch_lock.update_attributes(stop_id: @amenity.id, stop_type: "Amenity")
     end
     if @amenity.update_attributes(amenity_params)
       begin

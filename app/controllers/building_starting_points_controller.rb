@@ -1,12 +1,18 @@
 class BuildingStartingPointsController < ApplicationController
+  before_action :check_community
   after_filter "previous_url", only: [:edit]
 	def edit
 		@community = Community.find params[:community_id]
     @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
     @building_starting_point = BuildingStartingPoint.find_by_id(params[:id])
 	end
-	def update
+  def update
 		@building_starting_point = BuildingStartingPoint.find params[:id]
+    if params[:latch_lock].present? and @community.locks_provider == "Latch" 
+      latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
+      @building_starting_point.latch_locks.update_all(stop_id: nil, stop_type: nil)
+      latch_lock.update_attributes(stop_id: @building_starting_point.id, stop_type: "BuildingStartingPoint")
+    end
     respond_to do |format|
       if @building_starting_point.update(building_starting_point_params)
         ts = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_starting_point.id)
