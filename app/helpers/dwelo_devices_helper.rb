@@ -76,7 +76,7 @@ module DweloDevicesHelper
       request_body = { type: "access_guest", id: tour_user.random_number, starts_at: start_time, ends_at: ends_time }
       puts "--------------------------- create access_persons request ----------------------------"
       puts request_body
-      puts "----------------------------------------------------------------------------------------"
+      puts "--------------------------------------------------------------------------------------"
 
 
       response = HTTParty.post(url,
