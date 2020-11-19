@@ -722,7 +722,10 @@ class CommunitiesController < ApplicationController
 
   def set_community
     @community = Community.find params[:id]
-    Community.joins(:users).where(users: {id: current_user.id}, community_users: {chat_enable: true}).update_all(is_chat_login: true)
+
+    # Only if the chat is enabled for this current_community to this current user,
+    # Only then set the values for the chat_enable_communities to TRUE
+    Community.joins(:users).where(users: {id: current_user.id}, community_users: {chat_enable: true, community_id: params[:id]}).update_all(is_chat_login: true)
   end
 
   def community_params

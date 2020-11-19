@@ -50,7 +50,8 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resource_or_scope)
-    cookies[:browser_id] = SecureRandom.hex(8) if cookies[:browser_id].nil?
+    # LoggedInUser.where(user_id: current_user).destroy_all
+    cookies[:browser_id] = { value: SecureRandom.hex(8), expiry: 5.years.from_now, same_site: :none } if cookies[:browser_id].nil?
     root_url
   end
 

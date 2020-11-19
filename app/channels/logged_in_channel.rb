@@ -39,6 +39,7 @@ class LoggedInChannel < ApplicationCable::Channel
     def user_logged_out_for_current_community
         # connections = connections_info
         # subscribers = connections.map{|connection| connection[:current_user].id}.uniq.count
+        puts "in user_logged_out_for_current_community"
 
         logged_in_user = LoggedInUser.find_by(user_id: current_user.id, browser_id: params[:browser_id])
         if logged_in_user.present?
@@ -47,15 +48,16 @@ class LoggedInChannel < ApplicationCable::Channel
                     logged_in_user.update_columns(logged_in_count: logged_in_user.logged_in_count-1) if logged_in_user.logged_in_count > 0
 
                     chat_enabled_communities_for_current_user = CommunityUser.where(user_id: current_user.id, chat_enable: true).pluck(:community_id).uniq   # current user's chat enabled communities
-                    chat_enabled_communities_for_current_user = chat_enabled_communities_for_current_user.length > 0 ? chat_enabled_communities_for_current_user : [0]
+                    chat_enabled_communities_for_current_user = [0] if chat_enabled_communities_for_current_user.length == 0
                     chat_enabled_communities_for_logged_in_users = CommunityUser.joins("LEFT JOIN logged_in_users ON logged_in_users.user_id = community_users.user_id").where("logged_in_users.logged_in_count > ? and community_users.chat_enable = ? and community_users.community_id  NOT IN  (?)", 0, true, chat_enabled_communities_for_current_user).pluck(:community_id).uniq
                    
-                    req_communities = chat_enabled_communities_for_current_user - chat_enabled_communities_for_logged_in_users
+                    req_communities =  LoggedInUser.where.not(browser_id: params[:browser_id]).present? ? [] : (chat_enabled_communities_for_current_user - chat_enabled_communities_for_logged_in_users)
                     
                     # all_users_count = LoggedInUser.where(community_id: cookies[:community_id].to_i).map{|u| u.logged_in_count}.sum
                     if req_communities.length > 0
-                        offline_communties = CommunityUser.joins("LEFT JOIN logged_in_users ON logged_in_users.user_id = community_users.user_id").where("logged_in_users.logged_in_count = ? and community_users.chat_enable = ? and community_users.community_id IN  (?)", 0, true, req_communities).pluck(:community_id).uniq
-                        Community.where(id: offline_communties).update_all(is_chat_login: false)
+                        offline_communties = CommunityUser.joins("LEFT JOIN logged_in_users ON logged_in_users.user_id = community_users.user_id").where(logged_in_users: {logged_in_count: 0}).where(community_users: {chat_enable: true, community_id: req_communities}).pluck(:community_id).uniq
+                        Community.where(id: offline_communties).update_all(is_chat_login: false) if offline_communties.length > 0
+                        LoggedInUser.where(logged_in_count: 0).destroy_all
                     end
 
                     # all_users_count = LoggedInUser.where(community_id: params[:community_id].to_i).map{|u| u.logged_in_count}.sum
