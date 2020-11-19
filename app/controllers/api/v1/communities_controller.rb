@@ -191,7 +191,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       if providers_account.present? and providers_account.class.name == "Dwelo" and in_visiting_hours and !is_tour_virtual
         Thread.new do
           tour_user = TourUser.find params[:tour_user_id]
-          access_token = dwelo_client_credentials(dwelo_account)
+          access_token = dwelo_client_credentials(providers_account)
           prev_data = tour_user.as_guests.find_by(community_id: params[:id])
           # ----------- creating a guest for remote lock (type = locks) ----------------- #
           unless prev_data.present? 
@@ -223,7 +223,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             end
           end
 
-          access_token = dwelo_client_credentials(dwelo_account)
+          access_token = dwelo_client_credentials(providers_account)
           dwelo = Dwelo.find_by(community_id: @community.id)
           locks = RemoteLock.where(name: unit_or_amenity_names, dwelo_id: dwelo.id).pluck(:device_id, :remote_lock_type)
           if locks.present?
