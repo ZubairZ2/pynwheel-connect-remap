@@ -146,9 +146,7 @@ class Api::V1::ToursController < ActionController::Base
         start_tour_auto_msg = "Thank you for choosing to tour our property!
 click here to start your tour.
 iPhone Users:
-#{app_link}
-Android Users:
-#{android_link}"
+#{app_link}"
 
         prod_from = '+12017012957'
         account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
