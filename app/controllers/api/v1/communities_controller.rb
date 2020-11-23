@@ -151,10 +151,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
+      require 'securerandom'
+      @random_string = SecureRandom.hex
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       @community = Community.find params[:id]
       @community.deleted_ids = []
       @community.save
+      @tour_user.update_attribute(tour_key: @random_string)
       unless @tour_user.email == "Removed at Consumer Request"
       #####
       @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact

@@ -2,8 +2,8 @@ i = 0
 json.tours @tours do |tour|
 
   json.id tour.id
-  require 'securerandom'
-  json.tour_key  random_string = SecureRandom.hex
+  
+  json.tour_key  @random_string
   json.community_id tour.community_id
   json.name tour.name
   json.latitude tour.latitude

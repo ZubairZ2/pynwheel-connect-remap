@@ -17,6 +17,7 @@ class TourUsersController < ApplicationController
     add_breadcrumb "All Visitors", community_tour_users_path(@community)
     add_breadcrumb "Visitor Details", "#"
     @tour_user = TourUser.find params[:id]
+    @virtual_list = []
     @visited_stop = VisitedStop.where(tour_id: @community.tour.id,tour_user_id: @tour_user.id).group_by(&:tour_stop_id)
     @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
     chatroom = Chatroom.find_by(tour_user_id: params[:id], tour_id: @community.tour.id)

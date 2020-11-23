@@ -29,6 +29,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
             tu = TourUser.find params[:tour_user_id]
             tu.id_selfie_mismatch = false
             tour_history.desired_bedroom = tu.desired_bedroom
+            tour_history.tour_key = tu.tour_key
             tu.save
           rescue => ex
           end
