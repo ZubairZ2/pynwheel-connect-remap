@@ -887,7 +887,7 @@ json.tours @tours do |tour|
       elevator = Elevator.find_by_id stop.stop_id
       json.image elevator.image.present? ? elevator.image.url : asset_path("elev2.png")
       json.name "Elevator"#elevator.description
-      # json.name elevator.name
+      json.name elevator.name
       # json.directional_text (counter != 0 && (new_stops_arr.compact[counter + 1].is_a? Tour)) ? "Your tour is completed! Now let's go back to where you started." : elevator.directional_text
       
       json.directional_text elevator.directional_text
