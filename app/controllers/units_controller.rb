@@ -149,7 +149,7 @@ class UnitsController < ApplicationController
       # if current_lock.present?
       #
       # end
-      @unit.remote_locks.where.not(dwelo_id: nil).destroy_all
+      @unit.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
       remote_lock = RemoteLock.find_by(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
       remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) if remote_lock.nil?
       remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name) rescue nil

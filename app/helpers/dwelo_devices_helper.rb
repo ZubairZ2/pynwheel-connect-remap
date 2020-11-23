@@ -37,6 +37,7 @@ module DweloDevicesHelper
   end
   def update_deivces_in_db(response, dwelo_user)
     devices = response["data"]
+    available_ids = []
     if devices.present?
       devices.each do |device|
         type = device["type"]
@@ -51,7 +52,9 @@ module DweloDevicesHelper
         elsif remote_lock.remote_lock_type != type or remote_lock.name != name
           remote_lock.update_attributes(remote_lock_type: type, name: name)
         end
+        available_ids << remote_lock.id
       end
+      RemoteLock.where(dwelo_id: dwelo_user.id).where.not(id: available_ids).delete_all
     # else
     #   flash[:notice] = "Something went wrong, please check your credentials."
     #   # render :js => "window.location = '/communities/#{dwelo_user.community_id}/dwelos/new'"
