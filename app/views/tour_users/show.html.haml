@@ -97,7 +97,10 @@
                         - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                         .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                           .alert-div1{:style => "margin-top: 10px"}
-                            = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - if alert.tour_status.present? && alert.tour_status == "self_tour"
+                              = image_tag  image_url("virtual_eye.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - else
+                              = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - if alert.arrived.present?
                               - if alert.my_time_zone.present?
                                 - begin

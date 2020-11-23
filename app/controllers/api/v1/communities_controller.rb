@@ -514,7 +514,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           if current_time.present?
             @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
             @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
-
+            @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) ), latitude: params[:latitude], longitude: params[:longitude])
             if @scheduled_tours.present?
               @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
               @tour_status , nearest_tour_id = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
