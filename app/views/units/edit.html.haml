@@ -214,7 +214,7 @@
               $('#dwelo_remote_lock').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name}</option>`)
               assigned_lock_present = true
             }
-            else if (locks[item].dwelo_id == dwelo && locks[item].stop_id == null)
+            else if (locks[item].dwelo_id == dwelo)
             {
               $('#dwelo_remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name}</option>`)
             }
