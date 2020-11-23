@@ -103,7 +103,11 @@ class UnitsController < ApplicationController
     @amenities = @unit.amenities.order(id: :desc)
     @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
     @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
-    @assigned_lock = @unit.remote_locks.first
+    if @community.locks_provider == "EdgeState"
+      @assigned_lock = @unit.remote_locks.where(dwelo_id: nil).first
+    elsif  @community.locks_provider == "Dwelo"
+      @assigned_lock = @unit.remote_locks.where.not(dwelo_id: nil).first
+    end
   end
 
   def load_remotelock_data
@@ -145,7 +149,9 @@ class UnitsController < ApplicationController
       # if current_lock.present?
       #
       # end
+      @unit.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
       remote_lock = RemoteLock.find_by(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
+      remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) if remote_lock.nil?
       remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name) rescue nil
     end
     if params[:remote_lock].present? and @community.locks_provider == "EdgeState"
