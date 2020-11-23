@@ -204,28 +204,29 @@ class Api::V1::CommunitiesController < ActionController::Base
           end
           stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
           allowed_ids = stops_arr.ids - @community.deleted_ids
-          allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
-          unit_or_amenity_names = []
-          allowed_stops.each do |stop|
-            if stop[0] == "unit"
-              unit = stop[0].classify.constantize.find_by_id stop[1]
-              if unit.present?
-                if unit.building.present?
-                  name = unit.building + "-" + unit.name
-                else
-                  name = unit.name
-                end
-                unit_or_amenity_names << name
-              end
-            elsif stop[0] == "amenity"
-              amentiy = stop[0].classify.constantize.find_by_id stop[1]
-              unit_or_amenity_names << amentiy.name if amentiy.present?
-            end
-          end
+          allowed_stops = TourStop.where(id: allowed_ids, stop_type: "unit").pluck(:stop_id)
+       
+          # unit_or_amenity_names = []
+          # allowed_stops.each do |stop|
+          #   if stop[0] == "unit"
+          #     unit = stop[0].classify.constantize.find_by_id stop[1]
+          #     if unit.present?
+          #       if unit.building.present?
+          #         name = unit.building + "-" + unit.name
+          #       else
+          #         name = unit.name
+          #       end
+          #       unit_or_amenity_names << name
+          #     end
+          #   elsif stop[0] == "amenity"
+          #     amentiy = stop[0].classify.constantize.find_by_id stop[1]
+          #     unit_or_amenity_names << amentiy.name if amentiy.present?
+          #   end
+          # end
 
           access_token = dwelo_client_credentials(providers_account)
           dwelo = Dwelo.find_by(community_id: @community.id)
-          locks = RemoteLock.where(name: unit_or_amenity_names, dwelo_id: dwelo.id).pluck(:device_id, :remote_lock_type)
+          locks = RemoteLock.where(stop_id: allowed_stops, dwelo_id: dwelo.id).pluck(:device_id, :remote_lock_type)
           if locks.present?
             tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
             locks.each do |lock|
