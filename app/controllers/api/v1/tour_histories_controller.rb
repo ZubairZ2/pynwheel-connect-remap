@@ -30,6 +30,8 @@ class Api::V1::TourHistoriesController < ActionController::Base
             tu.id_selfie_mismatch = false
             tour_history.desired_bedroom = tu.desired_bedroom
             tour_history.tour_status = tu.is_virtual_tour ? "virtual" : "self_tour"
+            tour_history.latitude = tu.latitude
+            tour_history.longitude = tu.longitude
             tour_history.tour_key = tu.tour_key
             tu.save
           rescue => ex
