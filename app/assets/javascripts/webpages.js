@@ -434,6 +434,7 @@ function setFilters() {
   }
   $(".disabled input").attr('data-original-title', 'none available');
   $(".disabled").click(false);
+  $(".disabled").hide();
   //var today = new Date();
   //console.log(today);
   //var thirty_days = new Date(today).setDate(today.getDate()+30); 
