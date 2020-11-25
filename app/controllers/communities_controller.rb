@@ -705,7 +705,7 @@ class CommunitiesController < ApplicationController
     cookies[:community_id] = @community.id if cookies[:community_id].nil?
     # @community.update_attributes(is_chat_login: true)
   end
-
+ 
   def community_params
     params.require(:community).permit(:name,:creator_id,:default_community_id ,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
