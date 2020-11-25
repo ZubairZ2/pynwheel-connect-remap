@@ -443,7 +443,6 @@ function setFilters() {
   //console.log(today.setHours(0,0,0,0) < thirty_days);
   //var curr = new Date();
   //console.log(today.setHours(0,0,0,0) == curr.setHours(0,0,0,0));
-
 }
 
 function showMarkers(market_rent_change = false) {
