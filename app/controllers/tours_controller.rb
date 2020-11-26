@@ -346,6 +346,12 @@ class ToursController < ApplicationController
     end
     
   end
+  def scheduler_widget
+
+  end
+  def save_schedule_widget_btn_setting
+    
+  end
   def ajaxplotstartingpoint
     tour = Tour.find params[:tour_id]
     if tour.present?

@@ -326,6 +326,8 @@ Rails.application.routes.draw do
         post :save_check_point_response
         get :starting_point
         get :select_stops
+        get :scheduler_widget
+        post :save_schedule_widget_btn_setting
         get :edit_amenity
         get :test_automate
       end
