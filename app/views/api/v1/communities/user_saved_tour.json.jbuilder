@@ -1,4 +1,4 @@
-description_limit = 90
+description_limit = 60
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.name @tour_user.name

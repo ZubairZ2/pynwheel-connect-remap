@@ -1091,7 +1091,7 @@ json.tours @tours do |tour|
           show_directional_text = true
         end
 
-        json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image","show_long_description" => show_long_description, "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"stop_description" => (styling_start + amenity.description.gsub('red','') + styling_end  rescue ""),"show_long_directional_text" => show_directional_text, "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"long_directional_text" => (styling_start + amenity.directional_text.gsub('red','') + styling_end  rescue "")]
+        json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image","show_long_description" => show_long_description,"long_description" => (styling_start + amenity.description.gsub('red', '') + styling_end  rescue ""), "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"stop_description" => (styling_start + amenity.description.gsub('red','') + styling_end  rescue ""),"show_long_directional_text" => show_directional_text, "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"long_directional_text" => (styling_start + amenity.directional_text.gsub('red','') + styling_end  rescue "")]
       else
         # json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
 
@@ -1115,7 +1115,7 @@ json.tours @tours do |tour|
 
             json.description stop_description[0..description_limit - 1]
           end
-          json.long_description styling_start + ag.description + styling_end  rescue ""
+          json.long_description styling_start + ag.description.gsub('red', '') + styling_end  rescue ""
 
           stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
 
