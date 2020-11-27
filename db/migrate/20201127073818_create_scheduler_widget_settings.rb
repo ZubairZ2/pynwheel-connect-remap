@@ -1,10 +1,11 @@
 class CreateSchedulerWidgetSettings < ActiveRecord::Migration[5.0]
   def change
     create_table :scheduler_widget_settings do |t|
-      t.string :btn_text
-      t.string :btn_color
-      t.string :btn_font
-      t.font_size :btn
+      t.string :btn_text, default: "Schedule a Visit"
+      t.string :btn_color, default: "#20a345"
+      t.string :btn_font, default: "ms-appx:/DesignTemplates/Expressionist/CutomFonts/OpenSans-Regular.ttf#Open Sans"
+      t.string :btn_font_size, default: "14px"
+      t.references :tour, foreign_key: true
 
       t.timestamps
     end

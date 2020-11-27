@@ -26,17 +26,17 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget Text
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = text_field_tag :btn_text , @community.tour.dotted_line_color.humanize,:class => "form-control widget_setting_field", :id => "set_text"
+                = text_field_tag :btn_text , @schedule_widget_setting.btn_text ,:class => "form-control widget_setting_field", :id => "set_text"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget font family
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :btn_font_family , options_for_select(font_families, "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"),:class => "form-control widget_setting_field", :id => "set_font"
+                = select_tag :btn_font , options_for_select(font_families, @schedule_widget_setting.btn_font),:class => "form-control widget_setting_field", :id => "set_font"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget color size
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :btn_font_family , options_for_select(["10px","11px","12px","13px","14px","15px","16px","17px","18px","19px","20px"], "14px"),:class => "form-control widget_setting_field", :id => "set_font_size"
+                = select_tag :btn_font_family , options_for_select(["10px","11px","12px","13px","14px","15px","16px","17px","18px","19px","20px"], @schedule_widget_setting.btn_font_size),:class => "form-control widget_setting_field", :id => "set_font_size"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget color

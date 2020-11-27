@@ -347,10 +347,10 @@ class ToursController < ApplicationController
     
   end
   def scheduler_widget
-
+    @schedule_widget_setting = @community.tour.scheduler_widget_setting || @community.tour.create_scheduler_widget_setting
   end
   def save_schedule_widget_btn_setting
-    byebug
+    @schedule_widget_setting = @community.tour.scheduler_widget_setting
   end
   def ajaxplotstartingpoint
     tour = Tour.find params[:tour_id]

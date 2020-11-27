@@ -21,6 +21,7 @@ class Tour < ApplicationRecord
 
   has_one :path, as: :map_path
   has_one :tour_setting, dependent: :destroy
+  has_one :scheduler_widget_setting, dependent: :destroy
   has_many :path_points, through: :path
 
   has_many :latch_locks, as: :stop, dependent: :destroy     # only for of starting point's latch locks
