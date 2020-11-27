@@ -782,8 +782,8 @@ json.tours @tours do |tour|
             json.gallery amenityGalleryArr do |ag|
               json.name ag.name
               json.image ag.image.url
-              json.description ag.description
-              json.directional_text ag.directional_text
+              json.description ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+              json.directional_text ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
             end
           end
 
@@ -839,7 +839,7 @@ json.tours @tours do |tour|
             end
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
 
-            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"show_long_description" => show_long_description ,"long_description" => (styling_start + unit.description + styling_end  rescue ""), "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"show_long_directional_text" => show_directional_text,"long_directional_text" => (styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue "")]
+            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"show_long_description" => show_long_description ,"long_description" => (styling_start + unit.description.gsub('red','') + styling_end  rescue ""), "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"show_long_directional_text" => show_directional_text,"long_directional_text" => (styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue "")]
           else
 
             amenityGalleryArr = []
@@ -861,7 +861,7 @@ json.tours @tours do |tour|
 
                 json.description stop_description[0..description_limit - 1]
               end
-              json.long_description styling_start + ag.description + styling_end  rescue ""
+              json.long_description styling_start + ag.description.gsub('red','') + styling_end  rescue ""
 
               stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
 
