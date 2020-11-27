@@ -109,9 +109,7 @@
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Dwelo locks
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      %select.form-control#dwelo_remote_lock{name: "dwelo_remote_lock"}
-      %button#dwelo_lock_update_btn.btn.btn-primary.update-lock.hidden{type: "button"}
-        %a#a-dwelo-lock.btn-text-color{href: "#"} Update selected lock
+      = select_tag :dwelo_remote_lock, options_for_select(@community.dwelo.remote_locks.collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @unit.remote_locks.present? ?  @unit.remote_locks.first.device_id : ''), {:class => "form-control", :prompt => "Select your option"}
 - elsif @community.locks_provider == "Latch" and @community.latch.present?
   .form-group.hide_on_new
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

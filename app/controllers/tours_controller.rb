@@ -331,6 +331,20 @@ class ToursController < ApplicationController
       @tours.latch_locks.update_all(stop_id: nil, stop_type: nil)
       latch_lock.update_attributes(stop_id: @tours.id, stop_type: "Tour")
     end
+    if @community.enable_locks and @community.locks_provider == "Dwelo"
+      if params[:dwelo_remote_lock].present?
+        remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) rescue nil
+
+        if @tours.remote_locks.present? and @tours.remote_locks.last.device_id != remote_lock.device_id
+          @tours.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+          remote_lock.update_attributes(stop_id: @tours.id, stop_type: "tour", stop_name: @tours.name) rescue nil
+        elsif @tours.remote_locks.blank?
+          remote_lock.update_attributes(stop_id: @tours.id, stop_type: "tour", stop_name: @tours.name) rescue nil
+        end
+      elsif params[:dwelo_remote_lock] == ""
+        @tours.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+      end
+    end
 
     if @tours.building.nil? && params[:building].present?
       flash[:error] = "Building can not be empty"

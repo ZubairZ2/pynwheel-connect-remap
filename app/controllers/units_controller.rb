@@ -144,24 +144,39 @@ class UnitsController < ApplicationController
     end
     @unit.image_bit = nil
     unit_previous_floorplan_amenities = @unit.amenities.where.not(floorplan_amenity_id: nil) rescue nil
-    if (params[:assigning_lock].present? or params[:dwelo_remote_lock].present?) and @community.locks_provider == "Dwelo"
-      # current_lock =@unit.remote_locks.where(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
-      # if current_lock.present?
-      #
-      # end
-      @unit.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-      remote_lock = RemoteLock.find_by(device_id: params[:lock_id] , dwelo_id: @community.dwelo.id) rescue nil
-      remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) if remote_lock.nil?
-      remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name) rescue nil
-    end
+
     if params[:remote_lock].present? and @community.locks_provider == "EdgeState"
       remote_lock = RemoteLock.find_by(device_id: params[:remote_lock], edge_state_id: @community.edge_state.id ) rescue nil
       remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: params[:unit][:marketing_name])
     end
-    if params[:latch_lock].present? and @community.locks_provider == "Latch" 
-      latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
-      @unit.latch_locks.update_all(stop_id: nil, stop_type: nil)
-      latch_lock.update_attributes(stop_id: @unit.id, stop_type: "Unit")
+
+    if @community.enable_locks and @community.locks_provider == "Dwelo"
+      if params[:dwelo_remote_lock].present?
+        remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) rescue nil
+
+        if @unit.remote_locks.present? and @unit.remote_locks.last.device_id != remote_lock.device_id
+          @unit.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+          remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name) rescue nil
+        elsif @unit.remote_locks.blank?
+          remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name) rescue nil
+        end
+      elsif params[:dwelo_remote_lock] == ""
+        @unit.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+      end
+    end
+
+    if @community.enable_locks and @community.locks_provider == "Latch"
+      if params[:latch_lock].present?
+        latch_lock = LatchLock.find_by(door_uuid: params[:latch_lock], latch_id: @community.latch.id) rescue nil
+        if @unit.latch_locks.present? and @unit.latch_locks.last.door_uuid != latch_lock.door_uuid
+          @unit.latch_locks.update_all(stop_id: nil, stop_type: nil)
+          latch_lock.update_attributes(stop_id: @unit.id, stop_type: "Unit") rescue nil
+        elsif @unit.latch_locks.blank?
+          latch_lock.update_attributes(stop_id: @unit.id, stop_type: "Unit") rescue nil
+        end
+      elsif params[:latch_lock] == ""
+        @unit.latch_locks.update_all(stop_id: nil, stop_type: nil)
+      end
     end
     respond_to do |format|
       ######## save item that updated

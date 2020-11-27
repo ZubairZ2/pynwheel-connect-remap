@@ -7,7 +7,21 @@ class BuildingStartingPointsController < ApplicationController
     @building_starting_point = BuildingStartingPoint.find_by_id(params[:id])
 	end
   def update
-		@building_starting_point = BuildingStartingPoint.find params[:id]
+    @building_starting_point = BuildingStartingPoint.find params[:id]
+    if @community.enable_locks and @community.locks_provider == "Dwelo"
+      if params[:dwelo_remote_lock].present?
+        remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) rescue nil
+
+        if @building_starting_point.remote_locks.present? and @building_starting_point.remote_locks.last.device_id != remote_lock.device_id
+          @building_starting_point.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+          remote_lock.update_attributes(stop_id: @building_starting_point.id, stop_type: "building_starting_point", stop_name: @building_starting_point.name) rescue nil
+        elsif @building_starting_point.remote_locks.blank?
+          remote_lock.update_attributes(stop_id: @building_starting_point.id, stop_type: "building_starting_point", stop_name: @building_starting_point.name) rescue nil
+        end
+      elsif params[:dwelo_remote_lock] == ""
+        @building_starting_point.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+      end
+    end
     if params[:latch_lock].present? and @community.locks_provider == "Latch" 
       latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
       @building_starting_point.latch_locks.update_all(stop_id: nil, stop_type: nil)
