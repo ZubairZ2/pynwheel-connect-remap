@@ -17,7 +17,7 @@
     .row
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30.pb-40
-          = form_tag save_schedule_widget_btn_setting_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
+          = form_tag save_schedule_widget_btn_setting_community_tours_path(@community) ,{:class => 'widget-settings-form'} do
             = hidden_field_tag "community_id", @community.id
 
             .form-group{:style => "text-align: center; "}
@@ -26,12 +26,17 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget Text
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = text_field_tag :btn_text , @community.tour.dotted_line_color.humanize,:class => "form-control", :id => "set_text"
+                = text_field_tag :btn_text , @community.tour.dotted_line_color.humanize,:class => "form-control widget_setting_field", :id => "set_text"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Schedule Widget color family
+                Schedule Widget font family
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :btn_font_family , options_for_select(font_families, "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"),:class => "form-control", :id => "set_font"
+                = select_tag :btn_font_family , options_for_select(font_families, "ms-appx:/DesignTemplates/Expressionist/CutomFonts/Arial.ttf#Arial"),:class => "form-control widget_setting_field", :id => "set_font"
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Schedule Widget color size
+              .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                = select_tag :btn_font_family , options_for_select(["10px","11px","12px","13px","14px","15px","16px","17px","18px","19px","20px"], "14px"),:class => "form-control widget_setting_field", :id => "set_font_size"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget color
@@ -48,4 +53,13 @@
   });
   $('#set_color').change(function(){
     $("#sample_btn").css("background-color", this.value);
+  });
+  $('#set_font').change(function(){
+    $("#sample_btn").css("font-family", $("#set_font option:selected").text());
+  });
+  $('#set_font_size').change(function(){
+    $("#sample_btn").css("font-size", $("#set_font_size option:selected").text());
+  });
+  $('.widget_setting_field').change(function(){
+    $(".widget-settings-form").submit();
   });

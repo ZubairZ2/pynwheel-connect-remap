@@ -1,0 +1,2 @@
+class SchedulerWidgetSetting < ApplicationRecord
+end
