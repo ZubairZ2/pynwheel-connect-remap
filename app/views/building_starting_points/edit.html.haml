@@ -44,29 +44,36 @@
                 Floor
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.select :floor, (@floors),{} , class: "form-control building_starting_point_edit_field" 
-            - if @community.locks_provider == "Latch" and @community.latch.present?
-              .form-group.hide_on_new
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Latch lock
-                  %i.unit_manualoverride.fa.fa-question-circle
-                    %span#unit_manualoverride_text
-                      Assign the lock to this building starting point
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.collect{ |l| [l.lock_name, l.lock_id] } , @building_starting_point.latch_locks.present? ?  @building_starting_point.latch_locks.first.lock_id : ''), {:class => "form-control building_starting_point_edit_field", :prompt => "Select your option"}
-            - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
-              .form-group.hide_on_new
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Dwelo locks
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = select_tag :dwelo_remote_lock, options_for_select(@community.dwelo.remote_locks.collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @building_starting_point.remote_locks.present? ?  @building_starting_point.remote_locks.first.device_id : ''), {:class => "form-control building_starting_point_edit_field", :prompt => "Select your option"}
-            - else
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Access Code
+                = f.select :floor, (@floors),{} , class: "form-control building_starting_point_edit_field"
 
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :access_code, :class=>"form-control building_starting_point_edit_field", :placeholder=>"Access Code",:maxlength=>"30"    
+            - if @community.enable_locks
+              - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Remote Lock
+                    %span Assign the lock to this unit
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :remote_lock, options_for_select(@community.edge_state.remote_locks.order(:id).collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @building_starting_point.remote_locks.present? ?  @building_starting_point.remote_locks.last.device_id : ''), {:class => "form-control building_starting_point_edit_field", :prompt => "Select your option"}
+              - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Dwelo lock
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :dwelo_remote_lock, options_for_select(@community.dwelo.remote_locks.order(:id).collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @building_starting_point.remote_locks.present? ?  @building_starting_point.remote_locks.last.device_id : ''), {:class => "form-control building_starting_point_edit_field", :prompt => "Select your option"}     
+              - elsif @community.locks_provider == "Latch" and @community.latch.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Latch lock
+                    %span Assign the lock to this unit
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.order(:id).collect{ |l| [l.lock_name, l.door_uuid] } , @building_starting_point.latch_locks.present? ?  @building_starting_point.latch_locks.last.door_uuid : ''), {:class => "form-control building_starting_point_edit_field", :prompt => "Select your option"}
+              - elsif @community.locks_provider == nil or @community.locks_provider == ""
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Access Code
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.text_field :access_code, :class=>"form-control building_starting_point_edit_field", :placeholder=>"Access Code",:maxlength=>"30"
+
 .row{:style => "margin-top: 245px;"}
   .col-md-12
     .box-footer.mt-30.pt-15

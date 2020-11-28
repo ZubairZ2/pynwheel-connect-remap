@@ -72,11 +72,6 @@
 -#      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
 -#      %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
 -#      %span.pl-15 Yes
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Access Code
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
 
 .form-group#unit_virtual_tour_button_label_field
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -92,31 +87,34 @@
     %span Specify URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
-- if @community.locks_provider == "EdgeState" and @community.edge_state.present?
+
+- if @community.enable_locks
+  - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
+    .form-group.hide_on_new
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Remote Lock
+        %span Assign the lock to this unit
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = select_tag :remote_lock, options_for_select(@community.edge_state.remote_locks.order(:id).collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @unit.remote_locks.present? ?  @unit.remote_locks.last.device_id : ''), {:class => "form-control", :prompt => "Select your option"}
+  - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
+    .form-group.hide_on_new
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Dwelo lock
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = select_tag :dwelo_remote_lock, options_for_select(@community.dwelo.remote_locks.order(:id).collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @unit.remote_locks.present? ?  @unit.remote_locks.last.device_id : ''), {:class => "form-control", :prompt => "Select your option"}
+  - elsif @community.locks_provider == "Latch" and @community.latch.present?
+    .form-group.hide_on_new
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Latch lock
+        %span Assign the lock to this unit
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.order(:id).collect{ |l| [l.lock_name, l.door_uuid] } , @unit.latch_locks.present? ?  @unit.latch_locks.last.door_uuid : ''), {:class => "form-control", :prompt => "Select your option"}
+  - elsif @community.locks_provider == nil or @community.locks_provider == ""
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Remote Lock
-      %i.unit_manualoverride.fa.fa-question-circle
-        %span#unit_manualoverride_text
-          if building name is present then name of Remote lock must be formatted like BuildingName-MarketingName otherwise name must be same as unit marketing name
-      %span Assign the lock to this unit
+      Access Code
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      %select.form-control#remote_lock{name: "remote_lock"}
-      %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
-        %a#a-lock.btn-text-color{href: "#"} Update selected lock
-- elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
-  .form-group.hide_on_new
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Dwelo locks
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = select_tag :dwelo_remote_lock, options_for_select(@community.dwelo.remote_locks.collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @unit.remote_locks.present? ?  @unit.remote_locks.first.device_id : ''), {:class => "form-control", :prompt => "Select your option"}
-- elsif @community.locks_provider == "Latch" and @community.latch.present?
-  .form-group.hide_on_new
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Latch lock
-      %span Assign the lock to this unit
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.collect{ |l| [l.lock_name, l.lock_id] } , @unit.latch_locks.present? ?  @unit.latch_locks.first.lock_id : ''), {:class => "form-control", :prompt => "Select your option"}
+      = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
 
 - if @community.touchscreen_app
   .form-group

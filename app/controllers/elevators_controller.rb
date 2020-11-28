@@ -1,4 +1,5 @@
 class ElevatorsController < ApplicationController
+  include AssignLocksHelper
   before_action :authenticate_user!
   before_action :check_community
   add_breadcrumb "Home", :root_path
@@ -57,24 +58,9 @@ class ElevatorsController < ApplicationController
   # PATCH/PUT /elevators/1
   # PATCH/PUT /elevators/1.json
   def update
-    if @community.enable_locks and @community.locks_provider == "Dwelo"
-      if params[:dwelo_remote_lock].present?
-        remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) rescue nil
-
-        if @elevator.remote_locks.present? and @elevator.remote_locks.last.device_id != remote_lock.device_id
-          @elevator.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-          remote_lock.update_attributes(stop_id: @elevator.id, stop_type: "elevator", stop_name: @elevator.name) rescue nil
-        elsif @elevator.remote_locks.blank?
-          remote_lock.update_attributes(stop_id: @elevator.id, stop_type: "elevator", stop_name: @elevator.name) rescue nil
-        end
-      elsif params[:dwelo_remote_lock] == ""
-        @elevator.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-      end
-    end
-    if params[:latch_lock].present? and @community.locks_provider == "Latch" 
-      latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
-      @elevator.latch_locks.update_all(stop_id: nil, stop_type: nil)
-      latch_lock.update_attributes(stop_id: @elevator.id, stop_type: "Elevator")
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : nil ) )
+      assign_lock(@community, @elevator, lock_id) unless lock_id.nil?
     end
     respond_to do |format|
       if @elevator.update(elevator_params)

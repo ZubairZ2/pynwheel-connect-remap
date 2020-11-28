@@ -1,4 +1,5 @@
 class AmenitiesController < ApplicationController
+  include AssignLocksHelper
   before_action :authenticate_user!
   before_action :check_community
   add_breadcrumb "Home", :root_path
@@ -84,29 +85,11 @@ class AmenitiesController < ApplicationController
 
   def update
     @amenity = Amenity.find(params[:id]) 
-    if params[:remote_lock].present? and @community.locks_provider == "EdgeState"
-      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
-      remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : nil ) )
+      assign_lock(@community, @amenity, lock_id) unless lock_id.nil?
     end
-    if @community.enable_locks and @community.locks_provider == "Dwelo"
-      if params[:dwelo_remote_lock].present?
-        remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) rescue nil
-
-        if @amenity.remote_locks.present? and @amenity.remote_locks.last.device_id != remote_lock.device_id
-          @amenity.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-          remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: @amenity.name) rescue nil
-        elsif @amenity.remote_locks.blank?
-          remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: @amenity.name) rescue nil
-        end
-      elsif params[:dwelo_remote_lock] == ""
-        @amenity.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-      end
-    end
-    if params[:latch_lock].present? and @community.locks_provider == "Latch" 
-      latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
-      @amenity.latch_locks.update_all(stop_id: nil, stop_type: nil)
-      latch_lock.update_attributes(stop_id: @amenity.id, stop_type: "Amenity")
-    end
+    
     if @amenity.update_attributes(amenity_params)
       begin
         ts = TourStop.find_by(stop_id: @amenity.id)

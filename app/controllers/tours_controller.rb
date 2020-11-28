@@ -1,4 +1,5 @@
 class ToursController < ApplicationController
+  include AssignLocksHelper
   def index
 
     @community = Community.find params[:community_id]
@@ -326,24 +327,9 @@ class ToursController < ApplicationController
     
     @tours.building = params[:building].present? ? params[:building] : nil
 
-    if params[:latch_lock].present? and @community.locks_provider == "Latch" 
-      latch_lock = LatchLock.find_by(lock_id: params[:latch_lock], latch_id: @community.latch.id) rescue nil
-      @tours.latch_locks.update_all(stop_id: nil, stop_type: nil)
-      latch_lock.update_attributes(stop_id: @tours.id, stop_type: "Tour")
-    end
-    if @community.enable_locks and @community.locks_provider == "Dwelo"
-      if params[:dwelo_remote_lock].present?
-        remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) rescue nil
-
-        if @tours.remote_locks.present? and @tours.remote_locks.last.device_id != remote_lock.device_id
-          @tours.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-          remote_lock.update_attributes(stop_id: @tours.id, stop_type: "tour", stop_name: @tours.name) rescue nil
-        elsif @tours.remote_locks.blank?
-          remote_lock.update_attributes(stop_id: @tours.id, stop_type: "tour", stop_name: @tours.name) rescue nil
-        end
-      elsif params[:dwelo_remote_lock] == ""
-        @tours.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-      end
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : nil ) )
+      assign_lock(@community, @tours, lock_id) unless lock_id.nil?
     end
 
     if @tours.building.nil? && params[:building].present?

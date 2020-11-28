@@ -1,4 +1,5 @@
 class UnitsController < ApplicationController
+  include AssignLocksHelper
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
@@ -103,36 +104,6 @@ class UnitsController < ApplicationController
     @amenities = @unit.amenities.order(id: :desc)
     @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
     @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
-    if @community.locks_provider == "EdgeState"
-      @assigned_lock = @unit.remote_locks.where(dwelo_id: nil).first
-    elsif  @community.locks_provider == "Dwelo"
-      @assigned_lock = @unit.remote_locks.where.not(dwelo_id: nil).first
-    end
-  end
-
-  def load_remotelock_data
-    # access_token = generate_remotelock_token
-    # responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
-    # RemoteLockService.new(current_community).update_deivces_in_db(responce)
-    # es = EdgeState.find_by(community_id: current_community.id)
-    
-    # if es.nil?
-    #   render json: {locks: []}
-    # else
-    #   render json: {locks: RemoteLock.where(edge_state_id: es.id)}
-    # end
-    
-    if current_community.edge_state.nil?
-      render json: {locks: []}
-    else
-      render json: {locks: current_community.edge_state.remote_locks}
-    end
-  end
-
-  def clear_locks
-    unit = Unit.find params[:id]
-    unit.remote_locks.delete_all
-    render json: {locks: unit.remote_locks}
   end
 
   def update
@@ -145,39 +116,11 @@ class UnitsController < ApplicationController
     @unit.image_bit = nil
     unit_previous_floorplan_amenities = @unit.amenities.where.not(floorplan_amenity_id: nil) rescue nil
 
-    if params[:remote_lock].present? and @community.locks_provider == "EdgeState"
-      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock], edge_state_id: @community.edge_state.id ) rescue nil
-      remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: params[:unit][:marketing_name])
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : nil ) )
+      assign_lock(@community, @unit, lock_id) unless lock_id.nil?
     end
 
-    if @community.enable_locks and @community.locks_provider == "Dwelo"
-      if params[:dwelo_remote_lock].present?
-        remote_lock = RemoteLock.find_by(device_id: params[:dwelo_remote_lock] , dwelo_id: @community.dwelo.id) rescue nil
-
-        if @unit.remote_locks.present? and @unit.remote_locks.last.device_id != remote_lock.device_id
-          @unit.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-          remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name) rescue nil
-        elsif @unit.remote_locks.blank?
-          remote_lock.update_attributes(stop_id: @unit.id, stop_type: "unit", stop_name: @unit.marketing_name) rescue nil
-        end
-      elsif params[:dwelo_remote_lock] == ""
-        @unit.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-      end
-    end
-
-    if @community.enable_locks and @community.locks_provider == "Latch"
-      if params[:latch_lock].present?
-        latch_lock = LatchLock.find_by(door_uuid: params[:latch_lock], latch_id: @community.latch.id) rescue nil
-        if @unit.latch_locks.present? and @unit.latch_locks.last.door_uuid != latch_lock.door_uuid
-          @unit.latch_locks.update_all(stop_id: nil, stop_type: nil)
-          latch_lock.update_attributes(stop_id: @unit.id, stop_type: "Unit") rescue nil
-        elsif @unit.latch_locks.blank?
-          latch_lock.update_attributes(stop_id: @unit.id, stop_type: "Unit") rescue nil
-        end
-      elsif params[:latch_lock] == ""
-        @unit.latch_locks.update_all(stop_id: nil, stop_type: nil)
-      end
-    end
     respond_to do |format|
       ######## save item that updated
       if (params[:unit].present? and params[:unit][:availability].present? && params[:unit][:availability] == "Unoccupied")
@@ -276,8 +219,6 @@ class UnitsController < ApplicationController
           @amenities = @unit.amenities.order(:sort)
           @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
           @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
-          @assigned_lock = @unit.remote_locks.first
-
 
           flash[:error] = @unit.errors.full_messages.join(',')
           format.html { render :action => "edit" }
@@ -309,7 +250,6 @@ class UnitsController < ApplicationController
             @amenities = @unit.amenities.order(:sort)
             @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
             @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
-            @assigned_lock = @unit.remote_locks.first
 
             flash[:error] = @unit.errors.full_messages.join(',')
             format.html { render :action => "edit" }

@@ -159,6 +159,22 @@ class EdgestateAccountsController < ApplicationController
       end
     end
 
+    def remove_edgestate_locks
+      if current_community.edge_state.present?
+        if current_community.edge_state.remote_locks.present?
+          current_community.edge_state.remote_locks.destroy_all
+          flash[:notice] = "Locks deleted successfully"
+          redirect_to new_community_dwelo_path(current_community)
+        else
+          flash[:error] = "No locks are present"
+          redirect_to new_community_dwelo_path(current_community)
+        end
+      else
+        flash[:error] = "Credentials for Latch are missing"
+        redirect_to new_community_dwelo_path(current_community)
+      end
+    end
+
     private
         def edge_state_params
             params.require(:edgestate).permit(:client_id, :client_secret, :community_id)

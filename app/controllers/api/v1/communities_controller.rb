@@ -188,7 +188,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
       providers_account = @community.locks_provider.classify.constantize.find_by(community_id: params[:id]) rescue nil
 
-      if providers_account.present? and providers_account.class.name == "Dwelo" and in_visiting_hours and !is_tour_virtual
+      if @community.enable_locks and providers_account.present? and providers_account.class.name == "Dwelo" and in_visiting_hours and !is_tour_virtual
         Thread.new do
           tour_user = TourUser.find params[:tour_user_id]
           access_token = dwelo_client_credentials(providers_account)
@@ -317,7 +317,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     # @in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
 
     edge_state = EdgeState.find_by(community_id: params[:id])
-    if @community.locks_provider == "EdgeState" and edge_state.present? and @in_visiting_hours
+    if @community.enable_locks and @community.locks_provider == "EdgeState" and edge_state.present? and @in_visiting_hours
       Thread.new do
         stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
         allowed_ids = `stops_arr`.ids - @community.deleted_ids
@@ -399,7 +399,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       # @floor_list = (@floor_list.present? ? @floor_list : []) + (non_building_floor.present? ? non_building_floor : [])
 
       edge_state = EdgeState.find_by(community_id: params[:id])
-      if @community.locks_provider == "EdgeState" and edge_state.present? and @in_visiting_hours
+      if @community.enable_locks and @community.locks_provider == "EdgeState" and edge_state.present? and @in_visiting_hours
         Thread.new do
           stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
           allowed_ids = stops_arr.ids - @community.deleted_ids
@@ -633,19 +633,19 @@ class Api::V1::CommunitiesController < ActionController::Base
       locks_data << community.tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.tour.latch_locks.present?
       units.each do |unit|
         lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
-        locks_data << lock_info if lock_info.present?
+        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
       amenities.each do |amenity|
         lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
-        locks_data << lock_info if lock_info.present?
+        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
       elevators.each do |elevator|
         lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
-        locks_data << lock_info if lock_info.present?
+        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
       building_starting_points.each do |building_starting_point|
         lock_info = building_starting_point.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
-        locks_data << lock_info if lock_info.present?
+        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
 
       if locks_data.present?
@@ -663,7 +663,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           latch_link = response["payload"]["message"]["link"]
 
           if latch_link.present?
-            tour_user.latch_guests.create(community_id: community.id, latch_link: latch_link, guest_of_stop_type: lock_info[1] , guest_of_stop_id: lock_info[2], start_time: start_time.to_i, end_time: end_time.to_i, status: "active")
+            LatchLock.where(lock_id: lock_info[0]).map{|stop_data| tour_user.latch_guests.create(community_id: community.id, latch_link: latch_link, guest_of_stop_type: stop_data.stop_type , guest_of_stop_id: stop_data.stop_id, start_time: start_time.to_i, end_time: end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
 
             # reservation_token = response["payload"]["message"]["reservationToken"] 
             # response = LatchDoorcodesService.call(community_id: community.id, reservation_token: reservation_token)

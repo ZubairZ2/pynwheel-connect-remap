@@ -43,7 +43,7 @@ class DwelosController < ApplicationController
 
   def test_dwelo_connection
     @community = Community.find params[:community_id]
-    if @community.locks_provider == "Dwelo" and @community.dwelo.present?
+    if @community.enable_locks and @community.locks_provider == "Dwelo" and @community.dwelo.present?
       dwelo_client_credentials(@community.dwelo)
       if @token.present?
         token_type = "Bearer"
@@ -143,6 +143,22 @@ class DwelosController < ApplicationController
     else
       flash[:error] = "Something went wrong, please check your credentials."
         render :js => "window.location = '/communities/#{community.id}/dwelos/new'"
+    end
+  end
+
+  def remove_dwelo_locks
+    if current_community.dwelo.present?
+      if current_community.dwelo.remote_locks.present?
+        current_community.dwelo.remote_locks.destroy_all
+        flash[:notice] = "Locks deleted successfully"
+        redirect_to new_community_dwelo_path(current_community)
+      else
+        flash[:error] = "No locks are present"
+        redirect_to new_community_dwelo_path(current_community)
+      end
+    else
+      flash[:error] = "Credentials for Dwelo are missing"
+      redirect_to new_community_dwelo_path(current_community)
     end
   end
 

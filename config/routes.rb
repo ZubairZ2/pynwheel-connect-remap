@@ -92,14 +92,20 @@ Rails.application.routes.draw do
         get :test_edgestate_connection
         post :import_edgestate_locks
         post :map_edgestate_locks
+        delete :remove_edgestate_locks
       end
     end
 
-    resources :latch_accounts
+    resources :latch_accounts do
+      collection do
+        delete :remove_latch_locks
+      end
+    end
 
     resources :dwelos do
       collection do
         get :test_dwelo_connection
+        delete :remove_dwelo_locks
       end
     end
 
