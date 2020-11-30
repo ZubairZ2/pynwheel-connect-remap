@@ -286,6 +286,12 @@
                 <%= hidden_field_tag :community_id, @community_id %>
                 <%= hidden_field_tag :user_time_zone, value: nil %>
               </div>
+              <div class="form-group">
+                <label>Tour Type</label>
+                <span class="hidden" id="tour_type"></span>
+                <%= select_tag :tour_type, options_for_select( [["Self Tour","self_tour"],["Virtual","virtual"],["Guided Tour","guided"]]), :class=>"form-control " %>
+               
+              </div>
               <div class="clearfix"></div>
               <button class="btn_popup" id="date_schedule_tour">Schedule My Tour!</button>
             </form>

@@ -100,9 +100,15 @@ class SchedualToursController < ApplicationController
     before_30_mints, c = get_tour_datetime_and_diff before_30_mints
     after_30_mints, d = get_tour_datetime_and_diff after_30_mints
 
-    count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).count
-    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
+    total_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).count
+    virtual_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "virtual").count
+    self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").count
+    guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided").count
+    
+    limit_exceeded = (total_count < community.tour.max_tour_users.to_i) || (virtual_count < community.tour.max_virtual_tour_users.to_i) || (self_tour_count < community.tour.max_self_tour_tour_users.to_i) || (guided_count < community.tour.max_guided_tour_users.to_i)
 
+    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
+    byebug
     if community.tour.max_tour_users.blank?
       respond_to do |format|
         if @schedual_tour.save
@@ -113,7 +119,7 @@ class SchedualToursController < ApplicationController
           format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
         end
       end
-    elsif count < community.tour.max_tour_users.to_i
+    elsif 
       respond_to do |format|
         if @schedual_tour.save
           format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
