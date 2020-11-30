@@ -133,9 +133,9 @@ module DweloDevicesHelper
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
 
-      puts "111" * 50
+      puts "------------------- create grant_access_person_accesses response -----------------------"
       puts response
-      puts "111" * 50
+      puts "----------------------------------------------------------------------------------------"
 
       return response
 

@@ -270,7 +270,7 @@ class RemoteLockService < BaseService
                         name: tour_user.name,
                         email: tour_user.email,
                         starts_at: current_time.strftime("%Y-%m-%dT%H:%M:%S"),
-                        ends_at: (current_time + 2.hours).strftime("%Y-%m-%dT%H:%M:%S"),
+                        ends_at: (current_time + 1.5.hours).strftime("%Y-%m-%dT%H:%M:%S"),
                     }
                 }.to_json,
                 :headers => { 'Authorization' => auth_header,
