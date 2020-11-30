@@ -605,7 +605,11 @@ class CommunitiesController < ApplicationController
       @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
       @community.show_camera_button = params[:show_camera_button].present? ? true : false
       @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
-      @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
+      # @community.tour.update_attributes(max_tour_users: params[:max_tour_users], max_virtual_tour_users: params[:max_virtual_tour_users],max_self_tour_users: params[:max_self_tour_users],max_guided_tour_users: params[:max_guided_tour_users])
+      @tour.max_tour_users = params[:max_tour_users]
+      @tour.max_virtual_tour_users = params[:max_virtual_tour_users]
+      @tour.max_self_tour_users = params[:max_self_tour_users]
+      @tour.max_guided_tour_users = params[:max_guided_tour_users]       
       # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
       # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
 

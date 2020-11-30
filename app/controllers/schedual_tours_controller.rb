@@ -105,21 +105,11 @@ class SchedualToursController < ApplicationController
     self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").count
     guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided").count
     
-    limit_exceeded = (total_count < community.tour.max_tour_users.to_i) || (virtual_count < community.tour.max_virtual_tour_users.to_i) || (self_tour_count < community.tour.max_self_tour_tour_users.to_i) || (guided_count < community.tour.max_guided_tour_users.to_i)
+    in_limit_count, error_message = check_limit(params[:tour_type], total_count, virtual_count, self_tour_count, guided_count, @community)
+    # in_limit_count = (total_count < community.tour.max_tour_users.to_i) || (virtual_count < community.tour.max_virtual_tour_users.to_i) || (self_tour_count < community.tour.max_self_tour_tour_users.to_i) || (guided_count < community.tour.max_guided_tour_users.to_i)
 
-    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
-    byebug
-    if community.tour.max_tour_users.blank?
-      respond_to do |format|
-        if @schedual_tour.save
-          format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
-          format.json { render :show, status: :created, location: @schedual_tour }
-        else
-          format.html { render :new }
-          format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
-        end
-      end
-    elsif 
+    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff, tour_type: params[:tour_type])
+    if in_limit_count
       respond_to do |format|
         if @schedual_tour.save
           format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
@@ -130,8 +120,23 @@ class SchedualToursController < ApplicationController
         end
       end
     else
-      render json: {message: "max tour users limit reached for the selected time", code: "400" }
+      render json: {message: error_message, code: "400" }
     end
+  end
+  def check_limit(tour_type, total_count, virtual_count, self_tour_count, guided_count, community )
+    if total_count == community.tour.max_tour_users.to_i
+      return false, "max tour users limit reached for the selected time"
+    elsif tour_type == "virtual" && community.tour.max_virtual_tour_users.present? && (virtual_count < community.tour.max_virtual_tour_users.to_i)
+      return false, "max virtual tour users limit reached for the selected time"
+    elsif tour_type == "self_tour" && community.tour.max_self_tour_users.present? && (self_tour_count < community.tour.max_self_tour_users.to_i)
+      return false, "max self tour tour users limit reached for the selected time"
+    elsif tour_type == "guided" && community.tour.max_guided_tour_users.present? && (guided_count < community.tour.max_guided_tour_users.to_i)
+      return false, "max guided tour users limit reached for the selected time"
+    else
+      return true, ""
+    end
+      
+
   end
 
   # PATCH/PUT /schedual_tours/1
