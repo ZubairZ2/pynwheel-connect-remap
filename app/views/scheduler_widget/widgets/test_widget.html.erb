@@ -108,7 +108,7 @@
   <body>
     <div class="divLoading hidden"></div>
 
-		<%= link_to("Schedule a Visit", "url" , class: "btn btn-success btn-lg", data: { toggle: "modal", target: "#scheduleMyTour" }) %>
+		<%= link_to("Schedule a Visit", "url",id: "schedule_btn" , class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#scheduleMyTour" }) %>
 
 	  <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
       <div class="modal-dialog" role="document">
@@ -309,9 +309,18 @@
 
     <script type="text/javascript">
       $(document).ready(function(){
-        document.getElementById('user_time_zone').value = jstz.determine().name();
-        // -new Date().getTimezoneOffset()/60;
-      })
+        var direct = <%= @direct %>
+          if(direct)
+          {
+            $('#schedule_btn').click();
+          }
+          else
+          {
+            $('#schedule_btn').removeClass('hidden');
+          }
+          document.getElementById('user_time_zone').value = jstz.determine().name();
+          // -new Date().getTimezoneOffset()/60;
+        })
       var steps = <%= @stepping %>
       var success = "<%= flash[:success]  %>";
       var credit_card_required = <%= @credit_card_required %>

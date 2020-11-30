@@ -348,9 +348,12 @@ class ToursController < ApplicationController
   end
   def scheduler_widget
     @schedule_widget_setting = @community.tour.scheduler_widget_setting || @community.tour.create_scheduler_widget_setting
+    @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
   end
   def save_schedule_widget_btn_setting
     @schedule_widget_setting = @community.tour.scheduler_widget_setting
+    @schedule_widget_setting.update_attributes(btn_text: params[:btn_text], btn_font: params[:btn_font], btn_font_size: params[:btn_font_size], btn_color: params[:btn_color])
+    
   end
   def ajaxplotstartingpoint
     tour = Tour.find params[:tour_id]

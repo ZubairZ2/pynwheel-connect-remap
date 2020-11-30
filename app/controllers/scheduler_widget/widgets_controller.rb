@@ -24,6 +24,16 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @credit_card_required =  @community.tour.credit_card_required
     @bedroom_list = @community.floorplans.map{|x| x.bedrooms.to_i}.uniq
     @marketing_source_required = @community.tour.marketing_source_required
+    
+    if params[:direct].present?
+      @direct =  true
+      decoded = JWT.decode params[:community_code], ENV['SECRET_KEY_BASE_v2'], true, { algorithm: 'HS256' } rescue nil
+      unless decoded[0]["community_id"].to_i == params[:community_id].to_i
+        raise ActionController::RoutingError.new('Not Found')
+      end
+    else
+      @direct =  false
+    end
     if @community.opening_hours.present?
       @disable_day_of_week = [0,1,2,3,4,5,6]
       @community.opening_hours.each do |rcd|
