@@ -11,10 +11,10 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
         tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
         tour_history.tour_id = params[:tour_id].to_i if params[:tour_id].present?
-        tour_history.tour_status = params[:tour_status] == false ? "virutal" : "self_tour"
+        # tour_history.tour_status = params[:tour_status] == false ? "virutal" : "self_tour"
         puts "----------------  tour_status ----------------------------"
-        puts params[:tour_status]
-        puts tour_history.tour_status
+        # puts params[:tour_status]
+        # puts tour_history.tour_status
         puts "----------------  tour_status ----------------------------"
         tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
         if params[:time_zone].present?
@@ -29,6 +29,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
             tu = TourUser.find params[:tour_user_id]
             tu.id_selfie_mismatch = false
             tour_history.desired_bedroom = tu.desired_bedroom
+            tour_history.tour_status = tu.tour_type
             tu.save
           rescue => ex
           end
