@@ -637,7 +637,11 @@ json.tours @tours do |tour|
           json.guest_pin ''
           json.latch_link ''
           json.unit_dwelo_lock_id ''  # will be replaced later in unit data
-        elsif @community.locks_provider.nil?
+        elsif @community.locks_provider == "Zerv"
+          json.guest_pin ''
+          json.latch_link ''
+          json.unit_dwelo_lock_id ''
+        elsif @community.locks_provider.nil? or @community.locks_provider == ""
           _stop_ = Unit.find_by_id stop.stop_id
           unit_dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).first rescue nil
           if _stop_.present? and _stop_.access_code.present? and unit_dwelo_lock.nil?
