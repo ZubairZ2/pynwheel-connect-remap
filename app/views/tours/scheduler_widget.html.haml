@@ -21,7 +21,7 @@
             = hidden_field_tag "community_id", @community.id
 
             .form-group{:style => "text-align: center; "}
-              %a.btn.btn-success.primary-button{:style => "float: center; font-size: #{@schedule_widget_setting.btn_font_size}", :id => "sample_btn", :href => "#{root_url}scheduler_widget/test_widget?community_id=#{current_community.id}&community_code=#{@community_code}&direct=true"}
+              %a.btn.btn-success.primary-button{:style => "float: center; font-size: #{@schedule_widget_setting.btn_font_size}; background-color: #{@schedule_widget_setting.btn_color}", :id => "sample_btn", :href => "#{root_url}scheduler_widget/test_widget?community_id=#{current_community.id}&community_code=#{@community_code}&direct=true"}
                 #{@schedule_widget_setting.btn_text}
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -38,7 +38,7 @@
                 Schedule Widget color size
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 = select_tag :btn_font_size, options_for_select(["10px","11px","12px","13px","14px","15px","16px","17px","18px","19px","20px"], @schedule_widget_setting.btn_font_size),:class => "form-control widget_setting_field", :id => "set_font_size"
-            .form-group.widget_setting_field
+            .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget color
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
@@ -46,7 +46,7 @@
                   .input-group-addon
                     %i
                 
-                    = text_field_tag :btn_color ,  @schedule_widget_setting.btn_color ,:class => "form-control", :id => "set_color"
+                    = text_field_tag :btn_color ,  @schedule_widget_setting.btn_color ,:class => "form-control ", :id => "set_color"
             .form-group
               .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 %button.btn.btn-primary#genrate_btn{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget","data-url" => "",:href => "##"}
@@ -92,6 +92,14 @@
   });
   $('.widget_setting_field').change(function(){
     $(".widget-settings-form").submit();
+  });
+  var tr = 1;
+  $('#set_color').change(function(){
+    if (tr != 1)
+    {
+      $(".widget-settings-form").submit();
+    }
+    tr = tr + 1
   });
 
   $("#sample_btn").css("font-family", $("#set_font option:selected").text());
