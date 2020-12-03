@@ -23,6 +23,7 @@ class Tour < ApplicationRecord
   has_one :tour_setting, dependent: :destroy
   has_many :path_points, through: :path
 
+  has_many :remote_locks,  -> { for_starting_points }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
   has_many :latch_locks, as: :stop, dependent: :destroy     # only for of starting point's latch locks
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy # only for of starting point's latch locks
 

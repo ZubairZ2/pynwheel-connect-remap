@@ -44,6 +44,22 @@ class LatchAccountsController < ApplicationController
         
     end
 
+    def remove_latch_locks
+        if current_community.latch.present?
+            if current_community.latch.latch_locks.present?
+              current_community.latch.latch_locks.destroy_all
+              flash[:notice] = "Locks deleted successfully"
+              redirect_to new_community_dwelo_path(current_community)
+            else
+              flash[:error] = "No locks are present"
+              redirect_to new_community_dwelo_path(current_community)
+            end
+          else
+            flash[:error] = "Credentials for EdgeState are missing"
+            redirect_to new_community_dwelo_path(current_community)
+        end
+    end
+
     def parse_csv(file)
         @latch.import_data(file)
     end

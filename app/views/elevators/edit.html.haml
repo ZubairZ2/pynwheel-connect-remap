@@ -51,17 +51,31 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Building
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :building ,  class: "form-control elevator_edit_field", placeholder: "building"    
-            - if @community.locks_provider == "Latch" and @community.latch.present?
-              .form-group.hide_on_new
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Latch lock
-                  %i.unit_manualoverride.fa.fa-question-circle
-                    %span#unit_manualoverride_text
-                      Assign the lock to this elevator
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.collect{ |l| [l.lock_name, l.lock_id] } , @elevator.latch_locks.present? ?  @elevator.latch_locks.first.lock_id : ''), {:class => "form-control elevator_edit_field", :prompt => "Select your option"}
-            
+                = f.text_field :building ,  class: "form-control elevator_edit_field", placeholder: "building"
+
+            - if @community.enable_locks
+              - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Remote Lock
+                    %span Assign the lock to this unit
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :remote_lock, options_for_select(@community.edge_state.remote_locks.order(:id).collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @elevator.remote_locks.present? ?  @elevator.remote_locks.last.device_id : ''), {:class => "form-control elevator_edit_field", :prompt => "Select your option"}
+              - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Dwelo lock
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :dwelo_remote_lock, options_for_select(@community.dwelo.remote_locks.order(:id).collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @elevator.remote_locks.present? ?  @elevator.remote_locks.last.device_id : ''), {:class => "form-control elevator_edit_field", :prompt => "Select your option"}     
+
+              - elsif @community.locks_provider == "Latch" and @community.latch.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Latch lock
+                    %span Assign the lock to this unit
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.order(:id).collect{ |l| [l.lock_name, l.door_uuid] } , @elevator.latch_locks.present? ?  @elevator.latch_locks.last.door_uuid : ''), {:class => "form-control elevator_edit_field", :prompt => "Select your option"}
+
             = submit_tag 'Save', class: "hidden"
 
     %span.btn.btn-primary.btn-file

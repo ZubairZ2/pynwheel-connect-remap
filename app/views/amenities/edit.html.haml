@@ -25,12 +25,6 @@
                 Name
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :name, :class=>"form-control amenity_edit_field", :placeholder=>"Name",:maxlength=>"30"
-            - if @community.locks_provider.nil?
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Access Code
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Video Link Button Label
@@ -41,18 +35,6 @@
                 Video Link
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :video_link, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link"
-            -# - if Dwelo.find_by(community_id: @community.id).present?
-            -#   .form-group
-            -#     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-            -#       Dwelo Lock
-            -#       %i.unit_manualoverride.fa.fa-question-circle
-            -#         %span#unit_manualoverride_text
-            -#           Name of lock must be same as amenity name
-            -#       %span Assign the lock to this amenity
-            -#     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            -#       %select.form-control#dwelo_remote{name: "remote_lock"}
-            -#       %button#dwelo_update_btn.btn.btn-primary.update-lock.hidden{type: "button"}
-            -#         %a#dwelo_a_lock.btn-text-color{href: "#"} Update selected lock
 
             - bool_check = @community.show_map ? f.object.amenityable.present? && f.object.amenityable_type == "Floorplate" : true
             .form-group
@@ -68,29 +50,34 @@
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.select :floor , (f.object.amenityable.floors.flatten.uniq.sort),{:include_blank => true}, class: "form-control amenity_edit_field", placeholder: "Floor"
 
-                  -#= f.text_field :floor, :class=>"form-control amenity_edit_field validate[required,custom[onlyNumber&Decimal]]", :placeholder=>"Floor"
-            - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Remote Lock
-                  %i.unit_manualoverride.fa.fa-question-circle
-                    %span#unit_manualoverride_text
-                      Name of Remote lock must be same as amenity name
-                  %span Assign the lock to this amenity
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  %select.form-control#remote_lock{name: "remote_lock"}
-                  %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
-                    %a#a-lock.btn-text-color{href: "#"} Update selected lock
-            - elsif @community.locks_provider == "Latch" and @community.latch.present?
-              .form-group.hide_on_new
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Latch lock
-                  %i.unit_manualoverride.fa.fa-question-circle
-                    %span#unit_manualoverride_text
-                      Assign the lock to this amenity
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.collect{ |l| [l.lock_name, l.lock_id] } , @amenity.latch_locks.present? ?  @amenity.latch_locks.first.lock_id : ''), {:class => "form-control amenity_edit_field", :prompt => "Select your option"}
-            
+            - if @community.enable_locks
+              - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Remote Lock
+                    %span Assign the lock to this unit
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :remote_lock, options_for_select(@community.edge_state.remote_locks.order(:id).collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @amenity.remote_locks.present? ?  @amenity.remote_locks.last.device_id : ''), {:class => "form-control amenity_edit_field", :prompt => "Select your option"}
+              - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Dwelo lock
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :dwelo_remote_lock, options_for_select(@community.dwelo.remote_locks.order(:id).collect{ |l| [l.name + " (" + l.remote_lock_type + ")", l.device_id] } , @amenity.remote_locks.present? ?  @amenity.remote_locks.last.device_id : ''), {:class => "form-control amenity_edit_field", :prompt => "Select your option"}     
+              - elsif @community.locks_provider == "Latch" and @community.latch.present?
+                .form-group.hide_on_new
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Latch lock
+                    %span Assign the lock to this unit
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :latch_lock, options_for_select(@community.latch.latch_locks.order(:id).collect{ |l| [l.lock_name, l.door_uuid] } , @amenity.latch_locks.present? ?  @amenity.latch_locks.last.door_uuid : ''), {:class => "form-control amenity_edit_field", :prompt => "Select your option"}
+              - elsif @community.locks_provider == nil or @community.locks_provider == ""
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Access Code
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
+
             - if @community.self_tour
               .row
                 .form-group
@@ -220,141 +207,6 @@
   $('#on_done').click(function(e){
     $('.edit_amenity').submit();
   })
-
-  var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
-  var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
-  // var IsDweloSelectedLockMatch = function (){
-  //   if($('#dwelo_remote :selected').text() != "Select your option"){
-  //     var index = $('#dwelo_remote :selected').text().lastIndexOf(" ");
-  //     var lock_name = $('#dwelo_remote :selected').text();
-  //
-  //     if(lock_name != $('#amenity_name').val()){
-  //       $('#dwelo_remote').addClass('lock_mismatch')
-  //       $("#dwelo_update_btn").removeClass('hidden')
-  //
-  //       var id = $('#dwelo_remote :selected').val()
-  //       var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + amenity_id + '&stop_name=' + amenity_name + '&stop_type=amenity'
-  //
-  //
-  //       $("#dwelo_a_lock").attr("href",href);
-  //     }
-  //     else{
-  //       $('#dwelo_remote').removeClass('lock_mismatch')
-  //       $("#dwelo_update_btn").addClass('hidden')
-  //       $("#dwelo_a_lock").attr("href","#");
-  //       var id = $('#dwelo_remote :selected').val()
-  //       $.ajax({
-  //           type: 'Put',
-  //           url: "/communities/" + community_id + "/amenities/" + amenity_id,
-  //           data: {
-  //               lock_id: id,
-  //               assigning_lock: "true"
-  //           },
-  //                 cache: false,
-  //           success: function () {
-  //           }
-  // })
-  //     }
-  //   }
-  //   else{
-  //       $('#dwelo_remote').removeClass('lock_mismatch')
-  //       $("#dwelo_update_btn").addClass('hidden')
-  //       $("#dwelo_a_lock").attr("href","#");
-  //   }
-  // }
-
-  var IsSelectedLockMatch = function(){
-    if($('#remote_lock :selected').text() != "Select your option"){
-      var index = $('#remote_lock :selected').text().lastIndexOf(" ");
-      var lock_name = $('#remote_lock :selected').text().substring(0, index);
-
-      if(lock_name != $('#amenity_name').val()){
-        $('#remote_lock').addClass('lock_mismatch')
-        $("#update-btn").removeClass('hidden')
-
-        var id = $('#remote_lock :selected').val()
-        var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + amenity_id + '&stop_name=' + amenity_name + '&stop_type=amenity'
-
-        $("#a-lock").attr("href",href);
-      }
-      else{
-        $('#remote_lock').removeClass('lock_mismatch')
-        $("#update-btn").addClass('hidden')
-        $("#a-lock").attr("href","#");
-      }
-    }
-    else{
-        $('#remote_lock').removeClass('lock_mismatch')
-        $("#update-btn").addClass('hidden')
-        $("#a-lock").attr("href","#");
-    }
-  }
-
-
-  function clear_assigned_lock(){
-    $.ajax({
-      type: 'POST',
-      url: '/communities/'+ community_id + '/amenities/' + amenity_id +'/clear_locks',
-      dataType: 'json',
-      cache: false,
-      success: function(data){
-        console.log(data)
-      },
-      fail: function(error){
-        console.log(error)
-      }
-    })
-  }
-
-  $(document).ready(function(){
-    var params = {"amenity_name": amenity_name}
-    var assigned_lock_present = false
-    // removed code for dwelo amenity check in dwelo work
-  $.ajax({
-      type: 'POST',
-      url: '/communities/'+ community_id + '/amenities/' + amenity_id +'/load_remotelock_data',
-      dataType: 'json',
-      data: params,
-      cache: false,
-      success: function(data){
-        locks = data['locks']
-        for (var item in locks) {
-            if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type){
-              $('#remote_lock').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
-              assigned_lock_present = true
-            }
-            else{
-              $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
-            }
-        }
-        if(assigned_lock_present == false){
-            $('#remote_lock').prepend(`<option value="" , selected="selected">Select your option</option>`)
-            // clear_assigned_lock()
-        }
-        else
-          IsSelectedLockMatch()
-      },
-      fail: function(error){
-        console.log(error)
-      }
-    });
-
-    $("#remote_lock").change(function () {
-      IsSelectedLockMatch()
-    });
-
-    $("#amenity_name").keyup(function() {
-      IsSelectedLockMatch()
-    });
-
-   $("#dwelo_remote").change(function () {
-    IsDweloSelectedLockMatch()
-    })
-    $("#amenity_name").keyup(function() {
-      IsDweloSelectedLockMatch()
-    });
-    
-  });
 
   var community_id = #{params[:community_id]}
   var amenity_id = #{@amenity.id}

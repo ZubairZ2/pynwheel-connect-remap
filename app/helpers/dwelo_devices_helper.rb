@@ -71,8 +71,8 @@ module DweloDevicesHelper
       tour_user.update!(random_number: id)
       url = base_url + "/v4/integrations/pynwheel/access_persons/"
 
-      start_time = Time.now.strftime('%Y-%m-%dT%H:%M:%SZ')
-      ends_time = (Time.now + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
+      start_time = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+      ends_time = (Time.now.utc + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
       puts start_time
       puts ends_time
 
@@ -133,9 +133,9 @@ module DweloDevicesHelper
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
 
-      puts "111" * 50
+      puts "------------------- create grant_access_person_accesses response -----------------------"
       puts response
-      puts "111" * 50
+      puts "----------------------------------------------------------------------------------------"
 
       return response
 

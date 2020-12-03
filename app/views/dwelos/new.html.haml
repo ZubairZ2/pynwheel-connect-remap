@@ -56,6 +56,7 @@
               %button.btn.btn-primary.impo#import_locks{:onclick => "import_dwelo_locks(#{@community.dwelo.id rescue 0})", :type => "button"} Import Locks Data
               - if @community.dwelo.present? and @community.dwelo.remote_locks.present?
                 %button.btn.btn-success#map_locks{:type => "button"} Map Units
+                = link_to "Delete all Existing Locks" , remove_dwelo_locks_community_dwelos_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
               
 
 - content_for :title, "Save EdgeState - Pynwheel", class: "edgestate hide_edgestate"
@@ -131,6 +132,7 @@
               %button.btn.btn-primary.impo#import_locks{:onclick => "import_edgestate_locks(#{@community.id})", :type => "button"} Import Locks Data
               - if @community.edge_state.present? and @community.edge_state.remote_locks.present?
                 %button.btn.btn-success#map_edgestate_locks{:type => "button"} Map Units
+                = link_to "Delete all Existing Locks" , remove_edgestate_locks_community_edgestate_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
 
 - content_for :title, "Save Latch - Pynwheel", class: "latch hide_latch"
 %section.latch.hide_latch{style: "margin-top: -45px"}
@@ -175,6 +177,8 @@
             = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
           - else
             = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+          - if @community.latch.present?
+            = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :class=>"btn btn-danger", :method => :delete, :style=> "background-color: #dd4b39d4;"
 
 - content_for :title, "Save Zerv - Pynwheel", class: "zerv hide_zerv"
 %section.zerv.hide_zerv{style: "margin-top: -45px"}
@@ -205,28 +209,28 @@
 
 :javascript
 
-    if("#{@community.locks_provider}" == "EdgeState"){
+    if("#{@community.enable_locks}" && "#{@community.locks_provider}" == "EdgeState"){
       $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
       $(".edgestate").removeClass("hide_edgestate");
       $(".latch").addClass("hide_latch");
       $(".dwelo").addClass("hide_dwelo");
       $(".zerv").addClass("hide_zerv");
     }
-    else if ("#{@community.locks_provider}" == "Dwelo"){
+    else if ("#{@community.enable_locks}" && "#{@community.locks_provider}" == "Dwelo"){
       $(".lock_provider").val($(".lock_provider option:first").val());
       $(".edgestate").addClass("hide_edgestate");
       $(".latch").addClass("hide_latch");
       $(".zerv").addClass("hide_zerv");
       $(".dwelo").removeClass("hide_dwelo");
     }
-    else if ("#{@community.locks_provider}" == "Latch"){
+    else if ("#{@community.enable_locks}" && "#{@community.locks_provider}" == "Latch"){
       $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
       $(".edgestate").addClass("hide_edgestate");
       $(".dwelo").addClass("hide_dwelo");
       $(".zerv").addClass("hide_zerv");
       $(".latch").removeClass("hide_latch");
     }
-    else if ("#{@community.locks_provider}" == "Zerv"){
+    else if ("#{@community.enable_locks}" && "#{@community.locks_provider}" == "Zerv"){
       $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
       $(".edgestate").addClass("hide_edgestate");
       $(".dwelo").addClass("hide_dwelo");
