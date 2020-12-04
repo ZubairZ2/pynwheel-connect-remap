@@ -75,7 +75,7 @@
 
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
-          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-url"} Copy to clipboard                        
+          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-link-url"} Copy to clipboard                        
 
 :javascript
   $('#set_text').keyup(function(){
@@ -110,8 +110,7 @@
     btn_font = $("#set_font option:selected").text()
     btn_font_size = $("#set_font_size option:selected").text()
     btn_link = "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{@community_code}&direct=true"
-    debugger;
-    $('#schedule-url').val("<a class='btn btn-success primary-button' id='pynwheel_widget' style='background-color: "+btn_color+"; font-family: "+btn_font+"; font-size: "+btn_font_size+";' href='"+ btn_link +";' target='_blank' >"+btn_text+"</a>")
+    $('#schedule-url').val("<a class='btn btn-success primary-button' id='pynwheel_widget' style='background-color: "+btn_color+" !important; font-family: "+btn_font+" !important; font-size: "+btn_font_size+" !important; color: white !important;' href='"+ btn_link +";' target='_blank' >"+btn_text+"</a>")
   });
 
   $('#genrate_link').click(function(){
