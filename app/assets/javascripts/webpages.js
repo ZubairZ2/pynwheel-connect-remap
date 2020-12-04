@@ -606,6 +606,12 @@ function select_units_according_to_filters(floorplate_units) {
   var rent_base_units = [];
   var square_feet_base_units = [];
   //var sold_units = [];
+  _now_units = [];
+  _now_to_30_units = [];
+  _30_to_60_units = [];
+  _60_to_90_units = [];
+  _90_to_120_units = [];
+  _120_units = [];
   //var are_available_units = [];
   var all_units = [];
   var market_rent = $('#market_rent').val();
@@ -629,6 +635,18 @@ function select_units_according_to_filters(floorplate_units) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 0) {
         //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
         bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
       }
     }
     //show one bedroom markers  
@@ -636,36 +654,99 @@ function select_units_according_to_filters(floorplate_units) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 1) {
         //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
         bedroom_base_units.push(floorplate_units[i]);
+        debugger;
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
       }
     }
     //show two bedroom markers
     if ($('#two-bedroom-checkbox').is(':checked')) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 2) {
         bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
       }
     }
     //show three bedroom markers
     if ($('#three-bedroom-checkbox').is(':checked')) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 3) {
         bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
       }
     }
     //show four bedroom markers
     if ($('#four-bedroom-checkbox').is(':checked')) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 4) {
         bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
       }
     }
     //show five bedroom markers
     if ($('#five-bedroom-checkbox').is(':checked')) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 5) {
         bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && available_date <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
       }
     }
     //show six bedroom markers
     if ($('#six-bedroom-checkbox').is(':checked')) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 6) {
         bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
       }
     }
     //show available now
@@ -754,6 +835,38 @@ function select_units_according_to_filters(floorplate_units) {
     rent_base_units = all_units
     price_filter_present = false
   }
+  debugger;
+  if(_now_units.length == 0)
+  {$('#now-checkbox').parent().addClass('hidden');}
+  else
+  {$('#now-checkbox').parent().removeClass('hidden');}
+
+  if(_now_to_30_units.length == 0)
+  {$('#thirty-days-checkbox').parent().addClass('hidden');}
+  else
+  {$('#thirty-days-checkbox').parent().removeClass('hidden');}
+
+  if(_30_to_60_units.length == 0)
+  {$('#thirty-to-sixty-days-checkbox').parent().addClass('hidden');}
+  else
+  {$('#thirty-to-sixty-days-checkbox').parent().removeClass('hidden');}
+  
+
+  if(_60_to_90_units.length == 0)
+  {$('#sixty-to-ninty-days-checkbox').parent().addClass('hidden');}
+  else
+  {$('#sixty-to-ninty-days-checkbox').parent().removeClass('hidden');}
+  
+  if(_90_to_120_units.length == 0)
+  {$('#ninty-to-one-twenty-days-checkbox').parent().addClass('hidden');}
+  else
+  {$('#ninty-to-one-twenty-days-checkbox').parent().removeClass('hidden');}
+
+  if(_120_units.length == 0)
+  {$('#one-twenty-plus-days-checkbox').parent().addClass('hidden');}
+  else
+  {$('#one-twenty-plus-days-checkbox').parent().removeClass('hidden');}
+
   if (bedroom_filter_present || availability_filter_present || price_filter_present || area_filter_present) {
     var units_to_display = $.intersect(bedroom_base_units, availability_base_units, rent_base_units, square_feet_base_units);
     //units_to_display = $.union(units_to_display, sold_units, are_available_units);
