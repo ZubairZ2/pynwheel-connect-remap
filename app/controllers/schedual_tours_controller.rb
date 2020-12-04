@@ -124,13 +124,14 @@ class SchedualToursController < ApplicationController
     end
   end
   def check_limit(tour_type, total_count, virtual_count, self_tour_count, guided_count, community )
-    if total_count == community.tour.max_tour_users.to_i
+    
+    if community.tour.max_tour_users.present? && total_count == community.tour.max_tour_users.to_i
       return false, "max tour users limit reached for the selected time"
-    elsif tour_type == "virtual" && community.tour.max_virtual_tour_users.present? && !(virtual_count < community.tour.max_virtual_tour_users.to_i)
+    elsif tour_type == "virtual" && community.tour.max_virtual_tour_users.present? && community.tour.max_virtual_tour_users.present? && !(virtual_count < community.tour.max_virtual_tour_users.to_i)
       return false, "max virtual tour users limit reached for the selected time"
-    elsif tour_type == "self_tour" && community.tour.max_self_tour_users.present? && !(self_tour_count < community.tour.max_self_tour_users.to_i)
+    elsif tour_type == "self_tour" && community.tour.max_self_tour_users.present? && community.tour.max_self_tour_users.present? && !(self_tour_count < community.tour.max_self_tour_users.to_i)
       return false, "max self tour tour users limit reached for the selected time"
-    elsif tour_type == "guided" && community.tour.max_guided_tour_users.present? && !(guided_count < community.tour.max_guided_tour_users.to_i)
+    elsif tour_type == "guided" && community.tour.max_guided_tour_users.present? && community.tour.max_guided_tour_users.present? && !(guided_count < community.tour.max_guided_tour_users.to_i)
       return false, "max guided tour users limit reached for the selected time"
     else
       return true, ""
