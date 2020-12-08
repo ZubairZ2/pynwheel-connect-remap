@@ -1,0 +1,113 @@
+<style type="text/css">
+  .form-group input, .form-control input, .form-group select {
+    border-color: #8c9192 !important;
+  }
+  .form-group {
+    padding-bottom: 5px !important;
+  }
+  .Pyn_Modal{
+    background: #fff;
+    width: 520px;
+    box-shadow: 0px 19px 30px -15px #888888;
+    margin: 0 auto;
+    padding: 20px;
+    border-top: 4px solid #ef4d88;
+  }
+  .Pyn_Modal p{
+    padding: 0px;
+    font-size: 14px;
+    text-align: center;
+    font-weight: bold;
+  }
+  .Pyn_Modal label{
+    font-size: 15px;
+    font-weight: 300;
+    color: #000;
+  }
+  .Pyn_Modal .form-control{
+    font-size: 18px;
+    height: 49px;
+    font-weight: 300;
+    border-radius: 0;
+    line-height: normal;
+    box-shadow: none;
+  }
+  .select_number{
+    width: 36%;
+    float: left;
+  }
+  .phoneNumber{
+    width: 60%;
+    float: right;
+  }
+  .cardNumber{
+    width: 70%;
+    float: left;
+  }
+  .expiry{
+    width: 26%;
+    float: right;
+  }
+  .btn_popup{
+    width: 100%;
+    border: none;
+    background: #89c766;
+    text-align: center;
+    color: #fff;
+    font-size: 19px;
+    padding: 12px 0;
+  }
+  .inner_phn_wrap{
+    float: left;
+    margin-bottom: 15px;
+    width: 100%;
+  }
+  @media only screen and (max-width: 560px) {
+    .Pyn_Modal{
+        background: #fff;
+        width: 100%;
+        box-shadow: 0px 19px 30px -15px #888888;
+        margin: 0 auto;
+        padding: 20px;
+        border-top: 4px solid #ef4d88;
+    }
+  }
+  .color-red{
+    color: red;
+  }
+</style>
+
+<%= javascript_include_tag "jsTimezoneDetect" %>
+<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+
+<script type="text/javascript">
+  Stripe.setPublishableKey('<%= ENV["STRIPE_PUBLISHABLE_KEY"] %>');
+</script>
+
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta charset="utf-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <title>Pynwheel | Dashboard</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag 'jquery.mCustomScrollbar.css' %>
+    <%= stylesheet_link_tag 'slick.css' %>
+    <%= stylesheet_link_tag 'bootstrap-datetimepicker' %>
+    <%= stylesheet_link_tag    'application', media: 'all' %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_include_tag 'jquery.arrayUtilities' %>
+    <%= javascript_include_tag 'slick' %>
+    <%= javascript_include_tag 'moment' %>
+    <%= javascript_include_tag 'bootstrap-datetimepicker' %>
+    <%= favicon_link_tag 'logo-small.png' %>
+    <%= render '/font_awesome_v5' %>
+  </head>
+  
+	<body style = "height: fit-content; width: fit-content;">
+		<a class="btn btn-success primary-button" style = "float: center; font-size: <%= @schedule_widget_setting.btn_font_size %> ; background-color: <%= @schedule_widget_setting.btn_color %>; font-family: <%= @schedule_widget_setting.btn_font %>" id = "sample_btn"  href = "<%= root_url%>scheduler_widget/test_widget?community_id=<%=@community.id%>&community_code=<%=@community_code%>&direct=true" >
+  		<%= @schedule_widget_setting.btn_text %> </a>
+
+	</body>
+</html>

@@ -16,7 +16,13 @@ class SchedulerWidget::WidgetsController < ApplicationController
       end
     end
   end
-
+  def scheduler_widget_button
+    
+    @schedule_widget_setting= SchedulerWidgetSetting.find params[:id]
+    @community_code = params[:community_code]
+    @community = Community.find params[:community_id]
+    render :scheduler_widget_button, layout: false
+  end
 
   def test_widget
     @community_id = params[:community_id]

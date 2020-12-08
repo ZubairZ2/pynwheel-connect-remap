@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   # before_action :check_community
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
+  helper_method :community_code
   helper_method :current_company
   helper_method :alphabetical_sort
   before_action :load_tour_users_chats
@@ -16,6 +17,10 @@ class ApplicationController < ActionController::Base
 	  elsif controller_name =='communities' && params[:id].present?
 		  @community ||= Community.find params[:id]
 	  end  	
+  end
+  def community_code
+    @schedule_widget_setting = @community.tour.scheduler_widget_setting || @community.tour.create_scheduler_widget_setting
+    @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
   end
   
   def info_for_paper_trail

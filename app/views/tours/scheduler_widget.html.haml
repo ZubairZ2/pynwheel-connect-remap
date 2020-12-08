@@ -47,19 +47,19 @@
                     %i
                 
                     = text_field_tag :btn_color ,  @schedule_widget_setting.btn_color ,:class => "form-control ", :id => "set_color"
-            .form-group
-              .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                %button.btn.btn-primary#genrate_btn{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget","data-url" => "",:href => "##"}
-                  %span Tour Scheduler Widget
-                %button.btn.btn-primary#genrate_link{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link","data-url" => "",:href => "##"}
-                  %span Genrate Link 
+            / .form-group
+            /   .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            /     %button.btn.btn-primary#genrate_btn{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget","data-url" => "",:href => "##"}
+            /       %span Tour Scheduler Widget
+            /     %button.btn.btn-primary#genrate_link{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link","data-url" => "",:href => "##"}
+            /       %span Genrate Link 
   #share-scheduler-widget.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
     .modal-dialog
       .modal-content
         .modal-header
           Copy and paste the code below and share it with your web developer to add the scheduler widget to your website.
         .modal-body
-          %input.form-control#schedule-url{:value =>''}
+          %input.form-control#schedule-url{:value => '<iframe style="height: 70px; width: 260px;"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code=eyJhbGciOiJIUzI1NiJ9.eyJjb21tdW5pdHlfaWQiOjR9.R9eFa3gZqU1lZDB2HP5x7w-NsWltyf3CjW0tPXPCnTw&id='+current_community.tour.scheduler_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
 
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
@@ -104,14 +104,7 @@
 
   $("#sample_btn").css("font-family", $("#set_font option:selected").text());
 
-  $('#genrate_btn').click(function(){
-    btn_text = $('#set_text').val()
-    btn_color =  $('#set_color').val()
-    btn_font = $("#set_font option:selected").text()
-    btn_font_size = $("#set_font_size option:selected").text()
-    btn_link = "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{@community_code}&direct=true"
-    $('#schedule-url').val("<a class='btn btn-success primary-button' id='pynwheel_widget' style='background-color: "+btn_color+" !important; font-family: "+btn_font+" !important; font-size: "+btn_font_size+" !important; color: white !important;' href='"+ btn_link +";' target='_blank' >"+btn_text+"</a>")
-  });
+
 
   $('#genrate_link').click(function(){
 

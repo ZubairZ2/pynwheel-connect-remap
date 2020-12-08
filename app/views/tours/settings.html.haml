@@ -417,7 +417,10 @@
                             = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
                     %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
                       Every 2 hours (ie, 10:00, 12:00, 2:00)        
-               
+              .form-group
+                .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  %button.btn.btn-primary#genrate_btn{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget","data-url" => "",:href => "##"}
+                    %span Tour Scheduler Widget 
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
