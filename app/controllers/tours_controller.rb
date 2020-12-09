@@ -734,17 +734,17 @@ class ToursController < ApplicationController
       GuidedOpeningHour.where(community_id: params[:community_id]).delete_all
       
       i=1
-      day_key = 'day_' + i.to_s
-      from_key = 'from_' + i.to_s
-      to_key = 'to_' + i.to_s
+      day_key = 'guided_day_' + i.to_s
+      from_key = 'guided_from_' + i.to_s
+      to_key = 'guided_to_' + i.to_s
 
       while params[day_key].present?
         times = current_community.guided_opening_hours.create(day: params[day_key], opening_time: params[from_key], closing_time: params[to_key])
 
         i=i+1
-        day_key = 'day_' + i.to_s
-        from_key = 'from_' + i.to_s
-        to_key = 'to_' + i.to_s
+        day_key = 'guided_day_' + i.to_s
+        from_key = 'guided_from_' + i.to_s
+        to_key = 'guided_to_' + i.to_s
       end
     end
     @community = Community.find params[:community_id]

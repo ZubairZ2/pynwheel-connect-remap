@@ -27,12 +27,12 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget Text
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = text_field_tag :btn_text , @schedule_widget_setting.btn_text ,:class => "form-control widget_setting_field", :id => "set_text"
+                = text_field_tag :btn_text , @schedule_widget_setting.btn_text ,:class => "form-control widget_setting_field", :id => "set_text", :maxlength=>"50"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget font family
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :btn_font , options_for_select(font_families, @schedule_widget_setting.btn_font),:class => "form-control widget_setting_field", :id => "set_font"
+                = select_tag :btn_font , options_for_select(font_families.collect(&:first), @schedule_widget_setting.btn_font),:class => "form-control widget_setting_field", :id => "set_font"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Schedule Widget color size
@@ -53,29 +53,29 @@
             /       %span Tour Scheduler Widget
             /     %button.btn.btn-primary#genrate_link{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link","data-url" => "",:href => "##"}
             /       %span Genrate Link 
-  #share-scheduler-widget.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-    .modal-dialog
-      .modal-content
-        .modal-header
-          Copy and paste the code below and share it with your web developer to add the scheduler widget to your website.
-        .modal-body
-          %input.form-control#schedule-url{:value => '<iframe style="height: 70px; width: 260px;"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code=eyJhbGciOiJIUzI1NiJ9.eyJjb21tdW5pdHlfaWQiOjR9.R9eFa3gZqU1lZDB2HP5x7w-NsWltyf3CjW0tPXPCnTw&id='+current_community.tour.scheduler_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
+  / #share-scheduler-widget-removed.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  /   .modal-dialog
+  /     .modal-content
+  /       .modal-header
+  /         Copy and paste the code below and share it with your web developer to add the scheduler widget to your website.
+  /       .modal-body
+  /         %input.form-control#schedule-url{:value => '<iframe style="height: 70px; width: 260px;"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code=eyJhbGciOiJIUzI1NiJ9.eyJjb21tdW5pdHlfaWQiOjR9.R9eFa3gZqU1lZDB2HP5x7w-NsWltyf3CjW0tPXPCnTw&id='+current_community.tour.scheduler_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
 
-        .modal-footer
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
-          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-url"} Copy to clipboard 
+  /       .modal-footer
+  /         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+  /         %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-url"} Copy to clipboard 
 
-  #share-scheduler-widget-link.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-    .modal-dialog
-      .modal-content
-        .modal-header
-          Copy and paste the link below and share it with your web developer to add the scheduler widget link to your website.
-        .modal-body
-          %input.form-control#schedule-link-url{:value =>''}
+  / #share-scheduler-widget-link-removed.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  /   .modal-dialog
+  /     .modal-content
+  /       .modal-header
+  /         Copy and paste the link below and share it with your web developer to add the scheduler widget link to your website.
+  /       .modal-body
+  /         %input.form-control#schedule-link-url{:value =>''}
 
-        .modal-footer
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
-          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-link-url"} Copy to clipboard                        
+  /       .modal-footer
+  /         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+  /         %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-link-url"} Copy to clipboard                        
 
 :javascript
   $('#set_text').keyup(function(){

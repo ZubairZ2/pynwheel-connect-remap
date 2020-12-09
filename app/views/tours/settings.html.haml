@@ -92,6 +92,9 @@
   .bg-grey-v{
     background: #e3e3e3;
   }
+  .bg-grey-v-guided{
+    background: #e3e3e3;
+  }
 
   .pt-5-v{
     padding-top: 5px !important;
@@ -592,7 +595,7 @@
                 - @community_guided_opening_hours.each_with_sortable_id do |current_day,sortable_id|
                   .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
                     - days_count[current_day.day] = days_count[current_day.day] +1
-                    %select.day-list-guided.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}", onchange: "myFunctionGuided()"}
+                    %select.day-list-guided.font-17-v.pull-left.mr-20-v{id: "guided_day_#{index+1}",name: "guided_day_#{index+1}", onchange: "myFunctionGuided()"}
                       - if current_day.day == "Monday"
                         %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
                         -# - days_count["mon"] = days_count["mon"] +1
@@ -632,21 +635,21 @@
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v From
-                        %input.day-list-guided.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "guided_monday_mor_" + "#{monday_count}",onkeyup: "myFunctionGuided()"}
+                        %input.day-list-guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "guided_monday_mor_" + "#{monday_count}",onkeyup: "myFunctionGuided()"}
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v To
-                        %input.day-list-guided.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "guided_monday_eve_" + "#{monday_count}", onkeyup: "myFunctionGuided()"}
+                        %input.day-list-guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "guided_monday_eve_" + "#{monday_count}", onkeyup: "myFunctionGuided()"}
                       .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                     - if current_day.day != "Monday"
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v From
-                        %input.day-list-guided.guided_morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "guided_from_t", onkeyup: "myFunctionGuided()"}
+                        %input.day-list-guided.morning_time_guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunctionGuided()"}
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v To
-                        %input.day-list-guided.guided_evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "guided_to_t", onkeyup: "myFunctionGuided()"}
+                        %input.day-list-guided.evening_time_guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunctionGuided()"}
                       .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                       -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                     - if current_day.day == "Monday"
@@ -657,7 +660,7 @@
                     - index +=1
                 - if @community.opening_hours.blank?
                   .row.p-8-v
-                    %select.day-list-guided.font-17-v.pull-left.mr-20-v#day_1_guided{name: "day_1"}
+                    %select.day-list-guided.font-17-v.pull-left.mr-20-v#guided_day_1{name: "guided_day_1"}
                       %option{selected: "", value: "Monday"} Monday
                       %option{value: "Tuesday"} Tuesday
                       %option{value: "Wednesday"} Wednesday
@@ -668,11 +671,11 @@
                     .font-17-v.pull-left.mr-20-v
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v From
-                      %input.day-list-guided.bg-grey-v{name: "from_1", type: "time", value: "09:00"}
+                      %input.day-list-guided.bg-grey-v-guided{name: "from_1", type: "time", value: "09:00"}
                     .font-17-v.pull-left.mr-20-v
                       .p-4-v.pull-left.mr-10-v
                         %label.text-grey-v To
-                      %input.day-list-guided.bg-grey-v{name: "to_1", type: "time", value: "05:00"}
+                      %input.day-list-guided.bg-grey-v-guided{name: "to_1", type: "time", value: "05:00"}
                     .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger
               .asd{style: "padding-bottom: 20px;"}
                 %button.btn.btn-primary#add-btn-guided{style: "margin-left: 10;"}
@@ -845,6 +848,7 @@
     $(".tour_time_sortable_guided").sortable( "disable" );
     $("#schedule-btn-submit-guided").removeClass("hide-save-btn-guided");
     $("#schedule-btn-submit-guided").addClass("blink");
+    debugger;
     monday_morning  = $(".guided_monday_mor_" + monday_count).val();
     monday_evening = $(".guided_monday_eve_" + monday_count).val();
     tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time_guided")).val(monday_morning);
@@ -1066,14 +1070,14 @@
     var current_day = $(".list").children().length
     var current_day_guided = $(".list_guided").children().length
     function append_new_day_guided(){
-      var last_dropdown_id = "day_" + (current_day - 1)
+      var last_dropdown_id = "guided_day_" + (current_day - 1)
       var last_dropdown = document.getElementById(last_dropdown_id);
       var last_day = last_dropdown.options[last_dropdown.selectedIndex].text;
       var new_day_with_selected_options = get_next_day_with_selected_option(last_day)
 
       $(".list_guided").append(`
         <div class="row p-8-v">
-          <select class="day-list-guided font-17-v pull-left mr-20-v" id="day_${current_day}" name="day_${current_day}">
+          <select class="day-list-guided font-17-v pull-left mr-20-v" id="gudided_day_${current_day}" name="guided_day_${current_day}">
             ${new_day_with_selected_options}
           </select>
 
@@ -1081,14 +1085,14 @@
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">From</label>
             </div>
-            <input class="day-list-guided bg-grey-v morning_time_guided" name="from_${current_day}" type="time" value="09:00">
+            <input class="day-list-guided bg-grey-v-guided morning_time_guided" name="guided_from_${current_day}" type="time" value="09:00">
           </div>
 
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">To</label>
             </div>
-            <input class="day-list-guided bg-grey-v evening_time_guided" name="to_${current_day}" type="time" value="17:00">
+            <input class="day-list-guided bg-grey-v-guided evening_time_guided" name="guided_to_${current_day}" type="time" value="17:00">
           </div>
 
           <div class="font-17-v pt-5 cancel_guided fa fa-v fa-times text-danger"></div>
@@ -1140,10 +1144,11 @@
 
   $('#schedule-btn-submit-guided').click(function( event ){
     var days = []
-    var times_list = $(".bg-grey-v")
+    var times_list = $(".bg-grey-v-guided")
     var times_hash = {}
     var i = 0;
     $(".list_guided").children().children('select').each(function(){
+    debugger;
       var selected = '#' + $(this).attr('id') + ' :selected'
       var day_ = $(selected).text()
       if(times_hash[day_] == undefined)
@@ -1154,6 +1159,7 @@
       days.push(day_);
       i += 2;
     })
+    debugger;
     if(hasDuplicates(days,times_hash)){
       event.preventDefault();
       $("#same-days-guided").css('color', 'red');
@@ -1190,6 +1196,11 @@
       }
     })
   }
+
+  $("#schedule-btn-submit").removeClass("hide-save-btn");
+  $(".tour_time_sortable").sortable( "disable" );
+  $("#schedule-btn-submit").addClass("blink");
+
   if ($(".list").children().length < 7)
     $('#add-btn').show()
   });
@@ -1201,23 +1212,27 @@
     current_day = 0
     $(".list_guided").children().children('select').each(function(){
       current_day = current_day + 1
-      $(this).attr("id", 'day_'+current_day);
-      $(this).attr("name", 'day_'+current_day);
+      $(this).attr("id", 'guided_day_'+current_day);
+      $(this).attr("name", 'guided_day_'+current_day);
     })
 
     current_day = 0
     $(".list_guided").children().children().children('input').each(function(i){
       if (Math.floor(i%2 == 0)){
         current_day = current_day + 1
-        $(this).attr("id", 'from_'+current_day);
-        $(this).attr("name", 'from_'+current_day);
+        $(this).attr("id", 'guided_from_'+current_day);
+        $(this).attr("name", 'guided_from_'+current_day);
       }
       else{
-        $(this).attr("id", 'to_'+current_day);
-        $(this).attr("name", 'to_'+current_day);
+        $(this).attr("id", 'guided_to_'+current_day);
+        $(this).attr("name", 'guided_to_'+current_day);
       }
     })
   }
+
+  $("#schedule-btn-submit-guided").removeClass("hide-save-btn-guided");
+  $(".tour_time_sortable-guided").sortable( "disable" );
+  $("#schedule-btn-submit-guided").addClass("blink");
 
   if ($(".list_guided").children().length < 7)
     $('#add-btn').show()
