@@ -36,6 +36,14 @@ class Tour < ApplicationRecord
     self.community.opening_hours.create(day: "Thursday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Friday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Saturday", opening_time: "09:00", closing_time: "17:00")
+
+
+    self.community.guided_opening_hours.create(day: "Monday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Tuesday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Wednesday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Thursday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Friday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Saturday", opening_time: "09:00", closing_time: "17:00")
   end
   
 end

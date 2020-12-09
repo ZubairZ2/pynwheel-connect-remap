@@ -3491,6 +3491,9 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .hide-save-btn {
     display: none;
 }
+.hide-save-btn-guided {
+    display: none;
+}
 .hide_email {
     display: none;
 }
@@ -3529,10 +3532,16 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .hide-save-btn {
     display: none;
 }
+.hide-save-btn-guided {
+    display: none;
+}
 .hide-apply-btn {
     display: none;
 }
 .hide-sort-btn {
+    display: none;
+}
+.hide-sort-btn-guided {
     display: none;
 }
 .hide-add-btn {

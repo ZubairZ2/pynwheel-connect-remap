@@ -306,6 +306,7 @@ Rails.application.routes.draw do
     resources :tours, only: :index do
       collection do
         post :save_opening_hours
+        post :save_guided_opening_hours
       end
       resources :tour_stops do
         member do
