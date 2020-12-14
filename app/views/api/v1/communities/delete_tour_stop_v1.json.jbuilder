@@ -702,13 +702,20 @@ json.tours @tours do |tour|
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.camelcase, guest_of_stop_id: stop.stop_id, status: "active")
             if zrv_guest.present?
-              json.guest_pin zrv_guest.res_errors.nil? ? 'Take your mobile near the lock to unlock the next door' : zrv_guest.res_errors["message"][0..52]
+              json.guest_pin 'Take your mobile near the lock to unlock the next door'
               json.latch_link ''
               json.unit_dwelo_lock_id ''
             else
-              json.guest_pin ''
-              json.latch_link ''
-              json.unit_dwelo_lock_id ''
+              zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
+              if zrv_guest.present?
+                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["message"][0..52]
+                json.latch_link ''
+                json.unit_dwelo_lock_id ''
+              else
+                json.guest_pin ''
+                json.latch_link ''
+                json.unit_dwelo_lock_id ''
+              end
             end
           else
             json.guest_pin ''
