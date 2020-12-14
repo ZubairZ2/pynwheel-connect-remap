@@ -81,6 +81,7 @@ class SchedualToursController < ApplicationController
       marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
       community.realpage_insert_prospect(tu, appointment_time, marketing_source, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
       # sms_notifire notification_content, params[:tour_user][:phone_number]
+      schedual_tour.add_user_in_zerv
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end

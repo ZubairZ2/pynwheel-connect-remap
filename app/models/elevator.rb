@@ -13,6 +13,8 @@ class Elevator < ApplicationRecord
   has_many :remote_locks,  -> { for_elevators }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
   has_many :latch_locks, as: :stop, dependent: :destroy
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
+  has_many :zerv_locks, as: :stop, dependent: :destroy
+  has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
   
   scope :plotted_elevators, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   def floors

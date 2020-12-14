@@ -697,10 +697,24 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
-        elsif @community.locks_provider == "Zerv"
-          json.guest_pin ''
-          json.latch_link ''
-          json.unit_dwelo_lock_id ''
+        elsif @community.enable_locks and @community.locks_provider == "Zerv"
+          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: stop.stop_type.camelcase, stop_id: stop.stop_id) if @community.latch.present?
+          if zrv.present?
+            zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.camelcase, guest_of_stop_id: stop.stop_id, status: "active")
+            if zrv_guest.present?
+              json.guest_pin zrv_guest.res_errors.nil? ? 'Take your mobile near the lock to unlock the next door' : zrv_guest.res_errors["message"][0..52]
+              json.latch_link ''
+              json.unit_dwelo_lock_id ''
+            else
+              json.guest_pin ''
+              json.latch_link ''
+              json.unit_dwelo_lock_id ''
+            end
+          else
+            json.guest_pin ''
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+          end
         elsif @community.enable_locks and @community.locks_provider.nil?
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
           dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).first rescue nil

@@ -28,6 +28,19 @@ module AssignLocksHelper
             elsif lock_id == ""
                 stop.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
             end
+        elsif community.locks_provider == "Zerv"
+
+            if lock_id.present?
+                zerv_lock = ZervLock.find_by(mac_id: lock_id, zerv_id: community.zerv.id) rescue nil
+                if zerv_lock.present? and stop.zerv_locks.present? and stop.zerv_locks.last.mac_id != zerv_lock.mac_id
+                    stop.zerv_locks.update_all(stop_id: nil, stop_type: nil)
+                    zerv_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil
+                elsif zerv_lock.present? and stop.zerv_locks.blank?
+                    zerv_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil
+                end
+            elsif lock_id == ""
+                stop.zerv_locks.update_all(stop_id: nil, stop_type: nil)
+            end
         end
     end
 end

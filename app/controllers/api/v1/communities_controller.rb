@@ -246,6 +246,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
       end
       create_latch_reservation(@community, @tour_user, DateTime.now.utc) if providers_account.present? and providers_account.class.name == "Latch" and in_visiting_hours and !is_tour_virtual
+      @locks_thread = create_zerv_user(@community, @tour_user) if providers_account.present? and providers_account.class.name == "Zerv" and in_visiting_hours and !is_tour_virtual
       else
         render :json=> {:success=>false, :message => ""}, :status=>500
       end
@@ -354,6 +355,26 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
       else
         @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
+      end
+      begin
+        puts "#############################################      main thread      ##################################################"
+        thread_ref = params[:locks_thread_ref]
+        unless thread_ref == "null"
+          puts thread_ref
+          thread_ref = thread_ref.gsub("run", "sleep")
+          puts thread_ref
+          locks_thread = Thread.list.select {|thread| thread if thread.to_s == thread_ref}
+          puts "---"*50
+          puts locks_thread
+          puts "---"*50
+          puts Thread.list
+          puts "---"*50
+          puts "##############################################  locks thread joined  #################################################"
+          locks_thread[0].join(20) if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
+          puts "#############################################  main thread continued  ################################################"
+        end
+      rescue => exception
+        puts exception
       end
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
@@ -605,6 +626,19 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
       end
     end
+  end
+
+  def create_zerv_user(community, tour_user)
+    locks_thread = Thread.new do
+      execution_context = Rails.application.executor.run!
+      available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+      available_stops << ["tour", @community.tour.id]
+      allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
+      ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
+    ensure
+      execution_context.complete! if execution_context
+    end
+    locks_thread.to_s
   end
   
   def include_application_data
