@@ -212,6 +212,7 @@ class CommunitiesController < ApplicationController
     redirect_to community_design_index_path(current_community),notice: 'Community will clone within few seconds.'
   end
 
+
   def alert_message
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
