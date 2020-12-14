@@ -627,6 +627,10 @@ class CommunitiesController < ApplicationController
       # @tour_setting.show_last_name = params[:show_last_name].present? ? params[:show_last_name] : false
       # @tour_setting.show_email = params[:show_email].present? ? params[:show_email] : false
       @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
+
+      @tour_setting.allow_self_tour = params[:allow_self_tour].present? ? params[:allow_self_tour] : false
+      @tour_setting.allow_guided_tour = params[:allow_guided_tour].present? ? params[:allow_guided_tour] : false
+      @tour_setting.allow_virtual_tour = params[:allow_virtual_tour].present? ? params[:allow_virtual_tour] : false
       @tour_setting.show_phone = params[:show_phone].present? ? params[:show_phone] : false
       @tour_setting.show_desired_bedroom = params[:show_desired_bedroom].present? ? params[:show_desired_bedroom] : false
       @tour_setting.show_desired_move_in_date = params[:show_desired_move_in_date].present? ? params[:show_desired_move_in_date] : false

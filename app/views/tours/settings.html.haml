@@ -218,6 +218,30 @@
                   = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget  , class: "scheduler_widget"
                   %label.label-primary{:for => "scheduler_widget"}
                   %span.pl-15 Yes
+            
+            .form-group
+              %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
+                Tour Type
+              %br
+              %br  
+              .col-sm-12.col-lg-4.col-md-4.col-xs-12
+                .row
+                  .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                    .checkbox
+                      = check_box_tag :allow_self_tour, true, @tour_setting.allow_self_tour.nil? ? true :  @tour_setting.allow_self_tour
+                      %label Self Tour
+              .col-sm-12.col-lg-4.col-md-4.col-xs-12
+                .row
+                  .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                    .checkbox
+                      = check_box_tag :allow_guided_tour, true, @tour_setting.allow_guided_tour.nil? ? true : @tour_setting.allow_guided_tour
+                      %label Guided Tour
+              .col-sm-12.col-lg-4.col-md-4.col-xs-12
+                .row
+                  .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                    .checkbox
+                      = check_box_tag :allow_virtual_tour, true, @tour_setting.allow_virtual_tour.nil? ? true : @tour_setting.allow_virtual_tour
+                      %label Virtual Tour
             .div_checklist.hidden{:style => "margin-left: 60px;"}
               %label Select Fields for Schedule Widget:
               .form-group{:style => "height: 190px; margin-top: ;"}
