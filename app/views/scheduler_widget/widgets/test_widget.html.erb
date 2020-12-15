@@ -189,7 +189,10 @@
                   
               </div>
               <% end %> 
-
+              <div class="form-group hidden">
+                <span class="hidden" id="hidden_tour_type"></span>
+                <%= hidden_field_tag :hidden_tour_type,"", :class=>"form-control"%>
+              </div>
               <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date  ) %>
               <div class="form-group">
                 <label>Desired Move-in Date</label>
@@ -288,12 +291,34 @@
               </div>
               <div class="form-group">
                 <label>Tour Type</label>
-                <span class="hidden" id="tour_type"></span>
+                <span class="hidden" id="tour_type_field"></span>
                 <%= select_tag :tour_type, options_for_select( [["Self Tour","self_tour"],["Virtual","virtual"],["Guided Tour","guided"]]), :class=>"form-control " %>
                
               </div>
               <div class="clearfix"></div>
               <button class="btn_popup" id="date_schedule_tour">Schedule My Tour!</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
+
+     <div class="modal fade" id="scheduleTourType" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <section>
+          <div class="Pyn_Modal">
+            <p>Schedule a self-guided tour. Select a tour type.</p>
+            <form class="form_popup" id="scheduleTourTypeForm">
+              <div class="clearfix"></div>
+              <div class="form-group">
+                <label>Tour Type</label>
+                <span class="hidden" id="tour_type_field"></span>
+                <%= select_tag :tour_type, options_for_select( [["Self Tour","self_tour"],["Virtual","virtual"],["Guided Tour","guided"]]), :class=>"form-control " %>
+               
+              </div>
+              <div class="clearfix"></div>
+              <button class="btn_popup" id="type_schedule_tour">Schedule My Tour!</button>
             </form>
           </div>
         </section>
@@ -682,7 +707,9 @@
                 $('.divLoading').addClass('hidden');
 
                 $("#scheduleMyTour").modal('hide');
-                $("#modalLoginForm").modal();
+                // $("#modalLoginForm").modal();
+                $("#scheduleTourType").modal();
+
                 $("#not-visiting-hours").addClass('hidden')
               }
               else{
@@ -695,6 +722,68 @@
             }
           });
         }
+
+        $("#scheduleTourTypeForm").on('submit', function(e){
+
+          var visiting_times = <%= raw @visiting_times %>
+          var error_messages = <%= raw @error_message %>
+          var selected_date = $(".datepickertime").val()
+          var matched = false
+          var error
+          selected_day = moment(selected_date).format('dddd')
+          selected_time = moment(selected_date).format('HH:mm')
+          debugger
+          $.ajax({
+            type: "POST",
+            url: "/schedual_tours.json",
+            data: {"id" : document.getElementById('sched_tour_id'), "tour_type" : $("#tour_type option:selected").text()},
+            success: function(data){
+              if(data.code != 400){
+                $('.divLoading').addClass('hidden');
+                $("#scheduleTourType").modal('hide');
+                $("#modalLoginForm").modal();
+
+              }
+              else{
+                $("#not-visiting-hours").removeClass('hidden')
+                $("#not-visiting-hours").addClass('color-red').text(data.message)
+              }
+            },
+            fail: function(error){
+              console.log(error)
+            }
+          });
+          debugger;
+
+          // if(visiting_times.length > 0){
+          //   for(var d_t in visiting_times){
+          //     if (selected_day == visiting_times[d_t][0]){
+          //       var start = getMinutes(visiting_times[d_t][1]);
+          //       var end = getMinutes(visiting_times[d_t][2]);
+          //       var selected = getMinutes(selected_time);
+
+          //       if ((selected >= start) && (selected <= end)) {
+          //         matched = true
+          //         schedual_my_tour($(this))
+          //       }
+          //       else{
+          //         $("#not-visiting-hours").removeClass('hidden')
+          //         for(var each in error_messages){
+          //           if (visiting_times[d_t][0] == error_messages[each][0]){
+          //             error = error_messages[each][1]
+          //           }
+          //         }
+          //       }
+          //     }
+          //   }
+          //   if (matched == false)
+          //     $("#not-visiting-hours").addClass('color-red').text(error)
+          // }
+          // else{
+          //   schedual_my_tour($(this))
+          // }
+          e.preventDefault();
+        });
         
         $("#scheduleMyTourForm").on('submit', function(e){
 

@@ -124,7 +124,7 @@ class SchedualToursController < ApplicationController
     end
   end
   def check_limit(tour_type, total_count, virtual_count, self_tour_count, guided_count, community )
-    
+     return true, ""
     if community.tour.max_tour_users.present? && total_count == community.tour.max_tour_users.to_i
       return false, "max tour users limit reached for the selected time"
     elsif tour_type == "virtual" && community.tour.max_virtual_tour_users.present? && community.tour.max_virtual_tour_users.present? && !(virtual_count < community.tour.max_virtual_tour_users.to_i)
@@ -142,6 +142,12 @@ class SchedualToursController < ApplicationController
 
   # PATCH/PUT /schedual_tours/1
   # PATCH/PUT /schedual_tours/1.json
+  def update_tour_type
+    st = SchedualTour.find params[:id]
+    st.tour_type = params[:tour_type]
+    st.save
+    format.json  { render :json => {"status" => 200} }
+  end
   def update
     date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     
