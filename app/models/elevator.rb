@@ -17,7 +17,7 @@ class Elevator < ApplicationRecord
 
   scope :plotted_elevators, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   def check_floorplate_covering_range
-    if floorplate_covering_range
+    unless floorplate_covering_range.present?
       errors[:base] << "Floorplate covering range can not be blank."
     end
   end
