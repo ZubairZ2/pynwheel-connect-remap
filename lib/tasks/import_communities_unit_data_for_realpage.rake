@@ -4,7 +4,6 @@ namespace :import_unit_data do
     communities = Community.where(data_provider: "realpagesvc")
     communities.each do |community|
       next if (community.locked.present? && community.locked)
-      puts '****************************' , community.id
       #RealPageSvcService.new(community.credential.attributes).perform
       ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
       sleep 20

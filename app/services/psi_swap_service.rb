@@ -48,7 +48,6 @@ class PsiSwapService < BaseService
           # save_website_column_of_community(response)
           end
       rescue => e
-        puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -60,7 +59,6 @@ class PsiSwapService < BaseService
     units.each do |u|
 
       vacateDate = ""
-      puts '+++++++++++++++++++++++++++ update outer  +++++++++++++++++++++++++++++'
 
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"])
       if unit.count > 1
@@ -71,7 +69,6 @@ class PsiSwapService < BaseService
       end
       if unit.present?
         unit = unit.first
-        puts '+++++++++++++++++++++++++++ update inner  +++++++++++++++++++++++++++++'
         unit.provider = "psi_new"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
         unit.property_id = property_id
@@ -182,10 +179,8 @@ class PsiSwapService < BaseService
   end
 
   def save_psi_floorplans(floorplans,property_id)
-    puts '+++++++++++++++++++++++++ add new floor plans  outerrrrr +++++++++++++++++++++++++++++'
     floorplans.each do |f|
 
-      puts '+++++++++++++++++++++++++ add new floor plans innerrrrr +++++++++++++++++++++++++++++'
       floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"])
       if floorplan.count > 1
         floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"],square_feet: f["SquareFeet"]["@attributes"]["Min"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"])
@@ -279,8 +274,6 @@ class PsiSwapService < BaseService
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
         floorplan.save
-        puts '++++++++++++++++++', floorplan.errors.full_messages.join(',')
-
       end
     end
 
@@ -424,11 +417,9 @@ class PsiSwapService < BaseService
                     unit.lease_pricing = rentStr
                     unit.save(validate: false)
                   rescue => ex
-                    puts "---------------- Space configuration inside loop", ex.message
                   end
                 end
               end
-              puts "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"* 300
               #else
               #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
             else
@@ -528,7 +519,6 @@ class PsiSwapService < BaseService
                         unit.lease_pricing = rentStr
                         unit.save(validate: false)
                       rescue => ex
-                        puts "---------------- filling pricing inside loop", ex.message
                       end
                     end
                   end
@@ -545,7 +535,6 @@ class PsiSwapService < BaseService
                   com.save
                 rescue => r
                 end
-                puts '-------------- filling pricing --------------' , e.message
                 #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
               end
 
@@ -563,7 +552,6 @@ class PsiSwapService < BaseService
             com.save
           rescue => r
           end
-          puts '-------------- filling pricing --------------' , e.message
           #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
         end
       end

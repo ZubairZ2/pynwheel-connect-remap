@@ -63,7 +63,6 @@ class Api::V1::DweloDevicesController < ActionController::Base
       request_body = { "access_person_id": guest_id, "lock_id": params[:lock_id], "command": params[:command] }
       puts "--------------------------- commands request ----------------------------"
       puts request_body
-      puts "-------------------------------------------------------------------------"
 
       url = base_url + "/v4/integrations/pynwheel/devices/commands/"
       response = HTTParty.post(url,
@@ -78,7 +77,6 @@ class Api::V1::DweloDevicesController < ActionController::Base
 
       puts "--------------------------- commands response ----------------------------"
       puts response
-      puts "---------------------------------------------------------------------------"
 
       if response.nil?
         render :json => {:success => true, :message => "Success"}

@@ -70,7 +70,6 @@ class PsiStaticService < BaseService
           cred.save
         rescue => err
         end
-        puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -277,7 +276,6 @@ class PsiStaticService < BaseService
                                    }.to_json,
                                    :headers => { 'Content-Type' => 'application/json' } )
           sleep 5
-          puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"* 300,move_in_date
           response =  JSON.parse(response.body)
         end
         sleep 4
@@ -361,11 +359,9 @@ class PsiStaticService < BaseService
                   unit.lease_pricing = rentStr
                   unit.save(validate: false)
                 rescue => ex
-                  puts "---------------- Space configuration inside loop", ex.message
                 end
               end
             end
-            puts "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"* 300
             #else
             #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
           else
@@ -471,7 +467,6 @@ class PsiStaticService < BaseService
                       unit.lease_pricing = rentStr
                       unit.save(validate: false)
                     rescue => ex
-                      puts "---------------- filling pricing inside loop", ex.message
                     end
                   end
                 end
@@ -488,7 +483,6 @@ class PsiStaticService < BaseService
                 com.save
               rescue => r
               end
-              puts '-------------- filling pricing --------------' , e.message
               #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
             end
 
@@ -506,7 +500,6 @@ class PsiStaticService < BaseService
           com.save
         rescue => r
         end
-        puts '-------------- filling pricing --------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
       end

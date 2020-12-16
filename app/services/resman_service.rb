@@ -50,7 +50,6 @@ class ResmanService < BaseService
             PaperTrail.enabled = true
           rescue => err
           end
-          puts '-----------------------------' , response["response"]["error"]["message"]
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
@@ -62,7 +61,6 @@ class ResmanService < BaseService
           PaperTrail.enabled = true
         rescue => err
         end
-        puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -247,7 +245,6 @@ class ResmanService < BaseService
         if f["FloorplanAvailabilityURL"].present?
           floorplan.availability_url = f["FloorplanAvailabilityURL"]
         end
-        puts  f["FloorplanAvailabilityURL"]
         room_types = f["Room"]
         room_types.each do |rt|
           if rt["Type"] == "Bedroom"

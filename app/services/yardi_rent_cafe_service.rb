@@ -180,7 +180,6 @@ class YardiRentCafeService < BaseService
             PaperTrail.enabled = true
           rescue => err
           end
-          puts  "Invalid credentials.Please enter correct one and try again." 
         end
         no_unit = unit_present - @unit_record
         if @unit_record.nil?
@@ -279,7 +278,6 @@ class YardiRentCafeService < BaseService
             end
           end
         else 
-          puts '"Invalid credentials.Please enter correct one and try again."'
         end
       rescue => e 
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 

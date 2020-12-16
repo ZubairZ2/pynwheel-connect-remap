@@ -26,7 +26,6 @@ namespace :import do
         rescue => ex
 
         end
-        puts '****************************' , community.id
         community_logs_str = community_logs_str + community.id.to_s + " , "
         case community.data_provider
           # when "psi"
@@ -58,7 +57,6 @@ namespace :import do
         end    
       end
 
-      puts 'Now waiting for 2 min for 3 background jobs to complete.'
       sleep 25
     end
     community_logs = {Time.now => community_logs_str}

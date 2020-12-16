@@ -1722,7 +1722,6 @@ json.community_group @communities do |co|
       end
     end
   end
-  puts '--------------------------' , random_numbers
   json.message "success"
   json.operation "data"
 

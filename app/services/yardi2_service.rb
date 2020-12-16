@@ -213,10 +213,8 @@ class Yardi2Service < BaseService
             unit.manually_updated = false
             unit.save(validate: false)
           end
-          puts "Not Present "*20
         end
       rescue => e
-        puts '----------------------------------'*30, e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
     end
@@ -337,7 +335,6 @@ class Yardi2Service < BaseService
           end
         end
       rescue => e
-        puts '----------------------------------', e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
     end

@@ -7,28 +7,22 @@ namespace :delayed_email_notifications do
 	desc "This delayed email task is called every day by the Heroku scheduler add-on"
 
 	task :one_day_before => :environment do
-	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Today Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	  # schedual_tours = SchedualTour.where('tour_date = ? AND daily_email_sent = ?', Date.today+1, false)
 	  schedual_tours = SchedualTour.where('tour_date > ? AND daily_email_sent = ? AND tour_date < ?',Date.today, false,Date.today + 2).where.not(tour_user_id: nil)
-	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Today #{schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
 
 	  one_day_before_emails schedual_tours
 	end
 
 	desc "This delayed email task is called every 10 mins by the Heroku scheduler add-on"
 	task :one_hour_before => :environment do
-	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Hour Left Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	 	schedual_tours = SchedualTour.where('tour_date >= ? AND hourly_email_sent = ? AND tour_date < ?', Date.today - 1, false, Date.today + 1).where.not(tour_user_id: nil)
-	 	puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Hour Left #{schedual_tours.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
 	 	one_hour_before_emails schedual_tours
 
 	end
 	desc "This delayed email task is called every 10 mins by the Heroku scheduler add-on"
 	task :abandoned_tour_email => :environment do
-	  puts "<<<<<<<<<<<<<<<<<<<<<<<<< Fetching Hour Left Tours >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	  	
 	 	tour_histories =  TourHistory.where('created_at > ? AND abandoned_tour_email_sent = ? AND active_app = ?', Date.today - 1, false, false).where.not(abandoned_tour_at_stop: nil)
-	 	puts "<<<<<<<<<<<<<<<<<<<<<<<<< Done: Fetching Hour Left #{tour_histories.size } Tours >>>>>>>>>>>>>>>>>>>>>>>>"
 	 	abandoned_tour tour_histories
 
 	end
@@ -181,8 +175,6 @@ Change appointment #{change_tour_time_url(schedual_tour)}?datetime=#{get_date_ti
 	  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		end
 	rescue => ex
-		puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-				puts ex.message
 	end
 
 	end
@@ -201,7 +193,6 @@ Change appointment #{change_tour_time_url(schedual_tour)}?datetime=#{get_date_ti
 				time_left_to_email = (tour_time - server_time)/1.minute
 				
 				time_left_to_email = time_left_to_email * -1 if time_left_to_email < 0
-				puts "<<<<<<<<<<<<<<<<<<<<<<<<< TIME LEFT TO EMAIL #{time_left_to_email} >>>>>>>>>>>>>>>>>>>>>>"
 				if time_left_to_email <= 60 && time_left_to_email > 0
 					tu = schedual_tour.tour_user
 			  	community = schedual_tour.community
@@ -228,8 +219,6 @@ Open #{community_text}  #{app_link}
 			  end
 			end
 			rescue => ex
-				puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-				puts ex.message
 			end
 
 		end
@@ -335,8 +324,6 @@ Open #{community_text}  #{app_link}
 				visited_stops << marketing_name if unit.present?
 			end
 		end
-		puts "visited_stops"
-		puts visited_stops
 		return visited_stops
 	end
 

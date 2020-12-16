@@ -1688,6 +1688,5 @@ json.additional_pages do
     end
   end
 end
-puts '--------------------------' , random_numbers
 json.message "success"
 json.operation "data"

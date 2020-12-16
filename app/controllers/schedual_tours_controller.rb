@@ -56,8 +56,7 @@ class SchedualToursController < ApplicationController
         })                     
       rescue Exception => e
         flash[:error] = e.message
-        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
-        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+
       end
       schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back[:id] : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom])
 
@@ -142,7 +141,6 @@ class SchedualToursController < ApplicationController
     @schedual_tour.update_attributes(hourly_email_sent: false, daily_email_sent: set_daily_email_sent)
     tu = @schedual_tour.tour_user
     # binding.pry
-    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
     respond_to do |format|
       if @schedual_tour.save 
 
@@ -150,7 +148,6 @@ class SchedualToursController < ApplicationController
           sent_notifications = send_email_and_other_notifications @schedual_tour
     
         rescue Exception => e
-          puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
         end
 
         # format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
@@ -173,7 +170,6 @@ class SchedualToursController < ApplicationController
       schedual_tour.destroy
       redirect_to community_schedual_tours_path(@community), notice: 'Schedual tour was successfully destroyed.'
     else
-      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
       @schedual_tour.destroy
       respond_to do |format|
         format.html { redirect_to schedual_tours_url, notice: 'Schedual tour was successfully destroyed.' }

@@ -95,7 +95,6 @@ class Yardi4StaticService < BaseService
           cred.save
         rescue => err
         end
-        puts '-------55555-------'*20 , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
