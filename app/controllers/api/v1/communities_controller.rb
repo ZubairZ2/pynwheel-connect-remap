@@ -215,7 +215,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
       end
 
-      if providers_account.present? and providers_account.class.name == "EdgeState" and in_visiting_hours and !is_tour_virtual
+      if @community.enable_locks and providers_account.present? and providers_account.class.name == "EdgeState" and in_visiting_hours and !is_tour_virtual
         Thread.new do
           tour_user = TourUser.find params[:tour_user_id]
           access_token = RemoteLockService.new(@community).client_credentials
@@ -245,8 +245,8 @@ class Api::V1::CommunitiesController < ActionController::Base
           
         end
       end
-      create_latch_reservation(@community, @tour_user, DateTime.now.utc) if providers_account.present? and providers_account.class.name == "Latch" and in_visiting_hours and !is_tour_virtual
-      @locks_thread = create_zerv_user(@community, @tour_user) if providers_account.present? and providers_account.class.name == "Zerv" and in_visiting_hours and !is_tour_virtual
+      create_latch_reservation(@community, @tour_user, DateTime.now.utc) if @community.enable_locks and providers_account.present? and providers_account.class.name == "Latch" and in_visiting_hours and !is_tour_virtual
+      @locks_thread = create_zerv_user(@community, @tour_user) if @community.enable_locks and providers_account.present? and providers_account.class.name == "Zerv" and in_visiting_hours and !is_tour_virtual
       else
         render :json=> {:success=>false, :message => ""}, :status=>500
       end
