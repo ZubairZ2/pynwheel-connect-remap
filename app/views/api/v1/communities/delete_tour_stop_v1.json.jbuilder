@@ -593,6 +593,31 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
+        elsif counter == 1 and @community.enable_locks and @community.locks_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
+          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: "Tour", stop_id: stop.id)
+          if zrv.present?
+            zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: "Tour", guest_of_stop_id: stop.id, status: "active")
+            if zrv_guest.present?
+              json.guest_pin 'Take your mobile near the lock to unlock the next door'
+              json.latch_link ''
+              json.unit_dwelo_lock_id ''
+            else
+              zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
+              if zrv_guest.present?
+                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["message"][0..52]
+                json.latch_link ''
+                json.unit_dwelo_lock_id ''
+              else
+                json.guest_pin ''
+                json.latch_link ''
+                json.unit_dwelo_lock_id ''
+              end
+            end
+          else
+            json.guest_pin ''
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+          end
         elsif counter == 1 and @community.enable_locks and @community.locks_provider == "Dwelo"
           dwelo_lock = stop.remote_locks.where.not(dwelo_id: nil).last rescue nil
           if dwelo_lock.present?
