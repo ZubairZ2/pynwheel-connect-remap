@@ -67,6 +67,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     # @visiting_times = @community.opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , day_obj.closing_time] }
     @visiting_times = @community.opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , (Time.parse(day_obj.closing_time) - (@stepping.minutes)).strftime("%H:%M")] }
+    @guided_visiting_times = @community.guided_opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , (Time.parse(day_obj.closing_time) - (@stepping.minutes)).strftime("%H:%M")] }
     @error_message = []
     day_hash = {}
     @community.opening_hours.each do |day_obj|
@@ -74,7 +75,15 @@ class SchedulerWidget::WidgetsController < ApplicationController
       # day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p")
       message = []
       message[0] = day_obj.day
-      message[1] = '(visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
+      message[1] = '(self tour visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
+      @error_message << message
+    end
+    @community.guided_opening_hours.each do |day_obj|
+      day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p")
+      # day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p")
+      message = []
+      message[0] = day_obj.day
+      message[1] = '(guided visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
       @error_message << message
     end
     flash[:success] = params[:message] if params[:message].present?

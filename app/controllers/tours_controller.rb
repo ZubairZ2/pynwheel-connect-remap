@@ -223,6 +223,8 @@ class ToursController < ApplicationController
     @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
     @community_opening_hours = @community.opening_hours.order(:sort).all
     @community_guided_opening_hours = @community.guided_opening_hours.order(:sort).all
+    @schedule_widget_setting = @community.tour.scheduler_widget_setting || @community.tour.create_scheduler_widget_setting
+    @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
 
   end
   

@@ -9,7 +9,7 @@ Rails.application.routes.draw do
 
   post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
   post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
-  post '/update_tour_type', to: 'schedual_tours#update_tour_type', format: :json
+  # post '/update_tour_type', to: 'schedual_tours#update_tour_type', format: :json
   resources :schedual_tours do
     # post :create_tour_user_from
     # member do

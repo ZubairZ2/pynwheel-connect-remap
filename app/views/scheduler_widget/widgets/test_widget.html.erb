@@ -289,12 +289,12 @@
                 <%= hidden_field_tag :community_id, @community_id %>
                 <%= hidden_field_tag :user_time_zone, value: nil %>
               </div>
-              <div class="form-group">
+              <!-- <div class="form-group">
                 <label>Tour Type</label>
                 <span class="hidden" id="tour_type_field"></span>
                 <%= select_tag :tour_type, options_for_select( [["Self Tour","self_tour"],["Virtual","virtual"],["Guided Tour","guided"]]), :class=>"form-control " %>
                
-              </div>
+              </div> -->
               <div class="clearfix"></div>
               <button class="btn_popup" id="date_schedule_tour">Schedule My Tour!</button>
             </form>
@@ -314,7 +314,7 @@
               <div class="form-group">
                 <label>Tour Type</label>
                 <span class="hidden" id="tour_type_field"></span>
-                <%= select_tag :tour_type, options_for_select( [["Self Tour","self_tour"],["Virtual","virtual"],["Guided Tour","guided"]]), :class=>"form-control " %>
+                <%= select_tag :tour_type, options_for_select( [[]]), :class=>"form-control " %>
                
               </div>
               <div class="clearfix"></div>
@@ -339,6 +339,10 @@
     </div>
 
     <script type="text/javascript">
+      var show_self_tour_option = false;
+      var show_guided_tour_option = false;
+      var hidden_tour_type_value;
+
       $(document).ready(function(){
         var direct = <%= @direct %>
           if(direct)
@@ -355,7 +359,6 @@
       var steps = <%= @stepping %>
       var success = "<%= flash[:success]  %>";
       var credit_card_required = <%= @credit_card_required %>
-      // debugger
       <% flash[:success] = "" %>
       if(success){
         $("#modalLoginForm").modal('hide');
@@ -698,17 +701,36 @@
           $.ajax({
             type: "POST",
             url: "/schedual_tours.json",
-            data: params_data.serialize(),
+            data: params_data.serialize()+"&show_self_tour_option="+show_self_tour_option+"&show_guided_tour_option="+show_guided_tour_option,
             cache: false,
             success: function(data){
               if(data.code != 400){
-                document.getElementById('sched_tour_id').value = data.id
-                tour_id = data.id;
+                document.getElementById('sched_tour_id').value = data.schedual_tour.id
+                tour_id = data.schedual_tour.id;
                 $('.divLoading').addClass('hidden');
+                if(data.show_tour_type_modal)
+                {
+                  $("#scheduleMyTour").modal('hide');
+                  var select = $("#tour_type")[0];
+                  $('#tour_type').empty()
+                  for (op of data.type_list)
+                  {
+                    select.add(new Option(op[0], op[1]));
+                  }
+                  // $("#modalLoginForm").modal();
+                  $("#scheduleTourType").modal();
 
-                $("#scheduleMyTour").modal('hide');
-                // $("#modalLoginForm").modal();
-                $("#scheduleTourType").modal();
+                }
+                else
+                {
+                  $("#scheduleMyTour").modal('hide');
+                  $("#modalLoginForm").modal();
+                  // hidden_tour_type_value = data.type_list[0][1]
+                  send_tour_type(data.schedual_tour.id,data.type_list[0][1])
+                  // $("#scheduleTourType").modal();
+                }
+
+                
 
                 $("#not-visiting-hours").addClass('hidden')
               }
@@ -725,35 +747,36 @@
 
         $("#scheduleTourTypeForm").on('submit', function(e){
 
-          var visiting_times = <%= raw @visiting_times %>
-          var error_messages = <%= raw @error_message %>
+          var visiting_times = <%= raw @visiting_times %>;
+          var guided_visiting_times = <%= raw @guided_visiting_times %>;
+
+          var error_messages = <%= raw @error_message %>;
           var selected_date = $(".datepickertime").val()
           var matched = false
           var error
           selected_day = moment(selected_date).format('dddd')
           selected_time = moment(selected_date).format('HH:mm')
-          debugger
-          $.ajax({
-            type: "POST",
-            url: "/schedual_tours.json",
-            data: {"id" : document.getElementById('sched_tour_id'), "tour_type" : $("#tour_type option:selected").text()},
-            success: function(data){
-              if(data.code != 400){
-                $('.divLoading').addClass('hidden');
-                $("#scheduleTourType").modal('hide');
-                $("#modalLoginForm").modal();
-
-              }
-              else{
-                $("#not-visiting-hours").removeClass('hidden')
-                $("#not-visiting-hours").addClass('color-red').text(data.message)
-              }
-            },
-            fail: function(error){
-              console.log(error)
-            }
-          });
-          debugger;
+          // hidden_tour_type_value = $("#tour_type option:selected").val()
+          send_tour_type(document.getElementById('sched_tour_id').value,$("#tour_type option:selected").val())
+          $('.divLoading').addClass('hidden');
+          $("#scheduleTourType").modal('hide');
+          $("#modalLoginForm").modal();
+          // $.ajax({
+          //     type: 'POST',
+          //     dataType: 'json',
+          //     cache: false,
+          //     url: "/communities/4/schedual_tours/"+document.getElementById('sched_tour_id').value+"/update_tour_type",
+          //     data: {"tour_type" : $("#tour_type option:selected").text()},
+          //     success: function(data){
+          //       $('.divLoading').addClass('hidden');
+          //       $("#scheduleTourType").modal('hide');
+          //       $("#modalLoginForm").modal();
+          //     },
+          //     fail: function(data){
+          //       console.log(data)
+          //     }
+          //   });
+          
 
           // if(visiting_times.length > 0){
           //   for(var d_t in visiting_times){
@@ -788,24 +811,27 @@
         $("#scheduleMyTourForm").on('submit', function(e){
 
           var visiting_times = <%= raw @visiting_times %>
+
+          var guided_visiting_times = <%= raw @guided_visiting_times %>;
           var error_messages = <%= raw @error_message %>
           var selected_date = $(".datepickertime").val()
-          var matched = false
+          var self_tour_matched = false
+          var guided_tour_matched = false
           var error
           selected_day = moment(selected_date).format('dddd')
           selected_time = moment(selected_date).format('HH:mm')
-          // debugger
 
           if(visiting_times.length > 0){
+
             for(var d_t in visiting_times){
               if (selected_day == visiting_times[d_t][0]){
                 var start = getMinutes(visiting_times[d_t][1]);
                 var end = getMinutes(visiting_times[d_t][2]);
                 var selected = getMinutes(selected_time);
-
                 if ((selected >= start) && (selected <= end)) {
-                  matched = true
-                  schedual_my_tour($(this))
+                  self_tour_matched = true
+                  show_self_tour_option = true;
+                  // schedual_my_tour($(this))
                 }
                 else{
                   $("#not-visiting-hours").removeClass('hidden')
@@ -817,11 +843,39 @@
                 }
               }
             }
-            if (matched == false)
-              $("#not-visiting-hours").addClass('color-red').text(error)
           }
-          else{
+          if(guided_visiting_times.length > 0){
+
+            for(var d_t in guided_visiting_times){
+              if (selected_day == guided_visiting_times[d_t][0]){
+                var start = getMinutes(guided_visiting_times[d_t][1]);
+                var end = getMinutes(guided_visiting_times[d_t][2]);
+                var selected = getMinutes(selected_time);
+                if ((selected >= start) && (selected <= end)) {
+                  guided_tour_matched = true
+                  show_guided_tour_option = true;
+                  // schedual_my_tour($(this))
+                }
+                else{
+                  $("#not-visiting-hours").removeClass('hidden')
+                  for(var each in error_messages){
+                    if (guided_visiting_times[d_t][0] == error_messages[each][0]){
+                      error = error_messages[each][1]
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if(guided_tour_matched || self_tour_matched)
+          {
             schedual_my_tour($(this))
+          }
+          else
+          { 
+            schedual_my_tour($(this))
+            // $("#not-visiting-hours").addClass('color-red').text(error)
+            // $("#not-visiting-hours").removeClass('hidden')
           }
           e.preventDefault();
         });
@@ -833,7 +887,6 @@
         //     data: $(this).serialize(),
         //     cache: false,
         //     success: function(data){
-        //       // debugger
         //       $("#scheduleMyTourSuccess .Pyn_Modal p").html(data.message)
         //       $("#modalLoginForm").modal('hide');
         //       $("#scheduleMyTourSuccess").modal()
@@ -852,18 +905,31 @@
         });
 
       });
+      function send_tour_type(s_id,type)
+      {
+        $.ajax({
+              type: 'POST',
+              dataType: 'json',
+              cache: false,
+              url: "/communities/4/schedual_tours/"+s_id+"/update_tour_type",
+              data: {"tour_type" : type},
+              success: function(data){
+              },
+              fail: function(data){
+                console.log(data)
+              }
+            });
+      }
 
       if(credit_card_required == true){
       jQuery(function ($) {
         var show_error, stripeResponseHandler;
-        // debugger
         $("#new_tour_user").submit(function (event) {
           if (parseInt($('#desired_bedroom').val()) < 0 || parseInt($('#desired_bedroom').val()) > 10)
           {
             alert("Invalid Number of Berdrooms");
             return false;
           }
-          // debugger
           var $form;
           $form = $(this);
           $form.find("input[type=submit]").prop("disabled", true);
@@ -876,7 +942,6 @@
         stripeResponseHandler = function (status, response) {
         var $form, token;
         $form = $("#new_tour_user");
-        // debugger
           if (response.error) {
             show_error(response.error.message);
             $form.find("input[type=submit]").prop("disabled", false);
@@ -888,7 +953,6 @@
             // $("[data-stripe=exp-year]").remove();
             // $("[data-stripe=exp-month]").remove();
             $form.append($("<input type=\"hidden\" name=\"sched_tour_id\" />").val(tour_id));
-            // debugger
             $form.get(0).submit();
             
 
@@ -898,14 +962,12 @@
             //   data: {data: $($form.get(0)).serialize()},
             //   cache: false,
             //   success: function(data){
-            //     debugger
             //     $("#scheduleMyTourSuccess .Pyn_Modal p").html(data.message)
             //     $("#modalLoginForm").modal('hide');
             //     $("#scheduleMyTourSuccess").modal()
             //     $("html, body").animate({ scrollTop: 0 }, 600);
             //   },
             //   fail: function(error){
-            //     debugger
             //     console.log(error)
             //   }
             // });
