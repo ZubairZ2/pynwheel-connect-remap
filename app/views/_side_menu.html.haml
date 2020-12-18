@@ -157,23 +157,23 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
             %i.fa.fa-share
             %span Webpages
-      - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
-        %li
-          %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
-            %i.fa.fa-share
-            %span Tour Scheduler Widget
-          / %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
-          /   %i.fa.fa-share
-          /   %span Tour Scheduler Widget
-      - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
-        %li
-          %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link",:href => "##"}
-            %i.fa.fa-share
-            %span Tour Scheduler Widget Link      
-          / %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
-          /   / %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
-          /   %i.fa.fa-share
-          /   %span Tour Scheduler Widget
+      / - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
+      /   %li
+      /     %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
+      /       %i.fa.fa-share
+      /       %span Tour Scheduler Widget
+      /     / %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
+      /     /   %i.fa.fa-share
+      /     /   %span Tour Scheduler Widget
+      / - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
+      /   %li
+      /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link",:href => "##"}
+      /       %i.fa.fa-share
+      /       %span Tour Scheduler Widget Link      
+      /     %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
+      /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
+      /       %i.fa.fa-share
+      /       %span Tour Scheduler Widget
       -# - if (current_community.chat_control)
       -#   %li
       -#     %a{"data-toggle"=>"modal","data-target"=>"#share-chat-widget",:href => "##"}

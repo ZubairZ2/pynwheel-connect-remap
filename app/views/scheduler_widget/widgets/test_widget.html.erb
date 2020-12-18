@@ -708,7 +708,7 @@
                 document.getElementById('sched_tour_id').value = data.schedual_tour.id
                 tour_id = data.schedual_tour.id;
                 $('.divLoading').addClass('hidden');
-                if(data.show_tour_type_modal)
+                if(data.show_tour_type_modal  && (data.type_list.length > 1))
                 {
                   $("#scheduleMyTour").modal('hide');
                   var select = $("#tour_type")[0];

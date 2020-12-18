@@ -106,7 +106,7 @@
   </head>
   
 	<body style = "height: fit-content; width: fit-content;">
-		<a class="btn btn-success primary-button" style = "float: center; font-size: <%= @schedule_widget_setting.btn_font_size %> ; background-color: <%= @schedule_widget_setting.btn_color %>; font-family: <%= @schedule_widget_setting.btn_font %>" id = "sample_btn"  href = "<%= root_url%>scheduler_widget/test_widget?community_id=<%=@community.id%>&community_code=<%=@community_code%>&direct=true" >
+		<a class="btn btn-success primary-button" style = "align-items: center; display: inline-grid; width: <%= @schedule_widget_setting.btn_width %>; height: <%= @schedule_widget_setting.btn_height %>; font-size: <%= @schedule_widget_setting.btn_font_size %> ; background-color: <%= @schedule_widget_setting.btn_color %>; font-family: <%= @schedule_widget_setting.btn_font %>" id = "sample_btn"  href = "<%= root_url%>scheduler_widget/test_widget?community_id=<%=@community.id%>&community_code=<%=@community_code%>&direct=true" ,  target= "_blank">
   		<%= @schedule_widget_setting.btn_text %> </a>
 
 	</body>

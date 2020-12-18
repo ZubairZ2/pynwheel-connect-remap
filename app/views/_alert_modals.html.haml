@@ -80,12 +80,13 @@
         .modal-header
           Copy and paste the code below and share it with your web developer to add the scheduler widget to your website.
         .modal-body
-          %input.form-control#schedule-url{:value =>'<embed style="height: 60px; width: 560px;"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code='+@community_code+'&id='+@schedule_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
+          - dimension = "height: " + @schedule_widget_setting.btn_height.to_s + "px; width: " + @schedule_widget_setting.btn_width.to_s + "px;"
+          %input.form-control#schedule-url{:value =>'<embed style="'+ dimension +'"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code='+@community_code+'&id='+@schedule_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
 
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
           %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-url"} Copy to clipboard
-  #share-scheduler-widget-link.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  #share-scheduler-widget-link1.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
     .modal-dialog
       .modal-content
         .modal-header
