@@ -430,13 +430,31 @@ class Api::V1::CommunitiesController < ActionController::Base
           @tour_user = TourUser.find_by_id params[:tour_user_id]
           @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
           @verfication_type = params[:id_verification].present? ? @tour.verification_type : "email" rescue "email"
-          timezone = get_community_time_zone(@community) rescue nil
-          current_time = Time.now.in_time_zone(timezone) rescue params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now
-
-          if current_time.present?
-            @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
+          timezone = get_community_time_zone(@community) rescue "UTC"
+          current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
+          @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
+          if @community.credential.crm_provider == "salesforce"
+            response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
+            if response.success?
+              @scheduled_tours = response.payload.find_all{ |b| (b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%A") == Time.now.in_time_zone(timezone).strftime("%A")) }
+              if @scheduled_tours.present?
+                @is_tour_ontime = is_sf_tour_on_time(current_time, @scheduled_tours, @tour.grace_period, timezone)
+                @tour_status , nearest_time_tour = sf_tour_time_status(current_time, @scheduled_tours, @tour.grace_period, timezone) unless @is_tour_ontime.present?
+                @tour_date = nearest_time_tour.present? ? nearest_time_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')  : "---"
+                @tour_time = nearest_time_tour.present? ?  nearest_time_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P') : "---"
+                
+                Prospect.where(community_id: @community.id,  tour_user_id: @tour_user.id,
+                  crm_provider: "salesforce").update_all(sf_status: "deleted")
+                if nearest_time_tour.present?
+                  Prospect.create(
+                    community_id: @community.id,  tour_user_id: @tour_user.id, data_provider: @community.data_provider, 
+                    crm_provider: "salesforce", sf_booking_id: nearest_time_tour["Id"], sf_booking_name: nearest_time_tour["Name"], 
+                    sf_guest_id: nearest_time_tour["Contact__r"]["Id"], sf_status: "active") 
+                end
+              end
+            end
+          else
             @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
-
             if @scheduled_tours.present?
               @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
               @tour_status , nearest_tour_id = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
@@ -444,7 +462,6 @@ class Api::V1::CommunitiesController < ActionController::Base
               @tour_date = nearest_time_tour.present? ? (SchedualTour.find nearest_tour_id).tour_date.strftime('%_m/%d/%Y')  : "---"
               @tour_time = nearest_time_tour.present? ?  (SchedualTour.find nearest_tour_id).tour_time.strftime('%l:%M %P') : "---"
             end
-
           end
         end
       end
@@ -478,7 +495,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         time_zone = Timezone.lookup(community.latitude, community.longitude)
         timezone = time_zone.name
     end
-    return timezone
+    return timezone.present? ? timezone : "UTC"
   end
 
   def is_tour_in_visiting_hours(time_param, community)
@@ -502,7 +519,11 @@ class Api::V1::CommunitiesController < ActionController::Base
     scheduled_tours.where(tour_time: before_margin..after_margin).last
   end
 
-  
+  def is_sf_tour_on_time(current_time, scheduled_tours, grace_time, timezone)
+    before_margin = current_time - grace_time.minutes
+    after_margin = current_time + grace_time.minutes
+    scheduled_tours.find_all{ |t| t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) >= before_margin and  t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) <= after_margin}.last
+  end
   
   def tour_time_status(time_param, grace_time, scheduled_tours)
     # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
@@ -510,6 +531,27 @@ class Api::V1::CommunitiesController < ActionController::Base
     current_tour = get_current_tour(time_param)
     nearest_before_time = scheduled_tours.where("tour_time > ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
     nearest_after_time  = scheduled_tours.where("tour_time < ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest after time  , remember min function will be applied at the first index of array, which is deliberately set to time
+
+    if nearest_before_time.present? and nearest_after_time.nil?
+      return ["before time" , nearest_before_time[1]]
+    elsif nearest_before_time.nil? and nearest_after_time.present?
+      return ["after time" , nearest_after_time[1]]
+    end
+
+    if nearest_before_time[0] < nearest_after_time[0]
+      return ["before time" , nearest_before_time[1]]
+    elsif nearest_after_time[0] < nearest_before_time[0]
+      return ["after time" , nearest_after_time[1]]
+    else
+      return ["after time" , nearest_after_time[1]] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
+    end
+  end
+
+  def sf_tour_time_status(current_time, scheduled_tours, grace_time, timezone)
+    # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
+    # now it is confirmed that either the tour is before or after time
+    nearest_before_time = scheduled_tours.map{ |t| [(t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) - current_time).abs , t] if t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) < current_time }.compact.min
+    nearest_after_time = scheduled_tours.map{ |t| [(t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) - current_time).abs , t] if t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) > current_time }.compact.min
 
     if nearest_before_time.present? and nearest_after_time.nil?
       return ["before time" , nearest_before_time[1]]

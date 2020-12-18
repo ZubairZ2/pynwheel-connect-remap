@@ -45,13 +45,17 @@
             json.late_arrive_message ""
             json.late_arrive_with_reschduler "" 
         end
-
-        json.scheduler_widget_allowed @community.scheduler_widget
-        if @scheduled_tours.present?
-            json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_tours.last.id}?datetime=#{@scheduled_tours.last.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_tours.last.tour_time.strftime("%H:%M")}" : ""
+        if @community.credential.crm_provider == "salesforce"
+            json.scheduler_widget_allowed false
+            json.scheduler_widget_url ""
         else
-            json.scheduler_widget_url @community.scheduler_widget ? "#{root_url}/scheduler_widget/test_widget?community_id=#{@community.id}" : ""
-        end 
+            json.scheduler_widget_allowed @community.scheduler_widget
+            if @scheduled_tours.present?
+                json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_tours.last.id}?datetime=#{@scheduled_tours.last.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_tours.last.tour_time.strftime("%H:%M")}" : ""
+            else
+                json.scheduler_widget_url @community.scheduler_widget ? "#{root_url}/scheduler_widget/test_widget?community_id=#{@community.id}" : ""
+            end
+        end
     end
 
     json.message "Response of tour configrations"
