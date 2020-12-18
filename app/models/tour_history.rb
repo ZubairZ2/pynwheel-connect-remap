@@ -72,17 +72,16 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both_to_touruser @thank_you_content
         # community.deleted_ids = []
 
-        binding.pry
         if community.credential.crm_provider == "salesforce"
-          binding.pry
           current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
           if current_tour.present?
+            # current_tour.tour_key = "450e96530bb8ae7af1b3f3d019a6a055" # testing line
             Prospect.where(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active").update_all(tour_key: current_tour.tour_key)
-            send_tour_feedback(community, tour_user, self)
+            community.send_feedback_to_salesforce(tour_user, self)
           end
+        else
+          save_prospect(self.left)
         end
-
-        save_prospect(self.left)
         community.save
       end
 
@@ -125,11 +124,6 @@ class TourHistory < ApplicationRecord
     elsif @community.data_provider == "psi"
       @community.entrata_send_mits_leads(self.tour_user, tour_time, end_time, visited_stops)
     end
-  end
-
-  def send_tour_feedback(community, tour_user, tour_history)
-    # do the below in background job
-    SalesforceServices::TourFeedback.call(community: community, tour_user: tour_user, tour_history: tour_history)
   end
 
 	def touruser_remotelock_data

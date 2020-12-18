@@ -442,6 +442,10 @@ class Community < ApplicationRecord
     ImportExperimentalYardi4DataJob.perform_async credential.attributes.to_json
   end
 
+  def send_feedback_to_salesforce(tour_user, tour_history)
+    SalesforceSendFeedbackJob.perform_async self, tour_user, tour_history
+  end
+
   def credentials_are_present?
     credential.present?
   end

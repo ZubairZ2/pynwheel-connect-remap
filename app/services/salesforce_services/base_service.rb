@@ -39,7 +39,7 @@ module SalesforceServices
 
             return timezone
         rescue
-            return nil
+            return "UTC"
         end
     end
 end
