@@ -4,6 +4,7 @@ module SalesforceServices
         def execute(args)
             community = args[:community]
             tour_user = args[:tour_user]
+            tour_history = args[:tour_history]
 
             url = base_url + "/tourFeedback"
             token = get_access_token
@@ -13,14 +14,14 @@ module SalesforceServices
                 c_time_zone = get_community_time_zone(community)
 
                 begin
-                    arrival_time = tour_user.arrived.in_time_zone(c_time_zone)
-                    if tour_user.is_left and tour_user.active_app
-                        end_time = tour_user.left.in_time_zone(c_time_zone)
+                    arrival_time = tour_history.arrived.in_time_zone(c_time_zone)
+                    if tour_history.is_left and tour_history.active_app
+                        end_time = tour_history.left.in_time_zone(c_time_zone)
                         abandoned_tour_at = ""
-                    elsif !tour_user.is_left and !tour_user.active_app
-                        tour_stop = TourStop.find_by_id tour_user.abandoned_tour_at_stop
-                        abandoned_tour_at =  tour_stop.present? ?  (tour_stop.stop_type.classify.constantize.find_by_id tour_stop.stop_id).name rescue "" : ""
-                        end_time = tour_user.lengthy_stay.in_time_zone(c_time_zone)
+                    elsif !tour_history.is_left and !tour_history.active_app
+                        tour_stop = TourStop.find_by_id tour_history.abandoned_tour_at_stop
+                        abandoned_tour_at =  tour_stop.present? ?  (tour_stop.stop_type.classify.constantize.find_by_id tour_stop.stop_id).name : ""  rescue ""
+                        end_time = tour_history.lengthy_stay.in_time_zone(c_time_zone)
                     else
                         end_time = Time.now.in_time_zone(c_time_zone)
                         abandoned_tour_at = ""
@@ -30,7 +31,7 @@ module SalesforceServices
                     begin
                         end_time = Time.now.in_time_zone(c_time_zone)
                     rescue => exception
-                        arrival_time = tour_user.arrived    # utc
+                        arrival_time = tour_history.arrived    # utc
                         end_time = Time.now.utc             # utc
                     end
                     abandoned_tour_at = ""
