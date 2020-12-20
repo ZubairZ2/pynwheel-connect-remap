@@ -8,10 +8,6 @@ module ZervServices
         def initialize(community)
             @zerv = community.zerv
         end
-
-        def hard_coded_token
-            "eyJraWQiOiJROVlLNjYxeE5tb1wvT1ljWnFhVFlCcVU1OWFUeTM2VG5ZSEtYZnBxU3Jycz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI5OTIwOGI0Ni0xMTA0LTQzMzUtYmRmMC1kNTcxNGFjZWIxZDkiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLWVhc3QtMS5hbWF6b25hd3MuY29tXC91cy1lYXN0LTFfSW8ya2F3RzRFIiwiY29nbml0bzp1c2VybmFtZSI6InB5bndoZWVsX2plbm5pZmVyX2N5cGhlcnMiLCJnaXZlbl9uYW1lIjoiSmVubmlmZXIiLCJhdWQiOiI1bmJzMjhwcTdqZWU3bWRqanNsNm01NnU5ZiIsImN1c3RvbTpjdXN0b21lcklkIjoiUHluV2hlZWwtaktPT2UiLCJldmVudF9pZCI6ImQ0OWYyNzdhLTYxNDctNDBmOC04ODU4LTUxZDliMjBiYjJkMiIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNjA2NzQ1Mjg3LCJuYW1lIjoiSmVubmlmZXIgQ3lwaGVycyIsInBob25lX251bWJlciI6IisxMzAzOTkwMDgzNCIsImV4cCI6MTYwNjc0ODg4NywiY3VzdG9tOnJvbGUiOiJDbGllbnQtQWRtaW4iLCJpYXQiOjE2MDY3NDUyODcsImZhbWlseV9uYW1lIjoiQ3lwaGVycyIsImVtYWlsIjoiamVubmlmZXJAcHlud2hlZWwuY29tIn0.uYnkUCRTjuKZM08CQwhrza420n56N70jlHrM6mwWG0kauFO4gcyF32VmLHcvWciPy9R6AYqsLVDnN9qnGxaqKEwuLb9GqjSOUbqIB9tYKvvKSXmNKA5MmofUQDs6SX27TiEOEyEMfKYuqRCb38geMNsrDAo-QLWzBCcaZKutQFGM6MeM6mJ52JrnBA0Mf-phFw_Q_8TNCtpder3AbSGYC7OspkbSbRiteON6TSbcmbJnELzn-Zp19x4XKz5lydL-_29NFgYd4QD-fgo6PD4I3QwHjXCRlIkMVKMuEiX9-A9B_N0q_X1yJAk6wiG_bdkii34s2oe25l6P1fl78jZ5Uw"
-        end
         
         def get_id_token
             token  = Rails.cache.fetch(:id_token, expires_in: 1.day.from_now) do
@@ -43,6 +39,17 @@ module ZervServices
                 {id_token:  nil, error: result.error}
             end
 
+        end
+
+        def current_community_zerv_locks(locks)
+            community = @zerv.community
+            location_name_1 = community.company.name.downcase + ' - ' + community.name.downcase
+            location_name_2 = community.company.name.downcase + '-' + community.name.downcase
+            locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].downcase == location_name_1 or lock["locationName"].downcase == location_name_2}.compact
+            if locks["listGetDevices"].length == 0
+              locks["listGetDevices"] = "No locks are presnet"
+            end
+            return locks
         end
     end
 end

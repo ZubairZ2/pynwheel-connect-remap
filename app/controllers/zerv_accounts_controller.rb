@@ -25,7 +25,7 @@ class ZervAccountsController < ApplicationController
 
     def import_zerv_locks
       result = ZervServices::ImportLockService.call(community: current_community, test_connection: false)
-      result.present? ? ( result.success? ? flash[:notice] = ZervConstants::LOCKS_IMPORTED : flash[:error] = result.error ) : flash[:error] = ZervConstants::CONTCT_PROD
+      result.present? ? ( result.success? ? ( (result.payload["listGetDevices"].instance_of? String) ? flash[:error] = ZervConstants::NO_LOCKS : flash[:notice] = ZervConstants::LOCKS_IMPORTED) : flash[:error] = result.error ) : flash[:error] = ZervConstants::CONTCT_PROD
       redirect_to new_community_dwelo_path(current_community)
     end
 
