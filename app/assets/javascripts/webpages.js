@@ -453,6 +453,7 @@ function showMarkers(market_rent_change = false) {
 
   var units_to_display = select_units_according_to_filters(current_units)
   // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
+  debugger;
   set_prices_according_to_units_to_display(units, market_rent_change)
 
   if (!(has_floorplate == 'true')) {
@@ -628,7 +629,7 @@ function select_units_according_to_filters(floorplate_units) {
   var sixty_days = new Date(today).setDate(today.getDate() + 60);
   var ninty_days = new Date(today).setDate(today.getDate() + 90);
   var one_twenty_days = new Date(today).setDate(today.getDate() + 120);
-  if (floorplate_units.length == 0)
+  if (units.length == 0)
     $('.available_portion').addClass('hidden');
   for (var i = 0; i < floorplate_units.length; i++) {
     all_units.push(floorplate_units[i]);
@@ -866,6 +867,10 @@ function select_units_according_to_filters(floorplate_units) {
   {$('#one-twenty-plus-days-checkbox').parent().addClass('hidden');}
   else
   {$('#one-twenty-plus-days-checkbox').parent().removeClass('hidden');}
+  if(_now_units.length == 0 && _now_to_30_units.length == 0 && _90_to_120_units.length == 0 && _60_to_90_units.length == 0 && _120_units.length == 0 && _30_to_60_units.length == 0)
+    {$('.available_portion').addClass('hidden');}
+  else
+  {$('.available_portion').removeClass('hidden');}
 
   if (bedroom_filter_present || availability_filter_present || price_filter_present || area_filter_present) {
     var units_to_display = $.intersect(bedroom_base_units, availability_base_units, rent_base_units, square_feet_base_units);
