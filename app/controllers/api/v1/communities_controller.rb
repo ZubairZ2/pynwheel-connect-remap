@@ -436,7 +436,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           if @community.credential.crm_provider == "salesforce"
             response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
             if response.success?
-              @scheduled_tours = response.payload.find_all{ |b| (b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%d") == Time.now.in_time_zone(timezone).strftime("%d")) }
+              @scheduled_tours = response.payload.find_all{ |b| (b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d")) == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
               if @scheduled_tours.present?
                 @is_tour_ontime = is_sf_tour_on_time(current_time, @scheduled_tours, @tour.grace_period, timezone)
                 @tour_status , nearest_time_tour = sf_tour_time_status(current_time, @scheduled_tours, @tour.grace_period, timezone) unless @is_tour_ontime.present?

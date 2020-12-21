@@ -1,6 +1,7 @@
 class ChatsController < ApplicationController
     protect_from_forgery with: :null_session
     skip_before_action :authenticate_user!, :only => [:create,:show, :listening_message]
+    before_action :set_tour_user, only: [:create]
 
 
     def index
@@ -15,7 +16,7 @@ class ChatsController < ApplicationController
                 tour_user_name = "You"
             end
 
-            chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id], client_date: params[:client_date])
+            chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id], client_date: params[:client_date], tour_key: @tour_user.tour_key)
             if chat.save
                 message = serailize_message(chat)
                 render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
@@ -24,7 +25,7 @@ class ChatsController < ApplicationController
             end
         else
             # message from support
-            chat = Chat.new(chat_params)
+            chat = Chat.new(chat_params.merge(tour_key: @tour_user.tour_key))
             if chat.save
                 message = serailize_message(chat)
                 render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
@@ -146,4 +147,7 @@ class ChatsController < ApplicationController
         params.require(:chat).permit(:message, :name, :chatroom_id, :client_date)
     end
 
+    def set_tour_user
+        @tour_user = (Chatroom.find_by_id chat_params[:chatroom_id]).tour_user
+    end
 end

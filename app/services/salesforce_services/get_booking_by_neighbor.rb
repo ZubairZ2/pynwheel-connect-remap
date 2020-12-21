@@ -3,7 +3,7 @@ module SalesforceServices
 
         def execute(args)
             tour_user = args[:tour_user]
-            tour_user.email = "testing"
+            tour_user.email = "tejachatrati@gmail.com" # testing line
             url = base_url + "/getBookingsByNeighbor"
             token = get_access_token
             if token.success?
