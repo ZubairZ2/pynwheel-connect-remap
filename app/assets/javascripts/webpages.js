@@ -452,7 +452,8 @@ function showMarkers(market_rent_change = false) {
   $('.hidden-units').empty();
 
   var units_to_display = select_units_according_to_filters(current_units)
-  set_prices_according_to_units_to_display(units_to_display, market_rent_change)
+  // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
+  set_prices_according_to_units_to_display(units, market_rent_change)
 
   if (!(has_floorplate == 'true')) {
     var min_rent = Math.min.apply(Math, units_to_display.map(function (o) {
@@ -627,7 +628,8 @@ function select_units_according_to_filters(floorplate_units) {
   var sixty_days = new Date(today).setDate(today.getDate() + 60);
   var ninty_days = new Date(today).setDate(today.getDate() + 90);
   var one_twenty_days = new Date(today).setDate(today.getDate() + 120);
-
+  if (floorplate_units.length == 0)
+    $('.available_portion').addClass('hidden');
   for (var i = 0; i < floorplate_units.length; i++) {
     all_units.push(floorplate_units[i]);
     //show zero bedroom markers  
@@ -654,7 +656,6 @@ function select_units_according_to_filters(floorplate_units) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 1) {
         //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
         bedroom_base_units.push(floorplate_units[i]);
-        debugger;
         if (new Date(floorplate_units[i]['available_date']) <= today)
           _now_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
@@ -835,7 +836,6 @@ function select_units_according_to_filters(floorplate_units) {
     rent_base_units = all_units
     price_filter_present = false
   }
-  debugger;
   if(_now_units.length == 0)
   {$('#now-checkbox').parent().addClass('hidden');}
   else
