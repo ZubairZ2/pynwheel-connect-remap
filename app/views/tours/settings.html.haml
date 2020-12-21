@@ -299,7 +299,7 @@
               /       %span.pl-15 Yes
 
               /       %span.pl-15 Yes
-            .div_checklist.hidden
+            .div_checklist{:class => "#{@community.credential.crm_provider == "salesforce" ? '' : 'hidden'}"}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Only allow scheduled tours
