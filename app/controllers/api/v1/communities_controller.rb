@@ -477,7 +477,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         
         timezone = get_community_time_zone(@community) rescue nil
         current_time = Time.now.in_time_zone(timezone) rescue params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now
-        @limit_exceeded = check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user)
+        @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
         @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
         if current_time.present?
           @in_visiting_hours = (is_tour_in_visiting_hours(current_time, @community) )
