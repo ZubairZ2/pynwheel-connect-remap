@@ -10,7 +10,7 @@ module ZervServices
             url = "https://api.zervinc.net/v1/portal/user/deleteuser/#{tour_user.phone_number}"
             id_token = get_id_token
             
-            response = HTTParty.post(url,
+            response = HTTParty.delete(url,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
 
         rescue HTTParty::Error => e

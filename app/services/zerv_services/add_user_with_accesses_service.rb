@@ -29,6 +29,7 @@ module ZervServices
                         "lastName": tour_user.last_name,
                         "phoneNumber":  tour_user.phone_number,
                         "email": tour_user.email,
+                        "image": nil,
                         "listAddUserAccess": list_add_user_access
                 }.to_json,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
@@ -93,12 +94,15 @@ module ZervServices
                     "sun_access_start_time": end_time,
                 }
             end
-    
+
+            # ask about "id" and "userAccessDurationId" values from zerv
             req_keys = {
                 "accessEndDate": tour_time.strftime("%Y-%m-%d"),
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
-                "credentialIdentifier": "",
-                "facilityId": "",
+                "credentialIdentifier": "1234",
+                "facilityId": nil,
+                "id": "0",
+                "userAccessDurationId": "0",
                 "monAccess": false,
                 "tueAccess": false,
                 "wedAccess": false,
