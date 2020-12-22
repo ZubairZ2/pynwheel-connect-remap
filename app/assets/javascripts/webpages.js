@@ -602,7 +602,6 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
       $('#market_rent').append(`<option value=""> Select Max Price </option>`)
     }
   }
-  debugger;
 }
 
 function select_units_according_to_filters(floorplate_units) {
