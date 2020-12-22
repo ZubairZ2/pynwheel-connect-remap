@@ -16,7 +16,6 @@ json.tours @tours do |tour|
   json.tour_setting do
     json.show_map @community.show_map
     json.mdu @community.mdu
-    json.locks_thread_ref @locks_thread
   end
   if @community.is_sitemap
     json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
