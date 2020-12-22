@@ -453,14 +453,16 @@ function showMarkers(market_rent_change = false) {
 
   var units_to_display = select_units_according_to_filters(current_units)
   // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
-  debugger;
+
   set_prices_according_to_units_to_display(units, market_rent_change)
 
   if (!(has_floorplate == 'true')) {
-    var min_rent = Math.min.apply(Math, units_to_display.map(function (o) {
+    // var min_rent = Math.min.apply(Math, units_to_display.map(function (o) {
+    var min_rent = Math.min.apply(Math, units.map(function (o) {
       return o.market_rent;
     }))
-    var max_area = Math.max.apply(Math, units_to_display.map(function (o) {
+    // var max_area = Math.max.apply(Math, units_to_display.map(function (o) {
+    var max_area = Math.max.apply(Math, units.map(function (o) {
       return o.square_feet;
     }))
     disable_rent_filter_options(min_rent)
@@ -600,6 +602,7 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
       $('#market_rent').append(`<option value=""> Select Max Price </option>`)
     }
   }
+  debugger;
 }
 
 function select_units_according_to_filters(floorplate_units) {
@@ -905,7 +908,7 @@ function disable_rent_filter_options(min_rent) {
     var option_rent = option.value.split('-');
     var maximum_option_rent = parseFloat(option_rent[1]);
     if (min_rent >= maximum_option_rent)
-      $("#market_rent option[value=" + option.value + "]").hide()
+      $("#market_rent option[value=" + option.value + "]").show()
     else
       $("#market_rent option[value=" + option.value + "]").show()
   }
@@ -918,7 +921,7 @@ function disable_area_filter_options(max_area) {
     var option_area = option.value.split('-');
     var minimum_option_rent = parseFloat(option_area[0]);
     if (max_area <= minimum_option_rent)
-      $("#square_feet option[value=" + option.value + "]").hide()
+      $("#square_feet option[value=" + option.value + "]").show()
     else
       $("#square_feet option[value=" + option.value + "]").show()
   }
