@@ -1,5 +1,5 @@
 module SalesforceServices
-    class GetBookingByNeighbor < BaseService
+    class GetBookingByNeighbor < SalesforceServices::BaseService
 
         def execute(args)
             tour_user = args[:tour_user]

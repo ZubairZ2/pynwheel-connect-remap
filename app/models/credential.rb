@@ -183,6 +183,9 @@ class Credential < ApplicationRecord
   end
 
   def change_to_scheduled_tours_for_sf
-    self.community.tour.only_scheduled_tour.update_columns(only_scheduled_tour: true) if self.crm_provider == "salesforce"
+    if self.crm_provider == "salesforce"
+      self.community.tour.update_columns(only_scheduled_tour: true)
+      self.community.update_columns(scheduler_widget: false)
+    end
   end
 end

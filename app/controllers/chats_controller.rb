@@ -148,6 +148,6 @@ class ChatsController < ApplicationController
     end
 
     def set_tour_user
-        @tour_user = (Chatroom.find_by_id chat_params[:chatroom_id]).tour_user
+        @tour_user = (Chatroom.find_by_id chat_params[:chatroom_id]).tour_user rescue TourUser.find_by(id: params[:tour_user_id])
     end
 end

@@ -1,5 +1,5 @@
 module SalesforceServices
-    class AuthToken < BaseService
+    class AuthToken < SalesforceServices::BaseService
 
         def execute(args)
             url = "https://prometheusreg--promuat.my.salesforce.com/services/oauth2/token"

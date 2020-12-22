@@ -1,5 +1,5 @@
 module SalesforceServices
-    class TourFeedback < BaseService
+    class TourFeedback < SalesforceServices::BaseService
 
         def execute(args)
             community = args[:community]
