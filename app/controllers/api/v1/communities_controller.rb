@@ -516,10 +516,12 @@ class Api::V1::CommunitiesController < ActionController::Base
     # return (limit <= SchedualTour.where('tour_date = ? AND tour_time BETWEEN ? AND  ?', property_time.to_date, (property_time.to_time - 30.minutes).to_s(:time), (property_time.to_time + 60.minutes).to_s(:time)).count) ? false : true
   end
   def app_usage(community, property_time, limit ,tour_user)
-
     # return (limit <= TourHistory.where('arrived = ? AND left = ? AND abandoned_tour_at_stop AND active_app = ? AND arrived > ? AND is_virtual_tour', property_time.to_date,  nil, nil, false, property_time - 180.minutes, false).count) ? false : true
-    return (limit <= TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, is_virtual_tour: false).where('arrived > ?', (property_time - 180.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude)) }.compact.count) ? true : false
-    
+    unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude)
+      return false
+    else
+      return (limit <= TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, is_virtual_tour: false,tour_id: community.tour.id).where('arrived > ?', (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude)) }.compact.count) ? true : false
+    end    
   end
   def geo_distance(lat1,long1,lat2,long2)
     return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) < 1.5) rescue true)
