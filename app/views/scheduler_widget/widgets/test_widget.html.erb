@@ -345,9 +345,11 @@
 
       $(document).ready(function(){
         var direct = <%= @direct %>
+        var show_first = <%= @show_first %>
           if(direct)
           {
-            $('#schedule_btn').click();
+            if(show_first)
+              $('#schedule_btn').click();
           }
           else
           {
@@ -697,11 +699,11 @@
             var time = str.split(':');
             return time[0]*60+time[1]*1;
         }
-        function schedual_my_tour(params_data){
+        function schedual_my_tour(params_data, error){
           $.ajax({
             type: "POST",
             url: "/schedual_tours.json",
-            data: params_data.serialize()+"&show_self_tour_option="+show_self_tour_option+"&show_guided_tour_option="+show_guided_tour_option,
+            data: params_data.serialize()+"&show_self_tour_option="+show_self_tour_option+"&show_guided_tour_option="+show_guided_tour_option+"&error="+error,
             cache: false,
             success: function(data){
               if(data.code != 400){
@@ -869,11 +871,11 @@
           }
           if(guided_tour_matched || self_tour_matched)
           {
-            schedual_my_tour($(this))
+            schedual_my_tour($(this),error)
           }
           else
           { 
-            schedual_my_tour($(this))
+            schedual_my_tour($(this),error)
             // $("#not-visiting-hours").addClass('color-red').text(error)
             // $("#not-visiting-hours").removeClass('hidden')
           }
@@ -901,6 +903,8 @@
 
         $("#close").on('click', function(){
           $("#scheduleMyTourSuccess").modal('hide')
+          $("#scheduleMyTour").modal()
+
           // window.location.reload();
         });
 
