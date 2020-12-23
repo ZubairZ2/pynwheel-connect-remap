@@ -1187,14 +1187,14 @@
     var current_day = $(".list").children().length
     var current_day_guided = $(".list_guided").children().length
     function append_new_day_guided(){
-      var last_dropdown_id = "guided_day_" + (current_day - 1)
+      var last_dropdown_id = "guided_day_" + (current_day_guided - 1)
       var last_dropdown = document.getElementById(last_dropdown_id);
       var last_day = last_dropdown.options[last_dropdown.selectedIndex].text;
       var new_day_with_selected_options = get_next_day_with_selected_option(last_day)
 
       $(".list_guided").append(`
         <div class="row p-8-v">
-          <select class="day-list-guided font-17-v pull-left mr-20-v" id="gudided_day_${current_day}" name="guided_day_${current_day}">
+          <select class="day-list-guided font-17-v pull-left mr-20-v" id="gudided_day_${current_day_guided}" name="guided_day_${current_day_guided}">
             ${new_day_with_selected_options}
           </select>
 
@@ -1202,14 +1202,14 @@
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">From</label>
             </div>
-            <input class="day-list-guided bg-grey-v-guided morning_time_guided" name="guided_from_${current_day}" type="time" value="09:00">
+            <input class="day-list-guided bg-grey-v-guided morning_time_guided" name="guided_from_${current_day_guided}" type="time" value="09:00">
           </div>
 
           <div class="font-17-v pull-left mr-20-v">
             <div class="p-4-v pull-left mr-10-v">
               <label class="text-grey-v">To</label>
             </div>
-            <input class="day-list-guided bg-grey-v-guided evening_time_guided" name="guided_to_${current_day}" type="time" value="17:00">
+            <input class="day-list-guided bg-grey-v-guided evening_time_guided" name="guided_to_${current_day_guided}" type="time" value="17:00">
           </div>
 
           <div class="font-17-v pt-5 cancel_guided fa fa-v fa-times text-danger"></div>
@@ -1225,7 +1225,7 @@
   });
 
   $('#add-btn-guided').click(function(event){
-    current_day = current_day + 1
+    current_day_guided = current_day_guided + 1
     append_new_day_guided()
     $("#schedule-btn-submit-guided").removeClass("hide-save-btn-guided");
     event.preventDefault();

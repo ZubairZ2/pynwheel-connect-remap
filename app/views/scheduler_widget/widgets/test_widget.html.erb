@@ -342,6 +342,7 @@
       var show_self_tour_option = false;
       var show_guided_tour_option = false;
       var hidden_tour_type_value;
+      var community_id = <%= @community.id %>;
 
       $(document).ready(function(){
         var direct = <%= @direct %>
@@ -915,7 +916,7 @@
               type: 'POST',
               dataType: 'json',
               cache: false,
-              url: "/communities/4/schedual_tours/"+s_id+"/update_tour_type",
+              url: "/communities/"+ community_id +"/schedual_tours/"+s_id+"/update_tour_type",
               data: {"tour_type" : type},
               success: function(data){
               },
