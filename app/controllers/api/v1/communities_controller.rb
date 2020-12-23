@@ -515,21 +515,33 @@ class Api::V1::CommunitiesController < ActionController::Base
           if current_time.present?
             @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
             @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
-
+            
             if @scheduled_tours.present?
               @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
               @tour_status , nearest_tour_id = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
+              @tour_user.tour_type = check_tour_type(@tour_status, nearest_tour_id, @tour, @is_tour_ontime) 
               nearest_time_tour = SchedualTour.find_by_id nearest_tour_id
               @tour_date = nearest_time_tour.present? ? (SchedualTour.find nearest_tour_id).tour_date.strftime('%_m/%d/%Y')  : "---"
               @tour_time = nearest_time_tour.present? ?  (SchedualTour.find nearest_tour_id).tour_time.strftime('%l:%M %P') : "---"
+            else
+              @tour_user.tour_type = (@tour.only_scheduled_tour ? "self_tour" : "virtual")
             end
-
+            @tour_user.save
           end
         end
       end
     end
   end
-
+  def check_tour_type(tour_status, nearest_tour_id, tour, is_tour_ontime)
+    if is_tour_ontime.present? 
+      return is_tour_ontime.tour_type
+    elsif tour_status == "on time" || is_tour_ontime
+      st = SchedualTour.find nearest_tour_id
+      return st.tour_type
+    else
+      return (tour.only_scheduled_tour ? "self_tour" : "virtual")
+    end
+  end
   def get_community_time(community)
     tz = Ziptz.new
     if community.zip.present?

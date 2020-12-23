@@ -218,70 +218,14 @@
                   = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget  , class: "scheduler_widget"
                   %label.label-primary{:for => "scheduler_widget"}
                   %span.pl-15 Yes
-            
             .form-group
-              %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
-                Tour Type
-              %br
-              %br  
-              .col-sm-12.col-lg-4.col-md-4.col-xs-12
-                .row
-                  .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                    .checkbox
-                      = check_box_tag :allow_self_tour, true, @tour_setting.allow_self_tour.nil? ? true :  @tour_setting.allow_self_tour
-                      %label Self Tour
-              .col-sm-12.col-lg-4.col-md-4.col-xs-12
-                .row
-                  .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                    .checkbox
-                      = check_box_tag :allow_guided_tour, true, @tour_setting.allow_guided_tour.nil? ? true : @tour_setting.allow_guided_tour
-                      %label Guided Tour
-              .col-sm-12.col-lg-4.col-md-4.col-xs-12
-                .row
-                  .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                    .checkbox
-                      = check_box_tag :allow_virtual_tour, true, @tour_setting.allow_virtual_tour.nil? ? true : @tour_setting.allow_virtual_tour
-                      %label Virtual Tour
-            .div_checklist.hidden{:style => "margin-left: 60px;"}
-              %label Select Fields for Schedule Widget:
-              .form-group{:style => "height: 190px; margin-top: ;"}
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_first_name, true, @tour_setting.show_first_name.nil? ? true :  @tour_setting.show_first_name
-                        %label Name
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_phone, true, @tour_setting.show_phone.nil? ? true : @tour_setting.show_phone
-                        %label Phone
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom.nil? ? true : @tour_setting.show_desired_bedroom
-                        %label Desired bedrooms
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date.nil? ? true : @tour_setting.show_desired_move_in_date
-                        %label Desired move-in date
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
-                        %label Credit card required
-                - if @community.data_provider == "realpagesvc"
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .row
-                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                        .checkbox
-                          = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
-                          %label Lead source
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Dotted line color
+              .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
+            
+            
+            
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /     Display name
@@ -338,43 +282,8 @@
               /       %span.pl-15 Yes
 
               /       %span.pl-15 Yes
-            .div_checklist.hidden
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Only allow scheduled tours
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "5Popover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Only give on-site access via the Self Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :only_scheduled_tour, true, @community.tour.only_scheduled_tour , class: "only_scheduled_tour"
-                    %label.label-primary{:for => "only_scheduled_tour"}
-                    %span.pl-15 Yes
-              .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
-                .form-group.hidden#grace_time_period
-                  .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{style:"margin-right: -35px;"}
-                    Grace period
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    %input.day-list.max-users-v.form-control{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}
-            - if current_user.is_super_admin?
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Add Unit Stops Based on Availability
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "6Popover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Selecting this option will automate which vacant units will appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
-                    %label.label-primary{:for => "automate_unit_stop"}
-                    %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Dotted line color
-              .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
+            
+            
             
             - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
               .form-group
@@ -410,52 +319,7 @@
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}
       
-              .form-group
-                %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
-                  Allow visitors to schedule tours
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "8Popover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Choose the time increments for scheduled tours. 
-              .row 
-                .form-group
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_15, true, @tour_setting.time_intervel == "15 min" ? true : false, :id => "time_intervel_id15"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In 15 minute increments (ie, 10:00, 10:15, 10:30)
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_1, true, @tour_setting.time_intervel == "1 hr" ? true : false, :id => "time_intervel_id1"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In hourly increments (ie, 10:00, 11:00, 12:00)        
-              .row 
-                .form-group
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_30, true, @tour_setting.time_intervel == "30 min" ? true : false, :id => "time_intervel_id30"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In 30 minute increments (ie, 10:00, 10:30, 11:00)        
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      Every 2 hours (ie, 10:00, 12:00, 2:00)        
+                   
               
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -488,57 +352,164 @@
         .box-body{style: "padding: 0px 20px !important;"}
           .row
             .col-lg-12 
-              = form_tag save_schedule_widget_btn_setting_community_tours_path(@community) ,{:class => 'widget-settings-form', :style => "margin-top: 50px;"} do
+              = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form', :style => "margin-top: 40px;"} do
                 = hidden_field_tag "community_id", @community.id
-                %label{:style => "float: ; "}
-                  This is what your Scheduler Widget looks like.
-                .form-group{:style => "text-align: center; "}
-                  
-                  %a.btn.btn-success.primary-button{:style => "align-items: center; display: inline-grid; float: center; font-size: #{@schedule_widget_setting.btn_font_size}; background-color: #{@schedule_widget_setting.btn_color}", :id => "sample_btn", :href => "#{root_url}scheduler_widget/test_widget?community_id=#{current_community.id}&community_code=#{@community_code}&direct=true"}
-                    #{@schedule_widget_setting.btn_text}
+                = hidden_field_tag :widget_settings, value: "widget_settings"
                 .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Scheduler Widget Text
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = text_field_tag :btn_text , @schedule_widget_setting.btn_text ,:class => "form-control widget_setting_field", :id => "set_text", :maxlength=>"50"
+                  %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
+                    Tour Types Offered
+                  %br
+                  %br  
+                  .col-sm-12.col-lg-4.col-md-4.col-xs-12
+                    .row
+                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                        .checkbox
+                          = check_box_tag :allow_self_tour, true, @tour_setting.allow_self_tour.nil? ? true :  @tour_setting.allow_self_tour
+                          %label Self Tour
+                  .col-sm-12.col-lg-4.col-md-4.col-xs-12
+                    .row
+                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                        .checkbox
+                          = check_box_tag :allow_guided_tour, true, @tour_setting.allow_guided_tour.nil? ? true : @tour_setting.allow_guided_tour
+                          %label Guided Tour
+                  .col-sm-12.col-lg-4.col-md-4.col-xs-12
+                    .row
+                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                        .checkbox
+                          = check_box_tag :allow_virtual_tour, true, @tour_setting.allow_virtual_tour.nil? ? true : @tour_setting.allow_virtual_tour
+                          %label Virtual Tour
+                .div_checklist.hidden{:style => "margin-left: 60px;"}
+                  %label Credit Card Required Select Fields
+                  .form-group{:style => "height: 190px; margin-top: ;"}
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :show_first_name, true, @tour_setting.show_first_name.nil? ? true :  @tour_setting.show_first_name
+                            %label Name
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :show_phone, true, @tour_setting.show_phone.nil? ? true : @tour_setting.show_phone
+                            %label Phone
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom.nil? ? true : @tour_setting.show_desired_bedroom
+                            %label Desired bedrooms
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date.nil? ? true : @tour_setting.show_desired_move_in_date
+                            %label Desired move-in date
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
+                            %label Credit card required
+                    - if @community.data_provider == "realpagesvc"
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                            .checkbox
+                              = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
+                              %label Lead source
+                .div_checklist.hidden
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Only allow scheduled tours
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "5Popover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          Only give on-site access via the Self Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = check_box_tag :only_scheduled_tour, true, @community.tour.only_scheduled_tour , class: "only_scheduled_tour"
+                        %label.label-primary{:for => "only_scheduled_tour"}
+                        %span.pl-15 Yes
+                  .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
+                    .form-group.hidden#grace_time_period
+                      .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{style:"margin-right: -35px;"}
+                        Grace period
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %input.day-list.max-users-v.form-control{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}              
+                - if current_user.is_super_admin?
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Add Unit Stops Based on Availability
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "6Popover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          Selecting this option will automate which vacant units will appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
+                        %label.label-primary{:for => "automate_unit_stop"}
+                        %span.pl-15 Yes        
                 .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Scheduler Widget font family
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = select_tag :btn_font , options_for_select(font_families.collect(&:first), @schedule_widget_setting.btn_font),:class => "form-control widget_setting_field", :id => "set_font"
+                  %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
+                    Allow visitors to schedule tours
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "8Popover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        Choose the time increments for scheduled tours. 
+                .row 
+                  .form-group
+                    .form-group.col-lg-6.col-md-6
+                      
+                      .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                            .radiobutton.check_t
+                              = radio_button_tag :time_intervel_15, true, @tour_setting.time_intervel == "15 min" ? true : false, :id => "time_intervel_id15"
+                      %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        In 15 minute increments (ie, 10:00, 10:15, 10:30)
+                    .form-group.col-lg-6.col-md-6
+                      
+                      .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                            .radiobutton.check_t
+                              = radio_button_tag :time_intervel_1, true, @tour_setting.time_intervel == "1 hr" ? true : false, :id => "time_intervel_id1"
+                      %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        In hourly increments (ie, 10:00, 11:00, 12:00)        
+                .row 
+                  .form-group
+                    .form-group.col-lg-6.col-md-6
+                      
+                      .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                            .radiobutton.check_t
+                              = radio_button_tag :time_intervel_30, true, @tour_setting.time_intervel == "30 min" ? true : false, :id => "time_intervel_id30"
+                      %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        In 30 minute increments (ie, 10:00, 10:30, 11:00)        
+                    .form-group.col-lg-6.col-md-6
+                      
+                      .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                            .radiobutton.check_t
+                              = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
+                      %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        Every 2 hours (ie, 10:00, 12:00, 2:00)   
                 .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Scheduler Widget font size
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    = select_tag :btn_font_size, options_for_select(["10px","11px","12px","13px","14px","15px","16px","17px","18px","19px","20px"], @schedule_widget_setting.btn_font_size),:class => "form-control widget_setting_field", :id => "set_font_size"
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Scheduler Widget dimensions
-                  .col-sm-12.col-lg-2.col-md-2.col-xs-12
-                    %input.day-list.max-users-v.form-control{type: "number", id: "btn_width", name: "btn_width", min: "100", max: "200", step: "1", onkeydown: "return false", value: @schedule_widget_setting.btn_width}
-                  .col-sm-12.col-lg-1.col-md-1.col-xs-12{:style => "margin-top: 7px;"}
-                    %label
-                      x
-                  .col-sm-12.col-lg-2.col-md-2.col-xs-12
-                    %input.day-list.max-users-v.form-control{type: "number", id: "btn_height", name: "btn_height", min: "20", max: "100", step: "1", onkeydown: "return false", value: @schedule_widget_setting.btn_height}  
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Scheduler Widget color
-                  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                    .input-group.colorpicker-style.hex-format-colorpicker
-                      .input-group-addon
-                        %i
-                    
-                        = text_field_tag :btn_color ,  @schedule_widget_setting.btn_color ,:class => "form-control ", :id => "set_color"
+                  .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    = link_to "Customize Schedule Widget " , scheduler_widget_community_tours_path(current_community) , :class=>"btn btn-primary ", :id => "" 
+                
+                
                 .form-group
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
                     %button.btn.btn-primary#genrate_btn{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget","data-url" => "",:href => "##", :onclick => "return false"}
                       %span Copy code for Scheduler Widget
                   .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     %button.btn.btn-primary#genrate_link{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link","data-url" => "",:href => "##", style: "margin-top: 5px;" , :onclick => "return false"}
-                      %span Copy link for Scheduler Page 
+                      %span Copy link for Scheduler Page  
                 .box-footer  
-                  = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "margin-bottom: -;"          
+                  = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "  "              
 
     //////////////////////////////////////////////// Visiting hours ////////////////////////////////////              
     - if @tour_setting.allow_self_tour

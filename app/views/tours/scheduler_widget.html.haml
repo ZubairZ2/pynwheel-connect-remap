@@ -17,36 +17,57 @@
     .row
       .col-md-12
         .box.box-widget.panel-box.add-plan.pt-30.pb-40
-          = form_tag save_schedule_widget_btn_setting_community_tours_path(@community) ,{:class => 'widget-settings-form'} do
+          = form_tag save_schedule_widget_btn_setting_community_tours_path(@community) ,{:class => 'widget-settings-form', :style => "margin-top: 50px;"} do
             = hidden_field_tag "community_id", @community.id
-
+            %label{:style => "float: ; "}
+              This is what your Scheduler Widget looks like.
             .form-group{:style => "text-align: center; "}
-              %a.btn.btn-success.primary-button{:style => "float: center; font-size: #{@schedule_widget_setting.btn_font_size}; background-color: #{@schedule_widget_setting.btn_color}", :id => "sample_btn", :href => "#{root_url}scheduler_widget/test_widget?community_id=#{current_community.id}&community_code=#{@community_code}&direct=true"}
+              
+              %a.btn.btn-success.primary-button{:style => "align-items: center; display: inline-grid; float: center; font-size: #{@schedule_widget_setting.btn_font_size}; width: #{@schedule_widget_setting.btn_width}px; height: #{@schedule_widget_setting.btn_height}px; background-color: #{@schedule_widget_setting.btn_color}", :id => "sample_btn", :href => "#{root_url}scheduler_widget/test_widget?community_id=#{current_community.id}&community_code=#{@community_code}&direct=true"}
                 #{@schedule_widget_setting.btn_text}
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Schedule Widget Text
+                Scheduler Widget Text
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 = text_field_tag :btn_text , @schedule_widget_setting.btn_text ,:class => "form-control widget_setting_field", :id => "set_text", :maxlength=>"50"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Schedule Widget font family
+                Scheduler Widget font family
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 = select_tag :btn_font , options_for_select(font_families.collect(&:first), @schedule_widget_setting.btn_font),:class => "form-control widget_setting_field", :id => "set_font"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Schedule Widget color size
+                Scheduler Widget font size
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 = select_tag :btn_font_size, options_for_select(["10px","11px","12px","13px","14px","15px","16px","17px","18px","19px","20px"], @schedule_widget_setting.btn_font_size),:class => "form-control widget_setting_field", :id => "set_font_size"
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Schedule Widget color
+                Scheduler Widget dimensions
+              .col-sm-12.col-lg-2.col-md-2.col-xs-12
+                %input.day-list.max-users-v.form-control{type: "number", id: "btn_width", name: "btn_width", min: "100", max: "350", step: "1", onkeydown: "return false", value: @schedule_widget_setting.btn_width}
+              .col-sm-12.col-lg-1.col-md-1.col-xs-12{:style => "margin-top: 7px;"}
+                %label
+                  x
+              .col-sm-12.col-lg-2.col-md-2.col-xs-12
+                %input.day-list.max-users-v.form-control{type: "number", id: "btn_height", name: "btn_height", min: "20", max: "100", step: "1", onkeydown: "return false", value: @schedule_widget_setting.btn_height}  
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Scheduler Widget color
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 .input-group.colorpicker-style.hex-format-colorpicker
                   .input-group-addon
                     %i
                 
                     = text_field_tag :btn_color ,  @schedule_widget_setting.btn_color ,:class => "form-control ", :id => "set_color"
+            / .form-group
+            /   .col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
+            /     %button.btn.btn-primary#genrate_btn{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget","data-url" => "",:href => "##", :onclick => "return false"}
+            /       %span Copy code for Scheduler Widget
+            /   .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            /     %button.btn.btn-primary#genrate_link{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link","data-url" => "",:href => "##", style: "margin-top: 5px;" , :onclick => "return false"}
+            /       %span Copy link for Scheduler Page 
+            .box-footer  
+              = submit_tag 'Done', class: "btn btn-success  mr-10", style: "margin-bottom: -36px;" 
             / .form-group
             /   .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
             /     %button.btn.btn-primary#genrate_btn{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget","data-url" => "",:href => "##"}
@@ -78,7 +99,7 @@
   /         %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-link-url"} Copy to clipboard                        
 
 :javascript
-  $('#set_text').keyup(function(){
+   $('#set_text').keyup(function(){
     $('#sample_btn').text(this.value)
   });
   $('#set_color').change(function(){
@@ -90,16 +111,17 @@
   $('#set_font_size').change(function(){
     $("#sample_btn").css("font-size", $("#set_font_size option:selected").text());
   });
+  $('#btn_width').change(function(){
+    $("#sample_btn").css("width", this.value);
+  });
+  $('#btn_height').change(function(){
+    $("#sample_btn").css("height", this.value);
+  });
   $('.widget_setting_field').change(function(){
-    $(".widget-settings-form").submit();
   });
   var tr = 1;
   $('#set_color').change(function(){
-    if (tr != 1)
-    {
-      $(".widget-settings-form").submit();
-    }
-    tr = tr + 1
+    
   });
 
   $("#sample_btn").css("font-family", $("#set_font option:selected").text());
@@ -110,5 +132,5 @@
 
     btn_link = "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{@community_code}&direct=true"
 
-    $('#schedule-link-url').val(btn_link )
+    $('#schedule-link-url1').val(btn_link )
   });
