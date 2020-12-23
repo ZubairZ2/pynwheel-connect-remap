@@ -47,10 +47,10 @@ module SalesforceServices
                         begin
                             stop_detail = Hash.new
                             stop_detail[:stopId] = stop.stop_id
-                            stop_detail[:stopName] = stop.name.present? ? stop.name : ((stop.stop_type.classify.constantize.find_by_id stop.stop_id).name rescue "")        
+                            stop_detail[:stopName] = stop.name.present? ? stop.name : ((stop.stop_type.classify.constantize.find_by_id stop.stop_id).name rescue "")
                             stop_detail[:notes] = VisitedStop.where(tour_id: community.tour.id, tour_user_id: tour_user.id, tour_key: sf_user.tour_key, tour_stop_id: stop_id).pluck(:description).compact
                             stop_detail[:photos] = VisitedStop.where(tour_id: community.tour.id, tour_user_id: tour_user.id, tour_key: sf_user.tour_key, tour_stop_id: stop_id).pluck(:image).compact.count
-                            stop_detail[:chatHistory] = ""
+                            stop_detail[:chatHistory] = Chatroom.where(tour_id: community.tour.id, tour_user_id: tour_user.id).chats.where(tour_key: sf_user.tour_key).order(:id).map{|c| (c.name == "Support Team" ? ("Support:" + c.message + " :: ") : ("User:" + c.message + " :: "))}.flatten.join("") rescue ""
                         rescue => exception
                             next
                         else
