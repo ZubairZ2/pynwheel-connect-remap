@@ -550,21 +550,21 @@ class Api::V1::CommunitiesController < ActionController::Base
   def sf_tour_time_status(current_time, scheduled_tours, grace_time, timezone)
     # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
     # now it is confirmed that either the tour is before or after time
-    nearest_before_time = scheduled_tours.map{ |t| [(t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) - current_time).abs , t] if t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) < current_time }.compact.min
-    nearest_after_time = scheduled_tours.map{ |t| [(t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) - current_time).abs , t] if t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) > current_time }.compact.min
+    nearest_before_time = scheduled_tours.map{ |t| [(t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) - current_time).abs , t["Id"]] if t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) < current_time }.compact.min
+    nearest_after_time = scheduled_tours.map{ |t| [(t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) - current_time).abs , t["Id"]] if t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) > current_time }.compact.min
 
     if nearest_before_time.present? and nearest_after_time.nil?
-      return ["before time" , nearest_before_time[1]]
+      return ["before time" , scheduled_tours.find{|s| s["Id"] == nearest_before_time[1]}]
     elsif nearest_before_time.nil? and nearest_after_time.present?
-      return ["after time" , nearest_after_time[1]]
+      return ["after time" , scheduled_tours.find{|s| s["Id"] == nearest_after_time[1]}]
     end
 
     if nearest_before_time[0] < nearest_after_time[0]
-      return ["before time" , nearest_before_time[1]]
+      return ["before time" , scheduled_tours.find{|s| s["Id"] == nearest_before_time[1]}]
     elsif nearest_after_time[0] < nearest_before_time[0]
-      return ["after time" , nearest_after_time[1]]
+      return ["after time" , scheduled_tours.find{|s| s["Id"] == nearest_after_time[1]}]
     else
-      return ["after time" , nearest_after_time[1]] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
+      return ["after time" , scheduled_tours.find{|s| s["Id"] == nearest_after_time[1]}] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
     end
   end
 
