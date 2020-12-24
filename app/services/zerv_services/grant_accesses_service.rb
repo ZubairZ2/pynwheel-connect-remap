@@ -1,5 +1,5 @@
 module ZervServices
-    class GrantAccessesService < BaseService
+    class GrantAccessesService < ZervServices::BaseService
         def self.call(*args, &block)
             request_data = args[0]
             new(request_data[:community]).perform(request_data[:community], request_data[:tour_user], request_data[:stop_list])
@@ -16,7 +16,7 @@ module ZervServices
                     delele_user_response = nil
                     response.payload["listUsers"].each do |zerv_user|
                         tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
-                        if zerv_user["email"] == tour_user.email and zerv_user["phoneNumber"] == tour_user.phone_number
+                        if zerv_user["phoneNumber"] == tour_user.phone_number
                             ################################### delete and create again zerv user ###################################
                             # for updating user we have to get a lot of data, the way zerv api's works
                             response = ZervServices::DeleteUserService.call(community: community, tour_user: tour_user)

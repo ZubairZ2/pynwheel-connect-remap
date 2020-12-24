@@ -1,5 +1,5 @@
 module ZervServices
-    class ImportLockService < BaseService
+    class ImportLockService < ZervServices::BaseService
 
         def execute(test_connection)
             url = "https://api.zervinc.net/v1/portal/clientdevice"

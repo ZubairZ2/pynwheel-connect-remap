@@ -1,5 +1,5 @@
 module ZervServices
-    class AddUserWithAccessesService < BaseService
+    class AddUserWithAccessesService < ZervServices::BaseService
         def self.call(*args, &block)
             request_data = args[0]
             new(request_data[:community]).execute(request_data[:community], request_data[:tour_user], request_data[:stop_list])
@@ -22,16 +22,23 @@ module ZervServices
                     end
                 end
             end
-            # sleep 10
+            
+            tour_user.phone_number = tour_user.phone_number[0] == '+' ?  tour_user.phone_number : '+' + tour_user.phone_number
+            body = {
+                "firstName": tour_user.first_name,
+                "lastName": tour_user.last_name,
+                "phoneNumber":  tour_user.phone_number,
+                "email": tour_user.email,
+                "image": nil,
+                "listAddUserAccess": list_add_user_access
+            }
+            
+            puts "############3 ------------- ###################"
+            puts body.to_json
+            puts "############3 ------------- ###################"
+
             response = HTTParty.post(url,
-                body: {
-                        "firstName": tour_user.first_name,
-                        "lastName": tour_user.last_name,
-                        "phoneNumber":  tour_user.phone_number,
-                        "email": tour_user.email,
-                        "image": nil,
-                        "listAddUserAccess": list_add_user_access
-                }.to_json,
+                 body: body.to_json,,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
 
         rescue HTTParty::Error => e
@@ -101,8 +108,6 @@ module ZervServices
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",
                 "facilityId": nil,
-                "id": "0",
-                "userAccessDurationId": "0",
                 "monAccess": false,
                 "tueAccess": false,
                 "wedAccess": false,
@@ -129,24 +134,5 @@ module ZervServices
             # below line will replace the main_keys within the required_keys
             req_keys.merge(main) 
         end
-    
-        def get_community_time_zone(community)
-            tz = Ziptz.new
-            timezone = nil
-        
-            if community.zip.present?
-                timezone = tz.time_zone_name(community.zip)
-            end
-        
-            if timezone.nil? and community.latitude.present? and community.longitude.present?
-                time_zone = Timezone.lookup(community.latitude, community.longitude)
-                timezone = time_zone.name
-            end
-        rescue
-            return nil
-        else
-            return timezone
-        end
-
     end
 end

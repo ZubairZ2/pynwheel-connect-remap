@@ -1,5 +1,5 @@
 module ZervServices
-    class LoginService < BaseService
+    class LoginService < ZervServices::BaseService
 
         def execute(test_conn)
             url = "https://api.zervinc.net/v1/portal/login"

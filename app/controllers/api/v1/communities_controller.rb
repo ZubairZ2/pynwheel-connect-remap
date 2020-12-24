@@ -655,7 +655,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
       providers_account = community.locks_provider.classify.constantize.find_by(community_id: params[:id]) rescue nil
       
-      if community.enable_locks and providers_account.present? and providers_account.class.name == "Latch" and in_visiting_hours and !is_tour_virtual
+      if community.enable_locks and providers_account.present? and providers_account.class.name == "Zerv" and in_visiting_hours and !is_tour_virtual
         available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
         available_stops << ["tour", @community.tour.id]
         allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact

@@ -1,5 +1,5 @@
 module ZervServices
-    class DeleteUserService < BaseService
+    class DeleteUserService < ZervServices::BaseService
         def self.call(*args, &block)
             request_data = args[0]
             new(request_data[:community]).execute(request_data[:community], request_data[:tour_user])
