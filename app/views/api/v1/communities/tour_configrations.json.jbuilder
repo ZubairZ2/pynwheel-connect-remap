@@ -47,11 +47,19 @@
             json.late_arrive_with_reschduler "" 
         end
 
-        json.scheduler_widget_allowed @community.scheduler_widget
-        if @scheduled_tours.present?
-            json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_tours.last.id}?datetime=#{@scheduled_tours.last.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_tours.last.tour_time.strftime("%H:%M")}" : ""
+        if @community.credential.crm_provider == "salesforce"
+            json.scheduler_widget_allowed false
+            json.scheduler_widget_url ""
         else
-            json.scheduler_widget_url @community.scheduler_widget ? "#{root_url}/scheduler_widget/test_widget?community_id=#{@community.id}" : ""
+            json.scheduler_widget_allowed @community.scheduler_widget
+            community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
+            widget_url = "#{root_url}/scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
+            if @scheduled_tours.present?
+                json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true" : ""
+                # json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_tours.last.id}?datetime=#{@scheduled_tours.last.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_tours.last.tour_time.strftime("%H:%M")}" : ""
+            else
+                json.scheduler_widget_url @community.scheduler_widget ? "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true" : ""
+            end
         end 
     end
 
