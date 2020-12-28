@@ -103,7 +103,7 @@
                             - elsif alert.tour_status.present? && (alert.tour_status == "self_tour" || alert.tour_status == "guided")
                               = image_tag  image_url("virtual_walk_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "In-Person Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - else
-                              = image_tag  image_url("virtual_walk_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"  
+                              = image_tag  image_url("icon-check.png"), :style => "height: 22px; width: 22px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"  
                             - if alert.arrived.present?
                               - if alert.my_time_zone.present?
                                 - begin
