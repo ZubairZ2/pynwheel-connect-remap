@@ -451,7 +451,7 @@ function showMarkers(market_rent_change = false) {
   $('.marker').addClass('hidden');
   $('.hidden-units').empty();
 
-  var units_to_display = select_units_according_to_filters(current_units)
+  var units_to_display = select_units_according_to_filters(units)
   // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
 
   set_prices_according_to_units_to_display(units, market_rent_change)
@@ -535,7 +535,7 @@ function disabled_enabled_anchors() {
       }
     }
     //console.log(floorplate_units);
-    var units_to_display = select_units_according_to_filters(floorplate_units)
+    var units_to_display = select_units_according_to_filters(units)
 
     // console.log(units_to_display.length);
     if (units_to_display.length == 0) {
