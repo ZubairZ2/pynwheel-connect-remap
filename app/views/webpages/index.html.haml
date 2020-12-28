@@ -552,7 +552,7 @@
   $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' });
 
   var has_floorplate = "#{@community_info.has_floorplates?}";
-  var current_floor = "#{@floors.present? and @floors.size > 0 ? @floors.first : 0}";
+  var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 0}";
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
   floors = JSON.parse(floors);
   /////////////////////////////////////////
