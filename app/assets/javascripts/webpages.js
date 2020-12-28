@@ -634,6 +634,8 @@ function select_units_according_to_filters(floorplate_units) {
   if (units.length == 0)
     $('.available_portion').addClass('hidden');
   for (var i = 0; i < floorplate_units.length; i++) {
+    if(($('.floorplate-anchor.selected').attr('id') != undefined) && ($('.floorplate-anchor.selected').attr('id') != floorplate_units[i].floor.toString()) )
+      continue;
     all_units.push(floorplate_units[i]);
     //show zero bedroom markers  
     if ($('#zero-bedroom-checkbox').is(':checked')) {
