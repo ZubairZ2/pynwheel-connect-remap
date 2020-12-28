@@ -37,12 +37,13 @@ class WebpagesController < ActionController::Base
     @available_units_and_sold_units.each do |unit|
       if unit.effective_rent.present? && unit.effective_rent >= 1  && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
         floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+        
         struct = {
           marketing_name: unit.marketing_name,
           market_rent: unit.effective_rent,
           bedrooms: floorplan.bedrooms,
           bathrooms: floorplan.bathrooms,
-          square_feet: (unit.square_feet.present? && unit.square_feet =! 0) ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0),
+          square_feet: (unit.square_feet.present? && unit.square_feet != 0) ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0),
           availability: unit.availability,
           available_date: unit.available_date,
           x_plot: unit.x_plot,
