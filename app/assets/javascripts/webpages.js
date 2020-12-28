@@ -560,11 +560,11 @@ function disabled_enabled_anchors() {
       if (max_area_floorplate > max_area)
         max_area = max_area_floorplate
     }
-    if (units_to_display.length == 1)
+    if (floorplate_units.length == 1)
       var str = " match"
     else
       var str = " matches"
-    $('#' + floors[i]).attr('data-original-title', (units_to_display.length.toString() + str));
+    $('#' + floors[i]).attr('data-original-title', (floorplate_units.length.toString() + str));
   }
   if ((floors.length > 0)) {
     disable_rent_filter_options(min_market_rent)
@@ -878,7 +878,9 @@ function select_units_according_to_filters(floorplate_units) {
   {$('.available_portion').removeClass('hidden');}
 
   if (bedroom_filter_present || availability_filter_present || price_filter_present || area_filter_present) {
+    
     var units_to_display = $.intersect(bedroom_base_units, availability_base_units, rent_base_units, square_feet_base_units);
+    // var units_to_display = $.intersect(_now_units, _now_to_30_units, _90_to_120_units, _60_to_90_units, _120_units, _30_to_60_units);
     //units_to_display = $.union(units_to_display, sold_units, are_available_units);
     return units_to_display;
   } else {
