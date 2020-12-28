@@ -803,6 +803,7 @@ function select_units_according_to_filters(floorplate_units) {
       rent_base_units.push(floorplate_units[i]);
     }
     //show units on the basis of minimum and maximum rent value
+    
     var unit_square_feet = parseFloat(floorplate_units[i]['square_feet']);
     if (unit_square_feet >= minimum_square_feet && unit_square_feet <= maximum_square_feet) {
       square_feet_base_units.push(floorplate_units[i]);
