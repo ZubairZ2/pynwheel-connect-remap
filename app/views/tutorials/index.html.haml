@@ -40,8 +40,9 @@
                       Product Line
                     %th
                       Video
-                    %th
-                      Action
+                    - if current_user.is_super_admin?
+                      %th
+                        Action
 
               
                 %tbody
@@ -72,11 +73,12 @@
                             /%a.preview-image{:href=>t.video.url,"data-toggle"=>"lightbox","data-title"=>"ATutorial Video"}
                             /= t.video.url, :class => "video1"
                             /= video_tag t.video.url , :controls => true, :autobuffer => true,:type => "video/mp4", :width => "400px", :class => "video1"
-                        %td
-                          %a.text-success{:href => "#{edit_community_tutorial_path(@community,t)}"}
-                            %i.fa.fa-edit.icon_size
-                          %a.text-danger{"data-name"=>"Tutorial","data-href" => "#{community_tutorial_path(@community,t)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
-                            %i.fa.fa-trash.icon_size  
+                        - if current_user.is_super_admin?
+                          %td
+                            %a.text-success{:href => "#{edit_community_tutorial_path(@community,t)}"}
+                              %i.fa.fa-edit.icon_size
+                            %a.text-danger{"data-name"=>"Tutorial","data-href" => "#{community_tutorial_path(@community,t)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+                              %i.fa.fa-trash.icon_size  
                     
 
     
