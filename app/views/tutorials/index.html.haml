@@ -47,6 +47,7 @@
               
                 %tbody
                   - @tutorials.each_with_index  do |t,index|
+                    - next if (!current_user.is_super_admin? && !t.video.present?)
                     .row
                       %tr
                         %td.col-lg-2

@@ -202,7 +202,7 @@
             %i.fa.fa-history
             %span CMS Logs
       - unless (current_user.is_view_visitor_details_page?) 
-        %li.loader_class{:class=>"#{controller_name =='Tutorial' && params[:action] == "index" ? 'active' : ''}"}
+        %li.loader_class{:class=>"#{controller_name =='tutorials' ? 'active' : ''}"}
           %a{:href => "#{community_tutorials_path(current_community)}"}
             %i.fa.fa-video-camera
             %span Tutorial      

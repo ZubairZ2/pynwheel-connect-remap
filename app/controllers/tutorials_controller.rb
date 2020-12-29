@@ -58,19 +58,19 @@ class TutorialsController < ApplicationController
   end
   def get_all_tutorials(touchscreen_app, show_map, self_tour)
     if touchscreen_app and show_map and self_tour
-      Tutorial.where('pynwheel_touch = ? OR pynwheel_maps = ? OR self_tour = ?', touchscreen_app , show_map , self_tour).where.not(video: nil)
+      Tutorial.where('pynwheel_touch = ? OR pynwheel_maps = ? OR self_tour = ?', touchscreen_app , show_map , self_tour)
     elsif touchscreen_app and show_map
-      Tutorial.where('pynwheel_touch = ? OR pynwheel_maps = ?', touchscreen_app , show_map).where.not(video: nil)
+      Tutorial.where('pynwheel_touch = ? OR pynwheel_maps = ?', touchscreen_app , show_map)
     elsif show_map and self_tour
-      Tutorial.where('pynwheel_maps = ? OR self_tour = ?', show_map , self_tour).where.not(video: nil)
+      Tutorial.where('pynwheel_maps = ? OR self_tour = ?', show_map , self_tour)
     elsif touchscreen_app and self_tour
-      Tutorial.where('pynwheel_touch = ? OR self_tour = ?', touchscreen_app , self_tour).where.not(video: nil) 
+      Tutorial.where('pynwheel_touch = ? OR self_tour = ?', touchscreen_app , self_tour)
     elsif touchscreen_app
-      Tutorial.where('pynwheel_touch = ?', touchscreen_app).where.not(video: nil) 
+      Tutorial.where('pynwheel_touch = ?', touchscreen_app)
     elsif self_tour
-      Tutorial.where('self_tour = ?', self_tour).where.not(video: nil)
+      Tutorial.where('self_tour = ?', self_tour)
     elsif show_map
-      Tutorial.where('pynwheel_maps = ?', show_map).where.not(video: nil)
+      Tutorial.where('pynwheel_maps = ?', show_map)
     else
       []
     end
