@@ -265,6 +265,7 @@ iPhone Users:
 
       if params[:unit_id].present?
         unit = Unit.find_by_id(params[:unit_id])
+        @community = Community.find unit.community_id
         @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
         @units.each do |u|
           if u.community.is_sitemap?

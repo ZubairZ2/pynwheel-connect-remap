@@ -311,7 +311,7 @@
 
                       .available-now
                         %p#availability
-                    - if @community_info.credential.present? and @community_info.credential.apply_now
+                    - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
                       - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc"
                         .date-select
                           %h5= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
@@ -323,7 +323,14 @@
                           = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag"
                         - else
                           = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag"
-
+                    - elsif @community_info.credential.present? and @community_info.credential.apply_now.to_s == "separate_link"
+                      .date-select
+                        %h5= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
+                        .form-group
+                          %input.form-control.datepicker#leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
+                          %i.fa.fa-calendar#leasing-start-date-icon
+                      .btn-apply
+                        %a{:href => @community_info.credential.separate_link,:target => "_blank" } Apply Now
                 .col-md-7
                   .plan-image-pop
                     %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/

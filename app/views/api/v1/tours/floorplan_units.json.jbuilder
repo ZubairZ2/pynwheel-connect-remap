@@ -16,6 +16,9 @@ json.data @units do |u|
         else
                 json.availability_url u.availability_url.present? ? u.availability_url : ""
         end
+        if @community.credential.apply_now.to_s == "separate_link"
+            json.availability_url @community.credential.separate_link
+        end
         json.community_id u.community_id
         json.provider u.provider
         json.property_id u.property_id
