@@ -15,11 +15,12 @@ class ApplicationController < ActionController::Base
   	if params[:community_id].present?
 	  	@community ||= Community.find params[:community_id]
 	  elsif controller_name =='communities' && params[:id].present?
-		  @community ||= Community.find params[:id]
+		  @community ||= Community.find params[:id] 
 	  end  	
   end
   def community_code
     if current_community.present?
+      @community.create_tour unless @community.tour.present?
       @schedule_widget_setting = @community.tour.scheduler_widget_setting || @community.tour.create_scheduler_widget_setting
       @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
     end
@@ -75,7 +76,6 @@ class ApplicationController < ActionController::Base
   def check_community
     return if params[:controller] == "tour_users" && params[:action]== "show"
     return if params[:controller] == "tour_users" &&(params[:action]== "checkpoint_verification" || params[:action]== "show")
-    
     if current_user.is_dwelo_admin?
 
       assigned_communities_ids = current_user.communities.ids # all assinged communities

@@ -511,7 +511,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @verfication_type = params[:id_verification].present? ? @tour.verification_type : "email" rescue "email"
           timezone = get_community_time_zone(@community) rescue nil
           current_time = Time.now.in_time_zone(timezone) rescue params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now
-
+          
           if current_time.present?
             @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
             @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
@@ -524,7 +524,7 @@ class Api::V1::CommunitiesController < ActionController::Base
               @tour_date = nearest_time_tour.present? ? (SchedualTour.find nearest_tour_id).tour_date.strftime('%_m/%d/%Y')  : "---"
               @tour_time = nearest_time_tour.present? ?  (SchedualTour.find nearest_tour_id).tour_time.strftime('%l:%M %P') : "---"
             else
-              @tour_user.tour_type = (@tour.only_scheduled_tour ? "self_tour" : "virtual")
+              @tour_user.tour_type = (!@tour.only_scheduled_tour ? "self_tour" : "virtual")
             end
             @tour_user.save
           end
@@ -539,7 +539,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       st = SchedualTour.find nearest_tour_id
       return st.tour_type
     else
-      return (tour.only_scheduled_tour ? "self_tour" : "virtual")
+      return (!tour.only_scheduled_tour ? "self_tour" : "virtual")
     end
   end
   def get_community_time(community)
