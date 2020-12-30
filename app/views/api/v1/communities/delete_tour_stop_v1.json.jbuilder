@@ -574,7 +574,7 @@ json.tours @tours do |tour|
       next
     end
     begin
-      if @in_visiting_hours and !@is_tour_virtual
+      if @in_visiting_hours and !@is_tour_virtual and !(@tour_user.tour_type == "guided" || @tour_user.tour_type == "virtual")
         if @community.locks_provider == "EdgeState"
           rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
           if rml.present?
