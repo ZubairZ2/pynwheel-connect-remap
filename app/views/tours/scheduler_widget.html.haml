@@ -19,11 +19,11 @@
         .box.box-widget.panel-box.add-plan.pt-30.pb-40
           = form_tag save_schedule_widget_btn_setting_community_tours_path(@community) ,{:class => 'widget-settings-form', :style => "margin-top: 50px;"} do
             = hidden_field_tag "community_id", @community.id
-            %label{:style => "float: ; "}
+            %label{:style => "margin-left: 15px;"}
               This is what your Scheduler Widget looks like.
             .form-group{:style => "text-align: center; "}
               
-              %a.btn.btn-success.primary-button{:style => "align-items: center; display: inline-grid; float: center; font-size: #{@schedule_widget_setting.btn_font_size}; width: #{@schedule_widget_setting.btn_width}px; height: #{@schedule_widget_setting.btn_height}px; background-color: #{@schedule_widget_setting.btn_color}", :id => "sample_btn", :href => "#{root_url}scheduler_widget/test_widget?community_id=#{current_community.id}&community_code=#{@community_code}&direct=true"}
+              %a.btn.btn-success.primary-button{:style => "align-items: center; display: inline-grid; float: center; font-size: #{@schedule_widget_setting.btn_font_size}; width: #{@schedule_widget_setting.btn_width}px; height: #{@schedule_widget_setting.btn_height}px; background-color: #{@schedule_widget_setting.btn_color}", :id => "sample_btn", :href => "#{root_url}scheduler_widget/test_widget?community_id=#{current_community.id}&community_code=#{@community_code}&direct=true", :target => "_blank"}
                 #{@schedule_widget_setting.btn_text}
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
