@@ -498,7 +498,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   def check_guest_limit(community, property_time, limit, tour_user)
     
     if community.tour.tour_setting.do_limit_max_tour
-      return (community.tour.tour_setting.limit_max_tour_type == "app_usage") ? app_usage(community, property_time, limit, tour_user) : total_scheduled_tour(community,property_time, limit, tour_user)
+      return (app_usage(community, property_time, limit, tour_user) || total_scheduled_tour(community,property_time, limit, tour_user))
     else
       return false
     end
