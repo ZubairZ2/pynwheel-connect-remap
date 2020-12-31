@@ -498,29 +498,28 @@ class Api::V1::CommunitiesController < ActionController::Base
   def check_guest_limit(community, property_time, limit, tour_user)
     
     if community.tour.tour_setting.do_limit_max_tour
-      return (app_usage(community, property_time, limit, tour_user) || total_scheduled_tour(community,property_time, limit, tour_user))
+      return (limit <= (app_usage(community, property_time, limit, tour_user) + total_scheduled_tour(community,property_time, limit, tour_user)) ? true : false)
     else
       return false
     end
   end
   def total_scheduled_tour(community, property_time, limit, tour_user)
     timezone = Timezone.lookup(community.latitude, community.longitude)
-    
     total  = SchedualTour.where('tour_date = ?', Date.today.to_date).where.not(tour_user_id: nil).map{|x| x if ( ((((x.tour_date.to_s + " " + x.tour_time.to_s(:time)).in_time_zone(x.user_time_zone).in_time_zone(timezone.name)) - property_time.in_time_zone(timezone.name) ) / 3600).between?(-0.5,0.5) )}.compact
-    if (total.map{|x| x.tour_user_id}.include? tour_user.id) || geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude)
-      return false
+    if (total.map{|x| x.tour_user_id}.include? tour_user.id) || !geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude)
+      return 0
     else
       total_count = total.count
-      return ((limit <= total_count) ? true : false)
+      return total_count
     end
     # return (limit <= SchedualTour.where('tour_date = ? AND tour_time BETWEEN ? AND  ?', property_time.to_date, (property_time.to_time - 30.minutes).to_s(:time), (property_time.to_time + 60.minutes).to_s(:time)).count) ? false : true
   end
   def app_usage(community, property_time, limit ,tour_user)
     # return (limit <= TourHistory.where('arrived = ? AND left = ? AND abandoned_tour_at_stop AND active_app = ? AND arrived > ? AND is_virtual_tour', property_time.to_date,  nil, nil, false, property_time - 180.minutes, false).count) ? false : true
     unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude)
-      return false
+      return 0
     else
-      return (limit <= TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, is_virtual_tour: false,tour_id: community.tour.id).where('arrived > ?', (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude)) }.compact.count) ? true : false
+      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, is_virtual_tour: false,tour_id: community.tour.id).where('arrived > ?', (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude)) }.compact.count
     end    
   end
   def geo_distance(lat1,long1,lat2,long2)
