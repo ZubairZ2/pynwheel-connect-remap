@@ -108,7 +108,7 @@
   <body>
     <div class="divLoading hidden"></div>
 
-		<%= link_to("Schedule a Visit", "url",id: "schedule_btn" , class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#scheduleMyTour" }) %>
+		<%= link_to("Schedule a Visit", "url",id: "schedule_btn" , class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#scheduleMyTour", backdrop: "static"}) %>
 
 	  <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
       <div class="modal-dialog" role="document">
@@ -366,7 +366,7 @@
       if(success){
         $("#modalLoginForm").modal('hide');
         $('.divLoading').addClass('hidden')
-        $("#scheduleMyTourSuccess").modal()
+        $("#scheduleMyTourSuccess").modal({backdrop: 'static', keyboard: false})
         $("html, body").animate({ scrollTop: 0 }, 600);
       }
       else
@@ -721,13 +721,13 @@
                     select.add(new Option(op[0], op[1]));
                   }
                   // $("#modalLoginForm").modal();
-                  $("#scheduleTourType").modal();
+                  $("#scheduleTourType").modal({backdrop: 'static', keyboard: false});
 
                 }
                 else
                 {
                   $("#scheduleMyTour").modal('hide');
-                  $("#modalLoginForm").modal();
+                  $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
                   // hidden_tour_type_value = data.type_list[0][1]
                   send_tour_type(data.schedual_tour.id,data.type_list[0][1])
                   // $("#scheduleTourType").modal();
@@ -763,7 +763,7 @@
           send_tour_type(document.getElementById('sched_tour_id').value,$("#tour_type option:selected").val())
           $('.divLoading').addClass('hidden');
           $("#scheduleTourType").modal('hide');
-          $("#modalLoginForm").modal();
+          $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
           // $.ajax({
           //     type: 'POST',
           //     dataType: 'json',
@@ -904,7 +904,7 @@
 
         $("#close").on('click', function(){
           $("#scheduleMyTourSuccess").modal('hide')
-          $("#scheduleMyTour").modal()
+          $("#scheduleMyTour").modal({backdrop: 'static', keyboard: false})
 
           // window.location.reload();
         });

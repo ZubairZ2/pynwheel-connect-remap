@@ -241,23 +241,24 @@
                     Limit the number of tours that can be taken at one time. 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 %input.day-list.max-users-v.form-control{type: "number", id: "limit_max_tour", name: "limit_max_tour", min: "1", max: "60", step: "1", onkeydown: "return false", value: @community.tour.tour_setting.limit_max_tour}         
-            .form-group.limit_max_tour_class.hidden
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Max Self-Guided Tours at One Time
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
-                  %span#propertyDetailNameText
-                    Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.tour.max_self_tour_users}
-            
-            .form-group.limit_max_tour_class.hidden
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Max Guided Tours at One Time
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
-                  %span#propertyDetailNameText
-                    Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}    
+            - if @tour_setting.allow_self_tour.nil? || @tour_setting.allow_self_tour
+              .form-group.limit_max_tour_class.hidden
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Max Self-Guided Tours at One Time
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.tour.max_self_tour_users}
+            - if @tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour
+              .form-group.limit_max_tour_class.hidden
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Max Guided Tours at One Time
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}    
             
             
             
