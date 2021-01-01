@@ -220,9 +220,44 @@
                   %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Dotted line color
-              .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
+
+                Allow Max Tours at One Time
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Allow limit the number of tours that can be taken at one time. 
+                
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :do_limit_max_tour, true, @community.tour.tour_setting.do_limit_max_tour  , class: "do_limit_max_tour"
+                  %label.label-primary{:for => "do_limit_max_tour"}
+                  %span.pl-15 Yes  
+            
+            .form-group.limit_max_tour_class.hidden
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Max Tours at One Time
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Limit the number of tours that can be taken at one time. 
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %input.day-list.max-users-v.form-control{type: "number", id: "limit_max_tour", name: "limit_max_tour", min: "1", max: "60", step: "1", onkeydown: "return false", value: @community.tour.tour_setting.limit_max_tour}         
+            .form-group.limit_max_tour_class.hidden
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Max Self-Guided Tours at One Time
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.tour.max_self_tour_users}
+            
+            .form-group.limit_max_tour_class.hidden
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Max Guided Tours at One Time
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}    
             
             
             
@@ -288,12 +323,13 @@
             - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Max Tour At One Time
+                  Max Tours per Day
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Enter the maximum number of Total Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+                      Limit the number of tours that can be taken in a given day.  
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
+
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /     Max Virtual Tour At One Time
@@ -302,24 +338,13 @@
               /         Enter the maximum number of Virtual Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
               /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
               /     %input.day-list.max-users-v.form-control{type: "number", id: "max_virtual_tour_users", name: "max_virtual_tour_users", min: "1", max:"10", value: @community.tour.max_virtual_tour_users}
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Max Self Tour At One Time
-              /     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
-              /       %span#propertyDetailNameText
-              /         Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.tour.max_self_tour_users}
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Max Guided Tour At One Time
-              /     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
-              /       %span#propertyDetailNameText
-              /         Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}
-      
-                   
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Dotted line color
+                .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                  = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
+                           
               
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -982,6 +1007,18 @@
     //tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
   }
 
+  var do_limit_max_tour = "#{current_community.tour.tour_setting.do_limit_max_tour}"  
+  if(do_limit_max_tour == "true")
+    $('.limit_max_tour_class').removeClass('hidden');
+  $('#do_limit_max_tour').change(function() {
+    if ($("#do_limit_max_tour").is(":checked")){
+      $(".limit_max_tour_class").removeClass("hidden")
+    }
+    else
+    {
+      $(".limit_max_tour_class").addClass("hidden")
+    }
+    })
 
   var floor = 1
   function tour_setup_goBack()

@@ -102,13 +102,14 @@ class SchedualToursController < ApplicationController
     before_30_mints, c = get_tour_datetime_and_diff before_30_mints
     after_30_mints, d = get_tour_datetime_and_diff after_30_mints
 
-    total_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).where.not(tour_user_id: nil).count
+    total_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).where.not(tour_user_id: nil,tour_type: "virtual").count
+    total_count_per_day = community.schedual_tours.where(tour_date: date).where.not(tour_user_id: nil,tour_type: "virtual").count
     
     # virtual_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "virtual").count
-    # self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").count
-    # guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided").count
+    self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").count
+    guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided").count
   
-    in_limit_count, error_message, limit_type = check_limit(params[:tour_type], total_count, @community)
+    in_limit_count, error_message, limit_type = check_limit(params[:tour_type], total_count,total_count_per_day,self_tour_count,guided_count,  @community)
     @show_tour_modal, @type_list, error = show_tour_type_modal(params[:show_self_tour_option], params[:show_guided_tour_option], in_limit_count, @community, limit_type, params[:error])
     # in_limit_count = (total_count < community.tour.max_tour_users.to_i) || (virtual_count < community.tour.max_virtual_tour_users.to_i) || (self_tour_count < community.tour.max_self_tour_tour_users.to_i) || (guided_count < community.tour.max_guided_tour_users.to_i)
 
@@ -131,53 +132,63 @@ class SchedualToursController < ApplicationController
   def show_tour_type_modal(show_self_tour_option, show_guided_tour_option, in_limit, community, limit_type, error)
     
     if(show_self_tour_option == "false" && show_guided_tour_option == "false")
-      return false , remove_array( [["Virtual","virtual"]] ,community), error
+      return false , remove_array( [["Virtual","virtual"]] ,community,limit_type), error
     elsif (show_self_tour_option == "true" && show_guided_tour_option == "false")
-      unless limit_type == "total"
-        return true , remove_array([["Self Tour","self_tour"], ["Virtual","virtual"]], community), "max tour users limit reached for the selected time"
+      unless (limit_type.include? "total") || (limit_type.include? "self_tour")
+        return true , remove_array([["Self Tour","self_tour"], ["Virtual","virtual"]], community,limit_type), "max tour users limit reached for the selected time"
       else
-        return false , remove_array([["Virtual","virtual"]], community), "max tour users limit reached for the selected time"
+        return false , remove_array([["Virtual","virtual"]], community,limit_type), "max tour users limit reached for the selected time"
       end
     elsif (show_self_tour_option == "false" && show_guided_tour_option == "true")
-      unless limit_type == "total"
-        return true , remove_array([["Virtual","virtual"],["Guided Tour","guided"]], community), "max tour users limit reached for the selected time"
+      unless (limit_type.include? "total") || (limit_type.include? "guided")
+        return true , remove_array([["Virtual","virtual"],["Guided Tour","guided"]], community,limit_type), "max tour users limit reached for the selected time"
       else
-        return false , remove_array([["Virtual","virtual"]], community), "max tour users limit reached for the selected time"
+        return false , remove_array([["Virtual","virtual"]], community,limit_type), "max tour users limit reached for the selected time"
       end
     else
-      if limit_type == "total"
-        return true , remove_array([["Virtual","virtual"]], community), "max tour users limit reached for the selected time"
+      if (limit_type.include?  "total")
+        return true , remove_array([["Virtual","virtual"]], community,limit_type), "max tour users limit reached for the selected time"
       else
-        return true , remove_array([["Self Tour","self_tour"],["Virtual","virtual"],["Guided Tour","guided"]], community), "max tour users limit reached for the selected time"
+        return true , remove_array([["Self Tour","self_tour"],["Virtual","virtual"],["Guided Tour","guided"]], community,limit_type), "max tour users limit reached for the selected time"
       end
         
     end
 
   end
-  def remove_array(arr, community)
+  def remove_array(arr, community, limit_type)
     if (!community.tour.tour_setting.allow_virtual_tour)
       arr = arr - [["Virtual","virtual"]]
     end
-    if (!community.tour.tour_setting.allow_guided_tour)
+    if (!community.tour.tour_setting.allow_guided_tour || (limit_type.include? "guided"))
       arr = arr - [["Guided Tour","guided"]]
     end
-    if (!community.tour.tour_setting.allow_self_tour)
+    if (!community.tour.tour_setting.allow_self_tour || (limit_type.include? "self_tour"))
       arr = arr - [["Self Tour","self_tour"]]
     end
     return arr
   end
-  def check_limit(tour_type, total_count, community )
-    if community.tour.max_tour_users.present? && total_count == community.tour.max_tour_users.to_i
-      return true, "max tour users limit reached for the selected time", "total"
+  def check_limit(tour_type, total_count,total_count_per_day,self_tour_count,guided_count, community )
+    
+    limit_type = []
+    if (community.tour.max_tour_users.present? && total_count_per_day >= community.tour.max_tour_users.to_i)
+      # return true, "max tour users limit reached for the day", (limit_type << "total")
+      limit_type << "total"
+    end
+    if (community.tour.tour_setting.do_limit_max_tour && community.tour.tour_setting.limit_max_tour.present? && total_count >= community.tour.tour_setting.limit_max_tour.to_i)
+      # return true, "max tour users limit reached for the selected time", (limit_type << "total")
+      limit_type << "total"
     # elsif tour_type == "virtual" && community.tour.max_virtual_tour_users.present? && community.tour.max_virtual_tour_users.present? && !(virtual_count < community.tour.max_virtual_tour_users.to_i)
     #   return true, "max virtual tour users limit reached for the selected time", "virtual"
-    # elsif tour_type == "self_tour" && community.tour.max_self_tour_users.present? && community.tour.max_self_tour_users.present? && !(self_tour_count < community.tour.max_self_tour_users.to_i)
-    #   return true, "max self tour tour users limit reached for the selected time", "self_tour"
-    # elsif tour_type == "guided" && community.tour.max_guided_tour_users.present? && community.tour.max_guided_tour_users.present? && !(guided_count < community.tour.max_guided_tour_users.to_i)
-    #   return true, "max guided tour users limit reached for the selected time", "guided"
-    else
-      return true, "", nil
     end
+    if community.tour.tour_setting.do_limit_max_tour && community.tour.max_self_tour_users.present? && community.tour.max_self_tour_users.present? && !(self_tour_count < community.tour.max_self_tour_users.to_i)
+      # return true, "max self tour tour users limit reached for the selected time", (limit_type << "self_tour")
+      limit_type << "self_tour"
+    end
+    if community.tour.tour_setting.do_limit_max_tour && community.tour.max_guided_tour_users.present? && community.tour.max_guided_tour_users.present? && !(guided_count < community.tour.max_guided_tour_users.to_i)
+      # return true, "max guided tour users limit reached for the selected time", (limit_type << "guided")
+      limit_type << "guided"
+    end
+    return true, "", limit_type
       
 
   end
