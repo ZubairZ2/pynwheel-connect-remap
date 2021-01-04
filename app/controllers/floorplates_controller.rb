@@ -30,6 +30,8 @@ class FloorplatesController < ApplicationController
         flash[:error] = "Too small property map image"
         render :new
       else
+        @floorplate.width = (image.width rescue 0)
+        @floorplate.height = (image.height rescue 0)
         if @floorplate.save
           flash[:notice] = "Floorplate created successfully."
           PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
@@ -86,6 +88,8 @@ class FloorplatesController < ApplicationController
       flash[:error] = "Too small property map image"
       render :edit
     else
+      @floorplate.width = (image.width rescue 0)
+      @floorplate.height = (image.height rescue 0)
       if params[:floorplate][:manual_override] == "true"
         if @floorplate.update(floorplate_params)
           flash[:notice] = "Floorplate updated successfully."
