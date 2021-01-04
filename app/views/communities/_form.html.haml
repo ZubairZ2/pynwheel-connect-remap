@@ -185,8 +185,8 @@
             var longitude = results[0].geometry.location.lng().toFixed(6);
             if (latitude != null){
                 // console.log(longitude)
-                document.getElementById('latitude').value = data.cord[0];
-                document.getElementById('longitude').value = data.cord[1];
+                document.getElementById('latitude').value = latitude;
+                document.getElementById('longitude').value = longitude;
                 $.ajax({
                   url: "/communities/make_cordinate",
                   type: "post",
