@@ -76,7 +76,7 @@
               .map-block{:style=>"position: relative;"}
                 .plot-image#map
                   - if @sitemap.image? and @sitemap.image.content_type == "image/svg+xml"
-                    .svg_image_style{:style =>  "width: #{@floorplate.image.width}px; height: #{@floorplate.image.height}px;"}
+                    .svg_image_style{:style =>  "width: #{@floorplate.width}px; height: #{@floorplate.height}px;"}
                       = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
                   - else
                     = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"

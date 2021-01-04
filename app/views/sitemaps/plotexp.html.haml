@@ -255,7 +255,7 @@
                   .grid-graph.hidden
                   - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
                     %object{:data => "your.svg", :type => "image/svg+xml"}
-                      = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.image.width}px; height: #{@sitemap.image.height}px;"
+                      = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                   - else
                     = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
                   - units = @units.sort_by{|u| u.marketing_name}
