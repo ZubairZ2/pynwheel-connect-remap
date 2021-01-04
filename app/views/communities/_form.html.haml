@@ -176,21 +176,31 @@
   
   function make_coord()
   {
-    
-    $.ajax({
-    url: "/communities/make_cordinate",
-    type: "post",
-    data: {address : $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val(), community_id : com},
-    success: function(data) {
-      if (data.cord != null)
-      {
-        document.getElementById('latitude').value = data.cord[0];
-        document.getElementById('longitude').value = data.cord[1];
-      }
+    var geocoder = new google.maps.Geocoder();
 
-    },
-    error: function(data) {}
-  })
+    geocoder.geocode( { 'address': $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val()}, function(results, status) {
+
+        if (status == google.maps.GeocoderStatus.OK) {
+            var latitude = results[0].geometry.location.lat().toFixed(6);
+            var longitude = results[0].geometry.location.lng().toFixed(6);
+            if (latitude != null){
+                // console.log(longitude)
+                document.getElementById('latitude').value = data.cord[0];
+                document.getElementById('longitude').value = data.cord[1];
+                $.ajax({
+                  url: "/communities/make_cordinate",
+                  type: "post",
+                  data: {lat: latitude, long: longitude, community_id : com},
+                  success: function(data) {
+
+                  },
+                  error: function(data) {}
+                })
+            }
+        }
+    });
+    
+    
   }
   $( ".address_fields1" ).keyup(function() {
     make_coord()
