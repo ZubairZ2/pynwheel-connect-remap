@@ -51,27 +51,27 @@ json.data @units do |u|
         json.update_apply (u.provider == "resman" || u.provider == "psi") ? true : false
         
         lease_pricing = []
-        if u.lease_pricing.present?
-          str_split = u.lease_pricing.split(';')
-          str_split.each do |ss|
-            str = ss.split(':')
-            pricing_str = []
-            pricing_str[0] = str[0]+" Month"
-            pricing_str[1] = "$"+str[1]
-            # h = {"pricing_option" => pricing_str}
-            lease_pricing << pricing_str
+        begin
+            if u.lease_pricing.present?
+              str_split = u.lease_pricing.split(';')
+              str_split.each do |ss|
+                str = ss.split(':')
+                pricing_str = []
+                pricing_str[0] = str[0]+" Month"
+                pricing_str[1] = "$"+str[1]
+                # h = {"pricing_option" => pricing_str}
+                lease_pricing << pricing_str
 
-          end
-          
-          lease_pricing = lease_pricing.sort_by {|x| x[0][0..1].to_i}
-          lease_pricing2 = []
-          lease_pricing.each do |lp|
-            lease_pricing2 << {"pricing_month" => lp[0],"pricing_rent" => lp[1]}
-          end
-          lease_pricing = lease_pricing2
+              end
+              
+              lease_pricing = lease_pricing.sort_by {|x| x[0][0..1].to_i}
+              lease_pricing2 = []
+              lease_pricing.each do |lp|
+                lease_pricing2 << {"pricing_month" => lp[0],"pricing_rent" => lp[1]}
+              end
+              lease_pricing = lease_pricing2
+            end
+        rescue => ex
         end
         json.lease_pricing_pynwheel_touch lease_pricing
-      else
-        json.lease_pricing nil
-      end
 end
