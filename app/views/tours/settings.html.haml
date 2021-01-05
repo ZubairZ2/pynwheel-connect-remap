@@ -202,6 +202,22 @@
                   = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget  , class: "scheduler_widget"
                   %label.label-primary{:for => "scheduler_widget"}
                   %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Limit Max Tour
+                
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :do_limit_max_tour, true, @community.tour.tour_setting.do_limit_max_tour  , class: "do_limit_max_tour"
+                  %label.label-primary{:for => "do_limit_max_tour"}
+                  %span.pl-15 Yes  
+            
+            .form-group.limit_max_tour_class.hidden
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Limit Max Tour
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %input.day-list.max-users-v{type: "number", id: "limit_max_tour", name: "limit_max_tour", min: "1", max: "60", step: "1", onkeydown: "return false", value: @community.tour.tour_setting.limit_max_tour}         
             .div_checklist.hidden{:style => "margin-left: 60px;"}
               %label Select Fields for Schedule Widget:
               .form-group{:style => "height: 190px; margin-top: ;"}
@@ -676,6 +692,18 @@
     //tues_morning_val = jQuery(".Sunday_" + monday_count).find($(".morning_time")).val(monday_morning);
     //tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
   }
+  var do_limit_max_tour = "#{current_community.tour.tour_setting.do_limit_max_tour}"  
+  if(do_limit_max_tour == "true")
+    $('.limit_max_tour_class').removeClass('hidden');
+  $('#do_limit_max_tour').change(function() {
+    if ($("#do_limit_max_tour").is(":checked")){
+      $(".limit_max_tour_class").removeClass("hidden")
+    }
+    else
+    {
+      $(".limit_max_tour_class").addClass("hidden")
+    }
+    })
   var floor = 1
   function tour_setup_goBack()
   {
