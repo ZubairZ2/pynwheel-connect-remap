@@ -615,7 +615,7 @@ class CommunitiesController < ApplicationController
         @tour_setting.time_intervel = "1 hr" if params[:time_intervel_1] == "true"
         @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
         @tour.credit_card_required = params[:credit_card_required].present? ? true : false
-        @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
+        @tour.max_tour_users = params[:max_tour_users]
         @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
         @tour.grace_period = params[:grace_time] if params[:grace_time].present?
       else
@@ -624,7 +624,8 @@ class CommunitiesController < ApplicationController
         @community.show_camera_button = params[:show_camera_button].present? ? true : false
         @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
         # @community.tour.update_attributes(max_tour_users: params[:max_tour_users], max_virtual_tour_users: params[:max_virtual_tour_users],max_self_tour_users: params[:max_self_tour_users],max_guided_tour_users: params[:max_guided_tour_users])
-        @tour.max_tour_users = params[:max_tour_users]
+        
+        @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
         @tour.max_virtual_tour_users = params[:max_virtual_tour_users]
         @tour.max_self_tour_users = params[:max_self_tour_users]
         @tour.max_guided_tour_users = params[:max_guided_tour_users]       
