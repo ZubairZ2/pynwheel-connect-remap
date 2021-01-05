@@ -1,11 +1,14 @@
 - if @community.present?
     json.data do
-        json.visual_id_verification (@in_visiting_hours and @tour_user.tour_type == "virtual") ? (@tour.visual_id_verification ) : false
+        json.visual_id_verification (@in_visiting_hours && !@limit_exceeded) ? (@tour.visual_id_verification ) : false
         json.verification_type @verfication_type
         json.virtual_tour @in_visiting_hours ? false : true         # last name 'ontime' issue in user_saved_tour.json is corrected here
         json.visited_history @visited_history
+        json.limit_exceeded @limit_exceeded
         json.locks_thread_ref @locks_thread
         json.tour_user @tour_user
+        json.limit_exceeded_message (@in_visiting_hours ? "" : (@limit_exceeded ? "The max number of tours has been reached for this property at this time. Please schedule your tour for another time." : ""))
+
         json.unscheduled_tours_allowed !@tour.only_scheduled_tour
         json.grace_period @tour.grace_period
         json.is_tour_scheduled @scheduled_tours.present?
