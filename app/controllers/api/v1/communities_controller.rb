@@ -493,8 +493,8 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
   def total_scheduled_tour(community, property_time, limit, tour_user)
-    timezone = Timezone.lookup(community.latitude, community.longitude)
-    total  = SchedualTour.where('tour_date = ?', Date.today.to_date).where.not(tour_user_id: nil).map{|x| x if ( ((((x.tour_date.to_s + " " + x.tour_time.to_s(:time)).in_time_zone(x.user_time_zone).in_time_zone(timezone.name)) - property_time.in_time_zone(timezone.name) ) / 3600).between?(-0.5,0.5) )}.compact
+    timezone = get_community_time_zone(community) rescue "UTC"
+    total  = SchedualTour.where('tour_date = ?', Date.today.to_date).where.not(tour_user_id: nil).map{|x| x if ( ((((x.tour_date.to_s + " " + x.tour_time.to_s(:time)).in_time_zone(x.user_time_zone).in_time_zone(timezone)) - property_time.in_time_zone(timezone) ) / 3600).between?(-0.5,0.5) )}.compact
     if (total.map{|x| x.tour_user_id}.include? tour_user.id) || !geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude)
       return 0
     else
@@ -542,6 +542,8 @@ class Api::V1::CommunitiesController < ActionController::Base
         timezone = time_zone.name
     end
     return timezone
+  rescue
+    return "UTC"
   end
 
   def is_tour_in_visiting_hours(time_param, community)

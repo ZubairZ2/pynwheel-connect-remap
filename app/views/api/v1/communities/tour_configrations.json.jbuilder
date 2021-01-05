@@ -5,9 +5,9 @@
         json.virtual_tour @in_visiting_hours ? false : true         # last name 'ontime' issue in user_saved_tour.json is corrected here
         json.visited_history @visited_history
         json.limit_exceeded @limit_exceeded
+        json.limit_exceeded_message (!@in_visiting_hours ? "Its outside of visiting hours. Would you like to take a virtual tour?" : (@limit_exceeded ? "The max number of tours has been reached for this property at this time. Please schedule your tour for another time." : ""))
         json.locks_thread_ref @locks_thread
         json.tour_user @tour_user
-        json.limit_exceeded_message (@in_visiting_hours ? "" : (@limit_exceeded ? "The max number of tours has been reached for this property at this time. Please schedule your tour for another time." : ""))
 
         json.unscheduled_tours_allowed !@tour.only_scheduled_tour
         json.grace_period @tour.grace_period
