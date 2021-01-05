@@ -143,27 +143,27 @@ json.tours @tours do |tour|
               #   end
               # end
 
-              # begin
-              #   if tour.starting_floor.present? and tour.starting_floor != min_floor #and !bsp.present?
+              begin
+                if tour.starting_floor.present? and tour.starting_floor != min_floor #and !bsp.present?
 
-              #     first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
-              #     first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
-              #     if first_floor_elev.present?
-              #       first_floor_elev.floor = floor
-              #       first_floor_elev.building = building
-              #       stops_arr << first_floor_elev 
-              #     end
-              #   end
-              # rescue => ex
-              # end
+                  first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
+                  first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
+                  if first_floor_elev.present?
+                    first_floor_elev.floor = floor
+                    first_floor_elev.building = building
+                    stops_arr << first_floor_elev 
+                  end
+                end
+              rescue => ex
+              end
             end
             
-            if first_bsp && add_bsp_entry
+            if add_bsp_entry
               stops_arr << bsp_stop
               add_bsp_entry  = false
             end
             begin
-              if bsp.present? and bsp.floor != min_floor and first_bsp
+              if bsp.present? and bsp.floor != min_floor
                 first_floor_elev = @all_elevators.map{|x| x[0] if ( x[2] == bsp.building ) and  (x[1].include? bsp.floor) }.compact.first
                 first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
                 # first_floor_elev = @community.tour.sort_hash[bsp.building + ","+ bsp.floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
