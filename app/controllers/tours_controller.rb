@@ -223,6 +223,9 @@ class ToursController < ApplicationController
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
     @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
     @community_opening_hours = @community.opening_hours.order(:sort).all
+    @community_guided_opening_hours = @community.guided_opening_hours.order(:sort).all
+    @schedule_widget_setting = @community.tour.scheduler_widget_setting || @community.tour.create_scheduler_widget_setting
+    @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
 
   end
   
@@ -345,6 +348,17 @@ class ToursController < ApplicationController
       end
     end
     
+  end
+  def scheduler_widget
+    @schedule_widget_setting = @community.tour.scheduler_widget_setting || @community.tour.create_scheduler_widget_setting
+    @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
+  end
+  def save_schedule_widget_btn_setting
+    
+    @schedule_widget_setting = @community.tour.scheduler_widget_setting
+    @schedule_widget_setting.update_attributes(btn_text: params[:btn_text], btn_font: params[:btn_font], btn_font_size: params[:btn_font_size], btn_color: params[:btn_color], btn_width: params[:btn_width].to_i, btn_height: params[:btn_height].to_i)
+    flash[:notice] = "Tour settings updated successfully."
+    redirect_to settings_community_tours_path(@community)
   end
   def ajaxplotstartingpoint
     tour = Tour.find params[:tour_id]
@@ -714,6 +728,30 @@ class ToursController < ApplicationController
         day_key = 'day_' + i.to_s
         from_key = 'from_' + i.to_s
         to_key = 'to_' + i.to_s
+      end
+    end
+    @community = Community.find params[:community_id]
+    redirect_to settings_community_tours_path(@community)
+    flash[:notice] = "Tour settings updated successfully."
+  end
+
+  def save_guided_opening_hours
+
+    if params[:community_id].present?
+      GuidedOpeningHour.where(community_id: params[:community_id]).delete_all
+      
+      i=1
+      day_key = 'guided_day_' + i.to_s
+      from_key = 'guided_from_' + i.to_s
+      to_key = 'guided_to_' + i.to_s
+
+      while params[day_key].present?
+        times = current_community.guided_opening_hours.create(day: params[day_key], opening_time: params[from_key], closing_time: params[to_key])
+
+        i=i+1
+        day_key = 'guided_day_' + i.to_s
+        from_key = 'guided_from_' + i.to_s
+        to_key = 'guided_to_' + i.to_s
       end
     end
     @community = Community.find params[:community_id]

@@ -69,7 +69,6 @@
           Copy and paste the code below and share it with your web developer to add the interactive map to your website.
         .modal-body
           %input.form-control#url{:value =>'<embed onload="window.parent.$("body").animate({scrollTop:0}, "slow");" style="margin-top: 0px; overflow:scroll;" src="'+community_webpages_url(current_community)+'" width="100%" height="750px" /><script type="text/javascript">$(window).on( "orientationchange", function( event ) {window.location.reload();});</script>'}/
-
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
           %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard
@@ -80,11 +79,23 @@
         .modal-header
           Copy and paste the code below and share it with your web developer to add the scheduler widget to your website.
         .modal-body
-          %input.form-control#schedule-url{:value =>'<embed style="margin-top: 0px; overflow:scroll;"src="'+root_url+'scheduler_widget/test_widget?community_id='+current_community.id.to_s+'"width="100%" height="950px" />'}
+          - dimension = "height: " + @schedule_widget_setting.btn_height.to_s + "px; width: " + @schedule_widget_setting.btn_width.to_s + "px;"
+          %input.form-control#schedule-url{:value =>'<embed style="'+ dimension +'"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code='+@community_code+'&id='+@schedule_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
 
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
           %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-url"} Copy to clipboard
+  #share-scheduler-widget-link1.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+    .modal-dialog
+      .modal-content
+        .modal-header
+          Copy and paste the code below and share it with your web developer to add the scheduler widget to your website.
+        .modal-body
+          %input.form-control#schedule-link-url{:value =>root_url+'scheduler_widget/test_widget?community_id='+current_community.id.to_s+'&community_code='+@community_code+'&direct=true'}
+
+        .modal-footer
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-link-url"} Copy to clipboard        
   -# #share-chat-widget.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   -#   .modal-dialog
   -#     .modal-content

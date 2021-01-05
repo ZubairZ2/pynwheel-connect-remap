@@ -21,6 +21,7 @@ class Tour < ApplicationRecord
 
   has_one :path, as: :map_path
   has_one :tour_setting, dependent: :destroy
+  has_one :scheduler_widget_setting, dependent: :destroy
   has_many :path_points, through: :path
 
   has_many :remote_locks,  -> { for_starting_points }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
@@ -36,6 +37,14 @@ class Tour < ApplicationRecord
     self.community.opening_hours.create(day: "Thursday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Friday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Saturday", opening_time: "09:00", closing_time: "17:00")
+
+
+    self.community.guided_opening_hours.create(day: "Monday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Tuesday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Wednesday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Thursday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Friday", opening_time: "09:00", closing_time: "17:00")
+    self.community.guided_opening_hours.create(day: "Saturday", opening_time: "09:00", closing_time: "17:00")
   end
   
 end

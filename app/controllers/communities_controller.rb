@@ -599,37 +599,49 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @tour = @community.tour
     @tour_setting = @tour.tour_setting
-    @community.chat_control = params[:chat_control].present? ? params[:chat_control] : false
     unless params[:community].present? && params[:community][:optional_mails].present? 
-      @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
-      @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
-      @community.show_camera_button = params[:show_camera_button].present? ? true : false
-      @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
-      @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
-      # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
-      # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+      
+      if params[:widget_settings]
+        @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
 
-      # @tour.marker_icon_size = params[:marker_icon_size]
-      @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
-      @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
-      @tour.credit_card_required = params[:credit_card_required].present? ? true : false
-      @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
-      @tour.grace_period = params[:grace_time] if params[:grace_time].present?
-      @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
+        @tour_setting.allow_self_tour = params[:allow_self_tour].present? ? params[:allow_self_tour] : false
+        @tour_setting.allow_guided_tour = params[:allow_guided_tour].present? ? params[:allow_guided_tour] : false
+        @tour_setting.allow_virtual_tour = params[:allow_virtual_tour].present? ? params[:allow_virtual_tour] : false
+        @tour_setting.show_phone = params[:show_phone].present? ? params[:show_phone] : false
+        @tour_setting.show_desired_bedroom = params[:show_desired_bedroom].present? ? params[:show_desired_bedroom] : false
+        @tour_setting.show_desired_move_in_date = params[:show_desired_move_in_date].present? ? params[:show_desired_move_in_date] : false
+        @tour_setting.time_intervel = "15 min" if params[:time_intervel_15] == "true"
+        @tour_setting.time_intervel = "30 min" if params[:time_intervel_30] == "true"
+        @tour_setting.time_intervel = "1 hr" if params[:time_intervel_1] == "true"
+        @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
+        @tour.credit_card_required = params[:credit_card_required].present? ? true : false
+        @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
+        @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
+        @tour.grace_period = params[:grace_time] if params[:grace_time].present?
+      else
+        @community.chat_control = params[:chat_control].present? ? params[:chat_control] : false
+        @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+        @community.show_camera_button = params[:show_camera_button].present? ? true : false
+        @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
+        # @community.tour.update_attributes(max_tour_users: params[:max_tour_users], max_virtual_tour_users: params[:max_virtual_tour_users],max_self_tour_users: params[:max_self_tour_users],max_guided_tour_users: params[:max_guided_tour_users])
+        @tour.max_tour_users = params[:max_tour_users]
+        @tour.max_virtual_tour_users = params[:max_virtual_tour_users]
+        @tour.max_self_tour_users = params[:max_self_tour_users]
+        @tour.max_guided_tour_users = params[:max_guided_tour_users]       
+        # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
+        # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+
+        # @tour.marker_icon_size = params[:marker_icon_size]
+        @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
+        @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
+        @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
+      end
       @tour.save
-
       # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
       # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
       # @tour_setting.show_last_name = params[:show_last_name].present? ? params[:show_last_name] : false
       # @tour_setting.show_email = params[:show_email].present? ? params[:show_email] : false
-      @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
-      @tour_setting.show_phone = params[:show_phone].present? ? params[:show_phone] : false
-      @tour_setting.show_desired_bedroom = params[:show_desired_bedroom].present? ? params[:show_desired_bedroom] : false
-      @tour_setting.show_desired_move_in_date = params[:show_desired_move_in_date].present? ? params[:show_desired_move_in_date] : false
-      @tour_setting.time_intervel = "15 min" if params[:time_intervel_15] == "true"
-      @tour_setting.time_intervel = "30 min" if params[:time_intervel_30] == "true"
-      @tour_setting.time_intervel = "1 hr" if params[:time_intervel_1] == "true"
-      @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
+      
       @tour_setting.save
 
     else
