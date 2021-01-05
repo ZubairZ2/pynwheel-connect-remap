@@ -237,7 +237,7 @@
           %a{:href => "#{community_tour_users_path(current_community)}"}
             %i.fa.fa-sticky-note-o
             %span Visitor Details
-      - if (current_community.self_tour && current_user.is_super_admin?) || current_user.is_view_visitor_details_page?
+      - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_community.self_tour && current_community.scheduler_widget == true
         %li.loader_class{:class=>"#{controller_name =='schedual_tours' ? 'active' : ''}"}
           %a{:href => "#{community_schedual_tours_path(current_community)}"}
             %i.fa.fa-sticky-note-o

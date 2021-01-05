@@ -186,6 +186,9 @@ class Credential < ApplicationRecord
     if self.crm_provider == "salesforce"
       self.community.tour.update_columns(only_scheduled_tour: true)
       self.community.update_columns(scheduler_widget: false)
+    else
+      self.community.tour.update_columns(only_scheduled_tour: false)
+      self.community.update_columns(scheduler_widget: false)
     end
   end
 end

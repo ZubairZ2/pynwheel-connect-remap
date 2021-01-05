@@ -39,6 +39,7 @@ module SalesforceServices
 
                 sf_user = Prospect.find_by(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active")
                 if sf_user.present?
+                    show_chat_only_in_first_stop = true
                     stops_visited = VisitedStop.where(tour_id: community.tour.id, tour_user_id: tour_user.id, tour_key: sf_user.tour_key).pluck(:tour_stop_id).uniq
 
                     stops_detail_for_sf = []
@@ -50,7 +51,10 @@ module SalesforceServices
                             stop_detail[:stopName] = stop.name.present? ? stop.name : ((stop.stop_type.classify.constantize.find_by_id stop.stop_id).name rescue "")
                             stop_detail[:notes] = VisitedStop.where(tour_id: community.tour.id, tour_user_id: tour_user.id, tour_key: sf_user.tour_key, tour_stop_id: stop_id).pluck(:description).compact
                             stop_detail[:photos] = VisitedStop.where(tour_id: community.tour.id, tour_user_id: tour_user.id, tour_key: sf_user.tour_key, tour_stop_id: stop_id).pluck(:image).compact.count
-                            stop_detail[:chatHistory] = Chatroom.find_by(tour_id: community.tour.id, tour_user_id: tour_user.id).chats.where(tour_key: sf_user.tour_key).order(:id).map{|c| (c.name == "Support Team" ? ("Support:" + c.message + " :: ") : ("User:" + c.message + " :: "))}.flatten.join("") rescue ""
+                            if show_chat_only_in_first_stop == true
+                                stop_detail[:chatHistory] = Chatroom.find_by(tour_id: community.tour.id, tour_user_id: tour_user.id).chats.where(tour_key: sf_user.tour_key).order(:id).map{|c| (c.name == "Support Team" ? ("Support:" + c.message + " :: ") : ("User:" + c.message + " :: "))}.flatten.join("") rescue ""
+                                show_chat_only_in_first_stop = false
+                            end
                         rescue => exception
                             next
                         else
