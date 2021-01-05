@@ -86,7 +86,7 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Lock Provider
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :default_community_id , options_for_select([["EdgeState","EdgeState"],["Dwelo","Dwelo"],["Latch","Latch"],["Zerv","Zerv"]],f.object),{},{:class=>"form-control lock_provider_edge"}
+                  = f.select :default_community_id , options_for_select([["EdgeState","EdgeState"],["Dwelo","Dwelo"],["Latch","Latch"],["Pynwheel Access (zerv)","Zerv"]],f.object),{},{:class=>"form-control lock_provider_edge"}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Client ID
@@ -154,7 +154,7 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Lock Provider
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :default_community_id , options_for_select([["Latch","Latch"],["EdgeState","EdgeState"],["Dwelo","Dwelo"],["Zerv","Zerv"]],f.object),{},{:class=>"form-control lock_provider_latch"}
+                  = f.select :default_community_id , options_for_select([["Latch","Latch"],["EdgeState","EdgeState"],["Dwelo","Dwelo"],["Pynwheel Access (zerv)","Zerv"]],f.object),{},{:class=>"form-control lock_provider_latch"}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Client ID
@@ -192,7 +192,7 @@
         %h3.box-title
           Create
           %span Zerv Account
-      = form_for :latch, :url=>community_latch_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal",  multipart: true} do |f|
+      = form_for :zerv, :url=>community_zerv_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
@@ -200,12 +200,55 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Lock Provider
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :default_community_id , options_for_select([["Zerv","Zerv"],["EdgeState","EdgeState"],["Latch","Latch"],["Dwelo","Dwelo"]],f.object),{},{:class=>"form-control lock_provider_zerv"}
+                  = f.select :locks_provider , options_for_select([["Pynwheel Access (zerv)","Zerv"],["EdgeState","EdgeState"],["Latch","Latch"],["Dwelo","Dwelo"]],f.object),{},{:class=>"form-control lock_provider_zerv"}
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Username
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :username, :class=>"form-control validate[required]", :placeholder=>"user name", :value=> @community.zerv.present? ? @community.zerv.username : ""
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Password
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :password, :class=>"form-control validate[required]", :placeholder=>"password", :value=> @community.zerv.present? ? @community.zerv.password : ""
                 = f.hidden_field :community_id, :value=> current_community.id
-                = f.hidden_field :zerv_selected, :value=> "Zerv"
         / /.box-body
         .box-footer
-          = f.submit "Save Provider", :class=>"btn btn-success pull-right loader_class"
+          - if current_community.zerv.present?
+            = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
+          - else
+            = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+
+    .row#data-connection-buttons
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-6
+            %h4.title Test Data Connection
+        .box.box-widget.panel-box.pl-20.pr-20.pb-20
+          .box-header
+            %p
+              This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
+            = link_to "Test Connection" , test_zerv_connection_community_zerv_accounts_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
+            %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
+              If the page that opens contains a bunch of data, it's probably good! If it contains one line that is an error message, then your data cannot be imported into Pynwheel. Please contact your data provider to troubleshoot.
+        .row
+          .col-md-6
+            %h4.title Import Locks Data
+        .box.box-widget.panel-box.pl-20.pr-20.pb-20
+          .box-header
+            %p
+              This option allows you to import  Pynwheel Access (zerv) locks data.
+            .callout.callout-danger
+              %p
+                %i.fa.fa-warning
+                This action will either import new, or update existing locks.
+            .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+              = link_to "Import Locks Data" , import_zerv_locks_community_zerv_accounts_path(current_community) , :method => :post, :class=>"btn btn-primary"
+
+              -# - if @community.zerv.present? and @community.zerv.zerv_locks.present?
+              = link_to "Map Units" , map_zerv_locks_community_zerv_accounts_path(current_community) , :method => :post, :class=>"btn btn-success"
+              = link_to "Delete all Existing Locks" , remove_zerv_locks_community_zerv_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
 
 :javascript
 

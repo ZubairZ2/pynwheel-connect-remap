@@ -55,7 +55,7 @@ class EdgestateAccountsController < ApplicationController
           flash[:error] = "Please enter the EdgeState credentials before testing data."
           redirect_to new_community_dwelo_path(@community)
         end
-      end
+    end
     
     def import_edgestate_locks
         community = Community.find params[:community_id]

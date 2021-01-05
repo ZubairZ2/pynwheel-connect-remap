@@ -41,13 +41,7 @@
             %i.fa.fa-gears
             %span Data
             %span.pull-right-container
-      - if ( current_user.is_community_admin? and current_community.self_tour)
-        %li.loader_class{:class=>"#{controller_name =='dwelos' ? 'active' : ''}"}
-          %a{:href => "#{new_community_dwelo_path(current_community)}"}
-            %i.fa.fa-lock
-            %span Locks
-            %span.pull-right-container
-      - if (current_user.is_super_admin? and current_community.self_tour) && current_community.mdu
+      - if (current_user.is_super_admin? || current_user.is_community_admin?) and current_community.self_tour and current_community.enable_locks
         %li.loader_class{:class=>"#{controller_name =='dwelos' ? 'active' : ''}"}
           %a{:href => "#{new_community_dwelo_path(current_community)}"}
             %i.fa.fa-lock

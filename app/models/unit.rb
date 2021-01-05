@@ -69,6 +69,8 @@ class Unit < ApplicationRecord
   has_many :remote_locks,  -> { for_units }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
   has_many :latch_locks, as: :stop, dependent: :destroy
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
+  has_many :zerv_locks, as: :stop, dependent: :destroy
+  has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
   
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }

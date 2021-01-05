@@ -212,7 +212,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
       end
 
-      if providers_account.present? and providers_account.class.name == "EdgeState" and in_visiting_hours and !is_tour_virtual
+      if @community.enable_locks and providers_account.present? and providers_account.class.name == "EdgeState" and in_visiting_hours and !is_tour_virtual
         Thread.new do
           tour_user = TourUser.find params[:tour_user_id]
           access_token = RemoteLockService.new(@community).client_credentials
@@ -242,7 +242,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           
         end
       end
-      create_latch_reservation(@community, @tour_user, DateTime.now.utc) if providers_account.present? and providers_account.class.name == "Latch" and in_visiting_hours and !is_tour_virtual
+      create_latch_reservation(@community, @tour_user, DateTime.now.utc) if @community.enable_locks and providers_account.present? and providers_account.class.name == "Latch" and in_visiting_hours and !is_tour_virtual
       else
         render :json=> {:success=>false, :message => ""}, :status=>500
       end
@@ -352,6 +352,26 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
+      begin
+        puts "#############################################      main thread      ##################################################"
+        thread_ref = params[:locks_thread_ref]
+        unless thread_ref == "null"
+          puts thread_ref
+          thread_ref = thread_ref.gsub("run", "sleep")
+          puts thread_ref
+          locks_thread = Thread.list.select {|thread| thread if thread.to_s == thread_ref}
+          puts "---"*50
+          puts locks_thread
+          puts "---"*50
+          puts Thread.list
+          puts "---"*50
+          puts "##############################################  locks thread joined  #################################################"
+          locks_thread[0].join(20) if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
+          puts "#############################################  main thread continued  ################################################"
+        end
+      rescue => exception
+        puts exception
+      end
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
     end
@@ -417,12 +437,14 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def tour_configrations
+    #################### Remember this call is being called twice for one of the usecase in mobile app #######################
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       if params[:id].present? and params[:tour_user_id].present?
         @community = Community.find_by_id params[:id]
         if @community.present?
+          @locks_thread = create_zerv_user(@community, @tour_user) if params[:second_time].present? and ( params[:second_time] == "false" || params[:second_time] == false )
           @tour = @community.tour
           @tour_user = TourUser.find_by_id params[:tour_user_id]
           @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
@@ -614,6 +636,44 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
       end
     end
+  end
+
+  def create_zerv_user(community, tour_user)
+    locks_thread = Thread.new do
+      execution_context = Rails.application.executor.run!
+
+      timezone = get_community_time_zone(community) rescue "UTC"
+      current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone)) 
+      in_visiting_hours = is_tour_in_visiting_hours(current_time, community) if community.present?
+      tour = community.tour
+      if in_visiting_hours == true
+        if tour.only_scheduled_tour
+          scheduled_tours = get_scheduled_tours(current_time, community.id, tour_user.id)
+          if scheduled_tours.present?
+            is_tour_ontime = is_tour_on_time(current_time, scheduled_tours, tour.grace_period)
+            is_tour_virtual = is_tour_ontime.nil? ? true : false
+          else
+            is_tour_virtual = true
+          end
+        else
+          is_tour_virtual = false
+        end
+      else
+        is_tour_virtual = true
+      end
+
+      providers_account = community.locks_provider.classify.constantize.find_by(community_id: params[:id]) rescue nil
+      
+      if community.enable_locks and providers_account.present? and providers_account.class.name == "Zerv" and in_visiting_hours and !is_tour_virtual
+        available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+        available_stops << ["tour", @community.tour.id]
+        allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
+        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
+      end
+    ensure
+      execution_context.complete! if execution_context
+    end
+    locks_thread.to_s
   end
   
   def include_application_data
