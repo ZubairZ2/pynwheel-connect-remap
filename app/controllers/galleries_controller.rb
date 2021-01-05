@@ -101,7 +101,6 @@ class GalleriesController < ApplicationController
 	end
 
 	def update_gallery_image
-		puts params
 		@gallery_image = GalleryImage.find(params[:gallery_image_id])
 		@gallery_image.name = params[:gallery_image][:name]
 		if @gallery_image.crop_x == params[:gallery_image][:crop_x].to_f

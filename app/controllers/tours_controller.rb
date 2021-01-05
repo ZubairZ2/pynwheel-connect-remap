@@ -659,7 +659,6 @@ class ToursController < ApplicationController
     @visitor = TourUser.find_by_id(params[:tour_user_id])
     @community = Community.find_by_id (params[:community])
     # binding.pry
-    puts "<<<<<<<<<<< ID MISMATCH? #{@visitor.id_selfie_mismatch} >>>>>>>>>>"
     render  'visitor_profile'
   end
   def test_automate
@@ -682,7 +681,11 @@ class ToursController < ApplicationController
         email_content = "The user has a mismatching ID/Selfie. <br/> <a href='#{manual_selfie_match_url tour_user.id }?community=#{community.id}' target='_blank'> Visitor's ID page </a>"
         DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
         if community_email.present?
-          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, community_email)
+          emails = community_email.gsub(" ","").split(',')
+          emails.each do |email|
+            DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, email)
+          end
+          # DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, community_email)
         else
           DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
         end

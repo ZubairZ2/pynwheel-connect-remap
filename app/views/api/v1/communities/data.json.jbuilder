@@ -1314,6 +1314,15 @@ json.apartments do
       json.y_plot amenity.y_plot
       json.sitemap_id @community.id
       json.id amenity.id
+
+      json.gallery amenity.amenity_galleries do |ag|
+        json.id ag.id
+        json.name ag.name
+        json.type "unit_stop"
+        json.image ag.image.url
+        json.description = ag.description.present? ? ag.description : ""    
+      end
+
     end
   else
     json.sitemap nil
@@ -1445,6 +1454,14 @@ json.apartments do
             random_numbers << random_number
             json.id random_number
           end
+
+          json.gallery amenity.amenity_galleries do |ag|
+            json.id ag.id
+            json.name ag.name
+            json.type "unit_stop"
+            json.image ag.image.url
+            json.description = ag.description.present? ? ag.description : ""    
+          end
         end
       elsif !unit.standard_image_url.present?
         #If unit amenities are not present then send floorplan amenities
@@ -1462,6 +1479,13 @@ json.apartments do
             random_number = SecureRandom.random_number(69999)
             random_numbers << random_number
             json.id random_number
+          end
+          json.gallery amenity.amenity_galleries do |ag|
+            json.id ag.id
+            json.name ag.name
+            json.type "unit_stop"
+            json.image ag.image.url
+            json.description = ag.description.present? ? ag.description : ""    
           end
         end
       else
@@ -1545,6 +1569,13 @@ json.apartments do
           json.floor amenity.floor
           json.floorplate_id floor
           json.id amenity.id
+          json.gallery amenity.amenity_galleries do |ag|
+            json.id ag.id
+            json.name ag.name
+            json.type "unit_stop"
+            json.image ag.image.url
+            json.description = ag.description.present? ? ag.description : ""    
+          end
         end
       end
     end
@@ -1688,6 +1719,5 @@ json.additional_pages do
     end
   end
 end
-puts '--------------------------' , random_numbers
 json.message "success"
 json.operation "data"

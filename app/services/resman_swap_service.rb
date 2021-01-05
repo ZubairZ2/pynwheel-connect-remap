@@ -30,11 +30,9 @@ class ResmanSwapService < BaseService
           save_resman_floorplans(floorplans,property_id)
           # save_website_column_of_community(response)
         else
-          puts '-----------------------------' , response["response"]["error"]["message"]
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
-        puts '----------------------------' , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -143,7 +141,6 @@ class ResmanSwapService < BaseService
         if f["FloorplanAvailabilityURL"].present?
           floorplan.availability_url = f["FloorplanAvailabilityURL"]
         end
-        puts  f["FloorplanAvailabilityURL"]
         room_types = f["Room"]
         room_types.each do |rt|
           if rt["Type"] == "Bedroom"
@@ -182,7 +179,6 @@ class ResmanSwapService < BaseService
         if f["FloorplanAvailabilityURL"].present?
           floorplan.availability_url = f["FloorplanAvailabilityURL"]
         end
-        puts  f["FloorplanAvailabilityURL"]
         room_types = f["Room"]
         room_types.each do |rt|
           if rt["Type"] == "Bedroom"
@@ -203,7 +199,6 @@ class ResmanSwapService < BaseService
         end
         floorplan.save!
         # puts "]]]]]]]]]]", floorplan.errors.full_message.join(',')
-        puts '==================================='
       end
     end
 

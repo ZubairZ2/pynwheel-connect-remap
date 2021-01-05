@@ -354,6 +354,7 @@ GEM
       wasabi (~> 3.4)
     scout_apm (2.6.8)
       parser
+    silencer (1.0.1)
     sixarm_ruby_unaccent (1.2.0)
     socksify (1.7.1)
     spring (2.1.0)
@@ -492,6 +493,7 @@ DEPENDENCIES
   sass-rails (~> 5.0)
   savon (~> 2.11.0)
   scout_apm
+  silencer
   spring
   spring-watcher-listen (~> 2.0.0)
   stackprof

@@ -29,7 +29,6 @@ class RealPageInsertUnitShownService < BaseService
                 if guest_card_id.present? and activity_id.present?
                     puts '-------------------------------  guest_card_id in insert unit shown ------------------------------------'
                     puts guest_card_id
-                    puts '--------------------------------------------------------------------------------------------------------'
 
                     response = HTTParty.post(
                         url,
@@ -61,7 +60,6 @@ class RealPageInsertUnitShownService < BaseService
 
                     puts '-------------------------------  response insert unit shown  ------------------------------------'
                     puts response
-                    puts '-------------------------------------------------------------------------------------------------'
 
                 else
                     cred = Credential.find credentials.id
@@ -69,7 +67,6 @@ class RealPageInsertUnitShownService < BaseService
                     PaperTrail.enabled = false
                     cred.save
                     PaperTrail.enabled = true
-                    puts '-------------------------------  in else  ------------------------------------'
                 end
             rescue => e
                 begin
@@ -78,7 +75,6 @@ class RealPageInsertUnitShownService < BaseService
                     PaperTrail.enabled = false
                     cred.save
                     PaperTrail.enabled = true
-                    puts '-------------------------------  rescued  ------------------------------------'
                 rescue => err
                 end
             end

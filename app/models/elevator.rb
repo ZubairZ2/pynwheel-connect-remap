@@ -14,7 +14,14 @@ class Elevator < ApplicationRecord
   has_many :latch_locks, as: :stop, dependent: :destroy
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
   
+  validate :check_floorplate_covering_range
+
   scope :plotted_elevators, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
+  def check_floorplate_covering_range
+    unless floorplate_covering_range.present?
+      errors[:base] << "Floorplate covering range can not be blank."
+    end
+  end
   def floors
     floors = []
     h = floorplate_covering_range

@@ -25,7 +25,6 @@ class RealPageGuestCardIntegrationJob < ApplicationJob
 
         puts '-------------------------------  leasing_agent in job  ------------------------------------'
         puts leasing_agent
-        puts '-------------------------------------------------------------------------------------------'
         
         real_page_get_activity_types_service = RealPageGetActivityTypesService.new(JSON.parse(credentials))
         activity_types = real_page_get_activity_types_service.perform(tour_status)
@@ -37,7 +36,6 @@ class RealPageGuestCardIntegrationJob < ApplicationJob
             
             puts '-------------------------------  activity_id in job (loop)  --------------------------------'
             puts activity_id
-            puts '--------------------------------------------------------------------------------------------'
             
             real_page_insert_unit_shown_service = RealPageInsertUnitShownService.new(JSON.parse(credentials))
             real_page_insert_unit_shown_service.perform(tour_user, tour_time, visited_stop, leasing_agent, activity_id)
@@ -66,7 +64,6 @@ class RealPageGuestCardIntegrationJob < ApplicationJob
 		end
         puts "<<<<<<<<<<    visited_stops in background job >>>>>>>>>>>>>>>>"
 		puts visited_stops
-		puts "<<<<<<<<<<    visited_stops in background job >>>>>>>>>>>>>>>>"
 		return visited_stops
 	end
 end

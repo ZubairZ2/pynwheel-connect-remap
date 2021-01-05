@@ -90,9 +90,8 @@ class PsiSendMitsLeadsService < BaseService
           prospect.data = response["response"]["result"]
           prospect.save
 
-          puts '---'*50
+          puts '---'*10
           puts response["response"]["result"]
-          puts '---'*50  
         end
       end
   end

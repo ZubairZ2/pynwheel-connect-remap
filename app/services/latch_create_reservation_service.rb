@@ -49,9 +49,8 @@ class LatchCreateReservationService < BaseService
                 :body => request[:body] ,
                 :headers => { 'Authorization' => token, 'Content-Type' => 'application/json'})
 
-            puts "---"*50
+            puts "---"*10
             puts response
-            puts "---"*50
 
             return response
         end

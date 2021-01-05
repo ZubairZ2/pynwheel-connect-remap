@@ -91,7 +91,6 @@ class CommunitiesController < ApplicationController
     # end
   end
   def update
-    puts
     if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
       @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
     end
@@ -212,6 +211,7 @@ class CommunitiesController < ApplicationController
     redirect_to community_design_index_path(current_community),notice: 'Community will clone within few seconds.'
   end
 
+
   def alert_message
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
@@ -255,9 +255,9 @@ class CommunitiesController < ApplicationController
   end
   def make_cordinate
     
-    address = Geocoder.coordinates(params[:address])
-    @community.update_attributes(latitude: address[0], longitude: address[1]) rescue ""
-    render :json=>{"cord"=> address }
+    # address = Geocoder.coordinates(params[:address])
+    @community.update_attributes(latitude: params[:lat], longitude: params[:long]) rescue ""
+    render :json=>{"cord"=> "ok" }
   end
   def change_expressionist_default
     # d = Community.find(params[:community_id]).design

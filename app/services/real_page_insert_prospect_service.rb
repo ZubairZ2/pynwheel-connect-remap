@@ -30,7 +30,6 @@ class RealPageInsertProspectService < BaseService
                 puts '-------------------------------  data in insert prospect  ------------------------------------'
                 puts collection
                 puts needed_date
-                puts '---------------------------------------------------------------------------------------------------'
 
                 response = HTTParty.post(
                     url,
@@ -76,7 +75,6 @@ class RealPageInsertProspectService < BaseService
             
                 puts '-------------------------------  response of insert prospect  ------------------------------------'
                 puts response
-                puts '--------------------------------------------------------------------------------------------------'
 
                 result = Ox.load(response.body, mode: :hash)
                 prospect_response = result[:"s:Envelope"][1][:"s:Body"][1][:insertprospectResponse][1][:insertprospectResult][:InsertProspectResponse]

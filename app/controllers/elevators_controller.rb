@@ -71,7 +71,7 @@ class ElevatorsController < ApplicationController
         format.html { redirect_back(fallback_location: community_elevators_path, notice: 'Elevator was successfully updated.') }
         format.js { render :show, status: :ok, location: @elevator }
       else
-        format.html { render :edit }
+        format.html { redirect_back(fallback_location: community_elevators_path, alert: @elevator.errors.full_messages[0]) }
         format.json { render json: @elevator.errors, status: :unprocessable_entity }
       end
     end

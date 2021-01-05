@@ -72,7 +72,6 @@ class Yardi4Service < BaseService
           save_yardi4_units(ils_units,external_property_id)
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
-          puts "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
           begin
             cred = Credential.find credentials.id
@@ -101,7 +100,6 @@ class Yardi4Service < BaseService
           PaperTrail.enabled = true
         rescue => err
         end
-        puts '------------------------'*20 , e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end

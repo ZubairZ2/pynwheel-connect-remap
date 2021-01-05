@@ -23,7 +23,6 @@ class RealPageInsertActivityService < BaseService
                 prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
                 
                 if prospect.present?
-                    puts '-------------------------------  prospect is present in insert activity ------------------------------------'
                     guest_card_id = prospect.data[0]["Guestcard"]["NewID"] != "0" ? prospect.data[0]["Guestcard"]["NewID"] : prospect.data[0]["Guestcard"]["ID"]
                 end
 
@@ -31,9 +30,7 @@ class RealPageInsertActivityService < BaseService
                     
                     puts '-------------------------------  guest_card_id  in insert activity ------------------------------------'
                     puts guest_card_id
-                    puts '-------------------------------  activity_types  in insert activity ------------------------------------'
                     puts activity_types
-                    puts '--------------------------------------------------------------------------------------------------------'
 
                     activity_ids = []
                     activity_types.each do |activity_type|
@@ -65,7 +62,6 @@ class RealPageInsertActivityService < BaseService
 
                         puts '-------------------------------  response insert activity  ------------------------------------'
                         puts response
-                        puts '-----------------------------------------------------------------------------------------------'
                         
                         result = Ox.load(response.body, mode: :hash)
                         

@@ -52,7 +52,6 @@ class FloorplateAmenitiesController < ApplicationController
   # end
 
   def plot_amenity
-    puts params
     @amenity = Amenity.find (params[:amenity_id])
     @amenity.amenityable_type = "Floorplate"
     @amenity.amenityable_id = params[:floorplate_id]

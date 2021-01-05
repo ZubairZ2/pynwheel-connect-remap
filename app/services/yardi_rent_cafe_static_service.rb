@@ -109,7 +109,6 @@ class YardiRentCafeStaticService < BaseService
             cred.save
           rescue => err
           end
-          puts  "Invalid credentials.Please enter correct one and try again."
         end
       rescue => e
         begin
@@ -172,7 +171,6 @@ class YardiRentCafeStaticService < BaseService
             end
           end
         else
-          puts '"Invalid credentials.Please enter correct one and try again."'
         end
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})

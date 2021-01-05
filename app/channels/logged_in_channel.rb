@@ -27,9 +27,6 @@ class LoggedInChannel < ApplicationCable::Channel
             all_users_count = LoggedInUser.where(community_id: params[:community_id].to_i).map{|u| u.logged_in_count}.sum
 
             subscribers = "total subscribers are " + all_users_count.to_s
-            puts '----------------------'
-            puts subscribers
-            puts '----------------------'
         end
 
         # connections = connections_info
@@ -51,9 +48,6 @@ class LoggedInChannel < ApplicationCable::Channel
                     Community.find_by(id: params[:community_id].to_i).update_columns(is_chat_login: false) if all_users_count == 0
 
                     subscribers = "remaing subscribers are " + all_users_count.to_s
-                    puts '***********************'
-                    puts subscribers
-                    puts '***********************'
                 rescue
                     puts "User logged out and records are deleted"
                 end

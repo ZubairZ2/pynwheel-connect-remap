@@ -87,7 +87,6 @@ class ZarembaStaticService < BaseService
     units.each do |u|
 
       flag = 0
-      puts u
       vacateDate = ""
       # u1 = Unit.where(community_id: credentials.community_id, provider_unit_id: u["IDValue"])
       # u1.each do |u2|
@@ -162,7 +161,6 @@ class ZarembaStaticService < BaseService
 
   def save_zaremba_floorplans(floorplans,property_id)
     floorplans.each do |f|
-      puts "=================", f
       floorplan = Floorplan.where(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize
       floorplan.property_id = property_id
       unless floorplan.name_is_updated.present? && floorplan.name_is_updated

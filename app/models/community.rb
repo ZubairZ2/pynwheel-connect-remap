@@ -602,18 +602,8 @@ class Community < ApplicationRecord
     result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
     units = result[1] 
-    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    puts params
-    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS FAVOURITES%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    puts params[:favorites]
-    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS ITEMS 1%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    params[:favorites][:items]
-    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS ITEMS 2%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    puts params[:favorites]['items']
-    puts "--"*50
 
     params[:favorites][:items].each do |item|
-      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", item['unit_id']
       # if item['unit_id'].present?
       #   u = Unit.find item['unit_id']
       #   if u.present?
@@ -668,10 +658,6 @@ class Community < ApplicationRecord
     favorites = []
     units = Hash.new
     items_objs.each do |item|
-      puts "populate_favorites 11"*50
-      puts item[:type]
-      puts "populate_favorites 22"*50
-      puts item['type']
       favorite = item[:type].classify.constantize.where(id: item[:id])
       favorites << favorite.first if favorite.present?
       if item[:type] == 'floorplan'

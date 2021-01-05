@@ -15,9 +15,7 @@ class RemoteLockService < BaseService
                 },
                 headers: { 'Content-Type' => 'application/x-www-form-urlencoded' } )
 
-            puts '==='*50
             puts response["access_token"]
-            puts '==='*50
 
             return response["access_token"]
         end
@@ -34,9 +32,7 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
             
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end
@@ -53,9 +49,7 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
            
-            puts "---"*50
             puts response
-            puts "---"*50
             
             return response
         end
@@ -77,9 +71,7 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1',
                               'Content-Type' => 'application/json'} )
-            puts "---"*50
             puts response
-            puts "---"*50
  
             return response
         end
@@ -119,9 +111,7 @@ class RemoteLockService < BaseService
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
 
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end
@@ -138,9 +128,7 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
            
-            puts "---"*50
             puts response
-            puts "---"*50
             
             return response
         end
@@ -158,9 +146,7 @@ class RemoteLockService < BaseService
                               'Accept' => 'application/vnd.lockstate+json; version=1',
                               'Content-Type' => 'application/json' } )
            
-            puts "---"*50
             puts response
-            puts "---"*50
             
             return response
         end
@@ -187,9 +173,7 @@ class RemoteLockService < BaseService
                               'Accept' => 'application/vnd.lockstate+json; version=1' ,
                               'Content-Type' => 'application/json'} )
            
-            puts "---"*50
             puts response
-            puts "---"*50
             
             return response
         end
@@ -213,9 +197,7 @@ class RemoteLockService < BaseService
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
             
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end
@@ -229,9 +211,7 @@ class RemoteLockService < BaseService
             response = HTTParty.get(url,
                 :headers => { 'Authorization' => auth_header} )
             
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end
@@ -246,9 +226,7 @@ class RemoteLockService < BaseService
             response = HTTParty.get(url,
                                     :headers => { 'Authorization' => auth_header} )
 
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end
@@ -277,9 +255,7 @@ class RemoteLockService < BaseService
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
 
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end
@@ -296,9 +272,7 @@ class RemoteLockService < BaseService
                               'Accept' => 'application/vnd.lockstate+json; version=1',
                               'Content-Type' => 'application/json' } )
 
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end

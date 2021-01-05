@@ -56,8 +56,7 @@ class SchedualToursController < ApplicationController
         })                     
       rescue Exception => e
         flash[:error] = e.message
-        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
-        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+
       end
       schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back[:id] : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom])
 
@@ -142,7 +141,6 @@ class SchedualToursController < ApplicationController
     @schedual_tour.update_attributes(hourly_email_sent: false, daily_email_sent: set_daily_email_sent)
     tu = @schedual_tour.tour_user
     # binding.pry
-    puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
     respond_to do |format|
       if @schedual_tour.save 
 
@@ -150,7 +148,6 @@ class SchedualToursController < ApplicationController
           sent_notifications = send_email_and_other_notifications @schedual_tour
     
         rescue Exception => e
-          puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace}---"
         end
 
         # format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
@@ -173,7 +170,6 @@ class SchedualToursController < ApplicationController
       schedual_tour.destroy
       redirect_to community_schedual_tours_path(@community), notice: 'Schedual tour was successfully destroyed.'
     else
-      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{@schedual_tour}"
       @schedual_tour.destroy
       respond_to do |format|
         format.html { redirect_to schedual_tours_url, notice: 'Schedual tour was successfully destroyed.' }
@@ -208,7 +204,7 @@ class SchedualToursController < ApplicationController
       
       email_content = "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br><a href=#{app_link} target='_blank'>Download Self Tour.</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
 
-      community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincolon Property Company Self Tour" : "Self Tour"
+      community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Self Tour"
       web_notification = "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your reservation is confirmed. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel Self Tour app before you arrive: <br/> <a href=#{app_link_web} target='_blank'>Download Pynwheel Self Tour From App Store</a><br><a href=#{android_link_web} target='_blank'>Download Pynwheel Self Tour From Google Play</a>"
       sms_content = "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. When you go to the property, you will need
 -A photo ID
@@ -235,8 +231,12 @@ Download #{community_text} #{app_link}
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
 
       # DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
-      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,nil,nil,nil,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
-      DelayedSchedulerMailerJob.perform_async("A Self Tour has been scheduled!",community_mail,community.email,nil,nil,nil,nil)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+      emails = community_email.gsub(" ","").split(',')
+      DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,nil,nil,nil,emails[0])if (community.alert_contact == "email" || community.alert_contact == "both")
+      emails.each do |email|
+        DelayedSchedulerMailerJob.perform_async("A Self Tour has been scheduled!",community_mail,email,nil,nil,nil,nil)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+      end
+      # DelayedSchedulerMailerJob.perform_async("A Self Tour has been scheduled!",community_mail,community.email,nil,nil,nil,nil)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
 
       sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
 

@@ -8,9 +8,6 @@ class Api::V1::CommunitiesController < ActionController::Base
   # $deleted_ids = []
 
   def test_panzoom
-    puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'
-    puts params["keyCode"]
-    puts '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
     render :json=> {:success=>true, :message => "#{params['id']}", :operation => "zoom"}
   end
 
