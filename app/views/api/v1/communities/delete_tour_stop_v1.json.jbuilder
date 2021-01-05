@@ -20,7 +20,7 @@ json.tours @tours do |tour|
 
   json.id tour.id
   require 'securerandom'
-  json.tour_key  random_string = SecureRandom.hex
+  json.tour_key  @tour_user.tour_key
   json.community_id tour.community_id
   json.name tour.name
   json.latitude tour.latitude
@@ -29,12 +29,16 @@ json.tours @tours do |tour|
   json.y_plot tour.y_plot
   json.tour_setting do
     json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
+    if @in_visiting_hours and !@is_tour_virtual
     if @community.enable_locks and @community.locks_provider == "EdgeState"
       json.starting_point_locked tour.remote_locks.where(dwelo_id: nil).present? ? true : false
     elsif @community.enable_locks and @community.locks_provider == "Dwelo"
       json.starting_point_locked tour.remote_locks.where.not(dwelo_id: nil).present? ? true : false
     elsif @community.enable_locks and @community.locks_provider == "Latch"
       json.starting_point_locked tour.latch_locks.present? ? (@tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: tour.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active").present?) : false
+    else
+      json.starting_point_locked false
+    end
     else
       json.starting_point_locked false
     end
@@ -553,6 +557,7 @@ json.tours @tours do |tour|
 
 
       begin
+      if @in_visiting_hours and !@is_tour_virtual
         if counter == 1 and @community.enable_locks and @community.locks_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
           lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.latch_locks.first.stop_id)
           if lch.present?
@@ -634,6 +639,11 @@ json.tours @tours do |tour|
           json.latch_link ''
           json.unit_dwelo_lock_id ''
         end
+      else
+        json.guest_pin ''
+        json.latch_link ''
+        json.unit_dwelo_lock_id ''
+      end
       rescue => exception
         json.guest_pin ''
         json.latch_link ''

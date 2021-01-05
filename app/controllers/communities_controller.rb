@@ -616,7 +616,7 @@ class CommunitiesController < ApplicationController
       @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
       @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
       @tour.credit_card_required = params[:credit_card_required].present? ? true : false
-      @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
+      @tour.only_scheduled_tour = params[:only_scheduled_tour].present? ? true : false
       @tour.grace_period = params[:grace_time] if params[:grace_time].present?
       @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
       @tour.save

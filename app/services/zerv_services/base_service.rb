@@ -41,13 +41,30 @@ module ZervServices
 
         def current_community_zerv_locks(locks)
             community = @zerv.community
-            location_name_1 = community.company.name.downcase + ' - ' + community.name.downcase
-            location_name_2 = community.company.name.downcase + '-' + community.name.downcase
-            locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].downcase == location_name_1 or lock["locationName"].downcase == location_name_2}.compact
+            location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
+            locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
             if locks["listGetDevices"].length == 0
               locks["listGetDevices"] = "No locks are presnet"
             end
             return locks
+        end
+
+        def get_community_time_zone(community)
+            tz = Ziptz.new
+            timezone = nil
+        
+            if community.latitude.present? and community.longitude.present?
+                time_zone = Timezone.lookup(community.latitude, community.longitude)
+                timezone = time_zone.name
+            end
+
+            if timezone.nil? and community.zip.present?
+                timezone = tz.time_zone_name(community.zip)
+            end
+
+            return timezone
+        rescue
+            return "UTC"
         end
     end
 end
