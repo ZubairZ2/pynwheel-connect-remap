@@ -190,7 +190,7 @@
             /       %label.label-primary{:for => "show_checklist"}
             /       %span.pl-15 Yes 
             
-            .form-group
+            .form-group{:class => "#{@community.credential.crm_provider == "salesforce" ? 'hidden' : ''}"}
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Scheduler Widget
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
@@ -313,7 +313,7 @@
               /       %label.label-primary{:for => "show_desired_move_in_date"}
               /       %span.pl-15 Yes
               /       %span.pl-15 Yes
-            .div_checklist.hidden
+            .div_checklist{:class => "#{@community.credential.crm_provider == "salesforce" ? '' : 'hidden'}"}
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Only allow scheduled tours
