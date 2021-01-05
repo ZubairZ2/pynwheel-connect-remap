@@ -1,0 +1,109 @@
+- content_for :title, "Tutorial Page - Pynwheel"
+.divLoading.hidden
+/ Main content
+%section
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-image
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          TUTORIAL
+          %span
+    - if current_user.is_super_admin?      
+      .form-group
+        = link_to new_community_tutorial_path(@community), class: "btn btn-primary mr-5 mt-20", id: "add-tutorial", :style => "font-weight: bold;" do
+          %i.fa.fa-plus-circle
+          ADD TUTORIAL
+    .row{:style => "margin-bottom: 70px;"}
+      / Start Panel left Side
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12#outer_div
+            .box.box-widget.panel-box.add-plan.pt-30
+            
+              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.tour_user_table
+                %thead
+                  %tr
+                    %th
+                      Sr
+                    %th
+                      Name
+                    %th
+                      Description
+                    %th
+                      Product Line
+                    %th
+                      Video
+                    - if current_user.is_super_admin?
+                      %th
+                        Action
+
+              
+                %tbody
+                  - @tutorials.each_with_index  do |t,index|
+                    - next if (!current_user.is_super_admin? && !t.video.present?)
+                    .row
+                      %tr
+                        %td.col-lg-2
+                          = index + 1
+                        %td.col-lg-2{:style => "max-width: 200px; overflow: auto;"}
+                          = t.name
+                        %td.col-lg-2{:style => "max-width: 500px; overflow: auto;"}
+                          = t.description
+                        %td.col-lg-2
+                          %ul
+                            - if t.pynwheel_touch
+                              %li
+                                Pynwheel Touch
+                            - if t.pynwheel_maps
+                              %li
+                                Pynwheel Maps
+                            - if t.self_tour
+                              %li
+                                Self Tour        
+                        %td.col-lg-2
+                          - if t.video.present?
+                            %button.btn.btn-lg.video{"data-target" => "#videoModal", "data-toggle" => "modal", "data-video" => t.video.url} Play Video
+
+                            /%a.preview-image{:href=>t.video.url,"data-toggle"=>"lightbox","data-title"=>"ATutorial Video"}
+                            /= t.video.url, :class => "video1"
+                            /= video_tag t.video.url , :controls => true, :autobuffer => true,:type => "video/mp4", :width => "400px", :class => "video1"
+                        - if current_user.is_super_admin?
+                          %td
+                            %a.text-success{:href => "#{edit_community_tutorial_path(@community,t)}"}
+                              %i.fa.fa-edit.icon_size
+                            %a.text-danger{"data-name"=>"Tutorial","data-href" => "#{community_tutorial_path(@community,t)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
+                              %i.fa.fa-trash.icon_size  
+                    
+
+    
+
+#videoModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content{:style => "width: fit-content;"}
+      .modal-body
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"} ×
+        = video_tag "https://clienti.dk/media/1140/friheden-video.mp4" , :controls => true, :autobuffer => true,:type => "video/mp4",  :class => "video1", :id => "video1"
+        / %video.set_{:controls => ""}
+        /   %source.set_video{:src => "", :type => "video/mp4"}
+
+:javascript
+  $(function() {
+    $(".video").click(function () {
+      $('.video1').attr('src', this.dataset.video)
+     
+    });
+  });
+  $(document).ready(function(e){
+    document.getElementById("video1").style.width = $(window).width() / 2 + "px";
+  });
+  $('#videoModal').on('hidden.bs.modal', function () {
+    $('.video1').attr('src', "")
+  });
