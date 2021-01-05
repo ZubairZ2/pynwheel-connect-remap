@@ -49,5 +49,27 @@ json.data @units do |u|
         json.square_feet u.square_feet
         json.description u.description
         json.update_apply (u.provider == "resman" || u.provider == "psi") ? true : false
-    
+        
+        lease_pricing = []
+        if u.lease_pricing.present? && !u.modal_unit
+            str_split = u.lease_pricing.split(';')
+            str_split.each do |ss|
+              str = ss.split(':')
+
+              pricing_str = str[0]+" Month - $"+str[1]
+              # h = {"pricing_option" => pricing_str}
+              lease_pricing << pricing_str
+
+            end
+            lease_pricing = lease_pricing.sort_by {|x| x[0..1].to_i}
+            lease_pricing2 = []
+            lease_pricing.each do |lp|
+              lease_pricing2 << {"pricing_option" => lp}
+            end
+            lease_pricing = lease_pricing2
+        else
+            h = {"pricing_option" => "$"+ u.effective_rent.to_s}
+            lease_pricing << h
+        end
+        json.lease_pricing lease_pricing
 end
