@@ -470,7 +470,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             if @community.id == 1240 # only enabled for "Metropolitan" for testing from Prometheus-salesforce
             response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
             if response.success?
-              @scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
+              @scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == (Time.now + 1.day).in_time_zone(timezone).strftime("%Y-%m-%d")) }
               if @scheduled_tours.present?
                 @is_tour_ontime = is_sf_tour_on_time(current_time, @scheduled_tours, @tour.grace_period, timezone)
                 @tour_status , nearest_time_tour = sf_tour_time_status(current_time, @scheduled_tours, @tour.grace_period, timezone) unless @is_tour_ontime.present?
