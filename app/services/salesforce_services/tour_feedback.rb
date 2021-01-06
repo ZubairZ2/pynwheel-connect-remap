@@ -54,6 +54,8 @@ module SalesforceServices
                             if show_chat_only_in_first_stop == true
                                 stop_detail[:chatHistory] = Chatroom.find_by(tour_id: community.tour.id, tour_user_id: tour_user.id).chats.where(tour_key: sf_user.tour_key).order(:id).map{|c| (c.name == "Support Team" ? ("Support:" + c.message + " :: ") : ("User:" + c.message + " :: "))}.flatten.join("") rescue ""
                                 show_chat_only_in_first_stop = false
+                            else
+                                stop_detail[:chatHistory] = ""
                             end
                         rescue => exception
                             next
@@ -71,7 +73,7 @@ module SalesforceServices
                             "guestEmail":  tour_user.email,
                             "propertyName": community.name,
                             "activityData": {
-                                "type": tour_history.tour_status,
+                                "type": tour_user.tour_type,
                                 "timeFrom": arrival_time.strftime('%Y-%m-%dT%H:%M:%SZ'),
                                 "timeTo": end_time.strftime('%Y-%m-%dT%H:%M:%SZ'),
                                 "tourLength": tour_length,

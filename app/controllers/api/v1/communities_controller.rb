@@ -473,7 +473,10 @@ class Api::V1::CommunitiesController < ActionController::Base
               @scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
               if @scheduled_tours.present?
                 @is_tour_ontime = is_sf_tour_on_time(current_time, @scheduled_tours, @tour.grace_period, timezone)
-                @tour_status , nearest_time_tour = sf_tour_time_status(current_time, @scheduled_tours, @tour.grace_period, timezone) unless @is_tour_ontime.present?
+                unless @is_tour_ontime.present?
+                  @tour_status , nearest_time_tour = sf_tour_time_status(current_time, @scheduled_tours, @tour.grace_period, timezone)
+                  @tour_user.tour_type = "virtual"
+                end
                 @tour_date = nearest_time_tour.present? ? nearest_time_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')  : "---"
                 @tour_time = nearest_time_tour.present? ?  nearest_time_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P') : "---"
                 
@@ -494,8 +497,8 @@ class Api::V1::CommunitiesController < ActionController::Base
             else
               @tour_user.tour_type = (!@tour.only_scheduled_tour ? "self_tour" : "virtual")
             end
-            @tour_user.save
           end
+          @tour_user.save
         end
       end
     end
