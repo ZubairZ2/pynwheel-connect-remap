@@ -27,6 +27,7 @@ json.tours @tours do |tour|
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
+  @community.enable_locks = false if (@tour_user.tour_type == "guided" || @tour_user.tour_type == "virtual" || @tour_user.is_virtual_tour)
   json.tour_setting do
     json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
     if @in_visiting_hours and !@is_tour_virtual
