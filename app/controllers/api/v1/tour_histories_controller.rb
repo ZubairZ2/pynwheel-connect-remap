@@ -24,15 +24,20 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.is_virtual_tour = tu.is_virtual_tour rescue nil
         tour_history.latitude = tu.latitude rescue nil
         tour_history.longitude = tu.longitude rescue nil
-        if !@tour.visual_id_verification
-          begin
-            tu = TourUser.find params[:tour_user_id]
+        begin
+          tu = TourUser.find params[:tour_user_id]
+          if !@tour.visual_id_verification
             tu.id_selfie_mismatch = false
-            tour_history.desired_bedroom = tu.desired_bedroom
-            tour_history.tour_status = tu.tour_type
-            tu.save
-          rescue => ex
           end
+          tour_history.desired_bedroom = tu.desired_bedroom
+          tour_history.latitude = tu.latitude
+          tour_history.longitude = tu.longitude
+          tour_history.tour_key = tu.tour_key
+          tour_history.tour_status = tu.tour_type
+          tour_history.tour_status = "virtual" if tu.is_virtual_tour
+      
+          tu.save
+        rescue => ex
         end
         tour_history.id_mismatch = tour_history.tour_user.id_selfie_mismatch rescue false
         
