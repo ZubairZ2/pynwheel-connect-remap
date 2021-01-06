@@ -39,7 +39,7 @@ module ZervServices
             puts "############3 ------------- ###################"
 
             response = HTTParty.post(url,
-                 body: body.to_json,,
+                 body: body.to_json,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
 
         rescue HTTParty::Error => e
