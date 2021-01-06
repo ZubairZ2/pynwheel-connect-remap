@@ -148,6 +148,8 @@ class Api::V1::CommunitiesController < ActionController::Base
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
+      require 'securerandom'
+      @random_string = SecureRandom.hex
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       @tour_user.tour_key = @random_string
       @community = Community.find params[:id]
@@ -458,7 +460,11 @@ class Api::V1::CommunitiesController < ActionController::Base
 
           @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
           @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
-          @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
+          
+          @tour_user.is_virtual_tour = ( (@in_visiting_hours ? false : true)  || @limit_exceeded)
+          @tour_user.latitude = params[:latitude]
+          @tour_user.longitude = params[:longitude]
+          # @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
 
           if @community.credential.crm_provider == "salesforce"
             if @community.id == 1240 # only enabled for "Metropolitan" for testing from Prometheus-salesforce
