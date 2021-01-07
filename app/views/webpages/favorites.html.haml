@@ -74,6 +74,7 @@
           %b{:style => "color: #FFFFFF; position: relative; top: 45%; left: 45%;"} You have no favorites
         - if @units.present? && @units.count == 0
           %b{:style => "color: #FFFFFF; position: relative; top: 45%; left: 45%;"} You have no favorites
+        - @units = [] if @units.nil?
         - @units.each do |unit|
           - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
           .row{:id=>"row-#{unit.id}"}
