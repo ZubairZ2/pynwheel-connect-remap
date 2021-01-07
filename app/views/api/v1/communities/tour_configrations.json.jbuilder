@@ -29,7 +29,7 @@
             end
 
             json.early_arrive_message @tour_status == "before time" ? (@community.arrive_too_early_alert.nil? ? "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@tour.grace_period.to_s} minutes before that time. In the meantime, would you like to take a virtual tour?" : @community.arrive_too_early_alert + " In the meantime, would you like to take a virtual tour?") : ""
-            json.late_arrive_message ( @tour_status == "after time" and !@community.scheduler_widget) ? (@community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for #{@tour_date}, #{@tour_time}." : @community.arrive_too_late_alert + " In the meantime, would you like to take a virtual tour?") : ""
+            json.late_arrive_message ( @tour_status == "after time" and !@community.scheduler_widget) ? (@community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for #{@tour_date}, #{@tour_time}. In the meantime, would you like to take a virtual tour?" : @community.arrive_too_late_alert + " In the meantime, would you like to take a virtual tour?") : ""
             json.late_arrive_with_rescheduler ( @tour_status == "after time" and @community.scheduler_widget) ? (@community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for #{@tour_date}, #{@tour_time}. Please click on the Reschedule button to reschedule" : @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?") : ""
             
         else
