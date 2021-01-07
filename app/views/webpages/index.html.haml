@@ -136,7 +136,7 @@
                   #content-3.content
                     .select-floor
                       %ul.slider_class#slider
-                        - min_unit_floor = JSON.parse(@units_with_floorplan_info).map{|x| x["floor"]}.min
+                        - min_unit_floor = JSON.parse(@units_with_floorplan_info).map{|x| x["floor"]}.min rescue @floors.first
                         - @floors.each do |floor|
                           - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                           %li
