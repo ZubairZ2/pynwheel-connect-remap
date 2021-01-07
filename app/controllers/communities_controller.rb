@@ -254,10 +254,9 @@ class CommunitiesController < ApplicationController
     end
   end
   def make_cordinate
-    
-    address = Geocoder.coordinates(params[:address])
-    @community.update_attributes(latitude: address[0], longitude: address[1]) rescue ""
-    render :json=>{"cord"=> address }
+    @community.update_attributes(latitude: params[:lat], longitude: params[:long]) rescue ""
+    @community.neighborhood.update_attributes(latitude: address[0], longitude: address[1]) rescue ""
+    render :json=>{"cord"=> "ok" }
   end
   def change_expressionist_default
     # d = Community.find(params[:community_id]).design
