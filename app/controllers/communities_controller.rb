@@ -106,6 +106,9 @@ class CommunitiesController < ApplicationController
     if params[:community][:image]
       @community.crop_x = nil
     end
+    if params["community"]["latitude"].present?
+      @community.neighborhood.update_attributes(latitude: params["community"]["latitude"], longitude: params["community"]["longitude"]) rescue ""
+    end
     if params["verification_type"].present?
       begin
         @community.tour.verification_type = params["verification_type"]
