@@ -466,7 +466,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @tour_user.longitude = params[:longitude]
           # @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
 
-          if @community.credential.crm_provider == "salesforce"
+          if @community.credential.present? and @community.credential.crm_provider == "salesforce"
             if @community.id == 1240 # only enabled for "Metropolitan" for testing from Prometheus-salesforce
             response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
             if response.success?
