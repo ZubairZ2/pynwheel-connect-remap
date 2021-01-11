@@ -1356,8 +1356,12 @@ json.apartments do
       json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
       json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
       json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
-      json.availability_url unit.availability_url.present? ? unit.availability_url : (floorplan.availability_url.present? ? floorplan.availability_url : nil)
-
+      if @community.credential.apply_now = "separate_link"
+        json.availability_url @community.credential.separate_link
+      else
+        json.availability_url unit.availability_url.present? ? unit.availability_url : (floorplan.availability_url.present? ? floorplan.availability_url : nil)
+      end
+      
       if unit.virtual_tour_url.present?
         if unit.virtual_tour_url.include? '</iframe>'
           @iframe_url = unit.virtual_tour_url.split('height')
