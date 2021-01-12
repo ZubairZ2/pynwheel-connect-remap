@@ -58,7 +58,7 @@ json.data @units do |u|
                 str = ss.split(':')
                 pricing_str = []
                 pricing_str[0] = str[0]+" Month"
-                pricing_str[1] = "$"+str[1]
+                pricing_str[1] = "$"+str[1].to_i.to_s
                 # h = {"pricing_option" => pricing_str}
                 lease_pricing << pricing_str
 
