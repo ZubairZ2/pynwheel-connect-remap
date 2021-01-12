@@ -2,7 +2,7 @@ json.success true
 json.message "success"
 json.data @units do |u|
         json.id u.id
-        if @community.credential.apply_now = "separate_link"
+        if @community.credential.apply_now == "separate_link"
             json.availability_url @community.credential.separate_link
         elsif u.provider == "resman"
                 begin

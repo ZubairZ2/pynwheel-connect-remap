@@ -753,7 +753,7 @@ json.tours @tours do |tour|
       else
         show_long_description = true
       end
-      if @community.credential.apply_now = "separate_link"
+      if @community.credential.apply_now == "separate_link"
         availability_url = @community.credential.separate_link
       else
         availability_url = @community.credential.apply_now.to_s == "separate_link" ? @community.credential.separate_link : (unit.availability_url.present? ? unit.availability_url :  (Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url rescue ""))
