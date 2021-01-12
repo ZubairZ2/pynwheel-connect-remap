@@ -840,6 +840,7 @@ json.tours @tours do |tour|
           # h = {"pricing_option" => pricing_str}
           lease_pricing << pricing_str
 
+
         end
         lease_pricing = lease_pricing.sort_by {|x| x[0..1].to_i}
         lease_pricing2 = []
