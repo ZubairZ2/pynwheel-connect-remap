@@ -614,6 +614,7 @@ class CommunitiesController < ApplicationController
 
       # @tour.marker_icon_size = params[:marker_icon_size]
       @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
+      @tour.enable_auto_zoom = params[:enable_auto_zoom].present? ? params[:enable_auto_zoom] : false
       @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
       @tour.credit_card_required = params[:credit_card_required].present? ? true : false
       @tour.only_scheduled_tour = params[:only_scheduled_tour].present? ? true : false

@@ -161,6 +161,18 @@
                   %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Enable auto zoom
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "2Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Auto-zoom on property map between stops. Only recommended for .svg maps.
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :enable_auto_zoom, true, @community.tour.enable_auto_zoom, class: "enable_auto_zoom"
+                  %label.label-primary{:for => "enable_auto_zoom"}
+                  %span.pl-15 Yes      
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Show Camera Button
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "3Popover","data-content" => " "}
                   %span#propertyDetailNameText

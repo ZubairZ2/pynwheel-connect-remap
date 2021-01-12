@@ -50,6 +50,7 @@ json.tours @tours do |tour|
     json.visual_id_verification tour.visual_id_verification
     json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
     json.chat_control (@community.chat_control and @community.is_chat_login) ? @community.chat_control : false
+    json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu
   end
@@ -847,7 +848,7 @@ json.tours @tours do |tour|
         end
         lease_pricing = lease_pricing2
       else
-        h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
+        h = {"pricing_option" => "$"+ unit.effective_rent.to_i.to_s}
         lease_pricing << h
       end
       if unit.modal_unit
@@ -855,7 +856,7 @@ json.tours @tours do |tour|
         @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
         @units.each do |floorplan_unit|
           unless floorplan_unit.id == unit.id
-            pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_s} rescue next
+            pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_i.to_s} rescue next
             lease_pricing << pricing_str
           end
         end
