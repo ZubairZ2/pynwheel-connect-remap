@@ -99,6 +99,7 @@ class Community < ApplicationRecord
   has_many :elevators, dependent: :destroy
   
   has_one :credential, dependent: :destroy
+  has_one :crm_credential, dependent: :destroy
   has_one :design, dependent: :destroy
   has_one :favorite_stop, dependent: :destroy
   has_one :sitemap, dependent: :destroy

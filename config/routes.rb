@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  get 'crm_providers/update'
+
   get 'tutorial/index'
 
   mount ActionCable.server => '/cable'
@@ -85,6 +87,7 @@ Rails.application.routes.draw do
     end
 
     resources :building_starting_points 
+    resources :crm_providers 
     resources :remote_locks do
       collection do
         get :authorization_code
