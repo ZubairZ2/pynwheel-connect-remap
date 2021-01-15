@@ -602,7 +602,6 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @tour = @community.tour
     @tour_setting = @tour.tour_setting
-    @community.chat_control = params[:chat_control].present? ? params[:chat_control] : false
     unless params[:community].present? && params[:community][:optional_mails].present?    
       if params[:widget_settings]
         @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
@@ -621,6 +620,8 @@ class CommunitiesController < ApplicationController
         @tour.max_tour_users = params[:max_tour_users]
         @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
         @tour.grace_period = params[:grace_time] if params[:grace_time].present?
+        @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
+
       else
         @community.chat_control = params[:chat_control].present? ? params[:chat_control] : false
         @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
@@ -641,7 +642,6 @@ class CommunitiesController < ApplicationController
         # @tour.marker_icon_size = params[:marker_icon_size]
         @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
         @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
-        @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
       end
       @tour.save
       # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false

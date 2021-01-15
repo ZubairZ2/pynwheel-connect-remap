@@ -59,7 +59,7 @@
         %small Longitude
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Manual Edit Latitude/Longitude
+    Override Latitude/Longitude
     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
       %span#propertyDetailNameText
         When set to "False" then the lat/long will default to the lat/long provided by Google for this address. When set to "True" then the lat/long provided by Google will be overridden with the lat/long entered in the fields above.
@@ -177,8 +177,7 @@
 
 :javascript
   
-  var manaul_edit_lat_long = #{@community.manual_lat_long}
-  if(!manaul_edit_lat_long)
+  if(!$('#community_manual_lat_long_true').prop('checked'))
   {
     document.getElementById("latitude").readOnly = true
     document.getElementById("latitude").style.background = "#ececec";
@@ -221,13 +220,13 @@
 
   }
   $( ".address_fields1" ).keyup(function() {
-    if(!manaul_edit_lat_long)
+    if(!$('#community_manual_lat_long_true').prop('checked'))
       make_coord()
   });
   $(document).ready(function() {
    // executes when HTML-Document is loaded and DOM is ready
    setTimeout(function(){
-    if(!manaul_edit_lat_long)
+    if(!$('#community_manual_lat_long_true').prop('checked'))
       make_coord();
   }, 2000);
   });

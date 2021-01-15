@@ -487,6 +487,8 @@ class Api::V1::CommunitiesController < ActionController::Base
             end
           else
             @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
+            @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
+
             if @scheduled_tours.present?
               @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
               @tour_status , nearest_tour_id = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
@@ -506,7 +508,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   def check_tour_type(tour_status, nearest_tour_id, tour, is_tour_ontime)
     if is_tour_ontime.present? 
       return is_tour_ontime.tour_type
-    elsif tour_status == "on time" || is_tour_ontime
+    elsif nearest_tour_id.present? && (tour_status == "on time" || !tour.only_scheduled_tour)
       st = SchedualTour.find nearest_tour_id
       return st.tour_type
     else

@@ -100,40 +100,33 @@ class SchedualToursController < ApplicationController
     before_30_mints, c = get_tour_datetime_and_diff before_30_mints
     after_30_mints, d = get_tour_datetime_and_diff after_30_mints
 
-    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
     total_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).where.not(tour_user_id: nil,tour_type: "virtual").count
     total_count_per_day = community.schedual_tours.where(tour_date: date).where.not(tour_user_id: nil,tour_type: "virtual").count
     
     # virtual_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "virtual").count
-    self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").count
-    guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided").count
+    self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").where.not(tour_user_id: nil).count
+    guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided").where.not(tour_user_id: nil).count
   
     in_limit_count, error_message, limit_type = check_limit(params[:tour_type], total_count,total_count_per_day,self_tour_count,guided_count,  @community)
     @show_tour_modal, @type_list, error = show_tour_type_modal(params[:show_self_tour_option], params[:show_guided_tour_option], in_limit_count, @community, limit_type, params[:error])
     # in_limit_count = (total_count < community.tour.max_tour_users.to_i) || (virtual_count < community.tour.max_virtual_tour_users.to_i) || (self_tour_count < community.tour.max_self_tour_tour_users.to_i) || (guided_count < community.tour.max_guided_tour_users.to_i)
 
-    if community.tour.max_tour_users.blank?
+    @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
+
+
+     unless @type_list == []
       respond_to do |format|
         if @schedual_tour.save
           format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
-          format.json { render :show, status: :created, location: @schedual_tour }
+          format.json { render  json: {schedual_tour: @schedual_tour, show_tour_type_modal: @show_tour_modal, type_list: @type_list, in_limit_count: in_limit_count} }
         else
           format.html { render :new }
           format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
         end
       end
-    elsif count < community.tour.max_tour_users.to_i
-      respond_to do |format|
-        if @schedual_tour.save
-          format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
-          format.json { render :show, status: :created, location: @schedual_tour }
-        else
-          format.html { render :new }
-          format.json { render json: @schedual_tour.errors, status: :unprocessable_entity }
-        end
-      end
-    else
-      render json: {message: "max tour users limit reached for the selected time", code: "400" }
+      else
+        error = "No tour found for this community." unless error.present?
+      render json: {message: error, code: "400" }
     end
   end
   def show_tour_type_modal(show_self_tour_option, show_guided_tour_option, in_limit, community, limit_type, error)
