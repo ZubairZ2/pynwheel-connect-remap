@@ -347,7 +347,7 @@
 
       $(document).ready(function(){
         var direct = <%= @direct %>
-        var show_first = <%= @show_first %>
+        var show_first = <%= @show_first.present? ? @show_first : false %>
           if(direct)
           {
             if(show_first)
