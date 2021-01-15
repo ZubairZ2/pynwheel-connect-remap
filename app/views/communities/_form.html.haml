@@ -59,6 +59,19 @@
         %small Longitude
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Manual Edit Latitude/Longitude
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+      %span#propertyDetailNameText
+        When set to "False" then the lat/long will default to the lat/long provided by Google for this address. When set to "True" then the lat/long provided by Google will be overridden with the lat/long entered in the fields above.
+
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :manual_lat_long, true
+    = f.label :manual_lat_long, "True", :value => "true"
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :manual_lat_long, false
+    = f.label :manual_lat_long, "False", :value => "false"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Phone
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :phone, :class=>"form-control", :placeholder=>"Phone",:maxlength=>"15"
@@ -164,8 +177,14 @@
 
 :javascript
   
-  
-  
+  var manaul_edit_lat_long = #{@community.manual_lat_long}
+  if(!manaul_edit_lat_long)
+  {
+    document.getElementById("latitude").readOnly = true
+    document.getElementById("latitude").style.background = "#ececec";
+    document.getElementById("longitude").readOnly = true
+    document.getElementById("longitude").style.background = "#ececec";
+  }
   $(document).on('change', '.address_fields1', function() {
 
 
@@ -181,8 +200,8 @@
     geocoder.geocode( { 'address': $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val()}, function(results, status) {
 
         if (status == google.maps.GeocoderStatus.OK) {
-            var latitude = results[0].geometry.location.lat().toFixed(6);
-            var longitude = results[0].geometry.location.lng().toFixed(6);
+            var latitude = results[0].geometry.location.lat().toFixed(8);
+            var longitude = results[0].geometry.location.lng().toFixed(8);
             if (latitude != null){
                 // console.log(longitude)
                 document.getElementById('latitude').value = latitude;
@@ -199,17 +218,17 @@
             }
         }
     });
-    
-    
+
   }
   $( ".address_fields1" ).keyup(function() {
-    make_coord()
+    if(!manaul_edit_lat_long)
+      make_coord()
   });
   $(document).ready(function() {
    // executes when HTML-Document is loaded and DOM is ready
-   
    setTimeout(function(){
-    make_coord();
+    if(!manaul_edit_lat_long)
+      make_coord();
   }, 2000);
   });
   if (!#{current_user.welcome_property_details_page})
