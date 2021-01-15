@@ -108,7 +108,7 @@
   <body>
     <div class="divLoading hidden"></div>
 
-    <%= link_to("Schedule a Visit", "url" , class: "btn btn-success btn-lg", data: { toggle: "modal", target: "#scheduleMyTour" }) %>
+		<%= link_to("Schedule a Visit", "url",id: "schedule_btn" , class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#scheduleMyTour", backdrop: "static"}) %>
 
     <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
       <div class="modal-dialog" role="document">
@@ -320,7 +320,7 @@
       if(success){
         $("#modalLoginForm").modal('hide');
         $('.divLoading').addClass('hidden')
-        $("#scheduleMyTourSuccess").modal()
+        $("#scheduleMyTourSuccess").modal({backdrop: 'static', keyboard: false})
         $("html, body").animate({ scrollTop: 0 }, 600);
       }
       else
@@ -665,7 +665,29 @@
                 document.getElementById('sched_tour_id').value = data.id
                 tour_id = data.id;
                 $('.divLoading').addClass('hidden');
+                if(data.show_tour_type_modal  && (data.type_list.length > 1))
+                {
+                  $("#scheduleMyTour").modal('hide');
+                  var select = $("#tour_type")[0];
+                  $('#tour_type').empty()
+                  for (op of data.type_list)
+                  {
+                    select.add(new Option(op[0], op[1]));
+                  }
+                  // $("#modalLoginForm").modal();
+                  $("#scheduleTourType").modal({backdrop: 'static', keyboard: false});
 
+                }
+                else
+                {
+                  $("#scheduleMyTour").modal('hide');
+                  $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
+                  // hidden_tour_type_value = data.type_list[0][1]
+                  send_tour_type(data.schedual_tour.id,data.type_list[0][1])
+                  // $("#scheduleTourType").modal();
+                }
+
+                
                 $("#scheduleMyTour").modal('hide');
                 $("#modalLoginForm").modal();
                 $("#not-visiting-hours").addClass('hidden')
@@ -680,6 +702,69 @@
             }
           });
         }
+
+        $("#scheduleTourTypeForm").on('submit', function(e){
+
+          var visiting_times = <%= raw @visiting_times %>;
+          var guided_visiting_times = <%= raw @guided_visiting_times %>;
+
+          var error_messages = <%= raw @error_message %>;
+          var selected_date = $(".datepickertime").val()
+          var matched = false
+          var error
+          selected_day = moment(selected_date).format('dddd')
+          selected_time = moment(selected_date).format('HH:mm')
+          // hidden_tour_type_value = $("#tour_type option:selected").val()
+          send_tour_type(document.getElementById('sched_tour_id').value,$("#tour_type option:selected").val())
+          $('.divLoading').addClass('hidden');
+          $("#scheduleTourType").modal('hide');
+          $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
+          // $.ajax({
+          //     type: 'POST',
+          //     dataType: 'json',
+          //     cache: false,
+          //     url: "/communities/4/schedual_tours/"+document.getElementById('sched_tour_id').value+"/update_tour_type",
+          //     data: {"tour_type" : $("#tour_type option:selected").text()},
+          //     success: function(data){
+          //       $('.divLoading').addClass('hidden');
+          //       $("#scheduleTourType").modal('hide');
+          //       $("#modalLoginForm").modal();
+          //     },
+          //     fail: function(data){
+          //       console.log(data)
+          //     }
+          //   });
+          
+
+          // if(visiting_times.length > 0){
+          //   for(var d_t in visiting_times){
+          //     if (selected_day == visiting_times[d_t][0]){
+          //       var start = getMinutes(visiting_times[d_t][1]);
+          //       var end = getMinutes(visiting_times[d_t][2]);
+          //       var selected = getMinutes(selected_time);
+
+          //       if ((selected >= start) && (selected <= end)) {
+          //         matched = true
+          //         schedual_my_tour($(this))
+          //       }
+          //       else{
+          //         $("#not-visiting-hours").removeClass('hidden')
+          //         for(var each in error_messages){
+          //           if (visiting_times[d_t][0] == error_messages[each][0]){
+          //             error = error_messages[each][1]
+          //           }
+          //         }
+          //       }
+          //     }
+          //   }
+          //   if (matched == false)
+          //     $("#not-visiting-hours").addClass('color-red').text(error)
+          // }
+          // else{
+          //   schedual_my_tour($(this))
+          // }
+          e.preventDefault();
+        });
         
         $("#scheduleMyTourForm").on('submit', function(e){
 
@@ -744,6 +829,7 @@
 
         $("#close").on('click', function(){
           $("#scheduleMyTourSuccess").modal('hide')
+          $("#scheduleMyTour").modal({backdrop: 'static', keyboard: false})
           // window.location.reload();
         });
 
