@@ -58,7 +58,7 @@
             widget_url = "#{root_url}/scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
             if @scheduled_tours.present?
                 json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true" : ""
-                # json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_tours.last.id}?datetime=#{@scheduled_tours.last.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_tours.last.tour_time.strftime("%H:%M")}" : ""
+                json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_tours.last.id}?datetime=#{@scheduled_tours.last.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_tours.last.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true" : ""
             else
                 json.scheduler_widget_url @community.scheduler_widget ? "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true" : ""
             end
