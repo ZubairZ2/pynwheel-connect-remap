@@ -176,7 +176,8 @@
 -#      %span.pl-15 Yes
 
 :javascript
-  
+  function non_readable()
+  {
   if(!$('#community_manual_lat_long_true').prop('checked'))
   {
     document.getElementById("latitude").readOnly = true
@@ -184,6 +185,22 @@
     document.getElementById("longitude").readOnly = true
     document.getElementById("longitude").style.background = "#ececec";
   }
+  else
+  {
+    document.getElementById("latitude").readOnly = false
+    document.getElementById("latitude").style.background = "";
+    document.getElementById("longitude").readOnly = false
+    document.getElementById("longitude").style.background = " ";
+  }
+  }
+  
+  non_readable();
+  $('#community_manual_lat_long_true').change(function() {
+    non_readable();   
+  });
+  $('#community_manual_lat_long_false').change(function() {
+    non_readable();   
+  });
   $(document).on('change', '.address_fields1', function() {
 
 
