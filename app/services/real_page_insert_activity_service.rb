@@ -1,6 +1,6 @@
 class RealPageInsertActivityService < BaseService
     def perform(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types,community)
-        insert_activity(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types)
+        insert_activity(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types, community)
     end
 
     def insert_activity(guest, action_date, stops_name, leasing_agent, activity_types,community)

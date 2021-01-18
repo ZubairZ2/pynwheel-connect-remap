@@ -419,19 +419,19 @@ class Community < ApplicationRecord
   end
 
   def realpage_insert_activity(tour_user)
-    RealPageInsertActivityJob.perform_async credential.attributes.to_json, tour_user
+    RealPageInsertActivityJob.perform_async credential.attributes.to_json, tour_user, self
   end
 
   def realpage_insert_unit_shown(tour_user)
-    RealPageInsertUnitShownJob.perform_async credential.attributes.to_json, tour_user
+    RealPageInsertUnitShownJob.perform_async credential.attributes.to_json, tour_user, self
   end
 
   def realpage_insert_follow_up(tour_user)
-    RealPageInsertFollowUpJob.perform_async credential.attributes.to_json, tour_user
+    RealPageInsertFollowUpJob.perform_async credential.attributes.to_json, tour_user, self
   end
 
   def realpage_get_leasing_agents
-    RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json
+    RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json, self
   end
 
   def real_page_get_activity_types
@@ -439,7 +439,7 @@ class Community < ApplicationRecord
   end
 
   def real_page_get_marketing_sources
-    RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json
+    RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json, self
   end
   
   def entrata_send_mits_leads(tour_user, tour_time, end_time, visited_stops)

@@ -1,6 +1,6 @@
 class RealPageInsertFollowUpService < BaseService
     def perform(tour_user, tour_time, end_time, leasing_agent,community)
-        insert_follow_up(tour_user, tour_time, end_time, leasing_agent)
+        insert_follow_up(tour_user, tour_time, end_time, leasing_agent, community)
     end
 
     def insert_follow_up(guest, tour_time, end_time, leasing_agent,community)
