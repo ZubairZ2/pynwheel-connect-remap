@@ -1,10 +1,11 @@
 class RealPageInsertActivityService < BaseService
-    def perform(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types)
+    def perform(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types,community)
         insert_activity(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types)
     end
 
-    def insert_activity(guest, action_date, stops_name, leasing_agent, activity_types)
-        site_ids = credentials.site_id.split(',') rescue []
+    def insert_activity(guest, action_date, stops_name, leasing_agent, activity_types,community)
+        use_crm_credentials = community.use_crm_credentials?
+        site_ids = (use_crm_credentials ? community.crm_credential.site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
             begin
                 url = REALPAGE_URL
@@ -12,7 +13,7 @@ class RealPageInsertActivityService < BaseService
                 username = REALPAGESVC_USERNAME
                 password = REALPAGESVC_PASSWORD
                 license_key = REALPAGESVC_LICENSE_KEY
-                pmc_id = credentials.pmc_id
+                pmc_id = use_crm_credentials ? community.crm_credential.realpage_pmc_id : credentials.pmc_id
                 
                 community_id = credentials.community_id
                 property_id = credentials.property_id

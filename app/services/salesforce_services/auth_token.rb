@@ -5,10 +5,10 @@ module SalesforceServices
             url = "https://prometheusreg--promuat.my.salesforce.com/services/oauth2/token"
             response = HTTParty.post(url,
                 body: {
-                    username: @sales_force.crm_username,
-                    password: @sales_force.crm_password,
-                    client_id: @sales_force.crm_client_id,
-                    client_secret: @sales_force.crm_client_secret,
+                    username: @sales_force.salesforce_username,
+                    password: @sales_force.salesforce_password,
+                    client_id: @sales_force.salesforce_client_id,
+                    client_secret: @sales_force.salesforce_secret_id,
                     grant_type: "password"
                 }
             )

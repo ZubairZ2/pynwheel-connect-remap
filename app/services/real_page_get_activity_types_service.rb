@@ -1,15 +1,16 @@
 class RealPageGetActivityTypesService < BaseService
-    def perform(tour_status)
-        get_activity_types(tour_status)
+    def perform(tour_status, community)
+        get_activity_types(tour_status, community)
     end
 
-    def get_activity_types(tour_status)
-        site_ids = credentials.site_id.split(',') rescue []
+    def get_activity_types(tour_status, community)
+        use_crm_credentials = community.use_crm_credentials?
+        site_ids = (use_crm_credentials ? community.crm_credential.site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
           begin
             url = REALPAGE_URL
             soap_action = REALPAGE_ACTIVITY_TYPES_ACTION
-            pmc_id = credentials.pmc_id
+            pmc_id = use_crm_credentials ? community.crm_credential.realpage_pmc_id : credentials.pmc_id
             username = REALPAGESVC_USERNAME
             password = REALPAGESVC_PASSWORD
             license_key = REALPAGESVC_LICENSE_KEY

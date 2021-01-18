@@ -5,7 +5,7 @@ module SalesforceServices
         end
 
         def initialize(community)
-            @sales_force = community.credential.crm_provider == "salesforce" ? community.credential : nil
+            @sales_force = (community.use_crm_credentials? && community.crm_credential.crm_provider == "salesforce") ? community.crm_credential : nil
         end
         
         def get_access_token
