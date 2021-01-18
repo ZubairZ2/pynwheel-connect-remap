@@ -73,11 +73,16 @@ json.tours @tours do |tour|
   
   json.is_sitemap @community.is_sitemap
   if @community.is_sitemap
-    json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue nil
+    floorplate_image = tour.image.present? ? tour : (@community.is_sitemap ? @community.sitemap : @community.floorplates.first) rescue nil
+    json.image floorplate_image.image.url rescue nil
+    json.image_width (floorplate_image.width rescue 0)
+    json.image_height (floorplate_image.height rescue 0)
 
   else
     @floorplate = @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
     json.image @floorplate.image
+    json.image_width (@floorplate.width rescue 0)
+    json.image_height (@floorplate.height rescue 0)
 
   end
   if @community.show_map
@@ -525,7 +530,10 @@ json.tours @tours do |tour|
       #   json.floorplate_image @floorplate.image.url
       #   once_flag = false
       # else
-      json.floorplate_image @community.is_sitemap ? @community.sitemap.image.url : (stop.starting_floor.present? ? @community.floorplates.select{|x| x if x.floors.include?(stop.starting_floor.to_i)}.last.image.url : @community.floorplates.select{|x| x if x.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.min)}.last.image.url) 
+      floorplate_image = @community.is_sitemap ? @community.sitemap : (stop.starting_floor.present? ? @community.floorplates.select{|x| x if x.floors.include?(stop.starting_floor.to_i)}.last : @community.floorplates.select{|x| x if x.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.min)}.last) rescue nil
+      json.floorplate_image floorplate_image.image.url rescue ""
+      json.image_width floorplate_image.width  rescue 0
+      json.image_height floorplate_image.height  rescue 0
       # end
       @existing_path_points = []
       begin
@@ -814,8 +822,11 @@ json.tours @tours do |tour|
       current_floor = unit.floor
       json.image_list images
       json.name (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
-      json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
-      json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
+      # json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
+      floorplate_image = (unit.floorplate.image.present? ? unit.floorplate : nil) if unit.floorplate.present?  rescue nil
+      json.floorplate_image floorplate_image.image.url  rescue ""
+      json.image_width floorplate_image.width  rescue 0
+      json.image_height floorplate_image.height  rescue 0
 
       unit_directional_text = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
 
@@ -1023,7 +1034,10 @@ json.tours @tours do |tour|
       json.name bsp.name
       json.directional_text bsp.directional_text
       
-      json.floorplate_image @community.floorplates.map{|x| x if (x.floors.include? bsp.floor)}.compact.first.image.url rescue ""
+      floorplate_image = @community.floorplates.map{|x| x if (x.floors.include? bsp.floor)}.compact.first rescue nil
+      json.floorplate_image floorplate_image.image.url  rescue ""
+      json.image_width floorplate_image.width  rescue 0
+      json.image_height floorplate_image.height rescue 0
 
     elsif stop.stop_type == "elevator"
       
@@ -1071,14 +1085,26 @@ json.tours @tours do |tour|
       if current_floor.present?
         floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last.image.url rescue nil
         floor_image = (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present? if floor_image.nil?
+        json.floorplate_image floor_image.image.url  rescue ""
+        json.image_width floor_image.width  rescue 0
+        json.image_height floor_image.height rescue 0
         json.floorplate_image floor_image
         if new_stops_arr[counter - 1].is_a? Tour 
-          json.floorplate_image @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last.image.url rescue nil
+          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last rescue nil
+          json.floorplate_image floorplate_image.image.url rescue ""
+          json.image_width floorplate_image.width rescue 0
+          json.image_height floorplate_image.height rescue 0
         end
       else
-        json.floorplate_image (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present?
+        floorplate_image = (elevator.floorplate.image.present? ? elevator.floorplate : nil) if elevator.floorplate.present? rescue nil
+        json.floorplate_image floorplate_image.image.url rescue ""
+        json.image_width floorplate_image.width rescue 0
+        json.image_height floorplate_image.height rescue 0
         if new_stops_arr[counter - 1].is_a? Tour 
-          json.floorplate_image @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last.image.url rescue nil
+          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last rescue nil
+          json.floorplate_image floorplate_image.image.url rescue ""
+          json.image_width floorplate_image.width rescue 0
+          json.image_height floorplate_image.height rescue 0
         end
       end
 
@@ -1140,7 +1166,10 @@ json.tours @tours do |tour|
 
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
-      json.floorplate_image (amenity.amenityable.image.present? ? amenity.amenityable.image.url : nil) if amenity.amenityable.present?
+      floorplate_image = (amenity.amenityable.image.present? ? amenity.amenityable : nil) if amenity.amenityable.present? rescue nil
+      json.floorplate_image floorplate_image.image.url  rescue 0
+      json.image_width floorplate_image.width rescue 0
+      json.image_height floorplate_image.height rescue 0
       json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
       if amenity.amenity_galleries.count == 0
          stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
