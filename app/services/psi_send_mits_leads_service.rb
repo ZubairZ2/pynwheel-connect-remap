@@ -1,7 +1,7 @@
 class PsiSendMitsLeadsService < BaseService
   def perform(tour_user, tour_time, end_time, visited_stops, community)
       use_crm_credentials = community.use_crm_credentials?
-      property_ids = (use_crm_credentials ? community.crm_credential.property_id.split(',') : credentials.property_id.split(',')) rescue []
+      property_ids = (use_crm_credentials ? community.crm_credential.entrata_property_id.split(',') : credentials.property_id.split(',')) rescue []
       property_ids.each do |property_id|
         entrata_domain = (use_crm_credentials ? community.crm_credential.entrata_domain : credentials.entrata_url)
         if entrata_domain.include?('https://') || entrata_domain.include?('http://')

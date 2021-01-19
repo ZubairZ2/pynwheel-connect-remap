@@ -1,11 +1,11 @@
 class RealPageInsertProspectService < BaseService
     def perform(tour_user, appointment_time, marketing_source, desired_move_in_date, community)
-        insert_prospect(tour_user, appointment_time, marketing_source, desired_move_in_date)
+        insert_prospect(tour_user, appointment_time, marketing_source, desired_move_in_date, community)
     end
 
     def insert_prospect(guest, appointment_time, marketing_source, desired_move_in_date, community)
         use_crm_credentials = community.use_crm_credentials?
-        site_ids = (use_crm_credentials ? community.crm_credential.site_id.split(',') : credentials.site_id.split(',')) rescue []
+        site_ids = (use_crm_credentials ? community.crm_credential.realpage_site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
             begin
                 url = REALPAGE_URL

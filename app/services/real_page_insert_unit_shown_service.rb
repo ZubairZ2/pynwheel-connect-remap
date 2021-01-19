@@ -1,11 +1,11 @@
 class RealPageInsertUnitShownService < BaseService
     def perform(tour_user, tour_time, visited_stop, leasing_agent, activity_id, community)
-        insert_unit_shown(tour_user, tour_time, visited_stop, leasing_agent, activity_id)
+        insert_unit_shown(tour_user, tour_time, visited_stop, leasing_agent, activity_id, community)
     end
 
     def insert_unit_shown(guest, activity_date, unit_shown, leasing_agent, activity_id, community)
         use_crm_credentials = community.use_crm_credentials?
-        site_ids = (use_crm_credentials ? community.crm_credential.site_id.split(',') : credentials.site_id.split(',')) rescue []
+        site_ids = (use_crm_credentials ? community.crm_credential.realpage_site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
             begin
                 url = REALPAGE_URL

@@ -5,9 +5,10 @@ class RealPageInsertFollowUpService < BaseService
 
     def insert_follow_up(guest, tour_time, end_time, leasing_agent,community)
         use_crm_credentials = community.use_crm_credentials?
-        site_ids = (use_crm_credentials ? community.crm_credential.site_id.split(',') : credentials.site_id.split(',')) rescue []
+        site_ids = (use_crm_credentials ? community.crm_credential.realpage_site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
             begin
+                
                 url = REALPAGE_URL
                 soap_action = REALPAGE_INSERT_FOLLOW_UP_ACTION
                 username = REALPAGESVC_USERNAME

@@ -72,7 +72,7 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both_to_touruser @thank_you_content
         # community.deleted_ids = []
 
-        if community.credential.crm_provider == "salesforce"
+        if community.credential.present? && community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"
           current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
           if current_tour.present?
             # current_tour.tour_key = "450e96530bb8ae7af1b3f3d019a6a055" # testing line
@@ -118,10 +118,10 @@ class TourHistory < ApplicationRecord
 
     available_stops = avail_stops_name_of_community
     visited_stops = stop_marketing_names_visited_by_user
-
-    if @community.data_provider == "realpagesvc"
+    data_provider = @community.use_crm_credentials? ? @community.crm_credential.crm_provider : @community.data_provider
+    if data_provider == "realpagesvc"
       RealPageGuestCardIntegrationJob.perform_async(@community.credential.attributes.to_json, self.tour_user, tour_time, end_time, tour_status, available_stops, visited_stops,@community)
-    elsif @community.data_provider == "psi"
+    elsif data_provider == "psi"
       @community.entrata_send_mits_leads(self.tour_user, tour_time, end_time, visited_stops)
     end
   end

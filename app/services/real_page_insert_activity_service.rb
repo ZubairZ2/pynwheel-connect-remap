@@ -5,7 +5,7 @@ class RealPageInsertActivityService < BaseService
 
     def insert_activity(guest, action_date, stops_name, leasing_agent, activity_types,community)
         use_crm_credentials = community.use_crm_credentials?
-        site_ids = (use_crm_credentials ? community.crm_credential.site_id.split(',') : credentials.site_id.split(',')) rescue []
+        site_ids = (use_crm_credentials ? community.crm_credential.realpage_site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
             begin
                 url = REALPAGE_URL
