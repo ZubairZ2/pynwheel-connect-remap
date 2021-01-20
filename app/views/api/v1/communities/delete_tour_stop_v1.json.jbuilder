@@ -1083,7 +1083,7 @@ json.tours @tours do |tour|
         elevator_stop_description = "Go to floor " + (plates_name[min_floor.to_s].present? ? plates_name[min_floor.to_s] : min_floor.to_s rescue min_floor.to_s)
       end
       if current_floor.present?
-        floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last.image.url rescue nil
+        floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last.image rescue nil
         floor_image = (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present? if floor_image.nil?
         json.floorplate_image floor_image.image.url  rescue ""
         json.image_width floor_image.width  rescue 0
