@@ -170,10 +170,10 @@ class SchedualToursController < ApplicationController
   def check_limit(tour_type, total_count,total_count_per_day,self_tour_count,guided_count, community )
     
     limit_type = []
-    if (community.tour.max_tour_users.present? && total_count_per_day >= community.tour.max_tour_users.to_i)
-      # return true, "max tour users limit reached for the day", (limit_type << "total")
-      limit_type << "total"
-    end
+    # if (community.tour.max_tour_users.present? && total_count_per_day >= community.tour.max_tour_users.to_i)
+    #   # return true, "max tour users limit reached for the day", (limit_type << "total")
+    #   limit_type << "total"
+    # end
     if (community.tour.tour_setting.do_limit_max_tour && community.tour.tour_setting.limit_max_tour.present? && total_count >= community.tour.tour_setting.limit_max_tour.to_i)
       # return true, "max tour users limit reached for the selected time", (limit_type << "total")
       limit_type << "total"

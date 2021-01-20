@@ -461,15 +461,15 @@
                         Grace period
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         %input.day-list.max-users-v.form-control{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}              
-                - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
-                  .form-group
-                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                      Max Tours per Day
-                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
-                        %span#propertyDetailNameText
-                          Limit the number of tours that can be taken in a given day.  
-                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      %input.day-list.max-users-v.form-control{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}       
+                / - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
+                /   .form-group
+                /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                /       Max Tours per Day
+                /       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                /         %span#propertyDetailNameText
+                /           Limit the number of tours that can be taken in a given day.  
+                /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                /       %input.day-list.max-users-v.form-control{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}       
                 .form-group
 
                   %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15

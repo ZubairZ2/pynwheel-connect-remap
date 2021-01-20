@@ -617,7 +617,7 @@ class CommunitiesController < ApplicationController
         @tour_setting.time_intervel = "1 hr" if params[:time_intervel_1] == "true"
         @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
         @tour.credit_card_required = params[:credit_card_required].present? ? true : false
-        @tour.max_tour_users = params[:max_tour_users]
+        # @tour.max_tour_users = params[:max_tour_users]
         @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
         @tour.grace_period = params[:grace_time] if params[:grace_time].present?
         @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
