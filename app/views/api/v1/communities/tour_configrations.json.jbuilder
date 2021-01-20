@@ -6,6 +6,7 @@
         json.visited_history @visited_history
         json.limit_exceeded @limit_exceeded
         json.limit_exceeded_message (!@in_visiting_hours ? "Its outside of visiting hours. Would you like to take a virtual tour?" : (@limit_exceeded ? "The max number of tours has been reached for this property at this time. Please schedule your tour for another time." : ""))
+        json.with_in_radius @within_one_km
         json.locks_thread_ref @locks_thread
         json.tour_user @tour_user
 
