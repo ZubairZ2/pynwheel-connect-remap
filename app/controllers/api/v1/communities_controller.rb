@@ -440,6 +440,25 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def tour_user_data
+    data = Hash.new
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @community = Community.find_by_id params[:id]
+      @tour_user = TourUser.find_by_id params[:tour_user_id]
+      if @community.present? and @tour_user.present?
+        @locks_thread = create_zerv_user(@community, @tour_user)
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @community.tour.id)
+        data = {visited_history: @visited_history, locks_thread_ref: @locks_thread, tour_user: @tour_user}
+        render :json=> {data: data, :success=>true, :message => "data retuned succesfully", code: 200}
+      else
+        render :json=> {data: data, :success=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
+      end
+    else
+      render :json=> {data: data, :success=>false, :message => "Invalid Token", code: 401}
+    end
+  end
+
   def tour_configrations
     #################### Remember this call is being called twice for one of the usecase in mobile app #######################
     puts params
@@ -451,7 +470,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @tour = @community.tour
           @tour_user = TourUser.find_by_id params[:tour_user_id]
           
-          @locks_thread = create_zerv_user(@community, @tour_user) if params[:second_time].present? and ( params[:second_time] == "false" || params[:second_time] == false )
+          @locks_thread = "#<Thread:0x00007f83437dccb0@/home/hamza/Projects/pynwheel/app/controllers/api/v1/communities_controller.rb:750 run>" #create_zerv_user(@community, @tour_user) if params[:second_time].present? and ( params[:second_time] == "false" || params[:second_time] == false )
           @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
           @verfication_type = params[:id_verification].present? ? @tour.verification_type : "email" rescue "email"
 
