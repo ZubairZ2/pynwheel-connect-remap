@@ -460,27 +460,44 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def tour_configrations
-    #################### Remember this call is being called twice for one of the usecase in mobile app #######################
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       if params[:id].present? and params[:tour_user_id].present?
         @community = Community.find_by_id params[:id]
-        if @community.present?
-          @tour = @community.tour
-          @tour_user = TourUser.find_by_id params[:tour_user_id]
+        @tour_user = TourUser.find_by_id params[:tour_user_id]
+        if @community.present? and @tour_user.present?
+          @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
+          current_time = current_community_time()
+
+          if @in_visiting_hours = is_tour_in_visiting_hours(@community, current_time)
+            unless @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
+              scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
+              if @tour.only_scheduled_tour
+                if scheduled_data.tours_exist and scheduled_data.on_time_tour.present?
+                  if @within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)
+                    @tour_user.tour_type = scheduled_data.on_time_tour.tour_type          # either scheduled tour is self_tour/virtual_tour
+                  end
+                end
+              else
+                if @within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)
+                  if scheduled_data.tours_exist 
+                    if scheduled_data.on_time_tour.present?
+                      @tour_user.tour_type = scheduled_data.on_time_tour.tour_type        # in case if scheduled a guided tour and is on_time
+                    else
+                      @tour_user.tour_type = "self_tour"                                  # if he is not on_time, he should not take guided tour
+                    end
+                  else
+                    @tour_user.tour_type = "self_tour"
+                  end
+                end
+              end
+            end
+          end
           
-          @locks_thread = "#<Thread:0x00007f83437dccb0@/home/hamza/Projects/pynwheel/app/controllers/api/v1/communities_controller.rb:750 run>" #create_zerv_user(@community, @tour_user) if params[:second_time].present? and ( params[:second_time] == "false" || params[:second_time] == false )
-          @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
           @verfication_type = params[:id_verification].present? ? @tour.verification_type : "email" rescue "email"
-
-          timezone = get_community_time_zone(@community) rescue "UTC"
-          current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
-
-          @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
-          @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
-          
-          @tour_user.is_virtual_tour = ( (@in_visiting_hours ? false : true)  || @limit_exceeded)
+          @tour_user.tour_type = @in_visiting_hours and !@limit_exceeded ? "standard tour" : "virtual"
+          # @tour_user.is_virtual_tour = ( (@in_visiting_hours ? false : true)  || @limit_exceeded)
           @tour_user.latitude = params[:latitude]
           @tour_user.longitude = params[:longitude]
           # @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
@@ -564,6 +581,12 @@ class Api::V1::CommunitiesController < ActionController::Base
   def geo_distance(lat1,long1,lat2,long2,limit)
     return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) < limit) rescue true)
   end
+  def current_community_time
+    timezone = get_community_time_zone(@community) rescue "UTC"
+    (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
+  rescue
+    Time.now.utc
+  end
   def get_community_time(community)
     if community.zip.present?
         timezone = tz.time_zone_name(community.zip)
@@ -622,25 +645,25 @@ class Api::V1::CommunitiesController < ActionController::Base
     scheduled_tours.find_all{ |t| t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) >= before_margin and  t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) <= after_margin}.last
   end
   
-  def tour_time_status(time_param, grace_time, scheduled_tours)
+  def tour_time_status(scheduled_tours, current_time)
     # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
     # now it is confirmed that either the tour is before or after time
-    current_tour = get_current_tour(time_param)
+    current_tour = get_current_tour(current_time)
     nearest_before_time = scheduled_tours.where("tour_time > ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
     nearest_after_time  = scheduled_tours.where("tour_time < ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest after time  , remember min function will be applied at the first index of array, which is deliberately set to time
 
     if nearest_before_time.present? and nearest_after_time.nil?
-      return ["before time" , nearest_before_time[1]]
+      return ["before time" , scheduled_tours.find{|s| s.id == nearest_before_time[1]}]
     elsif nearest_before_time.nil? and nearest_after_time.present?
-      return ["after time" , nearest_after_time[1]]
+      return ["after time" , scheduled_tours.find{|s| s.id == nearest_after_time[1]}]
     end
 
     if nearest_before_time[0] < nearest_after_time[0]
-      return ["before time" , nearest_before_time[1]]
+      return ["before time" ,scheduled_tours.find{|s| s.id == nearest_before_time[1]}]
     elsif nearest_after_time[0] < nearest_before_time[0]
-      return ["after time" , nearest_after_time[1]]
+      return ["after time" , scheduled_tours.find{|s| s.id == nearest_after_time[1]}]
     else
-      return ["after time" , nearest_after_time[1]] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
+      return ["after time" , scheduled_tours.find{|s| s.id == nearest_after_time[1]}] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
     end
   end
 
@@ -670,6 +693,20 @@ class Api::V1::CommunitiesController < ActionController::Base
     current_time = current_datetime.to_datetime.strftime('%l:%M %p')
     current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
     current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
+  end
+
+  def nearest_time_tour(community, tour_user, current_time)
+    tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil;
+
+    today_scheduled_tours = get_scheduled_tours(community, tour_user, current_time)
+    if tours_exist = today_scheduled_tours.present?
+      on_time_tour = is_tour_on_time(today_scheduled_tours, current_time, community.tour.grace_period)
+      unless on_time_tour.present?
+        time_status , nearest_tour = tour_time_status(today_scheduled_tours, current_time)
+      else
+    end
+
+    OpenStruct.new({tours_exist: tours_exist, on_time_tour: on_time_tour, nearest_tour: nearest_tour, time_status: time_status})
   end
 
   def create_latch_reservation(community, tour_user, start_time)
