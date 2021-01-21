@@ -79,10 +79,12 @@ class Api::V1::TourHistoriesController < ActionController::Base
           end
         else
           begin
-            id_mismatch = (TourUser.find params[:tour_user_id]).id_selfie_mismatch
+            tu = TourUser.find params[:tour_user_id]
+            id_mismatch = tu.id_selfie_mismatch
           rescue => ex
           end
         end
+        check_length_stay(params[:tour_history_id], params[:lengthy_stay], tour.community, tu) if (params[:tour_history_id].present? and params[:lengthy_stay].present?)
         chat_control = (tour.community.chat_control and tour.community.is_chat_login) ? tour.community.chat_control : false
         chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
         if chatroom.present?
@@ -103,7 +105,24 @@ class Api::V1::TourHistoriesController < ActionController::Base
       render :json=> {:success=>false, :message => "Invalid Token"}
     end
   end
-  
+  def check_length_stay(tour_history_id, lengthy_stay, community, tu)
+    tour_history = TourHistory.find tour_history_id
+    stay_time = time_difference(lengthy_stay.to_time, tour_history.arrived)
+    if stay_time < community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == true
+      contact_user = (tu.phone_number.present? ? tu.phone_number : "http://localhost:3000/companies/#{community.company.id}/communities/#{community.id}/edit")
+      @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on Self Tour at #{community.name} for #{stay_time} minutes.<br><br><b>Want to check in with them? #{contact_user}</b>"] #get_alert_message('lengthy_stay')
+      tour_history.update_column 'lengthy_stay_email_sent',true
+
+      emails = community.email.gsub(" ","").split(',')
+      emails.each do |email|
+        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email).deliver
+      end
+
+    end
+  end
+  def time_difference(lengthy_stay, arrival_time)
+    ((lengthy_stay - arrival_time) / 1.minute).round
+  end
   def change_id_selfie_status
     puts params
     access = grant_access (decoded(params[:token])) rescue false
