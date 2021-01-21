@@ -208,7 +208,7 @@
                                 <div class="chat_people">
                                     <div class="chat_img"> <img id="img_id" src= <%= chatroom.tour_user.image.present? ?  chatroom.tour_user.image.url : @default_user_image %> alt= <%= chatroom.tour_user.name %> > </div>                                                                     
                                         <div class="chat_ib">
-                                            <a class="sidebar-chat" data-remote="true" href="/chats/<%= chatroom.id %>" style="overflow: hidden;display: block; width: 100%;"> 
+                                            <a class="sidebar-chat" data-remote="true" href="/chats/<%= chatroom.id %>" style="overflow: hidden;display: block; width: 100%;" id="chat_person_<%=chatroom.id%>" > 
                                                 <p> 
                                                     <span style="color: black;"> <%= chatroom.tour_user.name %> </span>
                                                     <% @notifications.each do |notification|  %>
@@ -459,7 +459,7 @@
                                 <div class="chat_people">
                                     <div class="chat_img"> <img id="img_id" src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
                                     <div class="chat_ib">
-                                        <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}" style="overflow: hidden;display: block; width: 100%;"> 
+                                        <a class="sidebar-chat" data-remote="true" href="/chats/${chat.chatroom_id}" style="overflow: hidden;display: block; width: 100%; id="chat_person_${chat.chatroom_id}""> 
                                             <p> 
                                                 <span style="color: black;"> ${chat.tour_user.name} </span>
                                                 ${span}
@@ -498,7 +498,7 @@
                             <div class="chat_people">
                                 <div class="chat_img"> <img id="img_id" src=${chatroom.tour_user.image} alt=${chatroom.tour_user.name}> </div>
                                 <div class="chat_ib">
-                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}" style="overflow: hidden;display: block; width: 100%;"> 
+                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}" style="overflow: hidden;display: block; width: 100%; id="chat_person_${chat.chatroom_id}""> 
                                         <p> <span style="color: black;"> ${chatroom.tour_user.name} </span></p>
                                         <p> <a> ${chatroom.tour_user.email} </a> </p>
                                     </a>

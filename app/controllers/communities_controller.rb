@@ -58,6 +58,8 @@ class CommunitiesController < ApplicationController
 
   def edit
     @com_id = current_community.id
+    @chatroom = Chatroom.find_by(tour_user_id: 2, tour_id: 6)
+    @chatroom = Chatroom.create(tour_user_id: 2, tour_id: 6) unless @chatroom.present?
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
