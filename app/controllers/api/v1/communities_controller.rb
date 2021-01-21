@@ -465,7 +465,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @tour_user.latitude = params[:latitude]
           @tour_user.longitude = params[:longitude]
           # @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
-
+          @within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)
           if @community.credential.present? and @community.credential.crm_provider == "salesforce"
             if @community.id == 1240 # only enabled for "Metropolitan" for testing from Prometheus-salesforce
             response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
@@ -526,7 +526,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   def total_scheduled_tour(community, property_time, limit, tour_user)
     timezone = get_community_time_zone(community) rescue "UTC"
     total  = SchedualTour.where('tour_date = ?', Date.today.to_date).where.not(tour_user_id: nil).map{|x| x if ( ((((x.tour_date.to_s + " " + x.tour_time.to_s(:time)).in_time_zone(x.user_time_zone).in_time_zone(timezone)) - property_time.in_time_zone(timezone) ) / 3600).between?(-0.5,0.5) )}.compact
-    if (total.map{|x| x.tour_user_id}.include? tour_user.id) || !geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude)
+    if (total.map{|x| x.tour_user_id}.include? tour_user.id) || !geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1.5)
       return 0
     else
       total_count = total.count
@@ -536,17 +536,16 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def app_usage(community, property_time, limit ,tour_user)
     # return (limit <= TourHistory.where('arrived = ? AND left = ? AND abandoned_tour_at_stop AND active_app = ? AND arrived > ? AND is_virtual_tour', property_time.to_date,  nil, nil, false, property_time - 180.minutes, false).count) ? false : true
-    unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude)
+    unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1.5)
       return 0
     else
-      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, is_virtual_tour: false,tour_id: community.tour.id).where('arrived > ?', (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude)) }.compact.count
+      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, is_virtual_tour: false,tour_id: community.tour.id).where('arrived > ?', (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1.5)) }.compact.count
     end    
   end
-  def geo_distance(lat1,long1,lat2,long2)
-    return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) < 1.5) rescue true)
+  def geo_distance(lat1,long1,lat2,long2,limit)
+    return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) < limit) rescue true)
   end
   def get_community_time(community)
-    tz = Ziptz.new
     if community.zip.present?
         timezone = tz.time_zone_name(community.zip)
         community_time = Time.now.in_time_zone(timezone) if timezone.present?
