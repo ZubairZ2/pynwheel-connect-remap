@@ -107,9 +107,11 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
   def check_length_stay(tour_history_id, lengthy_stay, community, tu)
     tour_history = TourHistory.find tour_history_id
+    
     stay_time = time_difference(lengthy_stay.to_time, tour_history.arrived)
-    if stay_time < community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == true
-      contact_user = (tu.phone_number.present? ? tu.phone_number : "http://localhost:3000/companies/#{community.company.id}/communities/#{community.id}/edit")
+    if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == true
+      
+      contact_user = (tu.phone_number.present? ? tu.phone_number : ("<a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}") + "'>Open Chat</a>" )
       @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on Self Tour at #{community.name} for #{stay_time} minutes.<br><br><b>Want to check in with them? #{contact_user}</b>"] #get_alert_message('lengthy_stay')
       tour_history.update_column 'lengthy_stay_email_sent',true
 
@@ -159,7 +161,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
 
   private
-
+  def base_url
+    Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/") 
+  end
   def convert_epoch_to_datetime epoch_str
     Time.strptime(epoch_str, '%s')
   end
