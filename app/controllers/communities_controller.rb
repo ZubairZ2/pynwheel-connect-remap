@@ -58,8 +58,7 @@ class CommunitiesController < ApplicationController
 
   def edit
     @com_id = current_community.id
-    @chatroom = Chatroom.find_by(tour_user_id: 2, tour_id: 6)
-    @chatroom = Chatroom.create(tour_user_id: 2, tour_id: 6) unless @chatroom.present?
+    @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id],current_community.tour.id) : Chatroom.new
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
@@ -722,6 +721,12 @@ class CommunitiesController < ApplicationController
     expressionist = design.filter_panel ||  design.create_filter_panel 
   end
   private
+
+  def show_chat_modal(tour_user_id, tour_id)
+    @chatroom = Chatroom.find_by(tour_user_id: tour_user_id, tour_id: tour_id)
+    @chatroom = Chatroom.create(tour_user_id: tour_user_id, tour_id: tour_id) unless @chatroom.present?
+    return @chatroom
+  end
 
   def set_community
     cookies[:community_id] = @community.id if cookies[:community_id].nil?
