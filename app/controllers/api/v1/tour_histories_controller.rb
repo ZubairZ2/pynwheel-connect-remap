@@ -11,7 +11,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
         tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
         tour_history.tour_id = params[:tour_id].to_i if params[:tour_id].present?
-        tour_history.tour_status = params[:tour_status] == false ? "virutal" : "self_tour" unless tour_history.tour_status.present?
         tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
         if params[:time_zone].present?
           tour_history.my_time_zone = params[:time_zone].to_s rescue nil
@@ -21,7 +20,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.tour_user_id = params[:tour_user_id]
         @tour = Tour.find params[:tour_id]
         tu = TourUser.find params[:tour_user_id]
-        tour_history.is_virtual_tour = tu.is_virtual_tour rescue nil
         tour_history.latitude = tu.latitude rescue nil
         tour_history.longitude = tu.longitude rescue nil
         begin
@@ -34,7 +32,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
           tour_history.longitude = tu.longitude
           tour_history.tour_key = tu.tour_key
           tour_history.tour_status = tu.tour_type
-          tour_history.tour_status = "virtual" if tu.is_virtual_tour
       
           tu.save
         rescue => ex

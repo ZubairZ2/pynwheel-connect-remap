@@ -7,7 +7,8 @@
         json.scheduler_widget_allowed  @community.scheduler_widget
         json.scheduler_widget_url      ""
         json.tour_alert                "Every thing is fine. Enjoy your tour"
-       
+        json.locks_thread_ref          @locks_thread
+
         is_salesforce_crm =  (@community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce") ? true : false
         community_code    =  (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')  if @community.scheduler_widget
         
