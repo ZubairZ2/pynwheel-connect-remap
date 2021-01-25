@@ -1,5 +1,11 @@
 - if @community.present? and @tour_user.present?
     json.data do
+        community_code    =  (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')  if @community.scheduler_widget
+        if @is_salesforce_crm
+            @community.tour.only_scheduled_tour = true
+            @community.scheduler_widget         = false
+        end
+
         json.visual_id_verification    @tour_user.tour_type != "virtual_tour" ? @community.tour.visual_id_verification : false # can't confirm here
         json.tour_type                 @tour_user.tour_type
         json.verification_type         @verfication_type
@@ -9,86 +15,11 @@
         json.tour_alert                "Every thing is fine. Enjoy your tour"
         json.locks_thread_ref          @locks_thread
 
-        is_salesforce_crm =  (@community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce") ? true : false
-        community_code    =  (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')  if @community.scheduler_widget
-        
-        
+
         if @in_visiting_hours
             unless @limit_exceeded
-                if is_salesforce_crm
-                    unless @within_one_km
-                        json.scheduler_widget_allowed false
-                        if @location_received
-                            json.tour_alert "It looks like you're not at the property. Would you like to take a virtual tour?"
-                        else
-                            json.tour_alert "Unable to detect location. Please select one of the options below. "
-                        end
-                    end
-                else
-                    if @community.tour.only_scheduled_tour
-                        if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
-                            unless @within_one_km
-                                json.scheduler_widget_allowed false
-                                if @location_received
-                                    json.tour_alert "It looks like you're not at the property. Would you like to take a virtual tour?"
-                                else
-                                    json.tour_alert "Unable to detect location. Please select one of the options below. "
-                                end
-                            end
-                        elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
-                            if @scheduled_data.time_status == "before time"
-                                json.scheduler_widget_allowed false
-                                if @community.arrive_too_early_alert.present?
-                                    @community.arrive_too_early_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time).gsub!("<grace time>", @community.tour.grace_period.to_s)
-                                    json.tour_alert @community.arrive_too_early_alert + " In the meantime, would you like to take a virtual tour?"  
-                                else
-                                    json.tour_alert "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.tour.grace_period.to_s} minutes before that time. In the meantime, would you like to take a virtual tour?"
-                                end
-                            elsif @scheduled_data.time_status == "after time"
-                                if @community.arrive_too_late_alert.present?
-                                    @community.arrive_too_late_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time)
-                                    if @community.scheduler_widget
-                                        json.tour_alert @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?"
-                                        json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
-                                    else
-                                        json.tour_alert @community.arrive_too_late_alert + " In the meantime, would you like to take a virtual tour?"
-                                    end
-                                else
-                                    message = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.tour.grace_period.to_s} minutes before that time. "
-                                    if @community.scheduler_widget
-                                        json.tour_alert message + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?"
-                                        json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
-                                    else
-                                        json.tour_alert message + " In the meantime, would you like to take a virtual tour?"
-                                    end
-                                end
-                            end
-                        else !@scheduled_data.tours_exist
-                            if @community.scheduler_widget
-                                if @community.unscheduled_alert_with_widget.present?
-                                    json.tour_alert @community.unscheduled_alert_with_widget + " To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?"
-                                else
-                                    json.tour_alert "I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?"
-                                end
-                                json.scheduler_widget_url "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
-                            else
-                                phone = ""
-                                if @community.phone.present?
-                                    phone =  @community.phone.scan(/\d/).join('')
-                                    phone = "#{phone[-10..-8]}-#{phone[-7..-5]}-#{phone[-4..-1]}"
-                                    contact_property = "To schedule a tour, please contact #{@community.name.split(' ').map(&:capitalize).join(' ')}: #{phone}. "
-                                end
-
-                                if @community.unscheduled_alert.present?
-                                    @community.unscheduled_alert.gsub!("<phone>", phone)
-                                    json.tour_alert @community.unscheduled_alert + " In the meantime, would you like to take a virtual tour?"
-                                else
-                                    json.tour_alert "I'm sorry! We only allow scheduled tours. #{contact_property}In the meantime, would you like to take a virtual tour?"
-                                end
-                            end
-
-                        end
-                    else
+                if @community.tour.only_scheduled_tour                                              # aslo works with salesforce communities
+                    if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
                         unless @within_one_km
                             json.scheduler_widget_allowed false
                             if @location_received
@@ -96,6 +27,67 @@
                             else
                                 json.tour_alert "Unable to detect location. Please select one of the options below. "
                             end
+                        end
+                    elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
+                        if @scheduled_data.time_status == "before time"
+                            json.scheduler_widget_allowed false
+                            if @community.arrive_too_early_alert.present?
+                                @community.arrive_too_early_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time).gsub!("<grace time>", @community.tour.grace_period.to_s)
+                                json.tour_alert @community.arrive_too_early_alert + " In the meantime, would you like to take a virtual tour?"  
+                            else
+                                json.tour_alert "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.tour.grace_period.to_s} minutes before that time. In the meantime, would you like to take a virtual tour?"
+                            end
+                        elsif @scheduled_data.time_status == "after time"
+                            if @community.arrive_too_late_alert.present?
+                                @community.arrive_too_late_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time)
+                                if @community.scheduler_widget
+                                    json.tour_alert @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?"
+                                    json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
+                                else
+                                    json.tour_alert @community.arrive_too_late_alert + " In the meantime, would you like to take a virtual tour?"
+                                end
+                            else
+                                message = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.tour.grace_period.to_s} minutes before that time. "
+                                if @community.scheduler_widget
+                                    json.tour_alert message + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?"
+                                    json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
+                                else
+                                    json.tour_alert message + " In the meantime, would you like to take a virtual tour?"
+                                end
+                            end
+                        end
+                    else !@scheduled_data.tours_exist
+                        if @community.scheduler_widget
+                            if @community.unscheduled_alert_with_widget.present?
+                                json.tour_alert @community.unscheduled_alert_with_widget + " To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?"
+                            else
+                                json.tour_alert "I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?"
+                            end
+                            json.scheduler_widget_url "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
+                        else
+                            phone = ""
+                            if @community.phone.present?
+                                phone =  @community.phone.scan(/\d/).join('')
+                                phone = "#{phone[-10..-8]}-#{phone[-7..-5]}-#{phone[-4..-1]}"
+                                contact_property = "To schedule a tour, please contact #{@community.name.split(' ').map(&:capitalize).join(' ')}: #{phone}. "
+                            end
+
+                            if @community.unscheduled_alert.present?
+                                @community.unscheduled_alert.gsub!("<phone>", phone)
+                                json.tour_alert @community.unscheduled_alert + " In the meantime, would you like to take a virtual tour?"
+                            else
+                                json.tour_alert "I'm sorry! We only allow scheduled tours. #{contact_property}In the meantime, would you like to take a virtual tour?"
+                            end
+                        end
+
+                    end
+                else
+                    unless @within_one_km
+                        json.scheduler_widget_allowed false
+                        if @location_received
+                            json.tour_alert "It looks like you're not at the property. Would you like to take a virtual tour?"
+                        else
+                            json.tour_alert "Unable to detect location. Please select one of the options below. "
                         end
                     end
                 end

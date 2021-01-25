@@ -435,11 +435,11 @@ class Api::V1::CommunitiesController < ActionController::Base
 
           timezone = get_community_time_zone(@community)
           current_time = current_community_time(@community)
-          is_salesforce_crm = (@community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce") ? true : false
+          @is_salesforce_crm = (@community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce") ? true : false
 
           if @in_visiting_hours = is_tour_in_visiting_hours(@community, current_time)
             unless @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
-              unless is_salesforce_crm
+              unless @is_salesforce_crm
                 @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
                 if @community.tour.only_scheduled_tour
                   if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
@@ -455,8 +455,8 @@ class Api::V1::CommunitiesController < ActionController::Base
                   should_range_be_checked = false
                 end
               else
-                if @community.id == 1240                                                    # only enabled for "Metropolitan" for testing from Prometheus-salesforce
-                  @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time)
+                if @community.id != 1240                                                    # only enabled for "Metropolitan" for testing from Prometheus-salesforce
+                  @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
                   if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
                     if @location_received and (@within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1))
                       # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
@@ -649,7 +649,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     OpenStruct.new({tours_exist: tours_exist, on_time_tour: on_time_tour, nearest_tour: nearest_tour, time_status: time_status})
   end
 
-  def sf_nearest_time_tour(community, tour_user, current_time)
+  def sf_nearest_time_tour(community, tour_user, current_time, timezone)
     tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil;
 
     response = SalesforceServices::GetBookingByNeighbor.call(community: community, tour_user: tour_user)
@@ -659,7 +659,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         on_time_tour = is_sf_tour_on_time(today_scheduled_tours, current_time, community.tour.grace_period, timezone)
         current_tour = on_time_tour
         unless on_time_tour.present?
-          time_status , nearest_tour = sf_tour_time_status(today_scheduled_tours, current_time, timezone, community.tour.grace_period)
+          time_status , nearest_tour = sf_tour_time_status(today_scheduled_tours, current_time, timezone)
           current_tour = nearest_tour
         end
         

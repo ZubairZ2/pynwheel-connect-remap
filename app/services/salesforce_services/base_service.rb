@@ -21,7 +21,7 @@ module SalesforceServices
         end
 
         def base_url
-            "https://prometheusreg.my.salesforce.com/services/apexrest"
+            "https://prometheusreg--promuat.my.salesforce.com/services/apexrest"
         end
 
         def get_community_time_zone(community)

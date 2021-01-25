@@ -2,7 +2,7 @@ module SalesforceServices
     class AuthToken < SalesforceServices::BaseService
 
         def execute(args)
-            url = "https://prometheusreg.my.salesforce.com/services/oauth2/token"
+            url = "https://prometheusreg--promuat.my.salesforce.com/services/oauth2/token"
             response = HTTParty.post(url,
                 body: {
                     username: @sales_force.crm_username,
