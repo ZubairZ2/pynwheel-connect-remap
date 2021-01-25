@@ -53,6 +53,6 @@ json.data @units do |u|
         json.manual_override u.manual_override
         json.square_feet u.square_feet
         json.description u.description
-        json.update_apply (u.provider == "resman" || u.provider == "psi") ? true : false
+        json.update_apply ((u.provider == "resman" || u.provider == "psi") && (@community.credential.apply_now != "separate_link")) ? true : false
     
 end
