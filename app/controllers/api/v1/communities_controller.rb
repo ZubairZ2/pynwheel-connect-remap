@@ -334,7 +334,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       
       @floor_list_temp = (@floor_list - [@tours.last.starting_floor]).unshift(@tours.last.starting_floor) if @tours.last.starting_floor.present? rescue nil
       @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}
-
+      chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
+      @chat_count = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
       # @floor_list = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if x.building.present?}.compact.flatten!
       # non_building_floor = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if !x.building.present?}.compact.flatten!
       # @floor_list = (@floor_list.present? ? @floor_list : []) + (non_building_floor.present? ? non_building_floor : [])

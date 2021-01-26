@@ -107,7 +107,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
   def check_length_stay(tour_history_id, lengthy_stay, community, tu, stop_id)
     tour_history = TourHistory.find tour_history_id
-    lengthy_stay = (convert_epoch_to_datetime lengthy_stay)
+    lengthy_stay = (convert_epoch_to_datetime lengthy_stay.to_s)
     stay_time = time_difference(lengthy_stay, tour_history.arrived)
     
     if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false
