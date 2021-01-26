@@ -370,7 +370,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           puts Thread.list
           puts "---"*50
           puts "##############################################  locks thread joined  #################################################"
-          locks_thread[0].join(20) if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
+          locks_thread[0].join(18) if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
           puts "#############################################  main thread continued  ################################################"
         end
       rescue => exception
