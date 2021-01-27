@@ -97,10 +97,10 @@
                         - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                         .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                           .alert-div1{:style => "margin-top: 10px"}
-                            - if alert.tour_status.present? && (alert.created_at > "2020-12-31".to_date) && alert.tour_status == "virtual"
+                            - if alert.tour_status.present? && (alert.created_at > "2020-12-31".to_date) && alert.tour_status == "virtual_tour"
                               - @virtual_list << alert.tour_key if alert.tour_key.present?
                               = image_tag  image_url("virtual_eye_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "Virtual Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                            - elsif alert.tour_status.present? && alert.created_at > "2020-12-31".to_date && (alert.tour_status == "self_tour" || alert.tour_status == "guided")
+                            - elsif alert.tour_status.present? && alert.created_at > "2020-12-31".to_date && (alert.tour_status == "self_tour" || alert.tour_status == "guided_tour")
                               = image_tag  image_url("virtual_walk_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "In-Person Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - else
                               = image_tag  image_url("icon-check.png"), :style => "height: 22px; width: 22px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"  
