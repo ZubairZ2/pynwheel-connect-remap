@@ -19,6 +19,9 @@ module SalesforceServices
                 rescue HTTParty::Error => e
                     OpenStruct.new({success?: false, error: e, payload: nil})
                 else
+                    puts "---"*50
+                    puts response
+                    puts "---"*50
                     if response.code == "200" or response.code == 200
                         OpenStruct.new({success?: true, error: nil, payload: response})
                     else
